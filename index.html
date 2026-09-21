@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 3.3 -->
+<!-- FRENDA_SIMULATOR_VERSION: 3.4 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダシミュレーター Ver3.3</title>
+<title>フレンダシミュレーター Ver3.4</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 body{margin:0;background:#f4f5f7;color:#111}
@@ -37,11 +37,11 @@ button:disabled{opacity:.45}
 </style>
 </head>
 <body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver3.3</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver3.4</header>
 <main>
 <section class="card">
 <h2>① 裏面撮影</h2>
-<p class="note">今回は認識精度の検証版です。裏面を縦向きにし、できるだけ正面から撮影してください。Ver3.3では緑のガイド枠を基準にピック領域を先に正規化し、その中から項目別OCRを行います。ピックの外周を緑枠にできるだけ合わせてください。</p>
+<p class="note">今回は認識精度の検証版です。裏面を縦向きにし、できるだけ正面から撮影してください。Ver3.4では緑のガイド枠を基準にピック領域を先に正規化し、その中から項目別OCRを行います。ピックの外周を緑枠にできるだけ合わせてください。</p>
 <input id="backFile" type="file" accept="image/*" capture="environment">
 <div id="previewBox" class="photo" style="margin-top:10px;display:none">
 <img id="backPreview">
@@ -77,7 +77,7 @@ button:disabled{opacity:.45}
 <div><label>とくぼう</label><input id="spdef" inputmode="numeric"></div>
 <div><label>ピック番号</label><input id="pickno"></div>
 </div>
-<p class="note">★・矢印・タイプアイコンはVer3.3では「画像認識候補」です。誤認識時は空欄または要確認として残し、固定値で埋めません。</p>
+<p class="note">★・矢印・タイプアイコンはVer3.4では「画像認識候補」です。誤認識時は空欄または要確認として残し、固定値で埋めません。</p>
 <button id="save" class="secondary">この内容で登録</button>
 </section>
 
@@ -115,7 +115,7 @@ $("backFile").addEventListener("change",e=>{
  r.readAsDataURL(f);
 });
 
-// Ver3.3: まず撮影ガイド枠内を「ピック本体」として正規化する。
+// Ver3.4: まず撮影ガイド枠内を「ピック本体」として正規化する。
 // iPhone試作では自動四隅検出の前段として、ユーザーが合わせたガイド枠を確実な基準にする。
 const CARD={x:.19,y:.07,w:.62,h:.86};
 function canvasCrop(x,y,w,h, scale=3, gray=true){
@@ -173,19 +173,20 @@ function showDiag(id,canvas,out){
 }
 
 /*
- ROIは「撮影枠にピックがほぼ一杯」の診断用。Ver3.3では切り出し画像を画面表示します。
+ ROIは「撮影枠にピックがほぼ一杯」の診断用。Ver3.4では切り出し画像を画面表示します。
  実機写真で位置を追い込みます。固定ポケモン名・技名は一切入れていません。
 */
 const ROI={
- name:[.13,.09,.53,.10],
- english:[.14,.175,.36,.055],
- move:[.10,.49,.55,.105],
- hp:[.66,.245,.23,.07],
- atk:[.66,.325,.23,.07],
- def:[.66,.405,.23,.07],
- spatk:[.66,.485,.23,.07],
- spdef:[.66,.565,.23,.07],
- pickno:[.53,.885,.38,.065]
+ // Ver3.4: 実際のトゲキッス裏面診断画像から再調整
+ name:[.48,.105,.43,.075],
+ english:[.60,.075,.30,.045],
+ move:[.18,.335,.55,.075],
+ hp:[.30,.655,.18,.075],
+ atk:[.47,.655,.16,.075],
+ def:[.64,.655,.18,.075],
+ spatk:[.40,.725,.20,.075],
+ spdef:[.62,.725,.20,.075],
+ pickno:[.72,.835,.22,.055]
 };
 
 $("recognize").onclick=async()=>{
@@ -248,7 +249,7 @@ $("save").onclick=()=>{
  // 検証版では巨大な写真をlocalStorageへ保存しない
  const arr=JSON.parse(localStorage.getItem("frenda31_records")||"[]");
  arr.push(rec); localStorage.setItem("frenda31_records",JSON.stringify(arr));
- alert("登録しました（Ver3.3検証用データ）。");
+ alert("登録しました（Ver3.4検証用データ）。");
 };
 </script>
 </body></html>
