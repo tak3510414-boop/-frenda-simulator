@@ -1,255 +1,47 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 3.4 -->
-<html lang="ja">
-<head>
-<meta charset="utf-8">
+<!-- FRENDA_SIMULATOR_VERSION: 3.5 -->
+<html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダシミュレーター Ver3.4</title>
+<title>フレンダシミュレーター Ver3.5</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
-body{margin:0;background:#f4f5f7;color:#111}
-header{background:#111;color:white;padding:14px 16px;font-weight:700}
-main{max-width:720px;margin:auto;padding:14px}
-.card{background:white;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 1px 5px #0002}
-h2{font-size:18px;margin:0 0 12px}
-label{display:block;font-size:13px;font-weight:700;margin:10px 0 4px}
-input,select,button{font:inherit}
-input,select{box-sizing:border-box;width:100%;padding:10px;border:1px solid #bbb;border-radius:9px;background:#fff}
-button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;background:#1769e0;color:#fff}
-button.secondary{background:#666}
-button:disabled{opacity:.45}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.photo{position:relative;background:#222;border-radius:12px;overflow:hidden;min-height:220px;display:flex;align-items:center;justify-content:center}
-.photo img{display:block;max-width:100%;max-height:520px}
-.frame{position:absolute;inset:7% 19%;border:3px solid #4cff70;border-radius:14px;pointer-events:none;box-shadow:0 0 0 999px #0004}
-.frame:after{content:"裏面をこの枠に合わせて縦向きで撮影";position:absolute;left:-18%;right:-18%;bottom:-42px;color:#fff;text-align:center;font-size:12px}
-.note{font-size:12px;color:#555;line-height:1.5}
-.status{padding:10px;border-radius:9px;background:#eef4ff;margin-top:10px;white-space:pre-wrap}
-.warn{background:#fff3cd}
-.ok{background:#e8f7ed}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.debug{font-family:ui-monospace,monospace;font-size:11px;white-space:pre-wrap;background:#f6f6f6;padding:8px;border-radius:8px}
-.diaggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.diagitem{background:#f6f6f6;border-radius:10px;padding:8px}
-.diagitem b{display:block;font-size:12px;margin-bottom:5px}
-.diagitem img{width:100%;height:90px;object-fit:contain;background:#222;border-radius:6px}
-.diagitem small{display:block;word-break:break-all;margin-top:4px}
-</style>
-</head>
-<body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver3.4</header>
-<main>
-<section class="card">
-<h2>① 裏面撮影</h2>
-<p class="note">今回は認識精度の検証版です。裏面を縦向きにし、できるだけ正面から撮影してください。Ver3.4では緑のガイド枠を基準にピック領域を先に正規化し、その中から項目別OCRを行います。ピックの外周を緑枠にできるだけ合わせてください。</p>
-<input id="backFile" type="file" accept="image/*" capture="environment">
-<div id="previewBox" class="photo" style="margin-top:10px;display:none">
-<img id="backPreview">
-<div class="frame"></div>
-</div>
-<div style="margin-top:10px">
-<button id="recognize" disabled>裏面を認識する</button>
-</div>
-<div id="status" class="status" style="display:none"></div>
+body{margin:0;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;color:#17202a}
+header{background:#172b3a;color:#fff;padding:14px 16px;font-weight:800}main{max-width:720px;margin:auto;padding:14px}
+.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 1px 5px #0002}
+h2{margin:0 0 12px;font-size:19px}.note{font-size:13px;line-height:1.6;color:#555}
+input,button{font:inherit;box-sizing:border-box}input[type=file]{width:100%}
+button{border:0;border-radius:10px;padding:11px 14px;background:#1769e0;color:#fff;font-weight:700}button:disabled{opacity:.4}
+.photo{position:relative;background:#222;border-radius:12px;overflow:hidden;margin-top:10px}
+.photo img{display:block;width:100%;height:auto}.photo canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.status{padding:9px;background:#eef4ff;border-radius:9px;margin:8px 0}.diag{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.diag>div{background:#f6f6f6;border-radius:10px;padding:7px}.diag img{width:100%;height:100px;object-fit:contain;background:#222}
+small{word-break:break-all}.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fields label{font-size:12px;font-weight:700}
+.fields input{width:100%;padding:9px;border:1px solid #bbb;border-radius:8px;margin-top:3px}
+</style></head><body>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver3.5</header><main>
+<section class="card"><h2>① 裏面を撮影</h2>
+<input id="file" type="file" accept="image/*" capture="environment">
+<p class="note">撮影後、ピックの <b>左上 → 右上 → 右下 → 左下</b> の順に4点をタップしてください。</p>
+<div id="photo" class="photo" hidden><img id="img"><canvas id="cv"></canvas></div>
+<div id="ps" class="status">0 / 4 点</div>
+<button id="reset" type="button">四隅をやり直す</button>
+<button id="run" type="button" disabled>4点補正してOCR</button>
 </section>
-
-<section class="card">
-<h2>② 認識結果を確認・修正</h2>
-<div class="row">
-<div><label>ポケモン名</label><input id="name"></div>
-<div><label>英語名</label><input id="nameEn"></div>
-</div>
-<div class="row">
-<div><label>グレード（★数）</label><input id="grade" inputmode="numeric"></div>
-<div><label>すばやさ（矢印数）</label><input id="speed" inputmode="numeric"></div>
-</div>
-<div class="row">
-<div><label>タイプ1</label><input id="type1"></div>
-<div><label>タイプ2</label><input id="type2"></div>
-</div>
-<label>わざ名</label><input id="move">
-<label>わざタイプ</label><input id="moveType">
-<div class="grid">
-<div><label>HP</label><input id="hp" inputmode="numeric"></div>
-<div><label>こうげき</label><input id="atk" inputmode="numeric"></div>
-<div><label>ぼうぎょ</label><input id="def" inputmode="numeric"></div>
-<div><label>とくこう</label><input id="spatk" inputmode="numeric"></div>
-<div><label>とくぼう</label><input id="spdef" inputmode="numeric"></div>
-<div><label>ピック番号</label><input id="pickno"></div>
-</div>
-<p class="note">★・矢印・タイプアイコンはVer3.4では「画像認識候補」です。誤認識時は空欄または要確認として残し、固定値で埋めません。</p>
-<button id="save" class="secondary">この内容で登録</button>
-</section>
-
-<section class="card">
-<h2>③ OCR切り出し診断</h2>
-<p class="note">ここには、OCRが実際に読んだ画像部分をそのまま表示します。認識後、この欄全体が分かるようにスクリーンショットを送ってください。</p>
-<div id="cardDiag" class="diagitem" style="margin-bottom:10px"><b>正規化対象（ガイド枠内）</b><img id="cardDiagImg" style="height:260px"><small>この画像にピック裏面がほぼ一杯で入っているか確認してください。</small></div>
-<div id="diag" class="diaggrid"></div>
-</section>
-
-<section class="card">
-<h2>認識デバッグ</h2>
-<div id="debug" class="debug">まだ認識していません。</div>
-</section>
+<section class="card"><h2>② 4点補正後</h2><img id="rect" style="width:100%;max-height:500px;object-fit:contain;background:#222">
+<p class="note">ここがピック裏面だけの長方形になっていることを確認してください。</p></section>
+<section class="card"><h2>③ OCR切り出し診断</h2><div id="diag" class="diag"></div></section>
+<section class="card"><h2>④ 認識結果</h2><div class="fields" id="fields"></div></section>
 </main>
-
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js"></script>
 <script>
-const $=id=>document.getElementById(id);
-let img=null, originalDataURL=null;
-
-$("backFile").addEventListener("change",e=>{
- const f=e.target.files?.[0]; if(!f)return;
- const r=new FileReader();
- r.onload=()=>{
-   originalDataURL=r.result;
-   img=new Image();
-   img.onload=()=>{
-     $("backPreview").src=r.result;
-     $("previewBox").style.display="flex";
-     $("recognize").disabled=false;
-   };
-   img.src=r.result;
- };
- r.readAsDataURL(f);
-});
-
-// Ver3.4: まず撮影ガイド枠内を「ピック本体」として正規化する。
-// iPhone試作では自動四隅検出の前段として、ユーザーが合わせたガイド枠を確実な基準にする。
-const CARD={x:.19,y:.07,w:.62,h:.86};
-function canvasCrop(x,y,w,h, scale=3, gray=true){
- const sx=(CARD.x+x*CARD.w)*img.naturalWidth;
- const sy=(CARD.y+y*CARD.h)*img.naturalHeight;
- const sw=w*CARD.w*img.naturalWidth;
- const sh=h*CARD.h*img.naturalHeight;
- const c=document.createElement("canvas");
- c.width=Math.max(1,Math.round(sw*scale));
- c.height=Math.max(1,Math.round(sh*scale));
- const ctx=c.getContext("2d");
- ctx.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
- if(gray){
-   let d=ctx.getImageData(0,0,c.width,c.height), a=d.data;
-   for(let i=0;i<a.length;i+=4){
-     const g=Math.round(.299*a[i]+.587*a[i+1]+.114*a[i+2]);
-     const v=g>165?255:(g<70?0:g);
-     a[i]=a[i+1]=a[i+2]=v;
-   }
-   ctx.putImageData(d,0,0);
- }
- return c;
-}
-function cardCanvas(){
- const c=document.createElement("canvas");
- const sx=CARD.x*img.naturalWidth, sy=CARD.y*img.naturalHeight;
- const sw=CARD.w*img.naturalWidth, sh=CARD.h*img.naturalHeight;
- c.width=Math.max(1,Math.round(sw)); c.height=Math.max(1,Math.round(sh));
- c.getContext("2d").drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
- return c;
-}
-function cleanNum(s){let m=(s||"").replace(/[^\d]/g,"").match(/\d{1,3}/);return m?m[0]:""}
-function cleanPick(s){
- s=(s||"").replace(/[—–ー―]/g,"-").replace(/[^0-9-]/g,"");
- let m=s.match(/\d-\d-\d{3}/); return m?m[0]:s;
-}
-function cleanText(s){return (s||"").replace(/\s+/g,"").replace(/[|｜]/g,"").trim()}
-
-async function ocr(worker,canvas,params={}){
- await worker.setParameters(params);
- const r=await worker.recognize(canvas);
- return {text:r.data.text||"", confidence:r.data.confidence||0};
-}
-function showDiag(id,canvas,out){
- const box=document.createElement("div");
- box.className="diagitem";
- const title=document.createElement("b");
- title.textContent=id;
- const im=document.createElement("img");
- im.src=canvas.toDataURL("image/jpeg",0.9);
- const sm=document.createElement("small");
- sm.textContent="OCR: "+JSON.stringify(out.text)+" / "+Math.round(out.confidence)+"%";
- box.append(title,im,sm);
- $("diag").appendChild(box);
-}
-
-/*
- ROIは「撮影枠にピックがほぼ一杯」の診断用。Ver3.4では切り出し画像を画面表示します。
- 実機写真で位置を追い込みます。固定ポケモン名・技名は一切入れていません。
-*/
-const ROI={
- // Ver3.4: 実際のトゲキッス裏面診断画像から再調整
- name:[.48,.105,.43,.075],
- english:[.60,.075,.30,.045],
- move:[.18,.335,.55,.075],
- hp:[.30,.655,.18,.075],
- atk:[.47,.655,.16,.075],
- def:[.64,.655,.18,.075],
- spatk:[.40,.725,.20,.075],
- spdef:[.62,.725,.20,.075],
- pickno:[.72,.835,.22,.055]
-};
-
-$("recognize").onclick=async()=>{
- if(!img)return;
- $("recognize").disabled=true;
- $("status").style.display="block";
- $("status").className="status";
- $("status").textContent="OCRを準備しています…（初回は日本語データの読込みに時間がかかります）";
- $("debug").textContent=""; $("diag").innerHTML="";
- $("cardDiagImg").src=cardCanvas().toDataURL("image/jpeg",0.9);
- try{
-   const worker=await Tesseract.createWorker(["jpn","eng"]);
-   const logs=[];
-   async function run(id, langKind="text"){
-     $("status").textContent="認識中："+id;
-     const r=ROI[id], c=canvasCrop(...r);
-     let p={preserve_interword_spaces:"1"};
-     if(langKind==="num") p={tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"7"};
-     if(langKind==="pick") p={tessedit_char_whitelist:"0123456789-",tessedit_pageseg_mode:"7"};
-     const out=await ocr(worker,c,p);
-     showDiag(id,c,out);
-     logs.push(id+" ["+Math.round(out.confidence)+"%] : "+JSON.stringify(out.text));
-     return out.text;
-   }
-   const name=cleanText(await run("name"));
-   const en=cleanText(await run("english"));
-   const move=cleanText(await run("move"));
-   $("name").value=name;
-   $("nameEn").value=en;
-   $("move").value=move;
-   $("hp").value=cleanNum(await run("hp","num"));
-   $("atk").value=cleanNum(await run("atk","num"));
-   $("def").value=cleanNum(await run("def","num"));
-   $("spatk").value=cleanNum(await run("spatk","num"));
-   $("spdef").value=cleanNum(await run("spdef","num"));
-   $("pickno").value=cleanPick(await run("pickno","pick"));
-   await worker.terminate();
-
-   // ★・矢印・タイプは、誤った固定値を入れない。
-   $("grade").value="";
-   $("speed").value="";
-   $("type1").value="";
-   $("type2").value="";
-   $("moveType").value="";
-
-   $("debug").textContent=logs.join("\n");
-   $("status").className="status ok";
-   $("status").textContent="認識完了。各項目を確認してください。\n★・矢印・タイプアイコンは次の画像判定調整のため、今回は固定値を入れていません。";
- }catch(err){
-   $("status").className="status warn";
-   $("status").textContent="認識に失敗しました。\n"+err+"\nSafariがオンラインか確認してください。";
-   $("debug").textContent=String(err);
- }finally{$("recognize").disabled=false}
-};
-
-$("save").onclick=()=>{
- const ids=["name","nameEn","grade","speed","type1","type2","move","moveType","hp","atk","def","spatk","spdef","pickno"];
- const rec={createdAt:new Date().toISOString()};
- ids.forEach(id=>rec[id]=$(id).value.trim());
- // 検証版では巨大な写真をlocalStorageへ保存しない
- const arr=JSON.parse(localStorage.getItem("frenda31_records")||"[]");
- arr.push(rec); localStorage.setItem("frenda31_records",JSON.stringify(arr));
- alert("登録しました（Ver3.4検証用データ）。");
-};
-</script>
-</body></html>
+const $=x=>document.getElementById(x); let im=new Image(),pts=[],rectified=null;
+const names={name:"日本語名",english:"英語名",move:"技名",hp:"HP",atk:"こうげき",def:"ぼうぎょ",spatk:"とくこう",spdef:"とくぼう",pickno:"ピック番号"};
+Object.entries(names).forEach(([k,v])=>{$("fields").insertAdjacentHTML("beforeend",`<label>${v}<input id="f_${k}"></label>`)});
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{im.onload=()=>{$("img").src=r.result;$("photo").hidden=false;pts=[];draw()};im.src=r.result};r.readAsDataURL(f)};
+function draw(){const c=$("cv"),r=$("img").getBoundingClientRect();c.width=r.width*devicePixelRatio;c.height=r.height*devicePixelRatio;let x=c.getContext("2d");x.scale(devicePixelRatio,devicePixelRatio);x.strokeStyle="red";x.fillStyle="red";x.lineWidth=2;pts.forEach((p,i)=>{x.beginPath();x.arc(p.x*r.width,p.y*r.height,7,0,7);x.fill();x.fillText(i+1,p.x*r.width+8,p.y*r.height)});if(pts.length>1){x.beginPath();x.moveTo(pts[0].x*r.width,pts[0].y*r.height);for(let i=1;i<pts.length;i++)x.lineTo(pts[i].x*r.width,pts[i].y*r.height);if(pts.length==4)x.closePath();x.stroke()}$("ps").textContent=pts.length+" / 4 点";$("run").disabled=pts.length!=4}
+$("cv").onpointerdown=e=>{if(pts.length>=4)return;let r=e.currentTarget.getBoundingClientRect();pts.push({x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height});draw()};
+$("reset").onclick=()=>{pts=[];draw()};
+function rectify(){const W=720,H=1080,s=document.createElement("canvas");s.width=im.naturalWidth;s.height=im.naturalHeight;let sx=s.getContext("2d");sx.drawImage(im,0,0);let sd=sx.getImageData(0,0,s.width,s.height).data,c=document.createElement("canvas");c.width=W;c.height=H;let cx=c.getContext("2d"),o=cx.createImageData(W,H),d=o.data,P=pts.map(p=>({x:p.x*s.width,y:p.y*s.height}));for(let y=0;y<H;y++){let v=y/(H-1);for(let x=0;x<W;x++){let u=x/(W-1),xx=(1-u)*(1-v)*P[0].x+u*(1-v)*P[1].x+u*v*P[2].x+(1-u)*v*P[3].x,yy=(1-u)*(1-v)*P[0].y+u*(1-v)*P[1].y+u*v*P[2].y+(1-u)*v*P[3].y,ix=Math.max(0,Math.min(s.width-1,Math.round(xx))),iy=Math.max(0,Math.min(s.height-1,Math.round(yy))),a=(iy*s.width+ix)*4,b=(y*W+x)*4;d[b]=sd[a];d[b+1]=sd[a+1];d[b+2]=sd[a+2];d[b+3]=255}}cx.putImageData(o,0,0);return c}
+const R={name:[.50,.10,.45,.09],english:[.60,.06,.34,.05],move:[.10,.35,.65,.09],hp:[.25,.64,.22,.08],atk:[.45,.64,.18,.08],def:[.63,.64,.22,.08],spatk:[.35,.72,.25,.08],spdef:[.60,.72,.25,.08],pickno:[.70,.84,.25,.06]};
+function crop(a){let [x,y,w,h]=a,c=document.createElement("canvas");c.width=w*rectified.width*4;c.height=h*rectified.height*4;c.getContext("2d").drawImage(rectified,x*rectified.width,y*rectified.height,w*rectified.width,h*rectified.height,0,0,c.width,c.height);return c}
+$("run").onclick=async()=>{try{$("run").disabled=true;rectified=rectify();$("rect").src=rectified.toDataURL("image/jpeg",.9);$("diag").innerHTML="";let w=await Tesseract.createWorker(["jpn","eng"]);for(const k of Object.keys(R)){let c=crop(R[k]),numeric=["hp","atk","def","spatk","spdef"].includes(k);await w.setParameters(numeric?{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"7"}:{tessedit_pageseg_mode:"7"});let z=await w.recognize(c),t=z.data.text.trim();$("f_"+k).value=numeric?t.replace(/\\D/g,""):t.replace(/\\s+/g," ");let box=document.createElement("div");box.innerHTML=`<b>${k}</b><img><small></small>`;box.querySelector("img").src=c.toDataURL("image/jpeg",.9);box.querySelector("small").textContent="OCR: "+JSON.stringify(t)+" / "+Math.round(z.data.confidence)+"%";$("diag").appendChild(box)}await w.terminate()}catch(e){alert(e)}finally{$("run").disabled=false}};
+</script></body></html>
