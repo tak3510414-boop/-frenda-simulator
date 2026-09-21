@@ -1,128 +1,73 @@
 <!doctype html>
-<html lang="ja">
-<head>
+<html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ家庭版 Ver2</title>
+<title>フレンダ家庭版 Ver3</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js"></script>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f4f6f7}
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f6f7;color:#17202a}
 *{box-sizing:border-box}body{margin:0;padding:14px;max-width:850px;margin:auto}h1{font-size:22px;margin:5px 0}.sub{font-size:12px;color:#667;margin-bottom:12px}
-.card{background:#fff;border:1px solid #ddd;border-radius:15px;padding:14px;margin:11px 0;box-shadow:0 2px 8px #0000000d}
-h2{font-size:17px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid #ddd;border-radius:15px;padding:14px;margin:11px 0;box-shadow:0 2px 8px #0001}h2{font-size:17px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}@media(max-width:600px){.grid{grid-template-columns:1fr}}
 label{font-size:12px;color:#59636d;display:block;margin:6px 0 3px}input,select{width:100%;padding:10px;border:1px solid #cfd5da;border-radius:9px;background:#fff;font-size:16px}
-button{border:0;border-radius:10px;padding:11px 13px;background:#253746;color:white;font-size:15px;font-weight:700}button.alt{background:#657786}
+button{border:0;border-radius:10px;padding:11px 13px;background:#253746;color:white;font-size:15px;font-weight:700}button.alt{background:#657786}button:disabled{opacity:.45}
 .preview{width:100%;aspect-ratio:1.58/1;border:2px dashed #aeb6bf;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafafa;color:#777;margin-top:7px}
-.preview img{width:100%;height:100%;object-fit:contain}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
-.status{margin-top:9px;font-weight:700;font-size:13px}.pickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(min-width:650px){.pickgrid{grid-template-columns:repeat(4,1fr)}}
-.pick{border:1px solid #ddd;border-radius:12px;overflow:hidden;background:white}.pick img{width:100%;aspect-ratio:1.58/1;object-fit:cover;background:#eee}.pick .p{padding:8px;font-size:12px}.pick b{font-size:14px}
-.hidden{display:none}.warn{background:#fff4d6;padding:8px;border-radius:8px;font-size:12px;margin-top:8px}
-</style>
-</head>
-<body>
-<h1>フレンダ家庭版 試作品 Ver2</h1>
-<div class="sub">表面＋裏面撮影 → 読取結果確認 → ピック登録 → 写真付きコレクション</div>
+.preview img{width:100%;height:100%;object-fit:contain}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.status{margin-top:9px;font-weight:700;font-size:13px;white-space:pre-wrap}
+progress{width:100%;height:18px;margin-top:9px}.raw{font-size:11px;white-space:pre-wrap;background:#111;color:#eee;padding:8px;border-radius:8px;max-height:160px;overflow:auto;margin-top:8px}
+.pickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(min-width:650px){.pickgrid{grid-template-columns:repeat(4,1fr)}}.pick{border:1px solid #ddd;border-radius:12px;overflow:hidden}.pick img{width:100%;aspect-ratio:1.58/1;object-fit:cover}.pick .p{padding:8px;font-size:12px}.pick b{font-size:14px}
+</style></head><body>
+<h1>フレンダ家庭版 試作品 Ver3</h1>
+<div class="sub">実画像OCR版：裏面写真から文字・数値を読み取り、候補をフォームへ自動入力します。</div>
 
-<div class="card">
-<h2>① 表面を撮影</h2>
-<input id="frontInput" type="file" accept="image/*" capture="environment">
-<div class="preview" id="frontPreview">ピック表面を枠いっぱいに撮影</div>
-</div>
+<div class="card"><h2>① 表面を撮影</h2><input id="frontInput" type="file" accept="image/*" capture="environment"><div class="preview" id="frontPreview">表面を枠いっぱいに撮影</div></div>
+<div class="card"><h2>② 裏面を撮影</h2><input id="backInput" type="file" accept="image/*" capture="environment"><div class="preview" id="backPreview">裏面を枠いっぱいに撮影</div>
+<button id="ocr" style="margin-top:10px">写真から自動読取り</button><progress id="prog" value="0" max="1"></progress><div id="status" class="status"></div><details><summary>OCR生データを見る</summary><div id="raw" class="raw"></div></details></div>
 
-<div class="card">
-<h2>② 裏面を撮影</h2>
-<input id="backInput" type="file" accept="image/*" capture="environment">
-<div class="preview" id="backPreview">ピック裏面を枠いっぱいに撮影</div>
-<div class="warn">Ver2では撮影フローとデータベース化を先に実装しています。OCRは「自動読取り」ボタンの仮解析で動作確認し、次版で実画像OCRに置き換えます。QRコードは使用しません。</div>
-<button id="readBtn" style="margin-top:10px">自動読取り（試験）</button>
-</div>
+<div class="card"><h2>③ 読取結果を確認・修正</h2><div class="grid">
+<div><label>ピック番号</label><input id="pickNo" placeholder="例 2-5-025"></div><div><label>日本語名</label><input id="name"></div>
+<div><label>英語名</label><input id="enName"></div><div><label>グレード</label><select id="grade"><option value="">選択</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+<div><label>ポケエネ</label><input id="energy" type="number" inputmode="numeric"></div><div><label>すばやさレベル</label><input id="speed" type="number" min="1" max="5" inputmode="numeric"></div>
+<div><label>HP</label><input id="hp" type="number" inputmode="numeric"></div><div><label>こうげき（ATK）</label><input id="atk" type="number" inputmode="numeric"></div>
+<div><label>ぼうぎょ（DEF）</label><input id="def" type="number" inputmode="numeric"></div><div><label>とくこう（SP.ATK）</label><input id="spatk" type="number" inputmode="numeric"></div>
+<div><label>とくぼう（SP.DEF）</label><input id="spdef" type="number" inputmode="numeric"></div><div><label>技名</label><input id="move"></div>
+<div><label>わざタイプ</label><select id="moveType"></select></div><div><label>特殊要素・備考</label><input id="special"></div>
+</div><button id="register" style="margin-top:12px">このピックを登録</button></div>
 
-<div class="card">
-<h2>③ 読取結果を確認・修正</h2>
-<div class="grid">
-<div><label>ポケモン名</label><input id="name" placeholder="例：ミライドン"></div>
-<div><label>グレード</label><select id="grade"><option value="">選択</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-<div><label>ポケエネ</label><input id="energy" type="number" inputmode="numeric"></div>
-<div><label>すばやさレベル</label><input id="speed" type="number" inputmode="numeric"></div>
-<div><label>HP</label><input id="hp" type="number" inputmode="numeric"></div>
-<div><label>こうげき</label><input id="atk" type="number" inputmode="numeric"></div>
-<div><label>ぼうぎょ</label><input id="def" type="number" inputmode="numeric"></div>
-<div><label>わざ名</label><input id="move"></div>
-<div><label>わざタイプ</label><select id="moveType"></select></div>
-<div><label>特殊マーク・備考</label><input id="special" placeholder="例：テラスタル"></div>
-</div>
-<div class="row" style="margin-top:12px"><button id="register">このピックを登録</button><button id="clearForm" class="alt">入力をクリア</button></div>
-<div id="status" class="status"></div>
-</div>
-
-<div class="card">
-<h2>④ ピックコレクション</h2>
-<div class="grid">
-<div><label>名前検索</label><input id="search" placeholder="ポケモン名"></div>
-<div><label>並べ替え</label><select id="sort"><option value="new">新しい順</option><option value="name">名前順</option><option value="grade">グレード高い順</option><option value="energy">ポケエネ高い順</option></select></div>
-</div>
-<div id="count" class="sub" style="margin-top:10px"></div>
-<div id="pickGrid" class="pickgrid"></div>
-</div>
+<div class="card"><h2>④ コレクション</h2><div class="grid"><div><label>名前検索</label><input id="search"></div><div><label>並べ替え</label><select id="sort"><option value="new">新しい順</option><option value="name">名前順</option><option value="grade">グレード高い順</option><option value="energy">ポケエネ高い順</option></select></div></div><div id="count" class="sub" style="margin-top:10px"></div><div id="pickGrid" class="pickgrid"></div></div>
 
 <script>
-const $=id=>document.getElementById(id);
+const $=x=>document.getElementById(x);
 const types=["未設定","ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
-types.forEach(t=>{let o=document.createElement("option");o.textContent=t;o.value=t;$("moveType").appendChild(o)});
-let frontData="",backData="";
-let picks=[];try{picks=JSON.parse(localStorage.getItem("frenda_v2_picks")||"[]")}catch(e){picks=[]}
+types.forEach(t=>{let o=document.createElement("option");o.value=o.textContent=t;$("moveType").appendChild(o)});
+let frontData="",backData="",picks=[];try{picks=JSON.parse(localStorage.getItem("frenda_v3_picks")||"[]")}catch(e){}
+function image(input,box,side){let f=input.files?.[0];if(!f)return;let r=new FileReader();r.onload=e=>{let im=new Image();im.onload=()=>{let c=document.createElement("canvas"),m=1400,s=Math.min(1,m/im.width);c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);let d=c.toDataURL("image/jpeg",.82);box.innerHTML=`<img src="${d}">`;side==="f"?frontData=d:backData=d};im.src=e.target.result};r.readAsDataURL(f)}
+$("frontInput").onchange=()=>image($("frontInput"),$("frontPreview"),"f");$("backInput").onchange=()=>image($("backInput"),$("backPreview"),"b");
 
-function loadImage(input,preview,side){
- const f=input.files&&input.files[0]; if(!f)return;
- const r=new FileReader();r.onload=e=>{
-  const img=new Image();img.onload=()=>{
-   const c=document.createElement("canvas"),max=900,scale=Math.min(1,max/img.width);
-   c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
-   c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-   const data=c.toDataURL("image/jpeg",.72);
-   preview.innerHTML='<img src="'+data+'">';
-   if(side==="front")frontData=data;else backData=data;
-  };img.src=e.target.result;
- };r.readAsDataURL(f);
+function numsNear(text,label){let r=new RegExp(label.replace(".","\\.")+"\\s*[:：]?\\s*(\\d{1,3})","i").exec(text);return r?r[1]:""}
+function parse(t){
+ let clean=t.replace(/[｜|]/g,"I");
+ let no=(clean.match(/\b\d[-‐‑–—]\d[-‐‑–—]\d{3}\b/)||[])[0];if(no)$("pickNo").value=no.replace(/[‐‑–—]/g,"-");
+ let hp=numsNear(clean,"HP"),atk=numsNear(clean,"ATK"),def=numsNear(clean,"DEF"),sa=numsNear(clean,"SP.ATK"),sd=numsNear(clean,"SP.DEF");
+ if(hp)$("hp").value=hp;if(atk)$("atk").value=atk;if(def)$("def").value=def;if(sa)$("spatk").value=sa;if(sd)$("spdef").value=sd;
+ let en=(clean.match(/\b[A-Z][a-z]{3,15}\b/g)||[]).filter(x=>!["Pokemon","Nintendo","Creatures"].includes(x));if(en.length)$("enName").value=en[0];
+ // Known labels/moves are deliberately conservative; user confirms all results.
+ const jpNames=["ピカチュウ","ミライドン"];for(const n of jpNames)if(clean.includes(n))$("name").value=n;
+ const moves=["ボルテッカー","イナズマドライブ"];for(const m of moves)if(clean.includes(m))$("move").value=m;
+ if(clean.includes("ボルテッカー")||clean.includes("イナズマドライブ"))$("moveType").value="でんき";
+ let stars=(clean.match(/★/g)||[]).length;if(stars>=2&&stars<=5)$("grade").value=stars;
 }
-$("frontInput").onchange=()=>loadImage($("frontInput"),$("frontPreview"),"front");
-$("backInput").onchange=()=>loadImage($("backInput"),$("backPreview"),"back");
-
-$("readBtn").onclick=()=>{
+$("ocr").onclick=async()=>{
  if(!backData){$("status").textContent="先に裏面を撮影してください。";return}
- // Prototype prefill using the sample pick shown during specification.
- if(!$("name").value)$("name").value="ミライドン";
- if(!$("move").value)$("move").value="イナズマドライブ";
- $("moveType").value="でんき";
- $("status").textContent="試験読取り完了。Ver2では項目を手修正して登録してください。";
+ $("ocr").disabled=true;$("status").textContent="OCRを準備しています… 初回は言語データの読込みに時間がかかります。";$("prog").value=0;
+ try{
+  const worker=await Tesseract.createWorker("jpn+eng",1,{logger:m=>{if(typeof m.progress==="number")$("prog").value=m.progress;$("status").textContent="自動読取り中… "+Math.round(($("prog").value||0)*100)+"%";}});
+  const ret=await worker.recognize(backData);await worker.terminate();$("raw").textContent=ret.data.text;parse(ret.data.text);
+  $("status").textContent="✓ OCR完了。自動入力された内容を必ず確認・修正してください。";
+ }catch(e){$("status").textContent="OCRに失敗しました："+e.message+"\n通信状態を確認して再実行してください。"}
+ finally{$("ocr").disabled=false}
 };
-
-function signature(p){return [p.name,p.grade,p.energy,p.speed,p.hp,p.atk,p.def,p.move,p.moveType].join("|")}
-function saveDB(){
- try{localStorage.setItem("frenda_v2_picks",JSON.stringify(picks));return true}
- catch(e){$("status").textContent="画像容量が大きく端末保存できませんでした。写真を撮り直すか、次版の画像保存方式へ移行します。";return false}
-}
-$("register").onclick=()=>{
- const p={id:Date.now()+"-"+Math.random().toString(16).slice(2),created:Date.now(),front:frontData,back:backData,
- name:$("name").value.trim(),grade:+$("grade").value||0,energy:+$("energy").value||0,speed:+$("speed").value||0,
- hp:+$("hp").value||0,atk:+$("atk").value||0,def:+$("def").value||0,move:$("move").value.trim(),moveType:$("moveType").value,special:$("special").value.trim()};
- if(!p.front||!p.back){$("status").textContent="表面と裏面の両方を撮影してください。";return}
- if(!p.name){$("status").textContent="ポケモン名を入力してください。";return}
- const dup=picks.find(x=>signature(x)===signature(p));
- if(dup&&!confirm("同じ情報のピックが既にあります。それでも登録しますか？"))return;
- picks.unshift(p);
- if(saveDB()){$("status").textContent="✓ "+p.name+" を登録しました。";render()}
-};
-function render(){
- let a=[...picks],q=$("search").value.trim();if(q)a=a.filter(p=>p.name.includes(q));
- const s=$("sort").value;
- if(s==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ja"));
- if(s==="grade")a.sort((x,y)=>y.grade-x.grade);
- if(s==="energy")a.sort((x,y)=>y.energy-x.energy);
- if(s==="new")a.sort((x,y)=>y.created-x.created);
- $("count").textContent=`登録 ${picks.length}枚／表示 ${a.length}枚`;
- $("pickGrid").innerHTML=a.map(p=>`<div class="pick">${p.front?`<img src="${p.front}">`:""}<div class="p"><b>${p.name}</b><br>★${p.grade||"-"}　ポケエネ ${p.energy||"-"}<br>${p.move||"-"} / ${p.moveType}</div></div>`).join("");
-}
-$("search").oninput=render;$("sort").onchange=render;
-$("clearForm").onclick=()=>{["name","energy","speed","hp","atk","def","move","special"].forEach(id=>$(id).value="");$("grade").value="";$("moveType").value="未設定";$("status").textContent=""};
-render();
-</script>
-</body></html>
+function sig(p){return [p.pickNo,p.name,p.grade,p.hp,p.atk,p.def,p.spatk,p.spdef,p.move].join("|")}
+function save(){try{localStorage.setItem("frenda_v3_picks",JSON.stringify(picks));return true}catch(e){$("status").textContent="保存容量を超えました。次版で画像をIndexedDB保存へ変更します。";return false}}
+$("register").onclick=()=>{let p={id:Date.now()+"-"+Math.random(),created:Date.now(),front:frontData,back:backData,pickNo:$("pickNo").value.trim(),name:$("name").value.trim(),enName:$("enName").value.trim(),grade:+$("grade").value||0,energy:+$("energy").value||0,speed:+$("speed").value||0,hp:+$("hp").value||0,atk:+$("atk").value||0,def:+$("def").value||0,spatk:+$("spatk").value||0,spdef:+$("spdef").value||0,move:$("move").value.trim(),moveType:$("moveType").value,special:$("special").value.trim()};if(!p.front||!p.back){$("status").textContent="表面・裏面の両方を撮影してください。";return}if(!p.name){$("status").textContent="日本語名を確認してください。";return}if(picks.some(x=>sig(x)===sig(p))&&!confirm("同一ピックと思われる登録があります。それでも登録しますか？"))return;picks.unshift(p);if(save()){$("status").textContent="✓ "+p.name+" を登録しました。";render()}};
+function render(){let a=[...picks],q=$("search").value.trim();if(q)a=a.filter(p=>p.name.includes(q)||p.enName.toLowerCase().includes(q.toLowerCase())||p.pickNo.includes(q));let s=$("sort").value;if(s==="new")a.sort((x,y)=>y.created-x.created);if(s==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ja"));if(s==="grade")a.sort((x,y)=>y.grade-x.grade);if(s==="energy")a.sort((x,y)=>y.energy-x.energy);$("count").textContent=`登録 ${picks.length}枚／表示 ${a.length}枚`;$("pickGrid").innerHTML=a.map(p=>`<div class=pick><img src="${p.front}"><div class=p><b>${p.name}</b><br>${p.pickNo||"-"} / ★${p.grade||"-"}<br>HP ${p.hp||"-"}　攻 ${p.atk||"-"}　防 ${p.def||"-"}<br>${p.move||"-"}</div></div>`).join("")}
+$("search").oninput=render;$("sort").onchange=render;render();
+</script></body></html>
