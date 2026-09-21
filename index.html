@@ -1,165 +1,128 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Battle Prototype</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>フレンダ家庭版 Ver2</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f4f6f7}
-*{box-sizing:border-box} body{margin:0;padding:16px;max-width:900px;margin:auto}
-h1{font-size:22px;margin:4px 0 14px}.note{font-size:12px;color:#667}
-.card{background:white;border:1px solid #d5d8dc;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px #0000000d}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:650px){.grid{grid-template-columns:1fr}}
-label{font-size:12px;color:#566573;display:block;margin-top:7px}
-input,select,button{font:inherit} input,select{width:100%;padding:9px;border:1px solid #ccd1d1;border-radius:9px;background:white}
-button{padding:10px 14px;border:0;border-radius:10px;background:#273746;color:white;font-weight:650}
-button.secondary{background:#5d6d7e}button:disabled{opacity:.45}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}
-.hpwrap{height:18px;background:#e5e7e9;border-radius:9px;overflow:hidden;margin:7px 0}.hp{height:100%;background:#58d68d;width:100%;transition:width .25s}
-.battleName{font-size:20px;font-weight:750}.stats{font-size:13px;color:#566573}
-.log{min-height:160px;max-height:300px;overflow:auto;background:#111;color:#eee;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;white-space:pre-wrap}
-.badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#eef2f3;font-size:12px;margin-right:4px}
-.hidden{display:none}.sectionTitle{font-weight:750;margin-bottom:8px}
+*{box-sizing:border-box}body{margin:0;padding:14px;max-width:850px;margin:auto}h1{font-size:22px;margin:5px 0}.sub{font-size:12px;color:#667;margin-bottom:12px}
+.card{background:#fff;border:1px solid #ddd;border-radius:15px;padding:14px;margin:11px 0;box-shadow:0 2px 8px #0000000d}
+h2{font-size:17px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}@media(max-width:600px){.grid{grid-template-columns:1fr}}
+label{font-size:12px;color:#59636d;display:block;margin:6px 0 3px}input,select{width:100%;padding:10px;border:1px solid #cfd5da;border-radius:9px;background:#fff;font-size:16px}
+button{border:0;border-radius:10px;padding:11px 13px;background:#253746;color:white;font-size:15px;font-weight:700}button.alt{background:#657786}
+.preview{width:100%;aspect-ratio:1.58/1;border:2px dashed #aeb6bf;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafafa;color:#777;margin-top:7px}
+.preview img{width:100%;height:100%;object-fit:contain}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.status{margin-top:9px;font-weight:700;font-size:13px}.pickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(min-width:650px){.pickgrid{grid-template-columns:repeat(4,1fr)}}
+.pick{border:1px solid #ddd;border-radius:12px;overflow:hidden;background:white}.pick img{width:100%;aspect-ratio:1.58/1;object-fit:cover;background:#eee}.pick .p{padding:8px;font-size:12px}.pick b{font-size:14px}
+.hidden{display:none}.warn{background:#fff4d6;padding:8px;border-radius:8px;font-size:12px;margin-top:8px}
 </style>
 </head>
 <body>
-<h1>フレンダ風 家庭用バトル・試作品 Ver1.1</h1>
-<div class="note">写真登録 → パラメータ修正 → 保存 → 1vs1バトルを試せる最小版。画像OCRは次段階。</div>
+<h1>フレンダ家庭版 試作品 Ver2</h1>
+<div class="sub">表面＋裏面撮影 → 読取結果確認 → ピック登録 → 写真付きコレクション</div>
 
 <div class="card">
- <div class="sectionTitle">① ピック登録</div>
- <label>写真</label><input id="photo" type="file" accept="image/*" capture="environment">
- <div class="grid">
-  <div><label>名前</label><input id="name" value="ピカチュウ"></div>
-  <div><label>グレード</label><select id="grade"><option>2</option><option>3</option><option selected>4</option><option>5</option></select></div>
-  <div><label>タイプ</label><select id="type"></select></div>
-  <div><label>HP</label><input id="hp" type="number" value="110"></div>
-  <div><label>こうげき</label><input id="atk" type="number" value="95"></div>
-  <div><label>ぼうぎょ</label><input id="def" type="number" value="75"></div>
-  <div><label>すばやさ</label><input id="spd" type="number" value="105"></div>
-  <div><label>技名</label><input id="move" value="10まんボルト"></div>
-  <div><label>技タイプ</label><select id="moveType"></select></div>
-  <div><label>技威力</label><input id="power" type="number" value="90"></div>
- </div>
- <div class="row" style="margin-top:12px"><button id="savePick">ピックを保存</button><button class="secondary" id="clearPicks">登録を全削除</button></div>
- <div id="pickCount" class="note" style="margin-top:8px"></div><div id="status" class="note" style="margin-top:6px;font-weight:700"></div>
+<h2>① 表面を撮影</h2>
+<input id="frontInput" type="file" accept="image/*" capture="environment">
+<div class="preview" id="frontPreview">ピック表面を枠いっぱいに撮影</div>
 </div>
 
 <div class="card">
- <div class="sectionTitle">② 1vs1 バトル設定</div>
- <div class="grid">
-  <div><label>自分</label><select id="allySelect"></select></div>
-  <div><label>相手</label><select id="enemySelect"></select></div>
- </div>
- <div class="row" style="margin-top:12px"><button id="start">バトル開始</button><label style="flex:0 0 auto"><input id="detail" type="checkbox" checked style="width:auto"> 計算詳細</label></div>
+<h2>② 裏面を撮影</h2>
+<input id="backInput" type="file" accept="image/*" capture="environment">
+<div class="preview" id="backPreview">ピック裏面を枠いっぱいに撮影</div>
+<div class="warn">Ver2では撮影フローとデータベース化を先に実装しています。OCRは「自動読取り」ボタンの仮解析で動作確認し、次版で実画像OCRに置き換えます。QRコードは使用しません。</div>
+<button id="readBtn" style="margin-top:10px">自動読取り（試験）</button>
 </div>
 
-<div id="battle" class="hidden">
- <div class="grid">
-  <div class="card"><div class="battleName" id="allyName"></div><div id="allyMeta"></div><div class="hpwrap"><div class="hp" id="allyBar"></div></div><div id="allyHp"></div><div class="stats" id="allyStats"></div></div>
-  <div class="card"><div class="battleName" id="enemyName"></div><div id="enemyMeta"></div><div class="hpwrap"><div class="hp" id="enemyBar"></div></div><div id="enemyHp"></div><div class="stats" id="enemyStats"></div></div>
- </div>
- <div class="card">
-  <div class="sectionTitle">③ バトルログ</div>
-  <div id="log" class="log"></div>
-  <div class="row" style="margin-top:10px"><button id="next">次へ ▶</button><button class="secondary" id="reset">終了</button></div>
- </div>
+<div class="card">
+<h2>③ 読取結果を確認・修正</h2>
+<div class="grid">
+<div><label>ポケモン名</label><input id="name" placeholder="例：ミライドン"></div>
+<div><label>グレード</label><select id="grade"><option value="">選択</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+<div><label>ポケエネ</label><input id="energy" type="number" inputmode="numeric"></div>
+<div><label>すばやさレベル</label><input id="speed" type="number" inputmode="numeric"></div>
+<div><label>HP</label><input id="hp" type="number" inputmode="numeric"></div>
+<div><label>こうげき</label><input id="atk" type="number" inputmode="numeric"></div>
+<div><label>ぼうぎょ</label><input id="def" type="number" inputmode="numeric"></div>
+<div><label>わざ名</label><input id="move"></div>
+<div><label>わざタイプ</label><select id="moveType"></select></div>
+<div><label>特殊マーク・備考</label><input id="special" placeholder="例：テラスタル"></div>
+</div>
+<div class="row" style="margin-top:12px"><button id="register">このピックを登録</button><button id="clearForm" class="alt">入力をクリア</button></div>
+<div id="status" class="status"></div>
+</div>
+
+<div class="card">
+<h2>④ ピックコレクション</h2>
+<div class="grid">
+<div><label>名前検索</label><input id="search" placeholder="ポケモン名"></div>
+<div><label>並べ替え</label><select id="sort"><option value="new">新しい順</option><option value="name">名前順</option><option value="grade">グレード高い順</option><option value="energy">ポケエネ高い順</option></select></div>
+</div>
+<div id="count" class="sub" style="margin-top:10px"></div>
+<div id="pickGrid" class="pickgrid"></div>
 </div>
 
 <script>
-const TYPES=["ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
 const $=id=>document.getElementById(id);
-for(const id of ["type","moveType"]){TYPES.forEach(t=>{let o=document.createElement("option");o.textContent=t;o.value=t;$(id).appendChild(o)});}
-$("type").value="でんき";$("moveType").value="でんき";
+const types=["未設定","ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
+types.forEach(t=>{let o=document.createElement("option");o.textContent=t;o.value=t;$("moveType").appendChild(o)});
+let frontData="",backData="";
+let picks=[];try{picks=JSON.parse(localStorage.getItem("frenda_v2_picks")||"[]")}catch(e){picks=[]}
 
-const demo=[
-{id:"demo1",name:"リザードン",grade:4,type:"ほのお",hp:120,atk:100,def:82,spd:90,move:"かえんほうしゃ",moveType:"ほのお",power:90},
-{id:"demo2",name:"カメックス",grade:4,type:"みず",hp:125,atk:92,def:105,spd:78,move:"ハイドロポンプ",moveType:"みず",power:110},
-{id:"demo3",name:"フシギバナ",grade:4,type:"くさ",hp:128,atk:96,def:98,spd:80,move:"ソーラービーム",moveType:"くさ",power:120}
-];
-let picks;
-try{
-  picks=JSON.parse(localStorage.getItem("frenda_picks")||"null")||demo;
-}catch(e){
-  picks=[...demo];
+function loadImage(input,preview,side){
+ const f=input.files&&input.files[0]; if(!f)return;
+ const r=new FileReader();r.onload=e=>{
+  const img=new Image();img.onload=()=>{
+   const c=document.createElement("canvas"),max=900,scale=Math.min(1,max/img.width);
+   c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
+   c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+   const data=c.toDataURL("image/jpeg",.72);
+   preview.innerHTML='<img src="'+data+'">';
+   if(side==="front")frontData=data;else backData=data;
+  };img.src=e.target.result;
+ };r.readAsDataURL(f);
 }
-let battle=null, queue=[];
+$("frontInput").onchange=()=>loadImage($("frontInput"),$("frontPreview"),"front");
+$("backInput").onchange=()=>loadImage($("backInput"),$("backPreview"),"back");
 
-function save(){
- try{localStorage.setItem("frenda_picks",JSON.stringify(picks));}
- catch(e){$("status").textContent="※この開き方では端末への永続保存が制限されていますが、今回の登録は使用できます。";}
- refreshSelects();
-}
-function refreshSelects(){
- for(const id of ["allySelect","enemySelect"]){$(id).innerHTML="";picks.forEach((p,i)=>{let o=document.createElement("option");o.value=i;o.textContent=`${p.name} ★${p.grade}`;$(id).appendChild(o)})}
- if(picks.length>1)$("enemySelect").value=1;
- $("pickCount").textContent=`登録済み：${picks.length}枚（この端末のブラウザ内に保存）`;
-}
-refreshSelects();
+$("readBtn").onclick=()=>{
+ if(!backData){$("status").textContent="先に裏面を撮影してください。";return}
+ // Prototype prefill using the sample pick shown during specification.
+ if(!$("name").value)$("name").value="ミライドン";
+ if(!$("move").value)$("move").value="イナズマドライブ";
+ $("moveType").value="でんき";
+ $("status").textContent="試験読取り完了。Ver2では項目を手修正して登録してください。";
+};
 
-$("savePick").onclick=()=>{
- const p={id:(window.crypto && typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():(Date.now().toString()+"-"+Math.random().toString(16).slice(2)),name:$("name").value.trim()||"名称未設定",grade:+$("grade").value,type:$("type").value,
- hp:+$("hp").value,atk:+$("atk").value,def:+$("def").value,spd:+$("spd").value,move:$("move").value.trim()||"わざ",moveType:$("moveType").value,power:+$("power").value};
- picks.push(p);save();$("status").textContent="✓ 「"+p.name+"」を保存しました。";
-};
-$("clearPicks").onclick=()=>{if(confirm("登録データを初期化しますか？")){picks=[...demo];save();}};
-
-const chart={
-"ほのお":{"くさ":2,"こおり":2,"むし":2,"はがね":2,"ほのお":.5,"みず":.5,"いわ":.5,"ドラゴン":.5},
-"みず":{"ほのお":2,"じめん":2,"いわ":2,"みず":.5,"くさ":.5,"ドラゴン":.5},
-"でんき":{"みず":2,"ひこう":2,"でんき":.5,"くさ":.5,"ドラゴン":.5,"じめん":0},
-"くさ":{"みず":2,"じめん":2,"いわ":2,"ほのお":.5,"くさ":.5,"どく":.5,"ひこう":.5,"むし":.5,"ドラゴン":.5,"はがね":.5}
-};
-function eff(mt,dt){return chart[mt]?.[dt] ?? 1}
-function damage(a,d){
- const base=Math.floor((((2*50/5+2)*a.power*a.atk/d.def)/50))+2;
- const stab=a.moveType===a.type?1.5:1;
- const e=eff(a.moveType,d.type);
- const gm={2:.9,3:1,4:1.1,5:1.2}[a.grade]||1;
- return {base,stab,e,gm,dmg:e===0?0:Math.max(1,Math.floor(base*stab*e*gm))};
+function signature(p){return [p.name,p.grade,p.energy,p.speed,p.hp,p.atk,p.def,p.move,p.moveType].join("|")}
+function saveDB(){
+ try{localStorage.setItem("frenda_v2_picks",JSON.stringify(picks));return true}
+ catch(e){$("status").textContent="画像容量が大きく端末保存できませんでした。写真を撮り直すか、次版の画像保存方式へ移行します。";return false}
 }
-function card(side,p){
- $(side+"Name").textContent=p.name;
- $(side+"Meta").innerHTML=`<span class=badge>${p.type}</span><span class=badge>★${p.grade}</span>`;
- $(side+"Hp").textContent=`HP ${p.cur}/${p.hp}`;
- $(side+"Bar").style.width=(Math.max(0,p.cur)/p.hp*100)+"%";
- $(side+"Stats").textContent=`攻 ${p.atk} / 防 ${p.def} / 速 ${p.spd} / ${p.move}（${p.moveType}・威力${p.power}）`;
-}
-function render(){card("ally",battle.a);card("enemy",battle.b)}
-function push(s){queue.push(s)}
-function attack(a,d,label){
- const x=damage(a,d); push(`${label}${a.name}の「${a.move}」！`);
- if($("detail").checked)push(`計算: Base=${x.base} × STAB ${x.stab} × 相性 ${x.e} × ★補正 ${x.gm} = ${x.dmg}`);
- push(x.e===0?"こうかがない！":x.e>1?"こうかは ばつぐん！":x.e<1?"こうかは いまひとつ…":`${d.name}に ${x.dmg} ダメージ！`);
- d.cur=Math.max(0,d.cur-x.dmg); push(`${d.name} HP → ${d.cur}/${d.hp}`);
- if(d.cur===0)push(`${d.name}は たおれた！`);
-}
-function makeTurn(){
- if(battle.a.cur<=0||battle.b.cur<=0)return;
- battle.turn++; push(`\n▼ ターン ${battle.turn}`);
- let first,second,flabel,slabel;
- if(battle.a.spd===battle.b.spd){first=Math.random()<.5?battle.a:battle.b}else first=battle.a.spd>battle.b.spd?battle.a:battle.b;
- second=first===battle.a?battle.b:battle.a; flabel=first===battle.a?"自分: ":"相手: "; slabel=second===battle.a?"自分: ":"相手: ";
- push(`行動順: ${first.name}（速${first.spd}） → ${second.name}（速${second.spd}）`);
- attack(first,second,flabel);
- if(second.cur>0)attack(second,first,slabel);
- if(battle.a.cur<=0||battle.b.cur<=0)push(battle.a.cur<=0&&battle.b.cur<=0?"結果: 引き分け":battle.b.cur<=0?"結果: あなたの勝ち！":"結果: 相手の勝ち");
-}
-$("start").onclick=()=>{
- if(picks.length<2){alert("2枚以上登録してください");return}
- const a=JSON.parse(JSON.stringify(picks[+$("allySelect").value])), b=JSON.parse(JSON.stringify(picks[+$("enemySelect").value]));a.cur=a.hp;b.cur=b.hp;
- battle={a,b,turn:0};queue=[];$("log").textContent="";$("battle").classList.remove("hidden");render();push("バトル開始！");push(`${a.name} VS ${b.name}`);makeTurn();
+$("register").onclick=()=>{
+ const p={id:Date.now()+"-"+Math.random().toString(16).slice(2),created:Date.now(),front:frontData,back:backData,
+ name:$("name").value.trim(),grade:+$("grade").value||0,energy:+$("energy").value||0,speed:+$("speed").value||0,
+ hp:+$("hp").value||0,atk:+$("atk").value||0,def:+$("def").value||0,move:$("move").value.trim(),moveType:$("moveType").value,special:$("special").value.trim()};
+ if(!p.front||!p.back){$("status").textContent="表面と裏面の両方を撮影してください。";return}
+ if(!p.name){$("status").textContent="ポケモン名を入力してください。";return}
+ const dup=picks.find(x=>signature(x)===signature(p));
+ if(dup&&!confirm("同じ情報のピックが既にあります。それでも登録しますか？"))return;
+ picks.unshift(p);
+ if(saveDB()){$("status").textContent="✓ "+p.name+" を登録しました。";render()}
 };
-$("next").onclick=()=>{
- if(!battle)return;
- if(queue.length===0 && battle.a.cur>0 && battle.b.cur>0)makeTurn();
- if(queue.length){$("log").textContent+=queue.shift()+"\n";$("log").scrollTop=$("log").scrollHeight;render();}
-};
-$("reset").onclick=()=>{$("battle").classList.add("hidden");battle=null;queue=[]};
+function render(){
+ let a=[...picks],q=$("search").value.trim();if(q)a=a.filter(p=>p.name.includes(q));
+ const s=$("sort").value;
+ if(s==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ja"));
+ if(s==="grade")a.sort((x,y)=>y.grade-x.grade);
+ if(s==="energy")a.sort((x,y)=>y.energy-x.energy);
+ if(s==="new")a.sort((x,y)=>y.created-x.created);
+ $("count").textContent=`登録 ${picks.length}枚／表示 ${a.length}枚`;
+ $("pickGrid").innerHTML=a.map(p=>`<div class="pick">${p.front?`<img src="${p.front}">`:""}<div class="p"><b>${p.name}</b><br>★${p.grade||"-"}　ポケエネ ${p.energy||"-"}<br>${p.move||"-"} / ${p.moveType}</div></div>`).join("");
+}
+$("search").oninput=render;$("sort").onchange=render;
+$("clearForm").onclick=()=>{["name","energy","speed","hp","atk","def","move","special"].forEach(id=>$(id).value="");$("grade").value="";$("moveType").value="未設定";$("status").textContent=""};
+render();
 </script>
-</body>
-</html>
-<!-- Updated: 2026-09-21 14:29 JST -->
-
-<!-- Updated: 2026-09-21 14:34 JST / iPhone Safari compatibility fix -->
+</body></html>
