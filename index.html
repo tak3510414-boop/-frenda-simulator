@@ -42,6 +42,10 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .battleSelectionStatus.active{background:#dff8ff;color:#075c79;border-color:#5dd8f2;box-shadow:0 0 10px #4bd6f233}
 
 
+
+/* Ver6.13: 100-point matchup score + all-picks default browser */
+.recommendScore{position:absolute;top:7px;right:7px;z-index:2;min-width:52px;text-align:center;padding:5px 7px;border-radius:12px;background:#0c6687;color:#fff;font-size:16px;font-weight:1000;line-height:1;box-shadow:0 2px 8px #0b355044}.recommendScore small{display:block;font-size:8px;font-weight:800;opacity:.9;margin-top:3px}.recommendCard.rank1 .recommendScore{background:#b58000}.recommendScore.reference{background:#9a7013}.pickCard{content-visibility:auto;contain-intrinsic-size:420px 170px}
+
 /* Ver6.12: matchup recommendation audit; immunity, KO timing, and ranking fixes */
 .recommendWrap{margin-top:10px;border:1px solid #cbd8e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}
 .recommendHead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
@@ -90,7 +94,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @media(max-width:720px){.tournamentBracket{grid-template-columns:1fr}.enemyRandomRow{grid-template-columns:1fr 1fr}.tournamentSetup .setupGrid{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr}.championName{font-size:25px}}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.12</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.13</header>
 <main>
 <section class="card pickConsole">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
@@ -104,7 +108,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
   <select id="browseType"><option value="">全タイプ</option></select>
   <select id="browseSort"><option value="number">番号順</option><option value="name">名前順</option><option value="energy">ポケエネ順</option></select>
 </div>
-<div class="seriesHeading"><b>弾から選ぶ</b><span>弾未選択＋「所持のみ」なら、所持ピックを全弾横断で表示</span></div>
+<div class="seriesHeading"><b>弾から選ぶ</b><span>弾未選択なら全ピック、さらに「所持のみ」で所持ピックだけを全弾横断表示</span></div>
 <div id="seriesButtons" class="seriesGrid"></div>
 <div id="browserSummary" class="browserSummary"></div>
 <div id="pickList" class="pickGrid"></div>
@@ -119,7 +123,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <div id="singleEnemyPanel"><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"></div><div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div><div class="battleModeHint">能力値が確認できるピックの中から選びます。</div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>所持から相性TOP3</button></div><div id="enemyResults"></div></div>
 <div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
 </div></div>
-<div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>おすすめ所持ピック TOP3</b><span id="recommendTarget">相手未選択</span></div><div id="recommendGrid" class="recommendGrid"></div></div>
+<div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>おすすめ所持ピック TOP3（100点満点）</b><span id="recommendTarget">相手未選択</span></div><div id="recommendGrid" class="recommendGrid"></div></div>
 <div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px"><div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><div class="vsBadge">VS</div><div class="fighter" id="enemyFighter"></div></div></div><div id="battleMessage" class="battleMessage">READY</div>
 <div class="actions"><button id="turnBtn">1ターン進める</button><button id="autoBtn" class="secondary">最後まで戦う</button><button id="restartBtn" class="ghost">やり直す</button></div>
@@ -183,7 +187,7 @@ function renderCollectionOverall(){
 function renderSeriesButtons(){
  const ids=new Set(getIds(OWNED_KEY)),box=$("seriesButtons");box.innerHTML="";
  const clear=document.createElement("button");clear.type="button";clear.className="seriesBtn clearSeries"+(!browseSeries&&!norm($("q").value)?" active":"");
- clear.innerHTML=`<b>弾選択なし</b><span>所持のみON → 全弾の所持ピック</span>`;
+ clear.innerHTML=`<b>全弾表示</b><span>所持のみOFF → 全${R.length}件 / ON → 所持ピックのみ</span>`;
  clear.onclick=()=>{browseSeries=null;$("q").value="";renderSeriesButtons();renderBrowser()};box.appendChild(clear);
  for(const s of SERIES_ORDER){
    const all=R.filter(r=>r.series===s),have=all.filter(r=>ids.has(r.master_id)).length,p=all.length?Math.round(have/all.length*1000)/10:0;
@@ -197,7 +201,6 @@ function browserRecords(){
  let a=R.slice();
  if(q)a=a.filter(r=>norm(r.pick_no).includes(q)||norm(r.name_ja).includes(q)||norm(r.name_en).includes(q));
  else if(browseSeries)a=a.filter(r=>r.series===browseSeries);
- else if(!ownedOnly)return [];
  if(ownedOnly)a=a.filter(isOwned);
  if(grade)a=a.filter(r=>String(merged(r).grade??"")===grade);
  if(type)a=a.filter(r=>{const m=merged(r);return m.type1===type||m.type2===type});
@@ -231,18 +234,17 @@ function refreshAfterFlagChange(r){
 function renderBrowser(){
  const box=$("pickList"),a=browserRecords(),q=norm($("q").value),ownedOnly=$("ownedOnly").checked;box.innerHTML="";
  renderCollectionOverall();
- const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries|| (ownedOnly?"全弾・所持ピック":"弾未選択"));
+ const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries|| (ownedOnly?"全弾・所持ピック":"全弾"));
  $("browserSummary").textContent=`${context}：${a.length}ピック表示`+(ownedOnly?"（所持のみ）":"");
  if(!a.length){
-   if(!q&&!browseSeries&&!ownedOnly){box.innerHTML='<div class="emptyBrowser">▲ 弾を選択してください<br><span style="font-weight:400;font-size:12px">または「所持のみ」をONにすると、全弾の所持ピックを表示します。</span></div>'}
-   else box.innerHTML='<div class="emptyBrowser">条件に該当するピックはありません。</div>';
+   box.innerHTML='<div class="emptyBrowser">条件に該当するピックはありません。</div>';
    return
  }
  for(const r of a){
    const m=merged(r),owned=isOwned(r),team=inTeam(r),grade=Number(m.grade)||0,d=document.createElement("div");
    d.className="pickCard grade"+grade+(owned?" owned":"")+(team?" inTeam":"");
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':'<span class="miniBadge unownedBadge">未所持</span>'}${team?'<span class="miniBadge teamBadge">⚔ TEAM</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="teamQuick${team?' on':''}" ${!owned||team?'disabled':''}>${team?'登録済':'チーム追加'}</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':'<span class="miniBadge unownedBadge">未所持</span>'}${team?'<span class="miniBadge teamBadge">⚔ TEAM</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="teamQuick${team?' on':''}" ${!owned||team?'disabled':''}>${team?'登録済':'チーム追加'}</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
    d.querySelector(".pickOpen").onclick=()=>select(r);d.querySelector(".detailQuick").onclick=()=>select(r);d.querySelector(".ownedQuick").onclick=()=>toggleOwned(r);d.querySelector(".teamQuick").onclick=()=>addTeam(r);box.appendChild(d)
  }
 }
@@ -267,7 +269,7 @@ function renderTeam(){
  const ids=getIds(TEAM_KEY),box=$("teamList");box.innerHTML="";
  if(!ids.length){box.innerHTML='<div class="emptyBrowser" style="color:#52636f;background:#fafcfe;border-color:#cbd8e0">バトルチームは未登録です。①のピックカードから追加してください。</div>';return}
  ids.forEach((id,i)=>{const r=R.find(x=>x.master_id===id);if(!r)return;const m=merged(r),d=document.createElement("div");d.className="teamCard";
- d.innerHTML=`<img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="teamCardMain"><div class="teamSlot">TEAM SLOT ${String(i+1).padStart(2,"0")}</div><div class="teamName">${esc(r.name_ja)}</div><div class="meta">${esc(r.pick_no)} / ★${esc(m.grade??"-")} / ポケエネ ${esc(m.poke_ene??"-")}</div><div class="teamActions"><button type="button" class="teamDetail">詳細</button><button type="button" class="removeTeam">チームから外す</button></div></div>`;
+ d.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="teamCardMain"><div class="teamSlot">TEAM SLOT ${String(i+1).padStart(2,"0")}</div><div class="teamName">${esc(r.name_ja)}</div><div class="meta">${esc(r.pick_no)} / ★${esc(m.grade??"-")} / ポケエネ ${esc(m.poke_ene??"-")}</div><div class="teamActions"><button type="button" class="teamDetail">詳細</button><button type="button" class="removeTeam">チームから外す</button></div></div>`;
  d.querySelector("img").onclick=()=>select(r);d.querySelector(".teamDetail").onclick=()=>select(r);d.querySelector(".removeTeam").onclick=()=>removeTeam(r);box.appendChild(d)})
 }
 $("ownedBtn").onclick=()=>toggleOwned(selected);
@@ -326,7 +328,7 @@ function dmg(a,d){
  const special=String(a.move_class||"").includes("特殊"),atk=Number(special?a.sp_atk:a.atk)||1,df=Number(special?d.sp_def:d.def)||1,e=eff(a.move_type,d),stab=(a.move_type===a.type1||a.move_type===a.type2)?1.2:1;
  return {n:Math.max(1,Math.round((18+atk*.38)*(100/(100+df))*stab*e)),e}
 }
-function fighterHTML(r,hp,label){const max=Number(r.hp)||1,p=Math.max(0,Math.round(hp/max*100)),hc=p<=25?" low":p<=50?" mid":"";const types=[r.type1,r.type2].filter(Boolean).map(t=>`<span class="typeBadge">${esc(t)}</span>`).join("");return `<div class="fighterMeta">${label}</div><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="fighterName">${esc(r.name_ja)}</div><div>${types}</div><div class="fighterMeta">${esc(r.pick_no)} / ${esc(r.series)}</div><div class="fighterMeta">技：${esc(skillName(r))} (${esc(r.move_type??"-")})</div><div class="hpbar"><div class="hpfill${hc}" style="width:${p}%"></div></div><b>HP ${Math.max(0,hp)} / ${max}</b>`}
+function fighterHTML(r,hp,label){const max=Number(r.hp)||1,p=Math.max(0,Math.round(hp/max*100)),hc=p<=25?" low":p<=50?" mid":"";const types=[r.type1,r.type2].filter(Boolean).map(t=>`<span class="typeBadge">${esc(t)}</span>`).join("");return `<div class="fighterMeta">${label}</div><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="fighterName">${esc(r.name_ja)}</div><div>${types}</div><div class="fighterMeta">${esc(r.pick_no)} / ${esc(r.series)}</div><div class="fighterMeta">技：${esc(skillName(r))} (${esc(r.move_type??"-")})</div><div class="hpbar"><div class="hpfill${hc}" style="width:${p}%"></div></div><b>HP ${Math.max(0,hp)} / ${max}</b>`}
 function blog(x){$("battleLog").insertAdjacentHTML("beforeend",`<div>${x}</div>`);$("battleLog").scrollTop=$("battleLog").scrollHeight}
 function arena(){if(!battle.me||!battle.enemy)return;$("battleArena").classList.remove("hidden");$("myFighter").innerHTML=fighterHTML(battle.me,battle.mhp,"自分");$("enemyFighter").innerHTML=fighterHTML(battle.enemy,battle.ehp,"相手");if(battle.mhp<=0)$("myFighter").classList.add("ko");if(battle.ehp<=0)$("enemyFighter").classList.add("ko")}
 function updateBattleSelectionStatus(){
@@ -397,6 +399,27 @@ function speedRelation(c,enemy){
  return {cFirst:cmp>=0,tie:cmp===0}
 }
 function outcomeLabel(outcome){return outcome==="win"?"勝利見込み":outcome==="draw"?"決着不能":"敗北見込み"}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
+function matchupScoreFull(x){
+ const outcomeBase=x.outcome==="win"?60:x.outcome==="draw"?30:10;
+ const koPts=Number.isFinite(x.cHits)?clamp(20-(x.cHits-1)*4,0,20):0;
+ const survivePts=!Number.isFinite(x.eHits)?10:clamp((x.eHits-1)*2.5,0,10);
+ const speedPts=x.speedTie?3:(x.cFirst?5:0);
+ const minE=FRIENDA_EFFECT.VERY_LOW,maxE=FRIENDA_EFFECT.VERY_HIGH,span=maxE-minE||1;
+ const attackType=clamp((x.outEff-minE)/span,0,1);
+ const defenseType=clamp((maxE-x.inEff)/span,0,1);
+ const typePts=((attackType+defenseType)/2)*5;
+ return Math.round(clamp(outcomeBase+koPts+survivePts+speedPts+typePts,0,100));
+}
+function matchupScoreReference(x){
+ const minE=FRIENDA_EFFECT.VERY_LOW,maxE=FRIENDA_EFFECT.VERY_HIGH,span=maxE-minE||1;
+ const attackType=clamp((x.outEff-minE)/span,0,1);
+ const defenseType=clamp((maxE-x.inEff)/span,0,1);
+ const typePts=((attackType+defenseType)/2)*35;
+ const energyPts=clamp((Number(x.c.poke_ene)||0)/300*15,0,15);
+ const speedPts=clamp((Number(x.c.speed_level)||0)/5*9,0,9);
+ return Math.round(clamp(typePts+energyPts+speedPts,0,59));
+}
 function ownedRecommendationRecords(){
  if(!battle.enemy)return [];
  const enemy=merged(battle.enemy), ownedIds=new Set(getIds(OWNED_KEY)), teamIds=new Set(getIds(TEAM_KEY));
@@ -426,7 +449,10 @@ function ownedRecommendationRecords(){
      refRows.push({base,c,full:false,outcome:"unknown",outcomeRank:0,cHits:null,eHits:null,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
    }
  }
+ for(const x of fullRows)x.score=matchupScoreFull(x);
+ for(const x of refRows)x.score=matchupScoreReference(x);
  fullRows.sort((a,b)=>{
+   if(b.score!==a.score)return b.score-a.score;
    if(b.outcomeRank!==a.outcomeRank)return b.outcomeRank-a.outcomeRank;
    if(a.outcome==="win"&&b.outcome==="win"){
      if(a.cTime!==b.cTime)return a.cTime-b.cTime;
@@ -436,7 +462,7 @@ function ownedRecommendationRecords(){
    }
    return (b.outEff-a.outEff)||(a.inEff-b.inEff)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0))
  });
- refRows.sort((a,b)=>b.margin-a.margin);
+ refRows.sort((a,b)=>(b.score-a.score)||(b.margin-a.margin));
  return fullRows.concat(refRows).slice(0,3)
 }
 function chooseRecommended(r){
@@ -461,7 +487,7 @@ function renderRecommendations(){
    const reason=x.full
      ? `<div><b>${order}</b> / ${koOut} / ${koIn}</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
      : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>タイプ相性・ポケエネ中心の評価です。</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ：${esc(x.c.speed_value??x.c.speed_level??"-")}</div>`;
-   d.innerHTML=`<span class="recommendRank">${i+1}位</span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div><button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`;
+   d.innerHTML=`<span class="recommendRank">${i+1}位</span><span class="recommendScore${x.full?"":" reference"}">${x.score}<small>${x.full?"相性スコア":"参考スコア"}</small></span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div><button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`;
    d.querySelector("button").onclick=()=>chooseRecommended(x.base);grid.appendChild(d)
  })
 }
@@ -545,7 +571,7 @@ $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.o
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.12",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.13",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -554,4 +580,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 </script></body></html>
-<!-- Updated: 2026-09-22 19:49:00 JST / Ver6.12 -->
+<!-- Updated: 2026-09-22 20:11:00 JST / Ver6.13 -->
