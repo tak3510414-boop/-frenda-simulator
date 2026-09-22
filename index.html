@@ -15,7 +15,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .photoBox label{display:block;margin-top:7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid label{font-size:12px;font-weight:700}.grid input{margin-top:3px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{padding:9px;border-radius:9px;background:#eef4ff;font-size:13px;margin:8px 0}.edited{background:#fff5d9}.hidden{display:none!important}
 .ownedToolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}.ownedToolbar select,.ownedToolbar input{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;width:auto;min-width:120px}.ownedToolbar input{flex:1;min-width:150px}.collectionStats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:10px 0 14px}.collectionStat{border:1px solid #dfe4e8;border-radius:12px;padding:9px;background:#fafbfd;cursor:pointer}.collectionStatHead{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800}.collectionBar{height:8px;background:#e6ebef;border-radius:999px;overflow:hidden;margin-top:6px}.collectionFill{height:100%;background:linear-gradient(90deg,#1769e0,#5e9df1)}.collectionOverall{padding:10px 12px;border-radius:12px;background:#eef4ff;font-weight:800;margin-bottom:8px}.ownedGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}.ownedCard{border:1px solid #dfe4e8;border-radius:14px;padding:8px;background:#fff;cursor:pointer}.ownedCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.ownedCard b{display:block;margin-top:6px}.ownedCard .meta{line-height:1.4}
-.battleSelect{display:grid;grid-template-columns:1fr 1fr;gap:10px}.battleStage{position:relative;border-radius:18px;padding:14px;background:linear-gradient(180deg,#eef8ff,#f8fbff);border:1px solid #d7e3ed;overflow:hidden}.battleStage:before{content:"";position:absolute;left:-8%;right:-8%;bottom:-40px;height:105px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 -1px 0 rgba(0,0,0,.05)}.battleGrid{position:relative;display:grid;grid-template-columns:1fr 72px 1fr;gap:10px;align-items:center;z-index:1}.fighter{border:1px solid #dfe4e8;border-radius:16px;padding:10px;background:rgba(255,255,255,.94);text-align:center;box-shadow:0 4px 16px rgba(30,60,90,.08)}.fighter img{width:min(145px,100%);aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#e8ebee}.fighterName{font-size:18px;font-weight:800;margin-top:6px}.fighterMeta{font-size:12px;color:#66717b}.vsBadge{display:flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:50%;background:#17202a;color:#fff;font-size:20px;font-weight:900;box-shadow:0 5px 18px rgba(0,0,0,.2)}.hpbar{height:16px;background:#e2e6e9;border-radius:10px;overflow:hidden;margin:8px 0}.hpfill{height:100%;background:linear-gradient(90deg,#48b95f,#73d478);transition:width .35s ease}.hpfill.mid{background:linear-gradient(90deg,#e8ad2f,#f0c85b)}.hpfill.low{background:linear-gradient(90deg,#d9534f,#ef7b75)}.typeBadge{display:inline-block;padding:3px 7px;margin:3px 2px 0;border-radius:999px;background:#edf2f7;font-size:11px;font-weight:700}.battleMessage{margin:10px 0;padding:10px;border-radius:12px;background:#17202a;color:#fff;text-align:center;font-weight:800;min-height:20px}.log{max-height:260px;overflow:auto;background:#f7f8fa;border-radius:10px;padding:9px;font-size:13px;line-height:1.55}.battlePick{width:100%;margin:4px 0;background:#edf2f7;color:#273746;text-align:left;display:flex;align-items:center;gap:8px}.battlePick img{width:38px;height:54px;object-fit:cover;border-radius:6px;background:#e8ebee}.battlePickText{min-width:0}.battlePickText b{display:block}.battlePickText span{display:block;font-size:11px;color:#66717b}.winner{font-size:18px;font-weight:900;text-align:center;padding:10px;border-radius:12px;background:#fff5d9;margin-top:10px}.fighter{position:relative;transition:transform .18s ease,filter .18s ease}.fighter.attackRight{transform:translateX(24px) scale(1.03)}.fighter.attackLeft{transform:translateX(-24px) scale(1.03)}.fighter.hit{animation:hitShake .34s ease}.fighter.ko{filter:grayscale(.8);opacity:.65;transform:translateY(8px)}@keyframes hitShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}.damageFloat{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:28px;font-weight:1000;color:#b51f1f;text-shadow:0 2px 0 #fff,0 0 8px #fff;pointer-events:none;animation:damagePop .7s ease forwards;z-index:4}.damageFloat.good{color:#d85a00}.damageFloat.weak{color:#536270}@keyframes damagePop{0%{opacity:0;transform:translate(-50%,0) scale(.6)}25%{opacity:1;transform:translate(-50%,-30%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-100%) scale(.9)}}.battleStage.specialFlash{animation:specialFlash .7s ease}@keyframes specialFlash{0%,100%{box-shadow:none}25%{box-shadow:inset 0 0 80px #ffd84d,0 0 24px #ffd84d}55%{box-shadow:inset 0 0 100px #fff,0 0 34px #ff9f1a}}.backupBox{border-top:1px solid #e6e9ec;margin-top:12px;padding-top:12px}.backupStatus{font-size:12px;color:#65717c;margin-top:8px;min-height:1.4em}
+.battleSelect{display:grid;grid-template-columns:1fr 1fr;gap:10px}.battleStage{position:relative;border-radius:18px;padding:14px;background:linear-gradient(180deg,#eef8ff,#f8fbff);border:1px solid #d7e3ed;overflow:hidden}.battleStage:before{content:"";position:absolute;left:-8%;right:-8%;bottom:-40px;height:105px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 -1px 0 rgba(0,0,0,.05)}.battleGrid{position:relative;display:grid;grid-template-columns:1fr 72px 1fr;gap:10px;align-items:center;z-index:1}.fighter{border:1px solid #dfe4e8;border-radius:16px;padding:10px;background:rgba(255,255,255,.94);text-align:center;box-shadow:0 4px 16px rgba(30,60,90,.08)}.fighter img{width:min(145px,100%);aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#e8ebee}.fighterName{font-size:18px;font-weight:800;margin-top:6px}.fighterMeta{font-size:12px;color:#66717b}.vsBadge{display:flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:50%;background:#17202a;color:#fff;font-size:20px;font-weight:900;box-shadow:0 5px 18px rgba(0,0,0,.2)}.hpbar{height:16px;background:#e2e6e9;border-radius:10px;overflow:hidden;margin:8px 0}.hpfill{height:100%;background:linear-gradient(90deg,#48b95f,#73d478);transition:width .35s ease}.hpfill.mid{background:linear-gradient(90deg,#e8ad2f,#f0c85b)}.hpfill.low{background:linear-gradient(90deg,#d9534f,#ef7b75)}.typeBadge{display:inline-block;padding:3px 7px;margin:3px 2px 0;border-radius:999px;background:#edf2f7;font-size:11px;font-weight:700}.battleMessage{margin:10px 0;padding:10px;border-radius:12px;background:#17202a;color:#fff;text-align:center;font-weight:800;min-height:20px}.log{max-height:260px;overflow:auto;background:#f7f8fa;border-radius:10px;padding:9px;font-size:13px;line-height:1.55}.battlePick{width:100%;margin:4px 0;background:#edf2f7;color:#273746;text-align:left;display:flex;align-items:center;gap:8px}.battlePick img{width:38px;height:54px;object-fit:cover;border-radius:6px;background:#e8ebee}.battlePickText{min-width:0}.battlePickText b{display:block}.battlePickText span{display:block;font-size:11px;color:#66717b}.winner{font-size:18px;font-weight:900;text-align:center;padding:10px;border-radius:12px;background:#fff5d9;margin-top:10px}.fighter{position:relative;transition:transform .18s ease,filter .18s ease}.fighter.attackRight{transform:translateX(24px) scale(1.03)}.fighter.attackLeft{transform:translateX(-24px) scale(1.03)}.fighter.hit{animation:hitShake .34s ease}.fighter.ko{filter:grayscale(.8);opacity:.65;transform:translateY(8px)}@keyframes hitShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}.damageFloat{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:28px;font-weight:1000;color:#b51f1f;text-shadow:0 2px 0 #fff,0 0 8px #fff;pointer-events:none;animation:damagePop .7s ease forwards;z-index:4}.damageFloat.good{color:#d85a00}.damageFloat.weak{color:#536270}.damageFloat.immune{color:#394b59;font-size:22px}@keyframes damagePop{0%{opacity:0;transform:translate(-50%,0) scale(.6)}25%{opacity:1;transform:translate(-50%,-30%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-100%) scale(.9)}}.battleStage.specialFlash{animation:specialFlash .7s ease}@keyframes specialFlash{0%,100%{box-shadow:none}25%{box-shadow:inset 0 0 80px #ffd84d,0 0 24px #ffd84d}55%{box-shadow:inset 0 0 100px #fff,0 0 34px #ff9f1a}}.backupBox{border-top:1px solid #e6e9ec;margin-top:12px;padding-top:12px}.backupStatus{font-size:12px;color:#65717c;margin-top:8px;min-height:1.4em}
 
 .browserToolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.browserFilters{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.browserFilters select{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;min-width:120px}.seriesGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:12px 0}.seriesBtn{background:#f7f9fb;color:#273746;border:1px solid #d8e0e6;padding:10px;text-align:left}.seriesBtn.active{background:#1769e0;color:#fff;border-color:#1769e0}.seriesBtn span{display:block;font-size:11px;opacity:.78;margin-top:3px}.browserSummary{font-size:13px;font-weight:700;margin:10px 0;color:#45525d}.pickGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}.pickCard{border:1px solid #dfe4e8;border-radius:14px;padding:8px;background:#fff;box-shadow:0 1px 3px #0001}.pickCard.owned{border-color:#61a778;box-shadow:0 0 0 2px #dff4e5 inset}.pickCard.inTeam{box-shadow:0 0 0 2px #dbe9ff inset}.pickOpen{cursor:pointer}.pickCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.pickName{display:block;font-size:15px;font-weight:800;margin-top:6px}.pickMeta{font-size:11px;color:#66717b;line-height:1.45;margin-top:3px;min-height:33px}.cardBadges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.miniBadge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;font-weight:800;background:#edf2f7;color:#44515c}.miniBadge.ownedBadge{background:#dff4e5;color:#276b3b}.miniBadge.teamBadge{background:#dbe9ff;color:#24589b}.quickActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.quickActions button{padding:8px 5px;font-size:11px}.quickActions .detailQuick{grid-column:1/-1;background:#edf2f7;color:#273746}.quickActions .ownedQuick.on{background:#348b50}.quickActions .teamQuick.on{background:#395f9c}.quickActions button:disabled{opacity:.45}.detailScreen{position:fixed;inset:0;z-index:50;background:#f4f6f8;overflow:auto;padding:0}.detailTop{position:sticky;top:0;z-index:2;background:#172b3a;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px}.detailTop button{background:#fff;color:#172b3a;padding:8px 11px}.detailTop b{font-size:16px}.detailPanel{max-width:760px;margin:0 auto;padding:12px}.detailPanel>.card{margin-bottom:20px}.emptyBrowser{padding:18px;border:1px dashed #c9d1d8;border-radius:12px;color:#65717c;text-align:center;background:#fafbfd}.subtleCheck{display:flex;align-items:center;gap:6px;font-size:13px}.subtleCheck input{width:auto}.seriesHeading{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-top:8px}.seriesHeading b{font-size:14px}.seriesHeading span{font-size:11px;color:#65717c}
 
@@ -42,7 +42,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .battleSelectionStatus.active{background:#dff8ff;color:#075c79;border-color:#5dd8f2;box-shadow:0 0 10px #4bd6f233}
 
 
-/* Ver6.9: owned-pick matchup recommendation */
+/* Ver6.11: matchup recommendation audit; immunity, KO timing, and ranking fixes */
 .recommendWrap{margin-top:10px;border:1px solid #cbd8e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}
 .recommendHead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .recommendHead b{font-size:14px}.recommendHead span{font-size:11px;color:#61707a}
@@ -54,7 +54,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .recommendTop img{width:58px;aspect-ratio:2/3;object-fit:cover;border-radius:8px;background:#e8ebee}
 .recommendName{font-weight:900;font-size:14px}.recommendMeta{font-size:10px;color:#66717b;line-height:1.4}
 .recommendVerdict{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:900;background:#dff4e5;color:#256a3b}
-.recommendVerdict.lose{background:#f6e1e1;color:#8c2a32}.recommendVerdict.ref{background:#fff1cf;color:#8a6200}
+.recommendVerdict.lose{background:#f6e1e1;color:#8c2a32}.recommendVerdict.draw{background:#e8edf2;color:#465766}.recommendVerdict.ref{background:#fff1cf;color:#8a6200}
 .recommendReasons{margin-top:7px;font-size:11px;line-height:1.55;color:#334652}
 .recommendReasons b{color:#122f42}.recommendCard button{width:100%;margin-top:7px;padding:8px;font-size:11px}
 .recommendEmpty{margin-top:8px;padding:10px;border-radius:10px;background:#eef3f6;color:#63727d;font-size:12px}
@@ -76,8 +76,21 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .battleSelectionStatus.active{background:#dff8ff;color:#075c79;border-color:#5dd8f2;box-shadow:0 0 10px #4bd6f233}
 
 @media(max-width:620px){.hero{grid-template-columns:100px 1fr}.photo{width:100px}.grid{grid-template-columns:1fr 1fr}.battleSelect{grid-template-columns:1fr}.battleGrid{grid-template-columns:1fr}.vsBadge{width:50px;height:50px;margin:auto}.ownedGrid{grid-template-columns:repeat(2,1fr)}.pickGrid{grid-template-columns:repeat(2,1fr)}.browserToolbar{grid-template-columns:1fr}.seriesGrid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* Ver6.11 tournament / ranked random */
+.battleModeTabs{display:flex;gap:8px;margin:8px 0 12px}.battleModeTabs button{flex:1;padding:10px;border-radius:12px;background:#e8eef2;color:#40515d;border:1px solid #c7d4dc;font-weight:900}.battleModeTabs button.on{background:linear-gradient(180deg,#1976d2,#0757a4);color:#fff;border-color:#064d91;box-shadow:0 0 0 2px #98d7ff inset,0 4px 12px #0a65b533}
+.enemyRandomRow{display:grid;grid-template-columns:minmax(120px,.75fr) minmax(120px,1fr);gap:7px;margin-top:7px}.enemyRandomRow select{min-width:0}.battleModeHint{font-size:11px;color:#60717b;margin-top:6px}
+.tournamentSetup{border:1px solid #c8d7e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}.tournamentSetup h3{margin:0 0 8px;font-size:15px}.tournamentSetup .setupGrid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.tournamentSetup select{width:100%}
+.tournamentWrap{margin-top:12px;border:2px solid #17394e;border-radius:16px;background:linear-gradient(180deg,#102838,#071822);color:#eefbff;padding:12px;box-shadow:0 8px 25px #07172244}.tournamentHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.tournamentTitle{font-size:18px;font-weight:1000;letter-spacing:.03em}.tournamentSub{font-size:11px;color:#9fc9da}.tournamentState{font-size:11px;font-weight:900;background:#0e5a7e;border:1px solid #3ed5ff;border-radius:999px;padding:5px 9px;color:#eaffff}
+.tournamentBracket{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;align-items:start}.roundCol{background:#0a202d;border:1px solid #23485c;border-radius:12px;padding:8px}.roundTitle{text-align:center;font-size:12px;font-weight:1000;color:#69e4ff;letter-spacing:.08em;margin-bottom:8px}.matchBox{background:#112d3d;border:1px solid #31566a;border-radius:10px;padding:5px;margin-bottom:8px;box-shadow:inset 0 0 12px #00131c66}.matchBox.live{border-color:#ffd84a;box-shadow:0 0 13px #ffd84a66,inset 0 0 12px #00131c66}.matchSlot{display:grid;grid-template-columns:30px 1fr auto;gap:6px;align-items:center;padding:5px;border-radius:8px;min-height:42px}.matchSlot+.matchSlot{border-top:1px solid #28485a}.matchSlot img{width:30px;height:40px;object-fit:cover;border-radius:5px;background:#dce5ea}.matchSlot .slotName{font-size:11px;font-weight:900;line-height:1.25}.matchSlot .slotMeta{font-size:9px;color:#9db9c7}.matchSlot.player{background:#073d57;box-shadow:inset 0 0 0 1px #3fe3ff}.matchSlot.winner{background:#184f2c;box-shadow:inset 0 0 0 1px #54e88b}.matchSlot.loser{opacity:.55}.slotResult{font-size:9px;font-weight:900;color:#8fb0bf}.matchSlot.winner .slotResult{color:#72f6a1}.matchEmpty{font-size:10px;color:#678594;padding:8px;text-align:center}
+.tournamentControls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.tournamentControls button{flex:1;min-width:120px}.tournamentHistory{margin-top:12px;border-top:1px solid #24485b;padding-top:10px}.historyHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.historyHead b{font-size:13px}.historyList{display:grid;gap:6px;margin-top:7px}.historyItem{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;background:#0c2230;border:1px solid #244759;border-radius:9px;padding:7px;font-size:10px}.historyResult{font-weight:1000}.historyResult.champ{color:#ffd84a}.historyDate{color:#7ea1b2}.historyEmpty{font-size:10px;color:#7999a8;padding:8px 0}
+.championOverlay{position:fixed;inset:0;z-index:1000;background:radial-gradient(circle at center,#124f71dd,#03131df5 65%);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}.championOverlay.show{opacity:1;pointer-events:auto}.championCard{text-align:center;color:#fff;transform:scale(.7);animation:none}.championOverlay.show .championCard{animation:championPop .65s cubic-bezier(.2,1.5,.4,1) forwards}.championCrown{font-size:64px;filter:drop-shadow(0 0 20px #ffd642)}.championLabel{font-size:17px;font-weight:1000;letter-spacing:.25em;color:#ffe76c;text-shadow:0 0 14px #ffdc44}.championName{font-size:31px;font-weight:1000;margin:8px 0;text-shadow:0 0 18px #45dbff}.championPick{width:120px;max-height:180px;object-fit:cover;border-radius:14px;border:3px solid #ffe04c;box-shadow:0 0 30px #ffe04c88}.championOverlay button{margin-top:14px;background:#fff;color:#17394e}.tournamentBattleNote{margin-top:8px;padding:8px;border-radius:9px;background:#fff5cc;color:#664d00;font-size:11px;font-weight:800}
+@keyframes championPop{0%{transform:scale(.65) rotate(-3deg);opacity:0}70%{transform:scale(1.08) rotate(1deg);opacity:1}100%{transform:scale(1);opacity:1}}
+@media(max-width:720px){.tournamentBracket{grid-template-columns:1fr}.enemyRandomRow{grid-template-columns:1fr 1fr}.tournamentSetup .setupGrid{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr}.championName{font-size:25px}}
+
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.9</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.11</header>
 <main>
 <section class="card pickConsole">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
@@ -100,13 +113,19 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 <section class="card teamConsole"><div class="consoleHeader compact"><div><span class="consoleKicker">BATTLE TEAM</span><h2>② バトルチーム</h2></div><div class="consoleLamp teamLamp">TEAM</div></div><div id="teamList" class="teamGrid"></div><p class="note">チームから外す操作はここで行います。ピック画像または「詳細」を押すとパラメータ画面を開きます。</p></section>
 <section class="card"><h2>③ バトル</h2>
-<p class="note">自分のバトルチームから1体、相手はマスターDBから検索して選択します。1対1・交代なしで最後まで戦います。</p>
-<div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"><button id="randomEnemyBtn" class="ghost" type="button">ランダム</button></div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>所持から相性TOP3</button></div><div id="enemyResults"></div></div></div>
+<div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">8体トーナメント</button></div>
+<p id="battleModeDescription" class="note">自分のバトルチームから1体、相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。</p>
+<div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div>
+<div id="singleEnemyPanel"><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"></div><div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div><div class="battleModeHint">能力値が確認できるピックの中から選びます。</div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>所持から相性TOP3</button></div><div id="enemyResults"></div></div>
+<div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
+</div></div>
 <div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>おすすめ所持ピック TOP3</b><span id="recommendTarget">相手未選択</span></div><div id="recommendGrid" class="recommendGrid"></div></div>
+<div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px"><div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><div class="vsBadge">VS</div><div class="fighter" id="enemyFighter"></div></div></div><div id="battleMessage" class="battleMessage">READY</div>
 <div class="actions"><button id="turnBtn">1ターン進める</button><button id="autoBtn" class="secondary">最後まで戦う</button><button id="restartBtn" class="ghost">やり直す</button></div>
 <div id="battleWinner"></div><div id="battleLog" class="log"></div></div>
 </section>
+<div id="championOverlay" class="championOverlay" aria-hidden="true"><div class="championCard"><div class="championCrown">👑</div><div class="championLabel">CHAMPION</div><img id="championPick" class="championPick" alt="優勝ピック"><div id="championName" class="championName"></div><div id="championCup"></div><button id="closeChampionBtn" type="button">大会表へ戻る</button></div></div>
 <section class="card"><h2>④ バックアップ／復元</h2>
 <p class="note">所持ピック、バトルチーム、ユーザー修正値、登録した写真を1つのJSONファイルに保存できます。端末変更やブラウザデータ消去前のバックアップに利用してください。</p>
 <div class="actions"><button id="backupBtn" type="button">バックアップを書き出す</button><button id="restoreBtn" type="button" class="secondary">バックアップを読み込む</button><input id="restoreFile" class="hidden" type="file" accept="application/json,.json"></div>
@@ -282,10 +301,22 @@ const TYPE={
 "はがね":{"ほのお":.5,"みず":.5,"でんき":.5,"こおり":2,"いわ":2,"はがね":.5,"フェアリー":2},
 "フェアリー":{"ほのお":.5,"かくとう":2,"どく":.5,"ドラゴン":2,"あく":2,"はがね":.5}};
 let battle={me:null,enemy:null,mhp:0,ehp:0,over:false,turn:1,busy:false};
+let battleMode="single";
+const TOURNAMENT_HISTORY_KEY="frenda:tournamentHistory:v1";
+let tournament={active:false,cup:"all",rounds:[],currentRound:0,pending:null,playerId:null,playerExit:null,completed:false,historySaved:false};
 function eff(move,def){let e=1;for(const t of [def.type1,def.type2])if(t)e*=TYPE[move]?.[t]??1;return e}
-function speed(r){return Number(r.speed_level??0)}
+function speedLevel(r){return Number(r.speed_level??0)}
+function compareSpeed(a,b){
+ const av=Number(a.speed_value),bv=Number(b.speed_value);
+ if(Number.isFinite(av)&&av>0&&Number.isFinite(bv)&&bv>0)return av-bv;
+ return speedLevel(a)-speedLevel(b)
+}
 function skillName(r){return (r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():(r.move||"技名未登録")}
-function dmg(a,d){const special=String(a.move_class||"").includes("特殊"),atk=Number(special?a.sp_atk:a.atk)||1,df=Number(special?d.sp_def:d.def)||1,e=eff(a.move_type,d),stab=(a.move_type===a.type1||a.move_type===a.type2)?1.2:1;return {n:Math.max(1,Math.round((18+atk*.38)*(100/(100+df))*stab*e)),e}}
+function dmg(a,d){
+ const special=String(a.move_class||"").includes("特殊"),atk=Number(special?a.sp_atk:a.atk)||1,df=Number(special?d.sp_def:d.def)||1,e=eff(a.move_type,d),stab=(a.move_type===a.type1||a.move_type===a.type2)?1.2:1;
+ if(e===0)return {n:0,e};
+ return {n:Math.max(1,Math.round((18+atk*.38)*(100/(100+df))*stab*e)),e}
+}
 function fighterHTML(r,hp,label){const max=Number(r.hp)||1,p=Math.max(0,Math.round(hp/max*100)),hc=p<=25?" low":p<=50?" mid":"";const types=[r.type1,r.type2].filter(Boolean).map(t=>`<span class="typeBadge">${esc(t)}</span>`).join("");return `<div class="fighterMeta">${label}</div><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="fighterName">${esc(r.name_ja)}</div><div>${types}</div><div class="fighterMeta">${esc(r.pick_no)} / ${esc(r.series)}</div><div class="fighterMeta">技：${esc(skillName(r))} (${esc(r.move_type??"-")})</div><div class="hpbar"><div class="hpfill${hc}" style="width:${p}%"></div></div><b>HP ${Math.max(0,hp)} / ${max}</b>`}
 function blog(x){$("battleLog").insertAdjacentHTML("beforeend",`<div>${x}</div>`);$("battleLog").scrollTop=$("battleLog").scrollHeight}
 function arena(){if(!battle.me||!battle.enemy)return;$("battleArena").classList.remove("hidden");$("myFighter").innerHTML=fighterHTML(battle.me,battle.mhp,"自分");$("enemyFighter").innerHTML=fighterHTML(battle.enemy,battle.ehp,"相手");if(battle.mhp<=0)$("myFighter").classList.add("ko");if(battle.ehp<=0)$("enemyFighter").classList.add("ko")}
@@ -294,19 +325,31 @@ function updateBattleSelectionStatus(){
  if(my){my.textContent=battle.me?`選択中：${battle.me.name_ja}（${battle.me.pick_no}）`:"未選択";my.classList.toggle("active",!!battle.me)}
  if(en){en.textContent=battle.enemy?`選択中：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`:"未選択";en.classList.toggle("active",!!battle.enemy)}
 }
-function chooseMe(r){if(battle.busy)return;battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();startIfReady()}
-function chooseEnemy(r){if(battle.busy)return;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();$("recommendBtn").disabled=false;$("recommendWrap").classList.add("hidden");startIfReady()}
-function startIfReady(){if(!battle.me||!battle.enemy||battle.busy)return;battle.mhp=Number(battle.me.hp)||1;battle.ehp=Number(battle.enemy.hp)||1;battle.over=false;battle.turn=1;$("battleLog").innerHTML="";$("battleWinner").innerHTML="";$("battleMessage").textContent=`${battle.me.name_ja} VS ${battle.enemy.name_ja}`;blog(`⚔️ ${esc(battle.me.name_ja)} vs ${esc(battle.enemy.name_ja)}　1対1・交代なし`);blog(`開始HP：${esc(battle.me.name_ja)} ${battle.mhp} / ${esc(battle.enemy.name_ja)} ${battle.ehp}`);arena()}
+function chooseMe(r){if(battle.busy)return;if(battleMode==="tournament"&&tournament.active){alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();if(battleMode==="single")startIfReady()}
+function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();$("recommendBtn").disabled=false;$("recommendWrap").classList.add("hidden");startIfReady()}
+function startIfReady(){
+ if(!battle.me||!battle.enemy||battle.busy)return;
+ battle.mhp=Number(battle.me.hp)||1;battle.ehp=Number(battle.enemy.hp)||1;battle.over=false;battle.turn=1;
+ $("battleLog").innerHTML="";$("battleWinner").innerHTML="";$("battleMessage").textContent=`${battle.me.name_ja} VS ${battle.enemy.name_ja}`;
+ blog(`⚔️ ${esc(battle.me.name_ja)} vs ${esc(battle.enemy.name_ja)}　1対1・交代なし`);
+ blog(`開始HP：${esc(battle.me.name_ja)} ${battle.mhp} / ${esc(battle.enemy.name_ja)} ${battle.ehp}`);
+ arena();
+ if(eff(battle.me.move_type,battle.enemy)===0&&eff(battle.enemy.move_type,battle.me)===0){
+   battle.over=true;$("battleMessage").textContent="双方の技が無効のため決着不能";
+   $("battleWinner").innerHTML='<div class="winner">🤝 DRAW - 決着不能</div>';
+   blog("🤝 双方の技が無効のため、この組み合わせは決着不能です。")
+ }
+}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function attack(a,d,target){
  const x=dmg(a,d),attacker=target==="enemy"?$("myFighter"):$("enemyFighter"),defender=target==="enemy"?$("enemyFighter"):$("myFighter");
- const sp=a.finisher_move&&String(a.finisher_move).trim(),name=skillName(a),t=x.e>1?"効果ばつぐん！":x.e<1?"効果はいまひとつ":"";
+ const sp=a.finisher_move&&String(a.finisher_move).trim(),name=skillName(a),t=x.e===0?"効果がないようだ…":x.e>1?"効果ばつぐん！":x.e<1?"効果はいまひとつ":"";
  $("battleMessage").textContent=`${a.name_ja}の${sp?"必殺技 ":""}${name}！`;
  if(sp){$("battleStage").classList.remove("specialFlash");void $("battleStage").offsetWidth;$("battleStage").classList.add("specialFlash")}
  attacker.classList.add(target==="enemy"?"attackRight":"attackLeft");await wait(220);attacker.classList.remove("attackRight","attackLeft");
- defender.classList.add("hit");const pop=document.createElement("div");pop.className=`damageFloat${x.e>1?" good":x.e<1?" weak":""}`;pop.textContent=`-${x.n}`;defender.appendChild(pop);await wait(430);
+ defender.classList.add("hit");const pop=document.createElement("div");pop.className=`damageFloat${x.e===0?" immune":x.e>1?" good":x.e<1?" weak":""}`;pop.textContent=x.e===0?"無効":`-${x.n}`;defender.appendChild(pop);await wait(430);
  if(target==="enemy")battle.ehp=Math.max(0,battle.ehp-x.n);else battle.mhp=Math.max(0,battle.mhp-x.n);
- $("battleMessage").textContent=`${x.n}ダメージ！ ${t}`.trim();
+ $("battleMessage").textContent=x.e===0?`0ダメージ！ ${t}`:`${x.n}ダメージ！ ${t}`;
  blog(`${esc(a.name_ja)}の${sp?"必殺技「"+esc(name)+"」":"「"+esc(name)+"」"}！ ${x.n}ダメージ。${t}`);
  arena();await wait(260)
 }
@@ -315,11 +358,11 @@ async function turn(){
  battle.busy=true;$("turnBtn").disabled=true;$("autoBtn").disabled=true;
  try{
    blog(`<b>ターン${battle.turn}</b>`);$("battleMessage").textContent=`ターン${battle.turn}`;
-   const meFirst=speed(battle.me)>=speed(battle.enemy);
+   const meFirst=compareSpeed(battle.me,battle.enemy)>=0;
    if(meFirst){await attack(battle.me,battle.enemy,"enemy");if(battle.ehp>0)await attack(battle.enemy,battle.me,"me")}
    else{await attack(battle.enemy,battle.me,"me");if(battle.mhp>0)await attack(battle.me,battle.enemy,"enemy")}
    blog(`HP：${esc(battle.me.name_ja)} ${battle.mhp} / ${esc(battle.enemy.name_ja)} ${battle.ehp}`);
-   if(battle.mhp<=0||battle.ehp<=0){battle.over=true;const winner=battle.mhp>0?battle.me.name_ja:battle.enemy.name_ja;$("battleMessage").textContent=`🏆 ${winner}の勝ち！`;$("battleWinner").innerHTML=`<div class="winner">🏆 ${esc(winner)} WIN!</div>`;blog(`🏁 ${esc(winner)}の勝ち！`)}
+   if(battle.mhp<=0||battle.ehp<=0){battle.over=true;const winnerRec=battle.mhp>0?battle.me:battle.enemy,winner=winnerRec.name_ja;$("battleMessage").textContent=`🏆 ${winner}の勝ち！`;$("battleWinner").innerHTML=`<div class="winner">🏆 ${esc(winner)} WIN!</div>`;blog(`🏁 ${esc(winner)}の勝ち！`);if(battleMode==="tournament"&&tournament.active)completeTournamentPlayerMatch(winnerRec)}
    battle.turn++;arena()
  }finally{battle.busy=false;$("turnBtn").disabled=false;$("autoBtn").disabled=false}
 }
@@ -330,36 +373,68 @@ function enemySearch(){const q=norm($("enemyQ").value),box=$("enemyResults");box
 function numOk(v){return v!==null&&v!==undefined&&v!==""&&Number.isFinite(Number(v))&&Number(v)>0}
 function attackStat(r){return String(r.move_class||"").includes("特殊")?r.sp_atk:r.atk}
 function defenseStat(defender,attacker){return String(attacker.move_class||"").includes("特殊")?defender.sp_def:defender.def}
-function effectText(v){if(v===0)return "無効";if(v>=4)return "×4 かなり有利";if(v>1)return "×2 こうかばつぐん";if(v<1)return "×0.5 いまひとつ";return "×1 等倍"}
+function effectText(v){
+ if(v===0)return "×0 無効";
+ if(v===.25)return "×0.25 かなりいまひとつ";
+ if(v===.5)return "×0.5 いまひとつ";
+ if(v===1)return "×1 等倍";
+ if(v===2)return "×2 こうかばつぐん";
+ if(v===4)return "×4 こうかばつぐん";
+ return `×${v}`;
+}
+function hitsToKO(hp,damage){return damage<=0?Infinity:Math.max(1,Math.ceil(Number(hp)/damage))}
+function actionTimeToKO(hits,goesFirst){
+ if(!Number.isFinite(hits))return Infinity;
+ return (hits-1)*2+(goesFirst?1:2)
+}
+function speedRelation(c,enemy){
+ const cmp=compareSpeed(c,enemy);
+ return {cFirst:cmp>=0,tie:cmp===0}
+}
+function outcomeLabel(outcome){return outcome==="win"?"勝利見込み":outcome==="draw"?"決着不能":"敗北見込み"}
 function ownedRecommendationRecords(){
  if(!battle.enemy)return [];
  const enemy=merged(battle.enemy), ownedIds=new Set(getIds(OWNED_KEY)), teamIds=new Set(getIds(TEAM_KEY));
- const rows=[];
+ const fullRows=[],refRows=[];
  for(const base of R){
    if(!ownedIds.has(base.master_id))continue;
    const c=merged(base),outEff=eff(c.move_type,enemy),inEff=eff(enemy.move_type,c);
    const full=[c.hp,enemy.hp,attackStat(c),defenseStat(enemy,c),attackStat(enemy),defenseStat(c,enemy)].every(numOk) && !!c.move_type && !!enemy.move_type;
+   const sr=speedRelation(c,enemy);
    if(full){
      const cd=dmg(c,enemy).n,ed=dmg(enemy,c).n;
-     const cHits=Math.max(1,Math.ceil(Number(enemy.hp)/cd)),eHits=Math.max(1,Math.ceil(Number(c.hp)/ed));
-     const cFirst=speed(c)>=speed(enemy);
-     const cTime=(cHits-1)*2+(cFirst?1:2),eTime=(eHits-1)*2+(cFirst?2:1);
-     const win=cTime<eTime;
-     rows.push({base,c,full:true,win,cHits,eHits,cFirst,outEff,inEff,cd,ed,margin:eTime-cTime,inTeam:teamIds.has(base.master_id)});
+     const cHits=hitsToKO(enemy.hp,cd),eHits=hitsToKO(c.hp,ed);
+     const cTime=actionTimeToKO(cHits,sr.cFirst),eTime=actionTimeToKO(eHits,!sr.cFirst);
+     let outcome;
+     if(!Number.isFinite(cHits)&&!Number.isFinite(eHits))outcome="draw";
+     else if(!Number.isFinite(cHits))outcome="lose";
+     else if(!Number.isFinite(eHits))outcome="win";
+     else outcome=cTime<eTime?"win":"lose";
+     const outcomeRank=outcome==="win"?2:outcome==="draw"?1:0;
+     const margin=Number.isFinite(cTime)&&Number.isFinite(eTime)?eTime-cTime:
+       outcome==="win"?Number.POSITIVE_INFINITY:outcome==="lose"?Number.NEGATIVE_INFINITY:0;
+     fullRows.push({base,c,full:true,outcome,outcomeRank,cHits,eHits,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd,ed,cTime,eTime,margin,inTeam:teamIds.has(base.master_id)});
    }else{
-     const energy=Number(c.poke_ene)||0,spd=Number(c.speed_level)||0;
-     const fallbackScore=outEff*1000-inEff*600+energy*2+spd*20;
-     rows.push({base,c,full:false,win:null,cHits:null,eHits:null,cFirst:null,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
+     let typeOutcome="unknown",typeRank=0;
+     if(outEff===0&&inEff===0){typeOutcome="draw";typeRank=1}
+     else if(outEff===0){typeOutcome="lose";typeRank=0}
+     else if(inEff===0){typeOutcome="win";typeRank=2}
+     const energy=Number(c.poke_ene)||0,spd=Number(c.speed_value)||Number(c.speed_level)||0;
+     const fallbackScore=typeRank*1e7+outEff*10000-inEff*6000+energy*2+spd;
+     refRows.push({base,c,full:false,outcome:typeOutcome,outcomeRank:typeRank,cHits:null,eHits:null,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
    }
  }
- const fullRows=rows.filter(x=>x.full).sort((a,b)=>
-   (Number(b.win)-Number(a.win)) ||
-   (b.margin-a.margin) ||
-   (b.outEff-a.outEff) ||
-   (a.inEff-b.inEff) ||
-   ((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0))
- );
- const refRows=rows.filter(x=>!x.full).sort((a,b)=>b.margin-a.margin);
+ fullRows.sort((a,b)=>{
+   if(b.outcomeRank!==a.outcomeRank)return b.outcomeRank-a.outcomeRank;
+   if(a.outcome==="win"&&b.outcome==="win"){
+     if(a.cTime!==b.cTime)return a.cTime-b.cTime;
+     if(a.eTime!==b.eTime)return b.eTime-a.eTime;
+   }else if(a.outcome==="lose"&&b.outcome==="lose"){
+     if(a.margin!==b.margin)return b.margin-a.margin;
+   }
+   return (b.outEff-a.outEff)||(a.inEff-b.inEff)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0))
+ });
+ refRows.sort((a,b)=>b.margin-a.margin);
  return fullRows.concat(refRows).slice(0,3)
 }
 function chooseRecommended(r){
@@ -376,27 +451,106 @@ function renderRecommendations(){
  if(!rows.length){grid.innerHTML='<div class="recommendEmpty" style="grid-column:1/-1">所持ピックがありません。①で所持登録してください。</div>';return}
  rows.forEach((x,i)=>{
    const d=document.createElement("div");d.className=`recommendCard rank${i+1}`;
-   const verdict=x.full?(x.win?"勝利見込み":"不利見込み"):"参考評価";
-   const verdictClass=x.full?(x.win?"":" lose"):" ref";
+   const verdict=x.full?outcomeLabel(x.outcome):"参考評価";
+   const verdictClass=x.full?(x.outcome==="lose"?" lose":x.outcome==="draw"?" draw":""):" ref";
+   const order=x.speedTie?"同速（自分先攻扱い）":(x.cFirst?"先攻":"後攻");
+   const koOut=Number.isFinite(x.cHits)?`相手を${x.cHits}回でKO見込み`:"相手にダメージを与えられない";
+   const koIn=Number.isFinite(x.eHits)?`自分は${x.eHits}回でKOされる見込み`:"相手の技は無効";
    const reason=x.full
-     ? `<div><b>${x.cFirst?"先攻":"後攻"}</b> / 相手を${x.cHits}回でKO見込み / 自分は${x.eHits}回でKOされる見込み</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
-     : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ段階：${esc(x.c.speed_level??"-")}</div>`;
+     ? `<div><b>${order}</b> / ${koOut} / ${koIn}</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
+     : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>${x.outEff===0?"この技では相手にダメージを与えられません。":x.inEff===0?"相手の技はタイプ上無効です。":"タイプ相性・ポケエネ中心の評価です。"}</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ：${esc(x.c.speed_value??x.c.speed_level??"-")}</div>`;
    d.innerHTML=`<span class="recommendRank">${i+1}位</span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div><button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`;
    d.querySelector("button").onclick=()=>chooseRecommended(x.base);grid.appendChild(d)
  })
 }
 
-$("enemyQ").oninput=enemySearch;$("recommendBtn").onclick=renderRecommendations;$("randomEnemyBtn").onclick=()=>{const pool=R.filter(r=>r.hp&&r.atk&&r.def&&r.sp_atk&&r.sp_def);if(pool.length)chooseEnemy(pool[Math.floor(Math.random()*pool.length)])};$("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=startIfReady;
+function hasBattleStats(r){return [r.hp,r.atk,r.def,r.sp_atk,r.sp_def].every(numOk)&&!!r.move_type&&!!r.type1}
+function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
+function setBattleMode(mode){
+ if(mode===battleMode)return;
+ if(tournament.active&&mode==="single"&&!confirm("進行中のトーナメントを中止して1対1バトルへ戻りますか？"))return;
+ if(tournament.active&&mode==="single")cancelTournament(false);
+ battleMode=mode;$("singleModeBtn").classList.toggle("on",mode==="single");$("tournamentModeBtn").classList.toggle("on",mode==="tournament");$("singleEnemyPanel").classList.toggle("hidden",mode!=="single");$("tournamentSetupPanel").classList.toggle("hidden",mode!=="tournament");$("tournamentWrap").classList.toggle("hidden",mode!=="tournament");$("recommendWrap").classList.add("hidden");
+ $("battleModeDescription").textContent=mode==="single"?"自分のバトルチームから1体、相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。":"自分のバトルチームから1体選び、8体トーナメントを戦います。CPU同士は自動判定、各試合HP全回復です。";
+ if(mode==="tournament"){$("battleArena").classList.add("hidden");renderTournament();renderTournamentHistory()}else if(battle.me&&battle.enemy)startIfReady();
+}
+function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
+function cupLabel(cup){return cup==="5"?"スーパートレジャーカップ":cup==="le4"?"チャレンジカップ":"フレンダカップ"}
+function tournamentPool(cup){return R.filter(r=>hasBattleStats(r)&&(cup==="5"?Number(r.grade)===5:cup==="le4"?(Number(r.grade)>0&&Number(r.grade)<=4):true))}
+function tournamentJudge(a,b){
+ const A=merged(a),B=merged(b),cmp=compareSpeed(A,B),aFirst=cmp>=0,ad=dmg(A,B).n,bd=dmg(B,A).n,ah=hitsToKO(B.hp,ad),bh=hitsToKO(A.hp,bd),at=actionTimeToKO(ah,aFirst),bt=actionTimeToKO(bh,!aFirst);
+ if(Number.isFinite(at)||Number.isFinite(bt)){if(at<bt)return {winner:a,method:`${Number.isFinite(ah)?ah:"∞"}手KO`};if(bt<at)return {winner:b,method:`${Number.isFinite(bh)?bh:"∞"}手KO`}}
+ const ae=Number(A.poke_ene)||0,be=Number(B.poke_ene)||0;if(ae!==be)return {winner:ae>be?a:b,method:"判定（ポケエネ）"};if(cmp!==0)return {winner:cmp>0?a:b,method:"判定（すばやさ）"};return {winner:Math.random()<.5?a:b,method:"判定"}
+}
+function makeMatch(a,b){return {a,b,winner:null,method:"",live:false}}
+function startTournament(){
+ if(!battle.me){alert("先に自分のバトルチームから参加ピックを選んでください。");return}
+ const playerBase=R.find(r=>r.master_id===battle.me.master_id);if(!playerBase){alert("参加ピックを確認できません。");return}
+ if(!hasBattleStats(playerBase)){alert("このピックは能力値が未確認のためトーナメント参加できません。");return}
+ const cup=$("tournamentCup").value;if(cup==="5"&&Number(playerBase.grade)!==5){alert("スーパートレジャーカップは★5ピックのみ参加できます。");return}if(cup==="le4"&&!(Number(playerBase.grade)>0&&Number(playerBase.grade)<=4)){alert("チャレンジカップは★4以下のピックのみ参加できます。");return}
+ if(tournament.active&&!confirm("現在の大会を中止して新しいトーナメントを開始しますか？"))return;
+ const pool=tournamentPool(cup).filter(r=>r.master_id!==playerBase.master_id);if(pool.length<7){alert("この大会条件では参加ピックが不足しています。");return}
+ const entrants=shuffle([playerBase,...shuffle(pool).slice(0,7)]),qf=[];for(let i=0;i<8;i+=2)qf.push(makeMatch(entrants[i],entrants[i+1]));
+ tournament={active:true,cup,rounds:[qf,[],[]],currentRound:0,pending:null,playerId:playerBase.master_id,playerExit:null,completed:false,historySaved:false};
+ $("tournamentWrap").classList.remove("hidden");$("tournamentBattleNote").classList.add("hidden");$("battleArena").classList.add("hidden");renderTournament();processTournamentRound(0)
+}
+function buildNextTournamentRound(roundIdx){const winners=tournament.rounds[roundIdx].map(m=>m.winner);if(roundIdx===0)tournament.rounds[1]=[makeMatch(winners[0],winners[1]),makeMatch(winners[2],winners[3])];else if(roundIdx===1)tournament.rounds[2]=[makeMatch(winners[0],winners[1])]}
+function processTournamentRound(roundIdx){
+ if(!tournament.active)return;tournament.currentRound=roundIdx;const matches=tournament.rounds[roundIdx];let playerMatch=null;
+ for(let i=0;i<matches.length;i++){const m=matches[i];if(m.winner)continue;const hasPlayer=m.a?.master_id===tournament.playerId||m.b?.master_id===tournament.playerId;if(hasPlayer){playerMatch={m,i};continue}const j=tournamentJudge(m.a,m.b);m.winner=j.winner;m.method=j.method}
+ renderTournament();
+ if(playerMatch){startTournamentPlayerMatch(roundIdx,playerMatch.i);return}
+ if(matches.every(m=>m.winner)){if(roundIdx===2){finishTournament(matches[0].winner);return}buildNextTournamentRound(roundIdx);processTournamentRound(roundIdx+1)}
+}
+function startTournamentPlayerMatch(roundIdx,matchIdx){
+ const m=tournament.rounds[roundIdx][matchIdx],player=m.a.master_id===tournament.playerId?m.a:m.b,enemy=m.a.master_id===tournament.playerId?m.b:m.a;m.live=true;tournament.pending={roundIdx,matchIdx};battle.me=merged(player);battle.enemy=merged(enemy);updateBattleSelectionStatus();renderBattlePicks();renderTournament();
+ const note=$("tournamentBattleNote");note.classList.remove("hidden");note.textContent=`${["準々決勝","準決勝","決勝"][roundIdx]}：${player.name_ja} VS ${enemy.name_ja}。下のバトル画面で戦ってください。`;
+ if(eff(battle.me.move_type,battle.enemy)===0&&eff(battle.enemy.move_type,battle.me)===0){const j=tournamentJudge(player,enemy);m.winner=j.winner;m.method="双方無効・"+j.method;m.live=false;tournament.pending=null;renderTournament();setTimeout(()=>afterTournamentMatch(roundIdx,j.winner),350);return}
+ startIfReady();$("battleArena").scrollIntoView({behavior:"smooth",block:"start"})
+}
+function completeTournamentPlayerMatch(winnerRec){
+ if(!tournament.pending||tournament.completed)return;const {roundIdx,matchIdx}=tournament.pending,m=tournament.rounds[roundIdx][matchIdx],base=R.find(r=>r.master_id===winnerRec.master_id)||winnerRec;m.winner=base;m.method="実戦";m.live=false;tournament.pending=null;renderTournament();setTimeout(()=>afterTournamentMatch(roundIdx,base),500)
+}
+function afterTournamentMatch(roundIdx,winner){
+ if(winner.master_id!==tournament.playerId){tournament.playerExit=roundIdx;autoFinishTournamentFrom(roundIdx);return}
+ const matches=tournament.rounds[roundIdx];if(matches.every(m=>m.winner)){if(roundIdx===2){finishTournament(winner);return}buildNextTournamentRound(roundIdx);processTournamentRound(roundIdx+1)}
+}
+function autoFinishTournamentFrom(roundIdx){
+ let r=roundIdx;while(r<2){if(!tournament.rounds[r].every(m=>m.winner))for(const m of tournament.rounds[r])if(!m.winner){const j=tournamentJudge(m.a,m.b);m.winner=j.winner;m.method=j.method}buildNextTournamentRound(r);r++;for(const m of tournament.rounds[r]){const j=tournamentJudge(m.a,m.b);m.winner=j.winner;m.method=j.method}}const champ=tournament.rounds[2][0].winner;finishTournament(champ)
+}
+function finishTournament(champion){
+ tournament.active=false;tournament.completed=true;tournament.pending=null;const final=tournament.rounds[2][0];if(final)final.live=false;let result="準々決勝敗退";if(champion.master_id===tournament.playerId)result="優勝";else if(tournament.playerExit===2)result="準優勝";else if(tournament.playerExit===1)result="準決勝敗退";
+ $("tournamentState").textContent=`終了：${result}`;$("tournamentBattleNote").classList.add("hidden");renderTournament();saveTournamentHistory(champion,result);showChampion(champion,result)
+}
+function cancelTournament(ask=true){if(!tournament.active&&!tournament.completed)return;if(ask&&tournament.active&&!confirm("トーナメントを中止しますか？"))return;tournament={active:false,cup:$("tournamentCup").value,rounds:[],currentRound:0,pending:null,playerId:null,playerExit:null,completed:false,historySaved:false};$("battleArena").classList.add("hidden");$("tournamentBattleNote").classList.add("hidden");renderTournament()}
+function slotHTML(r,m){if(!r)return '<div class="matchEmpty">未定</div>';const win=m?.winner?.master_id===r.master_id,done=!!m?.winner,player=r.master_id===tournament.playerId,cls=`matchSlot${player?" player":""}${win?" winner":""}${done&&!win?" loser":""}`;return `<div class="${cls}"><img src="${esc(pickImage(r))}" alt=""><div><div class="slotName">${esc(r.name_ja)}</div><div class="slotMeta">${esc(r.pick_no)} / ${r.grade?"★"+esc(r.grade):"ランク-"}</div></div><div class="slotResult">${win?"WIN":done?"LOSE":player?"YOU":""}</div></div>`}
+function matchHTML(m){if(!m)return '<div class="matchBox"><div class="matchEmpty">未定</div></div>';return `<div class="matchBox${m.live?" live":""}">${slotHTML(m.a,m)}${slotHTML(m.b,m)}${m.winner?`<div class="slotMeta" style="padding:3px 5px;text-align:right">${esc(m.method)}</div>`:""}</div>`}
+function renderTournament(){
+ const bracket=$("tournamentBracket");if(!bracket)return;$("tournamentTitle").textContent=`🏆 ${cupLabel(tournament.cup||$("tournamentCup").value)}`;
+ if(!tournament.rounds.length){$("tournamentSub").textContent="大会未開始";$("tournamentState").textContent="READY";bracket.innerHTML='<div class="matchEmpty" style="grid-column:1/-1">自分のピックと大会ルールを選び、「8体トーナメント開始」を押してください。</div>';return}
+ const titles=["準々決勝","準決勝","決勝"];bracket.innerHTML=titles.map((t,ri)=>`<div class="roundCol"><div class="roundTitle">${t}</div>${(tournament.rounds[ri]||[]).map(matchHTML).join("")||'<div class="matchEmpty">未定</div>'}</div>`).join("");
+ const player=R.find(r=>r.master_id===tournament.playerId);$("tournamentSub").textContent=player?`参加：${player.name_ja}（${player.pick_no}） / 8体`:`8体`;if(tournament.active)$("tournamentState").textContent=`${titles[tournament.currentRound]} 進行中`
+}
+function historyData(){try{const x=JSON.parse(localStorage.getItem(TOURNAMENT_HISTORY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
+function saveTournamentHistory(champion,result){if(tournament.historySaved)return;tournament.historySaved=true;const player=R.find(r=>r.master_id===tournament.playerId),list=historyData();list.unshift({date:new Date().toISOString(),cup:cupLabel(tournament.cup),player:player?.name_ja||"-",champion:champion.name_ja,result});localStorage.setItem(TOURNAMENT_HISTORY_KEY,JSON.stringify(list.slice(0,20)));renderTournamentHistory()}
+function renderTournamentHistory(){const box=$("tournamentHistoryList");if(!box)return;const list=historyData();if(!list.length){box.innerHTML='<div class="historyEmpty">大会履歴はまだありません。</div>';return}box.innerHTML=list.map(h=>{const d=new Date(h.date),date=Number.isNaN(d.getTime())?"":`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;return `<div class="historyItem"><span class="historyDate">${esc(date)}</span><span>${esc(h.cup)} / 自分：${esc(h.player)} / 優勝：${esc(h.champion)}</span><span class="historyResult${h.result==="優勝"?" champ":""}">${esc(h.result)}</span></div>`}).join("")}
+function showChampion(champion,result){const ov=$("championOverlay");$("championPick").src=pickImage(champion);$("championName").textContent=champion.name_ja;$("championCup").textContent=`${cupLabel(tournament.cup)}　${champion.master_id===tournament.playerId?"あなたが優勝！":`あなた：${result}`}`;ov.classList.add("show");ov.setAttribute("aria-hidden","false")}
+function closeChampion(){const ov=$("championOverlay");ov.classList.remove("show");ov.setAttribute("aria-hidden","true")}
+
+$("singleModeBtn").onclick=()=>setBattleMode("single");$("tournamentModeBtn").onclick=()=>setBattleMode("tournament");
+$("enemyQ").oninput=enemySearch;$("recommendBtn").onclick=renderRecommendations;$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert("このランクには対戦可能なピックがありません。");return}chooseEnemy(pool[Math.floor(Math.random()*pool.length)])};
+$("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
+$("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.9",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.11",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
 $("restoreBtn").onclick=()=>$("restoreFile").click();
 $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!confirm("現在の所持・チーム・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)localStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")localStorage.setItem(k,v);$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderTeam();renderSeriesButtons();renderBrowser()}catch(err){alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
 
-initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();
+initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 </script></body></html>
-<!-- Updated: 2026-09-22 18:48:26 JST / Ver6.9 -->
+<!-- Updated: 2026-09-22 19:31:00 JST / Ver6.11 -->
