@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.6 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.18 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.6</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.18</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -17,7 +17,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .ownedToolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}.ownedToolbar select,.ownedToolbar input{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;width:auto;min-width:120px}.ownedToolbar input{flex:1;min-width:150px}.collectionStats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:10px 0 14px}.collectionStat{border:1px solid #dfe4e8;border-radius:12px;padding:9px;background:#fafbfd;cursor:pointer}.collectionStatHead{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800}.collectionBar{height:8px;background:#e6ebef;border-radius:999px;overflow:hidden;margin-top:6px}.collectionFill{height:100%;background:linear-gradient(90deg,#1769e0,#5e9df1)}.collectionOverall{padding:10px 12px;border-radius:12px;background:#eef4ff;font-weight:800;margin-bottom:8px}.ownedGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}.ownedCard{border:1px solid #dfe4e8;border-radius:14px;padding:8px;background:#fff;cursor:pointer}.ownedCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.ownedCard b{display:block;margin-top:6px}.ownedCard .meta{line-height:1.4}
 .battleSelect{display:grid;grid-template-columns:1fr 1fr;gap:10px}.battleStage{position:relative;border-radius:18px;padding:14px;background:linear-gradient(180deg,#eef8ff,#f8fbff);border:1px solid #d7e3ed;overflow:hidden}.battleStage:before{content:"";position:absolute;left:-8%;right:-8%;bottom:-40px;height:105px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 -1px 0 rgba(0,0,0,.05)}.battleGrid{position:relative;display:grid;grid-template-columns:1fr 72px 1fr;gap:10px;align-items:center;z-index:1}.fighter{border:1px solid #dfe4e8;border-radius:16px;padding:10px;background:rgba(255,255,255,.94);text-align:center;box-shadow:0 4px 16px rgba(30,60,90,.08)}.fighter img{width:min(145px,100%);aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#e8ebee}.fighterName{font-size:18px;font-weight:800;margin-top:6px}.fighterMeta{font-size:12px;color:#66717b}.vsBadge{display:flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:50%;background:#17202a;color:#fff;font-size:20px;font-weight:900;box-shadow:0 5px 18px rgba(0,0,0,.2)}.hpbar{height:16px;background:#e2e6e9;border-radius:10px;overflow:hidden;margin:8px 0}.hpfill{height:100%;background:linear-gradient(90deg,#48b95f,#73d478);transition:width .35s ease}.hpfill.mid{background:linear-gradient(90deg,#e8ad2f,#f0c85b)}.hpfill.low{background:linear-gradient(90deg,#d9534f,#ef7b75)}.typeBadge{display:inline-block;padding:3px 7px;margin:3px 2px 0;border-radius:999px;background:#edf2f7;font-size:11px;font-weight:700}.battleMessage{margin:10px 0;padding:10px;border-radius:12px;background:#17202a;color:#fff;text-align:center;font-weight:800;min-height:20px}.log{max-height:260px;overflow:auto;background:#f7f8fa;border-radius:10px;padding:9px;font-size:13px;line-height:1.55}.battlePick{width:100%;margin:4px 0;background:#edf2f7;color:#273746;text-align:left;display:flex;align-items:center;gap:8px}.battlePick img{width:38px;height:54px;object-fit:cover;border-radius:6px;background:#e8ebee}.battlePickText{min-width:0}.battlePickText b{display:block}.battlePickText span{display:block;font-size:11px;color:#66717b}.winner{font-size:18px;font-weight:900;text-align:center;padding:10px;border-radius:12px;background:#fff5d9;margin-top:10px}.fighter{position:relative;transition:transform .18s ease,filter .18s ease}.fighter.attackRight{transform:translateX(24px) scale(1.03)}.fighter.attackLeft{transform:translateX(-24px) scale(1.03)}.fighter.hit{animation:hitShake .34s ease}.fighter.ko{filter:grayscale(.8);opacity:.65;transform:translateY(8px)}@keyframes hitShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}.damageFloat{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:28px;font-weight:1000;color:#b51f1f;text-shadow:0 2px 0 #fff,0 0 8px #fff;pointer-events:none;animation:damagePop .7s ease forwards;z-index:4}.damageFloat.good{color:#d85a00}.damageFloat.weak{color:#536270}.damageFloat.immune{color:#394b59;font-size:22px}@keyframes damagePop{0%{opacity:0;transform:translate(-50%,0) scale(.6)}25%{opacity:1;transform:translate(-50%,-30%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-100%) scale(.9)}}.battleStage.specialFlash{animation:specialFlash .7s ease}@keyframes specialFlash{0%,100%{box-shadow:none}25%{box-shadow:inset 0 0 80px #ffd84d,0 0 24px #ffd84d}55%{box-shadow:inset 0 0 100px #fff,0 0 34px #ff9f1a}}.backupBox{border-top:1px solid #e6e9ec;margin-top:12px;padding-top:12px}.backupStatus{font-size:12px;color:#65717c;margin-top:8px;min-height:1.4em}
 
-.browserToolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.browserFilters{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.browserFilters select{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;min-width:120px}.seriesGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:12px 0}.seriesBtn{background:#f7f9fb;color:#273746;border:1px solid #d8e0e6;padding:10px;text-align:left}.seriesBtn.active{background:#1769e0;color:#fff;border-color:#1769e0}.seriesBtn span{display:block;font-size:11px;opacity:.78;margin-top:3px}.browserSummary{font-size:13px;font-weight:700;margin:10px 0;color:#45525d}.pickGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}.pickCard{border:1px solid #dfe4e8;border-radius:14px;padding:8px;background:#fff;box-shadow:0 1px 3px #0001}.pickCard.owned{border-color:#61a778;box-shadow:0 0 0 2px #dff4e5 inset}.pickCard.inTeam{box-shadow:0 0 0 2px #dbe9ff inset}.pickOpen{cursor:pointer}.pickCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.pickName{display:block;font-size:15px;font-weight:800;margin-top:6px}.pickMeta{font-size:11px;color:#66717b;line-height:1.45;margin-top:3px;min-height:33px}.cardBadges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.miniBadge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;font-weight:800;background:#edf2f7;color:#44515c}.miniBadge.ownedBadge{background:#dff4e5;color:#276b3b}.miniBadge.teamBadge{background:#dbe9ff;color:#24589b}.quickActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.quickActions button{padding:8px 5px;font-size:11px}.quickActions .detailQuick{grid-column:1/-1;background:#edf2f7;color:#273746}.quickActions .ownedQuick.on{background:#348b50}.quickActions .teamQuick.on{background:#395f9c}.quickActions button:disabled{opacity:.45}.detailScreen{position:fixed;inset:0;z-index:50;background:#f4f6f8;overflow:auto;padding:0}.detailTop{position:sticky;top:0;z-index:2;background:#172b3a;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px}.detailTop button{background:#fff;color:#172b3a;padding:8px 11px}.detailTop b{font-size:16px}.detailPanel{max-width:760px;margin:0 auto;padding:12px}.detailPanel>.card{margin-bottom:20px}.emptyBrowser{padding:18px;border:1px dashed #c9d1d8;border-radius:12px;color:#65717c;text-align:center;background:#fafbfd}.subtleCheck{display:flex;align-items:center;gap:6px;font-size:13px}.subtleCheck input{width:auto}.seriesHeading{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-top:8px}.seriesHeading b{font-size:14px}.seriesHeading span{font-size:11px;color:#65717c}
+.browserToolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.browserFilters{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.browserFilters select{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;min-width:120px}.seriesGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:12px 0}.seriesBtn{background:#f7f9fb;color:#273746;border:1px solid #d8e0e6;padding:10px;text-align:left}.seriesBtn.active{background:#1769e0;color:#fff;border-color:#1769e0}.seriesBtn span{display:block;font-size:11px;opacity:.78;margin-top:3px}.browserSummary{font-size:13px;font-weight:700;margin:10px 0;color:#45525d}.pickGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}.pickCard{border:1px solid #dfe4e8;border-radius:14px;padding:8px;background:#fff;box-shadow:0 1px 3px #0001}.pickCard.owned{border-color:#61a778;box-shadow:0 0 0 2px #dff4e5 inset}.pickCard.inTeam{box-shadow:0 0 0 2px #dbe9ff inset}.pickOpen{cursor:default}.pickCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.pickName{display:block;font-size:15px;font-weight:800;margin-top:6px}.pickMeta{font-size:11px;color:#66717b;line-height:1.45;margin-top:3px;min-height:33px}.cardBadges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.miniBadge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;font-weight:800;background:#edf2f7;color:#44515c}.miniBadge.ownedBadge{background:#dff4e5;color:#276b3b}.miniBadge.teamBadge{background:#dbe9ff;color:#24589b}.quickActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.quickActions button{padding:8px 5px;font-size:11px}.quickActions .detailQuick{grid-column:1/-1;background:#edf2f7;color:#273746}.quickActions .ownedQuick.on{background:#348b50}.quickActions .teamQuick.on{background:#395f9c}.quickActions button:disabled{opacity:.45}.detailScreen{position:fixed;inset:0;z-index:50;background:#f4f6f8;overflow:auto;padding:0}.detailTop{position:sticky;top:0;z-index:2;background:#172b3a;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px}.detailTop button{background:#fff;color:#172b3a;padding:8px 11px}.detailTop b{font-size:16px}.detailPanel{max-width:760px;margin:0 auto;padding:12px}.detailPanel>.card{margin-bottom:20px}.emptyBrowser{padding:18px;border:1px dashed #c9d1d8;border-radius:12px;color:#65717c;text-align:center;background:#fafbfd}.subtleCheck{display:flex;align-items:center;gap:6px;font-size:13px}.subtleCheck input{width:auto}.seriesHeading{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-top:8px}.seriesHeading b{font-size:14px}.seriesHeading span{font-size:11px;color:#65717c}
 
 
 /* Ver6.8: clearer owned-state and battle selection state */
@@ -25,7 +25,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .consoleHeader{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#fff;margin:-2px 0 12px;position:relative;z-index:1}.consoleHeader.compact{color:#172b3a}.consoleHeader h2{margin:1px 0 0}.consoleKicker{font-size:10px;letter-spacing:.22em;font-weight:900;color:#55e8ff;text-shadow:0 0 10px #3ce2ff88}.teamConsole .consoleKicker{color:#1769e0;text-shadow:none}.consoleLamp{min-width:70px;text-align:center;padding:8px 10px;border-radius:999px;background:#083954;border:1px solid #36e7ff;color:#7ef0ff;font-size:11px;font-weight:1000;letter-spacing:.13em;box-shadow:0 0 16px #26d7ff44,inset 0 0 10px #26d7ff22}.consoleLamp.teamLamp{background:#edf4ff;color:#1a5da7;border-color:#9cc5ef;box-shadow:none}
 .pickConsole .collectionOverall{position:relative;z-index:1;background:#09263b;color:#eaffff;border:1px solid #1e607d;box-shadow:inset 0 0 18px #0eb9e51f}.pickConsole .browserToolbar,.pickConsole .browserFilters,.pickConsole .seriesHeading,.pickConsole .seriesGrid{position:relative;z-index:1}.pickConsole .search input,.pickConsole .browserFilters select{background:#f9fdff;border-color:#80aabd}.pickConsole .subtleCheck{background:#06243a;color:#fff;border:1px solid #2f6a86;border-radius:12px;padding:9px 12px;font-weight:800}.pickConsole .seriesHeading{color:#dff7ff}.pickConsole .seriesHeading span{color:#9ec7d7}
 .seriesBtn{position:relative;overflow:hidden;background:linear-gradient(180deg,#fafdff,#e8f2f8);border-color:#8eb7c9;box-shadow:0 3px 0 #b7cbd4;color:#16374c}.seriesBtn:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#25d8ff,#1769e0,#fc54bc)}.seriesBtn.active{background:linear-gradient(180deg,#00bfe9,#0676c4);border-color:#49e7ff;box-shadow:0 0 17px #23cbe888,0 3px 0 #034c7b;color:#fff}.seriesBtn.clearSeries{background:linear-gradient(180deg,#273a4a,#152633);color:#eaf8ff;border-color:#537386;box-shadow:0 3px 0 #0b1720}.seriesBtn.clearSeries.active{background:linear-gradient(180deg,#fb4caf,#9b2680);border-color:#ff8ed1;box-shadow:0 0 17px #ff42bd66,0 3px 0 #6e1458}
-.browserSummary{padding:8px 12px;border-radius:12px;background:#0e2e44;color:#dffbff;border:1px solid #316179;letter-spacing:.02em}.emptyBrowser{grid-column:1/-1;background:linear-gradient(180deg,#0a2639,#071b2b);color:#d7f6ff;border-color:#437389;padding:28px;font-weight:800}.pickGrid{margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:13px}.pickCard{position:relative;overflow:hidden;padding:7px;border-radius:17px;border:2px solid #a9beca;background:linear-gradient(145deg,#e8f3f8,#fff 42%,#dbe7ec);box-shadow:0 7px 16px #071b2b26,0 2px 0 #9fafb7;transition:transform .12s ease,box-shadow .12s ease}.pickCard:hover{transform:translateY(-2px);box-shadow:0 10px 22px #071b2b35}.pickCard:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 0 35%,rgba(255,255,255,.58) 44%,transparent 52%);transform:translateX(-120%)}.pickCard:hover:before{animation:cardShine .75s ease}@keyframes cardShine{to{transform:translateX(120%)}}.pickCard.grade5{border-color:#f0c631;background:linear-gradient(145deg,#fff3a9,#fff 38%,#dff8ff 62%,#ffc1ef);box-shadow:0 7px 18px #9e760633,0 0 0 1px #fff6b7 inset}.pickCard.grade4{border-color:#9f78db;background:linear-gradient(145deg,#eee4ff,#fff 45%,#e4f3ff)}.pickCard.owned{outline:3px solid #4cf08b;outline-offset:-3px}.pickCard.inTeam{box-shadow:0 0 0 3px #55cfff inset,0 7px 18px #1378a433}.arcadeCardTop{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 3px 6px}.arcadeStars{font-size:14px;font-weight:1000;letter-spacing:-1px;color:#ffbd19;text-shadow:0 1px 0 #9f6a00}.arcadeNo{font-size:10px;font-weight:900;color:#45606f;background:#fff9;border:1px solid #cad8df;border-radius:999px;padding:3px 6px}.pickImageFrame{position:relative;border-radius:12px;overflow:hidden;background:#061b2c;padding:3px}.pickImageFrame:before{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #6de7ff77;border-radius:12px;z-index:2}.pickCard img{border-radius:9px;display:block}.energyOrb{position:absolute;right:7px;bottom:7px;min-width:42px;height:42px;padding:0 6px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#d8fbff,#15bde9 47%,#04598d 75%);color:#fff;border:2px solid #bff9ff;box-shadow:0 0 12px #23cfff99;font-weight:1000;font-size:12px;line-height:1}.energyOrb small{font-size:7px;letter-spacing:.04em;margin-bottom:2px}.pickName{font-size:15px;text-align:center;color:#0f2737;text-shadow:0 1px #fff}.pickMeta{text-align:center;min-height:29px}.cardBadges{justify-content:center}.miniBadge.ownedBadge{background:#1cba5b;color:#fff;box-shadow:0 0 8px #36e57b66}.miniBadge.teamBadge{background:#0879c9;color:#fff;box-shadow:0 0 8px #30b9ff66}.quickActions button{border-radius:8px;box-shadow:0 2px 0 #0002}.quickActions .detailQuick{background:#182f40;color:#fff}.quickActions .teamQuick:not(:disabled){background:linear-gradient(180deg,#1c9ee5,#0871b6)}.quickActions .teamQuick.on,.quickActions .teamQuick:disabled.on{background:#125f91;color:#bfeeff;opacity:.78}.quickActions .ownedQuick.on{background:linear-gradient(180deg,#2ecb6f,#178648)}
+.browserSummary{padding:8px 12px;border-radius:12px;background:#0e2e44;color:#dffbff;border:1px solid #316179;letter-spacing:.02em}.emptyBrowser{grid-column:1/-1;background:linear-gradient(180deg,#0a2639,#071b2b);color:#d7f6ff;border-color:#437389;padding:28px;font-weight:800}.pickGrid{margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:13px}.pickCard{position:relative;overflow:hidden;padding:7px;border-radius:17px;border:2px solid #a9beca;background:linear-gradient(145deg,#e8f3f8,#fff 42%,#dbe7ec);box-shadow:0 7px 16px #071b2b26,0 2px 0 #9fafb7;transition:transform .12s ease,box-shadow .12s ease}.pickCard:hover{transform:translateY(-2px);box-shadow:0 10px 22px #071b2b35}.pickCard:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 0 35%,rgba(255,255,255,.58) 44%,transparent 52%);transform:translateX(-120%)}.pickCard:hover:before{animation:cardShine .75s ease}@keyframes cardShine{to{transform:translateX(120%)}}.pickCard.grade5{border-color:#f0c631;background:linear-gradient(145deg,#fff3a9,#fff 38%,#dff8ff 62%,#ffc1ef);box-shadow:0 7px 18px #9e760633,0 0 0 1px #fff6b7 inset}.pickCard.grade4{border-color:#9f78db;background:linear-gradient(145deg,#eee4ff,#fff 45%,#e4f3ff)}.pickCard.owned{outline:3px solid #4cf08b;outline-offset:-3px}.pickCard.inTeam{box-shadow:0 0 0 3px #55cfff inset,0 7px 18px #1378a433}.arcadeCardTop{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 3px 6px}.arcadeStars{font-size:14px;font-weight:1000;letter-spacing:-1px;color:#ffbd19;text-shadow:0 1px 0 #9f6a00}.arcadeNo{font-size:10px;font-weight:900;color:#45606f;background:#fff9;border:1px solid #cad8df;border-radius:999px;padding:3px 6px}.pickImageFrame{position:relative;border-radius:12px;overflow:hidden;background:#061b2c;padding:3px}.pickImageFrame{cursor:pointer}.pickImageFrame:before{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #6de7ff77;border-radius:12px;z-index:2}.pickCard img{border-radius:9px;display:block}.energyOrb{position:absolute;right:7px;bottom:7px;min-width:42px;height:42px;padding:0 6px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#d8fbff,#15bde9 47%,#04598d 75%);color:#fff;border:2px solid #bff9ff;box-shadow:0 0 12px #23cfff99;font-weight:1000;font-size:12px;line-height:1}.energyOrb small{font-size:7px;letter-spacing:.04em;margin-bottom:2px}.pickName{font-size:15px;text-align:center;color:#0f2737;text-shadow:0 1px #fff}.pickMeta{text-align:center;min-height:29px}.cardBadges{justify-content:center}.miniBadge.ownedBadge{background:#1cba5b;color:#fff;box-shadow:0 0 8px #36e57b66}.miniBadge.teamBadge{background:#0879c9;color:#fff;box-shadow:0 0 8px #30b9ff66}.quickActions button{border-radius:8px;box-shadow:0 2px 0 #0002}.quickActions .detailQuick{background:#182f40;color:#fff}.quickActions .teamQuick:not(:disabled){background:linear-gradient(180deg,#1c9ee5,#0871b6)}.quickActions .teamQuick.on,.quickActions .teamQuick:disabled.on{background:#125f91;color:#bfeeff;opacity:.78}.quickActions .ownedQuick.on{background:linear-gradient(180deg,#2ecb6f,#178648)}
 .teamGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.teamCard{display:grid;grid-template-columns:74px 1fr;gap:10px;align-items:center;border:2px solid #8fcce9;border-radius:15px;padding:8px;background:linear-gradient(135deg,#eefaff,#fff 55%,#e9f2ff);box-shadow:0 5px 13px #123b5720}.teamCard img{width:74px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#e8ebee;cursor:pointer}.teamCardMain{min-width:0}.teamSlot{font-size:9px;font-weight:1000;letter-spacing:.14em;color:#0876b5}.teamName{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.teamActions{display:flex;gap:5px;margin-top:7px}.teamActions button{padding:7px 8px;font-size:10px;flex:1}.teamActions .removeTeam{background:linear-gradient(180deg,#dc4b56,#a9202c)}.teamActions .teamDetail{background:#274a63}
 
 /* Ver6.8 state visibility */
@@ -43,7 +43,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 
 
-/* Ver6.15: owned + overall matchup TOP3 */
+/* Ver6.17: owned + overall matchup TOP3 */
 .recommendSection{margin-top:12px;padding-top:10px;border-top:1px solid #d7e1e7}.recommendSection:first-of-type{border-top:0;padding-top:4px}.recommendSubHead{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-bottom:6px}.recommendSubHead b{font-size:13px}.recommendSubHead span{font-size:10px;color:#66717b}
 /* Ver6.13: 100-point matchup score + all-picks default browser */
 .recommendScore{position:absolute;top:7px;right:7px;z-index:2;min-width:52px;text-align:center;padding:5px 7px;border-radius:12px;background:#0c6687;color:#fff;font-size:16px;font-weight:1000;line-height:1;box-shadow:0 2px 8px #0b355044}.recommendScore small{display:block;font-size:8px;font-weight:800;opacity:.9;margin-top:3px}.recommendCard.rank1 .recommendScore{background:#b58000}.recommendScore.reference{background:#9a7013}.pickCard{content-visibility:auto;contain-intrinsic-size:420px 170px}
@@ -65,6 +65,10 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .recommendReasons b{color:#122f42}.recommendCard button{width:100%;margin-top:7px;padding:8px;font-size:11px}
 .recommendEmpty{margin-top:8px;padding:10px;border-radius:10px;background:#eef3f6;color:#63727d;font-size:12px}
 
+
+/* Ver6.17: DB-based pick back/data viewer */
+.pickBackOverlay{position:fixed;inset:0;z-index:70;background:rgba(2,10,18,.88);display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
+.pickBackOverlay.hidden{display:none!important}.pickBackShell{width:min(720px,100%);max-height:94vh;overflow:auto;border-radius:22px;padding:12px;background:linear-gradient(145deg,#071b2b,#0d3950 55%,#071d31);border:2px solid #62dcff;box-shadow:0 0 28px #22cfff55,0 18px 50px #0009;color:#eafaff}.pickBackHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 4px 10px}.pickBackHead button{background:#eafaff;color:#0b2a3d}.pickBackTitle{font-size:12px;letter-spacing:.14em;font-weight:1000;color:#73e7ff}.pickBackCard{position:relative;border-radius:18px;padding:16px;background:linear-gradient(160deg,#0a2437,#0d4560 52%,#081d30);border:1px solid #5fcfeb;box-shadow:inset 0 0 32px #0fcfff18}.pickBackTop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;border-bottom:1px solid #5dc7e755;padding-bottom:12px}.pickBackName{font-size:26px;font-weight:1000;line-height:1.05}.pickBackSub{font-size:12px;color:#a9dbea;margin-top:5px}.pickBackEnergy{min-width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#e9feff,#24c8ee 43%,#075b8d 73%);border:3px solid #c9f9ff;box-shadow:0 0 18px #35dcff88;color:#fff;font-size:22px;font-weight:1000;line-height:1}.pickBackEnergy small{font-size:8px;letter-spacing:.08em;margin-bottom:4px}.pickBackTypes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.pickBackType{padding:5px 10px;border-radius:999px;background:#e9f8ff;color:#07324a;font-size:12px;font-weight:900}.pickBackMove{margin-top:12px;padding:11px;border-radius:13px;background:#061927;border:1px solid #4c9fba}.pickBackMoveLabel{font-size:9px;color:#78cce5;font-weight:900;letter-spacing:.12em}.pickBackMoveName{font-size:19px;font-weight:1000;margin-top:3px}.pickBackMoveMeta{font-size:11px;color:#b7e6f4;margin-top:3px}.pickBackStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.pickBackStat{position:relative;border-radius:12px;padding:9px 7px;text-align:center;background:linear-gradient(180deg,#123f55,#082a3d);border:1px solid #4da7c4}.pickBackStat b{display:block;font-size:22px;line-height:1.05;color:#fff}.pickBackStat span{display:block;font-size:9px;font-weight:900;color:#78d8f2;letter-spacing:.05em;margin-top:4px}.pickBackSpecial{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fff1;border:1px solid #fff3;font-size:12px;line-height:1.55}.pickBackWarning{margin-top:10px;padding:8px 10px;border-radius:10px;background:#ffdb6b20;border:1px solid #ffd76b66;color:#ffe6a0;font-size:11px}.pickBackFooter{margin-top:10px;text-align:center;color:#80bbcd;font-size:10px}.pickBackEditState{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#ffca3a;color:#2c2500;font-size:9px;font-weight:900}.pickBackShell.edited .pickBackCard{border-color:#ffce4d;box-shadow:inset 0 0 32px #ffcb4216,0 0 18px #ffca3a33}@media(max-width:520px){.pickBackName{font-size:22px}.pickBackEnergy{min-width:62px;height:62px;font-size:19px}.pickBackStats{grid-template-columns:repeat(2,1fr)}.pickBackStat b{font-size:20px}}
 @media(max-width:620px){.recommendGrid{grid-template-columns:1fr}.pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pickCard{padding:5px;border-radius:13px}.arcadeStars{font-size:12px}.arcadeNo{font-size:8px;padding:2px 4px}.energyOrb{width:37px;height:37px;min-width:37px;font-size:10px}.pickName{font-size:13px}.pickMeta{font-size:9px}.quickActions button{font-size:10px;padding:7px 3px}.teamGrid{grid-template-columns:1fr}.consoleLamp{min-width:58px;padding:7px 8px}}
 
 
@@ -85,7 +89,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 
 
-/* Ver6.15 main tabs */
+/* Ver6.17 main tabs */
 .mainTabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px 0 10px;margin:0 0 10px;background:linear-gradient(180deg,#f4f6f8 78%,rgba(244,246,248,.88));backdrop-filter:blur(7px)}
 .mainTabBtn{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:8px 6px;border-radius:13px;border:1px solid #cbd6dd;background:#e9eef2;color:#3e4e59;font-weight:1000;box-shadow:0 2px 5px #0000000d}
 .mainTabBtn .tabNo{font-size:16px}.mainTabBtn .tabLabel{font-size:12px;white-space:nowrap}
@@ -105,8 +109,25 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @keyframes championPop{0%{transform:scale(.65) rotate(-3deg);opacity:0}70%{transform:scale(1.08) rotate(1deg);opacity:1}100%{transform:scale(1);opacity:1}}
 @media(max-width:720px){.tournamentBracket{grid-template-columns:1fr}.enemyRandomRow{grid-template-columns:1fr 1fr}.tournamentSetup .setupGrid{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr}.championName{font-size:25px}}
 
+
+/* Ver6.18: compact battle setup + full-screen selectors */
+.cardBadges{min-height:18px}
+.battleSetupCompact{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin:8px 0 12px}
+.battleChoiceCard{border:1px solid #cbd8e0;border-radius:14px;padding:11px;background:linear-gradient(180deg,#f9fcfe,#eef5f8)}
+.battleChoiceHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}.battleChoiceHead b{font-size:14px}.battleChoiceHead span{font-size:9px;font-weight:900;letter-spacing:.1em;color:#7692a1}
+.battleChoiceCard>button{width:100%;margin-top:7px}.battleSelectionStatus.tapTarget.active{cursor:pointer}
+body.battleOverlayOpen{overflow:hidden}
+.battlePickerOverlay{position:fixed;inset:0;z-index:900;background:#f4f6f8;overflow:auto;-webkit-overflow-scrolling:touch}
+.battlePickerShell{max-width:760px;min-height:100%;margin:0 auto;background:#f4f6f8}
+.battlePickerHead{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;background:#102b3d;color:#fff;box-shadow:0 2px 10px #0003}
+.battlePickerHead>div{display:grid;gap:1px}.battlePickerHead small{font-size:9px;letter-spacing:.13em;color:#79dfff;font-weight:900}.battlePickerHead b{font-size:16px}.battlePickerHead button{background:#fff;color:#17394e;padding:8px 10px;white-space:nowrap}
+.battlePickerBody{padding:12px 12px 28px}.pickerHelp{font-size:11px;color:#61727d;margin:0 0 10px}
+.battlePickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.battlePickerList .battlePick{margin:0;min-height:66px}
+#recommendOverlay .recommendWrap{margin-top:0}
+@media(max-width:620px){.battleSetupCompact{grid-template-columns:1fr}.battlePickerList{grid-template-columns:1fr}.battlePickerBody{padding:10px 10px 24px}}
+
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.15</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.18</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -137,11 +158,20 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <section id="tab-battle" class="card mainTabPanel tabHidden"><h2>③ バトル</h2>
 <div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">8体トーナメント</button></div>
 <p id="battleModeDescription" class="note">自分のバトルチームから1体、相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。</p>
-<div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div>
-<div id="singleEnemyPanel"><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"></div><div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div><div class="battleModeHint">能力値が確認できるピックの中から選びます。</div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>相性TOP3を見る</button></div><div id="enemyResults"></div></div>
-<div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
-</div></div>
-<div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>相性ランキング（100点満点）</b><span id="recommendTarget">相手未選択</span></div><div class="recommendSection"><div class="recommendSubHead"><b>所持ピック TOP3</b><span>今持っているピックから選出</span></div><div id="recommendOwnedGrid" class="recommendGrid"></div></div><div class="recommendSection"><div class="recommendSubHead"><b>全ピック TOP3</b><span>能力値確認済み984件・未所持含む</span></div><div id="recommendAllGrid" class="recommendGrid"></div></div></div>
+<div class="battleSetupCompact">
+  <div class="battleChoiceCard">
+    <div class="battleChoiceHead"><b>自分のピック</b><span>MY PICK</span></div>
+    <div id="myBattleSelection" class="battleSelectionStatus tapTarget">未選択</div>
+    <button id="openMyPickBtn" type="button">自分ピックを選ぶ</button>
+  </div>
+  <div id="singleEnemyPanel" class="battleChoiceCard">
+    <div class="battleChoiceHead"><b>対戦相手</b><span>OPPONENT</span></div>
+    <div id="enemyBattleSelection" class="battleSelectionStatus tapTarget">未選択</div>
+    <button id="openEnemyPickBtn" type="button">相手を選ぶ・検索</button>
+    <div class="battleModeHint">相手を選ぶと相性TOP3を自動表示します。選択済みの相手表示をタップすると再表示できます。</div>
+  </div>
+  <div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
+</div>
 <div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px"><div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><div class="vsBadge">VS</div><div class="fighter" id="enemyFighter"></div></div></div><div id="battleMessage" class="battleMessage">READY</div>
 <div class="actions"><button id="turnBtn">1ターン進める</button><button id="autoBtn" class="secondary">最後まで戦う</button><button id="restartBtn" class="ghost">やり直す</button></div>
@@ -153,6 +183,42 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <div class="actions"><button id="backupBtn" type="button">バックアップを書き出す</button><button id="restoreBtn" type="button" class="secondary">バックアップを読み込む</button><input id="restoreFile" class="hidden" type="file" accept="application/json,.json"></div>
 <div id="backupStatus" class="backupStatus"></div>
 </section></main>
+
+
+<section id="myPickOverlay" class="battlePickerOverlay hidden" aria-modal="true" role="dialog" aria-label="自分ピック選択">
+  <div class="battlePickerShell">
+    <div class="battlePickerHead"><div><small>MY PICK SELECT</small><b>自分のピックを選ぶ</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
+    <div class="battlePickerBody"><div class="pickerHelp">②バトルチームに登録したピックから選択します。</div><div id="myBattlePicks" class="battlePickerList"></div></div>
+  </div>
+</section>
+
+<section id="enemyPickOverlay" class="battlePickerOverlay hidden" aria-modal="true" role="dialog" aria-label="対戦相手選択">
+  <div class="battlePickerShell">
+    <div class="battlePickerHead"><div><small>OPPONENT SELECT</small><b>対戦相手を選ぶ</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
+    <div class="battlePickerBody">
+      <div class="search"><input id="enemyQ" placeholder="番号・名前で検索"></div>
+      <div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div>
+      <div class="battleModeHint">能力値が確認できるピックの中から選びます。</div>
+      <div id="enemyResults" class="battlePickerList"></div>
+    </div>
+  </div>
+</section>
+
+<section id="recommendOverlay" class="battlePickerOverlay hidden" aria-modal="true" role="dialog" aria-label="相性ランキング">
+  <div class="battlePickerShell">
+    <div class="battlePickerHead"><div><small>MATCHUP TOP 3</small><b>相性ランキング</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
+    <div class="battlePickerBody">
+      <div id="recommendWrap" class="recommendWrap"><div class="recommendHead"><b>相性ランキング（100点満点）</b><span id="recommendTarget">相手未選択</span></div><div class="recommendSection"><div class="recommendSubHead"><b>所持ピック TOP3</b><span>今持っているピックから選出</span></div><div id="recommendOwnedGrid" class="recommendGrid"></div></div><div class="recommendSection"><div class="recommendSubHead"><b>全ピック TOP3</b><span>能力値確認済み984件・未所持含む</span></div><div id="recommendAllGrid" class="recommendGrid"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="pickBackOverlay" class="pickBackOverlay hidden" aria-modal="true" role="dialog" aria-label="ピック裏面データ">
+  <div id="pickBackShell" class="pickBackShell">
+    <div class="pickBackHead"><div class="pickBackTitle">FRIENDA PICK DATA</div><button id="closePickBack" type="button">× 閉じる</button></div>
+    <div id="pickBackBody"></div>
+  </div>
+</section>
 
 <section id="detailCard" class="detailScreen hidden" aria-modal="true" role="dialog">
 <div class="detailTop"><button id="closeDetail" type="button">← 一覧へ戻る</button><b>ピック詳細・パラメータ編集</b></div>
@@ -228,12 +294,14 @@ function browserRecords(){
  return a
 }
 function toggleOwned(r){
+ const scrollY=window.scrollY;
  let a=getIds(OWNED_KEY);
  if(isOwned(r)){
    a=a.filter(x=>x!==r.master_id);setIds(TEAM_KEY,getIds(TEAM_KEY).filter(x=>x!==r.master_id));
    if(battle.me&&battle.me.master_id===r.master_id){battle.me=null;battle.mhp=0;$("battleArena").classList.add("hidden")}
  }else a.push(r.master_id);
- setIds(OWNED_KEY,a);refreshAfterFlagChange(r);updateBattleSelectionStatus()
+ setIds(OWNED_KEY,a);refreshAfterFlagChange(r);updateBattleSelectionStatus();
+ requestAnimationFrame(()=>window.scrollTo({top:scrollY,left:0,behavior:"auto"}))
 }
 function addTeam(r){
  if(!isOwned(r)||inTeam(r))return;
@@ -247,7 +315,7 @@ function removeTeam(r){
 function toggleTeam(r){addTeam(r)}
 function refreshAfterFlagChange(r){
  renderCollectionOverall();renderSeriesButtons();renderBrowser();renderTeam();renderBattlePicks();
- if(selected&&r&&selected.master_id===r.master_id)render();if(!$("recommendWrap").classList.contains("hidden")&&battle.enemy)renderRecommendations()
+ if(selected&&r&&selected.master_id===r.master_id)render();if(!$("recommendOverlay").classList.contains("hidden")&&battle.enemy)renderRecommendations()
 }
 function renderBrowser(){
  const box=$("pickList"),a=browserRecords(),q=norm($("q").value),ownedOnly=$("ownedOnly").checked;box.innerHTML="";
@@ -262,10 +330,28 @@ function renderBrowser(){
    const m=merged(r),owned=isOwned(r),team=inTeam(r),grade=Number(m.grade)||0,d=document.createElement("div");
    d.className="pickCard grade"+grade+(owned?" owned":"")+(team?" inTeam":"");
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':'<span class="miniBadge unownedBadge">未所持</span>'}${team?'<span class="miniBadge teamBadge">⚔ TEAM</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="teamQuick${team?' on':''}" ${!owned||team?'disabled':''}>${team?'登録済':'チーム追加'}</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
-   d.querySelector(".pickOpen").onclick=()=>select(r);d.querySelector(".detailQuick").onclick=()=>select(r);d.querySelector(".ownedQuick").onclick=()=>toggleOwned(r);d.querySelector(".teamQuick").onclick=()=>addTeam(r);box.appendChild(d)
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${team?'<span class="miniBadge teamBadge">⚔ TEAM</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="teamQuick${team?' on':''}" ${!owned||team?'disabled':''}>${team?'登録済':'チーム追加'}</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
+   d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};d.querySelector(".detailQuick").onclick=()=>select(r);d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();toggleOwned(r)};d.querySelector(".teamQuick").onclick=()=>addTeam(r);box.appendChild(d)
  }
 }
+function dataValue(v){return v===null||v===undefined||v===""?"未確認":v}
+function showPickBack(r){
+ const m=merged(r),ov=overrides(r),edited=Object.keys(ov).length>0;
+ const grade=Number(m.grade)||0,stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
+ const types=[m.type1,m.type2].filter(Boolean).map(t=>`<span class="pickBackType">${esc(t)}</span>`).join("")||'<span class="pickBackType">未確認</span>';
+ const sp=Array.isArray(m.special)?m.special.filter(Boolean).join(" / "):(m.special||"");
+ const speed=(m.speed_value!==null&&m.speed_value!==undefined&&m.speed_value!=="")?`${esc(m.speed_value)} <small>（段階 ${esc(m.speed_level??"-")}）</small>`:`段階 ${esc(m.speed_level??"未確認")}`;
+ const stats=[["HP",m.hp],["ATK",m.atk],["DEF",m.def],["SP.ATK",m.sp_atk],["SP.DEF",m.sp_def],["SPEED",speed]];
+ const missing=[m.hp,m.atk,m.def,m.sp_atk,m.sp_def].some(v=>v===null||v===undefined||v==="");
+ $("pickBackShell").classList.toggle("edited",edited);
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${esc(dataValue(m.move_type))} / ${esc(dataValue(m.move_class))}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。</div></div>`;
+ $("pickBackOverlay").classList.remove("hidden");document.body.style.overflow="hidden"
+}
+function closePickBack(){$("pickBackOverlay").classList.add("hidden");if($("detailCard").classList.contains("hidden"))document.body.style.overflow=""}
+$("closePickBack").onclick=closePickBack;
+$("pickBackOverlay").addEventListener("click",e=>{if(e.target===$("pickBackOverlay"))closePickBack()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("pickBackOverlay").classList.contains("hidden"))closePickBack()});
+
 function updateCounts(){refreshAfterFlagChange(null)}
 
 function select(r){selected=r;editing=false;$("detailCard").classList.remove("hidden");document.body.style.overflow="hidden";render()}
@@ -348,16 +434,41 @@ function dmg(a,d){
 }
 function fighterHTML(r,hp,label){const max=Number(r.hp)||1,p=Math.max(0,Math.round(hp/max*100)),hc=p<=25?" low":p<=50?" mid":"";const types=[r.type1,r.type2].filter(Boolean).map(t=>`<span class="typeBadge">${esc(t)}</span>`).join("");return `<div class="fighterMeta">${label}</div><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="fighterName">${esc(r.name_ja)}</div><div>${types}</div><div class="fighterMeta">${esc(r.pick_no)} / ${esc(r.series)}</div><div class="fighterMeta">技：${esc(skillName(r))} (${esc(r.move_type??"-")})</div><div class="hpbar"><div class="hpfill${hc}" style="width:${p}%"></div></div><b>HP ${Math.max(0,hp)} / ${max}</b>`}
 function blog(x){$("battleLog").insertAdjacentHTML("beforeend",`<div>${x}</div>`);$("battleLog").scrollTop=$("battleLog").scrollHeight}
-function arena(){if(!battle.me||!battle.enemy)return;$("battleArena").classList.remove("hidden");$("myFighter").innerHTML=fighterHTML(battle.me,battle.mhp,"自分");$("enemyFighter").innerHTML=fighterHTML(battle.enemy,battle.ehp,"相手");if(battle.mhp<=0)$("myFighter").classList.add("ko");if(battle.ehp<=0)$("enemyFighter").classList.add("ko")}
+function clearFighterVisual(el){
+ if(!el)return;
+ el.classList.remove("ko","hit","attackRight","attackLeft");
+ el.querySelectorAll(".damageFloat").forEach(x=>x.remove())
+}
+function resetBattleVisuals(){
+ clearFighterVisual($("myFighter"));
+ clearFighterVisual($("enemyFighter"));
+ const stage=$("battleStage");if(stage)stage.classList.remove("specialFlash")
+}
+function arena(){
+ if(!battle.me||!battle.enemy)return;
+ $("battleArena").classList.remove("hidden");
+ const my=$("myFighter"),enemy=$("enemyFighter");
+ clearFighterVisual(my);clearFighterVisual(enemy);
+ my.innerHTML=fighterHTML(battle.me,battle.mhp,"自分");
+ enemy.innerHTML=fighterHTML(battle.enemy,battle.ehp,"相手");
+ if(battle.mhp<=0)my.classList.add("ko");
+ if(battle.ehp<=0)enemy.classList.add("ko")
+}
 function updateBattleSelectionStatus(){
  const my=$("myBattleSelection"),en=$("enemyBattleSelection");
  if(my){my.textContent=battle.me?`選択中：${battle.me.name_ja}（${battle.me.pick_no}）`:"未選択";my.classList.toggle("active",!!battle.me)}
  if(en){en.textContent=battle.enemy?`選択中：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`:"未選択";en.classList.toggle("active",!!battle.enemy)}
 }
-function chooseMe(r){if(battle.busy)return;if(battleMode==="tournament"&&tournament.active){alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();if(battleMode==="single")startIfReady()}
-function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();$("recommendBtn").disabled=false;$("recommendWrap").classList.add("hidden");startIfReady()}
+function closeBattleOverlays(){document.querySelectorAll(".battlePickerOverlay").forEach(x=>x.classList.add("hidden"));document.body.classList.remove("battleOverlayOpen")}
+function showBattleOverlay(id){document.querySelectorAll(".battlePickerOverlay").forEach(x=>x.classList.add("hidden"));const el=$(id);if(!el)return;el.classList.remove("hidden");document.body.classList.add("battleOverlayOpen");el.scrollTop=0}
+function openMyPickOverlay(){renderBattlePicks();showBattleOverlay("myPickOverlay")}
+function openEnemyPickOverlay(){enemySearch();showBattleOverlay("enemyPickOverlay");setTimeout(()=>$("enemyQ")?.focus(),30)}
+function openRecommendOverlay(){if(!battle.enemy)return;renderRecommendations();showBattleOverlay("recommendOverlay")}
+function chooseMe(r){if(battle.busy)return;if(battleMode==="tournament"&&tournament.active){alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
+function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady();renderRecommendations();showBattleOverlay("recommendOverlay")}
 function startIfReady(){
  if(!battle.me||!battle.enemy||battle.busy)return;
+ resetBattleVisuals();
  battle.mhp=Number(battle.me.hp)||1;battle.ehp=Number(battle.enemy.hp)||1;battle.over=false;battle.turn=1;
  $("battleLog").innerHTML="";$("battleWinner").innerHTML="";$("battleMessage").textContent=`${battle.me.name_ja} VS ${battle.enemy.name_ja}`;
  blog(`⚔️ ${esc(battle.me.name_ja)} vs ${esc(battle.enemy.name_ja)}　1対1・交代なし`);
@@ -489,8 +600,7 @@ function allRecommendationRecords(){return recommendationRecords({ownedOnly:fals
 function chooseRecommended(r){
  if(!isOwned(r))return;
  if(!inTeam(r))addTeam(r);
- chooseMe(r);
- document.getElementById("myBattlePicks")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+ chooseMe(r)
 }
 function renderRecommendationCards(grid,rows,{overall=false}={}){
  grid.innerHTML="";
@@ -512,9 +622,9 @@ function renderRecommendationCards(grid,rows,{overall=false}={}){
  })
 }
 function renderRecommendations(){
- const wrap=$("recommendWrap"),ownedGrid=$("recommendOwnedGrid"),allGrid=$("recommendAllGrid"),target=$("recommendTarget"),btn=$("recommendBtn");
- if(!battle.enemy){wrap.classList.add("hidden");btn.disabled=true;return}
- btn.disabled=false;wrap.classList.remove("hidden");target.textContent=`相手：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`;
+ const wrap=$("recommendWrap"),ownedGrid=$("recommendOwnedGrid"),allGrid=$("recommendAllGrid"),target=$("recommendTarget");
+ if(!battle.enemy){target.textContent="相手未選択";ownedGrid.innerHTML="";allGrid.innerHTML="";return}
+ target.textContent=`相手：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`;
  renderRecommendationCards(ownedGrid,ownedRecommendationRecords(),{overall:false});
  renderRecommendationCards(allGrid,allRecommendationRecords(),{overall:true});
 }
@@ -526,7 +636,7 @@ function setBattleMode(mode){
  if(mode===battleMode)return;
  if(tournament.active&&mode==="single"&&!confirm("進行中のトーナメントを中止して1対1バトルへ戻りますか？"))return;
  if(tournament.active&&mode==="single")cancelTournament(false);
- battleMode=mode;$("singleModeBtn").classList.toggle("on",mode==="single");$("tournamentModeBtn").classList.toggle("on",mode==="tournament");$("singleEnemyPanel").classList.toggle("hidden",mode!=="single");$("tournamentSetupPanel").classList.toggle("hidden",mode!=="tournament");$("tournamentWrap").classList.toggle("hidden",mode!=="tournament");$("recommendWrap").classList.add("hidden");
+ battleMode=mode;closeBattleOverlays();$("singleModeBtn").classList.toggle("on",mode==="single");$("tournamentModeBtn").classList.toggle("on",mode==="tournament");$("singleEnemyPanel").classList.toggle("hidden",mode!=="single");$("tournamentSetupPanel").classList.toggle("hidden",mode!=="tournament");$("tournamentWrap").classList.toggle("hidden",mode!=="tournament");
  $("battleModeDescription").textContent=mode==="single"?"自分のバトルチームから1体、相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。":"自分のバトルチームから1体選び、8体トーナメントを戦います。CPU同士は自動判定、各試合HP全回復です。";
  if(mode==="tournament"){$("battleArena").classList.add("hidden");renderTournament();renderTournamentHistory()}else if(battle.me&&battle.enemy)startIfReady();
 }
@@ -593,7 +703,11 @@ function showChampion(champion,result){const ov=$("championOverlay");$("champion
 function closeChampion(){const ov=$("championOverlay");ov.classList.remove("show");ov.setAttribute("aria-hidden","true")}
 
 $("singleModeBtn").onclick=()=>setBattleMode("single");$("tournamentModeBtn").onclick=()=>setBattleMode("tournament");
-$("enemyQ").oninput=enemySearch;$("recommendBtn").onclick=renderRecommendations;$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert("このランクには対戦可能なピックがありません。");return}chooseEnemy(pool[Math.floor(Math.random()*pool.length)])};
+$("openMyPickBtn").onclick=openMyPickOverlay;$("openEnemyPickBtn").onclick=openEnemyPickOverlay;
+$("myBattleSelection").onclick=()=>openMyPickOverlay();$("enemyBattleSelection").onclick=()=>{if(battle.enemy)openRecommendOverlay();else openEnemyPickOverlay()};
+document.querySelectorAll(".battlePickerClose").forEach(b=>b.onclick=closeBattleOverlays);
+document.querySelectorAll(".battlePickerOverlay").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeBattleOverlays()}));
+$("enemyQ").oninput=enemySearch;$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert("このランクには対戦可能なピックがありません。");return}chooseEnemy(pool[Math.floor(Math.random()*pool.length)])};
 $("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
 $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
 
@@ -602,6 +716,7 @@ const MAIN_TAB_KEY="frenda:mainTab:v1";
 const MAIN_TABS=["pick","team","battle","data"];
 function setMainTab(name,fromUser=false){
  if(!MAIN_TABS.includes(name))name="pick";
+ closeBattleOverlays();
  document.querySelectorAll(".mainTabPanel").forEach(p=>p.classList.toggle("tabHidden",p.id!==`tab-${name}`));
  document.querySelectorAll(".mainTabBtn").forEach(b=>{
    const on=b.dataset.mainTab===name;
@@ -618,7 +733,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.15",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.18",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -628,4 +743,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-22 20:46:17 JST / Ver6.15 -->
+<!-- Updated: 2026-09-22 21:15:04 JST / Ver6.18 -->
