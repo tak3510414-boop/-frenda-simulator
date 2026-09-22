@@ -43,6 +43,8 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 
 
+/* Ver6.14: owned + overall matchup TOP3 */
+.recommendSection{margin-top:12px;padding-top:10px;border-top:1px solid #d7e1e7}.recommendSection:first-of-type{border-top:0;padding-top:4px}.recommendSubHead{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-bottom:6px}.recommendSubHead b{font-size:13px}.recommendSubHead span{font-size:10px;color:#66717b}
 /* Ver6.13: 100-point matchup score + all-picks default browser */
 .recommendScore{position:absolute;top:7px;right:7px;z-index:2;min-width:52px;text-align:center;padding:5px 7px;border-radius:12px;background:#0c6687;color:#fff;font-size:16px;font-weight:1000;line-height:1;box-shadow:0 2px 8px #0b355044}.recommendScore small{display:block;font-size:8px;font-weight:800;opacity:.9;margin-top:3px}.recommendCard.rank1 .recommendScore{background:#b58000}.recommendScore.reference{background:#9a7013}.pickCard{content-visibility:auto;contain-intrinsic-size:420px 170px}
 
@@ -94,7 +96,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @media(max-width:720px){.tournamentBracket{grid-template-columns:1fr}.enemyRandomRow{grid-template-columns:1fr 1fr}.tournamentSetup .setupGrid{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr}.championName{font-size:25px}}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.13</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.14</header>
 <main>
 <section class="card pickConsole">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
@@ -120,10 +122,10 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">8体トーナメント</button></div>
 <p id="battleModeDescription" class="note">自分のバトルチームから1体、相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。</p>
 <div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div>
-<div id="singleEnemyPanel"><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"></div><div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div><div class="battleModeHint">能力値が確認できるピックの中から選びます。</div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>所持から相性TOP3</button></div><div id="enemyResults"></div></div>
+<div id="singleEnemyPanel"><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"></div><div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div><div class="battleModeHint">能力値が確認できるピックの中から選びます。</div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>相性TOP3を見る</button></div><div id="enemyResults"></div></div>
 <div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
 </div></div>
-<div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>おすすめ所持ピック TOP3（100点満点）</b><span id="recommendTarget">相手未選択</span></div><div id="recommendGrid" class="recommendGrid"></div></div>
+<div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>相性ランキング（100点満点）</b><span id="recommendTarget">相手未選択</span></div><div class="recommendSection"><div class="recommendSubHead"><b>所持ピック TOP3</b><span>今持っているピックから選出</span></div><div id="recommendOwnedGrid" class="recommendGrid"></div></div><div class="recommendSection"><div class="recommendSubHead"><b>全ピック TOP3</b><span>能力値確認済み984件・未所持含む</span></div><div id="recommendAllGrid" class="recommendGrid"></div></div></div>
 <div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px"><div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><div class="vsBadge">VS</div><div class="fighter" id="enemyFighter"></div></div></div><div id="battleMessage" class="battleMessage">READY</div>
 <div class="actions"><button id="turnBtn">1ターン進める</button><button id="autoBtn" class="secondary">最後まで戦う</button><button id="restartBtn" class="ghost">やり直す</button></div>
@@ -420,12 +422,13 @@ function matchupScoreReference(x){
  const speedPts=clamp((Number(x.c.speed_level)||0)/5*9,0,9);
  return Math.round(clamp(typePts+energyPts+speedPts,0,59));
 }
-function ownedRecommendationRecords(){
+function recommendationRecords({ownedOnly=false,fullOnly=false}={}){
  if(!battle.enemy)return [];
  const enemy=merged(battle.enemy), ownedIds=new Set(getIds(OWNED_KEY)), teamIds=new Set(getIds(TEAM_KEY));
  const fullRows=[],refRows=[];
  for(const base of R){
-   if(!ownedIds.has(base.master_id))continue;
+   const owned=ownedIds.has(base.master_id);
+   if(ownedOnly&&!owned)continue;
    const c=merged(base),outEff=eff(c.move_type,enemy),inEff=eff(enemy.move_type,c);
    const full=[c.hp,enemy.hp,attackStat(c),defenseStat(enemy,c),attackStat(enemy),defenseStat(c,enemy)].every(numOk) && !!c.move_type && !!enemy.move_type;
    const sr=speedRelation(c,enemy);
@@ -441,12 +444,12 @@ function ownedRecommendationRecords(){
      const outcomeRank=outcome==="win"?2:outcome==="draw"?1:0;
      const margin=Number.isFinite(cTime)&&Number.isFinite(eTime)?eTime-cTime:
        outcome==="win"?Number.POSITIVE_INFINITY:outcome==="lose"?Number.NEGATIVE_INFINITY:0;
-     fullRows.push({base,c,full:true,outcome,outcomeRank,cHits,eHits,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd,ed,cTime,eTime,margin,inTeam:teamIds.has(base.master_id)});
-   }else{
+     fullRows.push({base,c,owned,full:true,outcome,outcomeRank,cHits,eHits,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd,ed,cTime,eTime,margin,inTeam:teamIds.has(base.master_id)});
+   }else if(!fullOnly){
      const energy=Number(c.poke_ene)||0,spd=Number(c.speed_value)||Number(c.speed_level)||0;
      const typeAdv=outEff/inEff;
      const fallbackScore=typeAdv*10000+outEff*2000-inEff*1000+energy*2+spd;
-     refRows.push({base,c,full:false,outcome:"unknown",outcomeRank:0,cHits:null,eHits:null,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
+     refRows.push({base,c,owned,full:false,outcome:"unknown",outcomeRank:0,cHits:null,eHits:null,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
    }
  }
  for(const x of fullRows)x.score=matchupScoreFull(x);
@@ -460,23 +463,22 @@ function ownedRecommendationRecords(){
    }else if(a.outcome==="lose"&&b.outcome==="lose"){
      if(a.margin!==b.margin)return b.margin-a.margin;
    }
-   return (b.outEff-a.outEff)||(a.inEff-b.inEff)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0))
+   return (b.outEff-a.outEff)||(a.inEff-b.inEff)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0));
  });
  refRows.sort((a,b)=>(b.score-a.score)||(b.margin-a.margin));
- return fullRows.concat(refRows).slice(0,3)
+ return fullRows.concat(refRows).slice(0,3);
 }
+function ownedRecommendationRecords(){return recommendationRecords({ownedOnly:true,fullOnly:false})}
+function allRecommendationRecords(){return recommendationRecords({ownedOnly:false,fullOnly:true})}
 function chooseRecommended(r){
  if(!isOwned(r))return;
  if(!inTeam(r))addTeam(r);
  chooseMe(r);
  document.getElementById("myBattlePicks")?.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
-function renderRecommendations(){
- const wrap=$("recommendWrap"),grid=$("recommendGrid"),target=$("recommendTarget"),btn=$("recommendBtn");
- if(!battle.enemy){wrap.classList.add("hidden");btn.disabled=true;return}
- btn.disabled=false;wrap.classList.remove("hidden");target.textContent=`相手：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`;
- const rows=ownedRecommendationRecords();grid.innerHTML="";
- if(!rows.length){grid.innerHTML='<div class="recommendEmpty" style="grid-column:1/-1">所持ピックがありません。①で所持登録してください。</div>';return}
+function renderRecommendationCards(grid,rows,{overall=false}={}){
+ grid.innerHTML="";
+ if(!rows.length){grid.innerHTML=`<div class="recommendEmpty" style="grid-column:1/-1">${overall?"評価できるピックがありません。":"所持ピックがありません。①で所持登録してください。"}</div>`;return}
  rows.forEach((x,i)=>{
    const d=document.createElement("div");d.className=`recommendCard rank${i+1}`;
    const verdict=x.full?outcomeLabel(x.outcome):"参考評価";
@@ -487,10 +489,20 @@ function renderRecommendations(){
    const reason=x.full
      ? `<div><b>${order}</b> / ${koOut} / ${koIn}</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
      : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>タイプ相性・ポケエネ中心の評価です。</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ：${esc(x.c.speed_value??x.c.speed_level??"-")}</div>`;
-   d.innerHTML=`<span class="recommendRank">${i+1}位</span><span class="recommendScore${x.full?"":" reference"}">${x.score}<small>${x.full?"相性スコア":"参考スコア"}</small></span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div><button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`;
-   d.querySelector("button").onclick=()=>chooseRecommended(x.base);grid.appendChild(d)
+   const ownLabel=x.owned?'<span class="miniBadge ownedBadge">所持中</span>':'<span class="miniBadge">未所持</span>';
+   const action=x.owned?`<button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`:'<button type="button" disabled>未所持（参考）</button>';
+   d.innerHTML=`<span class="recommendRank">${i+1}位</span><span class="recommendScore${x.full?"":" reference"}">${x.score}<small>${x.full?"相性スコア":"参考スコア"}</small></span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div>${ownLabel}<br><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div>${action}`;
+   const button=d.querySelector("button");if(x.owned)button.onclick=()=>chooseRecommended(x.base);grid.appendChild(d)
  })
 }
+function renderRecommendations(){
+ const wrap=$("recommendWrap"),ownedGrid=$("recommendOwnedGrid"),allGrid=$("recommendAllGrid"),target=$("recommendTarget"),btn=$("recommendBtn");
+ if(!battle.enemy){wrap.classList.add("hidden");btn.disabled=true;return}
+ btn.disabled=false;wrap.classList.remove("hidden");target.textContent=`相手：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`;
+ renderRecommendationCards(ownedGrid,ownedRecommendationRecords(),{overall:false});
+ renderRecommendationCards(allGrid,allRecommendationRecords(),{overall:true});
+}
+
 
 function hasBattleStats(r){return [r.hp,r.atk,r.def,r.sp_atk,r.sp_def].every(numOk)&&!!r.move_type&&!!r.type1}
 function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
@@ -571,7 +583,7 @@ $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.o
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.13",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.14",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -580,4 +592,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 </script></body></html>
-<!-- Updated: 2026-09-22 20:11:00 JST / Ver6.13 -->
+<!-- Updated: 2026-09-22 20:20:30 JST / Ver6.14 -->
