@@ -43,7 +43,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 
 
-/* Ver6.14: owned + overall matchup TOP3 */
+/* Ver6.15: owned + overall matchup TOP3 */
 .recommendSection{margin-top:12px;padding-top:10px;border-top:1px solid #d7e1e7}.recommendSection:first-of-type{border-top:0;padding-top:4px}.recommendSubHead{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-bottom:6px}.recommendSubHead b{font-size:13px}.recommendSubHead span{font-size:10px;color:#66717b}
 /* Ver6.13: 100-point matchup score + all-picks default browser */
 .recommendScore{position:absolute;top:7px;right:7px;z-index:2;min-width:52px;text-align:center;padding:5px 7px;border-radius:12px;background:#0c6687;color:#fff;font-size:16px;font-weight:1000;line-height:1;box-shadow:0 2px 8px #0b355044}.recommendScore small{display:block;font-size:8px;font-weight:800;opacity:.9;margin-top:3px}.recommendCard.rank1 .recommendScore{background:#b58000}.recommendScore.reference{background:#9a7013}.pickCard{content-visibility:auto;contain-intrinsic-size:420px 170px}
@@ -84,6 +84,16 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @media(max-width:620px){.hero{grid-template-columns:100px 1fr}.photo{width:100px}.grid{grid-template-columns:1fr 1fr}.battleSelect{grid-template-columns:1fr}.battleGrid{grid-template-columns:1fr}.vsBadge{width:50px;height:50px;margin:auto}.ownedGrid{grid-template-columns:repeat(2,1fr)}.pickGrid{grid-template-columns:repeat(2,1fr)}.browserToolbar{grid-template-columns:1fr}.seriesGrid{grid-template-columns:repeat(2,1fr)}}
 
 
+
+/* Ver6.15 main tabs */
+.mainTabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px 0 10px;margin:0 0 10px;background:linear-gradient(180deg,#f4f6f8 78%,rgba(244,246,248,.88));backdrop-filter:blur(7px)}
+.mainTabBtn{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:8px 6px;border-radius:13px;border:1px solid #cbd6dd;background:#e9eef2;color:#3e4e59;font-weight:1000;box-shadow:0 2px 5px #0000000d}
+.mainTabBtn .tabNo{font-size:16px}.mainTabBtn .tabLabel{font-size:12px;white-space:nowrap}
+.mainTabBtn.active{background:linear-gradient(180deg,#1878d7,#0757a4);color:#fff;border-color:#064d91;box-shadow:0 0 0 2px #91d7ff inset,0 5px 13px #0a65b538}
+.mainTabBtn:active{transform:translateY(1px)}
+.mainTabPanel.tabHidden{display:none!important}
+@media(max-width:520px){.mainTabs{gap:4px}.mainTabBtn{min-height:43px;padding:7px 3px;gap:3px}.mainTabBtn .tabNo{font-size:14px}.mainTabBtn .tabLabel{font-size:10px}}
+
 /* Ver6.12 tournament / ranked random */
 .battleModeTabs{display:flex;gap:8px;margin:8px 0 12px}.battleModeTabs button{flex:1;padding:10px;border-radius:12px;background:#e8eef2;color:#40515d;border:1px solid #c7d4dc;font-weight:900}.battleModeTabs button.on{background:linear-gradient(180deg,#1976d2,#0757a4);color:#fff;border-color:#064d91;box-shadow:0 0 0 2px #98d7ff inset,0 4px 12px #0a65b533}
 .enemyRandomRow{display:grid;grid-template-columns:minmax(120px,.75fr) minmax(120px,1fr);gap:7px;margin-top:7px}.enemyRandomRow select{min-width:0}.battleModeHint{font-size:11px;color:#60717b;margin-top:6px}
@@ -96,9 +106,15 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @media(max-width:720px){.tournamentBracket{grid-template-columns:1fr}.enemyRandomRow{grid-template-columns:1fr 1fr}.tournamentSetup .setupGrid{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr}.championName{font-size:25px}}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.14</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.15</header>
 <main>
-<section class="card pickConsole">
+<nav class="mainTabs" aria-label="メインメニュー">
+  <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
+  <button class="mainTabBtn" type="button" data-main-tab="team" aria-selected="false"><span class="tabNo">②</span><span class="tabLabel">チーム</span></button>
+  <button class="mainTabBtn" type="button" data-main-tab="battle" aria-selected="false"><span class="tabNo">③</span><span class="tabLabel">バトル</span></button>
+  <button class="mainTabBtn" type="button" data-main-tab="data" aria-selected="false"><span class="tabNo">④</span><span class="tabLabel">データ</span></button>
+</nav>
+<section id="tab-pick" class="card pickConsole mainTabPanel">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
 <div id="collectionOverall" class="collectionOverall"></div>
 <div class="browserToolbar">
@@ -117,8 +133,8 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <p class="note">検索中は全弾を対象に検索します。①では所持登録とチーム追加ができます。チームからの除外は②「バトルチーム」で行います。「詳細・編集」でパラメータ確認・変更画面を開きます。</p>
 </section>
 
-<section class="card teamConsole"><div class="consoleHeader compact"><div><span class="consoleKicker">BATTLE TEAM</span><h2>② バトルチーム</h2></div><div class="consoleLamp teamLamp">TEAM</div></div><div id="teamList" class="teamGrid"></div><p class="note">チームから外す操作はここで行います。ピック画像または「詳細」を押すとパラメータ画面を開きます。</p></section>
-<section class="card"><h2>③ バトル</h2>
+<section id="tab-team" class="card teamConsole mainTabPanel tabHidden"><div class="consoleHeader compact"><div><span class="consoleKicker">BATTLE TEAM</span><h2>② バトルチーム</h2></div><div class="consoleLamp teamLamp">TEAM</div></div><div id="teamList" class="teamGrid"></div><p class="note">チームから外す操作はここで行います。ピック画像または「詳細」を押すとパラメータ画面を開きます。</p></section>
+<section id="tab-battle" class="card mainTabPanel tabHidden"><h2>③ バトル</h2>
 <div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">8体トーナメント</button></div>
 <p id="battleModeDescription" class="note">自分のバトルチームから1体、相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。</p>
 <div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div>
@@ -132,7 +148,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <div id="battleWinner"></div><div id="battleLog" class="log"></div></div>
 </section>
 <div id="championOverlay" class="championOverlay" aria-hidden="true"><div class="championCard"><div class="championCrown">👑</div><div class="championLabel">CHAMPION</div><img id="championPick" class="championPick" alt="優勝ピック"><div id="championName" class="championName"></div><div id="championCup"></div><button id="closeChampionBtn" type="button">大会表へ戻る</button></div></div>
-<section class="card"><h2>④ バックアップ／復元</h2>
+<section id="tab-data" class="card mainTabPanel tabHidden"><h2>④ バックアップ／復元</h2>
 <p class="note">所持ピック、バトルチーム、ユーザー修正値、登録した写真を1つのJSONファイルに保存できます。端末変更やブラウザデータ消去前のバックアップに利用してください。</p>
 <div class="actions"><button id="backupBtn" type="button">バックアップを書き出す</button><button id="restoreBtn" type="button" class="secondary">バックアップを読み込む</button><input id="restoreFile" class="hidden" type="file" accept="application/json,.json"></div>
 <div id="backupStatus" class="backupStatus"></div>
@@ -581,9 +597,28 @@ $("enemyQ").oninput=enemySearch;$("recommendBtn").onclick=renderRecommendations;
 $("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
 $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
 
+
+const MAIN_TAB_KEY="frenda:mainTab:v1";
+const MAIN_TABS=["pick","team","battle","data"];
+function setMainTab(name,fromUser=false){
+ if(!MAIN_TABS.includes(name))name="pick";
+ document.querySelectorAll(".mainTabPanel").forEach(p=>p.classList.toggle("tabHidden",p.id!==`tab-${name}`));
+ document.querySelectorAll(".mainTabBtn").forEach(b=>{
+   const on=b.dataset.mainTab===name;
+   b.classList.toggle("active",on);
+   b.setAttribute("aria-selected",on?"true":"false");
+ });
+ localStorage.setItem(MAIN_TAB_KEY,name);
+ if(name==="team"){renderTeam();renderBattlePicks()}
+ if(name==="battle"){renderBattlePicks();updateBattleSelectionStatus();renderTournament();renderTournamentHistory()}
+ if(name==="pick"){renderCollectionOverall();renderSeriesButtons();renderBrowser()}
+ if(fromUser)document.querySelector(".mainTabs")?.scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.dataset.mainTab,true));
+
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.14",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.15",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -591,5 +626,6 @@ $("restoreBtn").onclick=()=>$("restoreFile").click();
 $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!confirm("現在の所持・チーム・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)localStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")localStorage.setItem(k,v);$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderTeam();renderSeriesButtons();renderBrowser()}catch(err){alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
 
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
+setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-22 20:20:30 JST / Ver6.14 -->
+<!-- Updated: 2026-09-22 20:46:17 JST / Ver6.15 -->
