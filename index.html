@@ -42,7 +42,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .battleSelectionStatus.active{background:#dff8ff;color:#075c79;border-color:#5dd8f2;box-shadow:0 0 10px #4bd6f233}
 
 
-/* Ver6.11: matchup recommendation audit; immunity, KO timing, and ranking fixes */
+/* Ver6.12: matchup recommendation audit; immunity, KO timing, and ranking fixes */
 .recommendWrap{margin-top:10px;border:1px solid #cbd8e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}
 .recommendHead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .recommendHead b{font-size:14px}.recommendHead span{font-size:11px;color:#61707a}
@@ -78,7 +78,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @media(max-width:620px){.hero{grid-template-columns:100px 1fr}.photo{width:100px}.grid{grid-template-columns:1fr 1fr}.battleSelect{grid-template-columns:1fr}.battleGrid{grid-template-columns:1fr}.vsBadge{width:50px;height:50px;margin:auto}.ownedGrid{grid-template-columns:repeat(2,1fr)}.pickGrid{grid-template-columns:repeat(2,1fr)}.browserToolbar{grid-template-columns:1fr}.seriesGrid{grid-template-columns:repeat(2,1fr)}}
 
 
-/* Ver6.11 tournament / ranked random */
+/* Ver6.12 tournament / ranked random */
 .battleModeTabs{display:flex;gap:8px;margin:8px 0 12px}.battleModeTabs button{flex:1;padding:10px;border-radius:12px;background:#e8eef2;color:#40515d;border:1px solid #c7d4dc;font-weight:900}.battleModeTabs button.on{background:linear-gradient(180deg,#1976d2,#0757a4);color:#fff;border-color:#064d91;box-shadow:0 0 0 2px #98d7ff inset,0 4px 12px #0a65b533}
 .enemyRandomRow{display:grid;grid-template-columns:minmax(120px,.75fr) minmax(120px,1fr);gap:7px;margin-top:7px}.enemyRandomRow select{min-width:0}.battleModeHint{font-size:11px;color:#60717b;margin-top:6px}
 .tournamentSetup{border:1px solid #c8d7e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}.tournamentSetup h3{margin:0 0 8px;font-size:15px}.tournamentSetup .setupGrid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.tournamentSetup select{width:100%}
@@ -90,7 +90,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 @media(max-width:720px){.tournamentBracket{grid-template-columns:1fr}.enemyRandomRow{grid-template-columns:1fr 1fr}.tournamentSetup .setupGrid{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr}.championName{font-size:25px}}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.11</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.12</header>
 <main>
 <section class="card pickConsole">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
@@ -304,7 +304,17 @@ let battle={me:null,enemy:null,mhp:0,ehp:0,over:false,turn:1,busy:false};
 let battleMode="single";
 const TOURNAMENT_HISTORY_KEY="frenda:tournamentHistory:v1";
 let tournament={active:false,cup:"all",rounds:[],currentRound:0,pending:null,playerId:null,playerExit:null,completed:false,historySaved:false};
-function eff(move,def){let e=1;for(const t of [def.type1,def.type2])if(t)e*=TYPE[move]?.[t]??1;return e}
+const FRIENDA_STEP=1.3;
+const FRIENDA_EFFECT={VERY_LOW:1/(FRIENDA_STEP*FRIENDA_STEP),LOW:1/FRIENDA_STEP,NORMAL:1,HIGH:FRIENDA_STEP,VERY_HIGH:FRIENDA_STEP*FRIENDA_STEP};
+function rawEff(move,def){let e=1;for(const t of [def.type1,def.type2])if(t)e*=TYPE[move]?.[t]??1;return e}
+function eff(move,def){
+ const raw=rawEff(move,def);
+ if(raw>=4)return FRIENDA_EFFECT.VERY_HIGH;
+ if(raw>=2)return FRIENDA_EFFECT.HIGH;
+ if(raw>=1)return FRIENDA_EFFECT.NORMAL;
+ if(raw>=.5)return FRIENDA_EFFECT.LOW;
+ return FRIENDA_EFFECT.VERY_LOW;
+}
 function speedLevel(r){return Number(r.speed_level??0)}
 function compareSpeed(a,b){
  const av=Number(a.speed_value),bv=Number(b.speed_value);
@@ -314,7 +324,6 @@ function compareSpeed(a,b){
 function skillName(r){return (r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():(r.move||"技名未登録")}
 function dmg(a,d){
  const special=String(a.move_class||"").includes("特殊"),atk=Number(special?a.sp_atk:a.atk)||1,df=Number(special?d.sp_def:d.def)||1,e=eff(a.move_type,d),stab=(a.move_type===a.type1||a.move_type===a.type2)?1.2:1;
- if(e===0)return {n:0,e};
  return {n:Math.max(1,Math.round((18+atk*.38)*(100/(100+df))*stab*e)),e}
 }
 function fighterHTML(r,hp,label){const max=Number(r.hp)||1,p=Math.max(0,Math.round(hp/max*100)),hc=p<=25?" low":p<=50?" mid":"";const types=[r.type1,r.type2].filter(Boolean).map(t=>`<span class="typeBadge">${esc(t)}</span>`).join("");return `<div class="fighterMeta">${label}</div><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="fighterName">${esc(r.name_ja)}</div><div>${types}</div><div class="fighterMeta">${esc(r.pick_no)} / ${esc(r.series)}</div><div class="fighterMeta">技：${esc(skillName(r))} (${esc(r.move_type??"-")})</div><div class="hpbar"><div class="hpfill${hc}" style="width:${p}%"></div></div><b>HP ${Math.max(0,hp)} / ${max}</b>`}
@@ -334,22 +343,18 @@ function startIfReady(){
  blog(`⚔️ ${esc(battle.me.name_ja)} vs ${esc(battle.enemy.name_ja)}　1対1・交代なし`);
  blog(`開始HP：${esc(battle.me.name_ja)} ${battle.mhp} / ${esc(battle.enemy.name_ja)} ${battle.ehp}`);
  arena();
- if(eff(battle.me.move_type,battle.enemy)===0&&eff(battle.enemy.move_type,battle.me)===0){
-   battle.over=true;$("battleMessage").textContent="双方の技が無効のため決着不能";
-   $("battleWinner").innerHTML='<div class="winner">🤝 DRAW - 決着不能</div>';
-   blog("🤝 双方の技が無効のため、この組み合わせは決着不能です。")
- }
+
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function attack(a,d,target){
  const x=dmg(a,d),attacker=target==="enemy"?$("myFighter"):$("enemyFighter"),defender=target==="enemy"?$("enemyFighter"):$("myFighter");
- const sp=a.finisher_move&&String(a.finisher_move).trim(),name=skillName(a),t=x.e===0?"効果がないようだ…":x.e>1?"効果ばつぐん！":x.e<1?"効果はいまひとつ":"";
+ const sp=a.finisher_move&&String(a.finisher_move).trim(),name=skillName(a),t=x.e<=FRIENDA_EFFECT.VERY_LOW+.0001?"ほとんどこうかがない…":x.e>1?"効果ばつぐん！":x.e<1?"効果はいまひとつ":"";
  $("battleMessage").textContent=`${a.name_ja}の${sp?"必殺技 ":""}${name}！`;
  if(sp){$("battleStage").classList.remove("specialFlash");void $("battleStage").offsetWidth;$("battleStage").classList.add("specialFlash")}
  attacker.classList.add(target==="enemy"?"attackRight":"attackLeft");await wait(220);attacker.classList.remove("attackRight","attackLeft");
- defender.classList.add("hit");const pop=document.createElement("div");pop.className=`damageFloat${x.e===0?" immune":x.e>1?" good":x.e<1?" weak":""}`;pop.textContent=x.e===0?"無効":`-${x.n}`;defender.appendChild(pop);await wait(430);
+ defender.classList.add("hit");const pop=document.createElement("div");pop.className=`damageFloat${x.e<=FRIENDA_EFFECT.VERY_LOW+.0001?" immune":x.e>1?" good":x.e<1?" weak":""}`;pop.textContent=`-${x.n}`;defender.appendChild(pop);await wait(430);
  if(target==="enemy")battle.ehp=Math.max(0,battle.ehp-x.n);else battle.mhp=Math.max(0,battle.mhp-x.n);
- $("battleMessage").textContent=x.e===0?`0ダメージ！ ${t}`:`${x.n}ダメージ！ ${t}`;
+ $("battleMessage").textContent=`${x.n}ダメージ！ ${t}`;
  blog(`${esc(a.name_ja)}の${sp?"必殺技「"+esc(name)+"」":"「"+esc(name)+"」"}！ ${x.n}ダメージ。${t}`);
  arena();await wait(260)
 }
@@ -374,13 +379,13 @@ function numOk(v){return v!==null&&v!==undefined&&v!==""&&Number.isFinite(Number
 function attackStat(r){return String(r.move_class||"").includes("特殊")?r.sp_atk:r.atk}
 function defenseStat(defender,attacker){return String(attacker.move_class||"").includes("特殊")?defender.sp_def:defender.def}
 function effectText(v){
- if(v===0)return "×0 無効";
- if(v===.25)return "×0.25 かなりいまひとつ";
- if(v===.5)return "×0.5 いまひとつ";
- if(v===1)return "×1 等倍";
- if(v===2)return "×2 こうかばつぐん";
- if(v===4)return "×4 こうかばつぐん";
- return `×${v}`;
+ const near=(a,b)=>Math.abs(a-b)<.002;
+ if(near(v,FRIENDA_EFFECT.VERY_LOW))return `×${FRIENDA_EFFECT.VERY_LOW.toFixed(3)} ほとんどこうかがない`;
+ if(near(v,FRIENDA_EFFECT.LOW))return `×${FRIENDA_EFFECT.LOW.toFixed(3)} いまひとつ`;
+ if(near(v,FRIENDA_EFFECT.NORMAL))return "×1.000 通常";
+ if(near(v,FRIENDA_EFFECT.HIGH))return "×1.300 ばつぐん";
+ if(near(v,FRIENDA_EFFECT.VERY_HIGH))return "×1.690 4倍弱点相当";
+ return `×${Number(v).toFixed(3)}`;
 }
 function hitsToKO(hp,damage){return damage<=0?Infinity:Math.max(1,Math.ceil(Number(hp)/damage))}
 function actionTimeToKO(hits,goesFirst){
@@ -415,13 +420,10 @@ function ownedRecommendationRecords(){
        outcome==="win"?Number.POSITIVE_INFINITY:outcome==="lose"?Number.NEGATIVE_INFINITY:0;
      fullRows.push({base,c,full:true,outcome,outcomeRank,cHits,eHits,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd,ed,cTime,eTime,margin,inTeam:teamIds.has(base.master_id)});
    }else{
-     let typeOutcome="unknown",typeRank=0;
-     if(outEff===0&&inEff===0){typeOutcome="draw";typeRank=1}
-     else if(outEff===0){typeOutcome="lose";typeRank=0}
-     else if(inEff===0){typeOutcome="win";typeRank=2}
      const energy=Number(c.poke_ene)||0,spd=Number(c.speed_value)||Number(c.speed_level)||0;
-     const fallbackScore=typeRank*1e7+outEff*10000-inEff*6000+energy*2+spd;
-     refRows.push({base,c,full:false,outcome:typeOutcome,outcomeRank:typeRank,cHits:null,eHits:null,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
+     const typeAdv=outEff/inEff;
+     const fallbackScore=typeAdv*10000+outEff*2000-inEff*1000+energy*2+spd;
+     refRows.push({base,c,full:false,outcome:"unknown",outcomeRank:0,cHits:null,eHits:null,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
    }
  }
  fullRows.sort((a,b)=>{
@@ -454,11 +456,11 @@ function renderRecommendations(){
    const verdict=x.full?outcomeLabel(x.outcome):"参考評価";
    const verdictClass=x.full?(x.outcome==="lose"?" lose":x.outcome==="draw"?" draw":""):" ref";
    const order=x.speedTie?"同速（自分先攻扱い）":(x.cFirst?"先攻":"後攻");
-   const koOut=Number.isFinite(x.cHits)?`相手を${x.cHits}回でKO見込み`:"相手にダメージを与えられない";
-   const koIn=Number.isFinite(x.eHits)?`自分は${x.eHits}回でKOされる見込み`:"相手の技は無効";
+   const koOut=Number.isFinite(x.cHits)?`相手を${x.cHits}回でKO見込み`:"KO回数を算出できない";
+   const koIn=Number.isFinite(x.eHits)?`自分は${x.eHits}回でKOされる見込み`:"被KO回数を算出できない";
    const reason=x.full
      ? `<div><b>${order}</b> / ${koOut} / ${koIn}</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
-     : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>${x.outEff===0?"この技では相手にダメージを与えられません。":x.inEff===0?"相手の技はタイプ上無効です。":"タイプ相性・ポケエネ中心の評価です。"}</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ：${esc(x.c.speed_value??x.c.speed_level??"-")}</div>`;
+     : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>タイプ相性・ポケエネ中心の評価です。</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ：${esc(x.c.speed_value??x.c.speed_level??"-")}</div>`;
    d.innerHTML=`<span class="recommendRank">${i+1}位</span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div><button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`;
    d.querySelector("button").onclick=()=>chooseRecommended(x.base);grid.appendChild(d)
  })
@@ -505,7 +507,6 @@ function processTournamentRound(roundIdx){
 function startTournamentPlayerMatch(roundIdx,matchIdx){
  const m=tournament.rounds[roundIdx][matchIdx],player=m.a.master_id===tournament.playerId?m.a:m.b,enemy=m.a.master_id===tournament.playerId?m.b:m.a;m.live=true;tournament.pending={roundIdx,matchIdx};battle.me=merged(player);battle.enemy=merged(enemy);updateBattleSelectionStatus();renderBattlePicks();renderTournament();
  const note=$("tournamentBattleNote");note.classList.remove("hidden");note.textContent=`${["準々決勝","準決勝","決勝"][roundIdx]}：${player.name_ja} VS ${enemy.name_ja}。下のバトル画面で戦ってください。`;
- if(eff(battle.me.move_type,battle.enemy)===0&&eff(battle.enemy.move_type,battle.me)===0){const j=tournamentJudge(player,enemy);m.winner=j.winner;m.method="双方無効・"+j.method;m.live=false;tournament.pending=null;renderTournament();setTimeout(()=>afterTournamentMatch(roundIdx,j.winner),350);return}
  startIfReady();$("battleArena").scrollIntoView({behavior:"smooth",block:"start"})
 }
 function completeTournamentPlayerMatch(winnerRec){
@@ -544,7 +545,7 @@ $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.o
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.11",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.12",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -553,4 +554,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 </script></body></html>
-<!-- Updated: 2026-09-22 19:31:00 JST / Ver6.11 -->
+<!-- Updated: 2026-09-22 19:49:00 JST / Ver6.12 -->
