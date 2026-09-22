@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.22 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.23 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.22</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.23</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -67,7 +67,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 
 /* Ver6.17: DB-based pick back/data viewer */
-.pickBackOverlay{position:fixed;inset:0;z-index:70;background:rgba(2,10,18,.88);display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
+.pickBackOverlay{position:fixed;inset:0;z-index:950;background:rgba(2,10,18,.88);display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
 .pickBackOverlay.hidden{display:none!important}.pickBackShell{width:min(720px,100%);max-height:94vh;overflow:auto;border-radius:22px;padding:12px;background:linear-gradient(145deg,#071b2b,#0d3950 55%,#071d31);border:2px solid #62dcff;box-shadow:0 0 28px #22cfff55,0 18px 50px #0009;color:#eafaff}.pickBackHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 4px 10px}.pickBackHead button{background:#eafaff;color:#0b2a3d}.pickBackTitle{font-size:12px;letter-spacing:.14em;font-weight:1000;color:#73e7ff}.pickBackCard{position:relative;border-radius:18px;padding:16px;background:linear-gradient(160deg,#0a2437,#0d4560 52%,#081d30);border:1px solid #5fcfeb;box-shadow:inset 0 0 32px #0fcfff18}.pickBackTop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;border-bottom:1px solid #5dc7e755;padding-bottom:12px}.pickBackName{font-size:26px;font-weight:1000;line-height:1.05}.pickBackSub{font-size:12px;color:#a9dbea;margin-top:5px}.pickBackEnergy{min-width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#e9feff,#24c8ee 43%,#075b8d 73%);border:3px solid #c9f9ff;box-shadow:0 0 18px #35dcff88;color:#fff;font-size:22px;font-weight:1000;line-height:1}.pickBackEnergy small{font-size:8px;letter-spacing:.08em;margin-bottom:4px}.pickBackTypes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.pickBackType{padding:5px 10px;border-radius:999px;background:#e9f8ff;color:#07324a;font-size:12px;font-weight:900}.pickBackMove{margin-top:12px;padding:11px;border-radius:13px;background:#061927;border:1px solid #4c9fba}.pickBackMoveLabel{font-size:9px;color:#78cce5;font-weight:900;letter-spacing:.12em}.pickBackMoveName{font-size:19px;font-weight:1000;margin-top:3px}.pickBackMoveMeta{font-size:11px;color:#b7e6f4;margin-top:3px}.pickBackStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.pickBackStat{position:relative;border-radius:12px;padding:9px 7px;text-align:center;background:linear-gradient(180deg,#123f55,#082a3d);border:1px solid #4da7c4}.pickBackStat b{display:block;font-size:22px;line-height:1.05;color:#fff}.pickBackStat span{display:block;font-size:9px;font-weight:900;color:#78d8f2;letter-spacing:.05em;margin-top:4px}.pickBackSpecial{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fff1;border:1px solid #fff3;font-size:12px;line-height:1.55}.pickBackWarning{margin-top:10px;padding:8px 10px;border-radius:10px;background:#ffdb6b20;border:1px solid #ffd76b66;color:#ffe6a0;font-size:11px}.pickBackFooter{margin-top:10px;text-align:center;color:#80bbcd;font-size:10px}.pickBackEditState{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#ffca3a;color:#2c2500;font-size:9px;font-weight:900}.pickBackShell.edited .pickBackCard{border-color:#ffce4d;box-shadow:inset 0 0 32px #ffcb4216,0 0 18px #ffca3a33}@media(max-width:520px){.pickBackName{font-size:22px}.pickBackEnergy{min-width:62px;height:62px;font-size:19px}.pickBackStats{grid-template-columns:repeat(2,1fr)}.pickBackStat b{font-size:20px}}
 @media(max-width:620px){.recommendGrid{grid-template-columns:1fr}.pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pickCard{padding:5px;border-radius:13px}.arcadeStars{font-size:12px}.arcadeNo{font-size:8px;padding:2px 4px}.energyOrb{width:37px;height:37px;min-width:37px;font-size:10px}.pickName{font-size:13px}.pickMeta{font-size:9px}.quickActions button{font-size:10px;padding:7px 3px}.teamGrid{grid-template-columns:1fr}.consoleLamp{min-width:58px;padding:7px 8px}}
 
@@ -145,10 +145,16 @@ body.battleOverlayOpen{overflow:hidden}
 .roundRobinTable th:nth-child(2),.roundRobinTable td:nth-child(2){text-align:left}
 .roundRobinTable tr.top1 td{background:#fff7cf}.roundRobinTable tr.top2 td{background:#f5f7f8}.roundRobinTable tr.top3 td{background:#fff0df}
 .roundRobinRank{font-weight:1000}.roundRobinName{font-weight:900}.roundRobinMuted{color:#73818a}
-@media(max-width:620px){.roundRobinControls{grid-template-columns:1fr}.roundRobinControls button{width:100%}.roundRobinTableWrap{max-height:68vh}}
+
+.roundRobinTable tbody tr{cursor:pointer}.roundRobinTable tbody tr:hover td{background:#eef8fd}.roundRobinTable tbody tr.top1:hover td{background:#fff2ad}.roundRobinTable tbody tr.top2:hover td{background:#eaf0f4}.roundRobinTable tbody tr.top3:hover td{background:#ffe2c4}
+.rrAnalysisHero{display:grid;grid-template-columns:112px 1fr;gap:12px;align-items:start;padding:12px;border-radius:16px;background:linear-gradient(145deg,#0b2d43,#124e69);color:#fff;border:1px solid #55cce9;box-shadow:0 6px 20px #0b2f4422}.rrAnalysisHero img{width:112px;aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#e8eef2}.rrAnalysisName{font-size:24px;font-weight:1000;line-height:1.08}.rrAnalysisMeta{font-size:11px;color:#b8e8f5;line-height:1.55;margin-top:5px}.rrAnalysisActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.rrAnalysisActions button{padding:8px 10px}.rrAnalysisActions .ghost{background:#eaf8fc;color:#123c50}.rrOwnedMark{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#dff4e5;color:#246d3a;font-size:10px;font-weight:1000;vertical-align:2px}
+.rrSummaryGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.rrSummaryCard{padding:9px;border-radius:12px;background:#fff;border:1px solid #d6e1e7;text-align:center}.rrSummaryCard b{display:block;font-size:21px;color:#13384c}.rrSummaryCard span{display:block;font-size:9px;font-weight:900;color:#71818b;margin-top:3px;letter-spacing:.03em}.rrAnalysisSection{margin-top:13px;padding:11px;border-radius:15px;background:#fff;border:1px solid #d5e0e6}.rrAnalysisSection h3{margin:0 0 4px;font-size:15px}.rrSectionNote{font-size:10px;color:#72818a;margin-bottom:8px}.rrMatchList{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rrMatchCard{display:grid;grid-template-columns:58px 1fr;gap:8px;padding:8px;border:1px solid #dbe4e9;border-radius:12px;background:#f9fbfc;align-items:center}.rrMatchCard img{width:58px;aspect-ratio:2/3;object-fit:cover;border-radius:8px;background:#e8eef2;cursor:pointer}.rrMatchName{font-size:13px;font-weight:1000}.rrMatchMeta{font-size:10px;color:#6b7a83;line-height:1.45}.rrMatchScore{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:999px;background:#e8f5fb;color:#0e6688;font-size:10px;font-weight:1000}.rrMatchResult{display:inline-block;margin-left:4px;font-size:10px;font-weight:1000}.rrMatchResult.win{color:#208044}.rrMatchResult.lose{color:#a83b34}.rrMatchResult.draw{color:#7a681b}.rrMatchBackBtn{margin-top:5px;padding:5px 7px!important;font-size:10px!important;background:#edf3f6!important;color:#264656!important}
+.rrTypeTableWrap{overflow:auto;border:1px solid #d7e1e6;border-radius:11px}.rrTypeTable{width:100%;border-collapse:collapse;min-width:560px;font-size:10px}.rrTypeTable th,.rrTypeTable td{padding:7px 8px;border-bottom:1px solid #e7ecef;text-align:right;white-space:nowrap}.rrTypeTable th{background:#173c50;color:#fff}.rrTypeTable th:first-child,.rrTypeTable td:first-child{text-align:left;font-weight:900}.rrTypeGood{color:#1f7d42;font-weight:900}.rrTypeBad{color:#a63b36;font-weight:900}.rrAnalysisEmpty{padding:18px;text-align:center;color:#6f7e87}
+@media(max-width:620px){.roundRobinControls{grid-template-columns:1fr}.roundRobinControls button{width:100%}.roundRobinTableWrap{max-height:68vh}.rrAnalysisHero{grid-template-columns:88px 1fr}.rrAnalysisHero img{width:88px}.rrAnalysisName{font-size:20px}.rrSummaryGrid{grid-template-columns:repeat(2,1fr)}.rrMatchList{grid-template-columns:1fr}}
+
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.22</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.23</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -196,7 +202,7 @@ body.battleOverlayOpen{overflow:hidden}
   <div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
 </div>
 <div id="roundRobinPanel" class="roundRobinInline hidden">
-  <h3>📊 総当たりシミュレーション</h3>
+  <h3>📊 総当たりシミュレーション</h3><div class="roundRobinPoolNote">ランキングの行をタップすると、得意・苦手TOP5とタイプ別成績を分析できます。</div>
   <div class="roundRobinControls">
     <label><input id="roundRobinOwnedOnly" type="checkbox" checked>所持ピックのみ</label>
     <div class="roundRobinActionBtns"><button id="runRoundRobinBtn" type="button">結果を表示</button><button id="recalcRoundRobinBtn" type="button" class="ghost">再計算</button></div>
@@ -254,6 +260,13 @@ body.battleOverlayOpen{overflow:hidden}
 </section>
 
 
+
+<section id="roundRobinAnalysisOverlay" class="battlePickerOverlay hidden" aria-modal="true" role="dialog" aria-label="総当たりピック分析">
+  <div class="battlePickerShell">
+    <div class="battlePickerHead"><div><small>ROUND ROBIN ANALYSIS</small><b>ピック対戦分析</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
+    <div class="battlePickerBody"><div id="roundRobinAnalysisBody"></div></div>
+  </div>
+</section>
 
 <section id="pickBackOverlay" class="pickBackOverlay hidden" aria-modal="true" role="dialog" aria-label="ピック裏面データ">
   <div id="pickBackShell" class="pickBackShell">
@@ -822,11 +835,76 @@ function openRoundRobinMode(){
  setBattleMode("roundrobin");
  roundRobinPoolInfo();
 }
+let currentRoundRobinRows=[];
+let currentRoundRobinMeta=null;
+function roundRobinMatchDetail(A,B){
+ const cmp=compareSpeed(A,B),cFirst=cmp>=0,speedTie=cmp===0,cd=dmg(A,B).n,ed=dmg(B,A).n;
+ const cHits=hitsToKO(B.hp,cd),eHits=hitsToKO(A.hp,ed);
+ const cTime=actionTimeToKO(cHits,cFirst),eTime=actionTimeToKO(eHits,!cFirst);
+ let result=0;
+ if(cmp>0)result=cTime<eTime?1:-1;
+ else if(cmp<0)result=cTime<eTime?1:-1;
+ else if(cHits<eHits)result=1;
+ else if(eHits<cHits)result=-1;
+ const outcome=result>0?"win":result<0?"lose":"draw";
+ const outEff=eff(A.move_type,B),inEff=eff(B.move_type,A);
+ const score=matchupScoreFull({outcome,cHits,eHits,cFirst,speedTie,outEff,inEff});
+ return {result,outcome,score,cd,ed,cHits,eHits,cTime,eTime,cFirst,speedTie,outEff,inEff}
+}
+function rrResultLabel(outcome){return outcome==="win"?"勝ち":outcome==="lose"?"負け":"引き分け"}
+function rrHitsLabel(v){return Number.isFinite(v)?`${v}手`:"∞"}
+function buildRoundRobinAnalysis(base,meta,row,rank){
+ const A=merged(base),matches=[];
+ const typeMap=new Map(TYPES.map(t=>[t,{type:t,games:0,wins:0,draws:0,losses:0,scoreSum:0}]));
+ for(const oppBase of meta.pool){
+   if(oppBase.master_id===base.master_id)continue;
+   const B=merged(oppBase),d=roundRobinMatchDetail(A,B);
+   const rec={base:oppBase,c:B,...d};matches.push(rec);
+   for(const t of new Set([B.type1,B.type2].filter(Boolean))){
+     if(!typeMap.has(t))typeMap.set(t,{type:t,games:0,wins:0,draws:0,losses:0,scoreSum:0});
+     const z=typeMap.get(t);z.games++;z.scoreSum+=d.score;if(d.result>0)z.wins++;else if(d.result<0)z.losses++;else z.draws++
+   }
+ }
+ const best=[...matches].sort((a,b)=>(b.score-a.score)||(a.cTime-b.cTime)||(b.eTime-a.eTime)||String(a.c.pick_no).localeCompare(String(b.c.pick_no),"ja")).slice(0,5);
+ const worst=[...matches].sort((a,b)=>(a.score-b.score)||(b.cTime-a.cTime)||(a.eTime-b.eTime)||String(a.c.pick_no).localeCompare(String(b.c.pick_no),"ja")).slice(0,5);
+ const types=[...typeMap.values()].filter(x=>x.games).map(x=>({...x,winRate:x.games?x.wins/x.games*100:0,avgScore:x.games?x.scoreSum/x.games:0}));
+ types.sort((a,b)=>TYPES.indexOf(a.type)-TYPES.indexOf(b.type));
+ const wins=row?.wins??matches.filter(x=>x.result>0).length,draws=row?.draws??matches.filter(x=>x.result===0).length,losses=row?.losses??matches.filter(x=>x.result<0).length,games=wins+draws+losses;
+ const points=row?.points??wins*3+draws,winRate=games?wins/games*100:0,avgScore=matches.length?matches.reduce((n,x)=>n+x.score,0)/matches.length:0;
+ return {A,matches,best,worst,types,wins,draws,losses,games,points,winRate,avgScore,rank}
+}
+function rrMatchCards(list){
+ return `<div class="rrMatchList">${list.map((x,i)=>`<div class="rrMatchCard" data-rr-match="${i}"><img src="${esc(pickImage(x.base))}" alt="${esc(x.c.name_ja)}"><div><div class="rrMatchName">${esc(x.c.name_ja)}</div><div class="rrMatchMeta">${esc(x.c.pick_no)} / ${esc(x.c.series)}<br>与${x.cd}・被${x.ed} / KO ${rrHitsLabel(x.cHits)}・被KO ${rrHitsLabel(x.eHits)}</div><span class="rrMatchScore">${x.score}点</span><span class="rrMatchResult ${x.outcome}">${rrResultLabel(x.outcome)}</span><br><button type="button" class="rrMatchBackBtn">裏面データ</button></div></div>`).join("")}</div>`
+}
+function openRoundRobinAnalysis(base,meta,row,rank){
+ if(!base||!meta)return;
+ const a=buildRoundRobinAnalysis(base,meta,row,rank),owned=isOwned(base),body=$("roundRobinAnalysisBody");
+ const grade=Number(a.A.grade)||0,stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
+ const typeRows=a.types.map(x=>`<tr><td>${esc(x.type)}</td><td>${x.games}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td class="${x.winRate>=60?"rrTypeGood":x.winRate<=40?"rrTypeBad":""}">${x.winRate.toFixed(1)}%</td><td>${x.avgScore.toFixed(1)}</td></tr>`).join("");
+ body.innerHTML=`<div class="rrAnalysisHero"><img src="${esc(pickImage(base))}" alt="${esc(a.A.name_ja)}"><div><div class="rrAnalysisName">${esc(a.A.name_ja)}${owned?'<span class="rrOwnedMark">✓ 所持</span>':''}</div><div class="rrAnalysisMeta">${esc(a.A.pick_no)} / ${esc(a.A.series)} / ${stars}<br>タイプ：${esc(a.A.type1||"-")}${a.A.type2?` / ${esc(a.A.type2)}`:""} / ポケエネ ${esc(a.A.poke_ene??"-")}<br>分析対象：${meta.ownedOnly?"所持ピック同士":"能力値確認済み全ピック"} ${meta.pool.length.toLocaleString("ja-JP")}件</div><div class="rrAnalysisActions"><button id="rrShowBackBtn" type="button" class="ghost">裏面データ</button>${owned?'<button id="rrUseBattleBtn" type="button">このピックで1対1</button>':'<button type="button" disabled>未所持のため対戦選択不可</button>'}</div></div></div>
+ <div class="rrSummaryGrid"><div class="rrSummaryCard"><b>${rank?`${rank}位`:"-"}</b><span>総合順位</span></div><div class="rrSummaryCard"><b>${a.winRate.toFixed(1)}%</b><span>勝率</span></div><div class="rrSummaryCard"><b>${a.wins}-${a.draws}-${a.losses}</b><span>勝-分-敗</span></div><div class="rrSummaryCard"><b>${a.points}</b><span>勝点</span></div><div class="rrSummaryCard"><b>${a.avgScore.toFixed(1)}</b><span>平均相性スコア</span></div><div class="rrSummaryCard"><b>${a.games}</b><span>対戦数</span></div></div>
+ <div class="rrAnalysisSection"><h3>得意 TOP5</h3><div class="rrSectionNote">このピックから見た相性スコア上位5件です。</div><div id="rrBestList">${rrMatchCards(a.best)}</div></div>
+ <div class="rrAnalysisSection"><h3>苦手 TOP5</h3><div class="rrSectionNote">このピックから見た相性スコア下位5件です。</div><div id="rrWorstList">${rrMatchCards(a.worst)}</div></div>
+ <div class="rrAnalysisSection"><h3>相手タイプ別成績</h3><div class="rrSectionNote">複合タイプの相手は両方のタイプに集計します。平均点は100点満点の相性スコアです。</div><div class="rrTypeTableWrap"><table class="rrTypeTable"><thead><tr><th>タイプ</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>勝率</th><th>平均点</th></tr></thead><tbody>${typeRows}</tbody></table></div></div>`;
+ $("rrShowBackBtn").onclick=()=>showPickBack(base);
+ const use=$("rrUseBattleBtn");if(use)use.onclick=()=>useRoundRobinPickForBattle(base);
+ const bind=(root,list)=>{root.querySelectorAll(".rrMatchCard").forEach((el,i)=>{const rec=list[i];el.querySelector("img").onclick=()=>showPickBack(rec.base);el.querySelector(".rrMatchBackBtn").onclick=()=>showPickBack(rec.base)})};
+ bind($("rrBestList"),a.best);bind($("rrWorstList"),a.worst);
+ showBattleOverlay("roundRobinAnalysisOverlay")
+}
+function useRoundRobinPickForBattle(base){
+ if(!isOwned(base)){alert("未所持ピックは自分側に選択できません。");return}
+ if(!inTeam(base))addTeam(base);
+ battle.me=merged(base);battle.enemy=null;battle.ehp=0;
+ setBattleMode("single");updateBattleSelectionStatus();renderBattlePicks();setMainTab("battle");openEnemyPickOverlay()
+}
 function renderRoundRobinResults(rows,meta){
+ currentRoundRobinRows=rows;currentRoundRobinMeta=meta;
  const box=$("roundRobinResults");
  const mode=meta.ownedOnly?"所持ピックのみ":"全ピック";
  box.innerHTML=`<div class="roundRobinSummary">${mode}：${rows.length.toLocaleString("ja-JP")}件 / ${meta.pairs.toLocaleString("ja-JP")}試合</div>
- <div class="roundRobinTableWrap"><table class="roundRobinTable"><thead><tr><th>順位</th><th>ピック</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>勝率</th><th>勝点</th></tr></thead><tbody>${rows.map((x,i)=>`<tr class="${i===0?"top1":i===1?"top2":i===2?"top3":""}"><td class="roundRobinRank">${i+1}</td><td><span class="roundRobinName">${esc(x.c.name_ja)}</span> <span class="roundRobinMuted">${esc(x.c.pick_no)}</span>${isOwned(x.base)?'<span class="roundRobinOwnedBadge">✓ 所持</span>':''}</td><td>${x.games}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.winRate.toFixed(1)}%</td><td>${x.points}</td></tr>`).join("")}</tbody></table></div>`;
+ <div class="roundRobinTableWrap"><table class="roundRobinTable"><thead><tr><th>順位</th><th>ピック</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>勝率</th><th>勝点</th></tr></thead><tbody>${rows.map((x,i)=>`<tr class="${i===0?"top1":i===1?"top2":i===2?"top3":""}" title="タップして対戦分析"><td class="roundRobinRank">${i+1}</td><td><span class="roundRobinName">${esc(x.c.name_ja)}</span> <span class="roundRobinMuted">${esc(x.c.pick_no)}</span>${isOwned(x.base)?'<span class="roundRobinOwnedBadge">✓ 所持</span>':''}</td><td>${x.games}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.winRate.toFixed(1)}%</td><td>${x.points}</td></tr>`).join("")}</tbody></table></div>`;
+ box.querySelectorAll("tbody tr").forEach((tr,i)=>tr.onclick=()=>openRoundRobinAnalysis(rows[i].base,meta,rows[i],i+1));
 }
 async function runRoundRobin(force=false){
  const btn=$("runRoundRobinBtn"),recalc=$("recalcRoundRobinBtn"),progress=$("roundRobinProgress"),results=$("roundRobinResults");
@@ -973,7 +1051,7 @@ $("myBattleSelection").onclick=()=>openMyPickOverlay();$("enemyBattleSelection")
 document.querySelectorAll(".battlePickerClose").forEach(b=>b.onclick=()=>{if(b.id==="closeEnemyPickerBtn")closeEnemyPicker();else closeBattleOverlays()});
 document.querySelectorAll(".battlePickerOverlay").forEach(ov=>ov.addEventListener("click",e=>{if(e.target!==ov)return;if(ov.id==="enemyPickOverlay")closeEnemyPicker();else closeBattleOverlays()}));
 $("enemyQ").oninput=enemySearch;$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert("このランクには対戦可能なピックがありません。");return}previewRandomEnemy(pool[Math.floor(Math.random()*pool.length)])};
-$("roundRobinOwnedOnly").onchange=()=>{roundRobinPoolInfo();$("roundRobinProgress").textContent="";$("roundRobinResults").innerHTML=""};$("runRoundRobinBtn").onclick=()=>runRoundRobin(false);$("recalcRoundRobinBtn").onclick=()=>runRoundRobin(true);
+$("roundRobinOwnedOnly").onchange=()=>{currentRoundRobinRows=[];currentRoundRobinMeta=null;roundRobinPoolInfo();$("roundRobinProgress").textContent="";$("roundRobinResults").innerHTML=""};$("runRoundRobinBtn").onclick=()=>runRoundRobin(false);$("recalcRoundRobinBtn").onclick=()=>runRoundRobin(true);
 $("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
 $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
 
@@ -999,7 +1077,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.22",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.23",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1009,4 +1087,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-22 22:03:00 JST / Ver6.22 -->
+<!-- Updated: 2026-09-23 07:45:00 JST / Ver6.23 -->
