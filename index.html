@@ -41,7 +41,25 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .battleSelectionStatus{margin:6px 0 4px;padding:7px 9px;border-radius:10px;background:#eef3f6;color:#66717b;font-size:12px;font-weight:800;border:1px solid #d6e0e6}
 .battleSelectionStatus.active{background:#dff8ff;color:#075c79;border-color:#5dd8f2;box-shadow:0 0 10px #4bd6f233}
 
-@media(max-width:620px){.pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pickCard{padding:5px;border-radius:13px}.arcadeStars{font-size:12px}.arcadeNo{font-size:8px;padding:2px 4px}.energyOrb{width:37px;height:37px;min-width:37px;font-size:10px}.pickName{font-size:13px}.pickMeta{font-size:9px}.quickActions button{font-size:10px;padding:7px 3px}.teamGrid{grid-template-columns:1fr}.consoleLamp{min-width:58px;padding:7px 8px}}
+
+/* Ver6.9: owned-pick matchup recommendation */
+.recommendWrap{margin-top:10px;border:1px solid #cbd8e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}
+.recommendHead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.recommendHead b{font-size:14px}.recommendHead span{font-size:11px;color:#61707a}
+.recommendGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
+.recommendCard{position:relative;border:2px solid #bad0dc;border-radius:13px;background:#fff;padding:8px;box-shadow:0 3px 10px #102b3c12}
+.recommendCard.rank1{border-color:#e0b31e;background:linear-gradient(145deg,#fff8ce,#fff)}
+.recommendRank{position:absolute;top:7px;left:7px;z-index:2;background:#17394e;color:#fff;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:900}
+.recommendCard.rank1 .recommendRank{background:#a97800}.recommendTop{display:grid;grid-template-columns:58px 1fr;gap:8px;align-items:center}
+.recommendTop img{width:58px;aspect-ratio:2/3;object-fit:cover;border-radius:8px;background:#e8ebee}
+.recommendName{font-weight:900;font-size:14px}.recommendMeta{font-size:10px;color:#66717b;line-height:1.4}
+.recommendVerdict{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:900;background:#dff4e5;color:#256a3b}
+.recommendVerdict.lose{background:#f6e1e1;color:#8c2a32}.recommendVerdict.ref{background:#fff1cf;color:#8a6200}
+.recommendReasons{margin-top:7px;font-size:11px;line-height:1.55;color:#334652}
+.recommendReasons b{color:#122f42}.recommendCard button{width:100%;margin-top:7px;padding:8px;font-size:11px}
+.recommendEmpty{margin-top:8px;padding:10px;border-radius:10px;background:#eef3f6;color:#63727d;font-size:12px}
+
+@media(max-width:620px){.recommendGrid{grid-template-columns:1fr}.pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pickCard{padding:5px;border-radius:13px}.arcadeStars{font-size:12px}.arcadeNo{font-size:8px;padding:2px 4px}.energyOrb{width:37px;height:37px;min-width:37px;font-size:10px}.pickName{font-size:13px}.pickMeta{font-size:9px}.quickActions button{font-size:10px;padding:7px 3px}.teamGrid{grid-template-columns:1fr}.consoleLamp{min-width:58px;padding:7px 8px}}
 
 
 /* Ver6.8 state visibility */
@@ -59,7 +77,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 @media(max-width:620px){.hero{grid-template-columns:100px 1fr}.photo{width:100px}.grid{grid-template-columns:1fr 1fr}.battleSelect{grid-template-columns:1fr}.battleGrid{grid-template-columns:1fr}.vsBadge{width:50px;height:50px;margin:auto}.ownedGrid{grid-template-columns:repeat(2,1fr)}.pickGrid{grid-template-columns:repeat(2,1fr)}.browserToolbar{grid-template-columns:1fr}.seriesGrid{grid-template-columns:repeat(2,1fr)}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.8</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.9</header>
 <main>
 <section class="card pickConsole">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
@@ -83,7 +101,8 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 <section class="card teamConsole"><div class="consoleHeader compact"><div><span class="consoleKicker">BATTLE TEAM</span><h2>② バトルチーム</h2></div><div class="consoleLamp teamLamp">TEAM</div></div><div id="teamList" class="teamGrid"></div><p class="note">チームから外す操作はここで行います。ピック画像または「詳細」を押すとパラメータ画面を開きます。</p></section>
 <section class="card"><h2>③ バトル</h2>
 <p class="note">自分のバトルチームから1体、相手はマスターDBから検索して選択します。1対1・交代なしで最後まで戦います。</p>
-<div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"><button id="randomEnemyBtn" class="ghost" type="button">ランダム</button></div><div id="enemyResults"></div></div></div>
+<div class="battleSelect"><div><b>自分のピック</b><div id="myBattleSelection" class="battleSelectionStatus">未選択</div><div id="myBattlePicks"></div></div><div><b>相手を検索</b><div id="enemyBattleSelection" class="battleSelectionStatus">未選択</div><div class="search"><input id="enemyQ" placeholder="番号・名前"><button id="randomEnemyBtn" class="ghost" type="button">ランダム</button></div><div class="actions"><button id="recommendBtn" type="button" class="secondary" disabled>所持から相性TOP3</button></div><div id="enemyResults"></div></div></div>
+<div id="recommendWrap" class="recommendWrap hidden"><div class="recommendHead"><b>おすすめ所持ピック TOP3</b><span id="recommendTarget">相手未選択</span></div><div id="recommendGrid" class="recommendGrid"></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px"><div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><div class="vsBadge">VS</div><div class="fighter" id="enemyFighter"></div></div></div><div id="battleMessage" class="battleMessage">READY</div>
 <div class="actions"><button id="turnBtn">1ターン進める</button><button id="autoBtn" class="secondary">最後まで戦う</button><button id="restartBtn" class="ghost">やり直す</button></div>
 <div id="battleWinner"></div><div id="battleLog" class="log"></div></div>
@@ -188,7 +207,7 @@ function removeTeam(r){
 function toggleTeam(r){addTeam(r)}
 function refreshAfterFlagChange(r){
  renderCollectionOverall();renderSeriesButtons();renderBrowser();renderTeam();renderBattlePicks();
- if(selected&&r&&selected.master_id===r.master_id)render()
+ if(selected&&r&&selected.master_id===r.master_id)render();if(!$("recommendWrap").classList.contains("hidden")&&battle.enemy)renderRecommendations()
 }
 function renderBrowser(){
  const box=$("pickList"),a=browserRecords(),q=norm($("q").value),ownedOnly=$("ownedOnly").checked;box.innerHTML="";
@@ -276,7 +295,7 @@ function updateBattleSelectionStatus(){
  if(en){en.textContent=battle.enemy?`選択中：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`:"未選択";en.classList.toggle("active",!!battle.enemy)}
 }
 function chooseMe(r){if(battle.busy)return;battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();startIfReady()}
-function chooseEnemy(r){if(battle.busy)return;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady()}
+function chooseEnemy(r){if(battle.busy)return;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();$("recommendBtn").disabled=false;$("recommendWrap").classList.add("hidden");startIfReady()}
 function startIfReady(){if(!battle.me||!battle.enemy||battle.busy)return;battle.mhp=Number(battle.me.hp)||1;battle.ehp=Number(battle.enemy.hp)||1;battle.over=false;battle.turn=1;$("battleLog").innerHTML="";$("battleWinner").innerHTML="";$("battleMessage").textContent=`${battle.me.name_ja} VS ${battle.enemy.name_ja}`;blog(`⚔️ ${esc(battle.me.name_ja)} vs ${esc(battle.enemy.name_ja)}　1対1・交代なし`);blog(`開始HP：${esc(battle.me.name_ja)} ${battle.mhp} / ${esc(battle.enemy.name_ja)} ${battle.ehp}`);arena()}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function attack(a,d,target){
@@ -307,11 +326,71 @@ async function turn(){
 function battlePickButton(r,onClick,selectedNow=false){const b=document.createElement("button");b.className="battlePick"+(selectedNow?" selected":"");b.innerHTML=`<img src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(r.name_ja)}</b><span>${esc(r.pick_no)} / ${esc(r.series)}</span></span>`;b.onclick=onClick;return b}
 function renderBattlePicks(){const box=$("myBattlePicks");box.innerHTML="";for(const id of getIds(TEAM_KEY)){const r=R.find(x=>x.master_id===id);if(!r)continue;box.appendChild(battlePickButton(r,()=>chooseMe(r),!!battle.me&&battle.me.master_id===r.master_id))}if(!box.children.length)box.innerHTML='<div class="meta">先にバトルチームへ追加してください。</div>'}
 function enemySearch(){const q=norm($("enemyQ").value),box=$("enemyResults");box.innerHTML="";if(!q)return;for(const r of R.filter(x=>norm(x.pick_no).includes(q)||norm(x.name_ja).includes(q)||norm(x.name_en).includes(q)).slice(0,10))box.appendChild(battlePickButton(r,()=>chooseEnemy(r),!!battle.enemy&&battle.enemy.master_id===r.master_id))}
-$("enemyQ").oninput=enemySearch;$("randomEnemyBtn").onclick=()=>{const pool=R.filter(r=>r.hp&&r.atk&&r.def&&r.sp_atk&&r.sp_def);if(pool.length)chooseEnemy(pool[Math.floor(Math.random()*pool.length)])};$("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=startIfReady;
+
+function numOk(v){return v!==null&&v!==undefined&&v!==""&&Number.isFinite(Number(v))&&Number(v)>0}
+function attackStat(r){return String(r.move_class||"").includes("特殊")?r.sp_atk:r.atk}
+function defenseStat(defender,attacker){return String(attacker.move_class||"").includes("特殊")?defender.sp_def:defender.def}
+function effectText(v){if(v===0)return "無効";if(v>=4)return "×4 かなり有利";if(v>1)return "×2 こうかばつぐん";if(v<1)return "×0.5 いまひとつ";return "×1 等倍"}
+function ownedRecommendationRecords(){
+ if(!battle.enemy)return [];
+ const enemy=merged(battle.enemy), ownedIds=new Set(getIds(OWNED_KEY)), teamIds=new Set(getIds(TEAM_KEY));
+ const rows=[];
+ for(const base of R){
+   if(!ownedIds.has(base.master_id))continue;
+   const c=merged(base),outEff=eff(c.move_type,enemy),inEff=eff(enemy.move_type,c);
+   const full=[c.hp,enemy.hp,attackStat(c),defenseStat(enemy,c),attackStat(enemy),defenseStat(c,enemy)].every(numOk) && !!c.move_type && !!enemy.move_type;
+   if(full){
+     const cd=dmg(c,enemy).n,ed=dmg(enemy,c).n;
+     const cHits=Math.max(1,Math.ceil(Number(enemy.hp)/cd)),eHits=Math.max(1,Math.ceil(Number(c.hp)/ed));
+     const cFirst=speed(c)>=speed(enemy);
+     const cTime=(cHits-1)*2+(cFirst?1:2),eTime=(eHits-1)*2+(cFirst?2:1);
+     const win=cTime<eTime;
+     rows.push({base,c,full:true,win,cHits,eHits,cFirst,outEff,inEff,cd,ed,margin:eTime-cTime,inTeam:teamIds.has(base.master_id)});
+   }else{
+     const energy=Number(c.poke_ene)||0,spd=Number(c.speed_level)||0;
+     const fallbackScore=outEff*1000-inEff*600+energy*2+spd*20;
+     rows.push({base,c,full:false,win:null,cHits:null,eHits:null,cFirst:null,outEff,inEff,cd:null,ed:null,margin:fallbackScore,inTeam:teamIds.has(base.master_id)});
+   }
+ }
+ const fullRows=rows.filter(x=>x.full).sort((a,b)=>
+   (Number(b.win)-Number(a.win)) ||
+   (b.margin-a.margin) ||
+   (b.outEff-a.outEff) ||
+   (a.inEff-b.inEff) ||
+   ((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0))
+ );
+ const refRows=rows.filter(x=>!x.full).sort((a,b)=>b.margin-a.margin);
+ return fullRows.concat(refRows).slice(0,3)
+}
+function chooseRecommended(r){
+ if(!isOwned(r))return;
+ if(!inTeam(r))addTeam(r);
+ chooseMe(r);
+ document.getElementById("myBattlePicks")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function renderRecommendations(){
+ const wrap=$("recommendWrap"),grid=$("recommendGrid"),target=$("recommendTarget"),btn=$("recommendBtn");
+ if(!battle.enemy){wrap.classList.add("hidden");btn.disabled=true;return}
+ btn.disabled=false;wrap.classList.remove("hidden");target.textContent=`相手：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`;
+ const rows=ownedRecommendationRecords();grid.innerHTML="";
+ if(!rows.length){grid.innerHTML='<div class="recommendEmpty" style="grid-column:1/-1">所持ピックがありません。①で所持登録してください。</div>';return}
+ rows.forEach((x,i)=>{
+   const d=document.createElement("div");d.className=`recommendCard rank${i+1}`;
+   const verdict=x.full?(x.win?"勝利見込み":"不利見込み"):"参考評価";
+   const verdictClass=x.full?(x.win?"":" lose"):" ref";
+   const reason=x.full
+     ? `<div><b>${x.cFirst?"先攻":"後攻"}</b> / 相手を${x.cHits}回でKO見込み / 自分は${x.eHits}回でKOされる見込み</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
+     : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ段階：${esc(x.c.speed_level??"-")}</div>`;
+   d.innerHTML=`<span class="recommendRank">${i+1}位</span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div><button type="button">${x.inTeam?"このピックで戦う":"チームに追加して戦う"}</button>`;
+   d.querySelector("button").onclick=()=>chooseRecommended(x.base);grid.appendChild(d)
+ })
+}
+
+$("enemyQ").oninput=enemySearch;$("recommendBtn").onclick=renderRecommendations;$("randomEnemyBtn").onclick=()=>{const pool=R.filter(r=>r.hp&&r.atk&&r.def&&r.sp_atk&&r.sp_def);if(pool.length)chooseEnemy(pool[Math.floor(Math.random()*pool.length)])};$("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=startIfReady;
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.8",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.9",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -320,4 +399,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();
 </script></body></html>
-<!-- Updated: 2026-09-22 13:51:57 JST / Ver6.8 -->
+<!-- Updated: 2026-09-22 18:48:26 JST / Ver6.9 -->
