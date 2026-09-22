@@ -155,14 +155,15 @@ body.battleOverlayOpen{overflow:hidden}
 
 
 
-/* Ver6.25 favorites / battle picker scope */
+/* Ver6.26 favorites / battle picker scope */
 .detailPanel #favoriteBtn{background:#d3a024;color:#fff;border-color:#aa7812}.detailPanel #favoriteBtn.on{background:#b47800;color:#fff;border-color:#825700;box-shadow:0 0 0 2px #ffe59a inset}
 .browserScopeSelect{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;min-width:120px;font-weight:800}
 .favoriteCardOwned{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#dff4e5;color:#276b3b;font-size:9px;font-weight:900}.favoriteCardUnowned{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#e9edf0;color:#5e6972;font-size:9px;font-weight:900}
 .myPickToolbar{position:sticky;top:0;z-index:2;background:#f7fafc;padding:0 0 9px;border-bottom:1px solid #dce5ea;margin-bottom:8px}.myPickScopeTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:7px}.myPickScopeBtn{background:#e8eef2;color:#42515c;border:1px solid #c5d2da;padding:9px 5px;border-radius:10px;font-weight:900}.myPickScopeBtn.on{background:linear-gradient(180deg,#1976d2,#0757a4);color:#fff;border-color:#064d91;box-shadow:0 0 0 2px #98d7ff inset}.myPickSearch{display:flex;gap:6px}.myPickSearch input{flex:1;min-width:0}.myPickCount{font-size:11px;color:#65717c;font-weight:800;margin-top:6px}.battlePick .favStar{color:#d49400;font-weight:1000}.battlePick .ownedTiny{color:#218b4d;font-weight:900}
+.enemyPickToolbar{position:sticky;top:0;z-index:3;background:#f7fafc;padding:0 0 9px;border-bottom:1px solid #dce5ea;margin-bottom:8px}.enemyPickScopeTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:7px}.enemyPickScopeBtn{background:#e8eef2;color:#42515c;border:1px solid #c5d2da;padding:9px 5px;border-radius:10px;font-weight:900}.enemyPickScopeBtn.on{background:linear-gradient(180deg,#c33b3b,#8f1f1f);color:#fff;border-color:#7d1717;box-shadow:0 0 0 2px #ffc7c7 inset}.enemyPickSearch{display:flex;gap:6px}.enemyPickSearch input{flex:1;min-width:0}.enemyPickCount{font-size:11px;color:#65717c;font-weight:800;margin-top:6px}
 .recommendActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.recommendActions button{width:100%}.recommendActions .recFavoriteBtn{background:linear-gradient(180deg,#f2bb35,#bd8000);color:#fff}.recommendActions .recFavoriteBtn.on{background:linear-gradient(180deg,#f8d45f,#a56c00);box-shadow:0 0 0 2px #fff0a6 inset}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.25</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.26</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -194,7 +195,7 @@ body.battleOverlayOpen{overflow:hidden}
 <section id="tab-team" class="card teamConsole mainTabPanel tabHidden"><div class="consoleHeader compact"><div><span class="consoleKicker">FAVORITES</span><h2>② ★ お気に入り</h2></div><div class="consoleLamp teamLamp">★ FAV</div></div><div id="teamList" class="teamGrid"></div><p class="note">所持・未所持に関係なく登録できます。ピック画像は裏面データ、詳細ボタンはパラメータ編集画面を開きます。</p></section>
 <section id="tab-battle" class="card mainTabPanel tabHidden"><h2>③ バトル</h2>
 <div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">トーナメント</button><button id="roundRobinModeBtn" type="button">総当たりランキング</button></div>
-<p id="battleModeDescription" class="note">自分のピックは「全件・所持・お気に入り」から選択できます。相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。</p>
+<p id="battleModeDescription" class="note">自分・相手とも「全件・所持・お気に入り」から選択できます。相手のランダム抽選も選択中の範囲に限定できます。1対1・交代なしです。</p>
 <div class="battleSetupCompact">
   <div id="myPickPanel" class="battleChoiceCard">
     <div class="battleChoiceHead"><b>自分のピック</b><span>MY PICK</span></div>
@@ -245,11 +246,16 @@ body.battleOverlayOpen{overflow:hidden}
   <div class="battlePickerShell">
     <div class="battlePickerHead"><div><small>OPPONENT SELECT</small><b>対戦相手を選ぶ</b></div><button id="closeEnemyPickerBtn" class="battlePickerClose" type="button">× 閉じる</button></div>
     <div class="battlePickerBody">
-      <div class="search"><input id="enemyQ" placeholder="番号・名前で検索"></div>
-      <div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">このランクからランダム</button></div>
-      <div id="enemyRandomStatus" class="enemyRandomStatus">ランダムは何度でも引き直せます。押すたび候補と相性TOP3を更新し、「閉じる」で確定します。</div>
+      <div class="pickerHelp">全件・所持・お気に入りを切り替えて対戦相手を選べます。ランダムも、現在選択中の範囲から抽選します。</div>
+      <div class="enemyPickToolbar">
+        <div class="enemyPickScopeTabs"><button type="button" class="enemyPickScopeBtn on" data-enemy-scope="all">全件</button><button type="button" class="enemyPickScopeBtn" data-enemy-scope="owned">所持</button><button type="button" class="enemyPickScopeBtn" data-enemy-scope="favorite">★ お気に入り</button></div>
+        <div class="enemyPickSearch"><input id="enemyQ" placeholder="番号・名前で検索"><button id="clearEnemyQ" type="button" class="ghost">消去</button></div>
+        <div id="enemyPickCount" class="enemyPickCount"></div>
+      </div>
+      <div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">この範囲からランダム</button></div>
+      <div id="enemyRandomStatus" class="enemyRandomStatus">ランダムは何度でも引き直せます。現在の範囲から候補を選び、相性TOP3を更新します。「閉じる」で確定します。</div>
       <div id="enemyRandomCandidate" class="enemyRandomCandidate hidden"></div>
-      <div class="battleModeHint">能力値が確認できるピックの中から選びます。検索結果を押した場合は、そのまま相性TOP3へ進みます。</div>
+      <div class="battleModeHint">ランダムは能力値確認済みピックから抽選します。検索結果を押した場合は、そのまま相性TOP3へ進みます。</div>
       <div id="enemyResults" class="battlePickerList"></div>
       <div id="enemyRandomRecommend" class="recommendWrap enemyRandomRecommend hidden">
         <div class="recommendHead"><b>候補との相性ランキング（100点満点）</b><span id="enemyRandomRecommendTarget">候補未選択</span></div>
@@ -569,20 +575,20 @@ let pendingRandomEnemy=null;
 function updateEnemyRandomStatus(){
  const el=$("enemyRandomStatus"),btn=$("closeEnemyPickerBtn"),card=$("enemyRandomCandidate");if(!el)return;
  if(pendingRandomEnemy){
-   el.textContent=`現在の候補：${pendingRandomEnemy.name_ja}（${pendingRandomEnemy.pick_no}）　ランダムを押すたび候補と相性TOP3を更新します。`;
+   el.textContent=`${scopeLabel(enemyPickScope)}からの候補：${pendingRandomEnemy.name_ja}（${pendingRandomEnemy.pick_no}）　ランダムを押すたび候補と相性TOP3を更新します。`;
    if(btn)btn.textContent="✓ 閉じる（確定）";
    if(card){
      card.classList.remove("hidden");
      card.innerHTML=`<img src="${esc(pickImage(pendingRandomEnemy))}" alt="${esc(pendingRandomEnemy.name_ja)}"><div><div class="enemyRandomCandidateName">${esc(pendingRandomEnemy.name_ja)}</div><div class="enemyRandomCandidateMeta">${esc(pendingRandomEnemy.pick_no)} / ${pendingRandomEnemy.grade?"★"+esc(pendingRandomEnemy.grade):"ランク-"}<br>${esc(pendingRandomEnemy.series||"")}<br>ポケエネ：${esc(pendingRandomEnemy.poke_ene??"-")}</div></div>`;
    }
  }else{
-   el.textContent="ランダムは何度でも引き直せます。押すたび候補と相性TOP3を更新し、「閉じる」で確定します。";
+   el.textContent=`ランダムは何度でも引き直せます。${scopeLabel(enemyPickScope)}の中から候補を選び、相性TOP3を更新します。「閉じる」で確定します。`;
    if(btn)btn.textContent="× 閉じる";
    if(card){card.classList.add("hidden");card.innerHTML=""}
  }
 }
 function openMyPickOverlay(){renderBattlePicks();showBattleOverlay("myPickOverlay");setTimeout(()=>$("myPickQ")?.focus(),30)}
-function openEnemyPickOverlay(){pendingRandomEnemy=null;enemySearch();renderEnemyRandomRecommendations();updateEnemyRandomStatus();showBattleOverlay("enemyPickOverlay");setTimeout(()=>$("enemyQ")?.focus(),30)}
+function openEnemyPickOverlay(){pendingRandomEnemy=null;document.querySelectorAll(".enemyPickScopeBtn").forEach(b=>b.classList.toggle("on",(b.dataset.enemyScope||"all")===enemyPickScope));enemySearch();renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel();showBattleOverlay("enemyPickOverlay");setTimeout(()=>$("enemyQ")?.focus(),30)}
 function openRecommendOverlay(){if(!battle.enemy)return;renderRecommendations();showBattleOverlay("recommendOverlay")}
 function closeEnemyPicker(){
  if(pendingRandomEnemy&&battleMode==="single"&&!battle.busy){
@@ -642,6 +648,9 @@ async function turn(){
 }
 function battlePickButton(r,onClick,selectedNow=false){const b=document.createElement("button"),owned=isOwned(r),favorite=isFavorite(r);b.className="battlePick"+(selectedNow?" selected":"");b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(r.name_ja)}</b><span>${esc(r.pick_no)} / ${esc(r.series)}${owned?' / <span class="ownedTiny">✓所持</span>':''}${favorite?' / <span class="favStar">★お気に入り</span>':''}</span></span>`;b.onclick=onClick;return b}
 let myPickScope="all";
+let enemyPickScope="all";
+function scopeLabel(scope){return scope==="owned"?"所持":scope==="favorite"?"お気に入り":"全件"}
+function inPickScope(r,scope){return scope==="owned"?isOwned(r):scope==="favorite"?isFavorite(r):true}
 function renderBattlePicks(){
  const box=$("myBattlePicks");if(!box)return;box.innerHTML="";const q=norm($("myPickQ")?.value||"");
  let list=R.filter(r=>myPickScope==="owned"?isOwned(r):myPickScope==="favorite"?isFavorite(r):true);
@@ -651,7 +660,15 @@ function renderBattlePicks(){
  const count=$("myPickCount");if(count)count.textContent=`${myPickScope==="owned"?"所持":myPickScope==="favorite"?"お気に入り":"全件"}：${list.length.toLocaleString("ja-JP")}件`;
  if(!box.children.length)box.innerHTML='<div class="meta">条件に該当するピックはありません。</div>'
 }
-function enemySearch(){const q=norm($("enemyQ").value),box=$("enemyResults");box.innerHTML="";if(!q)return;for(const r of R.filter(x=>norm(x.pick_no).includes(q)||norm(x.name_ja).includes(q)||norm(x.name_en).includes(q)).slice(0,10))box.appendChild(battlePickButton(r,()=>chooseEnemy(r),!!battle.enemy&&battle.enemy.master_id===r.master_id))}
+function enemySearch(){
+ const q=norm($("enemyQ")?.value||""),box=$("enemyResults");if(!box)return;box.innerHTML="";
+ let list=R.filter(r=>inPickScope(r,enemyPickScope));
+ if(q)list=list.filter(r=>norm(r.pick_no).includes(q)||norm(r.name_ja).includes(q)||norm(r.name_en).includes(q));
+ list.sort((a,b)=>String(a.pick_no).localeCompare(String(b.pick_no),"ja",{numeric:true}));
+ for(const r of list)box.appendChild(battlePickButton(r,()=>chooseEnemy(r),!!battle.enemy&&battle.enemy.master_id===r.master_id));
+ const count=$("enemyPickCount");if(count)count.textContent=`${scopeLabel(enemyPickScope)}：${list.length.toLocaleString("ja-JP")}件`;
+ if(!box.children.length)box.innerHTML='<div class="meta">条件に該当するピックはありません。</div>'
+}
 
 function numOk(v){return v!==null&&v!==undefined&&v!==""&&Number.isFinite(Number(v))&&Number(v)>0}
 function attackStat(r){return String(r.move_class||"").includes("特殊")?r.sp_atk:r.atk}
@@ -993,7 +1010,8 @@ async function runRoundRobin(force=false){
 }
 
 function hasBattleStats(r){return [r.hp,r.atk,r.def,r.sp_atk,r.sp_def].every(numOk)&&!!r.move_type&&!!r.type1}
-function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
+function updateEnemyRandomButtonLabel(){const b=$("randomEnemyBtn");if(!b)return;const grade=$("enemyGrade")?.value||"";b.textContent=`${scopeLabel(enemyPickScope)}${grade?`・★${grade}`:""}からランダム`}
+function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>inPickScope(r,enemyPickScope)&&hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
 function setBattleMode(mode){
  if(!["single","tournament","roundrobin"].includes(mode))mode="single";
  if(mode===battleMode){
@@ -1013,7 +1031,7 @@ function setBattleMode(mode){
  $("tournamentWrap").classList.toggle("hidden",mode!=="tournament");
  $("roundRobinPanel").classList.toggle("hidden",mode!=="roundrobin");
  $("battleModeDescription").textContent=
-   mode==="single"?"自分のピックは「全件・所持・お気に入り」から選択できます。相手は検索またはランク指定ランダムで選択します。1対1・交代なしです。":
+   mode==="single"?"自分・相手とも「全件・所持・お気に入り」から選択できます。相手のランダム抽選も選択中の範囲に限定できます。1対1・交代なしです。":
    mode==="tournament"?"自分のピックを全件・所持・お気に入りから1体選び、8体トーナメントを戦います。CPU同士は自動判定、各試合HP全回復です。":
    "所持ピックのみ、または能力値確認済み全ピックで総当たりシミュレーションを行い、勝点・勝数・勝率でランキングします。";
  if(mode==="tournament"){
@@ -1096,7 +1114,9 @@ $("myPickQ").oninput=renderBattlePicks;$("clearMyPickQ").onclick=()=>{$("myPickQ
 $("myBattleSelection").onclick=()=>openMyPickOverlay();$("enemyBattleSelection").onclick=()=>{if(battle.enemy)openRecommendOverlay();else openEnemyPickOverlay()};
 document.querySelectorAll(".battlePickerClose").forEach(b=>b.onclick=()=>{if(b.id==="closeEnemyPickerBtn")closeEnemyPicker();else closeBattleOverlays()});
 document.querySelectorAll(".battlePickerOverlay").forEach(ov=>ov.addEventListener("click",e=>{if(e.target!==ov)return;if(ov.id==="enemyPickOverlay")closeEnemyPicker();else closeBattleOverlays()}));
-$("enemyQ").oninput=enemySearch;$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert("このランクには対戦可能なピックがありません。");return}previewRandomEnemy(pool[Math.floor(Math.random()*pool.length)])};
+document.querySelectorAll(".enemyPickScopeBtn").forEach(b=>b.onclick=()=>{enemyPickScope=b.dataset.enemyScope||"all";pendingRandomEnemy=null;document.querySelectorAll(".enemyPickScopeBtn").forEach(x=>x.classList.toggle("on",x===b));enemySearch();renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()});
+$("enemyQ").oninput=enemySearch;$("clearEnemyQ").onclick=()=>{$("enemyQ").value="";enemySearch();$("enemyQ").focus()};$("enemyGrade").onchange=()=>{pendingRandomEnemy=null;renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()};
+$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert(`${scopeLabel(enemyPickScope)}の現在の条件には、対戦可能なピックがありません。`);return}previewRandomEnemy(pool[Math.floor(Math.random()*pool.length)])};
 $("roundRobinOwnedOnly").onchange=()=>{currentRoundRobinRows=[];currentRoundRobinMeta=null;roundRobinPoolInfo();$("roundRobinProgress").textContent="";$("roundRobinResults").innerHTML=""};$("runRoundRobinBtn").onclick=()=>runRoundRobin(false);$("recalcRoundRobinBtn").onclick=()=>runRoundRobin(true);
 $("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
 $("turnBtn").onclick=turn;$("autoBtn").onclick=async()=>{let n=0;while(!battle.over&&n++<100){await turn();await wait(180)}};$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
@@ -1133,4 +1153,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 08:17:15 JST / Ver6.25 -->
+<!-- Updated: 2026-09-23 08:24:07 JST / Ver6.26 -->
