@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.23 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.24 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.23</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.24</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -128,6 +128,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 /* Ver6.19: repeatable random opponent + round-robin ranking */
 /* Ver6.21: random candidate updates matchup TOP3 in-place; close confirms opponent */
+/* Ver6.24: browser sort options for HP/ATK/DEF/SP.ATK/SP.DEF/speed */
 .enemyRandomRecommend{margin-top:12px}.enemyRandomRecommend.hidden{display:none!important}.enemyRandomRecommend .recommendHead{position:sticky;top:-1px;z-index:2}
 .enemyRandomStatus{margin-top:8px;padding:8px 9px;border-radius:10px;background:#e8f7ff;border:1px solid #9cdcf3;color:#155b75;font-size:11px;font-weight:800;min-height:18px}
 .enemyRandomCandidate{display:grid;grid-template-columns:82px 1fr;gap:10px;align-items:center;margin-top:9px;padding:9px;border:1px solid #b9d9e7;border-radius:13px;background:linear-gradient(145deg,#f7fdff,#eaf6fb)}.enemyRandomCandidate.hidden{display:none!important}.enemyRandomCandidate img{width:82px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#e5edf2;box-shadow:0 2px 8px #17394e22}.enemyRandomCandidateName{font-size:16px;font-weight:1000;color:#17394e}.enemyRandomCandidateMeta{font-size:11px;color:#60717b;line-height:1.5;margin-top:3px}
@@ -154,7 +155,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.23</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.24</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -174,7 +175,7 @@ body.battleOverlayOpen{overflow:hidden}
   <select id="browseGrade"><option value="">全グレード</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select>
   <select id="browseType"><option value="">全タイプ</option></select>
   <select id="browseStats"><option value="">能力値：すべて</option><option value="verified">能力値：確認済み</option><option value="missing">能力値：未確認</option></select>
-  <select id="browseSort"><option value="number">番号順</option><option value="name">名前順</option><option value="energy">ポケエネ順</option></select>
+  <select id="browseSort"><option value="number">番号順</option><option value="name">名前順</option><option value="energy">ポケエネ順</option><option value="hp">HP高い順</option><option value="atk">ATK高い順</option><option value="def">DEF高い順</option><option value="sp_atk">SP.ATK高い順</option><option value="sp_def">SP.DEF高い順</option><option value="speed">すばやさ高い順</option></select>
 </div>
 <div class="seriesHeading"><b>弾から選ぶ</b><span>弾未選択なら全ピック、さらに「所持のみ」で所持ピックだけを全弾横断表示</span></div>
 <div id="seriesButtons" class="seriesGrid"></div>
@@ -351,9 +352,36 @@ function browserRecords(){
  if(type)a=a.filter(r=>{const m=merged(r);return m.type1===type||m.type2===type});
  if(stats==="verified")a=a.filter(hasMasterFiveStats);
  if(stats==="missing")a=a.filter(r=>!hasMasterFiveStats(r));
+ const numSort=(key)=>a.sort((x,y)=>{
+   const xm=merged(x),ym=merged(y),xv=xm[key],yv=ym[key];
+   const xMissing=xv===null||xv===undefined||xv===""||!Number.isFinite(Number(xv));
+   const yMissing=yv===null||yv===undefined||yv===""||!Number.isFinite(Number(yv));
+   if(xMissing!==yMissing)return xMissing?1:-1;
+   if(!xMissing&&Number(yv)!==Number(xv))return Number(yv)-Number(xv);
+   const pe=(Number(ym.poke_ene)||0)-(Number(xm.poke_ene)||0);
+   if(pe)return pe;
+   return String(x.pick_no).localeCompare(String(y.pick_no),"ja",{numeric:true});
+ });
  if(sort==="number")a.sort((x,y)=>String(x.pick_no).localeCompare(String(y.pick_no),"ja",{numeric:true}));
  if(sort==="name")a.sort((x,y)=>String(x.name_ja).localeCompare(String(y.name_ja),"ja"));
- if(sort==="energy")a.sort((x,y)=>(Number(merged(y).poke_ene)||0)-(Number(merged(x).poke_ene)||0));
+ if(sort==="energy")numSort("poke_ene");
+ if(sort==="hp")numSort("hp");
+ if(sort==="atk")numSort("atk");
+ if(sort==="def")numSort("def");
+ if(sort==="sp_atk")numSort("sp_atk");
+ if(sort==="sp_def")numSort("sp_def");
+ if(sort==="speed")a.sort((x,y)=>{
+   const xm=merged(x),ym=merged(y);
+   const xs=xm.speed_value!==null&&xm.speed_value!==undefined&&xm.speed_value!==""?Number(xm.speed_value):null;
+   const ys=ym.speed_value!==null&&ym.speed_value!==undefined&&ym.speed_value!==""?Number(ym.speed_value):null;
+   if((xs===null)!==(ys===null))return xs===null?1:-1;
+   if(xs!==null&&ys!==null&&ys!==xs)return ys-xs;
+   const xl=Number(xm.speed_level),yl=Number(ym.speed_level);
+   if(Number.isFinite(xl)&&Number.isFinite(yl)&&yl!==xl)return yl-xl;
+   const pe=(Number(ym.poke_ene)||0)-(Number(xm.poke_ene)||0);
+   if(pe)return pe;
+   return String(x.pick_no).localeCompare(String(y.pick_no),"ja",{numeric:true});
+ });
  return a
 }
 function toggleOwned(r){
@@ -1077,7 +1105,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.23",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.24",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1087,4 +1115,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 07:45:00 JST / Ver6.23 -->
+<!-- Updated: 2026-09-23 07:59:00 JST / Ver6.24 -->
