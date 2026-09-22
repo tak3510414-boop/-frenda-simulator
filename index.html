@@ -19,12 +19,22 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 
 .browserToolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.browserFilters{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.browserFilters select{padding:9px;border:1px solid #b9c1c8;border-radius:10px;background:#fff;min-width:120px}.seriesGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:12px 0}.seriesBtn{background:#f7f9fb;color:#273746;border:1px solid #d8e0e6;padding:10px;text-align:left}.seriesBtn.active{background:#1769e0;color:#fff;border-color:#1769e0}.seriesBtn span{display:block;font-size:11px;opacity:.78;margin-top:3px}.browserSummary{font-size:13px;font-weight:700;margin:10px 0;color:#45525d}.pickGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}.pickCard{border:1px solid #dfe4e8;border-radius:14px;padding:8px;background:#fff;box-shadow:0 1px 3px #0001}.pickCard.owned{border-color:#61a778;box-shadow:0 0 0 2px #dff4e5 inset}.pickCard.inTeam{box-shadow:0 0 0 2px #dbe9ff inset}.pickOpen{cursor:pointer}.pickCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.pickName{display:block;font-size:15px;font-weight:800;margin-top:6px}.pickMeta{font-size:11px;color:#66717b;line-height:1.45;margin-top:3px;min-height:33px}.cardBadges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.miniBadge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;font-weight:800;background:#edf2f7;color:#44515c}.miniBadge.ownedBadge{background:#dff4e5;color:#276b3b}.miniBadge.teamBadge{background:#dbe9ff;color:#24589b}.quickActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.quickActions button{padding:8px 5px;font-size:11px}.quickActions .detailQuick{grid-column:1/-1;background:#edf2f7;color:#273746}.quickActions .ownedQuick.on{background:#348b50}.quickActions .teamQuick.on{background:#395f9c}.quickActions button:disabled{opacity:.45}.detailScreen{position:fixed;inset:0;z-index:50;background:#f4f6f8;overflow:auto;padding:0}.detailTop{position:sticky;top:0;z-index:2;background:#172b3a;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px}.detailTop button{background:#fff;color:#172b3a;padding:8px 11px}.detailTop b{font-size:16px}.detailPanel{max-width:760px;margin:0 auto;padding:12px}.detailPanel>.card{margin-bottom:20px}.emptyBrowser{padding:18px;border:1px dashed #c9d1d8;border-radius:12px;color:#65717c;text-align:center;background:#fafbfd}.subtleCheck{display:flex;align-items:center;gap:6px;font-size:13px}.subtleCheck input{width:auto}.seriesHeading{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-top:8px}.seriesHeading b{font-size:14px}.seriesHeading span{font-size:11px;color:#65717c}
 
+
+/* Ver6.7: arcade-style pick selection */
+.pickConsole{position:relative;overflow:hidden;background:radial-gradient(circle at 12% 0%,rgba(20,212,255,.16),transparent 33%),radial-gradient(circle at 88% 0%,rgba(255,53,178,.13),transparent 30%),linear-gradient(180deg,#07192a 0,#0b2940 215px,#f6f8fa 215px);border:1px solid #173d59;box-shadow:0 10px 32px #001b2d28}.pickConsole:before{content:"";position:absolute;inset:0 0 auto;height:215px;pointer-events:none;background:linear-gradient(115deg,transparent 0 42%,rgba(79,227,255,.06) 43% 45%,transparent 46% 54%,rgba(255,73,194,.06) 55% 57%,transparent 58%)}
+.consoleHeader{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#fff;margin:-2px 0 12px;position:relative;z-index:1}.consoleHeader.compact{color:#172b3a}.consoleHeader h2{margin:1px 0 0}.consoleKicker{font-size:10px;letter-spacing:.22em;font-weight:900;color:#55e8ff;text-shadow:0 0 10px #3ce2ff88}.teamConsole .consoleKicker{color:#1769e0;text-shadow:none}.consoleLamp{min-width:70px;text-align:center;padding:8px 10px;border-radius:999px;background:#083954;border:1px solid #36e7ff;color:#7ef0ff;font-size:11px;font-weight:1000;letter-spacing:.13em;box-shadow:0 0 16px #26d7ff44,inset 0 0 10px #26d7ff22}.consoleLamp.teamLamp{background:#edf4ff;color:#1a5da7;border-color:#9cc5ef;box-shadow:none}
+.pickConsole .collectionOverall{position:relative;z-index:1;background:#09263b;color:#eaffff;border:1px solid #1e607d;box-shadow:inset 0 0 18px #0eb9e51f}.pickConsole .browserToolbar,.pickConsole .browserFilters,.pickConsole .seriesHeading,.pickConsole .seriesGrid{position:relative;z-index:1}.pickConsole .search input,.pickConsole .browserFilters select{background:#f9fdff;border-color:#80aabd}.pickConsole .subtleCheck{background:#06243a;color:#fff;border:1px solid #2f6a86;border-radius:12px;padding:9px 12px;font-weight:800}.pickConsole .seriesHeading{color:#dff7ff}.pickConsole .seriesHeading span{color:#9ec7d7}
+.seriesBtn{position:relative;overflow:hidden;background:linear-gradient(180deg,#fafdff,#e8f2f8);border-color:#8eb7c9;box-shadow:0 3px 0 #b7cbd4;color:#16374c}.seriesBtn:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#25d8ff,#1769e0,#fc54bc)}.seriesBtn.active{background:linear-gradient(180deg,#00bfe9,#0676c4);border-color:#49e7ff;box-shadow:0 0 17px #23cbe888,0 3px 0 #034c7b;color:#fff}.seriesBtn.clearSeries{background:linear-gradient(180deg,#273a4a,#152633);color:#eaf8ff;border-color:#537386;box-shadow:0 3px 0 #0b1720}.seriesBtn.clearSeries.active{background:linear-gradient(180deg,#fb4caf,#9b2680);border-color:#ff8ed1;box-shadow:0 0 17px #ff42bd66,0 3px 0 #6e1458}
+.browserSummary{padding:8px 12px;border-radius:12px;background:#0e2e44;color:#dffbff;border:1px solid #316179;letter-spacing:.02em}.emptyBrowser{grid-column:1/-1;background:linear-gradient(180deg,#0a2639,#071b2b);color:#d7f6ff;border-color:#437389;padding:28px;font-weight:800}.pickGrid{margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:13px}.pickCard{position:relative;overflow:hidden;padding:7px;border-radius:17px;border:2px solid #a9beca;background:linear-gradient(145deg,#e8f3f8,#fff 42%,#dbe7ec);box-shadow:0 7px 16px #071b2b26,0 2px 0 #9fafb7;transition:transform .12s ease,box-shadow .12s ease}.pickCard:hover{transform:translateY(-2px);box-shadow:0 10px 22px #071b2b35}.pickCard:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 0 35%,rgba(255,255,255,.58) 44%,transparent 52%);transform:translateX(-120%)}.pickCard:hover:before{animation:cardShine .75s ease}@keyframes cardShine{to{transform:translateX(120%)}}.pickCard.grade5{border-color:#f0c631;background:linear-gradient(145deg,#fff3a9,#fff 38%,#dff8ff 62%,#ffc1ef);box-shadow:0 7px 18px #9e760633,0 0 0 1px #fff6b7 inset}.pickCard.grade4{border-color:#9f78db;background:linear-gradient(145deg,#eee4ff,#fff 45%,#e4f3ff)}.pickCard.owned{outline:3px solid #4cf08b;outline-offset:-3px}.pickCard.inTeam{box-shadow:0 0 0 3px #55cfff inset,0 7px 18px #1378a433}.arcadeCardTop{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 3px 6px}.arcadeStars{font-size:14px;font-weight:1000;letter-spacing:-1px;color:#ffbd19;text-shadow:0 1px 0 #9f6a00}.arcadeNo{font-size:10px;font-weight:900;color:#45606f;background:#fff9;border:1px solid #cad8df;border-radius:999px;padding:3px 6px}.pickImageFrame{position:relative;border-radius:12px;overflow:hidden;background:#061b2c;padding:3px}.pickImageFrame:before{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #6de7ff77;border-radius:12px;z-index:2}.pickCard img{border-radius:9px;display:block}.energyOrb{position:absolute;right:7px;bottom:7px;min-width:42px;height:42px;padding:0 6px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#d8fbff,#15bde9 47%,#04598d 75%);color:#fff;border:2px solid #bff9ff;box-shadow:0 0 12px #23cfff99;font-weight:1000;font-size:12px;line-height:1}.energyOrb small{font-size:7px;letter-spacing:.04em;margin-bottom:2px}.pickName{font-size:15px;text-align:center;color:#0f2737;text-shadow:0 1px #fff}.pickMeta{text-align:center;min-height:29px}.cardBadges{justify-content:center}.miniBadge.ownedBadge{background:#1cba5b;color:#fff;box-shadow:0 0 8px #36e57b66}.miniBadge.teamBadge{background:#0879c9;color:#fff;box-shadow:0 0 8px #30b9ff66}.quickActions button{border-radius:8px;box-shadow:0 2px 0 #0002}.quickActions .detailQuick{background:#182f40;color:#fff}.quickActions .teamQuick:not(:disabled){background:linear-gradient(180deg,#1c9ee5,#0871b6)}.quickActions .teamQuick.on,.quickActions .teamQuick:disabled.on{background:#125f91;color:#bfeeff;opacity:.78}.quickActions .ownedQuick.on{background:linear-gradient(180deg,#2ecb6f,#178648)}
+.teamGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.teamCard{display:grid;grid-template-columns:74px 1fr;gap:10px;align-items:center;border:2px solid #8fcce9;border-radius:15px;padding:8px;background:linear-gradient(135deg,#eefaff,#fff 55%,#e9f2ff);box-shadow:0 5px 13px #123b5720}.teamCard img{width:74px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#e8ebee;cursor:pointer}.teamCardMain{min-width:0}.teamSlot{font-size:9px;font-weight:1000;letter-spacing:.14em;color:#0876b5}.teamName{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.teamActions{display:flex;gap:5px;margin-top:7px}.teamActions button{padding:7px 8px;font-size:10px;flex:1}.teamActions .removeTeam{background:linear-gradient(180deg,#dc4b56,#a9202c)}.teamActions .teamDetail{background:#274a63}
+@media(max-width:620px){.pickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pickCard{padding:5px;border-radius:13px}.arcadeStars{font-size:12px}.arcadeNo{font-size:8px;padding:2px 4px}.energyOrb{width:37px;height:37px;min-width:37px;font-size:10px}.pickName{font-size:13px}.pickMeta{font-size:9px}.quickActions button{font-size:10px;padding:7px 3px}.teamGrid{grid-template-columns:1fr}.consoleLamp{min-width:58px;padding:7px 8px}}
+
 @media(max-width:620px){.hero{grid-template-columns:100px 1fr}.photo{width:100px}.grid{grid-template-columns:1fr 1fr}.battleSelect{grid-template-columns:1fr}.battleGrid{grid-template-columns:1fr}.vsBadge{width:50px;height:50px;margin:auto}.ownedGrid{grid-template-columns:repeat(2,1fr)}.pickGrid{grid-template-columns:repeat(2,1fr)}.browserToolbar{grid-template-columns:1fr}.seriesGrid{grid-template-columns:repeat(2,1fr)}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.6</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.7</header>
 <main>
-<section class="card">
-<h2>① ピックを選ぶ</h2>
+<section class="card pickConsole">
+<div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
 <div id="collectionOverall" class="collectionOverall"></div>
 <div class="browserToolbar">
   <div class="search"><input id="q" placeholder="番号・ポケモン名・英語名で検索"><button id="clearQ" class="ghost" type="button">消去</button></div>
@@ -35,14 +45,14 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
   <select id="browseType"><option value="">全タイプ</option></select>
   <select id="browseSort"><option value="number">番号順</option><option value="name">名前順</option><option value="energy">ポケエネ順</option></select>
 </div>
-<div class="seriesHeading"><b>弾から選ぶ</b><span>弾を押すと、その弾の全ピックを表示</span></div>
+<div class="seriesHeading"><b>弾から選ぶ</b><span>弾未選択＋「所持のみ」なら、所持ピックを全弾横断で表示</span></div>
 <div id="seriesButtons" class="seriesGrid"></div>
 <div id="browserSummary" class="browserSummary"></div>
 <div id="pickList" class="pickGrid"></div>
-<p class="note">検索中は全弾を対象に検索します。カード上から「所持」「チーム追加」を直接操作できます。「詳細・編集」でパラメータ確認・変更画面を開きます。</p>
+<p class="note">検索中は全弾を対象に検索します。①では所持登録とチーム追加ができます。チームからの除外は②「バトルチーム」で行います。「詳細・編集」でパラメータ確認・変更画面を開きます。</p>
 </section>
 
-<section class="card"><h2>② バトルチーム</h2><div id="teamList"></div><p class="note">所持ピックからバトルチームへ追加できます。チーム情報はこの端末に保存されます。</p></section>
+<section class="card teamConsole"><div class="consoleHeader compact"><div><span class="consoleKicker">BATTLE TEAM</span><h2>② バトルチーム</h2></div><div class="consoleLamp teamLamp">TEAM</div></div><div id="teamList" class="teamGrid"></div><p class="note">チームから外す操作はここで行います。ピック画像または「詳細」を押すとパラメータ画面を開きます。</p></section>
 <section class="card"><h2>③ バトル</h2>
 <p class="note">自分のバトルチームから1体、相手はマスターDBから検索して選択します。1対1・交代なしで最後まで戦います。</p>
 <div class="battleSelect"><div><b>自分のピック</b><div id="myBattlePicks"></div></div><div><b>相手を検索</b><div class="search"><input id="enemyQ" placeholder="番号・名前"><button id="randomEnemyBtn" class="ghost" type="button">ランダム</button></div><div id="enemyResults"></div></div></div>
@@ -88,7 +98,7 @@ function inTeam(r){return getIds(TEAM_KEY).includes(r.master_id)}
 function pickImage(r){return localStorage.getItem(key(r)+":photo")||r.official_image||svgPlaceholder(r.name_ja)}
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
 const TYPES=["ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
-let browseSeries="フレンダ1だん";
+let browseSeries=null;
 
 function overrides(r){try{return JSON.parse(localStorage.getItem(key(r))||"{}")}catch{return {}}}
 function merged(r){return Object.assign({},r,overrides(r))}
@@ -106,6 +116,9 @@ function renderCollectionOverall(){
 }
 function renderSeriesButtons(){
  const ids=new Set(getIds(OWNED_KEY)),box=$("seriesButtons");box.innerHTML="";
+ const clear=document.createElement("button");clear.type="button";clear.className="seriesBtn clearSeries"+(!browseSeries&&!norm($("q").value)?" active":"");
+ clear.innerHTML=`<b>弾選択なし</b><span>所持のみON → 全弾の所持ピック</span>`;
+ clear.onclick=()=>{browseSeries=null;$("q").value="";renderSeriesButtons();renderBrowser()};box.appendChild(clear);
  for(const s of SERIES_ORDER){
    const all=R.filter(r=>r.series===s),have=all.filter(r=>ids.has(r.master_id)).length,p=all.length?Math.round(have/all.length*1000)/10:0;
    const b=document.createElement("button");b.type="button";b.className="seriesBtn"+(browseSeries===s&&!norm($("q").value)?" active":"");
@@ -118,6 +131,7 @@ function browserRecords(){
  let a=R.slice();
  if(q)a=a.filter(r=>norm(r.pick_no).includes(q)||norm(r.name_ja).includes(q)||norm(r.name_en).includes(q));
  else if(browseSeries)a=a.filter(r=>r.series===browseSeries);
+ else if(!ownedOnly)return [];
  if(ownedOnly)a=a.filter(isOwned);
  if(grade)a=a.filter(r=>String(merged(r).grade??"")===grade);
  if(type)a=a.filter(r=>{const m=merged(r);return m.type1===type||m.type2===type});
@@ -131,24 +145,34 @@ function toggleOwned(r){
  if(isOwned(r)){a=a.filter(x=>x!==r.master_id);setIds(TEAM_KEY,getIds(TEAM_KEY).filter(x=>x!==r.master_id))}else a.push(r.master_id);
  setIds(OWNED_KEY,a);refreshAfterFlagChange(r)
 }
-function toggleTeam(r){
- if(!isOwned(r))return;
- let a=getIds(TEAM_KEY);if(inTeam(r))a=a.filter(x=>x!==r.master_id);else a.push(r.master_id);setIds(TEAM_KEY,a);refreshAfterFlagChange(r)
+function addTeam(r){
+ if(!isOwned(r)||inTeam(r))return;
+ const a=getIds(TEAM_KEY);a.push(r.master_id);setIds(TEAM_KEY,a);refreshAfterFlagChange(r)
 }
+function removeTeam(r){
+ setIds(TEAM_KEY,getIds(TEAM_KEY).filter(x=>x!==r.master_id));refreshAfterFlagChange(r)
+}
+function toggleTeam(r){addTeam(r)}
 function refreshAfterFlagChange(r){
  renderCollectionOverall();renderSeriesButtons();renderBrowser();renderTeam();renderBattlePicks();
  if(selected&&r&&selected.master_id===r.master_id)render()
 }
 function renderBrowser(){
- const box=$("pickList"),a=browserRecords(),q=norm($("q").value);box.innerHTML="";
+ const box=$("pickList"),a=browserRecords(),q=norm($("q").value),ownedOnly=$("ownedOnly").checked;box.innerHTML="";
  renderCollectionOverall();
- const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries||"全ピック");
- $("browserSummary").textContent=`${context}：${a.length}ピック表示`+($("ownedOnly").checked?"（所持のみ）":"");
- if(!a.length){box.innerHTML='<div class="emptyBrowser">条件に該当するピックはありません。</div>';return}
+ const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries|| (ownedOnly?"全弾・所持ピック":"弾未選択"));
+ $("browserSummary").textContent=`${context}：${a.length}ピック表示`+(ownedOnly?"（所持のみ）":"");
+ if(!a.length){
+   if(!q&&!browseSeries&&!ownedOnly){box.innerHTML='<div class="emptyBrowser">▲ 弾を選択してください<br><span style="font-weight:400;font-size:12px">または「所持のみ」をONにすると、全弾の所持ピックを表示します。</span></div>'}
+   else box.innerHTML='<div class="emptyBrowser">条件に該当するピックはありません。</div>';
+   return
+ }
  for(const r of a){
-   const m=merged(r),owned=isOwned(r),team=inTeam(r),d=document.createElement("div");d.className="pickCard"+(owned?" owned":"")+(team?" inTeam":"");
-   d.innerHTML=`<div class="pickOpen"><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.pick_no)}<br>${esc(r.series)} / ★${esc(m.grade??"-")} / ポケエネ ${esc(m.poke_ene??"-")}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">所持</span>':''}${team?'<span class="miniBadge teamBadge">チーム</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'所持解除':'所持'}</button><button type="button" class="teamQuick${team?' on':''}" ${!owned&&!team?'disabled':''}>${team?'チーム解除':'チーム追加'}</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
-   d.querySelector(".pickOpen").onclick=()=>select(r);d.querySelector(".detailQuick").onclick=()=>select(r);d.querySelector(".ownedQuick").onclick=()=>toggleOwned(r);d.querySelector(".teamQuick").onclick=()=>toggleTeam(r);box.appendChild(d)
+   const m=merged(r),owned=isOwned(r),team=inTeam(r),grade=Number(m.grade)||0,d=document.createElement("div");
+   d.className="pickCard grade"+grade+(owned?" owned":"")+(team?" inTeam":"");
+   const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持</span>':''}${team?'<span class="miniBadge teamBadge">⚔ TEAM</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'所持解除':'所持'}</button><button type="button" class="teamQuick${team?' on':''}" ${!owned||team?'disabled':''}>${team?'登録済':'チーム追加'}</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
+   d.querySelector(".pickOpen").onclick=()=>select(r);d.querySelector(".detailQuick").onclick=()=>select(r);d.querySelector(".ownedQuick").onclick=()=>toggleOwned(r);d.querySelector(".teamQuick").onclick=()=>addTeam(r);box.appendChild(d)
  }
 }
 function updateCounts(){refreshAfterFlagChange(null)}
@@ -164,21 +188,23 @@ function render(){
  for(const [k,label] of fields){const l=document.createElement("label");l.textContent=label;const i=document.createElement("input");i.id="v_"+k;i.value=Array.isArray(r[k])?r[k].join(" / "):(r[k]??"");i.disabled=!editing;l.appendChild(i);$("fields").appendChild(l)}
  const img=localStorage.getItem(key(selected)+":photo");$("photo").src=img||r.official_image||svgPlaceholder(r.name_ja);
  $("ownedBtn").textContent=isOwned(selected)?"所持から外す":"所持にする";
- $("teamBtn").textContent=inTeam(selected)?"チームから外す":"バトルチームに追加";
- $("teamBtn").disabled=!isOwned(selected)&&!inTeam(selected);
+ $("teamBtn").textContent=inTeam(selected)?"チーム登録済（除外は②）":"バトルチームに追加";
+ $("teamBtn").disabled=!isOwned(selected)||inTeam(selected);
  $("editBtn").classList.toggle("hidden",editing);$("saveBtn").classList.toggle("hidden",!editing);$("cancelBtn").classList.toggle("hidden",!editing)
 }
 function renderTeam(){
  const ids=getIds(TEAM_KEY),box=$("teamList");box.innerHTML="";
- if(!ids.length){box.innerHTML='<div class="meta">バトルチームは未登録です。</div>';return}
- ids.forEach((id,i)=>{const r=R.find(x=>x.master_id===id);if(!r)return;const d=document.createElement("div");d.className="result";d.innerHTML=`<b>${i+1}. ${esc(r.name_ja)}</b>　${esc(r.pick_no)}<div class="meta">${esc(r.series)} / ★${esc(merged(r).grade??"-")}</div>`;d.onclick=()=>select(r);box.appendChild(d)})
+ if(!ids.length){box.innerHTML='<div class="emptyBrowser" style="color:#52636f;background:#fafcfe;border-color:#cbd8e0">バトルチームは未登録です。①のピックカードから追加してください。</div>';return}
+ ids.forEach((id,i)=>{const r=R.find(x=>x.master_id===id);if(!r)return;const m=merged(r),d=document.createElement("div");d.className="teamCard";
+ d.innerHTML=`<img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="teamCardMain"><div class="teamSlot">TEAM SLOT ${String(i+1).padStart(2,"0")}</div><div class="teamName">${esc(r.name_ja)}</div><div class="meta">${esc(r.pick_no)} / ★${esc(m.grade??"-")} / ポケエネ ${esc(m.poke_ene??"-")}</div><div class="teamActions"><button type="button" class="teamDetail">詳細</button><button type="button" class="removeTeam">チームから外す</button></div></div>`;
+ d.querySelector("img").onclick=()=>select(r);d.querySelector(".teamDetail").onclick=()=>select(r);d.querySelector(".removeTeam").onclick=()=>removeTeam(r);box.appendChild(d)})
 }
 $("ownedBtn").onclick=()=>toggleOwned(selected);
-$("teamBtn").onclick=()=>toggleTeam(selected);
+$("teamBtn").onclick=()=>addTeam(selected);
 $("closeDetail").onclick=closeDetail;
 $("detailCard").addEventListener("click",e=>{if(e.target===$("detailCard"))closeDetail()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("detailCard").classList.contains("hidden"))closeDetail()});
-$("ownedOnly").onchange=renderBrowser;$("browseGrade").onchange=renderBrowser;$("browseType").onchange=renderBrowser;$("browseSort").onchange=renderBrowser;
+$("ownedOnly").onchange=()=>{renderSeriesButtons();renderBrowser()};$("browseGrade").onchange=renderBrowser;$("browseType").onchange=renderBrowser;$("browseSort").onchange=renderBrowser;
 $("q").addEventListener("input",()=>{renderSeriesButtons();renderBrowser()});$("clearQ").onclick=()=>{$("q").value="";renderSeriesButtons();renderBrowser();$("q").focus()};
 $("editBtn").onclick=()=>{editing=true;render()};
 $("cancelBtn").onclick=()=>{editing=false;render()};
@@ -256,4 +282,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 
 initBrowser();renderBattlePicks();renderTeam();renderCollectionOverall();
 </script></body></html>
-<!-- Updated: 2026-09-22 13:33:00 JST / Ver6.6 -->
+<!-- Updated: 2026-09-22 13:44:40 JST / Ver6.7 -->
