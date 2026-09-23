@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.31 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.35 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.34</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.35</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -205,8 +205,19 @@ body.battleOverlayOpen{overflow:hidden}
 .quickActions .detailQuick{grid-column:auto}.quickActions .matchupQuick{background:linear-gradient(180deg,#1b83a8,#0c5d7b);color:#fff}
 .tournamentWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.tournamentBracket{grid-template-columns:repeat(3,minmax(240px,1fr));min-width:780px;gap:38px;align-items:stretch}.roundCol{position:relative;min-height:520px;overflow:visible}.roundMatches{height:470px;display:flex;flex-direction:column;justify-content:space-around;gap:8px}.roundCol.round-0 .roundMatches{justify-content:space-between}.roundCol .matchBox{position:relative;margin-bottom:0}.roundCol:not(.round-2) .matchBox:after{content:"";position:absolute;right:-22px;top:50%;width:22px;border-top:2px solid #4aa9c8;opacity:.9}.roundCol:not(.round-0) .matchBox:before{content:"";position:absolute;left:-22px;top:50%;width:22px;border-top:2px solid #4aa9c8;opacity:.9}.roundCol:not(.round-2):after{content:"›";position:absolute;right:-31px;top:50%;transform:translateY(-50%);font-size:28px;font-weight:1000;color:#68dfff;text-shadow:0 0 10px #35cfff}.tournamentBracketHint{font-size:10px;color:#9fc9da;margin-top:6px;text-align:center}
 @media(max-width:720px){.tournamentBracket{grid-template-columns:repeat(3,240px)!important;min-width:780px!important}.tournamentWrap{overflow-x:auto}.roundCol{min-height:500px}.roundMatches{height:450px}}
+
+/* Ver6.35: tournament bracket mobile flow fix (no overlap with history/battle sheet) */
+.tournamentWrap{overflow-x:visible!important;overflow-y:visible!important}
+.tournamentBracket{width:100%;max-width:100%;min-width:0!important;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;align-items:stretch;padding-bottom:4px}
+.roundCol{min-height:0!important;display:flex;flex-direction:column;overflow:visible}
+.roundMatches{height:auto!important;min-height:470px;flex:1;box-sizing:border-box}
+@media(max-width:720px){
+ .tournamentBracket{grid-template-columns:repeat(3,240px)!important;min-width:0!important;overflow-x:auto!important;align-items:stretch}
+ .roundCol{min-height:0!important}
+ .roundMatches{height:auto!important;min-height:450px}
+}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.34</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.35</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1409,7 +1420,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.34",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.35",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1419,4 +1430,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 18:57:55 JST / Ver6.34 -->
+<!-- Updated: 2026-09-23 19:12:20 JST / Ver6.35 -->
