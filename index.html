@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.44 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.46</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.47</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -228,7 +228,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 /* Ver6.39: battle history, strength breakdown, matchup TOP3/TOP10 */
 /* Ver6.40: matchup good/bad toggle to keep the screen compact */
-/* Ver6.46: selected opponents shown as three side-by-side cards */
+/* Ver6.47: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
 .battleHistoryPanel{margin-top:14px;padding:12px;border:1px solid #cbd8e0;border-radius:14px;background:linear-gradient(180deg,#f9fcfe,#eef6fa)}
 .battleHistoryPanel.hidden{display:none!important}.battleHistoryHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.battleHistoryHead b{font-size:15px;color:#17394e}.battleHistoryHead button{padding:7px 10px}
@@ -251,7 +251,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 
 
-/* Ver6.46: selected opponent three-card overview */
+/* Ver6.47: selected opponent three-card overview */
 .best3OpponentOverviewWrap{margin:9px 0 8px;padding:8px;border:1px solid #cfdde5;border-radius:12px;background:linear-gradient(180deg,#f8fcfe,#edf5f9)}
 .best3OpponentOverviewHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;color:#17394e}.best3OpponentOverviewHead b{font-size:10px}.best3OpponentOverviewHead span{font-size:7px;color:#748792}
 .best3OpponentOverview .bestThreeCard{cursor:pointer;position:relative;transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
@@ -271,7 +271,7 @@ body.battleOverlayOpen{overflow:hidden}
 @media(max-width:600px){.typePill{font-size:9px;padding-right:5px}.typeMark{width:20px;height:20px}.weakTypeChooser{grid-template-columns:repeat(6,minmax(0,1fr))}.weakTypeBtn{font-size:7px;padding:5px 1px}.weakTypeBtn .typeMark{width:23px;height:23px}}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.46</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.47</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -521,7 +521,7 @@ function migrateLegacyTeamToFavorites(){
 }
 function pickImage(r){return localStorage.getItem(key(r)+":photo")||r.official_image||svgPlaceholder(r.name_ja)}
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
-const TYPES=["ノーマル","かくとう","どく","じめん","ひこう","むし","いわ","ゴースト","はがね","ほのお","みず","でんき","くさ","こおり","エスパー","ドラゴン","あく","フェアリー"];
+const TYPES=["ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
 let browseSeries=null;
 function browseScopeValue(){return document.querySelector('input[name="browseScope"]:checked')?.value||"all"}
 
@@ -1668,7 +1668,7 @@ function saveBest3OpponentSlots(){try{localStorage.setItem(BEST3_OPP_KEY,JSON.st
 function best3TypeNames(){return [...TYPES]}
 function best3TypeOrder(t){const i=TYPES.indexOf(t);return i>=0?i:999}
 function best3GoodTypes(r){const c=merged(r),m=c.move_type;if(!m)return [];return best3TypeNames().filter(t=>(TYPE[m]?.[t]??1)>1)}
-function best3WeakTypes(r){const c=merged(r);if(!c.type1)return [];return best3TypeNames().map(t=>({type:t,raw:rawEff(t,c)})).filter(x=>x.raw>1).sort((a,b)=>(b.raw-a.raw)||(best3TypeOrder(a.type)-best3TypeOrder(b.type)))}
+function best3WeakTypes(r){const c=merged(r);if(!c.type1)return [];return best3TypeNames().map(t=>({type:t,raw:rawEff(t,c)})).filter(x=>x.raw>1).sort((a,b)=>best3TypeOrder(a.type)-best3TypeOrder(b.type))}
 function best3TypeChipHTML(types,weak=false){if(!types?.length)return '<span class="bestTypeNone">なし</span>';return types.map(x=>{const t=typeof x==="string"?x:x.type,raw=typeof x==="string"?null:x.raw;return `<span class="bestTypeChip${weak?" weak":""}">${typeIconHTML(t,{label:false,iconOnly:true})}<span>${esc(t)}${raw>=4?" ×4":""}</span></span>`}).join("")}
 function best3Strength(base){return strengthInfo(base)?.score??-1}
 function best3EligiblePool(ownedOnly){const ownedIds=new Set(getIds(OWNED_KEY));return R.filter(r=>hasBattleStats(merged(r))&&(!ownedOnly||ownedIds.has(r.master_id)))}
@@ -1954,7 +1954,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.46",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.47",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1964,4 +1964,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 07:27:00 JST / Ver6.46 -->
+<!-- Updated: 2026-09-24 08:09:20 JST / Ver6.47 -->
