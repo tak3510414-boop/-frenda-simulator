@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.35 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.36 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.35</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.36</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -207,6 +207,7 @@ body.battleOverlayOpen{overflow:hidden}
 @media(max-width:720px){.tournamentBracket{grid-template-columns:repeat(3,240px)!important;min-width:780px!important}.tournamentWrap{overflow-x:auto}.roundCol{min-height:500px}.roundMatches{height:450px}}
 
 /* Ver6.35: tournament bracket mobile flow fix (no overlap with history/battle sheet) */
+/* Ver6.36: matchup TOP3 direction fixed; ranked pick is opponent when starting battle */
 .tournamentWrap{overflow-x:visible!important;overflow-y:visible!important}
 .tournamentBracket{width:100%;max-width:100%;min-width:0!important;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;align-items:stretch;padding-bottom:4px}
 .roundCol{min-height:0!important;display:flex;flex-direction:column;overflow:visible}
@@ -217,7 +218,7 @@ body.battleOverlayOpen{overflow:hidden}
  .roundMatches{height:auto!important;min-height:450px}
 }
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.35</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.36</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1008,12 +1009,56 @@ function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null,
 }
 function ownedRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:true,fullOnly:false,enemyRecord})}
 function allRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:false,fullOnly:true,enemyRecord})}
-function browserRecommendationRecords(enemyRecord=null,direction="best"){
- return recommendationRecords({ownedOnly:recommendScope==="owned",fullOnly:true,enemyRecord,direction});
+function browserRecommendationRecords(targetRecord=null,direction="best"){
+ const sourceTarget=targetRecord||recommendTargetRecord;if(!sourceTarget)return [];
+ const me=merged(sourceTarget),ownedIds=new Set(getIds(OWNED_KEY)),favoriteIds=new Set(getIds(FAVORITE_KEY));
+ const rows=[];
+ for(const base of R){
+   if(base.master_id===sourceTarget.master_id)continue;
+   const owned=ownedIds.has(base.master_id);
+   if(recommendScope==="owned"&&!owned)continue;
+   const enemy=merged(base);
+   const full=[me.hp,enemy.hp,attackStat(me),defenseStat(enemy,me),attackStat(enemy),defenseStat(me,enemy)].every(numOk) && !!me.move_type && !!enemy.move_type;
+   if(!full)continue;
+   const outEff=eff(me.move_type,enemy),inEff=eff(enemy.move_type,me);
+   const cmp=compareSpeed(me,enemy),meFirst=cmp>=0,speedTie=cmp===0;
+   const md=dmg(me,enemy).n,ed=dmg(enemy,me).n;
+   const meHits=hitsToKO(enemy.hp,md),enemyHits=hitsToKO(me.hp,ed);
+   const meTime=actionTimeToKO(meHits,meFirst),enemyTime=actionTimeToKO(enemyHits,!meFirst);
+   let outcome;
+   if(!Number.isFinite(meHits)&&!Number.isFinite(enemyHits))outcome="draw";
+   else if(!Number.isFinite(meHits))outcome="lose";
+   else if(!Number.isFinite(enemyHits))outcome="win";
+   else outcome=meTime<enemyTime?"win":"lose";
+   const outcomeRank=outcome==="win"?2:outcome==="draw"?1:0;
+   const margin=Number.isFinite(meTime)&&Number.isFinite(enemyTime)?enemyTime-meTime:
+     outcome==="win"?Number.POSITIVE_INFINITY:outcome==="lose"?Number.NEGATIVE_INFINITY:0;
+   const x={base,c:enemy,owned,full:true,outcome,outcomeRank,cHits:meHits,eHits:enemyHits,cFirst:meFirst,speedTie,outEff,inEff,cd:md,ed, cTime:meTime,eTime:enemyTime,margin,favorite:favoriteIds.has(base.master_id),targetPerspective:true};
+   x.score=matchupScoreFull(x);rows.push(x);
+ }
+ const bestSort=(a,b)=>{
+   if(b.score!==a.score)return b.score-a.score;
+   if(b.outcomeRank!==a.outcomeRank)return b.outcomeRank-a.outcomeRank;
+   if(a.outcome==="win"&&b.outcome==="win"){
+     if(a.cTime!==b.cTime)return a.cTime-b.cTime;
+     if(a.eTime!==b.eTime)return b.eTime-a.eTime;
+   }else if(a.outcome==="lose"&&b.outcome==="lose"){
+     if(a.margin!==b.margin)return b.margin-a.margin;
+   }
+   return (b.outEff-a.outEff)||(a.inEff-b.inEff)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0));
+ };
+ const worstSort=(a,b)=>{
+   if(a.score!==b.score)return a.score-b.score;
+   if(a.outcomeRank!==b.outcomeRank)return a.outcomeRank-b.outcomeRank;
+   if(a.margin!==b.margin)return a.margin-b.margin;
+   return (a.outEff-b.outEff)||(b.inEff-a.inEff)||((Number(a.c.poke_ene)||0)-(Number(b.c.poke_ene)||0));
+ };
+ rows.sort(direction==="worst"?worstSort:bestSort);
+ return rows.slice(0,3);
 }
 function chooseRecommended(r){
  if(!recommendTargetRecord)return;
- battle.me=merged(r);battle.enemy=merged(recommendTargetRecord);
+ battle.me=merged(recommendTargetRecord);battle.enemy=merged(r);
  updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();setMainTab("battle",false);setBattleMode("single");startIfReady();
 }
 function chooseRandomRecommended(r){
@@ -1035,33 +1080,33 @@ function renderRecommendationCards(grid,rows,{overall=false,interactive=true,ran
    const d=document.createElement("div");d.className=`recommendCard rank${i+1}`;
    const verdict=x.full?outcomeLabel(x.outcome):"参考評価";
    const verdictClass=x.full?(x.outcome==="lose"?" lose":x.outcome==="draw"?" draw":""):" ref";
-   const order=x.speedTie?"同速（自分先攻扱い）":(x.cFirst?"先攻":"後攻");
-   const koOut=Number.isFinite(x.cHits)?`相手を${x.cHits}回でKO見込み`:"KO回数を算出できない";
-   const koIn=Number.isFinite(x.eHits)?`自分は${x.eHits}回でKOされる見込み`:"被KO回数を算出できない";
+   const order=x.speedTie?"同速（自分先攻扱い）":(x.cFirst?"自分が先攻":"相手が先攻");
+   const koOut=Number.isFinite(x.cHits)?`自分→相手 ${x.cHits}回でKO見込み`:"自分→相手 KO回数を算出できない";
+   const koIn=Number.isFinite(x.eHits)?`相手→自分 ${x.eHits}回でKO見込み`:"相手→自分 被KO回数を算出できない";
    const reason=x.full
-     ? `<div><b>${order}</b> / ${koOut} / ${koIn}</div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：与${x.cd} / 被${x.ed}</div>`
+     ? `<div><b>${order}</b> / ${koOut} / ${koIn}</div><div>自分の攻撃相性：${effectText(x.outEff)}</div><div>相手の攻撃相性：${effectText(x.inEff)}</div><div>予測ダメージ：自分→相手 ${x.cd} / 相手→自分 ${x.ed}</div>`
      : `<div><b>能力値未確認のため参考評価</b></div><div>攻撃相性：${effectText(x.outEff)}</div><div>被攻撃相性：${effectText(x.inEff)}</div><div>タイプ相性・ポケエネ中心の評価です。</div><div>ポケエネ：${esc(x.c.poke_ene??"-")} / すばやさ：${esc(x.c.speed_value??x.c.speed_level??"-")}</div>`;
    const ownLabel=x.owned?'<span class="miniBadge ownedBadge">所持中</span>':'<span class="miniBadge">未所持</span>';
    const fav=isFavorite(x.base);
-   const action=interactive?`<div class="recommendActions"><button type="button" class="recBattleBtn">このポケモンで対戦</button><button type="button" class="recFavoriteBtn${fav?' on':''}">${fav?'★ お気に入り':'☆ お気に入り'}</button></div>`:"";
+   const action=interactive?`<div class="recommendActions"><button type="button" class="recBattleBtn">このポケモンと対戦</button><button type="button" class="recFavoriteBtn${fav?' on':''}">${fav?'★ お気に入り':'☆ お気に入り'}</button></div>`:"";
    d.innerHTML=`<span class="recommendRank">${i+1}位</span><span class="recommendScore${x.full?"":" reference"}">${x.score}<small>${x.full?"相性スコア":"参考スコア"}</small></span><div class="recommendTop"><img src="${esc(pickImage(x.base))}" alt=""><div><div class="recommendName">${esc(x.c.name_ja)}</div><div class="recommendMeta">${esc(x.c.pick_no)}<br>${esc(x.c.series)}</div>${ownLabel}${fav?' <span class="miniBadge favoriteBadge">★ お気に入り</span>':''}<br><span class="recommendVerdict${verdictClass}">${verdict}</span></div></div><div class="recommendReasons">${reason}</div>${action}`;
    const battleBtn=d.querySelector(".recBattleBtn");if(interactive&&battleBtn)battleBtn.onclick=()=>randomCandidate?chooseRandomRecommended(x.base):chooseRecommended(x.base);
    const favBtn=d.querySelector(".recFavoriteBtn");if(interactive&&favBtn)favBtn.onclick=e=>{e.stopPropagation();toggleFavorite(x.base);randomCandidate?renderEnemyRandomRecommendations():renderRecommendations()};grid.appendChild(d)
  })
 }
 function renderRecommendations(){
- const bestGrid=$("recommendBestGrid"),worstGrid=$("recommendWorstGrid"),target=$("recommendTarget"),note=$("recommendScopeNote"),enemy=recommendTargetRecord;
+ const bestGrid=$("recommendBestGrid"),worstGrid=$("recommendWorstGrid"),target=$("recommendTarget"),note=$("recommendScopeNote"),me=recommendTargetRecord;
  const scopeBtns=[...document.querySelectorAll("#recommendOverlay .matchupScopeBtn")];
  scopeBtns.forEach(btn=>{
    btn.classList.toggle("on",btn.dataset.matchupScope===recommendScope);
    btn.onclick=()=>{recommendScope=btn.dataset.matchupScope||"all";renderRecommendations()};
  });
- if(!enemy){target.textContent="対象未選択";bestGrid.innerHTML="";worstGrid.innerHTML="";return}
- target.textContent=`対象：${enemy.name_ja}（${enemy.pick_no}）`;
+ if(!me){target.textContent="対象未選択";bestGrid.innerHTML="";worstGrid.innerHTML="";return}
+ target.textContent=`基準：${me.name_ja}（${me.pick_no}）から見た相性`;
  const owned=recommendScope==="owned";
- note.textContent=owned?"所持中かつ能力値確認済みのピックから選出します。":"能力値確認済みの全ピックから選出します。";
- renderRecommendationCards(bestGrid,browserRecommendationRecords(enemy,"best"),{overall:!owned});
- renderRecommendationCards(worstGrid,browserRecommendationRecords(enemy,"worst"),{overall:!owned});
+ note.textContent=(owned?"所持中かつ能力値確認済みの相手候補から選出。":"能力値確認済みの全相手候補から選出。")+" 上段＝このピックが戦いやすい相手、下段＝このピックが苦手な相手です。";
+ renderRecommendationCards(bestGrid,browserRecommendationRecords(me,"best"),{overall:!owned});
+ renderRecommendationCards(worstGrid,browserRecommendationRecords(me,"worst"),{overall:!owned});
 }
 function renderEnemyRandomRecommendations(){
  const wrap=$("enemyRandomRecommend"),ownedGrid=$("enemyRandomOwnedGrid"),allGrid=$("enemyRandomAllGrid"),target=$("enemyRandomRecommendTarget");
@@ -1420,7 +1465,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.35",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.36",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1430,4 +1475,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 19:12:20 JST / Ver6.35 -->
+<!-- Updated: 2026-09-23 19:50:12 JST / Ver6.36 -->
