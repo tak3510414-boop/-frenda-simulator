@@ -220,14 +220,19 @@ body.battleOverlayOpen{overflow:hidden}
 
 /* Ver6.37: 1000-point overall strength rating */
 .strengthBadge{display:inline-flex;align-items:baseline;justify-content:center;gap:4px;margin:7px auto 3px;padding:5px 9px;border-radius:999px;background:linear-gradient(180deg,#fff8cf,#f6cf55);border:1px solid #d7a91c;color:#5d4700;box-shadow:0 2px 5px #8a650022;font-weight:1000}.strengthBadge span{font-size:8px}.strengthBadge b{font-size:16px;line-height:1}.strengthBadge small{font-size:7px}.strengthBadge.missing{background:#edf1f3;border-color:#c5d0d6;color:#71818a;box-shadow:none}.pickBackStrength{display:inline-flex;align-items:baseline;gap:5px;margin-top:7px;padding:5px 9px;border-radius:999px;background:#fff2b4;border:1px solid #d6ad28;color:#5c4700;font-weight:1000}.pickBackStrength span{font-size:9px}.pickBackStrength b{font-size:17px}.pickBackStrength small{font-size:8px}.pickBackStrength.missing{background:#edf1f3;border-color:#c6d0d5;color:#6e7e87}
+
+/* Ver6.38: settings consolidation + pick scope radio buttons */
+.browserScopeRadios{display:flex;gap:5px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.browserScopeOption{position:relative;cursor:pointer}.browserScopeOption input{position:absolute;opacity:0;pointer-events:none}.browserScopeOption span{display:block;padding:9px 11px;border:1px solid #b9c7d0;border-radius:999px;background:#edf2f5;color:#40515d;font-size:11px;font-weight:1000;white-space:nowrap;box-shadow:0 1px 2px #0001}.browserScopeOption input:checked+span{background:linear-gradient(180deg,#1878d7,#0757a4);border-color:#064d91;color:#fff;box-shadow:0 0 0 2px #91d7ff inset,0 3px 8px #0a65b52b}.browserScopeOption:active span{transform:translateY(1px)}
+.settingsGroup{margin:12px 0 16px;padding:12px;border:1px solid #d6e0e6;border-radius:14px;background:#f8fbfd}.settingsGroup h3{margin:0 0 9px;font-size:15px;color:#243d4d}.settingsGroup .damageModelBar{margin:0}.settingsNote{margin:8px 0 0}.settingsDanger{border-color:#e3c9c9;background:#fffafa}.settingsClearActions .dangerBtn{background:#9b2d30;color:#fff;border:1px solid #7f2023}.settingsClearActions .dangerBtn:active{background:#7f2023}
+@media(max-width:520px){.browserToolbar{grid-template-columns:1fr}.browserScopeRadios{justify-content:stretch}.browserScopeOption{flex:1}.browserScopeOption span{text-align:center;padding:8px 5px;font-size:10px}.settingsClearActions{display:grid;grid-template-columns:1fr}.settingsClearActions button{width:100%}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.37</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.38</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
   <button class="mainTabBtn" type="button" data-main-tab="team" aria-selected="false"><span class="tabNo">②</span><span class="tabLabel">お気に入り</span></button>
   <button class="mainTabBtn" type="button" data-main-tab="battle" aria-selected="false"><span class="tabNo">③</span><span class="tabLabel">バトル</span></button>
-  <button class="mainTabBtn" type="button" data-main-tab="data" aria-selected="false"><span class="tabNo">④</span><span class="tabLabel">データ</span></button>
+  <button class="mainTabBtn" type="button" data-main-tab="data" aria-selected="false"><span class="tabNo">④</span><span class="tabLabel">設定</span></button>
 </nav>
 <section id="tab-pick" class="card pickConsole mainTabPanel">
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
@@ -235,7 +240,11 @@ body.battleOverlayOpen{overflow:hidden}
 <div id="masterStatsStatus" class="masterStatsStatus"></div>
 <div class="browserToolbar">
   <div class="search"><input id="q" placeholder="番号・ポケモン名・英語名で検索"><button id="clearQ" class="ghost" type="button">消去</button></div>
-  <select id="browseScope" class="browserScopeSelect" aria-label="表示対象"><option value="all">全件</option><option value="owned">所持</option><option value="favorite">お気に入り</option></select>
+  <div id="browseScope" class="browserScopeRadios" role="radiogroup" aria-label="表示対象">
+    <label class="browserScopeOption"><input type="radio" name="browseScope" value="all" checked><span>全件</span></label>
+    <label class="browserScopeOption"><input type="radio" name="browseScope" value="owned"><span>所持</span></label>
+    <label class="browserScopeOption"><input type="radio" name="browseScope" value="favorite"><span>★ お気に入り</span></label>
+  </div>
 </div>
 <div class="browserFilters">
   <select id="browseGrade"><option value="">全グレード</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select>
@@ -254,7 +263,7 @@ body.battleOverlayOpen{overflow:hidden}
 <section id="tab-battle" class="card mainTabPanel tabHidden"><h2>③ バトル</h2>
 <div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">トーナメント</button><button id="roundRobinModeBtn" type="button">総当たりランキング</button></div>
 <p id="battleModeDescription" class="note">左右のピック画像をタップして自分・相手を選択し、中央の🆚をタップすると最後まで自動で戦います。全件・所持・お気に入りから選択できます。</p>
-<div class="damageModelBar"><div class="damageModelLabel">ダメージ計算</div><div class="damageModelBtns"><button id="damageV1Btn" type="button">Ver1 旧計算</button><button id="damageV2Btn" type="button">Ver2 技威力・命中</button></div><div id="damageModelNote" class="damageModelNote"></div></div>
+
 <div class="battleSetupCompact">
   <div id="myPickPanel" class="battleChoiceCard hidden">
     <div class="battleChoiceHead"><b>自分のピック</b><span>MY PICK</span></div>
@@ -290,10 +299,24 @@ body.battleOverlayOpen{overflow:hidden}
 <details class="battleLogDetails"><summary>詳細ログを見る</summary><div id="battleLog" class="log"></div></details></div>
 </section>
 <div id="championOverlay" class="championOverlay" aria-hidden="true"><div class="championCard"><div class="championCrown">👑</div><div class="championLabel">CHAMPION</div><img id="championPick" class="championPick" alt="優勝ピック"><div id="championName" class="championName"></div><div id="championCup"></div><button id="closeChampionBtn" type="button">大会表へ戻る</button></div></div>
-<section id="tab-data" class="card mainTabPanel tabHidden"><h2>④ バックアップ／復元</h2>
-<p class="note">所持ピック、お気に入り、ユーザー修正値、登録した写真を1つのJSONファイルに保存できます。端末変更やブラウザデータ消去前のバックアップに利用してください。</p>
-<div class="actions"><button id="backupBtn" type="button">バックアップを書き出す</button><button id="restoreBtn" type="button" class="secondary">バックアップを読み込む</button><input id="restoreFile" class="hidden" type="file" accept="application/json,.json"></div>
-<div id="backupStatus" class="backupStatus"></div>
+<section id="tab-data" class="card mainTabPanel tabHidden"><h2>④ 設定</h2>
+<div class="settingsGroup">
+  <h3>⚔️ バトル設定</h3>
+  <div class="damageModelBar"><div class="damageModelLabel">ダメージ計算方式</div><div class="damageModelBtns"><button id="damageV1Btn" type="button">Ver1 旧計算</button><button id="damageV2Btn" type="button">Ver2 技威力・命中</button></div><div id="damageModelNote" class="damageModelNote"></div></div>
+  <p class="note settingsNote">ここで選んだ方式は、1対1・トーナメント・総当たり・相性・総合強さの計算に共通で使用します。</p>
+</div>
+<div class="settingsGroup">
+  <h3>💾 バックアップ／復元</h3>
+  <p class="note">所持ピック、お気に入り、ユーザー修正値、登録した写真、各種設定を1つのJSONファイルに保存できます。端末変更やブラウザデータ消去前のバックアップに利用してください。</p>
+  <div class="actions"><button id="backupBtn" type="button">バックアップを書き出す</button><button id="restoreBtn" type="button" class="secondary">バックアップを読み込む</button><input id="restoreFile" class="hidden" type="file" accept="application/json,.json"></div>
+  <div id="backupStatus" class="backupStatus"></div>
+</div>
+<div class="settingsGroup settingsDanger">
+  <h3>🧹 登録データのクリア</h3>
+  <p class="note">ピック本体や能力値マスターは消えません。所持登録・お気に入り登録だけを個別に空にします。</p>
+  <div class="actions settingsClearActions"><button id="clearOwnedBtn" type="button" class="dangerBtn">所持をすべてクリア</button><button id="clearFavoritesBtn" type="button" class="dangerBtn">お気に入りをすべてクリア</button></div>
+  <div id="clearDataStatus" class="backupStatus"></div>
+</div>
 </section></main>
 
 
@@ -394,6 +417,7 @@ function pickImage(r){return localStorage.getItem(key(r)+":photo")||r.official_i
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
 const TYPES=["ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
 let browseSeries=null;
+function browseScopeValue(){return document.querySelector('input[name="browseScope"]:checked')?.value||"all"}
 
 function overrides(r){try{return JSON.parse(localStorage.getItem(key(r))||"{}")}catch{return {}}}
 function merged(r){return Object.assign({},r,overrides(r))}
@@ -428,7 +452,7 @@ function renderSeriesButtons(){
  }
 }
 function browserRecords(){
- const q=norm($("q").value),scope=$("browseScope").value,grade=$("browseGrade").value,type=$("browseType").value,stats=$("browseStats").value,sort=$("browseSort").value;
+ const q=norm($("q").value),scope=browseScopeValue(),grade=$("browseGrade").value,type=$("browseType").value,stats=$("browseStats").value,sort=$("browseSort").value;
  let a=R.slice();
  if(q)a=a.filter(r=>norm(r.pick_no).includes(q)||norm(r.name_ja).includes(q)||norm(r.name_en).includes(q));
  else if(browseSeries)a=a.filter(r=>r.series===browseSeries);
@@ -497,13 +521,13 @@ function updateBrowserCardFlagState(r){
 function toggleOwned(r){
  let a=getIds(OWNED_KEY);
  if(isOwned(r))a=a.filter(x=>x!==r.master_id);else a.push(r.master_id);
- const redrawBrowser=$("browseScope").value==="owned";
+ const redrawBrowser=browseScopeValue()==="owned";
  keepWindowScroll(()=>{setIds(OWNED_KEY,a);refreshAfterFlagChange(r,redrawBrowser);updateBattleSelectionStatus()})
 }
 function toggleFavorite(r){
  let a=getIds(FAVORITE_KEY);
  if(isFavorite(r))a=a.filter(x=>x!==r.master_id);else a.push(r.master_id);
- const redrawBrowser=$("browseScope").value==="favorite";
+ const redrawBrowser=browseScopeValue()==="favorite";
  keepWindowScroll(()=>{setIds(FAVORITE_KEY,a);refreshAfterFlagChange(r,redrawBrowser)})
 }
 function removeFavorite(r){setIds(FAVORITE_KEY,getIds(FAVORITE_KEY).filter(x=>x!==r.master_id));refreshAfterFlagChange(r)}
@@ -516,7 +540,7 @@ function refreshAfterFlagChange(r,redrawBrowser=true){
  if(!$("enemyPickOverlay").classList.contains("hidden")&&pendingRandomEnemy)renderEnemyRandomRecommendations()
 }
 function renderBrowser(){
- const box=$("pickList"),a=browserRecords(),q=norm($("q").value),scope=$("browseScope").value,stats=$("browseStats").value;box.innerHTML="";
+ const box=$("pickList"),a=browserRecords(),q=norm($("q").value),scope=browseScopeValue(),stats=$("browseStats").value;box.innerHTML="";
  renderCollectionOverall();
  const scopeLabel=scope==="owned"?"所持":scope==="favorite"?"お気に入り":"全件";
  const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries||`全弾・${scopeLabel}`);
@@ -580,7 +604,7 @@ $("favoriteBtn").onclick=()=>toggleFavorite(selected);
 $("closeDetail").onclick=closeDetail;
 $("detailCard").addEventListener("click",e=>{if(e.target===$("detailCard"))closeDetail()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("detailCard").classList.contains("hidden"))closeDetail()});
-$("browseScope").onchange=()=>{renderSeriesButtons();renderBrowser()};$("browseGrade").onchange=renderBrowser;$("browseType").onchange=renderBrowser;$("browseStats").onchange=renderBrowser;$("browseSort").onchange=renderBrowser;
+document.querySelectorAll('input[name="browseScope"]').forEach(r=>r.onchange=()=>{renderSeriesButtons();renderBrowser()});$("browseGrade").onchange=renderBrowser;$("browseType").onchange=renderBrowser;$("browseStats").onchange=renderBrowser;$("browseSort").onchange=renderBrowser;
 $("q").addEventListener("input",()=>{renderSeriesButtons();renderBrowser()});$("clearQ").onclick=()=>{$("q").value="";renderSeriesButtons();renderBrowser();$("q").focus()};
 $("editBtn").onclick=()=>{editing=true;render()};
 $("cancelBtn").onclick=()=>{editing=false;render()};
@@ -1362,7 +1386,7 @@ function renderDamageModelUI(){
 }
 function setDamageModel(m){
  if(!["v1","v2"].includes(m))m="v1";if(m===damageModel){renderDamageModelUI();return}
- damageModel=m;localStorage.setItem(DAMAGE_MODEL_KEY,m);strengthMemo={signature:"",scores:new Map(),ranks:new Map(),count:0};renderDamageModelUI();roundRobinPoolInfo();
+ damageModel=m;localStorage.setItem(DAMAGE_MODEL_KEY,m);strengthMemo={signature:"",scores:new Map(),ranks:new Map(),count:0};renderDamageModelUI();roundRobinPoolInfo();renderBrowser();
  if(battleMode==="single"&&battle.me&&battle.enemy)startIfReady();
  if(!$("recommendOverlay")?.classList.contains("hidden"))renderRecommendations();
  if(!$("enemyPickOverlay")?.classList.contains("hidden"))renderEnemyRandomRecommendations();
@@ -1501,9 +1525,28 @@ function setMainTab(name,fromUser=false){
 }
 document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.dataset.mainTab,true));
 
+function refreshAfterBulkFlagClear(){
+ renderCollectionOverall();renderSeriesButtons();renderBrowser();renderFavorites();renderBattlePicks();updateBattleSelectionStatus();roundRobinPoolInfo();
+ if(!$("recommendOverlay")?.classList.contains("hidden")&&recommendTargetRecord)renderRecommendations();
+ if(!$("enemyPickOverlay")?.classList.contains("hidden")){enemySearch();renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()}
+}
+function clearAllOwned(){
+ const n=getIds(OWNED_KEY).length,status=$("clearDataStatus");
+ if(!n){status.textContent="所持登録はありません。";return}
+ if(!confirm(`所持登録 ${n}件をすべてクリアしますか？\nこの操作は元に戻せません。`))return;
+ setIds(OWNED_KEY,[]);refreshAfterBulkFlagClear();status.textContent=`所持登録 ${n}件をクリアしました。`;
+}
+function clearAllFavorites(){
+ const n=getIds(FAVORITE_KEY).length,status=$("clearDataStatus");
+ if(!n){status.textContent="お気に入り登録はありません。";return}
+ if(!confirm(`お気に入り登録 ${n}件をすべてクリアしますか？\nこの操作は元に戻せません。`))return;
+ setIds(FAVORITE_KEY,[]);refreshAfterBulkFlagClear();status.textContent=`お気に入り登録 ${n}件をクリアしました。`;
+}
+$("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAllFavorites;
+
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.37",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.38",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1513,4 +1556,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 20:00:11 JST / Ver6.37 -->
+<!-- Updated: 2026-09-23 21:11:41 JST / Ver6.38 -->
