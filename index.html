@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.36 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.36</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.37</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -207,7 +207,7 @@ body.battleOverlayOpen{overflow:hidden}
 @media(max-width:720px){.tournamentBracket{grid-template-columns:repeat(3,240px)!important;min-width:780px!important}.tournamentWrap{overflow-x:auto}.roundCol{min-height:500px}.roundMatches{height:450px}}
 
 /* Ver6.35: tournament bracket mobile flow fix (no overlap with history/battle sheet) */
-/* Ver6.36: matchup TOP3 direction fixed; ranked pick is opponent when starting battle */
+/* Ver6.37: matchup TOP3 direction fixed; ranked pick is opponent when starting battle */
 .tournamentWrap{overflow-x:visible!important;overflow-y:visible!important}
 .tournamentBracket{width:100%;max-width:100%;min-width:0!important;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;align-items:stretch;padding-bottom:4px}
 .roundCol{min-height:0!important;display:flex;flex-direction:column;overflow:visible}
@@ -217,8 +217,11 @@ body.battleOverlayOpen{overflow:hidden}
  .roundCol{min-height:0!important}
  .roundMatches{height:auto!important;min-height:450px}
 }
+
+/* Ver6.37: 1000-point overall strength rating */
+.strengthBadge{display:inline-flex;align-items:baseline;justify-content:center;gap:4px;margin:7px auto 3px;padding:5px 9px;border-radius:999px;background:linear-gradient(180deg,#fff8cf,#f6cf55);border:1px solid #d7a91c;color:#5d4700;box-shadow:0 2px 5px #8a650022;font-weight:1000}.strengthBadge span{font-size:8px}.strengthBadge b{font-size:16px;line-height:1}.strengthBadge small{font-size:7px}.strengthBadge.missing{background:#edf1f3;border-color:#c5d0d6;color:#71818a;box-shadow:none}.pickBackStrength{display:inline-flex;align-items:baseline;gap:5px;margin-top:7px;padding:5px 9px;border-radius:999px;background:#fff2b4;border:1px solid #d6ad28;color:#5c4700;font-weight:1000}.pickBackStrength span{font-size:9px}.pickBackStrength b{font-size:17px}.pickBackStrength small{font-size:8px}.pickBackStrength.missing{background:#edf1f3;border-color:#c6d0d5;color:#6e7e87}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.36</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.37</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -238,7 +241,7 @@ body.battleOverlayOpen{overflow:hidden}
   <select id="browseGrade"><option value="">全グレード</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select>
   <select id="browseType"><option value="">全タイプ</option></select>
   <select id="browseStats"><option value="">能力値：すべて</option><option value="verified">能力値：確認済み</option><option value="missing">能力値：未確認</option></select>
-  <select id="browseSort"><option value="number">番号順</option><option value="name">名前順</option><option value="energy">ポケエネ順</option><option value="hp">HP高い順</option><option value="atk">ATK高い順</option><option value="def">DEF高い順</option><option value="sp_atk">SP.ATK高い順</option><option value="sp_def">SP.DEF高い順</option><option value="speed">すばやさ高い順</option></select>
+  <select id="browseSort"><option value="number">番号順</option><option value="name">名前順</option><option value="strength">総合強さ順</option><option value="energy">ポケエネ順</option><option value="hp">HP高い順</option><option value="atk">ATK高い順</option><option value="def">DEF高い順</option><option value="sp_atk">SP.ATK高い順</option><option value="sp_def">SP.DEF高い順</option><option value="speed">すばやさ高い順</option></select>
 </div>
 <div class="seriesHeading"><b>弾から選ぶ</b><span>弾未選択なら全ピック。表示対象は「全件・所持・お気に入り」で切替できます</span></div>
 <div id="seriesButtons" class="seriesGrid"></div>
@@ -447,6 +450,9 @@ function browserRecords(){
  });
  if(sort==="number")a.sort((x,y)=>String(x.pick_no).localeCompare(String(y.pick_no),"ja",{numeric:true}));
  if(sort==="name")a.sort((x,y)=>String(x.name_ja).localeCompare(String(y.name_ja),"ja"));
+ if(sort==="strength"){
+   const st=getStrengthRatings();a.sort((x,y)=>{const xs=st.scores.get(x.master_id),ys=st.scores.get(y.master_id);if((xs===undefined)!==(ys===undefined))return xs===undefined?1:-1;if(xs!==undefined&&ys!==undefined&&ys!==xs)return ys-xs;const pe=(Number(merged(y).poke_ene)||0)-(Number(merged(x).poke_ene)||0);return pe||String(x.pick_no).localeCompare(String(y.pick_no),"ja",{numeric:true})})
+ }
  if(sort==="energy")numSort("poke_ene");
  if(sort==="hp")numSort("hp");
  if(sort==="atk")numSort("atk");
@@ -521,16 +527,16 @@ function renderBrowser(){
    return
  }
  for(const r of a){
-   const m=merged(r),owned=isOwned(r),favorite=isFavorite(r),grade=Number(m.grade)||0,d=document.createElement("div");
+   const m=merged(r),owned=isOwned(r),favorite=isFavorite(r),grade=Number(m.grade)||0,si=strengthInfo(r),d=document.createElement("div");
    d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button><button type="button" class="matchupQuick">相性TOP3</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${esc(m.type1??"-")}${m.type2?" / "+esc(m.type2):""}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・${si.rank}位`:"・未評価"}</small></div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button><button type="button" class="matchupQuick">相性TOP3</button><button type="button" class="detailQuick">詳細・編集</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};d.querySelector(".matchupQuick").onclick=e=>{e.preventDefault();e.stopPropagation();openPickRecommendOverlay(r)};d.querySelector(".detailQuick").onclick=()=>select(r);d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
 }
 function dataValue(v){return v===null||v===undefined||v===""?"未確認":v}
 function showPickBack(r){
- const m=merged(r),ov=overrides(r),edited=Object.keys(ov).length>0;
+ const m=merged(r),ov=overrides(r),edited=Object.keys(ov).length>0,si=strengthInfo(r);
  const grade=Number(m.grade)||0,stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
  const types=[m.type1,m.type2].filter(Boolean).map(t=>`<span class="pickBackType">${esc(t)}</span>`).join("")||'<span class="pickBackType">未確認</span>';
  const sp=Array.isArray(m.special)?m.special.filter(Boolean).join(" / "):(m.special||"");
@@ -538,7 +544,7 @@ function showPickBack(r){
  const stats=[["HP",m.hp],["ATK",m.atk],["DEF",m.def],["SP.ATK",m.sp_atk],["SP.DEF",m.sp_def],["SPEED",speed]];
  const missing=[m.hp,m.atk,m.def,m.sp_atk,m.sp_def].some(v=>v===null||v===undefined||v==="");
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${esc(dataValue(m.move_type))} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${esc(dataValue(m.move_type))} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  $("pickBackOverlay").classList.remove("hidden");document.body.style.overflow="hidden"
 }
 function closePickBack(){$("pickBackOverlay").classList.add("hidden");if($("detailCard").classList.contains("hidden"))document.body.style.overflow=""}
@@ -1122,7 +1128,7 @@ function renderEnemyRandomRecommendations(){
 
 const ROUND_ROBIN_CACHE_KEY="frenda:roundrobin:cache:v1";
 const ROUND_ROBIN_RULE_VERSION="6.28-v2ref";
-const ROUND_ROBIN_SIG_FIELDS=["poke_ene","speed_level","speed_value","type1","type2","move_type","move_class","hp","atk","def","sp_atk","sp_def"];
+const ROUND_ROBIN_SIG_FIELDS=["poke_ene","speed_level","speed_value","type1","type2","move_type","move_class","move_power_ref","move_accuracy_ref","move_accuracy_always","hp","atk","def","sp_atk","sp_def"];
 
 function roundRobinEligible(ownedOnly){
  const ownedIds=new Set(getIds(OWNED_KEY));
@@ -1171,6 +1177,38 @@ function roundRobinCacheEntry(meta){
 function sortRoundRobinRows(rows){
  rows.sort((a,b)=>(b.points-a.points)||(b.wins-a.wins)||(b.draws-a.draws)||(b.winRate-a.winRate)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0))||String(a.c.pick_no).localeCompare(String(b.c.pick_no),"ja"));
  return rows
+}
+
+const STRENGTH_CACHE_KEY="frenda:strength:cache:v1";
+let strengthMemo={signature:"",scores:new Map(),ranks:new Map(),count:0};
+function strengthMeta(){
+ const pool=roundRobinEligible(false);return {pool,pairs:pool.length*(pool.length-1)/2,ownedOnly:false,excluded:Math.max(0,R.length-pool.length)}
+}
+function strengthSignature(meta){return `strength-${roundRobinSignature(meta)}`}
+function strengthBuildMemo(signature,entries){
+ const valid=entries.filter(x=>Array.isArray(x)&&x.length>=2&&Number.isFinite(Number(x[1]))),refs=new Map(R.map(r=>[r.master_id,merged(r)]));
+ valid.sort((a,b)=>{const ar=refs.get(a[0])||{},br=refs.get(b[0])||{};return (Number(b[1])-Number(a[1]))||((Number(br.poke_ene)||0)-(Number(ar.poke_ene)||0))||String(ar.pick_no||"").localeCompare(String(br.pick_no||""),"ja",{numeric:true})});
+ const scores=new Map(),ranks=new Map();valid.forEach((x,i)=>{scores.set(x[0],Math.max(0,Math.min(1000,Math.round(Number(x[1])))));ranks.set(x[0],i+1)});
+ strengthMemo={signature,scores,ranks,count:valid.length};return strengthMemo
+}
+function strengthEntriesFromRows(rows){
+ return rows.map(x=>[x.base.master_id,x.games?Math.round(x.points/(x.games*3)*1000):0])
+}
+function calculateStrengthEntries(meta){
+ const rows=meta.pool.map(base=>({base,c:merged(base),wins:0,draws:0,losses:0,points:0,games:meta.pool.length-1}));
+ for(let i=0;i<rows.length-1;i++){
+   const A=rows[i];for(let j=i+1;j<rows.length;j++){const B=rows[j],r=roundRobinJudge(A.c,B.c);if(r>0){A.wins++;A.points+=3;B.losses++}else if(r<0){B.wins++;B.points+=3;A.losses++}else{A.draws++;B.draws++;A.points++;B.points++}}
+ }
+ return strengthEntriesFromRows(rows)
+}
+function getStrengthRatings(){
+ const meta=strengthMeta(),signature=strengthSignature(meta);if(strengthMemo.signature===signature&&strengthMemo.scores.size===meta.pool.length)return strengthMemo;
+ try{const saved=JSON.parse(localStorage.getItem(STRENGTH_CACHE_KEY)||"{}");if(saved.signature===signature&&Array.isArray(saved.entries)&&saved.entries.length===meta.pool.length)return strengthBuildMemo(signature,saved.entries)}catch{}
+ const rr=roundRobinCacheEntry(meta).entry;if(rr){const rows=rowsFromRoundRobinCache(rr,meta);if(rows){const entries=strengthEntriesFromRows(rows);try{localStorage.setItem(STRENGTH_CACHE_KEY,JSON.stringify({signature,entries}))}catch{}return strengthBuildMemo(signature,entries)}}
+ const entries=calculateStrengthEntries(meta);try{localStorage.setItem(STRENGTH_CACHE_KEY,JSON.stringify({signature,entries}))}catch{}return strengthBuildMemo(signature,entries)
+}
+function strengthInfo(r){
+ if(!r||!hasBattleStats(merged(r)))return null;const data=getStrengthRatings(),score=data.scores.get(r.master_id),rank=data.ranks.get(r.master_id);return Number.isFinite(score)?{score,rank,count:data.count,model:damageModel}:null
 }
 function rowsFromRoundRobinCache(entry,meta){
  if(!entry||!Array.isArray(entry.rows)||entry.rows.length!==meta.pool.length)return null;
@@ -1324,7 +1362,7 @@ function renderDamageModelUI(){
 }
 function setDamageModel(m){
  if(!["v1","v2"].includes(m))m="v1";if(m===damageModel){renderDamageModelUI();return}
- damageModel=m;localStorage.setItem(DAMAGE_MODEL_KEY,m);renderDamageModelUI();roundRobinPoolInfo();
+ damageModel=m;localStorage.setItem(DAMAGE_MODEL_KEY,m);strengthMemo={signature:"",scores:new Map(),ranks:new Map(),count:0};renderDamageModelUI();roundRobinPoolInfo();
  if(battleMode==="single"&&battle.me&&battle.enemy)startIfReady();
  if(!$("recommendOverlay")?.classList.contains("hidden"))renderRecommendations();
  if(!$("enemyPickOverlay")?.classList.contains("hidden"))renderEnemyRandomRecommendations();
@@ -1465,7 +1503,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.36",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.37",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1475,4 +1513,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 19:50:12 JST / Ver6.36 -->
+<!-- Updated: 2026-09-23 20:00:11 JST / Ver6.37 -->
