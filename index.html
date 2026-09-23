@@ -227,6 +227,7 @@ body.battleOverlayOpen{overflow:hidden}
 @media(max-width:520px){.browserToolbar{grid-template-columns:1fr}.browserScopeRadios{justify-content:stretch}.browserScopeOption{flex:1}.browserScopeOption span{text-align:center;padding:8px 5px;font-size:10px}.settingsClearActions{display:grid;grid-template-columns:1fr}.settingsClearActions button{width:100%}}
 
 /* Ver6.39: battle history, strength breakdown, matchup TOP3/TOP10 */
+/* Ver6.40: matchup good/bad toggle to keep the screen compact */
 .battleHistoryPanel{margin-top:14px;padding:12px;border:1px solid #cbd8e0;border-radius:14px;background:linear-gradient(180deg,#f9fcfe,#eef6fa)}
 .battleHistoryPanel.hidden{display:none!important}.battleHistoryHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.battleHistoryHead b{font-size:15px;color:#17394e}.battleHistoryHead button{padding:7px 10px}
 .historySummaryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}.historySummaryCard{padding:8px;border-radius:10px;background:#fff;border:1px solid #dce6eb;text-align:center}.historySummaryCard span{display:block;font-size:8px;color:#6d7e87}.historySummaryCard b{display:block;font-size:17px;color:#16384b;margin-top:2px}
@@ -236,11 +237,11 @@ body.battleOverlayOpen{overflow:hidden}
 .strengthBadge{cursor:pointer}.pickBackStrength{cursor:pointer}
 .strengthAnalysisHero{display:grid;grid-template-columns:105px 1fr;gap:12px;align-items:center}.strengthAnalysisHero img{width:105px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}.strengthAnalysisName{font-size:22px;font-weight:1000;color:#17394e}.strengthAnalysisMeta{font-size:10px;color:#627781;line-height:1.55;margin-top:3px}.strengthTotalBig{display:inline-flex;align-items:baseline;gap:5px;margin-top:8px;padding:7px 11px;border-radius:999px;background:#fff2b4;border:1px solid #d6ad28;color:#5c4700;font-weight:1000}.strengthTotalBig b{font-size:24px}.strengthTotalBig span{font-size:9px}
 .strengthBreakdown{margin-top:13px;display:grid;gap:8px}.strengthPart{display:grid;grid-template-columns:74px 1fr 64px;gap:8px;align-items:center;padding:8px;border:1px solid #dce5ea;border-radius:10px;background:#fff}.strengthPartName{font-size:10px;font-weight:1000;color:#304f60}.strengthPartBar{height:10px;border-radius:999px;background:#e7edf0;overflow:hidden}.strengthPartFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1d83c1,#46c8e9)}.strengthPartValue{text-align:right}.strengthPartValue b{font-size:12px;color:#17394e}.strengthPartValue small{display:block;font-size:7px;color:#758791}.strengthBreakdownNote{margin-top:9px;padding:8px;border-radius:9px;background:#eef6fa;color:#58717e;font-size:8px;line-height:1.55}
-.matchupLimitTabs{display:flex;gap:5px;justify-content:flex-end}.matchupLimitBtn{padding:7px 10px;background:#edf2f5;color:#40515d;border:1px solid #b9c7d0}.matchupLimitBtn.on{background:#175fa7;color:#fff;border-color:#0f518f}.matchupControlRow{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.recommendReasonSummary{margin:7px 0 4px;padding:6px 7px;border-radius:8px;background:#e7f5fb;border-left:4px solid #1783aa;color:#1f5369;font-size:9px;font-weight:1000}
+.matchupLimitTabs{display:flex;gap:5px;justify-content:flex-end}.matchupLimitBtn{padding:7px 10px;background:#edf2f5;color:#40515d;border:1px solid #b9c7d0}.matchupLimitBtn.on{background:#175fa7;color:#fff;border-color:#0f518f}.matchupDirectionTabs{display:flex;gap:5px}.matchupDirectionBtn{padding:7px 10px;background:#edf2f5;color:#40515d;border:1px solid #b9c7d0}.matchupDirectionBtn.on{background:#7a4aa5;color:#fff;border-color:#65388f}.matchupControlRow{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.recommendReasonSummary{margin:7px 0 4px;padding:6px 7px;border-radius:8px;background:#e7f5fb;border-left:4px solid #1783aa;color:#1f5369;font-size:9px;font-weight:1000}
 @media(max-width:620px){.historySummaryGrid{grid-template-columns:repeat(2,1fr)}.historyBattleRow{grid-template-columns:70px 1fr auto}.strengthAnalysisHero{grid-template-columns:82px 1fr}.strengthAnalysisHero img{width:82px}.strengthAnalysisName{font-size:19px}.strengthPart{grid-template-columns:62px 1fr 58px}.matchupControlRow{align-items:stretch}.matchupLimitTabs{justify-content:flex-start}}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.39</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.40</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -379,6 +380,7 @@ body.battleOverlayOpen{overflow:hidden}
       <div id="recommendWrap" class="recommendWrap">
         <div class="recommendHead"><b>相性ランキング（100点満点）</b><span id="recommendTarget">対象未選択</span></div>
         <div class="matchupControlRow">
+          <div class="matchupDirectionTabs" aria-label="相性方向"><button type="button" class="matchupDirectionBtn on" data-matchup-direction="best">相性がいい</button><button type="button" class="matchupDirectionBtn" data-matchup-direction="worst">相性が悪い</button></div>
           <div class="matchupScopeTabs" aria-label="相性ランキング対象"><button type="button" class="matchupScopeBtn on" data-matchup-scope="all">全件</button><button type="button" class="matchupScopeBtn" data-matchup-scope="owned">所持</button></div>
           <div class="matchupLimitTabs" aria-label="表示件数"><button type="button" class="matchupLimitBtn on" data-matchup-limit="3">TOP3</button><button type="button" class="matchupLimitBtn" data-matchup-limit="10">TOP10</button></div>
         </div>
@@ -892,6 +894,7 @@ let pendingRandomEnemy=null;
 let recommendTargetRecord=null;
 let recommendScope="all";
 let recommendLimit=3;
+let recommendDirection="best";
 function updateEnemyRandomStatus(){
  const el=$("enemyRandomStatus"),btn=$("closeEnemyPickerBtn"),card=$("enemyRandomCandidate");if(!el)return;
  if(pendingRandomEnemy){
@@ -1203,6 +1206,11 @@ function renderRecommendationCards(grid,rows,{overall=false,interactive=true,ran
 }
 function renderRecommendations(){
  const bestGrid=$("recommendBestGrid"),worstGrid=$("recommendWorstGrid"),target=$("recommendTarget"),note=$("recommendScopeNote"),me=recommendTargetRecord;
+ const bestSection=document.querySelector("#recommendOverlay .recommendBestSection"),worstSection=document.querySelector("#recommendOverlay .recommendWorstSection");
+ document.querySelectorAll("#recommendOverlay .matchupDirectionBtn").forEach(btn=>{
+   btn.classList.toggle("on",btn.dataset.matchupDirection===recommendDirection);
+   btn.onclick=()=>{recommendDirection=btn.dataset.matchupDirection==="worst"?"worst":"best";renderRecommendations()};
+ });
  const scopeBtns=[...document.querySelectorAll("#recommendOverlay .matchupScopeBtn")];
  scopeBtns.forEach(btn=>{
    btn.classList.toggle("on",btn.dataset.matchupScope===recommendScope);
@@ -1214,12 +1222,21 @@ function renderRecommendations(){
  });
  if($("recommendBestTitle"))$("recommendBestTitle").textContent=`相性がいい TOP${recommendLimit}`;
  if($("recommendWorstTitle"))$("recommendWorstTitle").textContent=`相性が悪い TOP${recommendLimit}`;
+ if(bestSection)bestSection.classList.toggle("hidden",recommendDirection!=="best");
+ if(worstSection)worstSection.classList.toggle("hidden",recommendDirection!=="worst");
  if(!me){target.textContent="対象未選択";bestGrid.innerHTML="";worstGrid.innerHTML="";return}
  target.textContent=`基準：${me.name_ja}（${me.pick_no}）から見た相性`;
  const owned=recommendScope==="owned";
- note.textContent=(owned?"所持中かつ能力値確認済みの相手候補から選出。":"能力値確認済みの全相手候補から選出。")+` 相性TOP${recommendLimit}を表示中。上段＝このピックが戦いやすい相手、下段＝このピックが苦手な相手です。`;
- renderRecommendationCards(bestGrid,browserRecommendationRecords(me,"best"),{overall:!owned});
- renderRecommendationCards(worstGrid,browserRecommendationRecords(me,"worst"),{overall:!owned});
+ const label=recommendDirection==="best"?"相性がいい":"相性が悪い";
+ const meaning=recommendDirection==="best"?"このピックが戦いやすい相手":"このピックが苦手な相手";
+ note.textContent=(owned?"所持中かつ能力値確認済みの相手候補から選出。":"能力値確認済みの全相手候補から選出。")+` ${label} TOP${recommendLimit}（${meaning}）を表示中。`;
+ if(recommendDirection==="best"){
+   renderRecommendationCards(bestGrid,browserRecommendationRecords(me,"best"),{overall:!owned});
+   worstGrid.innerHTML="";
+ }else{
+   renderRecommendationCards(worstGrid,browserRecommendationRecords(me,"worst"),{overall:!owned});
+   bestGrid.innerHTML="";
+ }
 }
 function renderEnemyRandomRecommendations(){
  const wrap=$("enemyRandomRecommend"),ownedGrid=$("enemyRandomOwnedGrid"),allGrid=$("enemyRandomAllGrid"),target=$("enemyRandomRecommendTarget");
@@ -1701,4 +1718,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 21:34:04 JST / Ver6.39 -->
+<!-- Updated: 2026-09-23 21:53:23 JST / Ver6.40 -->
