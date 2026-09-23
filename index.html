@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.31 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.33</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.34</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -53,6 +53,7 @@ button{border:0;border-radius:10px;padding:10px 13px;background:#1769e0;color:#f
 .recommendWrap{margin-top:10px;border:1px solid #cbd8e0;border-radius:14px;padding:10px;background:linear-gradient(180deg,#f8fbfd,#edf5f9)}
 .recommendHead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .recommendHead b{font-size:14px}.recommendHead span{font-size:11px;color:#61707a}
+.matchupScopeTabs{display:flex;gap:6px;margin-top:10px;padding:4px;background:#dfeaf0;border-radius:12px}.matchupScopeBtn{flex:1;border:0;border-radius:9px;padding:9px 12px;background:transparent;color:#4c5d68;font-weight:800}.matchupScopeBtn.on{background:#fff;color:#075d83;box-shadow:0 2px 8px #264a5d20}.matchupScopeNote{margin-top:6px;font-size:10px;color:#64737d}.recommendWorstSection{border-top-color:#e6caca}.recommendWorstSection .recommendSubHead b{color:#9d3131}
 .recommendGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
 .recommendCard{position:relative;border:2px solid #bad0dc;border-radius:13px;background:#fff;padding:8px;box-shadow:0 3px 10px #102b3c12}
 .recommendCard.rank1{border-color:#e0b31e;background:linear-gradient(145deg,#fff8ce,#fff)}
@@ -195,17 +196,17 @@ body.battleOverlayOpen{overflow:hidden}
 @media(max-width:620px){.battleFxControl{justify-content:center}.battleIntroSide{font-size:13px}.battleIntroVS{font-size:30px}.battleTurnSplash b{font-size:27px}.battleImpact{font-size:22px}.battleImpact.ko{font-size:34px}.battleSpecialBanner b{font-size:14px}.battleVictoryFx b{font-size:31px}}
 
 
-/* Ver6.33: image selection, VS auto battle, battle analysis */
+/* Ver6.34: image selection, VS auto battle, battle analysis */
 .fighterImageButton{display:block;width:min(145px,100%);margin:0 auto;padding:0;border:0;border-radius:12px;background:transparent;box-shadow:none;color:inherit;cursor:pointer;overflow:hidden;position:relative}.fighterImageButton img{display:block;width:100%!important;max-width:none;aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#e8ebee}.fighterImageButton:not(:disabled):active{transform:scale(.97)}.fighterImageButton:disabled{cursor:default;opacity:1}.fighterPickTapHint{font-size:8px;font-weight:900;color:#517080;margin-top:3px}.fighterImagePlaceholder{aspect-ratio:2/3;border:2px dashed #86a8b9;background:linear-gradient(180deg,#f7fcff,#dceef6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#31586b}.fighterImagePlaceholder .fighterPlaceholderPlus{font-size:31px;line-height:1;color:#0b78a2}.fighterImagePlaceholder b{font-size:11px}.fighterImagePlaceholder small{font-size:7px;color:#65808f}.fighterNameEmpty{color:#82929b}.vsBadge{appearance:none;padding:0;cursor:pointer;font-family:inherit;transition:transform .18s ease,box-shadow .18s ease,opacity .18s ease}.vsBadge.ready{animation:vsReadyPulse 1.15s ease-in-out infinite alternate}.vsBadge.running{animation:none;filter:saturate(.55)}.vsBadge:disabled{cursor:default;opacity:.48}.vsBadge.ready:active{transform:scale(.9)}.battleTapGuide{margin:7px 0 0;text-align:center;font-size:9px;font-weight:900;color:#496574}.battleForecastEmpty{padding:8px;text-align:center;color:#657b88;font-size:10px;font-weight:800}.battleResetActions{justify-content:center}.battleResetActions button{max-width:220px}.battleAnalysis{margin-top:10px;border:1px solid #c9d8e0;border-radius:12px;background:#f8fbfc;padding:9px}.battleAnalysisHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}.battleAnalysisHead b{font-size:13px;color:#17394e}.battleAnalysisHead span{font-size:9px;font-weight:1000;border-radius:999px;padding:4px 8px}.battleAnalysisHead span.good{background:#dff4e5;color:#236b3a}.battleAnalysisHead span.bad{background:#f8e1e1;color:#922f34}.battleAnalysisItems{display:grid;gap:5px}.battleAnalysisItem{display:grid;grid-template-columns:78px 1fr;gap:7px;align-items:start;border-left:4px solid #aebdc5;border-radius:7px;background:#fff;padding:6px 7px}.battleAnalysisItem.good{border-left-color:#49a467}.battleAnalysisItem.bad{border-left-color:#c4585d}.battleAnalysisItem strong{font-size:9px;color:#344d5b}.battleAnalysisItem span{font-size:9px;line-height:1.45;color:#556a76}.battleAnalysisTip{margin-top:7px;padding:7px 8px;border-radius:8px;background:#eaf4f8;color:#315a6e;font-size:9px;font-weight:800;line-height:1.45}.battleAnalysisNote{margin-top:5px;font-size:7px;color:#7b8c95}.battleChoiceCard.hidden{display:none!important}@keyframes vsReadyPulse{from{transform:scale(1);box-shadow:0 0 14px #65e2ff77,0 5px 18px #0005}to{transform:scale(1.08);box-shadow:0 0 27px #6de7ffcc,0 5px 18px #0005}}
 @media(max-width:620px){.fighterImageButton{width:min(112px,100%)}.battleAnalysisItem{grid-template-columns:66px 1fr}.battleTapGuide{font-size:8px}}
 
 
-/* Ver6.33: browser matchup TOP3 + clean battle selection + classic tournament bracket */
+/* Ver6.34: matchup best/worst TOP3 with all/owned scope + classic tournament bracket */
 .quickActions .detailQuick{grid-column:auto}.quickActions .matchupQuick{background:linear-gradient(180deg,#1b83a8,#0c5d7b);color:#fff}
 .tournamentWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.tournamentBracket{grid-template-columns:repeat(3,minmax(240px,1fr));min-width:780px;gap:38px;align-items:stretch}.roundCol{position:relative;min-height:520px;overflow:visible}.roundMatches{height:470px;display:flex;flex-direction:column;justify-content:space-around;gap:8px}.roundCol.round-0 .roundMatches{justify-content:space-between}.roundCol .matchBox{position:relative;margin-bottom:0}.roundCol:not(.round-2) .matchBox:after{content:"";position:absolute;right:-22px;top:50%;width:22px;border-top:2px solid #4aa9c8;opacity:.9}.roundCol:not(.round-0) .matchBox:before{content:"";position:absolute;left:-22px;top:50%;width:22px;border-top:2px solid #4aa9c8;opacity:.9}.roundCol:not(.round-2):after{content:"›";position:absolute;right:-31px;top:50%;transform:translateY(-50%);font-size:28px;font-weight:1000;color:#68dfff;text-shadow:0 0 10px #35cfff}.tournamentBracketHint{font-size:10px;color:#9fc9da;margin-top:6px;text-align:center}
 @media(max-width:720px){.tournamentBracket{grid-template-columns:repeat(3,240px)!important;min-width:780px!important}.tournamentWrap{overflow-x:auto}.roundCol{min-height:500px}.roundMatches{height:450px}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.33</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.34</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -311,9 +312,15 @@ body.battleOverlayOpen{overflow:hidden}
 
 <section id="recommendOverlay" class="battlePickerOverlay hidden" aria-modal="true" role="dialog" aria-label="相性ランキング">
   <div class="battlePickerShell">
-    <div class="battlePickerHead"><div><small>MATCHUP TOP 3</small><b>このピックに強い相性TOP3</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
+    <div class="battlePickerHead"><div><small>MATCHUP TOP 3</small><b>このピックとの相性TOP3</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
     <div class="battlePickerBody">
-      <div id="recommendWrap" class="recommendWrap"><div class="recommendHead"><b>相性ランキング（100点満点）</b><span id="recommendTarget">相手未選択</span></div><div class="recommendSection"><div class="recommendSubHead"><b>所持ピック TOP3</b><span>今持っているピックから選出</span></div><div id="recommendOwnedGrid" class="recommendGrid"></div></div><div class="recommendSection"><div class="recommendSubHead"><b>全ピック TOP3</b><span>能力値確認済み1043件・未所持含む</span></div><div id="recommendAllGrid" class="recommendGrid"></div></div></div>
+      <div id="recommendWrap" class="recommendWrap">
+        <div class="recommendHead"><b>相性ランキング（100点満点）</b><span id="recommendTarget">対象未選択</span></div>
+        <div class="matchupScopeTabs" aria-label="相性ランキング対象"><button type="button" class="matchupScopeBtn on" data-matchup-scope="all">全件</button><button type="button" class="matchupScopeBtn" data-matchup-scope="owned">所持</button></div>
+        <div id="recommendScopeNote" class="matchupScopeNote">能力値確認済みの全ピックから選出します。</div>
+        <div class="recommendSection recommendBestSection"><div class="recommendSubHead"><b>相性がいい TOP3</b><span>スコアが高い順</span></div><div id="recommendBestGrid" class="recommendGrid"></div></div>
+        <div class="recommendSection recommendWorstSection"><div class="recommendSubHead"><b>相性が悪い TOP3</b><span>スコアが低い順</span></div><div id="recommendWorstGrid" class="recommendGrid"></div></div>
+      </div>
     </div>
   </div>
 </section>
@@ -778,6 +785,7 @@ function closeBattleOverlays(){document.querySelectorAll(".battlePickerOverlay")
 function showBattleOverlay(id){document.querySelectorAll(".battlePickerOverlay").forEach(x=>x.classList.add("hidden"));const el=$(id);if(!el)return;el.classList.remove("hidden");document.body.classList.add("battleOverlayOpen");el.scrollTop=0}
 let pendingRandomEnemy=null;
 let recommendTargetRecord=null;
+let recommendScope="all";
 function updateEnemyRandomStatus(){
  const el=$("enemyRandomStatus"),btn=$("closeEnemyPickerBtn"),card=$("enemyRandomCandidate");if(!el)return;
  if(pendingRandomEnemy){
@@ -934,7 +942,7 @@ function matchupScoreReference(x){
  const speedPts=clamp((Number(x.c.speed_level)||0)/5*9,0,9);
  return Math.round(clamp(typePts+energyPts+speedPts,0,59));
 }
-function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null}={}){
+function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null,direction="best"}={}){
  const sourceEnemy=enemyRecord||battle.enemy;if(!sourceEnemy)return [];
  const enemy=merged(sourceEnemy), ownedIds=new Set(getIds(OWNED_KEY)), favoriteIds=new Set(getIds(FAVORITE_KEY));
  const fullRows=[],refRows=[];
@@ -966,7 +974,7 @@ function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null}
  }
  for(const x of fullRows)x.score=matchupScoreFull(x);
  for(const x of refRows)x.score=matchupScoreReference(x);
- fullRows.sort((a,b)=>{
+ const bestSort=(a,b)=>{
    if(b.score!==a.score)return b.score-a.score;
    if(b.outcomeRank!==a.outcomeRank)return b.outcomeRank-a.outcomeRank;
    if(a.outcome==="win"&&b.outcome==="win"){
@@ -976,12 +984,22 @@ function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null}
      if(a.margin!==b.margin)return b.margin-a.margin;
    }
    return (b.outEff-a.outEff)||(a.inEff-b.inEff)||((Number(b.c.poke_ene)||0)-(Number(a.c.poke_ene)||0));
- });
- refRows.sort((a,b)=>(b.score-a.score)||(b.margin-a.margin));
+ };
+ const worstSort=(a,b)=>{
+   if(a.score!==b.score)return a.score-b.score;
+   if(a.outcomeRank!==b.outcomeRank)return a.outcomeRank-b.outcomeRank;
+   if(a.margin!==b.margin)return a.margin-b.margin;
+   return (a.outEff-b.outEff)||(b.inEff-a.inEff)||((Number(a.c.poke_ene)||0)-(Number(b.c.poke_ene)||0));
+ };
+ fullRows.sort(direction==="worst"?worstSort:bestSort);
+ refRows.sort(direction==="worst"?((a,b)=>(a.score-b.score)||(a.margin-b.margin)):((a,b)=>(b.score-a.score)||(b.margin-a.margin)));
  return fullRows.concat(refRows).slice(0,3);
 }
 function ownedRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:true,fullOnly:false,enemyRecord})}
 function allRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:false,fullOnly:true,enemyRecord})}
+function browserRecommendationRecords(enemyRecord=null,direction="best"){
+ return recommendationRecords({ownedOnly:recommendScope==="owned",fullOnly:true,enemyRecord,direction});
+}
 function chooseRecommended(r){
  if(!recommendTargetRecord)return;
  battle.me=merged(r);battle.enemy=merged(recommendTargetRecord);
@@ -1021,11 +1039,18 @@ function renderRecommendationCards(grid,rows,{overall=false,interactive=true,ran
  })
 }
 function renderRecommendations(){
- const wrap=$("recommendWrap"),ownedGrid=$("recommendOwnedGrid"),allGrid=$("recommendAllGrid"),target=$("recommendTarget"),enemy=recommendTargetRecord;
- if(!enemy){target.textContent="対象未選択";ownedGrid.innerHTML="";allGrid.innerHTML="";return}
+ const bestGrid=$("recommendBestGrid"),worstGrid=$("recommendWorstGrid"),target=$("recommendTarget"),note=$("recommendScopeNote"),enemy=recommendTargetRecord;
+ const scopeBtns=[...document.querySelectorAll("#recommendOverlay .matchupScopeBtn")];
+ scopeBtns.forEach(btn=>{
+   btn.classList.toggle("on",btn.dataset.matchupScope===recommendScope);
+   btn.onclick=()=>{recommendScope=btn.dataset.matchupScope||"all";renderRecommendations()};
+ });
+ if(!enemy){target.textContent="対象未選択";bestGrid.innerHTML="";worstGrid.innerHTML="";return}
  target.textContent=`対象：${enemy.name_ja}（${enemy.pick_no}）`;
- renderRecommendationCards(ownedGrid,ownedRecommendationRecords(enemy),{overall:false});
- renderRecommendationCards(allGrid,allRecommendationRecords(enemy),{overall:true});
+ const owned=recommendScope==="owned";
+ note.textContent=owned?"所持中かつ能力値確認済みのピックから選出します。":"能力値確認済みの全ピックから選出します。";
+ renderRecommendationCards(bestGrid,browserRecommendationRecords(enemy,"best"),{overall:!owned});
+ renderRecommendationCards(worstGrid,browserRecommendationRecords(enemy,"worst"),{overall:!owned});
 }
 function renderEnemyRandomRecommendations(){
  const wrap=$("enemyRandomRecommend"),ownedGrid=$("enemyRandomOwnedGrid"),allGrid=$("enemyRandomAllGrid"),target=$("enemyRandomRecommendTarget");
@@ -1384,7 +1409,7 @@ document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.d
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.33",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.34",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1394,4 +1419,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-23 18:47:10 JST / Ver6.33 -->
+<!-- Updated: 2026-09-23 18:57:55 JST / Ver6.34 -->
