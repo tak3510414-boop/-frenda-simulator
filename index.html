@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.52 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.53</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.54</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -231,7 +231,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.49: double weakness badge on weakness type icons */
 /* Ver6.49: opponent image opens picker; compact counter UI; infer type from exact weakness set */
 /* Ver6.51: selected opponent uses master types for weakness; unselected opponent uses manual weaknesses and explicit type-candidate choice */
-/* Ver6.53: selected opponent cards show master type, move type, and calculated weaknesses */
+/* Ver6.54: selected opponent cards show master type, move type, and calculated weaknesses */
 /* Ver6.49: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
 .battleHistoryPanel{margin-top:14px;padding:12px;border:1px solid #cbd8e0;border-radius:14px;background:linear-gradient(180deg,#f9fcfe,#eef6fa)}
@@ -277,11 +277,11 @@ body.battleOverlayOpen{overflow:hidden}
 .best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}
 .best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.53</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.54</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
-  <button class="mainTabBtn" type="button" data-main-tab="team" aria-selected="false"><span class="tabNo">②</span><span class="tabLabel">お気に入り</span></button>
+  <button class="mainTabBtn" type="button" data-main-tab="team" aria-selected="false"><span class="tabNo">②</span><span class="tabLabel">最強3体</span></button>
   <button class="mainTabBtn" type="button" data-main-tab="battle" aria-selected="false"><span class="tabNo">③</span><span class="tabLabel">バトル</span></button>
   <button class="mainTabBtn" type="button" data-main-tab="data" aria-selected="false"><span class="tabNo">④</span><span class="tabLabel">設定</span></button>
 </nav>
@@ -310,9 +310,36 @@ body.battleOverlayOpen{overflow:hidden}
 <p class="note">検索中は全弾を対象に検索します。「所持」と「★お気に入り」は独立して登録できます。未所持のピックもお気に入りにできます。「詳細・編集」でパラメータ確認・変更画面を開きます。</p>
 </section>
 
-<section id="tab-team" class="card teamConsole mainTabPanel tabHidden"><div class="consoleHeader compact"><div><span class="consoleKicker">FAVORITES</span><h2>② ★ お気に入り</h2></div><div class="consoleLamp teamLamp">★ FAV</div></div><div id="teamList" class="teamGrid"></div><p class="note">所持・未所持に関係なく登録できます。ピック画像は裏面データ、詳細ボタンはパラメータ編集画面を開きます。</p></section>
+<section id="tab-team" class="card teamConsole mainTabPanel tabHidden"><div class="consoleHeader compact"><div><span class="consoleKicker">BEST THREE</span><h2>② 最強3体</h2></div><div class="consoleLamp teamLamp">TOP 3</div></div><div id="bestThreePanel" class="bestThreePanel">
+  <div class="bestThreeSection">
+    <div class="bestThreeHead"><div><h3>👑 所持ピック 最強3体</h3><p>現在の総合強さ1000点を基準に、所持ピックから上位3体を1組だけ選出します。</p></div><button id="refreshBestOwnedThreeBtn" type="button" class="ghost">再表示</button></div>
+    <div id="bestOwnedThreeMeta" class="bestThreeMeta"></div>
+    <div id="bestOwnedThreeResult" class="bestThreeCards"></div>
+  </div>
+  <div class="bestThreeSection counterBuilder">
+    <div class="bestThreeHead"><div><h3>🎯 相手ピックから最強3体</h3><p>相手ピックを選んだ場合はマスタデータのタイプから弱点を判定します。相手を選ばない場合は、実機に表示された弱点を選び、表示されたタイプ候補から該当タイプを選択してください。</p></div></div>
+    <div class="best3OpponentOverviewWrap">
+      <div class="best3OpponentOverviewHead"><b>相手1・2・3</b><span>カードをタップして編集</span></div>
+      <div id="best3OpponentOverview" class="bestThreeCards best3OpponentOverview"></div>
+    </div>
+    <div id="weakOpponentTabs" class="weakOpponentTabs hidden">
+      <button type="button" class="on" data-weak-slot="0">相手1</button><button type="button" data-weak-slot="1">相手2</button><button type="button" data-weak-slot="2">相手3</button>
+    </div>
+    <div id="weakOpponentSummary" class="weakOpponentSummary hidden"></div>
+    <div id="weakTypeChooser" class="weakTypeChooser"></div>
+    <div id="best3TypeCandidatePanel" class="best3TypeCandidatePanel hidden"></div>
+    <div id="best3InferredTypeStatus" class="bestThreeMeta hidden"></div>
+    <div class="weakTypeActions"><button id="clearCurrentWeakBtn" type="button" class="ghost">この相手をクリア</button><button id="clearAllWeakBtn" type="button" class="ghost">3人ともクリア</button><button id="calcWeakCounterBtn" type="button">最強3体を選出</button></div>
+    <div id="weakCounterStatus" class="bestThreeMeta"></div>
+    <div class="counterResultBlocks">
+      <div class="counterResultBlock"><div class="counterResultTitle"><b>✓ 所持から</b><span>能力値確認済み</span></div><div id="weakOwnedThreeResult" class="bestThreeCards"></div></div>
+      <div class="counterResultBlock"><div class="counterResultTitle"><b>全件から</b><span>能力値確認済み</span></div><div id="weakAllThreeResult" class="bestThreeCards"></div></div>
+    </div>
+  </div>
+</div>
+</section>
 <section id="tab-battle" class="card mainTabPanel tabHidden"><h2>③ バトル</h2>
-<div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">トーナメント</button><button id="roundRobinModeBtn" type="button">総当たりランキング</button><button id="bestThreeModeBtn" type="button">最強3枚</button></div>
+<div class="battleModeTabs"><button id="singleModeBtn" type="button" class="on">1対1バトル</button><button id="tournamentModeBtn" type="button">トーナメント</button><button id="roundRobinModeBtn" type="button">総当たりランキング</button></div>
 <p id="battleModeDescription" class="note">左右のピック画像をタップして自分・相手を選択し、中央の🆚をタップすると最後まで自動で戦います。全件・所持・お気に入りから選択できます。</p>
 
 <div class="battleSetupCompact">
@@ -336,33 +363,6 @@ body.battleOverlayOpen{overflow:hidden}
   <div id="roundRobinPoolNote" class="roundRobinPoolNote"></div>
   <div id="roundRobinProgress" class="roundRobinProgress"></div>
   <div id="roundRobinResults"></div>
-</div>
-<div id="bestThreePanel" class="bestThreePanel hidden">
-  <div class="bestThreeSection">
-    <div class="bestThreeHead"><div><h3>👑 所持ピック 最強3枚</h3><p>現在の総合強さ1000点を基準に、所持ピックから上位3枚を1組だけ選出します。</p></div><button id="refreshBestOwnedThreeBtn" type="button" class="ghost">再表示</button></div>
-    <div id="bestOwnedThreeMeta" class="bestThreeMeta"></div>
-    <div id="bestOwnedThreeResult" class="bestThreeCards"></div>
-  </div>
-  <div class="bestThreeSection counterBuilder">
-    <div class="bestThreeHead"><div><h3>🎯 相手ピックから最強3枚</h3><p>相手ピックを選んだ場合はマスタデータのタイプから弱点を判定します。相手を選ばない場合は、実機に表示された弱点を選び、表示されたタイプ候補から該当タイプを選択してください。</p></div></div>
-    <div class="best3OpponentOverviewWrap">
-      <div class="best3OpponentOverviewHead"><b>相手1・2・3</b><span>カードをタップして編集</span></div>
-      <div id="best3OpponentOverview" class="bestThreeCards best3OpponentOverview"></div>
-    </div>
-    <div id="weakOpponentTabs" class="weakOpponentTabs hidden">
-      <button type="button" class="on" data-weak-slot="0">相手1</button><button type="button" data-weak-slot="1">相手2</button><button type="button" data-weak-slot="2">相手3</button>
-    </div>
-    <div id="weakOpponentSummary" class="weakOpponentSummary hidden"></div>
-    <div id="weakTypeChooser" class="weakTypeChooser"></div>
-    <div id="best3TypeCandidatePanel" class="best3TypeCandidatePanel hidden"></div>
-    <div id="best3InferredTypeStatus" class="bestThreeMeta hidden"></div>
-    <div class="weakTypeActions"><button id="clearCurrentWeakBtn" type="button" class="ghost">この相手をクリア</button><button id="clearAllWeakBtn" type="button" class="ghost">3人ともクリア</button><button id="calcWeakCounterBtn" type="button">最強3枚を選出</button></div>
-    <div id="weakCounterStatus" class="bestThreeMeta"></div>
-    <div class="counterResultBlocks">
-      <div class="counterResultBlock"><div class="counterResultTitle"><b>✓ 所持から</b><span>能力値確認済み</span></div><div id="weakOwnedThreeResult" class="bestThreeCards"></div></div>
-      <div class="counterResultBlock"><div class="counterResultTitle"><b>全件から</b><span>能力値確認済み</span></div><div id="weakAllThreeResult" class="bestThreeCards"></div></div>
-    </div>
-  </div>
 </div>
 <div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div class="tournamentBracketHint">準々決勝 → 準決勝 → 決勝　（スマホは横にスライドできます）</div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px">
@@ -646,7 +646,7 @@ function removeFavorite(r){setIds(FAVORITE_KEY,getIds(FAVORITE_KEY).filter(x=>x!
 function refreshAfterFlagChange(r,redrawBrowser=true){
  renderCollectionOverall();renderSeriesButtons();
  if(redrawBrowser)renderBrowser();else updateBrowserCardFlagState(r);
- renderFavorites();renderBattlePicks();
+ renderFavorites();renderBattlePicks();renderBestThreeMode();
  if(selected&&r&&selected.master_id===r.master_id)render();
  if(!$("recommendOverlay").classList.contains("hidden")&&recommendTargetRecord)renderRecommendations();
  if(!$("enemyPickOverlay").classList.contains("hidden")&&pendingRandomEnemy)renderEnemyRandomRecommendations()
@@ -735,7 +735,7 @@ function render(){
  $("editBtn").classList.toggle("hidden",editing);$("saveBtn").classList.toggle("hidden",!editing);$("cancelBtn").classList.toggle("hidden",!editing)
 }
 function renderFavorites(){
- const ids=getIds(FAVORITE_KEY),box=$("teamList");box.innerHTML="";
+ const ids=getIds(FAVORITE_KEY),box=$("teamList");if(!box)return;box.innerHTML="";
  if(!ids.length){box.innerHTML='<div class="emptyBrowser" style="color:#52636f;background:#fafcfe;border-color:#cbd8e0">お気に入りは未登録です。①のピックカードから★お気に入りを登録してください。</div>';return}
  ids.forEach((id,i)=>{const r=R.find(x=>x.master_id===id);if(!r)return;const m=merged(r),owned=isOwned(r),d=document.createElement("div");d.className="teamCard";
  d.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div class="teamCardMain"><div class="teamSlot">★ FAVORITE ${String(i+1).padStart(2,"0")}</div><div class="teamName">${esc(r.name_ja)}${owned?'<span class="favoriteCardOwned">✓ 所持</span>':'<span class="favoriteCardUnowned">未所持</span>'}</div><div class="meta">${esc(r.pick_no)} / ★${esc(m.grade??"-")} / ポケエネ ${esc(m.poke_ene??"-")}</div><div class="teamActions"><button type="button" class="teamDetail">詳細・編集</button><button type="button" class="removeTeam">★ 解除</button></div></div>`;
@@ -1657,7 +1657,7 @@ function setDamageModel(m){
  if(battleMode==="single"&&battle.me&&battle.enemy)startIfReady();
  if(!$("recommendOverlay")?.classList.contains("hidden"))renderRecommendations();
  if(!$("enemyPickOverlay")?.classList.contains("hidden"))renderEnemyRandomRecommendations();
- if(battleMode==="bestthree"){renderBestThreeMode();clearBest3CounterResults("計算方式を変更しました。対策結果は再選出してください。")};
+ renderBestThreeMode();clearBest3CounterResults("計算方式を変更しました。対策結果は再選出してください。");
 }
 function hasBattleStats(r){return [r.hp,r.atk,r.def,r.sp_atk,r.sp_def].every(numOk)&&!!r.move_type&&!!r.type1}
 function updateEnemyRandomButtonLabel(){const b=$("randomEnemyBtn");if(!b)return;const grade=$("enemyGrade")?.value||"";b.textContent=`${scopeLabel(enemyPickScope)}${grade?`・★${grade}`:""}からランダム`}
@@ -1760,7 +1760,7 @@ function renderBest3TypeCandidates(cond){
  if(!candidates.length){panel.innerHTML='<div class="best3TypeCandidateMsg warn">この弱点の組み合わせに一致する単タイプ・複合タイプはありません。弱点の選択を確認してください。</div>';return}
  const selected=best3SelectedTypeCandidate(best3WeakSlot,candidates);
  panel.innerHTML=`<div class="best3TypeCandidateHead"><b>タイプ候補 ${candidates.length}件</b><span>該当する組み合わせを選択</span></div><div class="best3TypeCandidateList">${candidates.map(x=>best3TypeCandidateButtonHTML(x,best3SameTypePair(x,selected))).join("")}</div>${selected?'<div class="best3TypeCandidateMsg ok" style="margin-top:6px">選択したタイプを対策計算に使用します。</div>':'<div class="best3TypeCandidateMsg warn" style="margin-top:6px">候補を1つ選択してください。1候補の場合も自動確定しません。</div>'}`;
- panel.querySelectorAll("[data-best3-type1]").forEach(b=>b.onclick=()=>{best3TypeChoiceSlots[best3WeakSlot]={type1:b.dataset.best3Type1,type2:b.dataset.best3Type2||""};saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("タイプ候補を選択しました。「最強3枚を選出」を押してください。");});
+ panel.querySelectorAll("[data-best3-type1]").forEach(b=>b.onclick=()=>{best3TypeChoiceSlots[best3WeakSlot]={type1:b.dataset.best3Type1,type2:b.dataset.best3Type2||""};saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("タイプ候補を選択しました。「最強3体を選出」を押してください。");});
 }
 function renderBest3OpponentCurrent(){
  const chooser=$("weakTypeChooser"),status=$("best3InferredTypeStatus");if(!chooser)return;const cond=best3Condition(best3WeakSlot);
@@ -1772,7 +1772,7 @@ function renderBest3OpponentCurrent(){
    return;
  }
  chooser.style.display="";chooser.classList.remove("autoMode");chooser.innerHTML=best3TypeNames().map(t=>`<button type="button" class="weakTypeBtn${best3WeakSlots[best3WeakSlot].includes(t)?" on":""}" data-weak-type="${esc(t)}">${typeIconHTML(t,{label:false,iconOnly:true})}<span>${esc(t)}</span></button>`).join("");
- chooser.querySelectorAll("[data-weak-type]").forEach(b=>b.onclick=()=>{const t=b.dataset.weakType,arr=best3WeakSlots[best3WeakSlot],p=arr.indexOf(t);if(p>=0)arr.splice(p,1);else arr.push(t);best3TypeChoiceSlots[best3WeakSlot]=null;saveBest3WeakSlots();saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("条件を変更しました。タイプ候補を選択してから「最強3枚を選出」を押してください。");});
+ chooser.querySelectorAll("[data-weak-type]").forEach(b=>b.onclick=()=>{const t=b.dataset.weakType,arr=best3WeakSlots[best3WeakSlot],p=arr.indexOf(t);if(p>=0)arr.splice(p,1);else arr.push(t);best3TypeChoiceSlots[best3WeakSlot]=null;saveBest3WeakSlots();saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("条件を変更しました。タイプ候補を選択してから「最強3体を選出」を押してください。");});
  if(status){status.textContent="相手未選択：実機に表示された弱点を選び、下のタイプ候補から該当タイプを選択してください。";status.style.display="";status.classList.remove("hidden")}
  renderBest3TypeCandidates(cond);
 }
@@ -1832,11 +1832,10 @@ function calculateWeakCounterTeams(){
 function renderBestThreeMode(){renderBestOwnedThree();renderBest3WeakChooser()}
 
 function setBattleMode(mode){
- if(!["single","tournament","roundrobin","bestthree"].includes(mode))mode="single";
+ if(!["single","tournament","roundrobin"].includes(mode))mode="single";
  if(mode===battleMode){
    if(mode==="roundrobin")roundRobinPoolInfo();
    if(mode==="single")arena();
-   if(mode==="bestthree")renderBestThreeMode();
    return;
  }
  if(tournament.active&&mode!=="tournament"&&!confirm("進行中のトーナメントを中止して別モードへ移動しますか？"))return;
@@ -1846,25 +1845,20 @@ function setBattleMode(mode){
  $("singleModeBtn").classList.toggle("on",mode==="single");
  $("tournamentModeBtn").classList.toggle("on",mode==="tournament");
  $("roundRobinModeBtn").classList.toggle("on",mode==="roundrobin");
- $("bestThreeModeBtn")?.classList.toggle("on",mode==="bestthree");
  $("myPickPanel").classList.toggle("hidden",mode!=="tournament");
  $("singleEnemyPanel").classList.add("hidden");
  $("tournamentSetupPanel").classList.toggle("hidden",mode!=="tournament");
  $("tournamentWrap").classList.toggle("hidden",mode!=="tournament");
  $("roundRobinPanel").classList.toggle("hidden",mode!=="roundrobin");
- $("bestThreePanel")?.classList.toggle("hidden",mode!=="bestthree");
  $("battleHistoryPanel")?.classList.toggle("hidden",mode!=="single");
  $("battleModeDescription").textContent=
    mode==="single"?"左右のピック画像をタップして自分・相手を選択し、中央の🆚をタップすると最後まで自動で戦います。全件・所持・お気に入りから選択できます。":
    mode==="tournament"?"自分のピックを全件・所持・お気に入りから1体選び、8体トーナメントを戦います。CPU同士は自動判定、各試合HP全回復です。":
-   mode==="roundrobin"?"所持ピックのみ、または能力値確認済み全ピックで総当たりシミュレーションを行い、勝点・勝数・勝率でランキングします。":
-   "所持ピックの最強3枚と、相手最大3人の弱点タイプを踏まえた対策用の最強3枚を選出します。";
+   "所持ピックのみ、または能力値確認済み全ピックで総当たりシミュレーションを行い、勝点・勝数・勝率でランキングします。";
  if(mode==="tournament"){
    $("battleArena").classList.add("hidden");renderTournament();renderTournamentHistory();
  }else if(mode==="roundrobin"){
    $("battleArena").classList.add("hidden");roundRobinPoolInfo();
- }else if(mode==="bestthree"){
-   $("battleArena").classList.add("hidden");renderBestThreeMode();
  }else{
    if(battle.me&&battle.enemy)startIfReady();else arena();renderBattleHistory();
  }
@@ -1931,7 +1925,7 @@ function renderTournamentHistory(){const box=$("tournamentHistoryList");if(!box)
 function showChampion(champion,result){const ov=$("championOverlay");$("championPick").src=pickImage(champion);$("championName").textContent=champion.name_ja;$("championCup").textContent=`${cupLabel(tournament.cup)}　${champion.master_id===tournament.playerId?"あなたが優勝！":`あなた：${result}`}`;ov.classList.add("show");ov.setAttribute("aria-hidden","false")}
 function closeChampion(){const ov=$("championOverlay");ov.classList.remove("show");ov.setAttribute("aria-hidden","true")}
 
-$("singleModeBtn").onclick=()=>setBattleMode("single");$("tournamentModeBtn").onclick=()=>setBattleMode("tournament");$("roundRobinModeBtn").onclick=openRoundRobinMode;$("bestThreeModeBtn").onclick=()=>setBattleMode("bestthree");
+$("singleModeBtn").onclick=()=>setBattleMode("single");$("tournamentModeBtn").onclick=()=>setBattleMode("tournament");$("roundRobinModeBtn").onclick=openRoundRobinMode;
 document.querySelectorAll(".myPickScopeBtn").forEach(b=>b.onclick=()=>{myPickScope=b.dataset.myScope||"all";document.querySelectorAll(".myPickScopeBtn").forEach(x=>x.classList.toggle("on",x===b));renderBattlePicks()});
 $("myPickQ").oninput=renderBattlePicks;$("clearMyPickQ").onclick=()=>{$("myPickQ").value="";renderBattlePicks();$("myPickQ").focus()};
 $("myBattleSelection").onclick=()=>{if(battleMode==="tournament")openMyPickOverlay()};
@@ -1964,8 +1958,8 @@ function setMainTab(name,fromUser=false){
    b.setAttribute("aria-selected",on?"true":"false");
  });
  localStorage.setItem(MAIN_TAB_KEY,name);
- if(name==="team"){renderFavorites();renderBattlePicks()}
- if(name==="battle"){renderBattlePicks();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();if(battleMode==="single")arena();if(battleMode==="bestthree")renderBestThreeMode()}
+ if(name==="team"){renderBestThreeMode()}
+ if(name==="battle"){renderBattlePicks();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();if(battleMode==="single")arena()}
  if(name==="pick"){renderCollectionOverall();renderSeriesButtons();renderBrowser()}
  if(fromUser)document.querySelector(".mainTabs")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -1975,7 +1969,7 @@ function refreshAfterBulkFlagClear(){
  renderCollectionOverall();renderSeriesButtons();renderBrowser();renderFavorites();renderBattlePicks();updateBattleSelectionStatus();roundRobinPoolInfo();
  if(!$("recommendOverlay")?.classList.contains("hidden")&&recommendTargetRecord)renderRecommendations();
  if(!$("enemyPickOverlay")?.classList.contains("hidden")){enemySearch();renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()}
- if(battleMode==="bestthree"){renderBestThreeMode();clearBest3CounterResults("所持／お気に入り情報が変わりました。弱点タイプ指定の結果は再選出してください。")}
+ renderBestThreeMode();clearBest3CounterResults("所持情報が変わりました。対策結果は必要に応じて再選出してください。");
 }
 function clearAllOwned(){
  const n=getIds(OWNED_KEY).length,status=$("clearDataStatus");
@@ -2003,4 +1997,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 09:35:12 JST / Ver6.53 -->
+<!-- Updated: 2026-09-24 09:43:44 JST / Ver6.54 -->
