@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.66 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.67 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.66</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.67</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -372,7 +372,7 @@ body.battleOverlayOpen{overflow:hidden}
 .bestThreeViewPanel.hidden{display:none!important}
 @media(max-width:520px){.bestThreeViewBtn{font-size:10px;padding:9px 5px}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.66</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.67</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1866,8 +1866,8 @@ function best3OpponentOverviewCardHTML(cond){
    const score=best3Strength(cond.base);
    return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${esc(slot)} ${esc(cond.c.name_ja)}"><span class="teamSlotLabel">${slot}</span><img data-best3-image-slot="${cond.index}" src="${esc(pickImage(cond.base))}" alt="${esc(cond.c.name_ja)}" title="画像をタップして相手を変更"><div class="bestThreeName">${esc(cond.c.name_ja)}</div><div class="bestThreeSub">${esc(cond.c.pick_no)} / ${cond.c.grade?"★"+esc(cond.c.grade):"ランク-"}</div><div class="bestThreeScore"><b>${score>=0?score:"—"}</b><span>/1000</span></div>${best3SummaryHTML(cond.base)}<div class="best3OpponentOverviewHint">画像：相手変更 / マスタデータで判定</div></div>`;
  }
- const manualTypeView=cond.hasType?`<div class="best3OpponentOverviewMeta"><b>タイプ</b><div class="best3OpponentOverviewTypes">${typePairHTML(cond.type1,cond.type2,{tiny:true})}</div></div>`:"";
- return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">未選択</div>${manualTypeView}${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>実機の弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,true)}</div></div>`:""}<div class="best3OpponentOverviewHint">＋：ピック選択 / カード：弱点入力</div></div>`;
+ const manualSummary=(cond.hasType||cond.manual.length)?`<div class="best3Summary">${cond.hasType?`<div class="best3SummaryLine typeLine"><div><b>タイプ</b></div>${typePairHTML(cond.type1,cond.type2,{tiny:true})}</div>`:""}${cond.manual.length?`<div class="best3SummaryLine weakLine"><div><b>× 弱点</b></div><div class="best3SummaryTypes">${best3TypeChipHTML(weak,true)}</div></div>`:""}</div>`:"";
+ return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">未選択</div>${manualSummary}<div class="best3OpponentOverviewHint">＋：ピック選択 / カード：弱点入力</div></div>`;
 }
 function renderBest3OpponentOverview(conditions){
  const box=$("best3OpponentOverview");if(!box)return;box.innerHTML=conditions.map(best3OpponentOverviewCardHTML).join("");
@@ -2134,7 +2134,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.66",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.67",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2144,4 +2144,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-25 07:54:00 JST / Ver6.66 -->
+<!-- Updated: 2026-09-25 08:00:04 JST / Ver6.67 -->
