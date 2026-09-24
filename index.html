@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.58 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.59 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.58</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.59</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -234,6 +234,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.54: selected opponent cards show master type, move type, and calculated weaknesses */
 /* Ver6.56: show calculated weaknesses, resistances, and immunities on both fighters during 1v1 battles */
 /* Ver6.57: pick-back attack/defense type matchups and STAB display */
+/* Ver6.59: strongest-three compact in-card matchups + unified counter cards */
 /* Ver6.58: strongest-three cards show attack/defense matchups and STAB */
 /* Ver6.49: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
@@ -279,8 +280,30 @@ body.battleOverlayOpen{overflow:hidden}
 
 .best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}
 .best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
+
+/* Ver6.59: 最強3体カード内の相性情報を3列幅に収める */
+.bestThreeCard{overflow:hidden}
+.best3Matchups,.best3MatchupBox,.best3MatchupRow,.best3MatchupRow .bestTypeChips{min-width:0;max-width:100%}
+.best3MatchupBox{overflow:hidden;padding:5px 4px}
+.best3MatchupRow{display:block;margin-top:4px}
+.best3MatchupLabel{display:block;margin-bottom:2px;font-size:6.5px;line-height:1.25}
+.best3MatchupRow .bestTypeChips{display:flex;flex-wrap:wrap;gap:2px;width:100%;overflow:hidden}
+.best3MatchupRow .bestTypeChip{display:inline-flex;align-items:center;gap:1px;max-width:100%;min-width:0;padding:1px 3px;font-size:5.8px;line-height:1.15;white-space:normal;overflow-wrap:anywhere}
+.best3MatchupRow .bestTypeChip>span:last-child{min-width:0;overflow-wrap:anywhere}
+.best3MatchupRow .typeMark{width:12px;height:12px;flex:0 0 12px}
+.best3MatchupRow .bestTypeIconWrap{flex:0 0 auto}
+.best3MatchupHead{font-size:7px;line-height:1.25}
+.best3Identity{overflow:hidden;overflow-wrap:anywhere}
+@media(max-width:600px){
+ .bestThreeCards{gap:5px}
+ .bestThreeCard{padding:5px}
+ .best3MatchupBox{padding:4px 3px}
+ .best3MatchupRow .bestTypeChip{font-size:5.4px;padding:1px 2px}
+ .best3MatchupRow .typeMark{width:11px;height:11px;flex-basis:11px}
+ .best3Identity{font-size:6px;padding:4px}
+}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.58</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.59</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1845,7 +1868,7 @@ function best3CounterTeam(pool){
  else {let best=null;for(const a of ranked[0])for(const b of ranked[1]){if(a.base.master_id===b.base.master_id)continue;for(const c of ranked[2]){if(c.base.master_id===a.base.master_id||c.base.master_id===b.base.master_id)continue;const v=a.slotValue+b.slotValue+c.slotValue;if(!best||v>best.v)best={v,a,b,c}}}if(best)chosen=[{...best.a,slot:active[0],label:`相手${active[0].index+1}向け`},{...best.b,slot:active[1],label:`相手${active[1].index+1}向け`},{...best.c,slot:active[2],label:`相手${active[2].index+1}向け`}];}
  return {team:chosen.slice(0,3),active};
 }
-function best3CounterCardHTML(x){const c=merged(x.base),target=x.slot?.base?x.slot.c.name_ja:`相手${(x.slot?.index??0)+1}`,reason=x.reasons?.slice(0,3).join(" / ")||"";return `<div class="bestThreeCard"><span class="teamSlotLabel">${esc(x.label||"")}</span><img src="${esc(pickImage(x.base))}" alt="${esc(c.name_ja)}"><div class="bestThreeName">${esc(c.name_ja)}</div><div class="bestThreeSub">${esc(c.pick_no)} / ${c.grade?"★"+esc(c.grade):"ランク-"}</div><div class="counterTacticalScore"><b>${x.counterScore}</b><span>/100 対策</span></div><div class="bestThreeScore"><b>${x.score>=0?x.score:"—"}</b><span>/1000 総合</span></div><div class="counterReasonLine"><strong>対 ${esc(target)}</strong><br>${esc(reason)}<br>評価：${esc(x.detail)}</div>${best3MatchupDetailHTML(x.base)}</div>`}
+function best3CounterCardHTML(x){return best3CardHTML({base:x.base,score:x.score},{slotLabel:x.label||""})}
 function renderBest3CounterResult(boxId,result,scopeLabelText){const box=$(boxId);if(!box)return;if(!result.active.length){box.innerHTML='<div class="historyEmpty639" style="grid-column:1/-1">相手ピックまたは弱点タイプを1つ以上指定してください。</div>';return}if(!result.team.length){box.innerHTML=`<div class="historyEmpty639" style="grid-column:1/-1">${esc(scopeLabelText)}に選出可能なピックがありません。</div>`;return}box.innerHTML=result.team.map(best3CounterCardHTML).join("")}
 function calculateWeakCounterTeams(){
  const all=[0,1,2].map(best3Condition);
@@ -2024,4 +2047,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 20:30:40 JST / Ver6.58 -->
+<!-- Updated: 2026-09-24 20:56:21 JST / Ver6.59 -->
