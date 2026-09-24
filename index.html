@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.62 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.63 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.62</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.63</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -282,6 +282,7 @@ body.battleOverlayOpen{overflow:hidden}
 .best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
 
 /* Ver6.62: 最強3体カードを要約表示＋タップ展開へ整理 */
+/* Ver6.63: 最強3体のタイプ／技タイプ表示のクリップを修正 */
 .bestThreeCards{align-items:stretch}
 .bestThreeCard{min-width:0;overflow:hidden}
 .best3ResultCard{cursor:pointer;user-select:none;transition:border-color .15s ease,box-shadow .15s ease,transform .1s ease}
@@ -290,7 +291,13 @@ body.battleOverlayOpen{overflow:hidden}
 .best3SummaryLine{min-width:0;padding:4px;border:1px solid #dfe8ed;border-radius:7px;background:#f8fbfc}
 .best3SummaryLine>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:3px;min-height:16px;margin-bottom:3px}
 .best3SummaryLine b{font-size:6.5px;color:#294858;white-space:nowrap}
-.best3SummaryLine.typeLine,.best3SummaryLine.moveLine{height:38px;min-height:38px}
+.best3SummaryLine.typeLine{height:54px;min-height:54px}
+.best3SummaryLine.moveLine{height:46px;min-height:46px}
+.best3SummaryLine.typeLine .typePair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;width:100%;align-items:stretch;justify-content:stretch}
+.best3SummaryLine.typeLine .typePill.tiny{width:100%;min-width:0;height:26px;min-height:26px;padding:1px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:5px;line-height:1;overflow:hidden}
+.best3SummaryLine.typeLine .typePill.tiny .typeMark{width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;flex:0 0 13px!important}
+.best3SummaryLine.typeLine .typePill.tiny>span:last-child{display:block;width:100%;min-width:0;text-align:center;white-space:nowrap;font-size:5px;line-height:1}
+.best3SummaryLine.moveLine>.typePill.tiny{max-width:100%;margin-top:1px}
 .best3SummaryLine.weakLine{height:92px;min-height:92px}
 .best3SummaryLine.resistLine{height:116px;min-height:116px}
 .best3SummaryTypes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;min-width:0}
@@ -334,7 +341,8 @@ body.battleOverlayOpen{overflow:hidden}
   .bestThreeCards{gap:5px}
   .bestThreeCard{padding:5px}
   .best3SummaryLine{padding:3px}
-  .best3SummaryLine.typeLine,.best3SummaryLine.moveLine{height:36px;min-height:36px}
+  .best3SummaryLine.typeLine{height:54px;min-height:54px}
+  .best3SummaryLine.moveLine{height:46px;min-height:46px}
   .best3SummaryLine.weakLine{height:90px;min-height:90px}
   .best3SummaryLine.resistLine{height:114px;min-height:114px}
   .best3SummaryTypes .bestTypeChip,.best3FullDetail .bestTypeChip{font-size:5px}
@@ -344,7 +352,7 @@ body.battleOverlayOpen{overflow:hidden}
   .counterResultBlock .bestThreeName{font-size:9px;min-height:23px}
 }
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.62</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.63</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -2083,7 +2091,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.62",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.63",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2093,4 +2101,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 22:13:00 JST / Ver6.62 -->
+<!-- Updated: 2026-09-25 06:51:00 JST / Ver6.63 -->
