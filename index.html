@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.60 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.61 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.60</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.61</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -234,7 +234,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.54: selected opponent cards show master type, move type, and calculated weaknesses */
 /* Ver6.56: show calculated weaknesses, resistances, and immunities on both fighters during 1v1 battles */
 /* Ver6.57: pick-back attack/defense type matchups and STAB display */
-/* Ver6.60: strongest-three compact in-card matchups + unified counter cards */
+/* Ver6.61: strongest-three compact in-card matchups + unified counter cards */
 /* Ver6.58: strongest-three cards show attack/defense matchups and STAB */
 /* Ver6.49: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
@@ -281,7 +281,7 @@ body.battleOverlayOpen{overflow:hidden}
 .best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}
 .best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
 
-/* Ver6.60: 最強3体カード内の相性情報を3列幅に収める */
+/* Ver6.61: 最強3体カード内の相性情報を3列幅に収める */
 .bestThreeCard{overflow:hidden}
 .best3Matchups,.best3MatchupBox,.best3MatchupRow,.best3MatchupRow .bestTypeChips{min-width:0;max-width:100%}
 .best3MatchupBox{overflow:hidden;padding:5px 4px}
@@ -303,7 +303,7 @@ body.battleOverlayOpen{overflow:hidden}
  .best3Identity{font-size:6px;padding:4px}
 }
 
-/* Ver6.60: 最強3体のタイプ表示を固定タイル化し、攻撃/防御枠を全カードで統一 */
+/* Ver6.61: 最強3体のタイプ表示を固定タイル化し、攻撃/防御枠を全カードで統一 */
 .bestThreeCards{align-items:stretch}
 .bestThreeCard .best3Identity{
   min-height:54px;
@@ -416,11 +416,24 @@ body.battleOverlayOpen{overflow:hidden}
   height:11px;
 }
 .bestThreeCard .best3MatchupRow .bestTypeIconWrap.double{margin-right:0}
-.bestThreeCard .best3MatchupRow .doubleWeakBadge{
-  right:-5px;
-  top:-5px;
-  font-size:4.5px;
+/* Ver6.61: 二重弱点バッジをタイプタイル内の右上へ固定して欠けを防止 */
+.bestThreeCard .best3MatchupRow .bestTypeChip{position:relative}
+.bestThreeCard .best3MatchupRow .best3DoubleWeakBadge{
+  position:absolute;
+  right:1px;
+  top:1px;
+  z-index:3;
   padding:1px 2px;
+  border-radius:999px;
+  background:#d92d35;
+  color:#fff;
+  border:1px solid #fff;
+  font-size:4.2px;
+  font-weight:1000;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 1px 2px #0004;
+  pointer-events:none;
 }
 /* 対策側も「所持ピック 最強3体」と同じカード寸法 */
 .counterResultBlock .bestThreeCard{padding:7px}
@@ -447,7 +460,7 @@ body.battleOverlayOpen{overflow:hidden}
 }
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.60</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.61</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1873,7 +1886,7 @@ function best3SameTypePair(a,b){return !!a&&!!b&&a.type1===b.type1&&(a.type2||""
 function best3SelectedTypeCandidate(slot,candidates){const saved=best3TypeChoiceSlots[slot];return candidates.find(x=>best3SameTypePair(x,saved))||null}
 function best3ResolvedTypeFromWeakness(slot,types){const candidates=best3TypeCandidatesFromWeakness(types),selected=best3SelectedTypeCandidate(slot,candidates);return {pair:selected,candidates,auto:false}}
 function best3InferTypeFromWeakness(types){const c=best3TypeCandidatesFromWeakness(types);return c.length===1?c[0]:null}
-function best3TypeChipHTML(types,weak=false){if(!types?.length)return '<span class="bestTypeNone">なし</span>';return types.map(x=>{const t=typeof x==="string"?x:x.type,raw=typeof x==="string"?null:x.raw,isDouble=weak&&raw>=4;return `<span class="bestTypeChip${weak?" weak":""}"${isDouble?' title="二重弱点（4倍弱点相当）"':""}><span class="bestTypeIconWrap${isDouble?" double":""}">${typeIconHTML(t,{label:false,iconOnly:true})}${isDouble?'<span class="doubleWeakBadge">二重</span>':""}</span><span>${esc(t)}</span></span>`}).join("")}
+function best3TypeChipHTML(types,weak=false){if(!types?.length)return '<span class="bestTypeNone">なし</span>';return types.map(x=>{const t=typeof x==="string"?x:x.type,raw=typeof x==="string"?null:x.raw,isDouble=weak&&raw>=4;return `<span class="bestTypeChip${weak?" weak":""}"${isDouble?' title="二重弱点（4倍弱点相当）"':""}><span class="bestTypeIconWrap${isDouble?" double":""}">${typeIconHTML(t,{label:false,iconOnly:true})}</span>${isDouble?'<span class="best3DoubleWeakBadge">二重</span>':""}<span>${esc(t)}</span></span>`}).join("")}
 function best3MatchupDetailHTML(base){
  const c=merged(base),atk=pickBackAttackTypes(c.move_type),def=pickBackDefenseTypes(c.type1,c.type2),stab=!!c.move_type&&(c.move_type===c.type1||c.move_type===c.type2);
  const chips=(types,weak=false)=>best3TypeChipHTML(types.map(t=>typeof t==="string"?t:t),weak);
@@ -2178,7 +2191,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.50",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.61",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2188,4 +2201,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 21:12:28 JST / Ver6.60 -->
+<!-- Updated: 2026-09-24 21:23:44 JST / Ver6.61 -->
