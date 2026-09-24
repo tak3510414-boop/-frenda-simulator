@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.52 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.52</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.53</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -231,7 +231,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.49: double weakness badge on weakness type icons */
 /* Ver6.49: opponent image opens picker; compact counter UI; infer type from exact weakness set */
 /* Ver6.51: selected opponent uses master types for weakness; unselected opponent uses manual weaknesses and explicit type-candidate choice */
-/* Ver6.52: selected opponent cards show master type, move type, and calculated weaknesses */
+/* Ver6.53: selected opponent cards show master type, move type, and calculated weaknesses */
 /* Ver6.49: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
 .battleHistoryPanel{margin-top:14px;padding:12px;border:1px solid #cbd8e0;border-radius:14px;background:linear-gradient(180deg,#f9fcfe,#eef6fa)}
@@ -277,7 +277,7 @@ body.battleOverlayOpen{overflow:hidden}
 .best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}
 .best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.52</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.53</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1733,7 +1733,8 @@ function best3OpponentOverviewCardHTML(cond){
    const weakView=cond.hasType?best3TypeChipHTML(masterWeak,true):'<span class="bestTypeNone">判定不可</span>';
    return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${esc(slot)} ${esc(cond.c.name_ja)}"><span class="teamSlotLabel">${slot}</span><img data-best3-image-slot="${cond.index}" src="${esc(pickImage(cond.base))}" alt="${esc(cond.c.name_ja)}" title="画像をタップして相手を変更"><div class="bestThreeName">${esc(cond.c.name_ja)}</div><div class="best3OpponentOverviewMeta"><b>タイプ</b><div class="best3OpponentOverviewTypes">${typeView}</div><b>技タイプ</b><div class="best3OpponentOverviewTypes">${moveView}</div></div><div class="best3OpponentOverviewWeak"><b>弱点</b><div class="bestTypeChips">${weakView}</div></div><div class="best3OpponentOverviewHint">画像：相手変更 / マスタデータで判定</div></div>`;
  }
- return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">未選択</div>${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>実機の弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,false)}</div></div>`:""}<div class="best3OpponentOverviewHint">＋：ピック選択 / カード：弱点入力</div></div>`;
+ const manualTypeView=cond.hasType?`<div class="best3OpponentOverviewMeta"><b>タイプ</b><div class="best3OpponentOverviewTypes">${typePairHTML(cond.type1,cond.type2,{tiny:true})}</div></div>`:"";
+ return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">未選択</div>${manualTypeView}${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>実機の弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,false)}</div></div>`:""}<div class="best3OpponentOverviewHint">＋：ピック選択 / カード：弱点入力</div></div>`;
 }
 function renderBest3OpponentOverview(conditions){
  const box=$("best3OpponentOverview");if(!box)return;box.innerHTML=conditions.map(best3OpponentOverviewCardHTML).join("");
@@ -2002,4 +2003,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 09:31:00 JST / Ver6.52 -->
+<!-- Updated: 2026-09-24 09:35:12 JST / Ver6.53 -->
