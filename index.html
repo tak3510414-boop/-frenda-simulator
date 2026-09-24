@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.44 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.50 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.49</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.50</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -230,6 +230,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.40: matchup good/bad toggle to keep the screen compact */
 /* Ver6.49: double weakness badge on weakness type icons */
 /* Ver6.49: opponent image opens picker; compact counter UI; infer type from exact weakness set */
+/* Ver6.50: use only manually selected machine weaknesses; resolve one type automatically or let user choose from matching type pairs */
 /* Ver6.49: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
 .battleHistoryPanel{margin-top:14px;padding:12px;border:1px solid #cbd8e0;border-radius:14px;background:linear-gradient(180deg,#f9fcfe,#eef6fa)}
@@ -272,8 +273,10 @@ body.battleOverlayOpen{overflow:hidden}
 .typeMark{--tc:#7c8790;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;color:#fff;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.38),transparent 28%),var(--tc);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18),inset 0 -3px 6px rgba(0,0,0,.16),0 1px 2px rgba(0,0,0,.18);vertical-align:middle;flex:0 0 auto}.typeMark svg{width:68%;height:68%;display:block;overflow:visible}.typeMark svg *{vector-effect:non-scaling-stroke}.typePill{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:2px 7px 2px 3px;border-radius:999px;background:#f4f7f9;border:1px solid #d6e0e5;color:#29404d;font-size:10px;font-weight:900;line-height:1;vertical-align:middle}.typePill.iconOnly{padding:2px;border:0;background:transparent}.typePill.iconOnly .typeMark{width:26px;height:26px}.typePill.tiny{gap:3px;min-height:18px;padding:1px 5px 1px 2px;font-size:7px}.typePill.tiny .typeMark{width:16px;height:16px}.typePill.small .typeMark{width:19px;height:19px}.typePair{display:inline-flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}.pickMeta .typePair{margin-top:3px}.pickBackTypes{display:flex;gap:5px;flex-wrap:wrap}.pickBackTypes .typePill{background:#fff;border-color:#cbd8e0}.fighter .typePair{margin-top:4px}.fighterMoveInfo .typePill{margin:2px 0}.weakTypeBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:50px}.weakTypeBtn .typeMark{width:25px;height:25px}.weakTypeBtn.on .typeMark{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),0 0 0 2px rgba(255,255,255,.32),0 2px 5px rgba(0,0,0,.18)}.weakOpponentSummary .typePill{margin:1px}.bestTypeChip{display:inline-flex;align-items:center;gap:3px}.bestTypeChip .typeMark{width:14px;height:14px}.bestTypeIconWrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}.bestTypeIconWrap.double{margin-right:5px}.doubleWeakBadge{position:absolute;right:-7px;top:-7px;z-index:2;padding:1px 3px;border-radius:999px;background:#d92d35;color:#fff;border:1px solid #fff;font-size:5.5px;font-weight:1000;line-height:1;white-space:nowrap;box-shadow:0 1px 3px #0005}.bestThreeSub .typePill{margin-top:2px}.rrAnalysisMeta .typePill{margin:1px}.battleTypeFx .typeMark{width:58px;height:58px;filter:drop-shadow(0 0 10px #fff);animation:fxSymbol .55s ease forwards}.battleTypeFx .typeMark svg{width:70%;height:70%}
 @media(max-width:600px){.typePill{font-size:9px;padding-right:5px}.typeMark{width:20px;height:20px}.weakTypeChooser{grid-template-columns:repeat(6,minmax(0,1fr))}.weakTypeBtn{font-size:7px;padding:5px 1px}.weakTypeBtn .typeMark{width:23px;height:23px}}
 
-.best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}</style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.49</header>
+.best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}
+.best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
+</style></head><body>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.50</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -340,7 +343,7 @@ body.battleOverlayOpen{overflow:hidden}
     <div id="bestOwnedThreeResult" class="bestThreeCards"></div>
   </div>
   <div class="bestThreeSection counterBuilder">
-    <div class="bestThreeHead"><div><h3>🎯 相手ピックから最強3枚</h3><p>相手は最大3人。一覧から相手を選ぶとマスター情報を優先利用します。相手未選択、または相手タイプ不明の場合だけ弱点タイプを指定します。</p></div></div>
+    <div class="bestThreeHead"><div><h3>🎯 相手ピックから最強3枚</h3><p>相手画像をタップしてピックを変更できます。実機に表示された弱点タイプを選ぶと、その組み合わせからタイプを判定します。</p></div></div>
     <div class="best3OpponentOverviewWrap">
       <div class="best3OpponentOverviewHead"><b>相手1・2・3</b><span>カードをタップして編集</span></div>
       <div id="best3OpponentOverview" class="bestThreeCards best3OpponentOverview"></div>
@@ -350,7 +353,8 @@ body.battleOverlayOpen{overflow:hidden}
     </div>
     <div id="weakOpponentSummary" class="weakOpponentSummary hidden"></div>
     <div id="weakTypeChooser" class="weakTypeChooser"></div>
-    <div id="best3InferredTypeStatus" class="bestThreeMeta"></div>
+    <div id="best3TypeCandidatePanel" class="best3TypeCandidatePanel hidden"></div>
+    <div id="best3InferredTypeStatus" class="bestThreeMeta hidden"></div>
     <div class="weakTypeActions"><button id="clearCurrentWeakBtn" type="button" class="ghost">この相手をクリア</button><button id="clearAllWeakBtn" type="button" class="ghost">3人ともクリア</button><button id="calcWeakCounterBtn" type="button">最強3枚を選出</button></div>
     <div id="weakCounterStatus" class="bestThreeMeta"></div>
     <div class="counterResultBlocks">
@@ -1660,18 +1664,25 @@ function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>
 
 const BEST3_WEAK_KEY="frenda:best3Weak:v1";
 const BEST3_OPP_KEY="frenda:best3Opponent:v1";
+const BEST3_TYPE_CHOICE_KEY="frenda:best3TypeChoice:v1";
 let best3WeakSlot=0;
 let best3OpponentPickerSlot=0;
 let best3WeakSlots=(()=>{try{const x=JSON.parse(localStorage.getItem(BEST3_WEAK_KEY)||"[]");return [0,1,2].map(i=>Array.isArray(x?.[i])?x[i].filter(t=>Object.keys(TYPE).includes(t)):[])}catch{return [[],[],[]]}})();
 let best3OpponentSlots=(()=>{try{const x=JSON.parse(localStorage.getItem(BEST3_OPP_KEY)||"[]");return [0,1,2].map(i=>typeof x?.[i]==="string"&&R.some(r=>r.master_id===x[i])?x[i]:null)}catch{return [null,null,null]}})();
+let best3TypeChoiceSlots=(()=>{try{const x=JSON.parse(localStorage.getItem(BEST3_TYPE_CHOICE_KEY)||"[]");return [0,1,2].map(i=>{const v=x?.[i];return v&&TYPES.includes(v.type1)&&(!v.type2||TYPES.includes(v.type2))&&v.type1!==v.type2?{type1:v.type1,type2:v.type2||""}:null})}catch{return [null,null,null]}})();
 function saveBest3WeakSlots(){try{localStorage.setItem(BEST3_WEAK_KEY,JSON.stringify(best3WeakSlots))}catch{}}
 function saveBest3OpponentSlots(){try{localStorage.setItem(BEST3_OPP_KEY,JSON.stringify(best3OpponentSlots))}catch{}}
+function saveBest3TypeChoiceSlots(){try{localStorage.setItem(BEST3_TYPE_CHOICE_KEY,JSON.stringify(best3TypeChoiceSlots))}catch{}}
 function best3TypeNames(){return [...TYPES]}
 function best3TypeOrder(t){const i=TYPES.indexOf(t);return i>=0?i:999}
 function best3GoodTypes(r){const c=merged(r),m=c.move_type;if(!m)return [];return best3TypeNames().filter(t=>(TYPE[m]?.[t]??1)>1)}
 function best3WeakTypes(r){const c=merged(r);if(!c.type1)return [];return best3TypeNames().map(t=>({type:t,raw:rawEff(t,c)})).filter(x=>x.raw>1).sort((a,b)=>best3TypeOrder(a.type)-best3TypeOrder(b.type))}
 function best3WeakSignature(type1,type2=""){const def={type1,type2};return best3TypeNames().filter(t=>rawEff(t,def)>1).sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b)).join("|")}
-function best3InferTypeFromWeakness(types){if(!Array.isArray(types)||!types.length)return null;const sig=[...new Set(types)].sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b)).join("|");const matches=[];for(let i=0;i<TYPES.length;i++){const t1=TYPES[i];if(best3WeakSignature(t1)===sig)matches.push({type1:t1,type2:""});for(let j=i+1;j<TYPES.length;j++){const t2=TYPES[j];if(best3WeakSignature(t1,t2)===sig)matches.push({type1:t1,type2:t2})}}return matches.length===1?matches[0]:null}
+function best3TypeCandidatesFromWeakness(types){if(!Array.isArray(types)||!types.length)return [];const sig=[...new Set(types)].sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b)).join("|");const matches=[];for(let i=0;i<TYPES.length;i++){const t1=TYPES[i];if(best3WeakSignature(t1)===sig)matches.push({type1:t1,type2:""});for(let j=i+1;j<TYPES.length;j++){const t2=TYPES[j];if(best3WeakSignature(t1,t2)===sig)matches.push({type1:t1,type2:t2})}}return matches}
+function best3SameTypePair(a,b){return !!a&&!!b&&a.type1===b.type1&&(a.type2||"")===(b.type2||"")}
+function best3SelectedTypeCandidate(slot,candidates){const saved=best3TypeChoiceSlots[slot];return candidates.find(x=>best3SameTypePair(x,saved))||null}
+function best3ResolvedTypeFromWeakness(slot,types){const candidates=best3TypeCandidatesFromWeakness(types);if(candidates.length===1)return {pair:candidates[0],candidates,auto:true};const selected=best3SelectedTypeCandidate(slot,candidates);return {pair:selected,candidates,auto:false}}
+function best3InferTypeFromWeakness(types){const c=best3TypeCandidatesFromWeakness(types);return c.length===1?c[0]:null}
 function best3TypeChipHTML(types,weak=false){if(!types?.length)return '<span class="bestTypeNone">なし</span>';return types.map(x=>{const t=typeof x==="string"?x:x.type,raw=typeof x==="string"?null:x.raw,isDouble=weak&&raw>=4;return `<span class="bestTypeChip${weak?" weak":""}"${isDouble?' title="二重弱点（4倍弱点相当）"':""}><span class="bestTypeIconWrap${isDouble?" double":""}">${typeIconHTML(t,{label:false,iconOnly:true})}${isDouble?'<span class="doubleWeakBadge">二重</span>':""}</span><span>${esc(t)}</span></span>`}).join("")}
 function best3Strength(base){return strengthInfo(base)?.score??-1}
 function best3EligiblePool(ownedOnly){const ownedIds=new Set(getIds(OWNED_KEY));return R.filter(r=>hasBattleStats(merged(r))&&(!ownedOnly||ownedIds.has(r.master_id)))}
@@ -1689,12 +1700,15 @@ function renderBestOwnedThree(){
 }
 function best3OpponentBase(i){const id=best3OpponentSlots[i];return id?R.find(r=>r.master_id===id)||null:null}
 function best3Condition(i){
- const base=best3OpponentBase(i),c=base?merged(base):null,dbHasType=!!c?.type1,attackType=c?.move_type||null,full=!!(c&&hasBattleStats(c));
- const manual=[...(best3WeakSlots[i]||[])].sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b)),inferred=!dbHasType?best3InferTypeFromWeakness(manual):null;
- const type1=dbHasType?c.type1:(inferred?.type1||""),type2=dbHasType?(c.type2||""):(inferred?.type2||""),hasType=!!type1;
- const enemy=hasType?{...(c||{}),type1,type2}:c;
- const autoWeak=dbHasType?best3WeakTypes(base).map(x=>x.type):[],weakTypes=dbHasType?autoWeak:manual;
- return {index:i,base,c,enemy,dbHasType,hasType,type1,type2,inferred:!!inferred,attackType,full,autoWeak,manual,weakTypes,ready:hasType||manual.length>0,needsManual:!dbHasType&&!manual.length};
+ const base=best3OpponentBase(i),c=base?merged(base):null,dbHasType=!!c?.type1,attackType=c?.move_type||null;
+ const manual=[...(best3WeakSlots[i]||[])].sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b));
+ const resolved=best3ResolvedTypeFromWeakness(i,manual),fromWeak=resolved.pair;
+ const useDb=!manual.length&&dbHasType;
+ const type1=fromWeak?.type1||(useDb?c.type1:""),type2=fromWeak?.type2||(useDb?(c.type2||""):""),hasType=!!type1;
+ const enemy={...(c||{}),type1,type2};
+ const statReady=!!(c&&[c.hp,c.atk,c.def,c.sp_atk,c.sp_def].every(numOk)&&attackType),full=statReady&&hasType;
+ const weakTypes=manual;
+ return {index:i,base,c,enemy,dbHasType,hasType,type1,type2,inferred:!!fromWeak,inferredAuto:!!fromWeak&&resolved.auto,typeCandidates:resolved.candidates,typeChoiceRequired:resolved.candidates.length>1&&!fromWeak,attackType,full,manual,weakTypes,ready:hasType||manual.length>0||!!base,needsManual:!!base&&!manual.length&&!dbHasType};
 }
 function best3DataBadgeHTML(cond){
  if(cond.full)return '<span class="best3DataBadge full">● 詳細データあり</span>';
@@ -1706,15 +1720,11 @@ function best3DataBadgeHTML(cond){
 function best3OpponentLabel(cond){return cond.base?`${cond.c.name_ja}（${cond.c.pick_no}）`:`相手${cond.index+1}`}
 function best3OpponentOverviewCardHTML(cond){
  const active=cond.index===best3WeakSlot?" active":"",slot=`相手${cond.index+1}`;
- if(cond.base){
-   const types=cond.hasType?typePairHTML(cond.type1,cond.type2,{tiny:true}):'<span class="bestTypeNone">タイプ未確認</span>';
-   const atk=cond.attackType?typeIconHTML(cond.attackType,{label:true,tiny:true}):'<span class="bestTypeNone">未確認</span>';
-   const weak=cond.dbHasType?best3WeakTypes(cond.base):cond.manual.map(t=>({type:t,raw:null}));
-   return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${esc(slot)} ${esc(cond.c.name_ja)}の条件を編集"><span class="teamSlotLabel">${slot}</span><img data-best3-image-slot="${cond.index}" src="${esc(pickImage(cond.base))}" alt="${esc(cond.c.name_ja)}" title="画像をタップして相手を変更"><div class="bestThreeName">${esc(cond.c.name_ja)}</div><div class="best3OpponentOverviewMeta">${esc(cond.c.pick_no)}${cond.c.grade?` / ★${esc(cond.c.grade)}`:""}<br>${esc(cond.c.series||"")}</div><div class="best3OpponentOverviewTypes">${types}</div><div class="best3OpponentOverviewMeta">攻撃：${atk}</div><div class="best3OpponentBadges" style="justify-content:center">${best3DataBadgeHTML(cond)}</div><div class="best3OpponentOverviewWeak"><b>${cond.dbHasType?"弱点タイプ":"入力した弱点"}</b><div class="bestTypeChips">${best3TypeChipHTML(weak,true)}</div></div><div class="best3OpponentOverviewHint">画像：相手変更 / カード：条件編集</div></div>`;
- }
  const weak=cond.manual.map(t=>({type:t,raw:null}));
- const inferred=cond.inferred?`<div class="best3OpponentOverviewMeta">推定タイプ：${typePairHTML(cond.type1,cond.type2,{tiny:true})}</div>`:"";
- return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">${cond.manual.length?"相手未選択":"未選択"}</div><div class="best3OpponentOverviewMeta">${cond.manual.length?"弱点タイプで評価":"＋を押して相手ピックを選択"}</div>${inferred}${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>入力した弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,true)}</div></div>`:""}<div class="best3OpponentOverviewHint">カード：弱点条件を編集 / ＋：ピック選択</div></div>`;
+ if(cond.base){
+   return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${esc(slot)} ${esc(cond.c.name_ja)}の弱点を編集"><span class="teamSlotLabel">${slot}</span><img data-best3-image-slot="${cond.index}" src="${esc(pickImage(cond.base))}" alt="${esc(cond.c.name_ja)}" title="画像をタップして相手を変更"><div class="bestThreeName">${esc(cond.c.name_ja)}</div>${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>実機の弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,false)}</div></div>`:""}<div class="best3OpponentOverviewHint">画像：相手変更 / カード：弱点編集</div></div>`;
+ }
+ return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">未選択</div>${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>実機の弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,false)}</div></div>`:""}<div class="best3OpponentOverviewHint">＋：ピック選択 / カード：弱点編集</div></div>`;
 }
 function renderBest3OpponentOverview(conditions){
  const box=$("best3OpponentOverview");if(!box)return;box.innerHTML=conditions.map(best3OpponentOverviewCardHTML).join("");
@@ -1730,19 +1740,29 @@ function renderBest3OpponentOverview(conditions){
    btn.addEventListener("click",e=>{e.stopPropagation();const i=Number(btn.dataset.best3PlusSlot)||0;best3WeakSlot=i;openBest3OpponentPicker(i)});
  });
 }
+function best3TypeCandidateButtonHTML(pair,on=false){return `<button type="button" class="best3TypeCandidateBtn${on?" on":""}" data-best3-type1="${esc(pair.type1)}" data-best3-type2="${esc(pair.type2||"")}">${typePairHTML(pair.type1,pair.type2,{tiny:true})}</button>`}
+function renderBest3TypeCandidates(cond){
+ const panel=$("best3TypeCandidatePanel");if(!panel)return;
+ const manual=cond.manual,candidates=cond.typeCandidates||[];
+ if(!manual.length){panel.classList.add("hidden");panel.innerHTML="";return}
+ panel.classList.remove("hidden");
+ if(!candidates.length){panel.innerHTML='<div class="best3TypeCandidateMsg warn">この弱点の組み合わせに一致する単タイプ・複合タイプはありません。弱点の選択を確認してください。</div>';return}
+ if(candidates.length===1){panel.innerHTML=`<div class="best3TypeCandidateHead"><b>タイプ判定</b><span>1候補のため自動設定</span></div><div class="best3TypeCandidateMsg ok">${typePairHTML(candidates[0].type1,candidates[0].type2,{tiny:true})} に自動設定しました。</div>`;return}
+ const selected=best3SelectedTypeCandidate(best3WeakSlot,candidates);
+ panel.innerHTML=`<div class="best3TypeCandidateHead"><b>タイプ候補 ${candidates.length}件</b><span>該当する組み合わせを選択</span></div><div class="best3TypeCandidateList">${candidates.map(x=>best3TypeCandidateButtonHTML(x,best3SameTypePair(x,selected))).join("")}</div>${selected?"":'<div class="best3TypeCandidateMsg warn" style="margin-top:6px">候補を1つ選ぶと、そのタイプを対策計算に使用します。</div>'}`;
+ panel.querySelectorAll("[data-best3-type1]").forEach(b=>b.onclick=()=>{best3TypeChoiceSlots[best3WeakSlot]={type1:b.dataset.best3Type1,type2:b.dataset.best3Type2||""};saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("タイプ候補を選択しました。「最強3枚を選出」を押してください。");});
+}
 function renderBest3OpponentCurrent(){
- const chooser=$("weakTypeChooser"),status=$("best3InferredTypeStatus");if(!chooser)return;const cond=best3Condition(best3WeakSlot);if(status){status.textContent="";status.style.display="none"}
- if(cond.dbHasType){chooser.innerHTML="";chooser.style.display="none";return}
+ const chooser=$("weakTypeChooser"),status=$("best3InferredTypeStatus");if(!chooser)return;const cond=best3Condition(best3WeakSlot);if(status){status.textContent="";status.style.display="none";status.classList.add("hidden")}
  chooser.style.display="";chooser.classList.remove("autoMode");chooser.innerHTML=best3TypeNames().map(t=>`<button type="button" class="weakTypeBtn${best3WeakSlots[best3WeakSlot].includes(t)?" on":""}" data-weak-type="${esc(t)}">${typeIconHTML(t,{label:false,iconOnly:true})}<span>${esc(t)}</span></button>`).join("");
- chooser.querySelectorAll("[data-weak-type]").forEach(b=>b.onclick=()=>{const t=b.dataset.weakType,arr=best3WeakSlots[best3WeakSlot],p=arr.indexOf(t);if(p>=0)arr.splice(p,1);else arr.push(t);saveBest3WeakSlots();renderBest3WeakChooser();clearBest3CounterResults("条件を変更しました。「最強3枚を選出」を押してください。")});
- if(cond.inferred&&status){status.style.display="";status.innerHTML=`弱点の組み合わせから推定：${typePairHTML(cond.type1,cond.type2,{tiny:true})}`};
+ chooser.querySelectorAll("[data-weak-type]").forEach(b=>b.onclick=()=>{const t=b.dataset.weakType,arr=best3WeakSlots[best3WeakSlot],p=arr.indexOf(t);if(p>=0)arr.splice(p,1);else arr.push(t);best3TypeChoiceSlots[best3WeakSlot]=null;saveBest3WeakSlots();saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("条件を変更しました。「最強3枚を選出」を押してください。");});
+ renderBest3TypeCandidates(cond);
 }
 function renderBest3WeakChooser(){
- const sum=$("weakOpponentSummary");if(!sum)return;
  const conditions=[0,1,2].map(best3Condition);
  renderBest3OpponentOverview(conditions);
- document.querySelectorAll("[data-weak-slot]").forEach(b=>{const i=Number(b.dataset.weakSlot)||0,c=conditions[i];b.classList.toggle("on",i===best3WeakSlot);b.classList.toggle("hasTypes",c.weakTypes.length>0);b.classList.toggle("hasPick",!!c.base);b.classList.toggle("needInput",!!c.base&&!c.hasType&&!c.manual.length);b.textContent=`相手${i+1}`;b.onclick=()=>{best3WeakSlot=i;renderBest3WeakChooser()}});
- sum.innerHTML=conditions.map(c=>{let sub;if(c.base)sub=c.full?"詳細評価":c.dbHasType?(c.attackType?"タイプ＋耐性評価":"タイプ評価"):c.inferred?"弱点からタイプ推定":c.manual.length?"弱点手入力":"弱点入力必要";else sub=c.inferred?"弱点からタイプ推定":c.manual.length?"弱点手入力":"未指定";return `<div><b class="best3OpponentSummaryName">${esc(c.base?c.c.name_ja:`相手${c.index+1}`)}</b><span class="best3OpponentSummarySub">${esc(sub)}</span></div>`}).join("");
+ document.querySelectorAll("[data-weak-slot]").forEach(b=>{const i=Number(b.dataset.weakSlot)||0,c=conditions[i];b.classList.toggle("on",i===best3WeakSlot);b.classList.toggle("hasTypes",c.weakTypes.length>0);b.classList.toggle("hasPick",!!c.base);b.classList.toggle("needInput",!!c.base&&!c.manual.length);b.textContent=`相手${i+1}`;b.onclick=()=>{best3WeakSlot=i;renderBest3WeakChooser()}});
+ const sum=$("weakOpponentSummary");if(sum){sum.innerHTML="";sum.classList.add("hidden")}
  renderBest3OpponentCurrent();
 }
 function populateBest3OpponentSeries(){const sel=$("best3OpponentSeries");if(!sel||sel.dataset.ready)return;const vals=[...new Set(R.map(r=>r.series).filter(Boolean))];for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)}sel.dataset.ready="1"}
@@ -1753,7 +1773,7 @@ function renderBest3OpponentPicker(){
  for(const r of list)box.appendChild(best3OpponentPickButton(r));const count=$("best3OpponentPickCount");if(count)count.textContent=`${series||"全シリーズ"}：${list.length.toLocaleString("ja-JP")}件`;if(!box.children.length)box.innerHTML='<div class="meta">条件に該当するピックはありません。</div>'
 }
 function openBest3OpponentPicker(slot){best3OpponentPickerSlot=slot;populateBest3OpponentSeries();const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;if($("best3OpponentQ"))$("best3OpponentQ").value="";if($("best3OpponentSeries"))$("best3OpponentSeries").value="";renderBest3OpponentPicker();showBattleOverlay("best3OpponentOverlay");setTimeout(()=>$("best3OpponentQ")?.focus(),30)}
-function chooseBest3Opponent(r){best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];saveBest3OpponentSlots();saveBest3WeakSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser();clearBest3CounterResults(`${r.name_ja}を相手${best3WeakSlot+1}に設定しました。「最強3枚を選出」を押してください。`)}
+function chooseBest3Opponent(r){best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser();clearBest3CounterResults(`${r.name_ja}を相手${best3WeakSlot+1}に設定しました。実機に表示された弱点を選んでください。`)}
 function clearBest3CounterResults(msg=""){const a=$("weakOwnedThreeResult"),b=$("weakAllThreeResult"),s=$("weakCounterStatus");if(a)a.innerHTML="";if(b)b.innerHTML="";if(s)s.textContent=msg}
 function best3AttackPts(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return 55;if(e>=FRIENDA_EFFECT.HIGH-.001)return 48;if(e>=1)return 24;if(e>=FRIENDA_EFFECT.LOW-.001)return 8;return 2}
 function best3ResistPts(e){if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return 20;if(e<=FRIENDA_EFFECT.LOW+.001)return 17;if(e<=1.001)return 10;if(e<=FRIENDA_EFFECT.HIGH+.001)return 3;return 0}
@@ -1785,7 +1805,7 @@ function renderBest3CounterResult(boxId,result,scopeLabelText){const box=$(boxId
 function calculateWeakCounterTeams(){
  const all=[0,1,2].map(best3Condition),needs=all.filter(c=>c.base&&!c.hasType&&!c.manual.length);if(needs.length){alert(`${needs.map(c=>`相手${c.index+1}（${c.c.name_ja}）`).join("、")}はタイプ未確認です。弱点タイプを1つ以上選択してください。`);return}const active=all.filter(c=>c.ready);if(!active.length){alert("相手を一覧から選ぶか、相手1～3のいずれかで弱点タイプを選択してください。");return}
  const ownedPool=best3EligiblePool(true),allPool=best3EligiblePool(false),owned=best3CounterTeam(ownedPool),allResult=best3CounterTeam(allPool);renderBest3CounterResult("weakOwnedThreeResult",owned,"所持ピック");renderBest3CounterResult("weakAllThreeResult",allResult,"全ピック");
- const full=active.filter(c=>c.full).length,resist=active.filter(c=>!c.full&&c.attackType).length,inferred=active.filter(c=>c.inferred).length,manual=active.filter(c=>!c.dbHasType&&c.manual.length&&!c.inferred).length;const status=$("weakCounterStatus");if(status)status.textContent=`相手 ${active.length}人を反映。詳細評価 ${full}人、攻撃属性を使った耐性評価 ${resist}人、弱点からタイプ推定 ${inferred}人、弱点のみ評価 ${manual}人。攻撃相性・相手技への耐性・すばやさ・総合強さを考慮（${damageModel==="v2"?"Ver2":"Ver1"}）。`;
+ const full=active.filter(c=>c.full).length,resist=active.filter(c=>!c.full&&c.attackType).length,inferred=active.filter(c=>c.inferred).length,manual=active.filter(c=>c.manual.length&&!c.inferred).length;const status=$("weakCounterStatus");if(status)status.textContent=`相手 ${active.length}人を反映。詳細評価 ${full}人、攻撃属性を使った耐性評価 ${resist}人、弱点からタイプ確定 ${inferred}人、弱点のみ評価 ${manual}人。実機で選択した弱点を優先して対策計算します（${damageModel==="v2"?"Ver2":"Ver1"}）。`;
 }
 function renderBestThreeMode(){renderBestOwnedThree();renderBest3WeakChooser()}
 
@@ -1906,8 +1926,8 @@ document.querySelectorAll("[data-fx-speed]").forEach(b=>b.onclick=()=>setBattleF
 $("battleVsButton").onclick=autoBattleFromVs;$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
 $("refreshBestOwnedThreeBtn").onclick=renderBestOwnedThree;
 $("calcWeakCounterBtn").onclick=calculateWeakCounterTeams;
-$("clearCurrentWeakBtn").onclick=()=>{best3WeakSlots[best3WeakSlot]=[];best3OpponentSlots[best3WeakSlot]=null;saveBest3WeakSlots();saveBest3OpponentSlots();renderBest3WeakChooser();clearBest3CounterResults("この相手の選択・弱点条件をクリアしました。")} ;
-$("clearAllWeakBtn").onclick=()=>{best3WeakSlots=[[],[],[]];best3OpponentSlots=[null,null,null];saveBest3WeakSlots();saveBest3OpponentSlots();renderBest3WeakChooser();clearBest3CounterResults("相手1～3の選択・弱点条件をすべてクリアしました。")} ;
+$("clearCurrentWeakBtn").onclick=()=>{best3WeakSlots[best3WeakSlot]=[];best3OpponentSlots[best3WeakSlot]=null;best3TypeChoiceSlots[best3WeakSlot]=null;saveBest3WeakSlots();saveBest3OpponentSlots();saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("この相手の選択・弱点条件をクリアしました。")} ;
+$("clearAllWeakBtn").onclick=()=>{best3WeakSlots=[[],[],[]];best3OpponentSlots=[null,null,null];best3TypeChoiceSlots=[null,null,null];saveBest3WeakSlots();saveBest3OpponentSlots();saveBest3TypeChoiceSlots();renderBest3WeakChooser();clearBest3CounterResults("相手1～3の選択・弱点条件をすべてクリアしました。")} ;
 
 
 const MAIN_TAB_KEY="frenda:mainTab:v1";
@@ -1951,7 +1971,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.49",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.50",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -1961,4 +1981,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 08:56:00 JST / Ver6.49 -->
+<!-- Updated: 2026-09-24 09:19:15 JST / Ver6.50 -->
