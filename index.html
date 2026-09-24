@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.59 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.60 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.59</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.60</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -234,7 +234,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.54: selected opponent cards show master type, move type, and calculated weaknesses */
 /* Ver6.56: show calculated weaknesses, resistances, and immunities on both fighters during 1v1 battles */
 /* Ver6.57: pick-back attack/defense type matchups and STAB display */
-/* Ver6.59: strongest-three compact in-card matchups + unified counter cards */
+/* Ver6.60: strongest-three compact in-card matchups + unified counter cards */
 /* Ver6.58: strongest-three cards show attack/defense matchups and STAB */
 /* Ver6.49: selected opponents shown as three side-by-side cards */
 /* Ver6.43: strongest-three team builder + opponent/master-aware counter teams */
@@ -281,7 +281,7 @@ body.battleOverlayOpen{overflow:hidden}
 .best3OpponentOverview .bestThreeCard img[data-best3-image-slot]{cursor:pointer}#best3InferredTypeStatus{margin:6px 2px 0;text-align:center}
 .best3TypeCandidatePanel{margin:7px 0 2px;padding:8px;border:1px solid #d6e1e6;border-radius:11px;background:#f8fbfd}.best3TypeCandidateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.best3TypeCandidateHead b{font-size:9px;color:#24485c}.best3TypeCandidateHead span{font-size:7px;color:#71838d}.best3TypeCandidateList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.best3TypeCandidateBtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 5px;background:#fff;color:#29404d;border:1px solid #cbd8e0;border-radius:9px;font-size:8px;font-weight:1000}.best3TypeCandidateBtn.on{background:#6b3d91;color:#fff;border-color:#57307d;box-shadow:0 0 0 1px #d8bfff inset}.best3TypeCandidateMsg{font-size:8px;line-height:1.55;color:#5d717d}.best3TypeCandidateMsg.ok{color:#28713d;font-weight:900}.best3TypeCandidateMsg.warn{color:#915e12}.best3TypeCandidatePanel .typePair{pointer-events:none}@media(max-width:600px){.best3TypeCandidateList{grid-template-columns:1fr}}
 
-/* Ver6.59: 最強3体カード内の相性情報を3列幅に収める */
+/* Ver6.60: 最強3体カード内の相性情報を3列幅に収める */
 .bestThreeCard{overflow:hidden}
 .best3Matchups,.best3MatchupBox,.best3MatchupRow,.best3MatchupRow .bestTypeChips{min-width:0;max-width:100%}
 .best3MatchupBox{overflow:hidden;padding:5px 4px}
@@ -302,8 +302,152 @@ body.battleOverlayOpen{overflow:hidden}
  .best3MatchupRow .typeMark{width:11px;height:11px;flex-basis:11px}
  .best3Identity{font-size:6px;padding:4px}
 }
+
+/* Ver6.60: 最強3体のタイプ表示を固定タイル化し、攻撃/防御枠を全カードで統一 */
+.bestThreeCards{align-items:stretch}
+.bestThreeCard .best3Identity{
+  min-height:54px;
+  display:block;
+}
+.bestThreeCard .best3Matchups{
+  display:grid;
+  grid-template-rows:190px 220px;
+  gap:6px;
+  align-items:stretch;
+}
+.bestThreeCard .best3MatchupBox{
+  height:100%;
+  min-height:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  padding:5px 4px;
+}
+.bestThreeCard .best3MatchupHead{
+  min-height:14px;
+  flex:0 0 14px;
+  margin-bottom:2px;
+}
+.bestThreeCard .best3MatchupRow{
+  display:block;
+  margin-top:3px;
+  min-width:0;
+}
+.bestThreeCard .best3MatchupLabel{
+  display:block;
+  min-height:9px;
+  margin:0 0 2px;
+  font-size:6px;
+  line-height:1.15;
+  white-space:nowrap;
+}
+.bestThreeCard .best3MatchupRow .bestTypeChips{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:2px;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow:visible;
+}
+.bestThreeCard .best3MatchupRow .bestTypeChip{
+  width:100%;
+  min-width:0;
+  height:24px;
+  min-height:24px;
+  max-height:24px;
+  padding:1px;
+  border-radius:6px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  font-size:5.1px;
+  line-height:1;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.bestThreeCard .best3MatchupRow .bestTypeChip>span:last-child{
+  display:block;
+  width:100%;
+  min-width:0;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+  font-size:5.1px;
+  line-height:1;
+}
+.bestThreeCard .best3MatchupRow .bestTypeChip .typePill.iconOnly{
+  display:inline-flex;
+  width:11px;
+  min-width:11px;
+  height:11px;
+  min-height:11px;
+  padding:0;
+  margin:0;
+  border:0;
+  flex:0 0 11px;
+}
+.bestThreeCard .best3MatchupRow .bestTypeChip .typePill.iconOnly .typeMark{
+  width:11px!important;
+  min-width:11px!important;
+  height:11px!important;
+  min-height:11px!important;
+  flex:0 0 11px!important;
+}
+.bestThreeCard .best3MatchupRow .bestTypeNone{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:24px;
+  min-height:24px;
+  border:1px dashed #d6e0e5;
+  border-radius:6px;
+  font-size:5.5px;
+  color:#82919a;
+  background:#fff;
+}
+.bestThreeCard .best3MatchupRow .bestTypeIconWrap{
+  flex:0 0 11px;
+  width:11px;
+  height:11px;
+}
+.bestThreeCard .best3MatchupRow .bestTypeIconWrap.double{margin-right:0}
+.bestThreeCard .best3MatchupRow .doubleWeakBadge{
+  right:-5px;
+  top:-5px;
+  font-size:4.5px;
+  padding:1px 2px;
+}
+/* 対策側も「所持ピック 最強3体」と同じカード寸法 */
+.counterResultBlock .bestThreeCard{padding:7px}
+.counterResultBlock .bestThreeCard img{width:72px}
+.counterResultBlock .bestThreeName{font-size:10px;min-height:25px}
+.counterResultBlock .bestThreeScore b{font-size:14px}
+/* 相手1～3の選択カードも同じ情報レイアウトを使用 */
+.best3OpponentOverview .bestThreeCard .best3Identity{min-height:54px}
+.best3OpponentOverview .bestThreeCard .best3Matchups{grid-template-rows:190px 220px}
+.best3OpponentOverview .bestThreeCard img{width:72px}
+@media(max-width:620px){
+  .bestThreeCard .best3Matchups,
+  .best3OpponentOverview .bestThreeCard .best3Matchups{grid-template-rows:190px 220px}
+  .bestThreeCard .best3MatchupRow .bestTypeChip{
+    height:24px;
+    min-height:24px;
+    max-height:24px;
+    font-size:5px;
+  }
+  .bestThreeCard .best3MatchupRow .bestTypeChip>span:last-child{font-size:5px}
+  .counterResultBlock .bestThreeCard{padding:5px}
+  .counterResultBlock .bestThreeCard img{width:62px}
+  .counterResultBlock .bestThreeName{font-size:9px;min-height:23px}
+}
+
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.59</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.60</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1777,11 +1921,8 @@ function best3OpponentOverviewCardHTML(cond){
  const active=cond.index===best3WeakSlot?" active":"",slot=`相手${cond.index+1}`;
  const weak=cond.manual.map(t=>({type:t,raw:null}));
  if(cond.base){
-   const masterWeak=best3WeakTypes(cond.base);
-   const typeView=cond.hasType?typePairHTML(cond.type1,cond.type2,{tiny:true}):'<span class="bestTypeNone">不明</span>';
-   const moveView=cond.attackType?typeIconHTML(cond.attackType,{label:true,tiny:true}):'<span class="bestTypeNone">不明</span>';
-   const weakView=cond.hasType?best3TypeChipHTML(masterWeak,true):'<span class="bestTypeNone">判定不可</span>';
-   return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${esc(slot)} ${esc(cond.c.name_ja)}"><span class="teamSlotLabel">${slot}</span><img data-best3-image-slot="${cond.index}" src="${esc(pickImage(cond.base))}" alt="${esc(cond.c.name_ja)}" title="画像をタップして相手を変更"><div class="bestThreeName">${esc(cond.c.name_ja)}</div><div class="best3OpponentOverviewMeta"><b>タイプ</b><div class="best3OpponentOverviewTypes">${typeView}</div><b>技タイプ</b><div class="best3OpponentOverviewTypes">${moveView}</div></div><div class="best3OpponentOverviewWeak"><b>弱点</b><div class="bestTypeChips">${weakView}</div></div><div class="best3OpponentOverviewHint">画像：相手変更 / マスタデータで判定</div></div>`;
+   const score=best3Strength(cond.base);
+   return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${esc(slot)} ${esc(cond.c.name_ja)}"><span class="teamSlotLabel">${slot}</span><img data-best3-image-slot="${cond.index}" src="${esc(pickImage(cond.base))}" alt="${esc(cond.c.name_ja)}" title="画像をタップして相手を変更"><div class="bestThreeName">${esc(cond.c.name_ja)}</div><div class="bestThreeSub">${esc(cond.c.pick_no)} / ${cond.c.grade?"★"+esc(cond.c.grade):"ランク-"}</div><div class="bestThreeScore"><b>${score>=0?score:"—"}</b><span>/1000</span></div>${best3MatchupDetailHTML(cond.base)}<div class="best3OpponentOverviewHint">画像：相手変更 / マスタデータで判定</div></div>`;
  }
  const manualTypeView=cond.hasType?`<div class="best3OpponentOverviewMeta"><b>タイプ</b><div class="best3OpponentOverviewTypes">${typePairHTML(cond.type1,cond.type2,{tiny:true})}</div></div>`:"";
  return `<div class="bestThreeCard${active}" data-best3-overview-slot="${cond.index}" role="button" tabindex="0" aria-label="${slot}を編集"><span class="teamSlotLabel">${slot}</span><button type="button" class="best3OpponentPlaceholder" data-best3-plus-slot="${cond.index}" aria-label="${slot}のピックを一覧から選ぶ">＋</button><div class="bestThreeName">未選択</div>${manualTypeView}${cond.manual.length?`<div class="best3OpponentOverviewWeak"><b>実機の弱点</b><div class="bestTypeChips">${best3TypeChipHTML(weak,false)}</div></div>`:""}<div class="best3OpponentOverviewHint">＋：ピック選択 / カード：弱点入力</div></div>`;
@@ -2047,4 +2188,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderFavorites();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-24 20:56:21 JST / Ver6.59 -->
+<!-- Updated: 2026-09-24 21:12:28 JST / Ver6.60 -->
