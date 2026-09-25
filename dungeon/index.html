@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.01 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.02 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.01</title>
+<title>フレンダダンジョン Ver0.02</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -13,7 +13,7 @@ button,input,select{font:inherit}button{border:0;border-radius:12px;padding:11px
 header{position:sticky;top:0;z-index:30;background:#0d2535eF;color:#fff;backdrop-filter:blur(8px);padding:11px 14px;border-bottom:1px solid #ffffff18}.headrow{max-width:920px;margin:auto;display:flex;gap:10px;align-items:center;justify-content:space-between}.brand b{display:block;font-size:18px}.brand small{opacity:.72}.headerBtns{display:flex;gap:7px;flex-wrap:wrap}.headerBtns button{padding:8px 10px;font-size:12px}
 main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);border:1px solid #dce5eb;border-radius:18px;padding:15px;margin-bottom:13px;box-shadow:0 7px 22px #0c243015}.heroCard{background:linear-gradient(145deg,#092a3d,#104d69);border-color:#28718e;color:#fff;overflow:hidden;position:relative}.heroCard:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-140px;background:#28d8ff1d}.heroCard h1{font-size:24px;margin:0 0 5px}.heroCard p{margin:0;color:#d6f6ff;line-height:1.6}.kicker{font-size:11px;font-weight:950;letter-spacing:.16em;color:#69e7ff;margin-bottom:5px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}.muted{color:var(--muted);font-size:12px}.sectionTitle{font-size:17px;font-weight:950;margin:0 0 11px}.hidden{display:none!important}.badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;background:#edf3f7;color:#40515d;font-size:11px;font-weight:850}.badge.good{background:#dff4e7;color:#167744}.badge.bad{background:#fee5e5;color:#a22929}.badge.gold{background:#fff2bd;color:#785500}.badge.dark{background:#173d54;color:#fff}.badge.purple{background:#eee6ff;color:#5b3c92}
 .menuGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.menuBtn{min-height:74px;background:linear-gradient(180deg,#fff,#eef5f8);border:1px solid #cfdde5;color:#173243;box-shadow:0 3px 0 #c5d0d6}.menuBtn b{display:block;font-size:20px;margin-bottom:2px}.menuBtn span{font-size:10px;color:#657580}.continueBtn{width:100%;font-size:17px;background:linear-gradient(180deg,#29b865,#178b4b);box-shadow:0 4px 0 #0e6b39;margin-bottom:12px}
-.starterGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.starterCard{border:2px solid #b9ccd7;border-radius:17px;background:linear-gradient(145deg,#f9fdff,#e8f1f6);padding:10px;text-align:center}.starterCard img{width:100%;max-width:160px;aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#dfe7ec}.starterCard h3{margin:7px 0 2px}.stars{color:#e3a300;font-weight:1000;letter-spacing:-1px}.starterCard button{width:100%;margin-top:8px}
+.starterGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.starterCard{border:2px solid #b9ccd7;border-radius:17px;background:linear-gradient(145deg,#f9fdff,#e8f1f6);padding:10px;text-align:center}.starterCard img{width:100%;max-width:160px;aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#dfe7ec}.starterCard h3{margin:7px 0 2px}.stars{color:#e3a300;font-weight:1000;letter-spacing:-1px}.starterCard button{width:100%;margin-top:8px}.starterSetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:11px}.starterSetCard{border:2px solid #b9ccd7;border-radius:18px;background:linear-gradient(145deg,#f9fdff,#e8f1f6);padding:12px}.starterSetCard h3{margin:0 0 8px;text-align:center}.starterTrio{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.starterMini{text-align:center;min-width:0}.starterMini img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#dfe7ec}.starterMini b{display:block;font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.starterMini small{display:block;font-size:9px;color:#667681}.starterSetCard>button{width:100%;margin-top:10px}
 .dungeonGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.dungeonCard{border:2px solid #b7cbd5;border-radius:17px;padding:13px;background:linear-gradient(160deg,#f9feff,#eaf4f7);position:relative}.dungeonCard.locked{filter:grayscale(.65);opacity:.6}.dungeonCard h3{margin:0 0 5px}.dungeonCard .bigStar{font-size:20px;color:#da9d00}.dungeonMeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}.metaBox{background:#fff;border:1px solid #dbe4e9;border-radius:10px;padding:7px}.metaBox span{display:block;font-size:10px;color:#697883}.metaBox b{font-size:13px}
 .teamSelectGrid,.ownedGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.pickCard{border:2px solid #b9cad4;border-radius:16px;background:#fff;padding:8px;position:relative}.pickCard.selected{outline:3px solid #2bcaf0;outline-offset:-2px;background:#eafbff}.pickCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e3eaee}.pickCard b{display:block;margin-top:6px}.pickCard small{display:block;color:#667681;line-height:1.45}.pickCard .selectMark{position:absolute;right:7px;top:7px;border-radius:999px;padding:4px 7px;background:#0786b0;color:#fff;font-size:10px;font-weight:900}.filterRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.filterRow input,.filterRow select{padding:10px;border:1px solid #bdcbd4;border-radius:10px;background:#fff;min-width:150px;flex:1}
 .runTop{display:grid;grid-template-columns:1.1fr .9fr;gap:10px}.runStatus{background:linear-gradient(145deg,#0a3146,#126585);color:#fff;border-radius:16px;padding:14px}.floorBig{font-size:28px;font-weight:1000}.progressTrack{height:10px;background:#ffffff28;border-radius:999px;overflow:hidden;margin-top:7px}.progressFill{height:100%;background:linear-gradient(90deg,#46e6ff,#85f4a9);transition:width .25s}.eggMini{background:#f7f2ff;border:1px solid #d8cbed;border-radius:16px;padding:12px}.routeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.routeCard{border:2px solid #c7d5dd;background:linear-gradient(180deg,#fff,#eef4f7);color:#253b49;padding:15px;min-height:128px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-shadow:0 4px 0 #c5d0d6}.routeCard .ico{font-size:31px}.routeCard b{font-size:17px;margin:4px 0}.routeCard small{color:#667883}.routeCard.battle{border-color:#d1a35e}.routeCard.elite{border-color:#a87dca;background:linear-gradient(180deg,#fff,#f0e7fa)}.routeCard.heal{border-color:#74bf8f}.routeCard.event{border-color:#6cbcc9}.routeCard.unknown{border-color:#9aa8b0}
@@ -24,7 +24,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン</b><small>Ver0.01 / Simulator Ver6.73 共通データ対応</small></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン</b><small>Ver0.02 / Simulator Ver6.73 共通データ対応</small></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
@@ -33,7 +33,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.01";
+const APP_VERSION="0.02";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
@@ -46,15 +46,35 @@ const ROUTE_RATES_EARLY={battle:30,elite:15,event:20,heal:15,unknown:20};
 const ROUTE_RATES_LATE={battle:25,elite:25,event:15,heal:15,unknown:20};
 const ENEMY_GRADE_RATES={1:{2:60,3:30,4:9,5:1},2:{2:45,3:35,4:17,5:3},3:{2:30,3:40,4:24,5:6},4:{2:20,3:35,4:35,5:10},5:{2:10,3:30,4:40,5:20}};
 const DIFF_BONUS={1:0,2:.10,3:.20,4:.35,5:.50};
-const stateDefault=()=>({saveVersion:1,appVersion:APP_VERSION,initialized:false,starterOptions:null,starterId:null,owned:[],dex:{},trainingPoints:{},permanentBoosts:{},eggs:[],eggCap:3,unlocks:{forest:[1]},stats:{},run:null,lastSummary:null});
+const STARTER_SET_DEFS=[
+ {key:"kanto",label:"カントー",names:["フシギダネ","ヒトカゲ","ゼニガメ"]},
+ {key:"johto",label:"ジョウト",names:["チコリータ","ヒノアラシ","ワニノコ"]},
+ {key:"hoenn",label:"ホウエン",names:["キモリ","アチャモ","ミズゴロウ"]},
+ {key:"sinnoh",label:"シンオウ",names:["ナエトル","ヒコザル","ポッチャマ"]},
+ {key:"unova",label:"イッシュ",names:["ツタージャ","ポカブ","ミジュマル"]},
+ {key:"kalos",label:"カロス",names:["ハリマロン","フォッコ","ケロマツ"]},
+ {key:"alola",label:"アローラ",names:["モクロー","ニャビー","アシマリ"]},
+ {key:"galar",label:"ガラル",names:["サルノリ","ヒバニー","メッソン"]},
+ {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
+];
+const stateDefault=()=>({saveVersion:2,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},trainingPoints:{},permanentBoosts:{},eggs:[],eggCap:3,unlocks:{forest:[1]},stats:{},run:null,lastSummary:null});
 let state=loadState();
+migrateState();
 let screen="home";
 let teamSelection=[];
 let currentDungeon={id:"forest",difficulty:1};
 let message="";
 
-function save(){try{state.appVersion=APP_VERSION;localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.error(e)}}
+function save(){try{state.appVersion=APP_VERSION;state.saveVersion=2;localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.error(e)}}
 function loadState(){try{const x=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");return x&&typeof x==="object"?Object.assign(stateDefault(),x):stateDefault()}catch{return stateDefault()}}
+function migrateState(){
+ const v=Number(state.saveVersion||1);
+ if(v>=2)return;
+ // Ver0.01は初期所持が1体のみでゲット機能も未実装。
+ // Ver0.02の御三家3体開始へ合わせるため、初回選択だけやり直す。
+ state=stateDefault();
+ save();
+}
 function resetSave(){if(!confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;localStorage.removeItem(SAVE_KEY);state=stateDefault();screen="home";render()}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
@@ -73,16 +93,49 @@ function chooseWeighted(map){const a=Object.entries(map),sum=a.reduce((n,[,w])=>
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function uniqueSample(a,n){return shuffle(a).slice(0,n)}
 function typesHTML(r){return [r?.type1,r?.type2].filter(Boolean).map(t=>`<span class="badge">${esc(t)}</span>`).join(" ")}
-function ensureStarterOptions(){if(state.starterOptions?.length===3)return;state.starterOptions=["フシギダネ","ヒトカゲ","ゼニガメ"].map(name=>{let a=RECORDS.filter(r=>r.name_ja===name&&Number(r.grade)===2&&validBattle(r));if(!a.length){const all=RECORDS.filter(r=>r.name_ja===name&&validBattle(r));const min=Math.min(...all.map(r=>Number(r.grade)||99));a=all.filter(r=>Number(r.grade)===min)}return a.length?a[Math.floor(Math.random()*a.length)].master_id:null}).filter(Boolean);save()}
+function starterPickForName(name){
+ const a=RECORDS.filter(r=>r.name_ja===name&&Number(r.grade)===2&&validBattle(r));
+ if(!a.length)return null;
+ return a[Math.floor(Math.random()*a.length)].master_id;
+}
+function ensureStarterSetOptions(){
+ if(Array.isArray(state.starterSetOptions)&&state.starterSetOptions.length)return;
+ state.starterSetOptions=STARTER_SET_DEFS.map(def=>{
+   const ids=def.names.map(starterPickForName);
+   return ids.every(Boolean)?{key:def.key,label:def.label,names:def.names.slice(),ids}:null;
+ }).filter(Boolean);
+ save();
+}
 function ownNew(id){if(!id||ownedEntry(id))return false;state.owned.push({id});state.dex[id]={obtained:true,current:true};save();return true}
-function pickStarter(id){if(state.initialized)return;ownNew(id);state.initialized=true;state.starterId=id;state.unlocks={forest:[1]};save();screen="home";render()}
+function pickStarterSet(key){
+ if(state.initialized)return;
+ const set=state.starterSetOptions?.find(x=>x.key===key);
+ if(!set||!Array.isArray(set.ids)||set.ids.length!==3)return;
+ set.ids.forEach(ownNew);
+ state.initialized=true;
+ state.starterSetKey=set.key;
+ state.starterIds=set.ids.slice();
+ state.starterId=null;
+ state.unlocks={forest:[1]};
+ save();
+ screen="home";
+ render();
+}
 function unlocked(did,diff){return (state.unlocks[did]||[]).includes(diff)}
 function unlockedDifficulties(did){return state.unlocks[did]||[]}
-function homeHero(){const s=getStat("forest",1);return `<div class="card heroCard"><div class="kicker">FRENDA DUNGEON</div><h1>森のダンジョンから冒険開始</h1><p>地下10階を目指し、HPを管理しながら分岐を選択。Ver0.01では基本ダンジョン進行とバトルを実装しています。</p><div class="row" style="margin-top:10px"><span class="badge dark">最深 B${s.deepest}F</span><span class="badge dark">クリア ${s.clears}回</span><span class="badge dark">所持 ${state.owned.length}枚</span></div></div>`}
+function homeHero(){const s=getStat("forest",1);return `<div class="card heroCard"><div class="kicker">FRENDA DUNGEON</div><h1>森のダンジョンから冒険開始</h1><p>地下10階を目指し、HPを管理しながら分岐を選択。Ver0.02では御三家3体スタートに対応し、基本ダンジョン進行とバトルを実装しています。</p><div class="row" style="margin-top:10px"><span class="badge dark">最深 B${s.deepest}F</span><span class="badge dark">クリア ${s.clears}回</span><span class="badge dark">所持 ${state.owned.length}枚</span></div></div>`}
 function render(){withdrawBtn.style.display=state.run?"inline-block":"none";homeBtn.style.display=screen==="home"&&!state.run?"none":"inline-block";if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。\n\nこのファイルを dungeon/index.html として配置し、1階層上に frenda-master.js / frenda-core.js を置いてください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.run){renderRun();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="save")return renderSaveMenu();renderHome()}
-function renderStarter(){ensureStarterOptions();app.innerHTML=`<div class="card heroCard"><div class="kicker">FIRST PARTNER</div><h1>最初のパートナーを選ぼう</h1><p>フシギダネ・ヒトカゲ・ゼニガメの★2ピックから1体を選択します。選び直しはセーブ初期化時のみです。</p></div><div class="card"><div class="starterGrid">${state.starterOptions.map(id=>{const r=rec(id);return `<div class="starterCard"><img src="${esc(imageOf(r))}" alt=""><h3>${esc(r.name_ja)}</h3><div class="stars">★★</div><div class="muted">${esc(r.pick_no)} / ${esc(r.series)}</div><div style="margin-top:5px">${typesHTML(r)}</div><button data-starter="${esc(id)}">このポケモンにする</button></div>`}).join("")}</div></div>`;app.querySelectorAll("[data-starter]").forEach(b=>b.onclick=()=>{const r=rec(b.dataset.starter);if(confirm(`${r.name_ja}を最初のパートナーにしますか？`))pickStarter(b.dataset.starter)})}
-function renderHome(){app.innerHTML=homeHero()+`${state.run?`<button class="continueBtn" id="continueBtn">▶ 続きから</button>`:""}<div class="card"><div class="menuGrid"><button class="menuBtn" data-menu="dungeons"><b>🌳</b><span>ダンジョンへ</span></button><button class="menuBtn" data-menu="owned"><b>🎴</b><span>所持ピック</span></button><button class="menuBtn" disabled><b>📖</b><span>図鑑（次版）</span></button><button class="menuBtn" disabled><b>🥚</b><span>卵（次版）</span></button><button class="menuBtn" disabled><b>✨</b><span>育成（次版）</span></button></div></div><div class="card"><div class="sectionTitle">Ver0.01 実装範囲</div><div class="notice">御三家選択／森★1／10階進行／分岐／通常戦／強敵戦／ボス3連戦／HP持ち越し／移動10％回復／回復・イベント・？／一時強化／全滅／撤退／自動保存を実装。ゲット・卵・孵化・進化・図鑑は次段階で追加します。</div></div><div class="card"><div class="row spread"><div><b>セーブ管理</b><div class="muted">自動保存されています。</div></div><button class="ghost" id="saveMenuBtn">開く</button></div></div>`;app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;render()});document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()}}
-function renderDungeonList(){const s=getStat("forest",1);app.innerHTML=`<div class="card"><div class="sectionTitle">ダンジョン選択</div><div class="dungeonGrid"><div class="dungeonCard"><div class="row spread"><h3>🌳 森のダンジョン</h3><span class="bigStar">★1</span></div><div>${["くさ","むし"].map(t=>`<span class="badge">${t}</span>`).join(" ")}</div><div class="dungeonMeta"><div class="metaBox"><span>最深到達</span><b>B${s.deepest}F</b></div><div class="metaBox"><span>クリア</span><b>${s.clears}回</b></div><div class="metaBox"><span>敵補正</span><b>+0%</b></div><div class="metaBox"><span>構成</span><b>全10階</b></div></div><div class="muted">くさ・むしタイプが合計80％。その他タイプ20％。</div><button style="width:100%;margin-top:10px" id="forestStart">挑戦する</button></div></div></div>`;document.getElementById("forestStart").onclick=()=>{currentDungeon={id:"forest",difficulty:1};teamSelection=[];screen="team";render()}}
+function renderStarter(){
+ ensureStarterSetOptions();
+ if(!state.starterSetOptions.length){app.innerHTML=`<div class="errorBox">御三家セットを作成できませんでした。共通マスターデータを確認してください。</div>`;return}
+ app.innerHTML=`<div class="card heroCard"><div class="kicker">STARTER TRIO</div><h1>最初の御三家を選ぼう</h1><p>地方ごとの御三家3体をセットで獲得して冒険を始めます。3体とも登録済み★2ピックから選ばれます。選び直しはセーブ初期化時のみです。</p></div><div class="card"><div class="sectionTitle">御三家セットを選択</div><div class="starterSetGrid">${state.starterSetOptions.map(set=>`<div class="starterSetCard"><h3>${esc(set.label)}の御三家</h3><div class="starterTrio">${set.ids.map(id=>{const r=rec(id);return `<div class="starterMini"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></div>`}).join("")}</div><button data-starter-set="${esc(set.key)}">この御三家で始める</button></div>`).join("")}</div><div class="notice" style="margin-top:12px">現在の共通マスターに★2ピックが3体そろっている地方だけ表示します。将来マスターデータに追加されれば候補も増やせます。</div></div>`;
+ app.querySelectorAll("[data-starter-set]").forEach(b=>b.onclick=()=>{
+   const set=state.starterSetOptions.find(x=>x.key===b.dataset.starterSet);
+   if(set&&confirm(`${set.label}の御三家3体で始めますか？\n${set.names.join("・")}`))pickStarterSet(set.key);
+ });
+}
+function renderHome(){app.innerHTML=homeHero()+`${state.run?`<button class="continueBtn" id="continueBtn">▶ 続きから</button>`:""}<div class="card"><div class="menuGrid"><button class="menuBtn" data-menu="dungeons"><b>🌳</b><span>ダンジョンへ</span></button><button class="menuBtn" data-menu="owned"><b>🎴</b><span>所持ピック</span></button><button class="menuBtn" disabled><b>📖</b><span>図鑑（次版）</span></button><button class="menuBtn" disabled><b>🥚</b><span>卵（次版）</span></button><button class="menuBtn" disabled><b>✨</b><span>育成（次版）</span></button></div></div><div class="card"><div class="sectionTitle">Ver0.02 実装範囲</div><div class="notice">御三家セット選択・3体獲得／森★1／10階進行／分岐／通常戦／強敵戦／ボス3連戦／HP持ち越し／移動10％回復／回復・イベント・？／一時強化／全滅／撤退／自動保存を実装。ゲット・卵・孵化・進化・図鑑は次段階で追加します。</div></div><div class="card"><div class="row spread"><div><b>セーブ管理</b><div class="muted">自動保存されています。</div></div><button class="ghost" id="saveMenuBtn">開く</button></div></div>`;app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;render()});document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()}}
+function renderDungeonList(){const s=getStat("forest",1);app.innerHTML=`<div class="card"><div class="sectionTitle">ダンジョン選択</div><div class="dungeonGrid"><div class="dungeonCard"><div class="row spread"><h3>🌳 森のダンジョン</h3><span class="bigStar">★1</span></div><div>${["くさ","むし"].map(t=>`<span class="badge">${t}</span>`).join(" ")}</div><div class="dungeonMeta"><div class="metaBox"><span>最深到達</span><b>B${s.deepest}F</b></div><div class="metaBox"><span>クリア</span><b>${s.clears}回</b></div><div class="metaBox"><span>敵補正</span><b>+0%</b></div><div class="metaBox"><span>構成</span><b>全10階</b></div></div><div class="muted">くさ・むしタイプが合計80％。その他タイプ20％。</div><button style="width:100%;margin-top:10px" id="forestStart">挑戦する</button></div></div></div>`;document.getElementById("forestStart").onclick=()=>{currentDungeon={id:"forest",difficulty:1};teamSelection=state.owned.length<=3?state.owned.map(o=>o.id):[];screen="team";render()}}
 function renderTeamSelect(){const max=Math.min(3,state.owned.length),need=max;const cards=state.owned.map(o=>rec(o.id)).filter(Boolean);app.innerHTML=`<div class="card"><div class="sectionTitle">挑戦チーム編成</div><div class="muted" style="margin-bottom:10px">所持数に応じて${need}体を選択してください。現在 ${teamSelection.length}/${need}体。</div><div class="teamSelectGrid">${cards.map(r=>{const sel=teamSelection.includes(r.master_id);const pb=state.permanentBoosts[r.master_id]||{};return `<div class="pickCard ${sel?"selected":""}" data-team-pick="${esc(r.master_id)}">${sel?'<span class="selectMark">選択中</span>':""}<img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div>${typesHTML(r)}</div><small>強化 HP+${pb.hp||0} / 攻撃+${pb.atk||0} / 防御+${pb.def||0}</small></div>`}).join("")}</div><div class="row spread" style="margin-top:12px"><button class="ghost" id="teamBack">戻る</button><button id="startRunBtn" ${teamSelection.length===need?"":"disabled"}>このチームで挑戦</button></div></div>`;app.querySelectorAll("[data-team-pick]").forEach(c=>c.onclick=()=>{const id=c.dataset.teamPick;if(teamSelection.includes(id))teamSelection=teamSelection.filter(x=>x!==id);else if(teamSelection.length<need)teamSelection.push(id);renderTeamSelect()});document.getElementById("teamBack").onclick=()=>{screen="dungeons";render()};document.getElementById("startRunBtn").onclick=startRun}
 function startRun(){const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0}));state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,routeOptions:null,scene:"route",encounter:null,battle:null,reward:null,event:null,logs:["森のダンジョン★1に挑戦！"],startedAt:new Date().toISOString()};updateDeepest(1);generateRoutes();save();render()}
 function runTeam(){return state.run?.team||[]}
@@ -120,9 +173,9 @@ function afterFloorResolved(){const r=state.run;if(!r)return;r.floor++;if(r.floo
 function runDefeat(){const floor=state.run.floor;state.lastSummary={type:"defeat",floor};state.run=null;save();screen="summary";renderSummary()}
 function runClear(){const s=getStat(state.run.dungeonId,state.run.difficulty);s.clears++;s.deepest=Math.max(s.deepest,10);state.lastSummary={type:"clear",floor:10};state.run=null;save();screen="summary";renderSummary()}
 function withdraw(){if(!state.run)return;if(!confirm("現在のダンジョンから撤退しますか？"))return;const floor=state.run.floor;state.lastSummary={type:"withdraw",floor};state.run=null;save();screen="summary";renderSummary()}
-function renderSummary(){const x=state.lastSummary||{type:"withdraw",floor:1};const clear=x.type==="clear",def=x.type==="defeat";app.innerHTML=`<div class="card summary"><div class="resultIcon">${clear?"🏆":def?"💥":"🚪"}</div><h2>${clear?"ダンジョンクリア！":def?"全滅……":"撤退しました"}</h2><p>到達：地下${x.floor}階<br>${clear?"森のダンジョン★1を制覇しました。":"獲得した進行記録は保存されています。"}</p>${clear?'<div class="notice">Ver0.01では卵ルーレットは未実装です。次段階でクリア報酬を追加します。</div>':""}<button id="summaryHome" style="margin-top:12px">ホームへ</button></div>`;withdrawBtn.style.display="none";document.getElementById("summaryHome").onclick=()=>{screen="home";render()}}
+function renderSummary(){const x=state.lastSummary||{type:"withdraw",floor:1};const clear=x.type==="clear",def=x.type==="defeat";app.innerHTML=`<div class="card summary"><div class="resultIcon">${clear?"🏆":def?"💥":"🚪"}</div><h2>${clear?"ダンジョンクリア！":def?"全滅……":"撤退しました"}</h2><p>到達：地下${x.floor}階<br>${clear?"森のダンジョン★1を制覇しました。":"獲得した進行記録は保存されています。"}</p>${clear?'<div class="notice">Ver0.02では卵ルーレットは未実装です。次段階でクリア報酬を追加します。</div>':""}<button id="summaryHome" style="margin-top:12px">ホームへ</button></div>`;withdrawBtn.style.display="none";document.getElementById("summaryHome").onclick=()=>{screen="home";render()}}
 function teamMiniHTML(t,i){const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max);return `<div class="teamMini ${t.ko?"ko":""}"><div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small></div></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="buffs">攻+${t.tempAtk||0} / 防+${t.tempDef||0}</div></div>`}
-function renderRun(){const r=state.run;if(!r)return;const theme=THEMES[r.dungeonId];let body=`<div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)} ★${r.difficulty}</div><div class="floorBig">地下${r.floor}階 / 10</div><div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div><div class="eggMini"><b>🥚 卵</b><div class="muted">Ver0.01では未実装</div><div style="margin-top:5px"><span class="badge purple">所持上限 ${state.eggCap}</span></div></div></div><div class="card"><div class="sectionTitle">チーム</div><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div>`;
+function renderRun(){const r=state.run;if(!r)return;const theme=THEMES[r.dungeonId];let body=`<div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)} ★${r.difficulty}</div><div class="floorBig">地下${r.floor}階 / 10</div><div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div><div class="eggMini"><b>🥚 卵</b><div class="muted">Ver0.02では未実装</div><div style="margin-top:5px"><span class="badge purple">所持上限 ${state.eggCap}</span></div></div></div><div class="card"><div class="sectionTitle">チーム</div><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div>`;
  if(r.scene==="route")body+=renderRoutesHTML();else if(r.scene==="chooseFighter")body+=renderChooseFighterHTML();else if(r.scene==="battle")body+=renderBattleHTML();else if(r.scene==="reward"||r.scene==="rewardTarget")body+=renderRewardHTML();else if(r.scene==="heal")body+=renderHealHTML();else if(r.scene==="eventTarget")body+=renderEventTargetHTML();else if(r.scene==="bossIntro")body+=`<div class="card summary"><div class="resultIcon">👑</div><h2>地下10階・ボス戦</h2><p>3匹の強敵との連戦です。相手は1匹ずつ登場します。</p><button id="bossStart">ボス戦を始める</button></div>`;
  body+=`<div class="card"><div class="sectionTitle">冒険ログ</div><div class="battleLog">${r.logs.slice(-12).map(x=>`<div class="logline">${esc(x)}</div>`).join("")}</div></div>`;app.innerHTML=body;bindRunHandlers()}
 function renderRoutesHTML(){const r=state.run,peek=r.peek>0;return `<div class="card"><div class="sectionTitle">進む道を選ぶ</div><div class="routeGrid">${r.routeOptions.map(x=>{const d=ROUTE_DEF[x.type];return `<button class="routeCard ${d.cls}" data-route="${esc(x.id)}"><span class="ico">${d.icon}</span><b>${d.label}</b><small>${peek?`${d.hint}（先読み中）`:d.hint}</small></button>`}).join("")}</div><div class="muted" style="margin-top:8px">一度選ぶと戻れません。</div></div>`}
@@ -143,6 +196,6 @@ withdrawBtn.onclick=withdraw;
 if(state.lastSummary&&screen==="summary")renderSummary();else render();
 })();
 </script>
-<!-- Updated: 2026-09-25 22:51:03 JST -->
+<!-- Updated: 2026-09-25 23:11:41 JST -->
 </body>
 </html>
