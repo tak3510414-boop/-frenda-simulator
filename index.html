@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.73 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.74 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.73</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.74</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -384,7 +384,7 @@ body.battleOverlayOpen{overflow:hidden}
 .best3SelectionReason span{display:block;font-size:6.2px;font-weight:900;color:#365664;line-height:1.25;overflow-wrap:anywhere}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.73</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.74</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -1160,10 +1160,10 @@ async function attack(a,d,target){
  if(x.model==="v2"&&x.accuracy<1&&Math.random()>x.accuracy){if(st)st.misses++;$("battleMessage").textContent=`${name}は外れた！`;blog(`${esc(a.name_ja)}の「${esc(name)}」！ <span class="damageMiss">しかし外れた。</span>`);await showImpactText("MISS!","miss");attacker?.classList.remove("activeTurn");renderBattleForecast();await fxSleep(160);return}
  if(st)st.hits++;
  const before=target==="enemy"?battle.ehp:battle.mhp,after=Math.max(0,before-x.hitN),applied=Math.min(before,x.hitN);if(st){st.damage+=applied;st.maxHit=Math.max(st.maxHit,x.hitN)}
- defender?.classList.add("hit");const pop=document.createElement("div");pop.className=`damageFloat${x.e<=FRIENDA_EFFECT.VERY_LOW+.0001?" immune":x.e>1?" good":x.e<1?" weak":""}`;pop.textContent=`-${x.hitN}`;defender?.appendChild(pop);battleSfx("hit");await fxSleep(260);
+ if(t){const kind=x.e>1?"good":x.e<FRIENDA_EFFECT.LOW+.0001?"low":"weak";$("battleMessage").textContent=t;await showImpactText(t.replace("…",""),kind);await fxSleep(90)}
+ defender?.classList.add("hit");const pop=document.createElement("div");pop.className=`damageFloat${x.e<=FRIENDA_EFFECT.VERY_LOW+.0001?" immune":x.e>1?" good":x.e<1?" weak":""}`;pop.textContent=`-${x.hitN}`;defender?.appendChild(pop);battleSfx("hit");$("battleMessage").textContent=`${x.hitN}ダメージ！`;await fxSleep(260);
  animateHpBar(target,after);if(target==="enemy")battle.ehp=after;else battle.mhp=after;await fxSleep(330);
- $("battleMessage").textContent=`${x.hitN}ダメージ！ ${t}`;blog(`${esc(a.name_ja)}の${sp?"必殺技「"+esc(name)+"」":"「"+esc(name)+"」"}！ ${x.hitN}ダメージ。${t}`);
- if(t){const kind=x.e>1?"good":x.e<FRIENDA_EFFECT.LOW+.0001?"low":"weak";await showImpactText(t.replace("…",""),kind)}
+ blog(`${esc(a.name_ja)}の${sp?"必殺技「"+esc(name)+"」":"「"+esc(name)+"」"}！ ${t?esc(t)+" ":""}${x.hitN}ダメージ。`);
  if(after<=0){defender?.classList.add("koBurst");battleSfx("ko");await showImpactText("K.O.!","ko");await fxSleep(150)}
  attacker?.classList.remove("activeTurn");arena();await fxSleep(180)
 }
@@ -2232,4 +2232,4 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-25 19:18:54 JST / Ver6.73 -->
+<!-- Updated: 2026-09-26 05:40:38 JST / Ver6.74 -->
