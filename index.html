@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.74 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.75 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.74</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.75</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -383,8 +383,13 @@ body.battleOverlayOpen{overflow:hidden}
 .best3SelectionReason b{font-size:6px;color:#315567;line-height:1.2}
 .best3SelectionReason span{display:block;font-size:6.2px;font-weight:900;color:#365664;line-height:1.25;overflow-wrap:anywhere}
 
+/* Ver6.75: startup performance - incremental pick rendering */
+.browserLoadMore{grid-column:1/-1;width:100%;padding:12px 14px;border-radius:12px;background:#0e3f5d;color:#e9fbff;border:1px solid #3e7c9c;font-size:12px;font-weight:900;box-shadow:none}
+.browserLoadMore:hover{background:#155579}
+.browserLoadMore small{display:block;font-size:9px;opacity:.75;margin-top:2px}
+
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.74</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.75</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -650,6 +655,11 @@ function migrateLegacyTeamToFavorites(){
 function pickImage(r){return localStorage.getItem(key(r)+":photo")||r.official_image||svgPlaceholder(r.name_ja)}
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
 let browseSeries=null;
+const BROWSER_PAGE_SIZE=80;
+let browserRenderLimit=BROWSER_PAGE_SIZE;
+let browserObserver=null;
+let strengthDeferredRunning=false;
+function resetBrowserLimit(){browserRenderLimit=BROWSER_PAGE_SIZE}
 function browseScopeValue(){return document.querySelector('input[name="browseScope"]:checked')?.value||"all"}
 
 function overrides(r){try{return JSON.parse(localStorage.getItem(key(r))||"{}")}catch{return {}}}
@@ -659,8 +669,8 @@ function norm(s){return String(s||"").toLowerCase().replace(/[‐‑‒–—―
 function svgPlaceholder(name){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="360"><rect width="100%" height="100%" fill="#e8ebee"/><text x="50%" y="48%" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#66717b">${name}</text><text x="50%" y="56%" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#89939c">ピック画像</text></svg>`)}
 
 function initBrowser(){
- const ts=$("browseType");for(const t of TYPES){const o=document.createElement("option");o.value=t;o.textContent=t;ts.appendChild(o)}
- renderSeriesButtons();renderBrowser()
+ const ts=$("browseType");
+ if(ts&&!ts.dataset.ready){for(const t of TYPES){const o=document.createElement("option");o.value=t;o.textContent=t;ts.appendChild(o)}ts.dataset.ready="1"}
 }
 function hasMasterFiveStats(r){return ["hp","atk","def","sp_atk","sp_def"].every(k=>r[k]!==null&&r[k]!==undefined&&r[k]!=="")}
 function renderMasterStatsStatus(){
@@ -676,12 +686,12 @@ function renderSeriesButtons(){
  const ids=new Set(getIds(OWNED_KEY)),box=$("seriesButtons");box.innerHTML="";
  const clear=document.createElement("button");clear.type="button";clear.className="seriesBtn clearSeries"+(!browseSeries&&!norm($("q").value)?" active":"");
  clear.innerHTML=`<b>全弾表示</b><span>表示対象：全件 / 所持 / お気に入り</span>`;
- clear.onclick=()=>{browseSeries=null;$("q").value="";renderSeriesButtons();renderBrowser()};box.appendChild(clear);
+ clear.onclick=()=>{browseSeries=null;$("q").value="";resetBrowserLimit();renderSeriesButtons();renderBrowser()};box.appendChild(clear);
  for(const s of SERIES_ORDER){
    const all=R.filter(r=>r.series===s),have=all.filter(r=>ids.has(r.master_id)).length,p=all.length?Math.round(have/all.length*1000)/10:0;
    const b=document.createElement("button");b.type="button";b.className="seriesBtn"+(browseSeries===s&&!norm($("q").value)?" active":"");
    b.innerHTML=`<b>${esc(s)}</b><span>${have} / ${all.length} 所持（${p}%）</span>`;
-   b.onclick=()=>{browseSeries=s;$("q").value="";renderSeriesButtons();renderBrowser();$("pickList").scrollIntoView({behavior:"smooth",block:"start"})};box.appendChild(b)
+   b.onclick=()=>{browseSeries=s;$("q").value="";resetBrowserLimit();renderSeriesButtons();renderBrowser();$("pickList").scrollIntoView({behavior:"smooth",block:"start"})};box.appendChild(b)
  }
 }
 function browserRecords(){
@@ -767,7 +777,7 @@ function removeFavorite(r){setIds(FAVORITE_KEY,getIds(FAVORITE_KEY).filter(x=>x!
 function refreshAfterFlagChange(r,redrawBrowser=true){
  renderCollectionOverall();renderSeriesButtons();
  if(redrawBrowser)renderBrowser();else updateBrowserCardFlagState(r);
- renderBattlePicks();renderBestThreeMode();
+ if(!$("myPickOverlay")?.classList.contains("hidden"))renderBattlePicks();renderBestThreeMode();
  if(selected&&r&&selected.master_id===r.master_id)render();
  if(!$("recommendOverlay").classList.contains("hidden")&&recommendTargetRecord)renderRecommendations();
  if(!$("enemyPickOverlay").classList.contains("hidden")&&pendingRandomEnemy)renderEnemyRandomRecommendations()
@@ -802,23 +812,35 @@ function typeIconHTML(type,{label=true,tiny=false,small=false,iconOnly=false}={}
 function typePairHTML(t1,t2,{tiny=false}={}){const a=[t1,t2].filter(Boolean);return a.length?`<span class="typePair">${a.map(t=>typeIconHTML(t,{label:true,tiny})).join("")}</span>`:'<span class="typePill">未確認</span>'}
 
 function renderBrowser(){
- const box=$("pickList"),a=browserRecords(),q=norm($("q").value),scope=browseScopeValue(),stats=$("browseStats").value;box.innerHTML="";
+ const box=$("pickList"),a=browserRecords(),q=norm($("q").value),scope=browseScopeValue(),stats=$("browseStats").value;
+ if(browserObserver){browserObserver.disconnect();browserObserver=null}
+ box.innerHTML="";
  renderCollectionOverall();
  const scopeLabel=scope==="owned"?"所持":scope==="favorite"?"お気に入り":"全件";
  const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries||`全弾・${scopeLabel}`);
  const statsLabel=stats==="verified"?"能力値確認済み":stats==="missing"?"能力値未確認":"";
- $("browserSummary").textContent=`${context}：${a.length}ピック表示`+(statsLabel?`（${statsLabel}）`:"");
+ const shown=a.slice(0,Math.min(browserRenderLimit,a.length));
+ $("browserSummary").textContent=`${context}：${a.length}ピック / ${shown.length}件表示`+(statsLabel?`（${statsLabel}）`:"");
  if(!a.length){
    box.innerHTML='<div class="emptyBrowser">条件に該当するピックはありません。</div>';
    return
  }
- for(const r of a){
-   const m=merged(r),owned=isOwned(r),favorite=isFavorite(r),grade=Number(m.grade)||0,si=strengthInfo(r),d=document.createElement("div");
+ const strengthData=getStrengthRatingsCachedOnly();
+ for(const r of shown){
+   const m=merged(r),owned=isOwned(r),favorite=isFavorite(r),grade=Number(m.grade)||0,d=document.createElement("div");
+   const ss=strengthData?.scores?.get(r.master_id),sr=strengthData?.ranks?.get(r.master_id),si=Number.isFinite(ss)?{score:ss,rank:sr}:null;
    d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・${si.rank}位`:"・未評価"}</small></div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:"・計算待ち"}</small></div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};const sb=d.querySelector(".strengthBadge");if(sb)sb.onclick=e=>{e.preventDefault();e.stopPropagation();showStrengthOverlay(r)};d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
+ if(shown.length<a.length){
+   const more=document.createElement("button");more.type="button";more.className="browserLoadMore";more.innerHTML=`さらに表示（${shown.length.toLocaleString("ja-JP")} / ${a.length.toLocaleString("ja-JP")}）<small>ここまでスクロールすると自動で次を読み込みます</small>`;
+   const loadMore=()=>{if(browserRenderLimit>=a.length)return;browserRenderLimit=Math.min(a.length,browserRenderLimit+BROWSER_PAGE_SIZE);renderBrowser()};
+   more.onclick=loadMore;box.appendChild(more);
+   if("IntersectionObserver" in window){browserObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){browserObserver?.disconnect();browserObserver=null;loadMore()}},{rootMargin:"500px 0px"});browserObserver.observe(more)}
+ }
+ if(!strengthData)scheduleStrengthRatingsDeferred();
 }
 function dataValue(v){return v===null||v===undefined||v===""?"未確認":v}
 function pickBackTypeListHTML(types){return types?.length?types.map(t=>typeIconHTML(t,{label:true,tiny:true})).join(""):'<span class="pickBackMatchupNone">なし</span>'}
@@ -879,8 +901,9 @@ $("favoriteBtn").onclick=()=>toggleFavorite(selected);
 $("closeDetail").onclick=closeDetail;
 $("detailCard").addEventListener("click",e=>{if(e.target===$("detailCard"))closeDetail()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("detailCard").classList.contains("hidden"))closeDetail()});
-document.querySelectorAll('input[name="browseScope"]').forEach(r=>r.onchange=()=>{renderSeriesButtons();renderBrowser()});$("browseGrade").onchange=renderBrowser;$("browseType").onchange=renderBrowser;$("browseStats").onchange=renderBrowser;$("browseSort").onchange=renderBrowser;
-$("q").addEventListener("input",()=>{renderSeriesButtons();renderBrowser()});$("clearQ").onclick=()=>{$("q").value="";renderSeriesButtons();renderBrowser();$("q").focus()};
+document.querySelectorAll('input[name="browseScope"]').forEach(r=>r.onchange=()=>{resetBrowserLimit();renderSeriesButtons();renderBrowser()});
+$("browseGrade").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseType").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseStats").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseSort").onchange=()=>{resetBrowserLimit();renderBrowser()};
+$("q").addEventListener("input",()=>{resetBrowserLimit();renderSeriesButtons();renderBrowser()});$("clearQ").onclick=()=>{$("q").value="";resetBrowserLimit();renderSeriesButtons();renderBrowser();$("q").focus()};
 $("editBtn").onclick=()=>{editing=true;render()};
 $("cancelBtn").onclick=()=>{editing=false;render()};
 $("saveBtn").onclick=()=>{const o={};for(const [k] of fields){let v=$("v_"+k).value.trim();if(["poke_ene","grade","speed_level","speed_value","hp","atk","def","sp_atk","sp_def"].includes(k)&&v!=="")v=Number(v);if(k==="special")v=v?String(v).split(/\s*[/／,、]\s*/).filter(Boolean):[];const base=selected[k];const same=Array.isArray(base)?JSON.stringify(v)===JSON.stringify(base):v===String(base??"");if(!same)o[k]=v===""?null:v}localStorage.setItem(key(selected),JSON.stringify(o));invalidateBest3CounterCache();editing=false;render();renderBrowser()};
@@ -1530,6 +1553,22 @@ function getStrengthRatings(){
 }
 function strengthInfo(r){
  if(!r||!hasBattleStats(merged(r)))return null;const data=getStrengthRatings(),score=data.scores.get(r.master_id),rank=data.ranks.get(r.master_id);return Number.isFinite(score)?{score,rank,count:data.count,model:damageModel}:null
+}
+function getStrengthRatingsCachedOnly(){
+ const meta=strengthMeta(),signature=strengthSignature(meta);
+ if(strengthMemo.signature===signature&&strengthMemo.scores.size===meta.pool.length)return strengthMemo;
+ try{const saved=JSON.parse(localStorage.getItem(STRENGTH_CACHE_KEY)||"{}");if(saved.signature===signature&&Array.isArray(saved.entries)&&saved.entries.length===meta.pool.length)return strengthBuildMemo(signature,saved.entries)}catch{}
+ return null
+}
+function scheduleStrengthRatingsDeferred(){
+ if(strengthDeferredRunning||getStrengthRatingsCachedOnly())return;
+ strengthDeferredRunning=true;
+ const work=()=>{
+   if($("tab-pick")?.classList.contains("tabHidden")){strengthDeferredRunning=false;return}
+   try{getStrengthRatings()}catch(e){console.error(e)}finally{strengthDeferredRunning=false}
+   if(!$("tab-pick")?.classList.contains("tabHidden"))renderBrowser()
+ };
+ if("requestIdleCallback" in window)window.requestIdleCallback(work,{timeout:2500});else setTimeout(work,1200)
 }
 let strengthRawMemo={signature:"",fireSorted:[],durSorted:[]};
 function neutralAttackPotential(c){
@@ -2194,14 +2233,14 @@ function setMainTab(name,fromUser=false){
  });
  localStorage.setItem(MAIN_TAB_KEY,name);
  if(name==="team"){renderBestThreeMode()}
- if(name==="battle"){renderBattlePicks();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();if(battleMode==="single")arena()}
+ if(name==="battle"){updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();if(battleMode==="single")arena()}
  if(name==="pick"){renderCollectionOverall();renderSeriesButtons();renderBrowser()}
  if(fromUser)document.querySelector(".mainTabs")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 document.querySelectorAll(".mainTabBtn").forEach(b=>b.onclick=()=>setMainTab(b.dataset.mainTab,true));
 
 function refreshAfterBulkFlagClear(){
- renderCollectionOverall();renderSeriesButtons();renderBrowser();renderBattlePicks();updateBattleSelectionStatus();roundRobinPoolInfo();
+ renderCollectionOverall();renderSeriesButtons();renderBrowser();if(!$("myPickOverlay")?.classList.contains("hidden"))renderBattlePicks();updateBattleSelectionStatus();roundRobinPoolInfo();
  if(!$("recommendOverlay")?.classList.contains("hidden")&&recommendTargetRecord)renderRecommendations();
  if(!$("enemyPickOverlay")?.classList.contains("hidden")){enemySearch();renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()}
  renderBestThreeMode();
@@ -2222,14 +2261,14 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.73",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.75",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
 $("restoreBtn").onclick=()=>$("restoreFile").click();
 $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!confirm("現在の所持・お気に入り・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)localStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")localStorage.setItem(k,v);invalidateBest3CounterCache();migrateLegacyTeamToFavorites();$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderSeriesButtons();renderBrowser()}catch(err){alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
 
-migrateLegacyTeamToFavorites();initBrowser();renderBattlePicks();renderCollectionOverall();updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();
+migrateLegacyTeamToFavorites();initBrowser();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 </script></body></html>
-<!-- Updated: 2026-09-26 05:40:38 JST / Ver6.74 -->
+<!-- Updated: 2026-09-26 07:28:10 JST / Ver6.75 -->
