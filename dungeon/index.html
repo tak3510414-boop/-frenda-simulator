@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.64 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.65 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.64</title>
+<title>フレンダダンジョン Ver0.65</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -378,6 +378,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 /* Ver0.62: fix Pokédex visibility to track encounters/ownership per exact pick instead of sharing visibility across same-species picks */
 /* Ver0.63: slower readable presentation pacing, tappable message artwork, larger home text, clear fanfare, and chronological series filter order */
 /* Ver0.64: simplify owned-pick front cards by grouping growth/drill resources, separating EXP, compacting permanent boosts, and reducing evolution text duplication */
+/* Ver0.65: owned-pick back side now includes front-side growth information and tappable help popups for growth, drill, EXP, bond, and permanent boosts */
 .eventResultCard{position:relative;overflow:hidden;border:2px solid #f1c94e;background:linear-gradient(145deg,#fffdf3,#fff6cb);box-shadow:0 14px 34px #7f641b2b}
 .eventResultCard:before,.eventResultCard:after{content:"✦";position:absolute;font-size:54px;opacity:.11;animation:eventSpark 1.4s ease-in-out infinite alternate}
 .eventResultCard:before{left:8%;top:8%}.eventResultCard:after{right:8%;bottom:8%;animation-delay:.35s}
@@ -661,21 +662,46 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
  .ownedBoostLine>b{font-size:7.5px!important}
 }
 
+
+/* Ver0.65: owned back side mirrors front data + tappable point explanations */
+.ownedBackSectionTitle{margin:2px 14px 7px;color:#8cdff2;font-size:10px;font-weight:1000;letter-spacing:.12em}
+.ownedBackFrontSummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 14px 8px}
+.ownedBackPoint{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;padding:9px 8px;border-radius:12px;border:1px solid #ffffff22;background:#ffffff0d;color:#eefcff;text-align:left;box-shadow:none}
+.ownedBackPoint>span{font-size:21px}.ownedBackPoint>div{min-width:0}.ownedBackPoint small{display:block;font-size:8px;color:#b7d0dc;font-weight:900}.ownedBackPoint b{display:block;font-size:18px;line-height:1.1}.ownedBackPoint i,.ownedBackBoostSummary i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#ffffff1c;border:1px solid #ffffff35;color:#c7f2ff;font-size:10px;font-style:normal;font-weight:1000}
+.ownedBackPoint.growth{background:#4b2c6b55;border-color:#b88ae05e}.ownedBackPoint.drill{background:#174f6655;border-color:#70c7e15e}.ownedBackPoint.exp{background:#6c5a1c45;border-color:#f1d17055}
+.ownedBackPoint:active,.ownedBackBoostSummary:active,.ownedBackBond:active{transform:scale(.98)}
+.ownedBackBond{display:inline-flex;align-items:center;gap:4px;margin-top:9px;padding:6px 9px;border-radius:999px;background:#50253d;color:#ffd7e7;border:1px solid #9c5574;font-size:10px;font-weight:1000;box-shadow:none}
+.ownedBackBond small{font-size:8px;color:#f2b9d0}.ownedBackBond span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#ffffff18;font-size:9px}
+.ownedBackExpGauge{margin:0 14px 8px;padding:8px 10px;border-radius:11px;background:#0a2231;border:1px solid #285269}
+.ownedBackExpGauge .ownedExpHead{color:#d6eef7}.ownedBackExpGauge .ownedExpHead b,.ownedBackExpGauge .ownedExpHead span{color:#d6eef7}.ownedBackExpGauge .expbar{height:8px;margin:5px 0 3px}.ownedBackExpGauge>small{display:block;text-align:right;color:#9ebbc8;font-size:8px}
+.ownedBackBoostSummary{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;width:calc(100% - 28px);margin:0 14px 8px;padding:9px 10px;border-radius:11px;background:#173d2c;color:#ecfff3;border:1px solid #3b9568;box-shadow:none;text-align:left}
+.ownedBackBoostSummary>span{font-size:9px;color:#9fe1b9;font-weight:1000}.ownedBackBoostSummary>b{font-size:11px;text-align:right}
+.ownedBackEvoState{margin:0 14px 10px;padding:7px 9px;border-radius:10px;background:#2d2540;color:#d8c8ef;border:1px solid #66547e;text-align:center;font-size:10px;font-weight:1000}.ownedBackEvoState.ready{background:#4e3475;color:#fff0ff;border-color:#9d71cf;box-shadow:0 0 13px #ad78e73c}
+.ownedBackPointHint{margin:0 14px 10px;padding:8px 10px;border-radius:10px;background:#0b2534;border:1px solid #28536a;color:#a9cad8;font-size:9px;line-height:1.55}
+.ownedPointHelpOverlay{position:fixed;inset:0;z-index:1900;display:flex;align-items:center;justify-content:center;padding:18px;background:#04111bd9;backdrop-filter:blur(4px)}
+.ownedPointHelpPanel{width:min(430px,100%);padding:20px 18px 16px;border-radius:20px;background:linear-gradient(160deg,#fff,#eef7fb);color:#203440;border:2px solid #77c9df;box-shadow:0 22px 65px #0009;text-align:center}
+.ownedPointHelpIcon{font-size:46px;line-height:1;margin-bottom:7px}.ownedPointHelpPanel h3{margin:0;font-size:22px}.ownedPointHelpValue{display:inline-block;margin:8px auto 2px;padding:5px 10px;border-radius:999px;background:#e0f1f7;color:#245a70;font-size:12px;font-weight:1000}.ownedPointHelpPanel p{margin:12px 0 16px;text-align:left;font-size:13px;font-weight:750;line-height:1.7;color:#425964}.ownedPointHelpPanel button{min-width:160px}
+@media(max-width:600px){
+ .ownedBackFrontSummary{gap:4px;margin-left:9px;margin-right:9px}.ownedBackPoint{gap:3px;padding:7px 5px}.ownedBackPoint>span{font-size:17px}.ownedBackPoint small{font-size:6.5px}.ownedBackPoint b{font-size:14px}.ownedBackPoint i{width:17px;height:17px;font-size:8px}
+ .ownedBackExpGauge,.ownedBackBoostSummary,.ownedBackEvoState,.ownedBackPointHint{margin-left:9px;margin-right:9px}.ownedBackBoostSummary{width:calc(100% - 18px)}
+ .ownedPointHelpPanel{padding:18px 15px 14px}.ownedPointHelpPanel h3{font-size:20px}.ownedPointHelpPanel p{font-size:12px}
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.64</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.65</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=0.64"></script>
-<script src="../frenda-core.js?v=0.64"></script>
+<script src="../frenda-master.js?v=0.65"></script>
+<script src="../frenda-core.js?v=0.65"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=0.64"></script>
+<script src="../frenda-cloud.js?v=0.65"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.64";
+const APP_VERSION="0.65";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const PRESENTATION_DELAYS={
@@ -1826,7 +1852,112 @@ function renderOwned(){
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
  app.querySelectorAll('[data-view-size="owned"]').forEach(b=>b.onclick=()=>{ownedViewSize=b.dataset.size;saveGridSize("owned",ownedViewSize);renderOwned()})
 }
-function showOwnedPickDetail(id){if(!ownedEntry(id))return;const r=rec(id);if(!r)return;document.getElementById("ownedDetailOverlay")?.remove();const pb=state.permanentBoosts[id]||{},baseHp=Number(r.hp)||0,baseAtk=Number(r.atk)||0,baseDef=Number(r.def)||0,hp=baseHp+Number(pb.hp||0),atk=baseAtk+Number(pb.atk||0),def=baseDef+Number(pb.def||0),spAtk=Number(r.sp_atk)||0,spDef=Number(r.sp_def)||0;const speed=Number(r.speed_value)>0?r.speed_value:(Number(r.speed_level)>0?`Lv${r.speed_level}`:"-");const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし"),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id);const ov=document.createElement("div");ov.id="ownedDetailOverlay";ov.className="ownedDetailOverlay";ov.innerHTML=`<div class="ownedBackPanel" role="dialog" aria-modal="true" aria-label="所持ピック裏面データ"><div class="ownedBackHead"><div><small>FRIENDA PICK DATA</small><b>所持ピック・裏面データ</b></div><button type="button" class="ownedBackClose" id="ownedBackClose">閉じる</button></div><div class="ownedBackHero"><img src="${esc(imageOf(r))}" alt=""><div><div class="ownedBackName">${esc(r.name_ja)}</div><div class="ownedBackMeta">${gradeText(r)} / ${esc(r.pick_no)}<br>${esc(r.series||"")}<br>ポケエネ ${esc(r.poke_ene??"-")}</div><div class="ownedBackTypes">${typesHTML(r)}</div><div class="ownedTapLabel">※この情報は所持ピックだけ確認できます。</div></div></div><div class="ownedBackStats"><div class="ownedStat"><span>HP</span><b>${hp}</b><small>${pb.hp?`元${baseHp} +${pb.hp}`:""}</small></div><div class="ownedStat"><span>ATK</span><b>${atk}</b><small>${pb.atk?`元${baseAtk} +${pb.atk}`:""}</small></div><div class="ownedStat"><span>DEF</span><b>${def}</b><small>${pb.def?`元${baseDef} +${pb.def}`:""}</small></div><div class="ownedStat"><span>SP.ATK</span><b>${spAtk}</b><small></small></div><div class="ownedStat"><span>SP.DEF</span><b>${spDef}</b><small></small></div><div class="ownedStat"><span>すばやさ</span><b>${esc(speed)}</b><small></small></div></div><div class="ownedMoveBox"><div class="ownedMoveRow"><span>通常わざ</span><div><b>${esc(r.move||"未登録")}</b><br>${esc(r.move_type||"-")} / ${esc(r.move_class||"-")} / 威力参考 ${esc(power)} / 命中 ${esc(acc)}</div></div><div class="ownedMoveRow"><span>必殺技</span><div class="${fin==="なし"?"ownedNoSpecial":""}"><b>${esc(fin)}</b></div></div><div class="ownedMoveRow"><span>特殊要素</span><div>${esc(special)}</div></div></div><div class="ownedPermanent"><b>恒久成長</b><br>HP+${pb.hp||0} / 攻撃+${pb.atk||0} / 防御+${pb.def||0}<br>育成P ${gp} / EXP ${xpFor(id)}/100 / 特訓P ${drillFor(id)}${ei.hasEvolution?`<br>進化コスト：育成P ${ei.cost}`:""}</div>${ei.hasEvolution?`${evolutionCueState(id).html}<div class="ownedBackActionRow"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 育成へ</button><button class="evoBtn${ei.canEvolve?" evoPulse":""}" id="ownedDetailEvo" ${ei.canEvolve?"":"disabled"}>進化する</button></div>`:`<div class="ownedBackActionRow single"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 育成へ</button></div>`}</div>`;document.body.appendChild(ov);const close=()=>{ov.remove();document.body.style.overflow=""};document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#ownedBackClose").onclick=close;const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();openTrainingFor(id)};const eb=ov.querySelector("#ownedDetailEvo");if(eb)eb.onclick=()=>{close();openEvolutionDialog(id)}}
+function ownedPointHelpData(kind,id){
+ const r=rec(id),gp=growthPointsFor(id),dp=drillFor(id),xp=xpFor(id),bp=bondPointsFor(id),bl=bondLevelFor(id),ei=evolutionInfoForPick(id);
+ if(kind==="growth")return {
+  icon:"🌱",title:"育成ポイント",value:`現在 ${gp}`,
+  body:`同じピックをもう一度入手した時などに増えるポイントです。進化系統で共有されます。能力強化では1ポイントを使ってHP・攻撃・防御のどれかを+${TRAINING_STEP}できます。${ei.hasEvolution?`このポケモンの進化には${ei.cost}ポイント必要です。`:""}各能力の恒久強化は最大+${PERMANENT_BOOST_MAX}です。`
+ };
+ if(kind==="drill")return {
+  icon:"🏋️",title:"特訓ポイント",value:`現在 ${dp}`,
+  body:`EXPが${EXP_TO_DRILL}たまるごとに1ポイント獲得します。このピック専用のポイントで、HP・攻撃・防御のどれかを+${TRAINING_STEP}するために使います。進化には使いません。各能力の恒久強化は最大+${PERMANENT_BOOST_MAX}です。`
+ };
+ if(kind==="exp")return {
+  icon:"⭐",title:"EXP",value:`現在 ${xp}/${EXP_TO_DRILL}`,
+  body:`バトルなどで獲得する経験値です。${EXP_TO_DRILL}たまると自動で特訓ポイント1に変わり、余ったEXPはそのまま残ります。現在は、あと${Math.max(0,EXP_TO_DRILL-xp)}で特訓ポイント+1です。`
+ };
+ if(kind==="bond")return {
+  icon:"♥",title:"絆ポイント",value:`現在 ${bp} / 絆Lv${bl}`,
+  body:`ダンジョンで一緒に冒険すると増える、進化系統で共有するポイントです。1・3・6・10・15ポイントで絆Lv1～5になります。絆Lvが上がると、戦闘後の回復、HP1でこらえる、戦闘開始時の攻撃・防御アップなどが発生することがあります。`
+ };
+ if(kind==="boost")return {
+  icon:"⬆️",title:"恒久強化",value:`${r?.name_ja||"ポケモン"}の育成結果`,
+  body:`育成ポイントまたは特訓ポイントを使って上げた能力です。HP・攻撃・防御はそれぞれ1回につき+${TRAINING_STEP}、各能力最大+${PERMANENT_BOOST_MAX}まで上げられます。この強化値はダンジョンを終えても残ります。`
+ };
+ return {icon:"ℹ️",title:"ポイントについて",value:"",body:"この項目の説明はありません。"}
+}
+function showOwnedPointHelp(kind,id){
+ document.getElementById("ownedPointHelpOverlay")?.remove();
+ const d=ownedPointHelpData(kind,id),ov=document.createElement("div");
+ ov.id="ownedPointHelpOverlay";ov.className="ownedPointHelpOverlay";
+ ov.innerHTML=`<div class="ownedPointHelpPanel" role="dialog" aria-modal="true" aria-label="${esc(d.title)}"><div class="ownedPointHelpIcon">${esc(d.icon)}</div><h3>${esc(d.title)}</h3>${d.value?`<div class="ownedPointHelpValue">${esc(d.value)}</div>`:""}<p>${esc(d.body)}</p><button type="button" id="ownedPointHelpClose">閉じる</button></div>`;
+ document.body.appendChild(ov);
+ const close=()=>ov.remove();
+ ov.onclick=e=>{if(e.target===ov)close()};
+ ov.querySelector("#ownedPointHelpClose").onclick=close
+}
+function showOwnedPickDetail(id){
+ if(!ownedEntry(id))return;
+ const r=rec(id);if(!r)return;
+ document.getElementById("ownedDetailOverlay")?.remove();
+ const pb=state.permanentBoosts[id]||{},
+       baseHp=Number(r.hp)||0,baseAtk=Number(r.atk)||0,baseDef=Number(r.def)||0,
+       hp=baseHp+Number(pb.hp||0),atk=baseAtk+Number(pb.atk||0),def=baseDef+Number(pb.def||0),
+       spAtk=Number(r.sp_atk)||0,spDef=Number(r.sp_def)||0,
+       speed=Number(r.speed_value)>0?r.speed_value:(Number(r.speed_level)>0?`Lv${r.speed_level}`:"-"),
+       fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし",
+       power=Number(r.move_power_ref)>0?r.move_power_ref:"-",
+       acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-"),
+       special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし"),
+       gp=growthPointsFor(id),dp=drillFor(id),xp=xpFor(id),bond=bondLevelFor(id),bondPts=bondPointsFor(id),
+       ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),
+       boostAny=Number(pb.hp||0)+Number(pb.atk||0)+Number(pb.def||0)>0,
+       evoState=!ei.hasEvolution?"進化なし":!ei.registered?"進化先ピック未登録":ei.fainted?"ひんし中は進化不可":ei.canEvolve?"✨ 進化可能":`進化まで育成あと${Math.max(0,ei.cost-gp)}`;
+
+ const ov=document.createElement("div");
+ ov.id="ownedDetailOverlay";ov.className="ownedDetailOverlay";
+ ov.innerHTML=`<div class="ownedBackPanel" role="dialog" aria-modal="true" aria-label="所持ピック裏面データ">
+  <div class="ownedBackHead"><div><small>FRIENDA PICK DATA</small><b>所持ピック・裏面データ</b></div><button type="button" class="ownedBackClose" id="ownedBackClose">閉じる</button></div>
+
+  <div class="ownedBackHero"><img src="${esc(imageOf(r))}" alt=""><div>
+   <div class="ownedBackName">${esc(r.name_ja)}</div>
+   <div class="ownedBackMeta">${gradeText(r)} / ${esc(r.pick_no)}<br>${esc(r.series||"")}<br>ポケエネ ${esc(r.poke_ene??"-")}</div>
+   <div class="ownedBackTypes">${typesHTML(r)}</div>
+   <button type="button" class="ownedBackBond" data-point-help="bond">♥ 絆Lv${bond}<small> ${bondPts}pt</small><span>?</span></button>
+  </div></div>
+
+  <div class="ownedBackFrontSummary">
+   <button type="button" class="ownedBackPoint growth" data-point-help="growth"><span>🌱</span><div><small>育成</small><b>${gp}</b></div><i>?</i></button>
+   <button type="button" class="ownedBackPoint drill" data-point-help="drill"><span>🏋️</span><div><small>特訓</small><b>${dp}</b></div><i>?</i></button>
+   <button type="button" class="ownedBackPoint exp" data-point-help="exp"><span>⭐</span><div><small>EXP</small><b>${xp}/${EXP_TO_DRILL}</b></div><i>?</i></button>
+  </div>
+
+  <div class="ownedBackExpGauge"><div class="ownedExpHead"><b>EXP</b><span>${xp}/${EXP_TO_DRILL}</span></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div><small>あと${Math.max(0,EXP_TO_DRILL-xp)}で特訓+1</small></div>
+
+  <button type="button" class="ownedBackBoostSummary" data-point-help="boost"><span>強化</span><b>${boostAny?`HP+${pb.hp||0}　攻+${pb.atk||0}　防+${pb.def||0}`:"なし"}</b><i>?</i></button>
+  ${ei.hasEvolution?`<div class="ownedBackEvoState ${ei.canEvolve?"ready":""}">${esc(evoState)}</div>`:""}
+
+  <div class="ownedBackSectionTitle">能力</div>
+  <div class="ownedBackStats">
+   <div class="ownedStat"><span>HP</span><b>${hp}</b><small>${pb.hp?`元${baseHp} +${pb.hp}`:""}</small></div>
+   <div class="ownedStat"><span>ATK</span><b>${atk}</b><small>${pb.atk?`元${baseAtk} +${pb.atk}`:""}</small></div>
+   <div class="ownedStat"><span>DEF</span><b>${def}</b><small>${pb.def?`元${baseDef} +${pb.def}`:""}</small></div>
+   <div class="ownedStat"><span>SP.ATK</span><b>${spAtk}</b><small></small></div>
+   <div class="ownedStat"><span>SP.DEF</span><b>${spDef}</b><small></small></div>
+   <div class="ownedStat"><span>すばやさ</span><b>${esc(speed)}</b><small></small></div>
+  </div>
+
+  <div class="ownedBackSectionTitle">わざ・特殊要素</div>
+  <div class="ownedMoveBox">
+   <div class="ownedMoveRow"><span>通常わざ</span><div><b>${esc(r.move||"未登録")}</b><br>${esc(r.move_type||"-")} / ${esc(r.move_class||"-")} / 威力参考 ${esc(power)} / 命中 ${esc(acc)}</div></div>
+   <div class="ownedMoveRow"><span>必殺技</span><div class="${fin==="なし"?"ownedNoSpecial":""}"><b>${esc(fin)}</b></div></div>
+   <div class="ownedMoveRow"><span>特殊要素</span><div>${esc(special)}</div></div>
+  </div>
+
+  <div class="ownedBackPointHint">🌱 育成・🏋️ 特訓・⭐ EXP・♥ 絆・強化 をタップすると、その仕組みを説明します。</div>
+
+  ${ei.hasEvolution?`${evolutionCueState(id).html}<div class="ownedBackActionRow"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 育成へ</button><button class="evoBtn${ei.canEvolve?" evoPulse":""}" id="ownedDetailEvo" ${ei.canEvolve?"":"disabled"}>進化する</button></div>`:`<div class="ownedBackActionRow single"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 育成へ</button></div>`}
+ </div>`;
+
+ document.body.appendChild(ov);
+ const close=()=>{document.getElementById("ownedPointHelpOverlay")?.remove();ov.remove();document.body.style.overflow=""};
+ document.body.style.overflow="hidden";
+ ov.onclick=e=>{if(e.target===ov)close()};
+ ov.querySelector("#ownedBackClose").onclick=close;
+ ov.querySelectorAll("[data-point-help]").forEach(el=>el.onclick=e=>{e.stopPropagation();showOwnedPointHelp(el.dataset.pointHelp,id)});
+ const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();openTrainingFor(id)};
+ const eb=ov.querySelector("#ownedDetailEvo");if(eb)eb.onclick=()=>{close();openEvolutionDialog(id)}
+}
 function renderTraining(){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
  app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">✨ 育成</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="notice" style="margin-bottom:8px"><b>育成または進化が今できるポケモンを表示します。</b><br>育成した直後のポケモンは、ポイントを使い切ってもこの画面を離れるまでは一覧に残ります。<br><b>育成ポイント</b>：重複ピックで獲得。進化またはHP・攻撃・防御+3に使用。<br><b>特訓ポイント</b>：100EXPごとに獲得。能力強化だけに使用。1ポイントで+3、恒久強化は各能力最大+30です。</div>${evoLoadNote()}<div class="ownedGrid">${actionable.length?actionable.map(o=>{const r=rec(o.id),pb=state.permanentBoosts[o.id]||(state.permanentBoosts[o.id]={hp:0,atk:0,def:0}),xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),kept=trainingStickyIds.has(o.id);const rows=[["hp","HP"],["atk","攻撃"],["def","防御"]].map(([k,label])=>`<div class="trainStatRow"><span>${label}+${pb[k]||0}</span><button class="growthSpend" data-growth-train="${esc(o.id)}" data-stat="${k}" ${gp<=0||Number(pb[k]||0)>=PERMANENT_BOOST_MAX?"disabled":""}>育成P +3</button><button class="drillSpend" data-train-id="${esc(o.id)}" data-stat="${k}" ${dp<=0||Number(pb[k]||0)>=PERMANENT_BOOST_MAX?"disabled":""}>特訓P +3</button></div>`).join("");return `<div class="trainCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回育成</div>':""}<div class="trainTop"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="expbar"><div class="expfill" style="width:${xp}%"></div></div><small>EXP ${xp}/100</small><div class="pointChips"><span class="pointChip growth">育成P ${gp}</span><span class="pointChip drill">特訓P ${dp}</span><span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ 絆Lv${bondLevelFor(o.id)}</span></div></div></div><div class="trainStatTable">${rows}</div>${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（育成P ${ei.cost}）</button>`:""}</div>`}).join(""):'<div class="dexEmpty">現在、育成または進化できるポケモンはいません。</div>'}</div></div>`;
@@ -1898,4 +2029,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 06:48:00 JST / Ver0.64 -->
+<!-- Updated: 2026-09-27 06:59:00 JST / Ver0.65 -->
