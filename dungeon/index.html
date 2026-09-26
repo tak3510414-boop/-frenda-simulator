@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.61 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.62 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.61</title>
+<title>フレンダダンジョン Ver0.62</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -375,6 +375,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 /* Ver0.59: dungeon entry gets a dedicated themed one-step intro before B1 route selection, with first-visit flavor text */
 /* Ver0.60: battle layout refactor — expanded always-visible 3-member status cards and higher/larger player-vs-enemy display */
 /* Ver0.61: dex series filter, large/medium/small dex+owned views, sticky just-trained cards, and one-screen enlarged home dashboard */
+/* Ver0.62: fix Pokédex visibility to track encounters/ownership per exact pick instead of sharing visibility across same-species picks */
 .eventResultCard{position:relative;overflow:hidden;border:2px solid #f1c94e;background:linear-gradient(145deg,#fffdf3,#fff6cb);box-shadow:0 14px 34px #7f641b2b}
 .eventResultCard:before,.eventResultCard:after{content:"✦";position:absolute;font-size:54px;opacity:.11;animation:eventSpark 1.4s ease-in-out infinite alternate}
 .eventResultCard:before{left:8%;top:8%}.eventResultCard:after{right:8%;bottom:8%;animation-delay:.35s}
@@ -569,18 +570,18 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.61</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.62</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=0.61"></script>
-<script src="../frenda-core.js?v=0.61"></script>
+<script src="../frenda-master.js?v=0.62"></script>
+<script src="../frenda-core.js?v=0.62"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=0.61"></script>
+<script src="../frenda-cloud.js?v=0.62"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.61";
+const APP_VERSION="0.62";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const SOUND_KEY="frenda:dungeon:sound:v1";
@@ -749,7 +750,7 @@ const STARTER_SET_DEFS=[
  {key:"galar",label:"ガラル",names:["サルノリ","ヒバニー","メッソン"]},
  {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
 ];
-const stateDefault=()=>({saveVersion:9,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
+const stateDefault=()=>({saveVersion:10,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
 let state=loadState();
 migrateState();
 let screen="home";
@@ -770,7 +771,7 @@ let teamTypeFilter="all",teamSort="recommended",teamSearch="",teamRecommendOnly=
 let teamAutoNotice="";
 
 
-function save(){try{state.appVersion=APP_VERSION;state.saveVersion=9;localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.error(e)}}
+function save(){try{state.appVersion=APP_VERSION;state.saveVersion=10;localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.error(e)}}
 function loadState(){try{const x=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");return x&&typeof x==="object"?Object.assign(stateDefault(),x):stateDefault()}catch{return stateDefault()}}
 function migrateState(){
  const v=Number(state.saveVersion||1);
@@ -778,6 +779,7 @@ function migrateState(){
  if(!Array.isArray(state.owned))state.owned=[];
  if(!state.dex||typeof state.dex!=="object")state.dex={};
  if(!state.seenSpecies||typeof state.seenSpecies!=="object")state.seenSpecies={};
+ if(!state.seenPicks||typeof state.seenPicks!=="object")state.seenPicks={};
  if(!state.experience||typeof state.experience!=="object")state.experience={};
  if(!state.drillPoints||typeof state.drillPoints!=="object")state.drillPoints={};
  if(!state.trainingPoints||typeof state.trainingPoints!=="object")state.trainingPoints={};
@@ -801,13 +803,17 @@ function migrateState(){
    }
  }
  reconcileDexState();
- if(state.run?.encounter&&["encounterCutin","legendaryIntro","chooseFighter","battle"].includes(state.run.scene)){
-   const enc=state.run.encounter,en=enc.enemies?.[enc.index];
+ if(state.run?.encounter){
+   const enc=state.run.encounter;
    enc.newSeenIndices=enc.newSeenIndices&&typeof enc.newSeenIndices==="object"?enc.newSeenIndices:{};
-   if(en&&!Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index)){markSpeciesSeen(en);enc.newSeenIndices[enc.index]=false}
+   for(let i=0;i<Number(enc.index||0);i++){const prior=enc.enemies?.[i];if(prior)markPickSeen(prior)}
+   if(["encounterCutin","legendaryIntro","chooseFighter","battle"].includes(state.run.scene)){
+    const en=enc.enemies?.[enc.index];
+    if(en){markPickSeen(en);if(!Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index))enc.newSeenIndices[enc.index]=false}
+   }
  }
  rebuildProgressionFromStats();
- state.saveVersion=9;
+ state.saveVersion=10;
  save();
 }
 function resetSave(){if(!confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;localStorage.removeItem(SAVE_KEY);state=stateDefault();screen="home";render()}
@@ -817,12 +823,11 @@ function clone(o){return JSON.parse(JSON.stringify(o))}
 function validBattle(r){return r&&Number(r.hp)>0&&Number(r.atk)>0&&Number(r.def)>0&&Number(r.sp_atk)>0&&Number(r.sp_def)>0&&r.move_type}
 function speciesKey(r){return String(r?.name_ja||r?.master_id||"").trim()}
 function speciesGroups(records){const m=new Map();for(const r of records||[]){const k=speciesKey(r);if(!k)continue;if(!m.has(k))m.set(k,[]);m.get(k).push(r)}return [...m.entries()].map(([name,records])=>({name,records}))}
-function speciesCurrentlyOwned(r){const k=speciesKey(r);return !!k&&(state.owned||[]).some(o=>speciesKey(rec(o.id))===k)}
-function speciesRegistered(r){const k=speciesKey(r);if(!k)return false;return RECORDS.some(x=>speciesKey(x)===k&&!!state.dex?.[x.master_id]?.obtained)}
-function speciesSeen(r){const k=speciesKey(r);return !!k&&(!!state.seenSpecies?.[k]||speciesRegistered(r)||speciesCurrentlyOwned(r))}
-function markSpeciesSeen(r){const k=speciesKey(r);if(!k)return false;const first=!speciesSeen(r);state.seenSpecies[k]=true;return first}
+function pickRegistered(r){const id=r?.master_id;return !!id&&!!state.dex?.[id]?.obtained}
+function pickSeen(r){const id=r?.master_id;if(!id)return false;return !!state.seenPicks?.[id]||pickRegistered(r)||!!ownedEntry(id)}
+function markPickSeen(r){const id=r?.master_id;if(!id)return false;state.seenPicks=state.seenPicks&&typeof state.seenPicks==="object"?state.seenPicks:{};const first=!pickSeen(r);state.seenPicks[id]=true;return first}
 function currentEnemyWasFirstSeen(){const enc=state.run?.encounter;return !!enc?.newSeenIndices?.[enc.index]}
-function markCurrentEnemySeen(){const enc=state.run?.encounter,en=currentEnemy();if(!enc||!en)return false;enc.newSeenIndices=enc.newSeenIndices&&typeof enc.newSeenIndices==="object"?enc.newSeenIndices:{};if(Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index))return !!enc.newSeenIndices[enc.index];const first=markSpeciesSeen(en);enc.newSeenIndices[enc.index]=first;if(first)addLog(`NEW! ${en.name_ja}を はじめて見つけた！`);return first}
+function markCurrentEnemySeen(){const enc=state.run?.encounter,en=currentEnemy();if(!enc||!en)return false;enc.newSeenIndices=enc.newSeenIndices&&typeof enc.newSeenIndices==="object"?enc.newSeenIndices:{};if(Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index)){markPickSeen(en);return !!enc.newSeenIndices[enc.index]}const first=markPickSeen(en);enc.newSeenIndices[enc.index]=first;if(first)addLog(`NEW! ${en.name_ja}を はじめて見つけた！`);return first}
 function pickRecordBySpecies(records,{boss=false}={}){let groups=speciesGroups(records);if(!groups.length)return null;if(boss){groups=groups.map(g=>({...g,pokeEne:Math.max(0,...g.records.map(r=>Number(r.poke_ene)||0))})).sort((a,b)=>b.pokeEne-a.pokeEne);groups=groups.slice(0,Math.max(8,Math.ceil(groups.length*.35)))}const g=groups[Math.floor(Math.random()*groups.length)];return g?.records?.[Math.floor(Math.random()*g.records.length)]||null}
 function imageOf(r){return r?.official_image||""}
 function gradeText(r){return r?.grade?"★"+r.grade:"★-"}
@@ -833,8 +838,16 @@ function drillFor(id){return Number(state.drillPoints?.[id]||0)}
 function reconcileDexState(){
  const owned=new Set((state.owned||[]).map(x=>x.id));
  state.seenSpecies=state.seenSpecies&&typeof state.seenSpecies==="object"?state.seenSpecies:{};
- for(const [id,d] of Object.entries(state.dex||{})){if(!d||typeof d!=="object")state.dex[id]={obtained:false,current:false};else{d.obtained=!!d.obtained;d.current=owned.has(id)}const rr=rec(id);if(rr&&state.dex[id]?.obtained)state.seenSpecies[speciesKey(rr)]=true}
- for(const id of owned){state.dex[id]=Object.assign({},state.dex[id]||{},{obtained:true,current:true});const rr=rec(id);if(rr)state.seenSpecies[speciesKey(rr)]=true}
+ state.seenPicks=state.seenPicks&&typeof state.seenPicks==="object"?state.seenPicks:{};
+ for(const [id,d] of Object.entries(state.dex||{})){
+  if(!d||typeof d!=="object")state.dex[id]={obtained:false,current:false};
+  else{d.obtained=!!d.obtained;d.current=owned.has(id)}
+  if(state.dex[id]?.obtained)state.seenPicks[id]=true
+ }
+ for(const id of owned){
+  state.dex[id]=Object.assign({},state.dex[id]||{},{obtained:true,current:true});
+  state.seenPicks[id]=true
+ }
 }
 function splitRegionalName(name){for(const region of REGION_PREFIXES)if(String(name||"").startsWith(region))return {base:String(name).slice(region.length),region};return {base:String(name||""),region:null}}
 function parseCsvLineSimple(line){return String(line||"").split(",")}
@@ -969,7 +982,7 @@ function openEvolutionDialog(id){
   performEvolution(id,pick.master_id,info.cost,target.name)
  })
 }
-function performEvolution(sourceId,targetId,cost,targetSpeciesName){const src=rec(sourceId),dst=rec(targetId);if(!src||!dst||!ownedEntry(sourceId))return;const newSpeciesRegistration=!speciesRegistered(dst);markSpeciesSeen(dst);const info=evolutionInfoForPick(sourceId);if(growthPointsFor(sourceId)<cost)return;const oldIdx=state.owned.findIndex(x=>x.id===sourceId),targetAlready=!!ownedEntry(targetId),oldPb=Object.assign({hp:0,atk:0,def:0},state.permanentBoosts[sourceId]||{}),oldXp=xpFor(sourceId),oldDp=drillFor(sourceId),familyKey=growthKeyFor(sourceId);state.trainingPoints[familyKey]=Math.max(0,Number(state.trainingPoints[familyKey]||0)-cost);let duplicateBonus=false;if(targetAlready){state.owned.splice(oldIdx,1);const tp=state.permanentBoosts[targetId]||(state.permanentBoosts[targetId]={hp:0,atk:0,def:0});for(const k of ["hp","atk","def"])tp[k]=Math.min(PERMANENT_BOOST_MAX,Number(tp[k]||0)+Number(oldPb[k]||0));let xp=xpFor(targetId)+oldXp,extra=Math.floor(xp/100);state.experience[targetId]=xp%100;state.drillPoints[targetId]=drillFor(targetId)+oldDp+extra;addGrowthPoint(targetId,1);duplicateBonus=true}else{state.owned[oldIdx]={id:targetId};state.permanentBoosts[targetId]=oldPb;state.experience[targetId]=oldXp;state.drillPoints[targetId]=oldDp}delete state.permanentBoosts[sourceId];delete state.experience[sourceId];delete state.drillPoints[sourceId];state.dex[sourceId]=Object.assign({},state.dex[sourceId]||{},{obtained:true,current:false});state.dex[targetId]=Object.assign({},state.dex[targetId]||{},{obtained:true,current:true});const tm=state.run?.team?.find(t=>t.id===sourceId);if(tm&&!tm.ko){const ratio=Math.max(0,Math.min(1,tm.hp/Math.max(1,Number(src.hp)+(oldPb.hp||0))));tm.id=targetId;tm.hp=Math.max(1,Math.round(maxHpFor(targetId)*ratio))}reconcileDexState();save();render();showEvolutionResult(src,dst,targetSpeciesName,duplicateBonus,newSpeciesRegistration)}
+function performEvolution(sourceId,targetId,cost,targetSpeciesName){const src=rec(sourceId),dst=rec(targetId);if(!src||!dst||!ownedEntry(sourceId))return;const newSpeciesRegistration=!pickRegistered(dst);markPickSeen(dst);const info=evolutionInfoForPick(sourceId);if(growthPointsFor(sourceId)<cost)return;const oldIdx=state.owned.findIndex(x=>x.id===sourceId),targetAlready=!!ownedEntry(targetId),oldPb=Object.assign({hp:0,atk:0,def:0},state.permanentBoosts[sourceId]||{}),oldXp=xpFor(sourceId),oldDp=drillFor(sourceId),familyKey=growthKeyFor(sourceId);state.trainingPoints[familyKey]=Math.max(0,Number(state.trainingPoints[familyKey]||0)-cost);let duplicateBonus=false;if(targetAlready){state.owned.splice(oldIdx,1);const tp=state.permanentBoosts[targetId]||(state.permanentBoosts[targetId]={hp:0,atk:0,def:0});for(const k of ["hp","atk","def"])tp[k]=Math.min(PERMANENT_BOOST_MAX,Number(tp[k]||0)+Number(oldPb[k]||0));let xp=xpFor(targetId)+oldXp,extra=Math.floor(xp/100);state.experience[targetId]=xp%100;state.drillPoints[targetId]=drillFor(targetId)+oldDp+extra;addGrowthPoint(targetId,1);duplicateBonus=true}else{state.owned[oldIdx]={id:targetId};state.permanentBoosts[targetId]=oldPb;state.experience[targetId]=oldXp;state.drillPoints[targetId]=oldDp}delete state.permanentBoosts[sourceId];delete state.experience[sourceId];delete state.drillPoints[sourceId];state.dex[sourceId]=Object.assign({},state.dex[sourceId]||{},{obtained:true,current:false});state.dex[targetId]=Object.assign({},state.dex[targetId]||{},{obtained:true,current:true});const tm=state.run?.team?.find(t=>t.id===sourceId);if(tm&&!tm.ko){const ratio=Math.max(0,Math.min(1,tm.hp/Math.max(1,Number(src.hp)+(oldPb.hp||0))));tm.id=targetId;tm.hp=Math.max(1,Math.round(maxHpFor(targetId)*ratio))}reconcileDexState();save();render();showEvolutionResult(src,dst,targetSpeciesName,duplicateBonus,newSpeciesRegistration)}
 function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonus,newSpeciesRegistration=false){
  document.getElementById("evoResult")?.remove();
  document.getElementById("evoCinematic")?.remove();
@@ -1034,7 +1047,7 @@ function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,groups=spec
 function makeEgg(kind,did,diff){const d=EGG_DEF[kind]||EGG_DEF.normal;return {id:eggId(),kind:d===EGG_DEF.normal&&kind!=="normal"?"normal":kind,type:kind==="type"?chooseThemeEggType(did):null,points:0,required:d.required,sourceDungeon:did,sourceDifficulty:diff,createdAt:new Date().toISOString()}}
 function advanceEggs(n=1){if(!Array.isArray(state.eggs)||!state.eggs.length)return;for(const e of state.eggs)e.points=Math.min(eggReq(e),Number(e.points||0)+n);addLog(`所持している卵すべての孵化ポイント +${n}。`)}
 function chooseHatchRecord(egg){const rates=EGG_HATCH_GRADE[egg.kind]||EGG_HATCH_GRADE.normal;let g=Number(chooseWeighted(rates));let pool=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,Number(egg?.sourceDifficulty||1)));if(egg.kind==="type"&&egg.type)pool=pool.filter(r=>r.type1===egg.type||r.type2===egg.type);let gp=pool.filter(r=>Number(r.grade)===g);if(!gp.length){const grades=[...new Set(pool.map(r=>Number(r.grade)).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=pool.filter(r=>Number(r.grade)===grades[0])}return pickRecordBySpecies(gp)||pickRecordBySpecies(pool)}
-function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id),newSpeciesRegistration=!speciesRegistered(r);if(duplicate)addGrowthPoint(r.master_id,1);else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate,newSpeciesRegistration})}return results}
+function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id),newSpeciesRegistration=!pickRegistered(r);if(duplicate)addGrowthPoint(r.master_id,1);else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate,newSpeciesRegistration})}return results}
 function eggSlotsFor(diff,did){const rates=EGG_SLOT_RATES[diff]||EGG_SLOT_RATES[1];return Array.from({length:8},()=>{const kind=chooseWeighted(rates);return {kind,type:kind==="type"?chooseThemeEggType(did):null}})}
 function pct(n,d){return d?Math.max(0,Math.min(100,Math.round(n/d*100))):0}
 function hpClass(p){return p<=25?" low":p<=50?" mid":""}
@@ -1055,7 +1068,7 @@ function ensureStarterSetOptions(){
  }).filter(Boolean);
  save();
 }
-function ownNew(id){if(!id||ownedEntry(id))return false;const r=rec(id);state.owned.push({id});state.dex[id]={obtained:true,current:true};if(r)markSpeciesSeen(r);save();return true}
+function ownNew(id){if(!id||ownedEntry(id))return false;const r=rec(id);state.owned.push({id});state.dex[id]={obtained:true,current:true};if(r)markPickSeen(r);save();return true}
 function pickStarterSet(key){
  if(state.initialized)return;
  const set=state.starterSetOptions?.find(x=>x.key===key);
@@ -1299,7 +1312,7 @@ function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;
 function chooseCaptureTarget(id){const c=state.run.capture;if(!c||!c.eligible)return; c.targetId=id;const special=Math.random()<.10;let balls=special?["poke","poke","poke","poke","super","super","hyper","master"]:["poke","poke","poke","poke","poke","super","super","hyper"];c.balls=shuffle(balls);c.special=special;c.pendingOutcome=null;c.result=null;state.run.scene="captureSlot";save();render()}
 function captureRate(targetId,ballKey){if(ballKey==="master")return 1;const g=Number(rec(targetId)?.grade||2),base=CAPTURE_BASE_RATE[g]??.03,m=BALL_DEF[ballKey]?.mult||1,boost=1+Math.max(0,Number(state.run?.captureBoost||0));return Math.min(1,base*m*boost)}
 function resolveCapture(ballKey){const c=state.run.capture;if(!c||!c.targetId||c.result)return;if(!c.pendingOutcome){const boost=Math.max(0,Number(state.run.captureBoost||0)),rate=captureRate(c.targetId,ballKey),success=Math.random()<rate;c.pendingOutcome={ballKey,rate,success,captureBoost:boost};state.run.captureBoost=0;if(boost)addLog(`拾ったモンスターボール効果を使用：捕獲率${Math.round(boost*100)}%アップ。`)}state.run.scene="captureThrow";save();render()}
-function commitCaptureOutcome(){const c=state.run?.capture;if(!c||c.result)return;if(!c.pendingOutcome)return;const {ballKey,rate,success}=c.pendingOutcome,target=rec(c.targetId),newSpeciesRegistration=!!success&&target&&!speciesRegistered(target);let duplicate=false;if(success){if(ownedEntry(c.targetId)){duplicate=true;addGrowthPoint(c.targetId,1);addLog(`${rec(c.targetId).name_ja}は所持済み。育成ポイント+1。`)}else{ownNew(c.targetId);state.run.captured=state.run.captured||[];state.run.captured.push(c.targetId);addLog(`${rec(c.targetId).name_ja}が仲間になった！`);if(newSpeciesRegistration)addLog(`📖 ${rec(c.targetId).name_ja}が図鑑に登録された！`)}}else addLog(`${rec(c.targetId).name_ja}のゲットに失敗した。`);c.result={ballKey,rate,success,duplicate,newSpeciesRegistration};c.pendingOutcome=null;state.run.scene="captureResult";save();render()}
+function commitCaptureOutcome(){const c=state.run?.capture;if(!c||c.result)return;if(!c.pendingOutcome)return;const {ballKey,rate,success}=c.pendingOutcome,target=rec(c.targetId),newSpeciesRegistration=!!success&&target&&!pickRegistered(target);let duplicate=false;if(success){if(ownedEntry(c.targetId)){duplicate=true;addGrowthPoint(c.targetId,1);addLog(`${rec(c.targetId).name_ja}は所持済み。育成ポイント+1。`)}else{ownNew(c.targetId);state.run.captured=state.run.captured||[];state.run.captured.push(c.targetId);addLog(`${rec(c.targetId).name_ja}が仲間になった！`);if(newSpeciesRegistration)addLog(`📖 ${rec(c.targetId).name_ja}が図鑑に登録された！`)}}else addLog(`${rec(c.targetId).name_ja}のゲットに失敗した。`);c.result={ballKey,rate,success,duplicate,newSpeciesRegistration};c.pendingOutcome=null;state.run.scene="captureResult";save();render()}
 function finishCapture(){state.run.capture=null;afterFloorResolved()}
 function rewardPool(kind){const elite=kind==="elite";return [{type:"heal",label:`全員HP${elite?40:20}%回復`,desc:"生存中のパーティ全員",value:elite?.40:.20},{type:"atk",label:`全員 攻撃+${elite?4:2}`,desc:"生存中のパーティ全員・ダンジョン終了まで",value:elite?4:2},{type:"def",label:`全員 防御+${elite?4:2}`,desc:"生存中のパーティ全員・ダンジョン終了まで",value:elite?4:2},{type:"shield",label:`被ダメ${elite?35:20}%減`,desc:"次の戦闘のみ・パーティ共通",value:elite?.35:.20}]}
 function showBattleReward(kind){const n=kind==="elite"?3:2;state.run.reward={kind,options:uniqueSample(rewardPool(kind),n)};state.run.scene="reward"}
@@ -1665,7 +1678,7 @@ function renderDex(){
  else if(dexFilter==="unobtained")list=seriesBase.filter(r=>!dexState(r.master_id).obtained);
  const shown=list.slice(0,dexLimit),filters=[["all","すべて",seriesBase.length],["obtained","入手済み",acquired],["current","現在所持",current],["unobtained","未入手",unobtained]];
  const seriesOptions=['<option value="all">すべての弾</option>',...seriesList.map(x=>`<option value="${esc(x)}" ${dexSeriesFilter===x?"selected":""}>${esc(x)}</option>`)].join("");
- app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">📖 ポケモン図鑑</div>${gridSizeControlHTML("dex",dexViewSize)}</div><div class="muted">未遭遇は「？？？」、遭遇済みで未所持のポケモンは姿を薄く表示します。現在所持しているピックは通常表示です。</div><div class="dexControlRow"><label><span>弾</span><select id="dexSeriesSelect">${seriesOptions}</select></label><div class="dexResultCount">表示対象 ${list.length}枚${dexSeriesFilter!=="all"?` / ${esc(dexSeriesFilter)}`:""}</div></div><div class="dexSummary">${filters.map(([k,l,n])=>`<button type="button" class="dexStat ${dexFilter===k?"active":""}" data-dex-filter="${k}" aria-pressed="${dexFilter===k?"true":"false"}"><b>${n}</b><span>${l}</span></button>`).join("")}</div><div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=speciesSeen(r),speciesOwned=speciesCurrentlyOwned(r),cls=speciesOwned?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}" ${d.current?`data-dex-owned="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen&&!speciesOwned?'<span class="dexSeenTag">遭遇済み</span>':""}<img src="${esc(imageOf(r))}" alt=""><div class="dexName">${seen?esc(r.name_ja):"？？？"}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}</div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
+ app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">📖 ポケモン図鑑</div>${gridSizeControlHTML("dex",dexViewSize)}</div><div class="muted">判定はピック単位です。未遭遇ピックは「？？？」、遭遇済みで未所持のピックは姿を薄く表示し、現在所持しているピックだけ通常表示します。</div><div class="dexControlRow"><label><span>弾</span><select id="dexSeriesSelect">${seriesOptions}</select></label><div class="dexResultCount">表示対象 ${list.length}枚${dexSeriesFilter!=="all"?` / ${esc(dexSeriesFilter)}`:""}</div></div><div class="dexSummary">${filters.map(([k,l,n])=>`<button type="button" class="dexStat ${dexFilter===k?"active":""}" data-dex-filter="${k}" aria-pressed="${dexFilter===k?"true":"false"}"><b>${n}</b><span>${l}</span></button>`).join("")}</div><div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=pickSeen(r),cls=d.current?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}" ${d.current?`data-dex-owned="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen?'<span class="dexSeenTag">遭遇済み</span>':""}<img src="${esc(imageOf(r))}" alt=""><div class="dexName">${seen?esc(r.name_ja):"？？？"}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}</div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
  app.querySelectorAll("[data-dex-filter]").forEach(b=>b.onclick=()=>{dexFilter=b.dataset.dexFilter;dexLimit=120;renderDex()});
  const seriesSel=document.getElementById("dexSeriesSelect");if(seriesSel)seriesSel.onchange=e=>{dexSeriesFilter=e.target.value;dexLimit=120;renderDex()};
  app.querySelectorAll('[data-view-size="dex"]').forEach(b=>b.onclick=()=>{dexViewSize=b.dataset.size;saveGridSize("dex",dexViewSize);renderDex()});
@@ -1712,4 +1725,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 06:18:00 JST / Ver0.61 -->
+<!-- Updated: 2026-09-27 06:31:00 JST / Ver0.62 -->
