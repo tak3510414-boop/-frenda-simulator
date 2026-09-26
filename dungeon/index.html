@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.30 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.31 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.30</title>
+<title>フレンダダンジョン Ver0.31</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -87,10 +87,41 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 .dexStat:focus-visible{outline:3px solid #62c8f2;outline-offset:2px}
 @media(max-width:700px){.dexSummary{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.dexStat{padding:7px 2px;border-radius:10px}.dexStat b{font-size:16px}.dexStat span{font-size:7.5px}}
 
+
+
+/* Ver0.31: PC layout optimization. Smartphone/tablet layout remains unchanged. */
+.runOverview{display:block}
+@media(min-width:901px){
+  .headrow,main{max-width:1180px}
+  main{padding:18px 20px}
+  .card{padding:18px}
+  .heroCard h1{font-size:28px}
+  .runOverview{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);gap:14px;align-items:stretch}
+  .runOverview>.runTop,.runOverview>.card{min-width:0;margin-bottom:13px}
+  .runOverview>.runTop .runStatus{height:100%}
+  .runOverview>.card{height:calc(100% - 0px)}
+  .dungeonGrid{grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px}
+  .starterSetGrid{grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+  .teamSelectGrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px}
+  .ownedGrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+  .eggGrid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .dexGrid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:9px}
+  .routeGrid{gap:14px}
+  .routeCard{min-height:120px}
+  .battleArena{max-width:980px;margin-left:auto;margin-right:auto}
+  .battleGrid{grid-template-columns:minmax(250px,1fr) 90px minmax(250px,1fr);gap:18px}
+  .fighterBox{padding:14px}
+  .fighterBox img{width:min(180px,100%)}
+  .enemyPreview img{width:170px}
+  .teamComparePanel{width:min(1120px,100%)}
+  .ownedBackPanel{width:min(820px,100%)}
+  .evoPanel{width:min(780px,100%)}
+  .eggDetailPanel{width:min(760px,100%)}
+}
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.30</span></b><small>Simulator Ver6.77 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.31</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
@@ -101,7 +132,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.30";
+const APP_VERSION="0.31";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
@@ -434,7 +465,7 @@ function renderSummary(){updateHeaderStatus();const x=state.postRun?.summary||st
 function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:"上のチームから、出すポケモンをタップしてください。",can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"上のチームから対象をタップしてください。ひんし状態も選べます。":"上のチームから対象をタップしてください。",can:(t)=>k==="healSingleSelect"?true:!t.ko}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
 function teamMiniHTML(t,i){const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,active=state.run?.scene==="battle"?b?.teamIndex:null,directSwitch=!m&&state.run?.scene==="battle"&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,action=m?m.action:(directSwitch?"switch":""),cls=`teamMini ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}`,attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:"";return `<div class="${cls}"${attrs}><div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small></div></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="buffs">攻+${t.tempAtk||0} / 防+${t.tempDef||0} / EXP ${xp}/100</div></div>`}
 function floorPathHTML(floor){const f=Math.max(1,Math.min(10,Number(floor)||1));const cells=Array.from({length:10},(_,i)=>{const n=i+1,cls=n<f?"done":n===f?"current":"future",goal=n===10?" goal":"";return `<div class="floorStep ${cls}${goal}" aria-label="地下${n}階${n===f?"・現在地":""}${n===10?"・ゴール":""}">${n===10?'<span class="goalFlag">👑</span>':`<span>${n}</span>`}</div>`}).join("");return `<div class="floorPath" aria-label="ゴールまでの階層マップ">${cells}</div><div class="floorPathCaption"><span>START</span><span>B10・BOSS</span></div>`}
-function renderRun(){const r=state.run;if(!r)return;updateHeaderStatus();const theme=THEMES[r.dungeonId],tm=teamTargetMode();let body=`<div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)} ★${r.difficulty}</div><div class="floorRow"><div class="floorBig">地下${r.floor}階 / 10</div><button type="button" class="runEggCount" data-run-egg-open>🥚 ${state.eggs.length}/${state.eggCap}</button></div>${floorPathHTML(r.floor)}<div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div></div><div class="card${tm?" teamChoiceCard":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"チーム"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div>`;
+function renderRun(){const r=state.run;if(!r)return;updateHeaderStatus();const theme=THEMES[r.dungeonId],tm=teamTargetMode();let body=`<div class="runOverview"><div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)} ★${r.difficulty}</div><div class="floorRow"><div class="floorBig">地下${r.floor}階 / 10</div><button type="button" class="runEggCount" data-run-egg-open>🥚 ${state.eggs.length}/${state.eggCap}</button></div>${floorPathHTML(r.floor)}<div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div></div><div class="card${tm?" teamChoiceCard":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"チーム"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`;
  if(r.scene==="route")body+=renderRoutesHTML();else if(r.scene==="encounterIntro")body+=renderEncounterIntroHTML();else if(r.scene==="chooseFighter")body+=renderChooseFighterHTML();else if(r.scene==="battle")body+=renderBattleHTML();else if(r.scene==="reward")body+=renderRewardHTML();else if(r.scene==="captureIntro")body+=renderCaptureIntroHTML();else if(r.scene==="captureSelect")body+=renderCaptureSelectHTML();else if(r.scene==="captureSlot")body+=renderCaptureSlotHTML();else if(r.scene==="captureThrow")body+=renderCaptureThrowHTML();else if(r.scene==="captureResult")body+=renderCaptureResultHTML();else if(r.scene==="heal")body+=renderHealHTML();else if(r.scene==="eventTarget")body+=renderEventTargetHTML();else if(r.scene==="eventNotice")body+=renderEventNoticeHTML();else if(r.scene==="bossIntro")body+=`<div class="card summary"><div class="resultIcon">👑</div><h2>地下10階・ボス戦</h2><p>${r.difficulty===1?"★1のボスは1体です。ここまで育てた3匹で挑みましょう。":"3匹の強敵との連戦です。相手は1匹ずつ登場します。"}</p><button id="bossStart">ボス戦を始める</button></div>`;
  body+=`<div class="card"><div class="sectionTitle">冒険ログ</div><div class="battleLog">${r.logs.slice(-12).map(x=>`<div class="logline">${esc(x)}</div>`).join("")}</div></div>`;app.innerHTML=body;bindRunHandlers()}
 function renderRoutesHTML(){const r=state.run,peek=r.peek>0;return `<div class="card"><div class="sectionTitle">進む道を選ぶ</div><div class="routeGrid">${r.routeOptions.map(x=>{const d=ROUTE_DEF[x.type];return `<button class="routeCard ${d.cls}" data-route="${esc(x.id)}"><span class="ico">${d.icon}</span><b>${d.label}</b><small>${peek?`${d.hint}（先読み中）`:d.hint}</small></button>`}).join("")}</div><div class="muted" style="margin-top:8px">一度選ぶと戻れません。</div></div>`}
@@ -506,4 +537,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-26 16:41:09 JST / Ver0.30 -->
+<!-- Updated: 2026-09-26 18:13:27 JST / Ver0.31 -->
