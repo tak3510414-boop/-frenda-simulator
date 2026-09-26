@@ -1,6 +1,7 @@
 (()=>{
 "use strict";
 
+const CLOUD_VERSION="1.1";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -17,12 +18,32 @@ let button=null;
 let modal=null;
 let statusText="未ログイン";
 let storagePatched=false;
+let initialized=false;
 
-function safeJSON(v){try{return JSON.stringify(v)}catch{return ""}}
+const META_KEYS=new Set(["format_version","simulator_version","dungeon_version","appVersion","saveVersion","exported_at","master_version"]);
+function comparableValue(v){
+  if(Array.isArray(v))return v.map(comparableValue);
+  if(v&&typeof v==="object"){
+    const o={};
+    for(const k of Object.keys(v).sort()){
+      if(META_KEYS.has(k))continue;
+      o[k]=comparableValue(v[k]);
+    }
+    return o;
+  }
+  return v;
+}
+function safeJSON(v){try{return JSON.stringify(comparableValue(v))}catch{return ""}}
+function hashString(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function reloadGuardKey(){return `frendaCloudReloadGuard:${cfg?.app||"app"}:${session?.user?.id||"anon"}`}
+function clearReloadGuard(){try{sessionStorage.removeItem(reloadGuardKey())}catch{}}
+function setReloadGuard(sig){try{sessionStorage.setItem(reloadGuardKey(),sig)}catch{}}
+function getReloadGuard(){try{return sessionStorage.getItem(reloadGuardKey())||""}catch{return ""}}
+
 function setStatus(text,kind=""){
   statusText=text;
   if(button){
-    const prefix=kind==="error"?"⚠️":kind==="syncing"?"☁️":"☁️";
+    const prefix=kind==="error"?"⚠️":"☁️";
     button.textContent=`${prefix} ${text}`;
     button.dataset.kind=kind;
   }
@@ -59,7 +80,7 @@ function openModal(){
     <div class="frendaCloudPanel" role="dialog" aria-modal="true">
       <div class="frendaCloudHead"><b>☁️ クラウド同期</b><button type="button" class="frendaCloudClose">閉じる</button></div>
       <div class="frendaCloudUser">${escapeHTML(email)}</div>
-      <div class="frendaCloudInfo">${escapeHTML(cfg?.label||"アプリ")}のデータをSupabaseと同期します。通常は端末内へ即保存し、少し後にクラウドへ自動保存します。</div>
+      <div class="frendaCloudInfo">${escapeHTML(cfg?.label||"アプリ")}のデータをSupabaseと同期します。通常は端末内へ即保存し、少し後にクラウドへ自動保存します。<br><small>Cloud v${CLOUD_VERSION}</small></div>
       <div id="frendaCloudStatus" class="frendaCloudStatus">${escapeHTML(statusText)}</div>
       <div class="frendaCloudActions">
         <button type="button" id="frendaCloudPush" class="frendaCloudPrimary">この端末を保存</button>
@@ -69,7 +90,7 @@ function openModal(){
     </div>`:`
     <div class="frendaCloudPanel" role="dialog" aria-modal="true">
       <div class="frendaCloudHead"><b>☁️ クラウド同期</b><button type="button" class="frendaCloudClose">閉じる</button></div>
-      <div class="frendaCloudInfo">同じアカウントでログインすると、スマホ・PC間で${escapeHTML(cfg?.label||"アプリ")}のデータを引き継げます。</div>
+      <div class="frendaCloudInfo">同じアカウントでログインすると、スマホ・PC間で${escapeHTML(cfg?.label||"アプリ")}のデータを引き継げます。<br><small>Cloud v${CLOUD_VERSION}</small></div>
       <label>メールアドレス</label><input id="frendaCloudEmail" type="email" autocomplete="username">
       <label>パスワード</label><input id="frendaCloudPassword" type="password" autocomplete="current-password">
       <div id="frendaCloudStatus" class="frendaCloudStatus">未ログイン</div>
@@ -107,11 +128,16 @@ async function login(email,password){
   session=data.session;setStatus("ログインしました","syncing");closeModal();await pullOrSeed();
 }
 async function logout(){
-  if(!client)return;await client.auth.signOut();session=null;lastUploaded="";setStatus("未ログイン");closeModal()
+  if(!client)return;clearReloadGuard();await client.auth.signOut();session=null;lastUploaded="";setStatus("未ログイン");closeModal()
 }
 async function rowForUser(){
   if(!session)return {data:null,error:new Error("not signed in")};
   return await client.from(TABLE).select(`user_id,${columnName()},updated_at`).eq("user_id",session.user.id).maybeSingle();
+}
+async function uploadLocal(local,localStr){
+  const payload={user_id:session.user.id,[columnName()]:local,updated_at:new Date().toISOString()};
+  const {error}=await client.from(TABLE).upsert(payload,{onConflict:"user_id"});if(error)throw error;
+  lastUploaded=localStr;clearReloadGuard();setStatus("同期済み");
 }
 async function pullOrSeed(){
   if(!session||syncing)return;
@@ -119,25 +145,25 @@ async function pullOrSeed(){
   try{
     const {data,error}=await rowForUser();if(error)throw error;
     const local=cfg.getData(),localStr=safeJSON(local);
-    if(!data){
-      const payload={user_id:session.user.id,[columnName()]:local,updated_at:new Date().toISOString()};
-      const {error:e}=await client.from(TABLE).upsert(payload,{onConflict:"user_id"});if(e)throw e;
-      lastUploaded=localStr;setStatus("同期済み");return;
-    }
+    if(!data){await uploadLocal(local,localStr);return}
     const cloud=data[columnName()];
-    if(cloud===null||typeof cloud==="undefined"){
-      const {error:e}=await client.from(TABLE).update({[columnName()]:local,updated_at:new Date().toISOString()}).eq("user_id",session.user.id);if(e)throw e;
-      lastUploaded=localStr;setStatus("同期済み");return;
-    }
+    if(cloud===null||typeof cloud==="undefined"){await uploadLocal(local,localStr);return}
     const cloudStr=safeJSON(cloud);
     if(cloudStr!==localStr){
+      const sig=hashString(cloudStr);
+      if(getReloadGuard()===sig){
+        // 同じクラウド内容を直前の再読み込みで適用済み。アプリ側の移行・並び替えで差分が残った場合は、
+        // 再読み込みを繰り返さず、現在の端末データをクラウドへ戻して収束させる。
+        await uploadLocal(local,localStr);return;
+      }
+      setReloadGuard(sig);
       applying=true;
       try{await cfg.applyData(cloud)}finally{applying=false}
       lastUploaded=cloudStr;setStatus("クラウドから読み込みました");
-      setTimeout(()=>location.reload(),120);
+      setTimeout(()=>location.reload(),180);
       return;
     }
-    lastUploaded=cloudStr;setStatus("同期済み");
+    lastUploaded=cloudStr;clearReloadGuard();setStatus("同期済み");
   }catch(e){console.error("FrendaCloud pull/seed",e);setStatus("同期エラー","error")}
   finally{syncing=false}
 }
@@ -148,9 +174,10 @@ async function pullNow(force=false){
     const cloud=data?.[columnName()];
     if(cloud===null||typeof cloud==="undefined"){setStatus("クラウドにデータがありません","error");return}
     const cloudStr=safeJSON(cloud),localStr=safeJSON(cfg.getData());
-    if(cloudStr===localStr&&!force){lastUploaded=cloudStr;setStatus("同期済み");return}
+    if(cloudStr===localStr){lastUploaded=cloudStr;clearReloadGuard();setStatus("同期済み");return}
+    setReloadGuard(hashString(cloudStr));
     applying=true;try{await cfg.applyData(cloud)}finally{applying=false}
-    lastUploaded=cloudStr;setStatus("クラウドから読み込みました");closeModal();setTimeout(()=>location.reload(),120)
+    lastUploaded=cloudStr;setStatus("クラウドから読み込みました");closeModal();setTimeout(()=>location.reload(),180)
   }catch(e){console.error("FrendaCloud pull",e);setStatus("読込エラー","error")}
   finally{syncing=false}
 }
@@ -159,11 +186,8 @@ async function pushNow(showResult=false){
   const local=cfg.getData(),s=safeJSON(local);if(!s)return;
   if(!showResult&&s===lastUploaded)return;
   syncing=true;setStatus("クラウド保存中…","syncing");
-  try{
-    const payload={user_id:session.user.id,[columnName()]:local,updated_at:new Date().toISOString()};
-    const {error}=await client.from(TABLE).upsert(payload,{onConflict:"user_id"});if(error)throw error;
-    lastUploaded=s;setStatus("同期済み")
-  }catch(e){console.error("FrendaCloud push",e);setStatus("保存エラー","error")}
+  try{await uploadLocal(local,s)}
+  catch(e){console.error("FrendaCloud push",e);setStatus("保存エラー","error")}
   finally{syncing=false}
 }
 function scheduleSync(delay=1400){
@@ -176,10 +200,18 @@ async function init(options){
   if(authUnsub){try{authUnsub.unsubscribe()}catch{}}
   const {data,error}=await client.auth.getSession();if(error){setStatus("認証確認エラー","error");return}
   session=data.session||null;
-  const listener=client.auth.onAuthStateChange((_event,newSession)=>{session=newSession||null;if(!session){lastUploaded="";setStatus("未ログイン")}else if(!syncing){setStatus("同期確認中…","syncing");setTimeout(()=>pullOrSeed(),0)}});
+  const listener=client.auth.onAuthStateChange((event,newSession)=>{
+    const oldUserId=session?.user?.id||null,newUserId=newSession?.user?.id||null;
+    session=newSession||null;
+    if(!session){lastUploaded="";clearReloadGuard();setStatus("未ログイン");return}
+    // TOKEN_REFRESHED / INITIAL_SESSION / タブ復帰などでは再読込しない。
+    // 新規ログイン・ユーザー切替時だけ同期確認する。
+    if(initialized&&event==="SIGNED_IN"&&newUserId!==oldUserId&&!syncing){setStatus("同期確認中…","syncing");setTimeout(()=>pullOrSeed(),0)}
+  });
   authUnsub=listener?.data?.subscription||null;
+  initialized=true;
   if(session)await pullOrSeed();else setStatus("未ログイン")
 }
 
-window.FrendaCloud={init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session};
+window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session};
 })();
