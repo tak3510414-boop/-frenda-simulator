@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.45 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.46 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.45</title>
+<title>フレンダダンジョン Ver0.46</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -142,6 +142,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 /* Ver0.43: larger, more readable battle damage numbers */
 /* Ver0.44: lucky-rest full-HP softlock prevention and recovery */
 /* Ver0.45: legendary Pokémon are limited to ★5 dungeons; non-★5 eggs cannot hatch legendary Pokémon */
+/* Ver0.46: enemy and egg lotteries are species-first, then pick; duplicate pick counts no longer raise species odds */
 .eventResultCard{position:relative;overflow:hidden;border:2px solid #f1c94e;background:linear-gradient(145deg,#fffdf3,#fff6cb);box-shadow:0 14px 34px #7f641b2b}
 .eventResultCard:before,.eventResultCard:after{content:"✦";position:absolute;font-size:54px;opacity:.11;animation:eventSpark 1.4s ease-in-out infinite alternate}
 .eventResultCard:before{left:8%;top:8%}.eventResultCard:after{right:8%;bottom:8%;animation-delay:.35s}
@@ -177,18 +178,18 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.45</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.46</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=0.45"></script>
-<script src="../frenda-core.js?v=0.45"></script>
+<script src="../frenda-master.js?v=0.46"></script>
+<script src="../frenda-core.js?v=0.46"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=0.45"></script>
+<script src="../frenda-cloud.js?v=0.46"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.45";
+const APP_VERSION="0.46";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
@@ -309,6 +310,9 @@ function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function validBattle(r){return r&&Number(r.hp)>0&&Number(r.atk)>0&&Number(r.def)>0&&Number(r.sp_atk)>0&&Number(r.sp_def)>0&&r.move_type}
+function speciesKey(r){return String(r?.name_ja||r?.master_id||"").trim()}
+function speciesGroups(records){const m=new Map();for(const r of records||[]){const k=speciesKey(r);if(!k)continue;if(!m.has(k))m.set(k,[]);m.get(k).push(r)}return [...m.entries()].map(([name,records])=>({name,records}))}
+function pickRecordBySpecies(records,{boss=false}={}){let groups=speciesGroups(records);if(!groups.length)return null;if(boss){groups=groups.map(g=>({...g,pokeEne:Math.max(0,...g.records.map(r=>Number(r.poke_ene)||0))})).sort((a,b)=>b.pokeEne-a.pokeEne);groups=groups.slice(0,Math.max(8,Math.ceil(groups.length*.35)))}const g=groups[Math.floor(Math.random()*groups.length)];return g?.records?.[Math.floor(Math.random()*g.records.length)]||null}
 function imageOf(r){return r?.official_image||""}
 function gradeText(r){return r?.grade?"★"+r.grade:"★-"}
 function maxHpFor(id){const r=rec(id);const b=state.permanentBoosts?.[id]?.hp||0;return Math.max(1,Math.round(Number(r?.hp||1)+b))}
@@ -367,10 +371,10 @@ function eggLabel(e){const d=EGG_DEF[e?.kind]||EGG_DEF.normal;return e?.kind==="
 function eggReq(e){return Number(EGG_DEF[e?.kind]?.required||e?.required||10)}
 function eggReady(e){return Number(e?.points||0)>=eggReq(e)}
 function eggVisualHTML(eOrKind,type=null,small=false){const kind=typeof eOrKind==="string"?eOrKind:(eOrKind?.kind||"normal"),tp=type||(typeof eOrKind==="object"?eOrKind?.type:null),c=TYPE_FX[tp]?.[1]||"#46a6df",cls=`eggVisual ${kind}${small?" small":""}`;return `<div class="${cls}"${kind==="type"?` data-type="${esc(tp||"タイプ")}" style="--typeColor:${esc(c)}"`:""} aria-hidden="true"></div>`}
-function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,valid=RECORDS.filter(validBattle),counts={};for(const t of th.types)counts[t]=valid.reduce((n,r)=>n+((r.type1===t||r.type2===t)?((th.types.every(x=>r.type1===x||r.type2===x))?.5:1):0),0);return chooseWeighted(counts)}
+function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,groups=speciesGroups(RECORDS.filter(validBattle)),counts={};for(const t of th.types)counts[t]=groups.reduce((n,g)=>{const types=new Set(g.records.flatMap(r=>[r.type1,r.type2]).filter(Boolean));if(!types.has(t))return n;return n+(th.types.every(x=>types.has(x))?.5:1)},0);return chooseWeighted(counts)}
 function makeEgg(kind,did,diff){const d=EGG_DEF[kind]||EGG_DEF.normal;return {id:eggId(),kind:d===EGG_DEF.normal&&kind!=="normal"?"normal":kind,type:kind==="type"?chooseThemeEggType(did):null,points:0,required:d.required,sourceDungeon:did,sourceDifficulty:diff,createdAt:new Date().toISOString()}}
 function advanceEggs(n=1){if(!Array.isArray(state.eggs)||!state.eggs.length)return;for(const e of state.eggs)e.points=Math.min(eggReq(e),Number(e.points||0)+n);addLog(`所持している卵すべての孵化ポイント +${n}。`)}
-function chooseHatchRecord(egg){const rates=EGG_HATCH_GRADE[egg.kind]||EGG_HATCH_GRADE.normal;let g=Number(chooseWeighted(rates));let pool=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,Number(egg?.sourceDifficulty||1)));if(egg.kind==="type"&&egg.type)pool=pool.filter(r=>r.type1===egg.type||r.type2===egg.type);let gp=pool.filter(r=>Number(r.grade)===g);if(!gp.length){const grades=[...new Set(pool.map(r=>Number(r.grade)).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=pool.filter(r=>Number(r.grade)===grades[0])}return gp[Math.floor(Math.random()*gp.length)]||pool[Math.floor(Math.random()*pool.length)]||null}
+function chooseHatchRecord(egg){const rates=EGG_HATCH_GRADE[egg.kind]||EGG_HATCH_GRADE.normal;let g=Number(chooseWeighted(rates));let pool=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,Number(egg?.sourceDifficulty||1)));if(egg.kind==="type"&&egg.type)pool=pool.filter(r=>r.type1===egg.type||r.type2===egg.type);let gp=pool.filter(r=>Number(r.grade)===g);if(!gp.length){const grades=[...new Set(pool.map(r=>Number(r.grade)).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=pool.filter(r=>Number(r.grade)===grades[0])}return pickRecordBySpecies(gp)||pickRecordBySpecies(pool)}
 function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id);if(duplicate)addGrowthPoint(r.master_id,1);else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate})}return results}
 function eggSlotsFor(diff,did){const rates=EGG_SLOT_RATES[diff]||EGG_SLOT_RATES[1];return Array.from({length:8},()=>{const kind=chooseWeighted(rates);return {kind,type:kind==="type"?chooseThemeEggType(did):null}})}
 function pct(n,d){return d?Math.max(0,Math.min(100,Math.round(n/d*100))):0}
@@ -492,8 +496,27 @@ function updateHeaderStatus(){const el=document.getElementById("runHeaderInfo");
 function floorRate(){return state.run.floor>=8?ROUTE_RATES_LATE:ROUTE_RATES_EARLY}
 function generateRoutes(){if(!state.run||state.run.floor>=10)return;const count=Math.random()<.55?3:2,rates=floorRate(),types=Object.keys(rates);let out=[];let attempts=0;while(out.length<count&&attempts++<30){const k=chooseWeighted(rates);if(!out.includes(k)||out.length>=types.length)out.push(k)}while(out.length<count)out.push(chooseWeighted(rates));state.run.routeOptions=out.map((type,i)=>({id:`${state.run.floor}-${i}-${Math.random().toString(36).slice(2,7)}`,type}));state.run.scene="route";save()}
 function themeCandidates(themeId){const theme=THEMES[themeId],valid=RECORDS.filter(validBattle);const themed=valid.filter(r=>theme.types.includes(r.type1)||theme.types.includes(r.type2)),other=valid.filter(r=>!theme.types.includes(r.type1)&&!theme.types.includes(r.type2));return {themed,other}}
-function themeSideWeights(themeId){const theme=THEMES[themeId],valid=RECORDS.filter(validBattle);const vals=theme.types.map(t=>valid.reduce((n,r)=>{const a=r.type1===t,b=r.type2===t,other=theme.types.find(x=>x!==t);if(a||b){if((r.type1===t&&r.type2===other)||(r.type2===t&&r.type1===other))return n+.5;return n+1}return n},0));const sum=vals[0]+vals[1]||1;return {[theme.types[0]]:80*vals[0]/sum,[theme.types[1]]:80*vals[1]/sum,other:20}}
-function pickEnemy({elite=false,boss=false,exclude=[]}={}){const theme=THEMES[state.run.dungeonId],weights=themeSideWeights(theme.id);const slot=chooseWeighted(weights),diff=state.run.difficulty;let pool=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,diff)&&!exclude.includes(r.master_id));if(slot!=="other")pool=pool.filter(r=>r.type1===slot||r.type2===slot);else pool=pool.filter(r=>!theme.types.includes(r.type1)&&!theme.types.includes(r.type2));if(!pool.length)pool=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,diff)&&!exclude.includes(r.master_id));let gradeRates=clone(ENEMY_GRADE_RATES[state.run.difficulty]||ENEMY_GRADE_RATES[1]);const isForest1Normal=state.run.dungeonId==="forest"&&state.run.difficulty===1&&!elite&&!boss;if(isForest1Normal)gradeRates=clone(FOREST1_NORMAL_GRADE_RATES);if(boss)gradeRates=clone(BOSS_GRADE_RATES[state.run.difficulty]||BOSS_GRADE_RATES[1]);else if(elite){const shifted={2:0,3:gradeRates[2],4:gradeRates[3],5:gradeRates[4]+gradeRates[5]};gradeRates=shifted}let g=Number(chooseWeighted(gradeRates));let gp=pool.filter(r=>Number(r.grade)===g);if(boss&&!gp.length)gp=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,diff)&&!exclude.includes(r.master_id)&&Number(r.grade)===g);if(!gp.length){const grades=[...new Set(pool.map(r=>Number(r.grade)).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=pool.filter(r=>Number(r.grade)===grades[0])}if(boss){gp.sort((a,b)=>(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0));gp=gp.slice(0,Math.max(8,Math.ceil(gp.length*.35)))}const base=clone(gp[Math.floor(Math.random()*gp.length)]||pool[Math.floor(Math.random()*pool.length)]);return scaleEnemy(base,{elite,boss})}
+function themeSideWeights(themeId){const theme=THEMES[themeId],groups=speciesGroups(RECORDS.filter(validBattle));const vals=theme.types.map(t=>groups.reduce((n,g)=>{const types=new Set(g.records.flatMap(r=>[r.type1,r.type2]).filter(Boolean)),other=theme.types.find(x=>x!==t);if(!types.has(t))return n;return n+(other&&types.has(other)?.5:1)},0));const sum=vals[0]+vals[1]||1;return {[theme.types[0]]:80*vals[0]/sum,[theme.types[1]]:80*vals[1]/sum,other:20}}
+function pickEnemy({elite=false,boss=false,exclude=[]}={}){
+ const theme=THEMES[state.run.dungeonId],weights=themeSideWeights(theme.id),slot=chooseWeighted(weights),diff=state.run.difficulty;
+ const excludedSpecies=new Set(exclude.map(id=>speciesKey(rec(id))).filter(Boolean));
+ const eligible=r=>validBattle(r)&&allowedByDungeonDifficulty(r,diff)&&!exclude.includes(r.master_id)&&!excludedSpecies.has(speciesKey(r));
+ let pool=RECORDS.filter(eligible);
+ if(slot!=="other")pool=pool.filter(r=>r.type1===slot||r.type2===slot);
+ else pool=pool.filter(r=>!theme.types.includes(r.type1)&&!theme.types.includes(r.type2));
+ if(!pool.length)pool=RECORDS.filter(eligible);
+ let gradeRates=clone(ENEMY_GRADE_RATES[state.run.difficulty]||ENEMY_GRADE_RATES[1]);
+ const isForest1Normal=state.run.dungeonId==="forest"&&state.run.difficulty===1&&!elite&&!boss;
+ if(isForest1Normal)gradeRates=clone(FOREST1_NORMAL_GRADE_RATES);
+ if(boss)gradeRates=clone(BOSS_GRADE_RATES[state.run.difficulty]||BOSS_GRADE_RATES[1]);
+ else if(elite){const shifted={2:0,3:gradeRates[2],4:gradeRates[3],5:gradeRates[4]+gradeRates[5]};gradeRates=shifted}
+ let g=Number(chooseWeighted(gradeRates)),gp=pool.filter(r=>Number(r.grade)===g);
+ if(boss&&!gp.length)gp=RECORDS.filter(r=>eligible(r)&&Number(r.grade)===g);
+ if(!gp.length){const grades=[...new Set(pool.map(r=>Number(r.grade)).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=pool.filter(r=>Number(r.grade)===grades[0])}
+ const picked=pickRecordBySpecies(gp,{boss})||pickRecordBySpecies(pool,{boss});
+ const base=clone(picked);
+ return scaleEnemy(base,{elite,boss})
+}
 function floorBonus(){const f=state.run.floor;return f>=10?.15:f>=7?.10:f>=4?.05:0}
 function scaleEnemy(base,{elite=false,boss=false}={}){const bonus=(DIFF_BONUS[state.run.difficulty]||0)+floorBonus()+(elite&&!boss ? .10 : 0);const damageModel=localStorage.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1";const forest1Ease=(state.run.dungeonId==="forest"&&state.run.difficulty===1)?(damageModel==="v2"?0.40:0.55):1;const r=clone(base);for(const k of ["hp","atk","def","sp_atk","sp_def"])if(Number(r[k])>0)r[k]=Math.max(1,Math.round(Number(r[k])*(1+bonus)*forest1Ease));r._dungeonBonus=bonus;r._forest1Ease=forest1Ease;r._elite=elite;r._boss=boss;return r}
 function selectRoute(route){if(!state.run||state.run.scene!=="route")return;state.run.routeOptions=null;const type=route.type;if(type==="battle")return beginEncounter("battle");if(type==="elite")return beginEncounter("elite");if(type==="heal")return showHeal();if(type==="event")return resolvePositiveEvent();if(type==="unknown")return resolveUnknown()}
@@ -706,4 +729,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-26 20:19:00 JST / Ver0.45 -->
+<!-- Updated: 2026-09-26 20:31:00 JST / Ver0.46 -->
