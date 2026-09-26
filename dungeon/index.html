@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.63 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.64 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.63</title>
+<title>フレンダダンジョン Ver0.64</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -377,6 +377,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 /* Ver0.61: dex series filter, large/medium/small dex+owned views, sticky just-trained cards, and one-screen enlarged home dashboard */
 /* Ver0.62: fix Pokédex visibility to track encounters/ownership per exact pick instead of sharing visibility across same-species picks */
 /* Ver0.63: slower readable presentation pacing, tappable message artwork, larger home text, clear fanfare, and chronological series filter order */
+/* Ver0.64: simplify owned-pick front cards by grouping growth/drill resources, separating EXP, compacting permanent boosts, and reducing evolution text duplication */
 .eventResultCard{position:relative;overflow:hidden;border:2px solid #f1c94e;background:linear-gradient(145deg,#fffdf3,#fff6cb);box-shadow:0 14px 34px #7f641b2b}
 .eventResultCard:before,.eventResultCard:after{content:"✦";position:absolute;font-size:54px;opacity:.11;animation:eventSpark 1.4s ease-in-out infinite alternate}
 .eventResultCard:before{left:8%;top:8%}.eventResultCard:after{right:8%;bottom:8%;animation-delay:.35s}
@@ -597,21 +598,84 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
  .homeMenuBtn small{font-size:7px}
 }
 
+
+/* Ver0.64: simplified owned-pick front information hierarchy */
+.ownedFrontCard{display:flex;flex-direction:column;gap:6px}
+.ownedFrontVisual{position:relative}
+.ownedFrontVisual>img{display:block}
+.ownedBondBadge{position:absolute;right:5px;top:5px;z-index:2;padding:4px 7px;border-radius:999px;background:#fff1f5;color:#9d365e;border:1px solid #f0bfd0;font-size:9px;font-weight:1000;box-shadow:0 2px 6px #0002}
+.ownedBondBadge.high{background:#ffe1ed;color:#92274f;border-color:#e99ab8;box-shadow:0 0 10px #ef8eb04a}
+.ownedFrontIdentity{min-width:0}
+.ownedFrontName{display:block!important;margin:0!important;font-size:14px!important;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ownedFrontIdentity>small{margin-top:2px}
+.ownedFrontTypes{margin-top:4px}
+.ownedFrontTypes .badge{padding:3px 6px;font-size:8px}
+.ownedResourceStrip{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ownedResource{display:grid;grid-template-columns:auto 1fr;gap:5px;align-items:center;padding:6px 7px;border-radius:10px;border:1px solid #dde4e9;background:#f7fafb;min-width:0}
+.ownedResource>span{font-size:16px;line-height:1}
+.ownedResource>div{display:flex;align-items:baseline;justify-content:space-between;gap:5px;min-width:0}
+.ownedResource small{font-size:8px;color:#687984;font-weight:900}
+.ownedResource b{margin:0!important;font-size:16px!important;line-height:1;color:#263a47}
+.ownedResource.growth{background:#f7f1ff;border-color:#dfd0f3}.ownedResource.growth b{color:#65409b}
+.ownedResource.drill{background:#eef8fc;border-color:#cde8f3}.ownedResource.drill b{color:#176c8a}
+.ownedExpBlock{padding:6px 7px;border:1px solid #e0e6ea;border-radius:10px;background:#fff}
+.ownedExpHead{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.ownedExpHead b{margin:0!important;font-size:9px!important;color:#405563}
+.ownedExpHead span{font-size:9px;font-weight:900;color:#405563}
+.ownedExpBlock .expbar{margin:4px 0 2px;height:7px}
+.ownedExpBlock>small{font-size:7px;color:#70808a;text-align:right}
+.ownedBoostLine{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:5px 7px;border-radius:9px;background:#f3f7f4;border:1px solid #d9e7dd;font-size:8px}
+.ownedBoostLine>span{color:#61726a;font-weight:900}.ownedBoostLine>b{margin:0!important;font-size:8px!important;color:#2d6042;white-space:nowrap}
+.ownedEvoCompact{padding:6px 7px;border-radius:9px;background:#f3f0f7;color:#655879;border:1px solid #ddd5e7;font-size:8px;font-weight:900;text-align:center}
+.ownedEvoCompact.near{background:#fff5cf;color:#816200;border-color:#ead37f}
+.ownedEvoCompact.ready{background:#eee4ff;color:#6636a5;border-color:#cdb2f1;box-shadow:0 0 0 2px #b784e72c inset}
+.ownedFrontActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ownedFrontActions:has(.ownedActionBtn:only-child){grid-template-columns:1fr}
+.ownedActionBtn{width:100%;padding:8px 6px;border-radius:9px;font-size:10px;font-weight:950}
+.ownedActionBtn.train{background:linear-gradient(180deg,#1d9b76,#117253)}
+.ownedActionBtn.evolve{background:linear-gradient(180deg,#8e5be0,#6338aa)}
+.ownedActionBtn.evolve.ready{box-shadow:0 0 0 2px #d8c1ff,0 3px 10px #7346ba36}
+.ownedActionBtn:disabled{background:#aeb8be;box-shadow:none;opacity:.58}
+.ownedFrontCard .ownedDetailHint{margin-top:0;padding:4px 5px;font-size:7.5px;background:#f0f7fa;color:#54707e}
+
+.ownedGrid.size-large .ownedFrontName{font-size:16px!important}
+.ownedGrid.size-large .ownedResource{padding:8px}.ownedGrid.size-large .ownedResource b{font-size:18px!important}.ownedGrid.size-large .ownedActionBtn{font-size:11px;padding:9px 7px}
+.ownedGrid.size-small .ownedFrontCard{gap:3px}
+.ownedGrid.size-small .ownedBondBadge{right:3px;top:3px;padding:2px 4px;font-size:6px}
+.ownedGrid.size-small .ownedFrontName{font-size:9px!important}
+.ownedGrid.size-small .ownedFrontIdentity>small{font-size:6px}
+.ownedGrid.size-small .ownedFrontTypes{margin-top:2px}.ownedGrid.size-small .ownedFrontTypes .badge{padding:1px 3px;font-size:5.5px}
+.ownedGrid.size-small .ownedResourceStrip{gap:2px}
+.ownedGrid.size-small .ownedResource{grid-template-columns:1fr;text-align:center;gap:1px;padding:3px 2px;border-radius:6px}
+.ownedGrid.size-small .ownedResource>span{display:none}
+.ownedGrid.size-small .ownedResource>div{display:block}.ownedGrid.size-small .ownedResource small{display:block;font-size:5.5px}.ownedGrid.size-small .ownedResource b{font-size:10px!important}
+.ownedGrid.size-small .ownedExpBlock{padding:3px}.ownedGrid.size-small .ownedExpHead b,.ownedGrid.size-small .ownedExpHead span{font-size:6px!important}.ownedGrid.size-small .ownedExpBlock>small{display:none}.ownedGrid.size-small .ownedExpBlock .expbar{height:5px;margin:2px 0 0}
+.ownedGrid.size-small .ownedBoostLine{padding:3px;font-size:5.5px}.ownedGrid.size-small .ownedBoostLine>b{font-size:5.5px!important;white-space:normal;text-align:right}
+.ownedGrid.size-small .ownedEvoCompact{padding:3px;font-size:5.5px}
+.ownedGrid.size-small .ownedFrontActions{gap:2px}.ownedGrid.size-small .ownedActionBtn{padding:5px 2px;font-size:6.5px}
+.ownedGrid.size-small .ownedDetailHint{display:none}
+
+@media(max-width:700px){
+ .ownedFrontName{font-size:13px!important}
+ .ownedResource{padding:5px 6px}.ownedResource>span{font-size:14px}.ownedResource b{font-size:14px!important}
+ .ownedBoostLine>b{font-size:7.5px!important}
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.63</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.64</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=0.63"></script>
-<script src="../frenda-core.js?v=0.63"></script>
+<script src="../frenda-master.js?v=0.64"></script>
+<script src="../frenda-core.js?v=0.64"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=0.63"></script>
+<script src="../frenda-cloud.js?v=0.64"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.63";
+const APP_VERSION="0.64";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const PRESENTATION_DELAYS={
@@ -1716,7 +1780,52 @@ function startBallSlotAnimation(stopBtn){stopBallTimer();ballCursor=0;const cell
 function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="notice" style="margin-bottom:10px">階を1つ進むたび、所持中のすべての卵に孵化ポイント+1。必要ポイントに達した卵は、クリア・全滅・撤退時に孵化します。<br><b>所持上限：</b>初期2個、ダンジョンクリア累計10回ごとに+1（最大10個）。現在${clears}回クリア${next?`／次の上限アップまであと${Math.max(0,next-clears)}回`:"／上限最大"}。</div>${state.eggs.length?`<div class="eggGrid">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.kind==="type"?"タイプのみ判明":"中身は孵化まで不明"}</small><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ダンジョンのボスを倒すと、卵ルーレットで1個獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
 function openTrainingFor(id){if(!ownedEntry(id))return;trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
-function renderOwned(){reconcileDexState();app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">ダンジョン所持ピック</div>${gridSizeControlHTML("owned",ownedViewSize)}</div><div class="muted" style="margin-bottom:6px">ピックをタップすると裏面データを表示します。「育成へ」を押すと、そのピックの育成欄へ直接移動します。進化先があるピックは「進化」ボタンも表示します。</div>${evoLoadNote()}<div class="ownedGrid size-${ownedViewSize}">${state.owned.map(o=>{const r=rec(o.id),pb=state.permanentBoosts[o.id]||{},xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id);const trainOk=trainingAvailable(o.id),evo=ei.hasEvolution?`${cue.html}<div class="ownedCardActions"><button class="evoBtn${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（育成P ${ei.cost}）</button><div class="evoStatus">育成P ${gp}${!ei.registered?" / 進化先ピック未登録":ei.fainted?" / ひんし中":gp<ei.cost?` / あと${ei.cost-gp}P`:" / 進化可能"}</div></div>`:"";return `<div class="pickCard ownedDetailCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}" data-owned-detail="${esc(o.id)}" role="button" tabindex="0"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div>${typesHTML(r)}</div><div class="expbar"><div class="expfill" style="width:${xp}%"></div></div><small>EXP ${xp}/100 / 特訓P ${dp}</small><div class="growthLine">育成P ${gp}（進化系統共通）</div><div><span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">${esc(bondProgressText(o.id))}</span></div><small>恒久強化 HP+${pb.hp||0} / 攻+${pb.atk||0} / 防+${pb.def||0}</small><div class="ownedQuickNav"><button class="trainingJumpBtn" data-training-jump="${esc(o.id)}" ${trainOk?"":"disabled"}>✨ 育成へ</button></div>${evo}<div class="ownedDetailHint">タップして裏面データ</div></div>`}).join("")}</div></div>`;app.querySelectorAll("[data-owned-detail]").forEach(c=>{const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);c.onclick=e=>{if(e.target.closest("button"))return;open()};c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}});app.querySelectorAll("[data-training-jump]").forEach(b=>b.onclick=e=>{e.stopPropagation();openTrainingFor(b.dataset.trainingJump)});app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});app.querySelectorAll('[data-view-size="owned"]').forEach(b=>b.onclick=()=>{ownedViewSize=b.dataset.size;saveGridSize("owned",ownedViewSize);renderOwned()})}
+function renderOwned(){
+ reconcileDexState();
+ app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">ダンジョン所持ピック</div>${gridSizeControlHTML("owned",ownedViewSize)}</div><div class="muted" style="margin-bottom:6px">表面は「今使える育成情報」だけに整理しました。詳しい能力・技・ポイントの説明は、ピックをタップして裏面で確認できます。</div>${evoLoadNote()}<div class="ownedGrid size-${ownedViewSize}">${state.owned.map(o=>{
+   const r=rec(o.id),pb=state.permanentBoosts[o.id]||{},xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),
+         ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),bond=bondLevelFor(o.id),trainOk=trainingAvailable(o.id),
+         boostAny=Number(pb.hp||0)+Number(pb.atk||0)+Number(pb.def||0)>0,
+         expRemain=Math.max(0,100-xp),
+         evoState=!ei.hasEvolution?"":!ei.registered?"進化先ピック未登録":ei.fainted?"ひんし中は進化不可":ei.canEvolve?"✨ 進化可能":`進化まで育成あと${Math.max(0,ei.cost-gp)}`,
+         evoButton=ei.hasEvolution?`<button class="ownedActionBtn evolve${ei.canEvolve?" ready":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化</button>`:"";
+   return `<div class="pickCard ownedDetailCard ownedFrontCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}" data-owned-detail="${esc(o.id)}" role="button" tabindex="0">
+     <div class="ownedFrontVisual">
+       <img src="${esc(imageOf(r))}" alt="">
+       <span class="ownedBondBadge${bond>=4?" high":""}">♥ Lv${bond}</span>
+     </div>
+     <div class="ownedFrontIdentity">
+       <b class="ownedFrontName">${esc(r.name_ja)}</b>
+       <small>${gradeText(r)} / ${esc(r.pick_no)}</small>
+       <div class="ownedFrontTypes">${typesHTML(r)}</div>
+     </div>
+     <div class="ownedResourceStrip">
+       <div class="ownedResource growth"><span>🌱</span><div><small>育成</small><b>${gp}</b></div></div>
+       <div class="ownedResource drill"><span>🏋️</span><div><small>特訓</small><b>${dp}</b></div></div>
+     </div>
+     <div class="ownedExpBlock">
+       <div class="ownedExpHead"><b>EXP</b><span>${xp}/100</span></div>
+       <div class="expbar"><div class="expfill" style="width:${xp}%"></div></div>
+       <small>${xp>=100?"特訓ポイント獲得可能":`あと${expRemain}で特訓+1`}</small>
+     </div>
+     <div class="ownedBoostLine"><span>強化</span><b>${boostAny?`HP+${pb.hp||0}　攻+${pb.atk||0}　防+${pb.def||0}`:"なし"}</b></div>
+     ${ei.hasEvolution?`<div class="ownedEvoCompact ${ei.canEvolve?"ready":cue.kind==="near"?"near":""}">${esc(evoState)}</div>`:""}
+     <div class="ownedFrontActions">
+       <button class="ownedActionBtn train" data-training-jump="${esc(o.id)}" ${trainOk?"":"disabled"}>✨ 育成</button>
+       ${evoButton}
+     </div>
+     <div class="ownedDetailHint">タップで詳しい裏面データ</div>
+   </div>`
+ }).join("")}</div></div>`;
+ app.querySelectorAll("[data-owned-detail]").forEach(c=>{
+  const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);
+  c.onclick=e=>{if(e.target.closest("button"))return;open()};
+  c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}
+ });
+ app.querySelectorAll("[data-training-jump]").forEach(b=>b.onclick=e=>{e.stopPropagation();openTrainingFor(b.dataset.trainingJump)});
+ app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
+ app.querySelectorAll('[data-view-size="owned"]').forEach(b=>b.onclick=()=>{ownedViewSize=b.dataset.size;saveGridSize("owned",ownedViewSize);renderOwned()})
+}
 function showOwnedPickDetail(id){if(!ownedEntry(id))return;const r=rec(id);if(!r)return;document.getElementById("ownedDetailOverlay")?.remove();const pb=state.permanentBoosts[id]||{},baseHp=Number(r.hp)||0,baseAtk=Number(r.atk)||0,baseDef=Number(r.def)||0,hp=baseHp+Number(pb.hp||0),atk=baseAtk+Number(pb.atk||0),def=baseDef+Number(pb.def||0),spAtk=Number(r.sp_atk)||0,spDef=Number(r.sp_def)||0;const speed=Number(r.speed_value)>0?r.speed_value:(Number(r.speed_level)>0?`Lv${r.speed_level}`:"-");const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし"),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id);const ov=document.createElement("div");ov.id="ownedDetailOverlay";ov.className="ownedDetailOverlay";ov.innerHTML=`<div class="ownedBackPanel" role="dialog" aria-modal="true" aria-label="所持ピック裏面データ"><div class="ownedBackHead"><div><small>FRIENDA PICK DATA</small><b>所持ピック・裏面データ</b></div><button type="button" class="ownedBackClose" id="ownedBackClose">閉じる</button></div><div class="ownedBackHero"><img src="${esc(imageOf(r))}" alt=""><div><div class="ownedBackName">${esc(r.name_ja)}</div><div class="ownedBackMeta">${gradeText(r)} / ${esc(r.pick_no)}<br>${esc(r.series||"")}<br>ポケエネ ${esc(r.poke_ene??"-")}</div><div class="ownedBackTypes">${typesHTML(r)}</div><div class="ownedTapLabel">※この情報は所持ピックだけ確認できます。</div></div></div><div class="ownedBackStats"><div class="ownedStat"><span>HP</span><b>${hp}</b><small>${pb.hp?`元${baseHp} +${pb.hp}`:""}</small></div><div class="ownedStat"><span>ATK</span><b>${atk}</b><small>${pb.atk?`元${baseAtk} +${pb.atk}`:""}</small></div><div class="ownedStat"><span>DEF</span><b>${def}</b><small>${pb.def?`元${baseDef} +${pb.def}`:""}</small></div><div class="ownedStat"><span>SP.ATK</span><b>${spAtk}</b><small></small></div><div class="ownedStat"><span>SP.DEF</span><b>${spDef}</b><small></small></div><div class="ownedStat"><span>すばやさ</span><b>${esc(speed)}</b><small></small></div></div><div class="ownedMoveBox"><div class="ownedMoveRow"><span>通常わざ</span><div><b>${esc(r.move||"未登録")}</b><br>${esc(r.move_type||"-")} / ${esc(r.move_class||"-")} / 威力参考 ${esc(power)} / 命中 ${esc(acc)}</div></div><div class="ownedMoveRow"><span>必殺技</span><div class="${fin==="なし"?"ownedNoSpecial":""}"><b>${esc(fin)}</b></div></div><div class="ownedMoveRow"><span>特殊要素</span><div>${esc(special)}</div></div></div><div class="ownedPermanent"><b>恒久成長</b><br>HP+${pb.hp||0} / 攻撃+${pb.atk||0} / 防御+${pb.def||0}<br>育成P ${gp} / EXP ${xpFor(id)}/100 / 特訓P ${drillFor(id)}${ei.hasEvolution?`<br>進化コスト：育成P ${ei.cost}`:""}</div>${ei.hasEvolution?`${evolutionCueState(id).html}<div class="ownedBackActionRow"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 育成へ</button><button class="evoBtn${ei.canEvolve?" evoPulse":""}" id="ownedDetailEvo" ${ei.canEvolve?"":"disabled"}>進化する</button></div>`:`<div class="ownedBackActionRow single"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 育成へ</button></div>`}</div>`;document.body.appendChild(ov);const close=()=>{ov.remove();document.body.style.overflow=""};document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#ownedBackClose").onclick=close;const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();openTrainingFor(id)};const eb=ov.querySelector("#ownedDetailEvo");if(eb)eb.onclick=()=>{close();openEvolutionDialog(id)}}
 function renderTraining(){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
@@ -1789,4 +1898,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 06:49:00 JST / Ver0.63 -->
+<!-- Updated: 2026-09-27 06:48:00 JST / Ver0.64 -->
