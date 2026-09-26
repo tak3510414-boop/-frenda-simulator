@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.75 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.76 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.75</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.76</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -389,7 +389,7 @@ body.battleOverlayOpen{overflow:hidden}
 .browserLoadMore small{display:block;font-size:9px;opacity:.75;margin-top:2px}
 
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.75</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.76</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -626,6 +626,8 @@ body.battleOverlayOpen{overflow:hidden}
 </section>
 <script src="frenda-master.js"></script>
 <script src="frenda-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="frenda-cloud.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const DB=window.FRENDA_MASTER;
@@ -2261,7 +2263,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.75",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.76",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2270,5 +2272,20 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 
 migrateLegacyTeamToFavorites();initBrowser();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
+
+// Ver6.76: Supabase cloud sync shared by simulator / dungeon.
+function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:cloud:")}
+function simulatorCloudData(){
+ const storage={};
+ for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
+ return {format_version:1,simulator_version:"6.76",storage};
+}
+function applySimulatorCloudData(data){
+ if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
+ const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))remove.push(k)}
+ for(const k of remove)localStorage.removeItem(k);
+ for(const [k,v] of Object.entries(data.storage))if(simulatorCloudKey(k)&&typeof v==="string")localStorage.setItem(k,v);
+}
+if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey});
 </script></body></html>
-<!-- Updated: 2026-09-26 07:28:10 JST / Ver6.75 -->
+<!-- Updated: 2026-09-26 16:14:30 JST / Ver6.76 -->
