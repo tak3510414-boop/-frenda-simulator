@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.38 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.39 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.38</title>
+<title>フレンダダンジョン Ver0.39</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -135,6 +135,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 
 /* Ver0.37: update check, stronger bonus feedback, battle victory splash */
 /* Ver0.38: victory button tap/click fix; decorative stars ignore pointer events */
+/* Ver0.39: make event target-selection prompt much more prominent */
 .eventResultCard{position:relative;overflow:hidden;border:2px solid #f1c94e;background:linear-gradient(145deg,#fffdf3,#fff6cb);box-shadow:0 14px 34px #7f641b2b}
 .eventResultCard:before,.eventResultCard:after{content:"✦";position:absolute;font-size:54px;opacity:.11;animation:eventSpark 1.4s ease-in-out infinite alternate}
 .eventResultCard:before{left:8%;top:8%}.eventResultCard:after{right:8%;bottom:8%;animation-delay:.35s}
@@ -154,6 +155,14 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 .victorySub{font-size:14px;font-weight:950;color:#415666}
 .victoryBonus{display:inline-flex;align-items:center;gap:8px;margin:12px auto 4px;padding:9px 14px;border-radius:999px;background:#fff2c7;border:1px solid #f0ca55;color:#795400;font-weight:950;box-shadow:0 4px 12px #8b65001e}
 .victoryBonus b{font-size:18px}
+.eventChoiceCard{position:relative;overflow:hidden;border:2px solid #f1c94e;background:linear-gradient(145deg,#fffdf3,#fff5c2);box-shadow:0 14px 32px #7f641b26;text-align:center}
+.eventChoiceIcon{font-size:46px;line-height:1;margin-bottom:4px;filter:drop-shadow(0 5px 7px #0002);animation:eventPop .45s cubic-bezier(.2,1.5,.4,1)}
+.eventChoiceTitle{font-size:clamp(24px,7vw,38px);font-weight:1000;line-height:1.15;margin:2px 0 7px;color:#b86900;text-shadow:0 2px 0 #fff}
+.eventChoiceValue{display:inline-block;margin:2px auto 10px;padding:7px 14px;border-radius:999px;background:#fff;border:2px solid #f0c34d;font-size:clamp(22px,6vw,32px);font-weight:1000;color:#c35d1e;box-shadow:0 5px 15px #9e65001c}
+.eventChoiceInstruction{margin-top:8px;padding:12px 14px;border-radius:13px;background:#132f43;color:#fff;font-size:16px;font-weight:1000;letter-spacing:.02em;box-shadow:0 6px 16px #10283a30;animation:eventValuePop .45s cubic-bezier(.17,1.6,.36,1)}
+.eventChoiceInstruction strong{color:#ffe57c;font-size:1.08em}
+.eventChoiceArrow{display:block;font-size:24px;line-height:1;margin-top:5px;animation:eventSpark .8s ease-in-out infinite alternate}
+@media(max-width:700px){.eventChoiceIcon{font-size:40px}.eventChoiceInstruction{font-size:14px;padding:10px}.eventChoiceArrow{font-size:20px}}
 @keyframes victoryPop{0%{transform:scale(.2) rotate(-5deg);opacity:0}68%{transform:scale(1.12) rotate(1deg)}100%{transform:scale(1);opacity:1}}
 @keyframes victoryCrown{0%{transform:translateY(-28px) scale(.4);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes victoryStars{from{transform:translateX(-3%)}to{transform:translateX(3%)}}
@@ -162,18 +171,18 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.38</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.39</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=0.38"></script>
-<script src="../frenda-core.js?v=0.38"></script>
+<script src="../frenda-master.js?v=0.39"></script>
+<script src="../frenda-core.js?v=0.39"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=0.38"></script>
+<script src="../frenda-cloud.js?v=0.39"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.38";
+const APP_VERSION="0.39";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
@@ -591,7 +600,7 @@ function renderCaptureResultHTML(){const c=state.run.capture,r=rec(c.targetId),r
 function renderVictoryHTML(){const v=state.run?.victory||{},label=v.kind==="elite"?"強敵戦":v.kind==="boss"?"ボス戦":"通常戦",next=v.kind==="boss"?"クリア結果へ":"報酬へ";return `<div class="card summary victoryCard"><div class="victoryCrown">${v.kind==="boss"?"👑":"🏆"}</div><div class="victoryWord">勝利！</div><div class="victorySub">${esc(label)}を制した！</div>${v.bonus?`<div class="victoryBonus">🔥 闘志ボーナス <b>攻撃・防御 +${v.bonus}</b></div>`:""}<p>${v.enemyName?`${esc(v.enemyName)}を倒した！`:"戦闘に勝利した！"}</p><button type="button" id="victoryNext" style="margin-top:8px">${next}</button></div>`}
 function renderHealHTML(){return `<div class="card"><div class="sectionTitle">❤️ 回復ポイント</div><div class="rewardGrid"><button class="rewardBtn" id="healOne"><span>💚</span><b>1匹を全回復</b><small>ひんし状態も復活</small></button><button class="rewardBtn" id="healAll"><span>💞</span><b>全員50%回復</b><small>ひんしは復活しない</small></button></div></div>`}
 function eventLabel(k){return {heal30:"1匹40%回復",heal20:"1匹25%回復",healAll15:"全員20%回復",atk2:"攻撃+3",def2:"防御+3",shield20:"次戦被ダメ25%減",danger:"危険な泉：HP20%減・攻撃+5",guard:"守りの祭壇：HP10%減・防御+5",lucky:"幸運の休息：60%回復",healSingleSelect:"1匹を全回復"}[k]||"イベント"}
-function renderEventTargetHTML(){const e=state.run.event;return `<div class="card"><div class="sectionTitle">✨ ${esc(eventLabel(e.kind))}</div><div class="notice">対象は上の「チーム」からタップして選んでください。</div></div>`}
+function renderEventTargetHTML(){const e=state.run.event,k=e?.kind||"",data={heal30:["💚","回復ボーナス","HP +40%"],heal20:["💚","回復","HP +25%"],atk2:["🔥","攻撃アップ！","攻撃 +3"],def2:["🛡️","防御アップ！","防御 +3"],danger:["⛲","危険な泉","HP -20% / 攻撃 +5"],guard:["🗿","守りの祭壇","HP -10% / 防御 +5"],lucky:["🍀","幸運の休息","HP +60%"],healSingleSelect:["💚","全回復","HP 全回復"]}[k]||["✨",eventLabel(k),eventLabel(k)];return `<div class="card eventChoiceCard"><div class="eventChoiceIcon">${data[0]}</div><div class="eventChoiceTitle">${esc(data[1])}</div><div class="eventChoiceValue">${esc(data[2])}</div><div class="eventChoiceInstruction"><strong>効果を受けるポケモンを選んでください</strong><span class="eventChoiceArrow">⬆️</span>上の「チーム」から対象をタップ</div></div>`}
 function renderEventNoticeHTML(){const e=state.run?.event||{},msg=e.message||"何も起こらなかった……。",title=e.title||"何も起こらなかった……",icon=e.icon||"🍃",result=e.kind==="result",cls=result?`eventResultCard ${esc(e.visual||"bonus")}`:"eventNothingCard";return `<div class="card summary ${cls}"><div class="${result?"eventResultIcon":"eventNothingIcon"}">${esc(icon)}</div><h2>${esc(title)}</h2>${result&&e.value?`<div class="eventResultValue">${esc(e.value)}</div>`:""}<p>${esc(msg)}</p><button id="eventNoticeNext" style="margin-top:8px">次へ進む</button></div>`}
 let captureDramaSeq=0;
 async function startCaptureDrama(){const run=state.run,c=run?.capture,o=c?.pendingOutcome;if(!run||run.scene!=="captureThrow"||!c||!o)return;const seq=++captureDramaSeq,ball=document.getElementById("captureThrownBall"),target=document.getElementById("captureTargetSprite"),msg=document.getElementById("captureDramaText"),title=document.getElementById("captureDramaTitle"),dots=document.getElementById("captureDots");if(!ball||!msg)return;const alive=()=>seq===captureDramaSeq&&state.run?.scene==="captureThrow"&&state.run?.capture?.pendingOutcome;if(title)title.textContent=`${BALL_DEF[o.ballKey]?.label||"ボール"}になった！`;msg.textContent="このボールでゲットに挑戦！";await fxSleep(900);if(!alive())return;msg.textContent=`${rec(c.targetId)?.name_ja||"ポケモン"}をゲットできるか…`;ball.classList.add("throw");await fxSleep(720);if(!alive())return;target?.classList.add("captured");ball.classList.add("settled");ball.classList.remove("throw");if(dots)dots.textContent="……";msg.textContent="ボールが閉じた……";await fxSleep(650);for(let i=1;i<=3;i++){if(!alive())return;ball.classList.remove("shake");void ball.offsetWidth;ball.classList.add("shake");if(dots)dots.textContent="・".repeat(i*3);msg.textContent=i===1?"……1回……":i===2?"……2回……":"……3回……";await fxSleep(720)}if(!alive())return;ball.classList.remove("shake");ball.classList.add(o.success?"success":"fail");msg.textContent="…………！";if(dots)dots.textContent="";await fxSleep(o.success?760:620);if(!alive())return;commitCaptureOutcome()}
@@ -665,4 +674,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-26 19:35:00 JST / Ver0.38 -->
+<!-- Updated: 2026-09-26 19:42:00 JST / Ver0.39 -->
