@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 0.28 -->
+<!-- FRENDA_DUNGEON_VERSION: 0.29 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver0.28</title>
+<title>フレンダダンジョン Ver0.29</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -90,16 +90,18 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.28</span></b><small>Simulator Ver6.75 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver0.29</span></b><small>Simulator Ver6.75 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
 <script src="../frenda-master.js"></script>
 <script src="../frenda-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../frenda-cloud.js"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.28";
+const APP_VERSION="0.29";
 const SAVE_KEY="frenda:dungeon:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
@@ -321,7 +323,7 @@ function renderStarter(){
    if(set&&confirm(`${set.label}の御三家3体で始めますか？\n${set.names.join("・")}`))pickStarterSet(set.key);
  });
 }
-function renderHome(){app.innerHTML=homeHero()+`${state.run?`<button class="continueBtn" id="continueBtn">▶ 続きから</button>`:""}<div class="card"><div class="menuGrid"><button class="menuBtn" data-menu="dungeons"><b>🌳</b><span>ダンジョンへ</span></button><button class="menuBtn" data-menu="owned"><b>🎴</b><span>所持ピック</span></button><button class="menuBtn" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span></button><button class="menuBtn" data-menu="eggs"><b>🥚</b><span>卵 ${state.eggs.length}/${state.eggCap}</span></button><button class="menuBtn" data-menu="training"><b>✨</b><span>育成</span></button></div></div><div class="card"><div class="sectionTitle">Ver0.28</div><div class="notice">ポケモン図鑑の件数カードをフィルタ操作に統合しました。「すべて・入手済み・現在所持・未入手」の件数をタップして絞り込めます。</div></div><div class="card"><div class="row spread"><div><b>セーブ管理</b><div class="muted">自動保存されています。</div></div><button class="ghost" id="saveMenuBtn">開く</button></div></div>`;app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;render()});const c=document.getElementById("continueBtn");if(c)c.onclick=()=>{screen="home";render()};document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()}}
+function renderHome(){app.innerHTML=homeHero()+`${state.run?`<button class="continueBtn" id="continueBtn">▶ 続きから</button>`:""}<div class="card"><div class="menuGrid"><button class="menuBtn" data-menu="dungeons"><b>🌳</b><span>ダンジョンへ</span></button><button class="menuBtn" data-menu="owned"><b>🎴</b><span>所持ピック</span></button><button class="menuBtn" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span></button><button class="menuBtn" data-menu="eggs"><b>🥚</b><span>卵 ${state.eggs.length}/${state.eggCap}</span></button><button class="menuBtn" data-menu="training"><b>✨</b><span>育成</span></button></div></div><div class="card"><div class="sectionTitle">Ver0.29</div><div class="notice">ポケモン図鑑の件数カードをフィルタ操作に統合しました。「すべて・入手済み・現在所持・未入手」の件数をタップして絞り込めます。</div></div><div class="card"><div class="row spread"><div><b>セーブ管理</b><div class="muted">自動保存されています。</div></div><button class="ghost" id="saveMenuBtn">開く</button></div></div>`;app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;render()});const c=document.getElementById("continueBtn");if(c)c.onclick=()=>{screen="home";render()};document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()}}
 function unlockCondition(did,diff){const ti=THEME_ORDER.indexOf(did);if(diff===1)return ti<=0?"最初から解放":`${THEMES[THEME_ORDER[ti-1]].name} ★1をクリア`;return `${THEMES[did].name} ★${diff-1}をクリア`}
 function renderDungeonList(){const cards=THEME_ORDER.map(did=>{const th=THEMES[did],any=unlockedDifficulties(did).length>0;const diffs=[1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),st=getStat(did,diff);return `<button class="diffBtn ${ok?"":"locked"}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"}>★${diff}${ok?`<span class="diffStat">B${st.deepest} / ${st.clears}回</span>`:`<span class="diffStat">🔒</span>`}</button>`}).join("");const nextLocked=[1,2,3,4,5].find(d=>!unlocked(did,d));return `<div class="dungeonCard ${any?"":"locked"}"><div class="row spread"><h3>${th.icon} ${esc(th.name)}</h3>${any?'':'<span class="badge">LOCK</span>'}</div><div>${th.types.map(t=>`<span class="badge">${esc(t)}</span>`).join(" ")}</div><div class="muted" style="margin-top:7px">${any?"難易度を選択してください。":`解放条件：${esc(unlockCondition(did,1))}`}</div><div class="diffRow">${diffs}</div>${any&&nextLocked?`<div class="muted" style="margin-top:6px">次：${esc(unlockCondition(did,nextLocked))}</div>`:""}</div>`}).join("");app.innerHTML=`<div class="card"><div class="sectionTitle">ダンジョン選択</div><div class="notice" style="margin-bottom:10px">各ダンジョンの★1を初クリアすると、同じダンジョンの★2と次のダンジョン★1が解放されます。</div><div class="dungeonGrid">${cards}</div></div>`;app.querySelectorAll("[data-dungeon-id]").forEach(b=>b.onclick=()=>{const did=b.dataset.dungeonId,diff=Number(b.dataset.diff);if(!unlocked(did,diff))return;currentDungeon={id:did,difficulty:diff};teamSelection=state.owned.length<=3?state.owned.map(o=>o.id):[];screen="team";render()})}
 function compareTypeText(r){return [r?.type1,r?.type2].filter(Boolean).join(" / ")||"-"}
@@ -491,6 +493,17 @@ homeBtn.onclick=()=>{if(state.postRun){renderPostRun();return}if(state.run){scre
 withdrawBtn.onclick=withdraw;
 render();
 loadEvolutionData();
+
+// Ver0.29: Supabase cloud sync shared by simulator / dungeon.
+function dungeonCloudData(){
+ let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null")}catch{}
+ return {format_version:1,dungeon_version:APP_VERSION,state:saved||state};
+}
+function applyDungeonCloudData(data){
+ if(!data||typeof data!=="object"||!data.state||typeof data.state!=="object")throw new Error("クラウドデータ形式が不正です");
+ localStorage.setItem(SAVE_KEY,JSON.stringify(data.state));
+}
+if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-26 14:03:43 JST / Ver0.28 -->
+<!-- Updated: 2026-09-26 16:14:30 JST / Ver0.29 -->
