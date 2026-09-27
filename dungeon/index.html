@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.04 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.05 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.04</title>
+<title>フレンダダンジョン Ver1.05</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1223,7 +1223,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.04: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
+/* Ver1.05: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
 @media(min-width:701px){
  body:has(main.dungeonRunScreen){height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
  body:has(main.dungeonRunScreen) header{position:relative;top:auto;flex:0 0 auto;padding:4px 8px}
@@ -1335,7 +1335,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .adventureLogBody{max-height:82px;padding:0 8px 6px;overflow:auto}
  main.dungeonRunScreen .adventureLogBody .battleLog{max-height:70px;margin-top:4px;padding:5px 7px;font-size:8px;line-height:1.25}
 
- /* Ver1.04: make the PC adventure header use its vertical space, with large left images and info on the right. */
+ /* Ver1.05: make the PC adventure header use its vertical space, with large left images and info on the right. */
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview{height:clamp(118px,19vh,154px);min-height:118px;flex:0 0 auto;grid-template-columns:minmax(250px,.46fr) minmax(0,1.54fr);gap:8px;margin-bottom:6px}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card{height:100%;padding:7px 9px;border-radius:12px;display:flex;flex-direction:column}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card .sectionTitle{font-size:12px;margin:0 0 5px}
@@ -1411,7 +1411,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 
 
 
-/* Ver1.04: PC adventure layout — team sidebar on the left, main scene on the right. */
+/* Ver1.05: PC adventure layout — team sidebar on the left, main scene on the right. */
 @media(min-width:701px){
  main.dungeonRunScreen:not(.combatStageScreen)>.dungeonRun{
   display:grid!important;
@@ -1473,21 +1473,111 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 .expLockedCard{opacity:.48;filter:grayscale(.35);position:relative}.expLockedCard::after{content:"🧭 探索中";position:absolute;left:6px;right:6px;top:6px;z-index:5;padding:5px 7px;border-radius:9px;background:#315f78e8;color:#fff;font-size:9px;font-weight:1000;text-align:center}.homeMenuBtn.expedition{background:linear-gradient(180deg,#fff4c8,#f3c75b)!important;color:#5e4300!important;border-color:#d8ab32!important}
+
+
+/* Ver1.05: PC dungeon UI is permanently split into left party / right scene. */
+@media(min-width:701px){
+ main.dungeonRunScreen>.dungeonRun{
+  display:grid!important;
+  grid-template-columns:clamp(255px,21vw,330px) minmax(0,1fr)!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+  grid-template-areas:"team status" "team content" "team log"!important;
+  gap:8px 10px!important;
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+ }
+ main.dungeonRunScreen .runOverview{display:contents!important;margin:0!important;height:auto!important;min-height:0!important}
+ main.dungeonRunScreen .runOverview>.runTop{grid-area:status!important;margin:0!important;min-width:0;height:auto!important}
+ main.dungeonRunScreen .runOverview>.runTop .runStatus{height:auto!important;padding:7px 10px!important;border-radius:12px!important}
+ main.dungeonRunScreen .partySidebar{grid-area:team!important;height:auto!important;min-height:0!important;margin:0!important;padding:10px!important;border-radius:14px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+ main.dungeonRunScreen .partySidebar .sectionTitle{font-size:15px!important;margin:0 0 7px!important}
+ main.dungeonRunScreen .partySidebar .teamChoiceHint{font-size:10px!important;line-height:1.3!important;margin:0 0 7px!important;padding:6px 7px!important}
+ main.dungeonRunScreen .partyPcCards{display:grid!important;grid-template-columns:1fr!important;grid-template-rows:repeat(3,minmax(0,1fr));gap:9px;flex:1 1 auto;min-height:0}
+ main.dungeonRunScreen .partyMobileCards{display:none!important}
+ main.dungeonRunScreen .partySideCard{position:relative;min-height:0;padding:8px;border:1px solid #d2dce2;border-radius:12px;background:#fff;display:grid;grid-template-columns:clamp(82px,7vw,104px) minmax(0,1fr);gap:10px;align-items:center;overflow:visible}
+ main.dungeonRunScreen .partySideCard.ko{filter:grayscale(.9);opacity:.58}
+ main.dungeonRunScreen .partySideCard.selectable{cursor:pointer;border:2px solid #55bcd7;background:linear-gradient(180deg,#f9feff,#e9faff);box-shadow:0 3px 10px #177b9a26}
+ main.dungeonRunScreen .partySideCard.selectable::after{content:"選択";position:absolute;right:6px;top:6px;border-radius:999px;padding:3px 6px;background:#0787aa;color:#fff;font-size:8px;font-weight:1000}
+ main.dungeonRunScreen .partySideCard.disabledTarget{opacity:.42}
+ main.dungeonRunScreen .partySideCard.activeBattle{border:2px solid #29b7df;box-shadow:0 0 0 3px #8be8ff55 inset;background:linear-gradient(180deg,#f7feff,#e6f8ff)}
+ main.dungeonRunScreen .partySideCard .partySideImg{width:100%;max-height:146px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#dce7ec;align-self:center}
+ main.dungeonRunScreen .partySideInfo{min-width:0;align-self:center}
+ main.dungeonRunScreen .partySideName{font-size:14px;font-weight:1000;line-height:1.15;display:block;padding-right:24px}
+ main.dungeonRunScreen .partySideMeta{font-size:9px;color:#657580;line-height:1.25;margin-top:2px}
+ main.dungeonRunScreen .partySideInfo .hpbar{height:11px;margin-top:7px;width:100%}
+ main.dungeonRunScreen .partySideHp{display:flex;justify-content:space-between;gap:5px;margin-top:2px;font-size:9px;font-weight:900;color:#425765}
+ main.dungeonRunScreen .partySideStats{font-size:9px;line-height:1.35;color:#536572;margin-top:5px}
+ main.dungeonRunScreen .partySideStats .bondChip{font-size:9px}
+ main.dungeonRunScreen .partySideCard .matchupAppeal{position:static;margin:0 0 4px;padding:4px 6px;font-size:10px}
+ main.dungeonRunScreen .partySideCard .matchupReason{display:block;font-size:8px!important;margin-top:3px}
+ main.dungeonRunScreen .partySideCard .battleMoodBadge{font-size:9px!important;padding:5px 6px!important;margin-top:5px!important}
+
+ main.dungeonRunScreen .dungeonRun>.card:not(.adventureLog),
+ main.dungeonRunScreen .dungeonRun>.dungeonEntryShell,
+ main.dungeonRunScreen .dungeonRun>.encounterCutinCard,
+ main.dungeonRunScreen .dungeonRun>.legendaryIntroCard{
+  grid-area:content!important;min-height:0!important;height:auto!important;max-height:none!important;margin:0!important;overflow:auto
+ }
+ main.dungeonRunScreen .dungeonRun>.combatStageCard,
+ main.dungeonRunScreen .dungeonRun>.encounterCutinCard,
+ main.dungeonRunScreen .dungeonRun>.legendaryIntroCard{overflow:hidden!important}
+ main.dungeonRunScreen .dungeonRun>.adventureLog{grid-area:log!important;margin:0!important;max-height:106px}
+
+ /* The party inside combat content is only for mobile. PC always uses the left sidebar. */
+ main.dungeonRunScreen .battleStageTeam,
+ main.dungeonRunScreen .captureCombatTop{display:none!important}
+ main.chooseFighterScreen .fighterSelectTeamPanel{display:none!important}
+ main.chooseFighterScreen .fighterSelectLayout{grid-template-columns:minmax(0,1fr)!important;height:100%!important}
+ main.chooseFighterScreen .fighterSelectEnemyPanel{grid-column:1!important;grid-row:1!important;display:flex!important;align-items:stretch!important}
+ main.chooseFighterScreen .fighterSelectEnemy{max-width:720px;margin:auto;width:100%!important}
+ main.chooseFighterScreen .fighterSelectEnemy img{max-height:min(390px,52vh)!important}
+
+ main.battleScreen .battleRun .battleMainCard.combatStageCard{height:auto!important;max-height:none!important;min-height:0!important;padding:7px 10px 8px!important}
+ main.battleScreen .battleRun .battleArena{height:100%!important;min-height:0!important}
+
+ /* Entry screen occupies the whole right-hand pane instead of auto-placing at top-left. */
+ main.dungeonRunScreen .dungeonEntryShell{display:flex!important;align-items:stretch!important;justify-content:stretch!important;padding:0!important;overflow:hidden!important}
+ main.dungeonRunScreen .dungeonEntryCard{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important}
+ main.dungeonRunScreen .dungeonEntryInner{width:min(860px,92%);margin:auto;text-align:center}
+ main.dungeonRunScreen .dungeonEntryIcon{font-size:clamp(72px,15vh,120px)!important}
+ main.dungeonRunScreen .dungeonEntryTitle{font-size:clamp(34px,6.5vh,54px)!important}
+ main.dungeonRunScreen .dungeonEntryIntro{font-size:13px!important;line-height:1.55!important;margin:10px auto!important;max-width:760px}
+ main.dungeonRunScreen .dungeonEntryBtn{font-size:17px!important;padding:11px 22px!important}
+}
+@media(min-width:701px) and (max-height:700px){
+ main.dungeonRunScreen>.dungeonRun{grid-template-columns:240px minmax(0,1fr)!important;gap:5px 8px!important}
+ main.dungeonRunScreen .partySidebar{padding:7px!important}
+ main.dungeonRunScreen .partyPcCards{gap:6px}
+ main.dungeonRunScreen .partySideCard{grid-template-columns:70px minmax(0,1fr);gap:7px;padding:6px}
+ main.dungeonRunScreen .partySideCard .partySideImg{max-height:102px}
+ main.dungeonRunScreen .partySideName{font-size:12px}
+ main.dungeonRunScreen .partySideMeta,.partySideHp,.partySideStats{font-size:8px!important}
+ main.dungeonRunScreen .partySideInfo .hpbar{height:9px;margin-top:5px}
+ main.dungeonRunScreen .dungeonEntryIcon{font-size:clamp(52px,11vh,80px)!important}
+ main.dungeonRunScreen .dungeonEntryTitle{font-size:clamp(26px,5.2vh,40px)!important}
+}
+@media(max-width:700px){
+ .partyPcCards{display:none!important}
+ .partyMobileCards{display:block!important}
+ main.combatStageScreen .partySidebar{display:none!important}
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.04</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.05</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.04"></script>
-<script src="../frenda-core.js?v=1.04"></script>
+<script src="../frenda-master.js?v=1.05"></script>
+<script src="../frenda-core.js?v=1.05"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=1.04"></script>
+<script src="../frenda-cloud.js?v=1.05"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.04";
+const APP_VERSION="1.05";
 const SAVE_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 const RUN_END_GUARD_KEY="frenda:dungeon:runEndGuard:v1";
@@ -2713,6 +2803,23 @@ function continueDungeonEntry(){
  save();
  render()
 }
+function runStatusPanelHTML(r,theme,battleKind=""){
+ return `<div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)}${battleKind?` / ${battleKind}`:""}</div><div class="floorRow"><div class="floorMain"><div class="floorBig">地下${r.floor}階 / 10</div><div class="runDifficultyBadge" aria-label="★${r.difficulty}に挑戦中"><span class="star">★${r.difficulty}</span><span class="challengeText">挑戦中</span></div></div><button type="button" class="runEggCount" data-run-egg-open>🥚 ${state.eggs.length}/${state.eggCap}</button></div><div class="runAlertRow"><span class="alertBadge ${Number(r.alertLevel||0)>=3?"max":Number(r.alertLevel||0)>=2?"warn":""}">👁 警戒度 <span class="alertDots">${alertDots(r.alertLevel)}</span></span><span class="roadBattleBadge ${Number(r.roadBattleWins||0)>=3?"ready":""}">⚔️ 道中 ${Number(r.roadBattleWins||0)}戦${Number(r.roadBattleWins||0)>=3?"　🔥BOSS+2":" / 3"}</span></div>${floorPathHTML(r.floor)}<div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div></div>`
+}
+function partySidebarCardHTML(t,i){
+ const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
+       inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,
+       directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
+       action=m?m.action:(directSwitch?"switch":""),bond=bondLevelFor(t.id),
+       appeal=m?.action==="fighter"?fighterMatchupAppeal(t):null,
+       mood=m?.action==="fighter"?battleMoodFor(t.id):"normal",
+       cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}`,
+       attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:"";
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>HP</span><span>${t.hp}/${max}</span></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+}
+function partySidebarHTML(tm,combatScene=false){
+ return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
+}
 function renderRun(){
  const r=state.run;if(!r)return;
  if(r.scene==="eventTarget"&&r.event?.kind==="lucky"){
@@ -2721,14 +2828,15 @@ function renderRun(){
  }
  updateHeaderStatus();
  if(r.scene==="dungeonEntry"){
-  app.innerHTML=`<div class="dungeonRun theme-${esc(r.dungeonId)}">${dungeonAtmosphereHTML(r.dungeonId)}${renderDungeonEntryHTML()}</div>`;
+  const entryTheme=THEMES[r.dungeonId],entryOverview=`<div class="runOverview">${runStatusPanelHTML(r,entryTheme,"")}${partySidebarHTML(null,false)}</div>`;
+  app.innerHTML=`<div class="dungeonRun theme-${esc(r.dungeonId)}">${dungeonAtmosphereHTML(r.dungeonId)}${entryOverview}${renderDungeonEntryHTML()}</div>`;
   bindRunHandlers();return
  }
  const theme=THEMES[r.dungeonId],tm=teamTargetMode(),inBattle=r.scene==="battle",
        combatScene=["encounterCutin","legendaryIntro","chooseFighter","battle","captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(r.scene),
        battleKind=inBattle?(r.encounter?.kind==="boss"?"BOSS BATTLE":r.encounter?.kind==="elite"?"STRONG BATTLE":"BATTLE"):["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(r.scene)?"GET CHANCE":"";
- const overviewTeam=combatScene?"":`<div class="card${tm?" teamChoiceCard":""}${inBattle?" battleTeamCard":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"チーム"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div>`;
- let body=`<div class="dungeonRun theme-${esc(r.dungeonId)}${inBattle?" battleRun":""}">${dungeonAtmosphereHTML(r.dungeonId)}<div class="runOverview"><div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)}${battleKind?` / ${battleKind}`:""}</div><div class="floorRow"><div class="floorMain"><div class="floorBig">地下${r.floor}階 / 10</div><div class="runDifficultyBadge" aria-label="★${r.difficulty}に挑戦中"><span class="star">★${r.difficulty}</span><span class="challengeText">挑戦中</span></div></div><button type="button" class="runEggCount" data-run-egg-open>🥚 ${state.eggs.length}/${state.eggCap}</button></div><div class="runAlertRow"><span class="alertBadge ${Number(r.alertLevel||0)>=3?"max":Number(r.alertLevel||0)>=2?"warn":""}">👁 警戒度 <span class="alertDots">${alertDots(r.alertLevel)}</span></span><span class="roadBattleBadge ${Number(r.roadBattleWins||0)>=3?"ready":""}">⚔️ 道中 ${Number(r.roadBattleWins||0)}戦${Number(r.roadBattleWins||0)>=3?"　🔥BOSS+2":" / 3"}</span></div>${floorPathHTML(r.floor)}<div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div></div>${overviewTeam}</div>`;
+ const overviewTeam=partySidebarHTML(tm,combatScene);
+ let body=`<div class="dungeonRun theme-${esc(r.dungeonId)}${inBattle?" battleRun":""}">${dungeonAtmosphereHTML(r.dungeonId)}<div class="runOverview">${runStatusPanelHTML(r,theme,battleKind)}${overviewTeam}</div>`;
  if(r.scene==="route")body+=renderRoutesHTML();
  else if(r.scene==="encounterIntro")body+=renderEncounterIntroHTML();
  else if(r.scene==="encounterCutin")body+=renderEncounterCutinHTML();
@@ -2842,7 +2950,7 @@ function renderBattleHTML(){
   <div class="fighterBox" id="myFighter"><img id="switchImageBtn" class="switchImageBtn${state.run.switchSelecting?" switchReady":""}" src="${esc(imageOf(me))}" alt="${esc(me.name_ja)}" ${canSwitch?'role="button" tabindex="0" aria-label="交代先を選択"':""}><h3>${esc(me.name_ja)}</h3><small>${gradeText(me)} / ${esc(compareTypeText(me))}</small><div class="hpbar"><div id="myHpFill" class="hpfill${hpClass(mp)}" style="width:${mp}%"></div></div><b id="myHpText">HP ${t.hp}/${maxHpFor(t.id)}</b></div>
   <div class="battleVsColumn"><div class="vs battleVsAttack${b.busy||autoBattleRunning?" busy":""}" id="battleVsAttack" role="button" tabindex="0" aria-label="1ターン攻撃する">VS<small>1ターン</small></div><div class="vs battleVsAttack battleVsAuto${b.busy&&!autoBattleRunning?" busy":""}${autoBattleRunning?" autoRunning":""}" id="battleVsAuto" role="button" tabindex="0" aria-label="${autoBattleRunning?"自動戦闘を停止":"最後まで自動で戦う"}">VS<small>${autoBattleRunning?"停止":"最後まで"}</small></div></div>
   <div class="fighterBox" id="enemyFighter"><img src="${esc(imageOf(en))}" alt=""><h3>${esc(en.name_ja)}</h3><small>${gradeText(en)} / ${esc(compareTypeText(en))}</small><div class="hpbar"><div id="enemyHpFill" class="hpfill${hpClass(ep)}" style="width:${ep}%"></div></div><b id="enemyHpText">HP ${b.enemyHp}/${en.hp}</b></div>
- </div><div class="battleMessage" id="battleMessage">${freeSwitch?"攻撃前：上の控えカードを直接タップして自由に交代できます（ターン消費なし）":"VS「1ターン」で攻撃 / VS「最後まで」で自動戦闘 / 上の控えカードを直接タップで交代"}</div><div class="battleControlHint">🆚 1ターン：1ターンだけ攻撃　／　🆚 最後まで：自動戦闘・もう一度押すと停止　／　控えカード：${freeSwitch?"直接タップで無料交代":"直接タップで交代（相手の攻撃あり）"}</div><details id="battleLogDetails" class="battleLog battleLogDetails"${battleLogOpen?" open":""}><summary>戦闘ログ</summary><div class="battleLogEntries">${b.log.slice(-10).map(x=>`<div class="logline">${esc(x)}</div>`).join("")}</div></details></div></div>`
+ </div><div class="battleMessage" id="battleMessage">${freeSwitch?"攻撃前：左の控えカードを直接タップして自由に交代できます（ターン消費なし）":"VS「1ターン」で攻撃 / VS「最後まで」で自動戦闘 / 左の控えカードを直接タップで交代"}</div><div class="battleControlHint">🆚 1ターン：1ターンだけ攻撃　／　🆚 最後まで：自動戦闘・もう一度押すと停止　／　控えカード：${freeSwitch?"直接タップで無料交代":"直接タップで交代（相手の攻撃あり）"}</div><details id="battleLogDetails" class="battleLog battleLogDetails"${battleLogOpen?" open":""}><summary>戦闘ログ</summary><div class="battleLogEntries">${b.log.slice(-10).map(x=>`<div class="logline">${esc(x)}</div>`).join("")}</div></details></div></div>`
 }
 function renderRewardHTML(){const rw=state.run.reward;const title=rw.kind==="elite"?"💀 強敵撃破！ 報酬を1つ選ぶ":"⚔️ 通常戦勝利！ 報酬を1つ選ぶ";return `<div class="card"><div class="sectionTitle">${title}</div><div class="notice" style="margin-bottom:10px">報酬は選んだ瞬間に自動適用されます。HP回復・攻撃アップ・防御アップは生存中のパーティ全員が対象です。さらに戦闘勝利では闘志ボーナス（通常戦：攻防+2、強敵戦：攻防+4）を全員が獲得します。通常戦は2択、強敵戦は3択。選択後、通常戦15％・強敵戦30％でゲットチャンスが発生します。</div><div class="rewardGrid">${rw.options.map((x,i)=>`<button class="rewardBtn" data-reward="${i}"><span>🎁</span><b>${esc(x.label)}</b><small>${esc(x.desc)}</small></button>`).join("")}</div></div>`}
 function renderCaptureSelectHTML(){const c=state.run.capture;return `<div class="card battleMainCard combatStageCard captureCombatCard"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody"><div class="sectionTitle">🎯 ゲットしたいポケモンを選ぼう</div><div class="notice" style="margin-bottom:8px">強敵の中から、ゲットしたい1匹を選んでください。</div><div class="captureSelectLayout">${c.candidateIds.map(id=>{const r=rec(id);return `<button class="capturePick captureLarge" data-capture-target="${esc(id)}"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></button>`}).join("")}</div></div></div>`}
@@ -2854,7 +2962,7 @@ function renderVictoryHTML(){const v=state.run?.victory||{},label=v.kind==="elit
 function renderPickupHTML(){const p=state.run?.pickup||{icon:"🎁",name:"拾い物",effect:"何かを見つけた！"};return `<div class="card pickupCard"><div class="pickupInner"><div class="pickupFound">道ばたに何か落ちている……</div><div class="pickupIcon tapAdvance" data-run-advance="pickup" role="button" tabindex="0" aria-label="先へ進む">${esc(p.icon)}</div><div class="pickupName">${esc(p.name)}を ひろった！</div><div class="pickupEffect">${esc(p.effect)}</div><div class="pickupRateNote">拾い物は階を進んだ時に低確率で見つかります。効果は自動で適用されます。</div><button id="pickupNext" style="margin-top:12px">先へ進む</button></div></div>`}
 function renderHealHTML(){return `<div class="card"><div class="sectionTitle">❤️ 回復ポイント</div><div class="rewardGrid"><button class="rewardBtn" id="healOne"><span>💚</span><b>1匹を全回復</b><small>ひんし状態も復活</small></button><button class="rewardBtn" id="healAll"><span>💞</span><b>全員50%回復</b><small>ひんしは復活しない</small></button></div></div>`}
 function eventLabel(k){return {heal30:"1匹40%回復",heal20:"1匹25%回復",healAll15:"全員20%回復",atk2:"攻撃+3",def2:"防御+3",shield20:"次戦被ダメ25%減",danger:"危険な泉：HP20%減・攻撃+5",guard:"守りの祭壇：HP10%減・防御+5",lucky:"幸運の休息：60%回復",healSingleSelect:"1匹を全回復"}[k]||"イベント"}
-function renderEventTargetHTML(){const e=state.run.event,k=e?.kind||"",data={heal30:["💚","回復ボーナス","HP +40%"],heal20:["💚","回復","HP +25%"],atk2:["🔥","攻撃アップ！","攻撃 +3"],def2:["🛡️","防御アップ！","防御 +3"],danger:["⛲","危険な泉","HP -20% / 攻撃 +5"],guard:["🗿","守りの祭壇","HP -10% / 防御 +5"],lucky:["🍀","幸運の休息","HP +60%"],healSingleSelect:["💚","全回復","HP 全回復"]}[k]||["✨",eventLabel(k),eventLabel(k)];return `<div class="card eventChoiceCard"><div class="eventChoiceIcon">${data[0]}</div><div class="eventChoiceTitle">${esc(data[1])}</div><div class="eventChoiceValue">${esc(data[2])}</div><div class="eventChoiceInstruction"><strong>効果を受けるポケモンを選んでください</strong><span class="eventChoiceArrow">⬆️</span>上の「チーム」から対象をタップ</div></div>`}
+function renderEventTargetHTML(){const e=state.run.event,k=e?.kind||"",data={heal30:["💚","回復ボーナス","HP +40%"],heal20:["💚","回復","HP +25%"],atk2:["🔥","攻撃アップ！","攻撃 +3"],def2:["🛡️","防御アップ！","防御 +3"],danger:["⛲","危険な泉","HP -20% / 攻撃 +5"],guard:["🗿","守りの祭壇","HP -10% / 防御 +5"],lucky:["🍀","幸運の休息","HP +60%"],healSingleSelect:["💚","全回復","HP 全回復"]}[k]||["✨",eventLabel(k),eventLabel(k)];return `<div class="card eventChoiceCard"><div class="eventChoiceIcon">${data[0]}</div><div class="eventChoiceTitle">${esc(data[1])}</div><div class="eventChoiceValue">${esc(data[2])}</div><div class="eventChoiceInstruction"><strong>効果を受けるポケモンを選んでください</strong><span class="eventChoiceArrow">${window.matchMedia?.("(min-width:701px)").matches?"⬅️":"⬆️"}</span>${window.matchMedia?.("(min-width:701px)").matches?"左のパーティ":"上のチーム"}から対象をタップ</div></div>`}
 function renderEventNoticeHTML(){const e=state.run?.event||{},msg=e.message||"何も起こらなかった……。",title=e.title||"何も起こらなかった……",icon=e.icon||"🍃",result=e.kind==="result",cls=result?`eventResultCard ${esc(e.visual||"bonus")}`:"eventNothingCard";return `<div class="card summary ${cls}"><div class="${result?"eventResultIcon":"eventNothingIcon"} tapAdvance" data-run-advance="event" role="button" tabindex="0" aria-label="次へ進む">${esc(icon)}</div><h2>${esc(title)}</h2>${result&&e.value?`<div class="eventResultValue">${esc(e.value)}</div>`:""}<p>${esc(msg)}</p><button id="eventNoticeNext" style="margin-top:8px">次へ進む</button></div>`}
 let captureDramaSeq=0;
 async function startCaptureDrama(){const run=state.run,c=run?.capture,o=c?.pendingOutcome;if(!run||run.scene!=="captureThrow"||!c||!o)return;const seq=++captureDramaSeq,ball=document.getElementById("captureThrownBall"),target=document.getElementById("captureTargetSprite"),msg=document.getElementById("captureDramaText"),title=document.getElementById("captureDramaTitle"),dots=document.getElementById("captureDots");if(!ball||!msg)return;const alive=()=>seq===captureDramaSeq&&state.run?.scene==="captureThrow"&&state.run?.capture?.pendingOutcome;if(title)title.textContent=`${BALL_DEF[o.ballKey]?.label||"ボール"}になった！`;msg.textContent="このボールでゲットに挑戦！";await fxSleep(1150);if(!alive())return;msg.textContent=`${rec(c.targetId)?.name_ja||"ポケモン"}をゲットできるか…`;sfx("captureThrow");ball.classList.add("throw");await fxSleep(850);if(!alive())return;target?.classList.add("captured");ball.classList.add("settled");ball.classList.remove("throw");if(dots)dots.textContent="……";msg.textContent="ボールが閉じた……";await fxSleep(850);for(let i=1;i<=3;i++){if(!alive())return;ball.classList.remove("shake");void ball.offsetWidth;ball.classList.add("shake");sfx("captureShake");if(dots)dots.textContent="・".repeat(i*3);msg.textContent=i===1?"……1回……":i===2?"……2回……":"……3回……";await fxSleep(850)}if(!alive())return;ball.classList.remove("shake");ball.classList.add(o.success?"success":"fail");sfx(o.success?"captureSuccess":"captureFail");msg.textContent="…………！";if(dots)dots.textContent="";await fxSleep(o.success?950:800);if(!alive())return;commitCaptureOutcome()}
@@ -3215,4 +3323,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 14:15:00 JST / Ver1.04 -->
+<!-- Updated: 2026-09-27 15:18:00 JST / Ver1.05 -->
