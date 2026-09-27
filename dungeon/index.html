@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.21 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.23 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.22</title>
+<title>フレンダダンジョン Ver1.23</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1837,7 +1837,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 @media(max-width:700px){.floorHeroBadge{min-width:112px;padding:6px 9px!important}.floorHeroBadge strong{font-size:23px!important}.encounterProgressBadge{min-width:auto;padding:6px 8px;gap:5px}.encounterProgressBadge b{font-size:20px}.encounterProgressBadge small{display:none}.battleEnemyCounter{right:8px;top:8px;padding:5px 8px;font-size:9px}.battleEnemyCounter b{font-size:17px}.nextEnemyInner{padding:10px}.nextEnemyQuestion{margin:12px 0 8px}}
 
 /* Ver1.20: hatch scene centered vertically; bond endure gets a full praise moment. */
-/* Ver1.22: cloud sync resolves local/cloud conflicts by the newer sync timestamp. */
+/* Ver1.23: shared game rules moved to frenda-rules.js; cloud conflict selection remains enabled. */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1865,18 +1865,19 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.22</span></b><small>Simulator Ver6.80 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.23</span></b><small>Simulator Ver6.81 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.22"></script>
-<script src="../frenda-core.js?v=1.22"></script>
+<script src="../frenda-master.js?v=1.23"></script>
+<script src="../frenda-core.js?v=1.23"></script>
+<script src="../frenda-rules.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.22";
+const APP_VERSION="1.23";
 
 
 const EXPEDITION_TIMER_KEY="frenda:expedition:v1";
@@ -2066,20 +2067,11 @@ function cycleSoundMode(){
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
 const MASTER=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
+const RULES=window.FRENDA_RULES;
+if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。");
 const RECORDS=Array.isArray(MASTER?.records)?MASTER.records:[];
-const THEME_ORDER=["forest","wetlands","volcano","icefire","steelmine","powerplant","skygarden","dragon","nightcity","phantom"];
-const THEMES={
- forest:{id:"forest",name:"森のダンジョン",types:["くさ","むし"],icon:"🌳"},
- wetlands:{id:"wetlands",name:"湿地のダンジョン",types:["みず","じめん"],icon:"💧"},
- volcano:{id:"volcano",name:"火山のダンジョン",types:["ほのお","いわ"],icon:"🌋"},
- icefire:{id:"icefire",name:"氷炎の洞窟",types:["こおり","ほのお"],icon:"❄️"},
- steelmine:{id:"steelmine",name:"鋼鉄鉱山",types:["はがね","じめん"],icon:"⛏️"},
- powerplant:{id:"powerplant",name:"廃発電所",types:["でんき","どく"],icon:"⚡"},
- skygarden:{id:"skygarden",name:"天空庭園",types:["ひこう","フェアリー"],icon:"☁️"},
- dragon:{id:"dragon",name:"竜の修練場",types:["ドラゴン","かくとう"],icon:"🐉"},
- nightcity:{id:"nightcity",name:"夜の街",types:["あく","ノーマル"],icon:"🌙"},
- phantom:{id:"phantom",name:"幻影遺跡",types:["ゴースト","エスパー"],icon:"👻"}
-};
+const THEME_ORDER=RULES.THEME_ORDER;
+const THEMES=RULES.THEMES;
 const DUNGEON_INTRO={
  forest:"草木が生い茂る、不思議なダンジョンだ……",
  wetlands:"足元には水が広がり、湿った空気が漂っている……",
@@ -2096,41 +2088,24 @@ const DUNGEON_INTRO={
 const ROUTE_DEF={battle:{icon:"⚔️",label:"通常戦",hint:"ポケモンの気配がする",cls:"battle"},elite:{icon:"💀",label:"強敵",hint:"強い気配を感じる……",cls:"elite"},event:{icon:"✨",label:"ボーナス",hint:"良いことが起こりそうだ",cls:"event"},heal:{icon:"❤️",label:"回復",hint:"休めそうな場所がある",cls:"heal"},unknown:{icon:"❓",label:"ハプニング",hint:"何が起こるか分からない……",cls:"unknown"}};
 const ROUTE_RATES_EARLY={battle:30,elite:10,event:20,heal:20,unknown:20};
 const ROUTE_RATES_LATE={battle:30,elite:20,event:15,heal:15,unknown:20};
-const ENEMY_GRADE_RATES={1:{2:60,3:30,4:9,5:1},2:{2:45,3:35,4:17,5:3},3:{2:30,3:40,4:24,5:6},4:{2:20,3:35,4:35,5:10},5:{2:10,3:30,4:40,5:20}};
+const ENEMY_GRADE_RATES=RULES.ENEMY_GRADE_RATES;
 const BOSS_GRADE_RATES={1:{3:100,4:0,5:0},2:{3:70,4:30,5:0},3:{3:40,4:60,5:0},4:{3:0,4:60,5:40},5:{3:0,4:0,5:100}};
-const LEGENDARY_NAMES=new Set([
-"フリーザー","サンダー","ファイヤー","ミュウツー",
-"ライコウ","エンテイ","スイクン","ルギア","ホウオウ",
-"レジロック","レジアイス","レジスチル","ラティアス","ラティオス","カイオーガ","グラードン","レックウザ",
-"ユクシー","エムリット","アグノム","ディアルガ","パルキア","ヒードラン","レジギガス","ギラティナ","クレセリア",
-"コバルオン","テラキオン","ビリジオン","トルネロス","ボルトロス","レシラム","ゼクロム","ランドロス","キュレム",
-"ゼルネアス","イベルタル","ジガルデ",
-"タイプ：ヌル","タイプ:ヌル","シルヴァディ","カプ・コケコ","カプ・テテフ","カプ・ブルル","カプ・レヒレ","コスモッグ","コスモウム","ソルガレオ","ルナアーラ","ネクロズマ",
-"ザシアン","ザマゼンタ","ムゲンダイナ","ダクマ","ウーラオス","レジエレキ","レジドラゴ","ブリザポス","レイスポス","バドレックス","ラブトロス",
-"コライドン","ミライドン","チオンジェン","パオジアン","ディンルー","イーユイ","オーガポン","テラパゴス"
-]);
-const MYTHICAL_NAMES=new Set([
-"ミュウ","セレビィ","ジラーチ","デオキシス",
-"フィオネ","マナフィ","ダークライ","シェイミ","アルセウス",
-"ビクティニ","ケルディオ","メロエッタ","ゲノセクト",
-"ディアンシー","フーパ","ボルケニオン",
-"マギアナ","マーシャドー","ゼラオラ","メルタン","メルメタル",
-"ザルード","モモワロウ"
-]);
-function specialPokemonBaseName(r){return String(r?.name_ja||"").replace(/[（(].*$/," ").trim()}
-function isLegendaryRecord(r){return LEGENDARY_NAMES.has(specialPokemonBaseName(r))}
-function isMythicalRecord(r){return MYTHICAL_NAMES.has(specialPokemonBaseName(r))}
-function isSpecialLimitedRecord(r){return isLegendaryRecord(r)||isMythicalRecord(r)}
+const LEGENDARY_NAMES=RULES.LEGENDARY_NAMES;
+const MYTHICAL_NAMES=RULES.MYTHICAL_NAMES;
+function specialPokemonBaseName(r){return RULES.specialBaseName(r)}
+function isLegendaryRecord(r){return RULES.isLegendary(r)}
+function isMythicalRecord(r){return RULES.isMythical(r)}
+function isSpecialLimitedRecord(r){return RULES.isSpecial(r)}
 function currentEnemyNeedsLegendaryIntro(){const en=currentEnemy();return !!en&&Number(state.run?.difficulty)===5&&isLegendaryRecord(en)}
 function currentEnemyEntryScene(){return currentEnemyNeedsLegendaryIntro()?"legendaryIntro":"encounterCutin"}
 function setCurrentEnemyReadyScene(){markCurrentEnemySeen();state.run.scene=currentEnemyEntryScene();save();render()}
-function allowedByDungeonDifficulty(r,diff){return Number(diff)===5||!isSpecialLimitedRecord(r)}
+function allowedByDungeonDifficulty(r,diff){return RULES.allowedByDungeonDifficulty(r,diff)}
 const FOREST1_NORMAL_GRADE_RATES={2:85,3:14,4:1,5:0};
 const DIFF_BONUS={1:0,2:.10,3:.20,4:.35,5:.50};
-const EXP_TO_DRILL=100;
+const EXP_TO_DRILL=RULES.EXP_TO_DRILL;
 const EVOLUTION_COST_FIRST=2;
 const EVOLUTION_COST_LATER=3;
-const BOND_LEVEL_THRESHOLDS=[0,1,3,6,10,15];
+const BOND_LEVEL_THRESHOLDS=RULES.BOND_LEVEL_THRESHOLDS;
 const BOND_HEAL_RATE={2:.20,3:.20,4:.20,5:.30};
 const BOND_ENDURE_RATE={3:.10,4:.10,5:.15};
 const BOND_START_BUFF_RATE={4:.20,5:.30};
@@ -2245,7 +2220,7 @@ function resetSave(){if(!confirm("フレンダダンジョンのセーブデー�
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
 function clone(o){return JSON.parse(JSON.stringify(o))}
-function validBattle(r){return r&&Number(r.hp)>0&&Number(r.atk)>0&&Number(r.def)>0&&Number(r.sp_atk)>0&&Number(r.sp_def)>0&&r.move_type}
+function validBattle(r){return RULES.validBattle(r)}
 function speciesKey(r){return String(r?.name_ja||r?.master_id||"").trim()}
 function speciesGroups(records){const m=new Map();for(const r of records||[]){const k=speciesKey(r);if(!k)continue;if(!m.has(k))m.set(k,[]);m.get(k).push(r)}return [...m.entries()].map(([name,records])=>({name,records}))}
 function pickRegistered(r){const id=r?.master_id;return !!id&&!!state.dex?.[id]?.obtained}
@@ -2255,7 +2230,7 @@ function currentEnemyWasFirstSeen(){const enc=state.run?.encounter;return !!enc?
 function markCurrentEnemySeen(){const enc=state.run?.encounter,en=currentEnemy();if(!enc||!en)return false;enc.newSeenIndices=enc.newSeenIndices&&typeof enc.newSeenIndices==="object"?enc.newSeenIndices:{};if(Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index)){markPickSeen(en);return !!enc.newSeenIndices[enc.index]}const first=markPickSeen(en);enc.newSeenIndices[enc.index]=first;if(first)addLog(`NEW! ${en.name_ja}を はじめて見つけた！`);return first}
 function pickRecordBySpecies(records,{boss=false}={}){let groups=speciesGroups(records);if(!groups.length)return null;if(boss){groups=groups.map(g=>({...g,pokeEne:Math.max(0,...g.records.map(r=>Number(r.poke_ene)||0))})).sort((a,b)=>b.pokeEne-a.pokeEne);groups=groups.slice(0,Math.max(8,Math.ceil(groups.length*.35)))}const g=groups[Math.floor(Math.random()*groups.length)];return g?.records?.[Math.floor(Math.random()*g.records.length)]||null}
 function imageOf(r){return r?.official_image||""}
-function gradeText(r){return r?.grade?"★"+r.grade:"★-"}
+function gradeText(r){return RULES.gradeText(r)}
 function maxHpFor(id){const r=rec(id);const b=state.permanentBoosts?.[id]?.hp||0;return Math.max(1,Math.round(Number(r?.hp||1)+b))}
 function ownedEntry(id){return state.owned.find(x=>x.id===id)||null}
 function expeditionSnapshot(){try{const x=JSON.parse(localStorage.getItem(EXPEDITION_KEY)||"null");const y=state.expeditionShared&&typeof state.expeditionShared==="object"?state.expeditionShared:null;if(y&&(!x||Number(y.updatedAt||0)>Number(x.updatedAt||0)))return y;return x}catch{return state.expeditionShared||null}}
@@ -2316,7 +2291,7 @@ function awardGrowthOrDrill(id,n=1){
 }
 function bondKeyFor(id){const r=rec(id),entry=evolutionEntryForName(r?.name_ja);return entry?`evo:${evolutionRootNo(entry)}`:(r?.evolution_family||r?.evo_family||r?.family_id||r?.name_ja||id)}
 function bondPointsFor(id){return Number(state.bondPoints?.[bondKeyFor(id)]||0)}
-function bondLevelFromPoints(points){const p=Math.max(0,Number(points)||0);let lv=0;for(let i=1;i<BOND_LEVEL_THRESHOLDS.length;i++)if(p>=BOND_LEVEL_THRESHOLDS[i])lv=i;return Math.min(5,lv)}
+function bondLevelFromPoints(points){return RULES.bondLevelFromPoints(points)}
 function bondLevelFor(id){return bondLevelFromPoints(bondPointsFor(id))}
 function bondProgressText(id){const p=bondPointsFor(id),lv=bondLevelFor(id),next=lv>=5?null:BOND_LEVEL_THRESHOLDS[lv+1];return `♥ 絆Lv${lv}${next?` (${p}/${next})`:" MAX"}`}
 function migrateBondPointsToFamilies(){if(!evoReady||!state.bondPoints)return;let changed=false;for(const [k,v] of Object.entries({...state.bondPoints})){if(k.startsWith("evo:")||!Number(v))continue;const rr=RECORDS.find(r=>r.name_ja===k||r.master_id===k);if(!rr)continue;const nk=bondKeyFor(rr.master_id);if(nk&&nk!==k){state.bondPoints[nk]=Number(state.bondPoints[nk]||0)+Number(v);delete state.bondPoints[k];changed=true}}if(changed)save()}
@@ -2327,7 +2302,7 @@ function tryBondEndure(t,dmg){if(!t||t.ko||Number(dmg)<=0||t.hp-Number(dmg)>0)re
 function applyBondPostBattleHeal(){for(const t of runTeam()){if(t.ko||t.hp>=maxHpFor(t.id))continue;const lv=bondLevelFor(t.id),rate=BOND_HEAL_RATE[lv]||0;if(rate<=0||Math.random()>=rate)continue;const healed=healPercent(t,.10),nm=rec(t.id)?.name_ja||"仲間";if(healed>0)addLog(`♥ ${nm}はうれしそうだ！ 絆でHPが${healed}回復した。`)}}
 function migrateGrowthPointsToFamilies(){if(!evoReady||!state.trainingPoints)return;let changed=false;for(const [k,v] of Object.entries({...state.trainingPoints})){if(k.startsWith("evo:")||!Number(v))continue;const rr=RECORDS.find(r=>r.name_ja===k||r.master_id===k);if(!rr)continue;const nk=growthKeyFor(rr.master_id);if(nk&&nk!==k){state.trainingPoints[nk]=Number(state.trainingPoints[nk]||0)+Number(v);delete state.trainingPoints[k];changed=true}}if(changed)save()}
 function trainingAvailable(id){if(!ownedEntry(id)||isExpeditionLocked(id))return false;const pb=state.permanentBoosts[id]||{};const hasRoom=["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX);return hasRoom&&drillFor(id)>0}
-function addBattleXp(ids,amount,label="戦闘"){const uniq=[...new Set((ids||[]).filter(Boolean))];if(!uniq.length||amount<=0)return;for(const id of uniq){let xp=xpFor(id)+amount;let gained=0;while(xp>=EXP_TO_DRILL){xp-=EXP_TO_DRILL;gained++}state.experience[id]=xp;if(gained){state.drillPoints[id]=drillFor(id)+gained}if(state.run){state.run.xpGained=state.run.xpGained||{};state.run.xpGained[id]=Number(state.run.xpGained[id]||0)+amount;if(gained){state.run.drillGained=state.run.drillGained||{};state.run.drillGained[id]=Number(state.run.drillGained[id]||0)+gained}}const nm=rec(id)?.name_ja||"仲間";addLog(`${nm}が${label}でEXP ${amount}を獲得${gained?`、特訓ポイント+${gained}`:""}。`)}save()}
+function addBattleXp(ids,amount,label="戦闘"){const uniq=[...new Set((ids||[]).filter(Boolean))];if(!uniq.length||amount<=0)return;for(const id of uniq){const {drillGained:gained}=RULES.applyXp(state,id,amount);if(state.run){state.run.xpGained=state.run.xpGained||{};state.run.xpGained[id]=Number(state.run.xpGained[id]||0)+amount;if(gained){state.run.drillGained=state.run.drillGained||{};state.run.drillGained[id]=Number(state.run.drillGained[id]||0)+gained}}const nm=rec(id)?.name_ja||"仲間";addLog(`${nm}が${label}でEXP ${amount}を獲得${gained?`、特訓ポイント+${gained}`:""}。`)}save()}
 function spendDrill(id,stat){if(!ownedEntry(id)||isExpeditionLocked(id)||drillFor(id)<=0)return;const pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0});if(!["hp","atk","def"].includes(stat)||Number(pb[stat]||0)>=PERMANENT_BOOST_MAX)return;pb[stat]=Math.min(PERMANENT_BOOST_MAX,Number(pb[stat]||0)+TRAINING_STEP);state.drillPoints[id]=drillFor(id)-1;trainingStickyIds.add(id);save();render()}
 
 function evolutionSafeCandidates(sourceId,target){
@@ -3712,4 +3687,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 18:59:00 JST / Ver1.22 -->
+<!-- Updated: 2026-09-27 19:38:00 JST / Ver1.23 -->
