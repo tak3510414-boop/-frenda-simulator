@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.87 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.88 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.87</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.88</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -394,6 +394,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.85: HTMLエスケープ等の共通UI補助を frenda-ui.js v1.0 に集約。 */
 /* Ver6.86: 共通UI基盤を frenda-ui.js v1.1 に更新。 */
 /* Ver6.87: 共通カード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に集約。 */
+/* Ver6.88: 選択済みチーム枠・カード小部品を frenda-ui.js v1.3 に共通化。 */
 @media (min-width:900px){
   main{max-width:1180px;padding:16px 18px}
   .detailPanel{max-width:1180px;padding:16px 18px}
@@ -408,8 +409,11 @@ body.battleOverlayOpen{overflow:hidden}
 @media (min-width:1200px){
   .pickGrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 }
+
+/* Shared selected-team strip (frenda-ui.js v1.3 component) */
+.frendaSelectedStrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0 10px}.frendaSelectedSlot{min-height:88px;border:2px solid #cfdae1;border-radius:13px;background:#f7fafc;position:relative;min-width:0;padding:7px}.frendaSelectedSlot.filled{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:center;background:linear-gradient(180deg,#f3fdff,#e5f8ff);border-color:#5fc4df;box-shadow:0 3px 9px #167da51a}.frendaSelectedSlot img{width:52px;height:72px;object-fit:cover;border-radius:8px;background:#e1e8ec;box-shadow:0 2px 5px #24475d25}.frendaSelectedInfo{min-width:0;padding-right:20px}.frendaSelectedInfo b{display:block;font-size:11px;line-height:1.15;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.frendaSelectedInfo small{display:block;margin-top:4px;font-size:8px;line-height:1.25;color:#526c7a;white-space:normal;overflow:hidden}.frendaSelectedRemove{position:absolute!important;right:4px!important;top:4px!important;width:23px!important;height:23px!important;min-width:0!important;padding:0!important;border-radius:50%!important;background:#fff!important;color:#58707e!important;border:1px solid #c7d4dc!important;box-shadow:none!important;font-size:16px!important;line-height:1!important}.frendaSelectedSlot.empty{display:flex;align-items:center;justify-content:center;gap:7px;color:#87969f;border-style:dashed}.frendaSelectedSlot.empty>span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#e4ebef;font-size:12px;font-weight:1000}.frendaSelectedSlot.empty b{display:block;font-size:9px}.frendaSelectedSlot.empty small{display:block;font-size:7px;color:#8a979f}@media(max-width:600px){.frendaSelectedStrip{gap:4px}.frendaSelectedSlot{min-height:79px;padding:5px}.frendaSelectedSlot.filled{grid-template-columns:40px minmax(0,1fr);gap:5px}.frendaSelectedSlot img{width:40px;height:56px}.frendaSelectedInfo{padding-right:16px}.frendaSelectedInfo b{font-size:9px}.frendaSelectedInfo small{font-size:6.8px}.frendaSelectedRemove{width:19px!important;height:19px!important;font-size:13px!important}.frendaSelectedSlot.empty{gap:4px}.frendaSelectedSlot.empty>span{width:24px;height:24px;font-size:10px}}
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.87</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.88</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -648,7 +652,7 @@ body.battleOverlayOpen{overflow:hidden}
 <script src="frenda-core.js"></script>
 <script src="frenda-rules.js?v=1.2"></script>
 <script src="frenda-data.js?v=1.2"></script>
-<script src="frenda-ui.js?v=1.2"></script>
+<script src="frenda-ui.js?v=1.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?v=1.4"></script>
 <script>
@@ -2292,7 +2296,7 @@ $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAll
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.87",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.88",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2306,11 +2310,12 @@ setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 // Ver6.85: 共通UI補助は frenda-ui.js v1.0 を利用。
 // Ver6.86: 共通UI基盤を frenda-ui.js v1.1 に更新。
 // Ver6.87: 共通カード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に集約。
+// Ver6.88: 選択済みチーム枠・カード小部品を frenda-ui.js v1.3 に共通化。
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
  const storage={};
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.87",storage};
+ return {format_version:1,simulator_version:"6.88",storage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2322,4 +2327,4 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-09-27 20:41:00 JST / Ver6.87 -->
+<!-- Updated: 2026-09-27 20:52:00 JST / Ver6.88 -->

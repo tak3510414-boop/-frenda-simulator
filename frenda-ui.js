@@ -1,7 +1,7 @@
-/* FRENDA_UI_VERSION: 1.2 / Updated: 2026-09-27 20:41 JST */
+/* FRENDA_UI_VERSION: 1.3 / Updated: 2026-09-27 20:52 JST */
 (()=>{
 "use strict";
-const VERSION="1.2";
+const VERSION="1.3";
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function formatRemain(ms,doneText="帰還できます"){
  if(ms<=0)return doneText;
@@ -125,10 +125,24 @@ function saveViewSize(key,size){try{if(VIEW_SIZES.includes(size))localStorage.se
 function viewSizeHTML({scope,current,wrapperClass="viewSizeControl",label="表示"}={}){return `<div class="${wrapperClass}"><span>${escapeHtml(label)}</span>${[["large","大"],["medium","中"],["small","小"]].map(([v,l])=>`<button type="button" class="${current===v?"active":""}" data-ui-view-scope="${escapeHtml(scope)}" data-ui-view-size="${v}" aria-pressed="${current===v?"true":"false"}">${l}</button>`).join("")}</div>`}
 function bindViewSize({root=document,scope,key,onChange}={}){root.querySelectorAll(`[data-ui-view-scope="${scope}"]`).forEach(b=>b.onclick=()=>{const size=saveViewSize(key,b.dataset.uiViewSize);if(typeof onChange==="function")onChange(size)})}
 
+function pickBadgeHTML(text,className="selectMark"){return text?`<span class="${escapeHtml(className)}">${escapeHtml(text)}</span>`:""}
+function pickChipsHTML(items,className="pickTypeChip"){return (items||[]).filter(Boolean).map(x=>`<span class="${escapeHtml(className)}">${escapeHtml(x)}</span>`).join("")}
 function pickCardHTML({classes="",attributes={},badges="",image="",alt="",name="",body=""}={}){
  const cls=String(classes||"").trim(),attrs=Object.entries(attributes||{}).filter(([,v])=>v!==null&&typeof v!=="undefined"&&v!==false).map(([k,v])=>` ${escapeHtml(k)}="${escapeHtml(v===true?"":v)}"`).join("");
  return `<div class="pickCard${cls?` ${escapeHtml(cls)}`:""}"${attrs}>${badges||""}<img src="${escapeHtml(image)}" alt="${escapeHtml(alt)}"><b>${escapeHtml(name)}</b>${body||""}</div>`;
 }
+function selectedStripHTML({scope="team",ids=[],max=3,resolve=null,imageOf=null,nameOf=null,metaFor=null,emptyLabel="未選択",slotNoun="体目",className=""}={}){
+ const list=Array.isArray(ids)?ids:[],count=Math.max(0,Number(max)||0);
+ return `<div class="frendaSelectedStrip${className?` ${escapeHtml(className)}`:""}">${Array.from({length:count},(_,i)=>{
+  const id=list[i],item=id!=null&&typeof resolve==="function"?resolve(id):null;
+  if(item){
+   const image=typeof imageOf==="function"?imageOf(item,id,i):"",name=typeof nameOf==="function"?nameOf(item,id,i):(item?.name_ja||item?.name||id),meta=typeof metaFor==="function"?metaFor(item,id,i):"";
+   return `<div class="frendaSelectedSlot filled"><img src="${escapeHtml(image)}" alt=""><div class="frendaSelectedInfo"><b>${escapeHtml(name)}</b>${meta?`<small>${escapeHtml(meta)}</small>`:""}</div><button type="button" class="frendaSelectedRemove" data-ui-selected-remove="${escapeHtml(scope)}" data-ui-selected-id="${escapeHtml(id)}" aria-label="${escapeHtml(name)}を外す">×</button></div>`;
+  }
+  return `<div class="frendaSelectedSlot empty"><span>${i+1}</span><div><b>${i+1}${escapeHtml(slotNoun)}</b><small>${escapeHtml(emptyLabel)}</small></div></div>`;
+ }).join("")}</div>`;
+}
+function bindSelectedStrip({root=document,scope="team",onRemove=null}={}){root.querySelectorAll(`[data-ui-selected-remove="${scope}"]`).forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();if(typeof onRemove==="function")onRemove(b.dataset.uiSelectedId,b)})}
 function toggleSelection(list,id,max=Infinity,{disabled=false}={}){
  const out=Array.isArray(list)?list.slice():[];
  if(disabled)return out;
@@ -142,12 +156,13 @@ function normalizeSelection(list,{max=Infinity,allowed=null}={}){
  for(const id of Array.isArray(list)?list:[]){if(!ok(id)||out.includes(id))continue;out.push(id);if(out.length>=max)break}
  return out;
 }
-const pickCard=Object.freeze({html:pickCardHTML});
+const pickCard=Object.freeze({html:pickCardHTML,badge:pickBadgeHTML,chips:pickChipsHTML});
+const selectedStrip=Object.freeze({html:selectedStripHTML,bind:bindSelectedStrip});
 const selection=Object.freeze({toggle:toggleSelection,remove:removeSelection,normalize:normalizeSelection});
 const dialog=Object.freeze({confirm:message=>window.confirm(String(message)),alert:message=>window.alert(String(message))});
 
 const pickFilter=Object.freeze({create:createPickFilter,series:pickFilterSeries,types:pickFilterTypes,grades:pickFilterGrades,normalize:normalizePickFilter,apply:applyPickFilter,html:pickFilterHTML,bind:bindPickFilter});
 const viewSize=Object.freeze({SIZES:VIEW_SIZES,load:loadViewSize,save:saveViewSize,html:viewSizeHTML,bind:bindViewSize});
 
-window.FRENDA_UI=Object.freeze({VERSION,escapeHtml,formatRemain,formatShortDateTime,sleep,createEyeCare,pickFilter,viewSize,pickCard,selection,dialog});
+window.FRENDA_UI=Object.freeze({VERSION,escapeHtml,formatRemain,formatShortDateTime,sleep,createEyeCare,pickFilter,viewSize,pickCard,selectedStrip,selection,dialog});
 })();
