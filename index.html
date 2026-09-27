@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.86 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.87 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.86</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.87</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -393,6 +393,7 @@ body.battleOverlayOpen{overflow:hidden}
 /* Ver6.84: 所持・お気に入り・修正値・写真などの共通保存処理を frenda-data.js v1.1 に集約。 */
 /* Ver6.85: HTMLエスケープ等の共通UI補助を frenda-ui.js v1.0 に集約。 */
 /* Ver6.86: 共通UI基盤を frenda-ui.js v1.1 に更新。 */
+/* Ver6.87: 共通カード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に集約。 */
 @media (min-width:900px){
   main{max-width:1180px;padding:16px 18px}
   .detailPanel{max-width:1180px;padding:16px 18px}
@@ -408,7 +409,7 @@ body.battleOverlayOpen{overflow:hidden}
   .pickGrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 }
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.86</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.87</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -647,7 +648,7 @@ body.battleOverlayOpen{overflow:hidden}
 <script src="frenda-core.js"></script>
 <script src="frenda-rules.js?v=1.2"></script>
 <script src="frenda-data.js?v=1.2"></script>
-<script src="frenda-ui.js?v=1.1"></script>
+<script src="frenda-ui.js?v=1.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?v=1.4"></script>
 <script>
@@ -937,9 +938,9 @@ $("q").addEventListener("input",()=>{resetBrowserLimit();renderSeriesButtons();r
 $("editBtn").onclick=()=>{editing=true;render()};
 $("cancelBtn").onclick=()=>{editing=false;render()};
 $("saveBtn").onclick=()=>{const o={};for(const [k] of fields){let v=$("v_"+k).value.trim();if(["poke_ene","grade","speed_level","speed_value","hp","atk","def","sp_atk","sp_def"].includes(k)&&v!=="")v=Number(v);if(k==="special")v=v?String(v).split(/\s*[/／,、]\s*/).filter(Boolean):[];const base=selected[k];const same=Array.isArray(base)?JSON.stringify(v)===JSON.stringify(base):v===String(base??"");if(!same)o[k]=v===""?null:v}DATA.simulator.writeOverride(selected,o);invalidateBest3CounterCache();editing=false;render();renderBrowser()};
-$("resetBtn").onclick=()=>{if(confirm("このピックの修正値を削除してマスター値に戻しますか？")){DATA.simulator.removeOverride(selected);invalidateBest3CounterCache();editing=false;render();renderBrowser()}};
+$("resetBtn").onclick=()=>{if(UI.dialog.confirm("このピックの修正値を削除してマスター値に戻しますか？")){DATA.simulator.removeOverride(selected);invalidateBest3CounterCache();editing=false;render();renderBrowser()}};
 $("photoBtn").onclick=()=>$("photoFile").click();
-$("photoFile").onchange=e=>{const f=e.target.files[0];if(!f||!selected)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),max=900,sc=Math.min(1,max/Math.max(im.width,im.height));c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const data=c.toDataURL("image/jpeg",.82);try{DATA.simulator.writePhoto(selected,data);$("photo").src=data;renderBrowser()}catch{alert("画像を保存できませんでした。画像サイズを小さくしてください。")}};im.src=rd.result};rd.readAsDataURL(f)};
+$("photoFile").onchange=e=>{const f=e.target.files[0];if(!f||!selected)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),max=900,sc=Math.min(1,max/Math.max(im.width,im.height));c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const data=c.toDataURL("image/jpeg",.82);try{DATA.simulator.writePhoto(selected,data);$("photo").src=data;renderBrowser()}catch{UI.dialog.alert("画像を保存できませんでした。画像サイズを小さくしてください。")}};im.src=rd.result};rd.readAsDataURL(f)};
 
 // タイプ相性・ダメージ基礎計算は frenda-core.js を共通利用。
 let battle={me:null,enemy:null,mhp:0,ehp:0,over:false,turn:1,busy:false,intro:false,stats:null};
@@ -1066,7 +1067,7 @@ function renderBattleHistory(){
  listBox.innerHTML=`<div class="historyList639">${list.map(h=>{const me=R.find(x=>x.master_id===h.meId),en=R.find(x=>x.master_id===h.enemyId),model=h.model==="v2"?"Ver2":"Ver1";return `<div class="historyBattleRow"><div class="date">${esc(battleHistoryDate(h.date))}</div><div class="match"><b>${esc(me?.name_ja||h.meId)} 🆚 ${esc(en?.name_ja||h.enemyId)}</b><span>${h.turns}ターン / 残HP ${h.myRemain} / 相性 ${h.score??"-"}点 / ${model}</span></div><span class="historyBattleResult ${h.result}">${h.result==="win"?"WIN":"LOSE"}</span></div>`}).join("")}</div>`;
 }
 function clearBattleHistory(){
- const n=battleHistoryData().length;if(!n)return;if(!confirm(`保存している対戦履歴 ${n}戦をすべて消去しますか？`))return;localStorage.removeItem(BATTLE_HISTORY_KEY);renderBattleHistory();
+ const n=battleHistoryData().length;if(!n)return;if(!UI.dialog.confirm(`保存している対戦履歴 ${n}戦をすべて消去しますか？`))return;localStorage.removeItem(BATTLE_HISTORY_KEY);renderBattleHistory();
 }
 function battleAnalysisData(winnerRec){
  if(!battle.me||!battle.enemy||!battle.stats)return {won:false,items:[],tip:""};
@@ -1174,7 +1175,7 @@ function closeEnemyPicker(){
  updateEnemyRandomStatus();
  closeBattleOverlays()
 }
-function chooseMe(r){if(battle.busy)return;if(battleMode==="tournament"&&tournament.active){alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
+function chooseMe(r){if(battle.busy)return;if(battleMode==="tournament"&&tournament.active){UI.dialog.alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
 function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;pendingRandomEnemy=null;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady();closeBattleOverlays()}
 function previewRandomEnemy(r){
  if(battle.busy||battleMode!=="single")return;
@@ -2140,7 +2141,7 @@ function setBattleMode(mode){
    if(mode==="single")arena();
    return;
  }
- if(tournament.active&&mode!=="tournament"&&!confirm("進行中のトーナメントを中止して別モードへ移動しますか？"))return;
+ if(tournament.active&&mode!=="tournament"&&!UI.dialog.confirm("進行中のトーナメントを中止して別モードへ移動しますか？"))return;
  if(tournament.active&&mode!=="tournament")cancelTournament(false);
  battleMode=mode;
  closeBattleOverlays();
@@ -2175,12 +2176,12 @@ function tournamentJudge(a,b){
 }
 function makeMatch(a,b){return {a,b,winner:null,method:"",live:false}}
 function startTournament(){
- if(!battle.me){alert("先に参加する自分のピックを選んでください。");return}
- const playerBase=R.find(r=>r.master_id===battle.me.master_id);if(!playerBase){alert("参加ピックを確認できません。");return}
- if(!hasBattleStats(playerBase)){alert("このピックは能力値が未確認のためトーナメント参加できません。");return}
- const cup=$("tournamentCup").value;if(cup==="5"&&Number(playerBase.grade)!==5){alert("スーパートレジャーカップは★5ピックのみ参加できます。");return}if(cup==="le4"&&!(Number(playerBase.grade)>0&&Number(playerBase.grade)<=4)){alert("チャレンジカップは★4以下のピックのみ参加できます。");return}
- if(tournament.active&&!confirm("現在の大会を中止して新しいトーナメントを開始しますか？"))return;
- const pool=tournamentPool(cup).filter(r=>r.master_id!==playerBase.master_id);if(pool.length<7){alert("この大会条件では参加ピックが不足しています。");return}
+ if(!battle.me){UI.dialog.alert("先に参加する自分のピックを選んでください。");return}
+ const playerBase=R.find(r=>r.master_id===battle.me.master_id);if(!playerBase){UI.dialog.alert("参加ピックを確認できません。");return}
+ if(!hasBattleStats(playerBase)){UI.dialog.alert("このピックは能力値が未確認のためトーナメント参加できません。");return}
+ const cup=$("tournamentCup").value;if(cup==="5"&&Number(playerBase.grade)!==5){UI.dialog.alert("スーパートレジャーカップは★5ピックのみ参加できます。");return}if(cup==="le4"&&!(Number(playerBase.grade)>0&&Number(playerBase.grade)<=4)){UI.dialog.alert("チャレンジカップは★4以下のピックのみ参加できます。");return}
+ if(tournament.active&&!UI.dialog.confirm("現在の大会を中止して新しいトーナメントを開始しますか？"))return;
+ const pool=tournamentPool(cup).filter(r=>r.master_id!==playerBase.master_id);if(pool.length<7){UI.dialog.alert("この大会条件では参加ピックが不足しています。");return}
  const entrants=shuffle([playerBase,...shuffle(pool).slice(0,7)]),qf=[];for(let i=0;i<8;i+=2)qf.push(makeMatch(entrants[i],entrants[i+1]));
  tournament={active:true,cup,rounds:[qf,[],[]],currentRound:0,pending:null,playerId:playerBase.master_id,playerExit:null,completed:false,historySaved:false};
  $("tournamentWrap").classList.remove("hidden");$("tournamentBattleNote").classList.add("hidden");$("battleArena").classList.add("hidden");renderTournament();processTournamentRound(0)
@@ -2212,7 +2213,7 @@ function finishTournament(champion){
  tournament.active=false;tournament.completed=true;tournament.pending=null;const final=tournament.rounds[2][0];if(final)final.live=false;let result="準々決勝敗退";if(champion.master_id===tournament.playerId)result="優勝";else if(tournament.playerExit===2)result="準優勝";else if(tournament.playerExit===1)result="準決勝敗退";
  $("tournamentState").textContent=`終了：${result}`;$("tournamentBattleNote").classList.add("hidden");renderTournament();saveTournamentHistory(champion,result);showChampion(champion,result)
 }
-function cancelTournament(ask=true){if(!tournament.active&&!tournament.completed)return;if(ask&&tournament.active&&!confirm("トーナメントを中止しますか？"))return;tournament={active:false,cup:$("tournamentCup").value,rounds:[],currentRound:0,pending:null,playerId:null,playerExit:null,completed:false,historySaved:false};$("battleArena").classList.add("hidden");$("tournamentBattleNote").classList.add("hidden");renderTournament()}
+function cancelTournament(ask=true){if(!tournament.active&&!tournament.completed)return;if(ask&&tournament.active&&!UI.dialog.confirm("トーナメントを中止しますか？"))return;tournament={active:false,cup:$("tournamentCup").value,rounds:[],currentRound:0,pending:null,playerId:null,playerExit:null,completed:false,historySaved:false};$("battleArena").classList.add("hidden");$("tournamentBattleNote").classList.add("hidden");renderTournament()}
 function slotHTML(r,m){if(!r)return '<div class="matchEmpty">未定</div>';const win=m?.winner?.master_id===r.master_id,done=!!m?.winner,player=r.master_id===tournament.playerId,cls=`matchSlot${player?" player":""}${win?" winner":""}${done&&!win?" loser":""}`;return `<div class="${cls}"><img src="${esc(pickImage(r))}" alt=""><div><div class="slotName">${esc(r.name_ja)}</div><div class="slotMeta">${esc(r.pick_no)} / ${r.grade?"★"+esc(r.grade):"ランク-"}</div></div><div class="slotResult">${win?"WIN":done?"LOSE":player?"YOU":""}</div></div>`}
 function matchHTML(m){if(!m)return '<div class="matchBox"><div class="matchEmpty">未定</div></div>';return `<div class="matchBox${m.live?" live":""}">${slotHTML(m.a,m)}${slotHTML(m.b,m)}${m.winner?`<div class="slotMeta" style="padding:3px 5px;text-align:right">${esc(m.method)}</div>`:""}</div>`}
 function renderTournament(){
@@ -2236,12 +2237,12 @@ document.querySelectorAll(".battlePickerOverlay").forEach(ov=>ov.addEventListene
 document.querySelectorAll(".enemyPickScopeBtn").forEach(b=>b.onclick=()=>{enemyPickScope=b.dataset.enemyScope||"all";pendingRandomEnemy=null;document.querySelectorAll(".enemyPickScopeBtn").forEach(x=>x.classList.toggle("on",x===b));enemySearch();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()});
 $("enemyQ").oninput=enemySearch;$("clearEnemyQ").onclick=()=>{$("enemyQ").value="";enemySearch();$("enemyQ").focus()};$("enemyGrade").onchange=()=>{pendingRandomEnemy=null;renderEnemyRandomRecommendations();updateEnemyRandomStatus();updateEnemyRandomButtonLabel()};
 $("best3OpponentQ").oninput=scheduleBest3OpponentSearch;$("clearBest3OpponentQ").onclick=()=>{$("best3OpponentQ").value="";runBest3OpponentSearchNow();$("best3OpponentQ").focus()};$("best3OpponentSeries").onchange=runBest3OpponentSearchNow;
-$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){alert(`${scopeLabel(enemyPickScope)}の現在の条件には、対戦可能なピックがありません。`);return}previewRandomEnemy(pool[Math.floor(Math.random()*pool.length)])};
+$("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){UI.dialog.alert(`${scopeLabel(enemyPickScope)}の現在の条件には、対戦可能なピックがありません。`);return}previewRandomEnemy(pool[Math.floor(Math.random()*pool.length)])};
 $("roundRobinOwnedOnly").onchange=()=>{currentRoundRobinRows=[];currentRoundRobinMeta=null;roundRobinPoolInfo();$("roundRobinProgress").textContent="";$("roundRobinResults").innerHTML=""};$("runRoundRobinBtn").onclick=()=>runRoundRobin(false);$("recalcRoundRobinBtn").onclick=()=>runRoundRobin(true);
-$("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("clearBattleHistoryBtn").onclick=clearBattleHistory;$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
+$("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(UI.dialog.confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("clearBattleHistoryBtn").onclick=clearBattleHistory;$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
 $("damageV1Btn").onclick=()=>setDamageModel("v1");$("damageV2Btn").onclick=()=>setDamageModel("v2");renderDamageModelUI();
 document.querySelectorAll("[data-fx-speed]").forEach(b=>b.onclick=()=>setBattleFxMode(b.dataset.fxSpeed));renderBattleFxUI();
-$("battleVsButton").onclick=autoBattleFromVs;$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
+$("battleVsButton").onclick=autoBattleFromVs;$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(UI.dialog.confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
 $("refreshBestOwnedThreeBtn").onclick=renderBestOwnedThree;
 $("best3OwnedViewBtn").onclick=()=>setBestThreeView("owned",{save:true,scroll:false});
 $("best3CounterViewBtn").onclick=()=>setBestThreeView("counter",{save:true,scroll:false});
@@ -2278,25 +2279,25 @@ function refreshAfterBulkFlagClear(){
 function clearAllOwned(){
  const n=getIds(OWNED_KEY).length,status=$("clearDataStatus");
  if(!n){status.textContent="所持登録はありません。";return}
- if(!confirm(`所持登録 ${n}件をすべてクリアしますか？\nこの操作は元に戻せません。`))return;
+ if(!UI.dialog.confirm(`所持登録 ${n}件をすべてクリアしますか？\nこの操作は元に戻せません。`))return;
  setIds(OWNED_KEY,[]);refreshAfterBulkFlagClear();status.textContent=`所持登録 ${n}件をクリアしました。`;
 }
 function clearAllFavorites(){
  const n=getIds(FAVORITE_KEY).length,status=$("clearDataStatus");
  if(!n){status.textContent="お気に入り登録はありません。";return}
- if(!confirm(`お気に入り登録 ${n}件をすべてクリアしますか？\nこの操作は元に戻せません。`))return;
+ if(!UI.dialog.confirm(`お気に入り登録 ${n}件をすべてクリアしますか？\nこの操作は元に戻せません。`))return;
  setIds(FAVORITE_KEY,[]);refreshAfterBulkFlagClear();status.textContent=`お気に入り登録 ${n}件をクリアしました。`;
 }
 $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAllFavorites;
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.80",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.87",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
 $("restoreBtn").onclick=()=>$("restoreFile").click();
-$("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!confirm("現在の所持・お気に入り・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)localStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")localStorage.setItem(k,v);invalidateBest3CounterCache();migrateLegacyTeamToFavorites();$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderSeriesButtons();renderBrowser()}catch(err){alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
+$("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!UI.dialog.confirm("現在の所持・お気に入り・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)localStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")localStorage.setItem(k,v);invalidateBest3CounterCache();migrateLegacyTeamToFavorites();$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderSeriesButtons();renderBrowser()}catch(err){UI.dialog.alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
 
 migrateLegacyTeamToFavorites();initBrowser();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
@@ -2304,11 +2305,12 @@ setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 // Ver6.84: 共通データアクセスは frenda-data.js v1.1 を利用。クラウド競合解決は frenda-cloud.js が担当。
 // Ver6.85: 共通UI補助は frenda-ui.js v1.0 を利用。
 // Ver6.86: 共通UI基盤を frenda-ui.js v1.1 に更新。
+// Ver6.87: 共通カード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に集約。
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
  const storage={};
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.80",storage};
+ return {format_version:1,simulator_version:"6.87",storage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2320,4 +2322,4 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-09-27 20:32:00 JST / Ver6.86 -->
+<!-- Updated: 2026-09-27 20:41:00 JST / Ver6.87 -->

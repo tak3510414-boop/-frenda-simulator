@@ -1,7 +1,7 @@
-/* FRENDA_UI_VERSION: 1.1 / Updated: 2026-09-27 20:32 JST */
+/* FRENDA_UI_VERSION: 1.2 / Updated: 2026-09-27 20:41 JST */
 (()=>{
 "use strict";
-const VERSION="1.1";
+const VERSION="1.2";
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function formatRemain(ms,doneText="帰還できます"){
  if(ms<=0)return doneText;
@@ -124,8 +124,30 @@ function loadViewSize(key,fallback="medium"){try{const v=localStorage.getItem(ke
 function saveViewSize(key,size){try{if(VIEW_SIZES.includes(size))localStorage.setItem(key,size)}catch{}return size}
 function viewSizeHTML({scope,current,wrapperClass="viewSizeControl",label="表示"}={}){return `<div class="${wrapperClass}"><span>${escapeHtml(label)}</span>${[["large","大"],["medium","中"],["small","小"]].map(([v,l])=>`<button type="button" class="${current===v?"active":""}" data-ui-view-scope="${escapeHtml(scope)}" data-ui-view-size="${v}" aria-pressed="${current===v?"true":"false"}">${l}</button>`).join("")}</div>`}
 function bindViewSize({root=document,scope,key,onChange}={}){root.querySelectorAll(`[data-ui-view-scope="${scope}"]`).forEach(b=>b.onclick=()=>{const size=saveViewSize(key,b.dataset.uiViewSize);if(typeof onChange==="function")onChange(size)})}
+
+function pickCardHTML({classes="",attributes={},badges="",image="",alt="",name="",body=""}={}){
+ const cls=String(classes||"").trim(),attrs=Object.entries(attributes||{}).filter(([,v])=>v!==null&&typeof v!=="undefined"&&v!==false).map(([k,v])=>` ${escapeHtml(k)}="${escapeHtml(v===true?"":v)}"`).join("");
+ return `<div class="pickCard${cls?` ${escapeHtml(cls)}`:""}"${attrs}>${badges||""}<img src="${escapeHtml(image)}" alt="${escapeHtml(alt)}"><b>${escapeHtml(name)}</b>${body||""}</div>`;
+}
+function toggleSelection(list,id,max=Infinity,{disabled=false}={}){
+ const out=Array.isArray(list)?list.slice():[];
+ if(disabled)return out;
+ if(out.includes(id))return out.filter(x=>x!==id);
+ if(out.length<Math.max(0,Number(max)||0))out.push(id);
+ return out;
+}
+function removeSelection(list,id){return (Array.isArray(list)?list:[]).filter(x=>x!==id)}
+function normalizeSelection(list,{max=Infinity,allowed=null}={}){
+ const ok=typeof allowed==="function"?allowed:()=>true,out=[];
+ for(const id of Array.isArray(list)?list:[]){if(!ok(id)||out.includes(id))continue;out.push(id);if(out.length>=max)break}
+ return out;
+}
+const pickCard=Object.freeze({html:pickCardHTML});
+const selection=Object.freeze({toggle:toggleSelection,remove:removeSelection,normalize:normalizeSelection});
+const dialog=Object.freeze({confirm:message=>window.confirm(String(message)),alert:message=>window.alert(String(message))});
+
 const pickFilter=Object.freeze({create:createPickFilter,series:pickFilterSeries,types:pickFilterTypes,grades:pickFilterGrades,normalize:normalizePickFilter,apply:applyPickFilter,html:pickFilterHTML,bind:bindPickFilter});
 const viewSize=Object.freeze({SIZES:VIEW_SIZES,load:loadViewSize,save:saveViewSize,html:viewSizeHTML,bind:bindViewSize});
 
-window.FRENDA_UI=Object.freeze({VERSION,escapeHtml,formatRemain,formatShortDateTime,sleep,createEyeCare,pickFilter,viewSize});
+window.FRENDA_UI=Object.freeze({VERSION,escapeHtml,formatRemain,formatShortDateTime,sleep,createEyeCare,pickFilter,viewSize,pickCard,selection,dialog});
 })();
