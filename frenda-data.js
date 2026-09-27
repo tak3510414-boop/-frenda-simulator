@@ -1,7 +1,7 @@
-/* FRENDA_DATA_VERSION: 1.2 / Updated: 2026-09-27 20:17 JST */
+/* FRENDA_DATA_VERSION: 1.3 / Updated: 2026-09-27 20:58 JST */
 (()=>{
 "use strict";
-const VERSION="1.2";
+const VERSION="1.3";
 const KEYS=Object.freeze({
  simulator:Object.freeze({
   owned:"frenda:owned:v1",
@@ -15,6 +15,20 @@ const KEYS=Object.freeze({
 });
 const EVOLUTION_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
 const EVOLUTION_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
+
+const REGION_PREFIXES=Object.freeze(["アローラ","ガラル","ヒスイ","パルデア"]);
+function createRecordIndex(records){
+ const list=Array.isArray(records)?records:[],byId=new Map();
+ for(const r of list){const id=r?.master_id;if(id!==null&&typeof id!=="undefined"&&!byId.has(id))byId.set(id,r)}
+ return Object.freeze({records:list,byId,get:id=>byId.get(id)||null});
+}
+function recordImage(record){return record?.official_image||""}
+function splitRegionalName(name,prefixes=REGION_PREFIXES){
+ const text=String(name||"");
+ for(const region of prefixes||REGION_PREFIXES)if(text.startsWith(region))return {base:text.slice(region.length),region};
+ return {base:text,region:null};
+}
+function dungeonStatKey(dungeonId,difficulty){return `${dungeonId}:${difficulty}`}
 function clone(v){
  if(v===undefined)return undefined;
  return JSON.parse(JSON.stringify(v));
@@ -128,7 +142,8 @@ window.FRENDA_DATA=Object.freeze({
   pickKey,pickPhotoKey,readOverride:readPickOverride,writeOverride:writePickOverride,removeOverride:removePickOverride,
   readPhoto:readPickPhoto,writePhoto:writePickPhoto,removePhoto:removePickPhoto,pickImage
  }),
- dungeon:Object.freeze({read:readDungeon,write:writeDungeon,mutate:mutateDungeon}),
+ records:Object.freeze({REGION_PREFIXES,index:createRecordIndex,image:recordImage,splitRegionalName}),
+ dungeon:Object.freeze({read:readDungeon,write:writeDungeon,mutate:mutateDungeon,statKey:dungeonStatKey}),
  expedition:Object.freeze({read:readExpedition,write:writeExpedition,snapshot:expeditionSnapshot,resolve:resolveExpedition}),
  evolution:Object.freeze({loadRows:loadEvolutionRows,loadIndex:loadEvolutionIndex,buildIndex:buildEvolutionIndex,compactRows:compactEvolutionRows,speciesUrl:EVOLUTION_SPECIES_URL,namesUrl:EVOLUTION_NAMES_URL})
 });
