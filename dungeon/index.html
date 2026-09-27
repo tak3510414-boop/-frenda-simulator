@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.28 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.29 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.28</title>
+<title>フレンダダンジョン Ver1.29</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1840,6 +1840,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 /* Ver1.26: セーブ・探索共有状態・進化データキャッシュを frenda-data.js v1.1 に集約。 */
 /* Ver1.27: 進化インデックス・目休憩タイマー・共通UI補助を frenda-data.js v1.2 / frenda-ui.js v1.0 に集約。 */
 /* Ver1.28: ピック検索・絞り込み・表示サイズUIを frenda-ui.js v1.1 に共通化。 */
+/* Ver1.29: ピックカード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に共通化。 */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1867,7 +1868,7 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.28</span></b><small>Simulator Ver6.86 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.29</span></b><small>Simulator Ver6.87 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
@@ -1875,13 +1876,13 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 <script src="../frenda-core.js?v=1.23"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
 <script src="../frenda-data.js?v=1.2"></script>
-<script src="../frenda-ui.js?v=1.1"></script>
+<script src="../frenda-ui.js?v=1.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.28";
+const APP_VERSION="1.29";
 const DATA=window.FRENDA_DATA;
 const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
@@ -2193,7 +2194,7 @@ function migrateState(){
  state.saveVersion=10;
  save();
 }
-function resetSave(){if(!confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
+function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
 const esc=UI.escapeHtml;
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
 function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -2278,12 +2279,12 @@ function chooseEvolutionPick(sourceId,target,allowLower=false){return RULES.choo
 function evolutionGradeWarning(currentGrade){
  return `現在の★${currentGrade}以上の進化先ピックがありません。\nそれでも進化しますか？`
 }
-function openEvolutionDialog(id){if(isExpeditionLocked(id)){alert("おでかけ探索中のため進化できません。");return}
+function openEvolutionDialog(id){if(isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため進化できません。");return}
  const info=evolutionInfoForPick(id),src=rec(id);
  if(!info.hasEvolution)return;
  if(!info.canEvolve){
   const why=!info.registered?"進化先の登録ピックがありません。":info.fainted?"ひんし中は進化できません。":`育成ポイントが不足しています（${info.points}/${info.cost}）。`;
-  alert(why);return
+  UI.dialog.alert(why);return
  }
  const current=Math.max(2,Number(src?.grade)||2),
        targetsWithPicks=info.targets.filter(t=>t.candidates.length),
@@ -2292,7 +2293,7 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){alert("おでかけ�
 
  // 進化ボタンを押した時点で、全進化先に同等以上の★が1枚もない場合は先に確認。
  if(safeTotal===0){
-  if(!confirm(evolutionGradeWarning(current)))return;
+  if(!UI.dialog.confirm(evolutionGradeWarning(current)))return;
   lowerApproved=true;
   // 分岐進化でなければ「はい」でそのまま進化。
   if(targetsWithPicks.length===1){
@@ -2320,7 +2321,7 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){alert("おでかけ�
   if(!target?.candidates?.length)return;
 
   if(!safe.length&&!lowerApproved){
-   if(!confirm(evolutionGradeWarning(current)))return;
+   if(!UI.dialog.confirm(evolutionGradeWarning(current)))return;
    const lowerPick=chooseEvolutionPick(id,target,true);
    if(!lowerPick)return;
    close();
@@ -2331,7 +2332,7 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){alert("おでかけ�
   const pick=chooseEvolutionPick(id,target,lowerApproved);
   if(!pick)return;
   const note=safe.length?`進化後は★${current}以上の登録ピックから抽選します。`:`低い★を含む登録ピックから抽選します。`;
-  if(!confirm(`${src.name_ja}を${target.name}へ進化させますか？\n育成ポイント ${info.cost} 消費\n${note}`))return;
+  if(!UI.dialog.confirm(`${src.name_ja}を${target.name}へ進化させますか？\n育成ポイント ${info.cost} 消費\n${note}`))return;
   close();
   performEvolution(id,pick.master_id,info.cost,target.name)
  })
@@ -2486,7 +2487,7 @@ function renderStarter(){
  app.querySelectorAll("[data-starter-compare]").forEach(b=>b.onclick=()=>showStarterSetCompare(b.dataset.starterCompare));
  app.querySelectorAll("[data-starter-set]").forEach(b=>b.onclick=()=>{
    const set=state.starterSetOptions.find(x=>x.key===b.dataset.starterSet);
-   if(set&&confirm(`${set.label}の御三家3体で始めますか？\n${set.names.join("・")}`))pickStarterSet(set.key);
+   if(set&&UI.dialog.confirm(`${set.label}の御三家3体で始めますか？\n${set.names.join("・")}`))pickStarterSet(set.key);
  });
 }
 function renderHome(){
@@ -2606,11 +2607,11 @@ function renderTeamSelect(){
  const last=validLastTeam(need);
  const selected=teamSelection.map(id=>rec(id)).filter(Boolean);
  const selectedSlots=Array.from({length:need},(_,i)=>{const r=selected[i];return r?`<button type="button" class="teamSelectedSlot filled" data-selected-remove="${esc(r.master_id)}"><img src="${esc(imageOf(r))}" alt=""><span><b>${esc(r.name_ja)}</b><small>${compareTypeText(r)}</small></span><i>×</i></button>`:`<div class="teamSelectedSlot empty"><span>${i+1}</span><small>未選択</small></div>`}).join("");
- const cardsHtml=cards.length?cards.map(r=>{const locked=isExpeditionLocked(r.master_id),sel=teamSelection.includes(r.master_id),pb=state.permanentBoosts[r.master_id]||{},ri=teamRecommendationInfo(r);return `<div class="pickCard ${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}" ${locked?"":`data-team-pick="${esc(r.master_id)}"`}> ${ri.recommended?`<span class="recommendMark">🔥 オススメ</span>`:""}${sel?'<span class="selectMark">選択中</span>':""}<img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)} / ポケエネ ${esc(r.poke_ene??"-")}</small><div>${typesHTML(r)}</div>${ri.recommended?`<small class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</small>`:""}<small>強化 HP+${pb.hp||0} / 攻撃+${pb.atk||0} / 防御+${pb.def||0}</small><small>EXP ${xpFor(r.master_id)}/100 / 特訓P ${drillFor(r.master_id)}</small><small><span class="bondChip${bondLevelFor(r.master_id)>=4?" high":""}">${esc(bondProgressText(r.master_id))}</span></small></div>`}).join(""):`<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>`;
+ const cardsHtml=cards.length?cards.map(r=>{const locked=isExpeditionLocked(r.master_id),sel=teamSelection.includes(r.master_id),pb=state.permanentBoosts[r.master_id]||{},ri=teamRecommendationInfo(r),badges=`${ri.recommended?`<span class="recommendMark">🔥 オススメ</span>`:""}${sel?'<span class="selectMark">選択中</span>':""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)} / ポケエネ ${esc(r.poke_ene??"-")}</small><div>${typesHTML(r)}</div>${ri.recommended?`<small class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</small>`:""}<small>強化 HP+${pb.hp||0} / 攻撃+${pb.atk||0} / 防御+${pb.def||0}</small><small>EXP ${xpFor(r.master_id)}/100 / 特訓P ${drillFor(r.master_id)}</small><small><span class="bondChip${bondLevelFor(r.master_id)>=4?" high":""}">${esc(bondProgressText(r.master_id))}</span></small>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}`,attributes:locked?{}:{"data-team-pick":r.master_id},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=commonPickFilterHTML("team",teamPickFilter,allCards,statusOptions,sortOptions,cards.length);
  app.innerHTML=`<div class="card teamSelectCard"><div class="sectionTitle">挑戦チーム編成</div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ★${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div><div class="muted" style="margin:10px 0 6px">${need}体を選択してください。現在 ${teamSelection.length}/${need}体。</div><div class="teamSelectedStrip">${selectedSlots}</div><div class="teamTools"><div class="teamQuickActions two"><button type="button" class="ghost" id="lastTeamBtn" ${last.length?"":"disabled"}>↩ 前回編成</button><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button></div>${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid">${cardsHtml}</div><div class="teamCompareActions"><button class="ghost" id="teamBack">戻る</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button><button id="startRunBtn" ${need>0&&teamSelection.length===need?"":"disabled"}>このチームで挑戦</button></div></div>`;
- app.querySelectorAll("[data-team-pick]").forEach(c=>c.onclick=()=>{teamAutoNotice="";const id=c.dataset.teamPick;if(teamSelection.includes(id))teamSelection=teamSelection.filter(x=>x!==id);else if(teamSelection.length<need)teamSelection.push(id);renderTeamSelect()});
- app.querySelectorAll("[data-selected-remove]").forEach(b=>b.onclick=()=>{teamAutoNotice="";teamSelection=teamSelection.filter(x=>x!==b.dataset.selectedRemove);renderTeamSelect()});
+ app.querySelectorAll("[data-team-pick]").forEach(c=>c.onclick=()=>{teamAutoNotice="";teamSelection=UI.selection.toggle(teamSelection,c.dataset.teamPick,need);renderTeamSelect()});
+ app.querySelectorAll("[data-selected-remove]").forEach(b=>b.onclick=()=>{teamAutoNotice="";teamSelection=UI.selection.remove(teamSelection,b.dataset.selectedRemove);renderTeamSelect()});
  document.getElementById("teamBack").onclick=()=>{screen="dungeons";render()};
  document.getElementById("teamCompareBtn").onclick=showTeamBackCompare;
  document.getElementById("startRunBtn").onclick=startRun;
@@ -2618,7 +2619,7 @@ function renderTeamSelect(){
  const autoBtn=document.getElementById("autoTeamBtn");if(autoBtn)autoBtn.onclick=()=>{const ids=buildAutoTeam(need);if(ids.length){teamSelection=ids;teamAutoNotice="タイプ相性・★・能力・育成・絆・役割バランスを見て自動編成しました。まだ挑戦は開始していません。";renderTeamSelect()}};
  bindCommonPickFilter("team",teamPickFilter,renderTeamSelect,{sort:"recommended"});
 }
-function startRun(){if(!teamSelection.length){alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id],firstVisit=!hasVisitedDungeon(currentDungeon.id);state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"dungeonEntry",entryFirstVisit:firstVisit,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},captured:[],logs:[`${th.name}★${currentDungeon.difficulty}に挑戦！`],startedAt:new Date().toISOString()};updateDeepest(1);save();render()}
+function startRun(){if(!teamSelection.length){UI.dialog.alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){UI.dialog.alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id],firstVisit=!hasVisitedDungeon(currentDungeon.id);state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"dungeonEntry",entryFirstVisit:firstVisit,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},captured:[],logs:[`${th.name}★${currentDungeon.difficulty}に挑戦！`],startedAt:new Date().toISOString()};updateDeepest(1);save();render()}
 function runTeam(){return state.run?.team||[]}
 const BATTLE_MOOD_RATE={energetic:.20,tired:.20};
 function ensureCurrentEnemyMoods(){
@@ -2855,7 +2856,7 @@ function runSummaryData(type,floor){const r=state.run||{};return {type,floor,dun
 function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false};state.run=null;state.lastSummary=summary;save();screen="postRun";render()}
 function runDefeat(){beginRunEnd("defeat",state.run.floor)}
 function runClear(){beginRunEnd("clear",10)}
-function withdraw(){if(!state.run)return;if(!confirm("現在のダンジョンから撤退しますか？"))return;beginRunEnd("withdraw",state.run.floor)}
+function withdraw(){if(!state.run)return;if(!UI.dialog.confirm("現在のダンジョンから撤退しますか？"))return;beginRunEnd("withdraw",state.run.floor)}
 function postRunNextAfterReward(p){return p?.hatchIndex<(p?.hatchResults?.length||0)?"hatch":"summary"}
 function finishHatchStep(){const p=state.postRun;if(!p)return;p.hatchIndex++;if(p.hatchIndex>=p.hatchResults.length)p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render()}
 // Ver0.33: egg roulette awards the slot highlighted at the instant STOP is pressed; no hidden slip.
@@ -2911,7 +2912,7 @@ function hatchDramaKey(p,x){return `frenda:hatchPlayed:${p?.type||"run"}:${p?.du
 function hatchDramaWasPlayed(p,x){try{return sessionStorage.getItem(hatchDramaKey(p,x))==="1"}catch{return false}}
 function markHatchDramaPlayed(p,x){try{sessionStorage.setItem(hatchDramaKey(p,x),"1")}catch{}}
 async function startHatchDrama(){const p=state.postRun;if(!p||p.stage!=="hatch")return;const x=p.hatchResults?.[p.hatchIndex];if(!x)return;markHatchDramaPlayed(p,x);const seq=++hatchDramaSeq,egg=document.getElementById("hatchEggWrap"),cracks=document.getElementById("hatchCracks"),glow=document.getElementById("hatchGlow"),title=document.getElementById("hatchTitle"),msg=document.getElementById("hatchMessage"),reveal=document.getElementById("hatchReveal"),next=document.getElementById("hatchNext");if(!egg||!title||!msg)return;const alive=()=>seq===hatchDramaSeq&&state.postRun?.stage==="hatch"&&state.postRun?.hatchIndex===p.hatchIndex;title.textContent="おや……？";msg.textContent="卵のようすが……";await fxSleep(950);if(!alive())return;egg.classList.add("wobble");msg.textContent="卵が動いている！";await fxSleep(1550);if(!alive())return;egg.classList.remove("wobble");egg.classList.add("wobbleHard");msg.textContent="もうすぐ生まれそう……！";await fxSleep(1200);if(!alive())return;cracks?.classList.add("show");msg.textContent="ピシッ……！";await fxSleep(760);if(!alive())return;glow?.classList.add("burst");title.textContent="まぶしい光があふれた！";msg.textContent="…………！";await fxSleep(1100);if(!alive())return;egg.style.visibility="hidden";reveal?.classList.add("show");title.textContent="卵が孵化した！";msg.textContent="";next?.classList.remove("hatchNextHidden");next?.classList.add("hatchNextVisible");document.querySelector(".hatchDramaCard")?.classList.add("hatchReady")}
-function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark postRunBigCard" id="eggDiscoveryCard"><div class="eggDiscoveryInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="muted">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?(x.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1。":"同一ピック所持済みのため、育成ポイント+1。"):"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary postRunBigCard eggRouletteCard" id="eggRouletteCard" data-egg-stop="1" role="button" tabindex="0" aria-label="どこを押してもSTOP"><div class="eggRouletteLead">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ★${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" class="eggRouletteStop" style="width:100%;font-size:20px">STOP!</button><div class="eggRouletteTapHint">💡 どこを押しても STOP できます</div></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)}" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
+function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark postRunBigCard" id="eggDiscoveryCard"><div class="eggDiscoveryInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="muted">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?(x.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1。":"同一ピック所持済みのため、育成ポイント+1。"):"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary postRunBigCard eggRouletteCard" id="eggRouletteCard" data-egg-stop="1" role="button" tabindex="0" aria-label="どこを押してもSTOP"><div class="eggRouletteLead">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ★${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" class="eggRouletteStop" style="width:100%;font-size:20px">STOP!</button><div class="eggRouletteTapHint">💡 どこを押しても STOP できます</div></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)}" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(UI.dialog.confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
 function renderSummary(){
  updateHeaderStatus();
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
@@ -3258,7 +3259,7 @@ function stopBallTimer(){if(ballTimer){clearInterval(ballTimer);ballTimer=null}}
 function startBallSlotAnimation(stopBtn){stopBallTimer();ballCursor=0;const cells=[...app.querySelectorAll("[data-ball-cell]")];const paint=()=>cells.forEach((c,i)=>c.classList.toggle("active",i===ballCursor));paint();ballTimer=setInterval(()=>{ballCursor=(ballCursor+1)%cells.length;paint()},65);stopBtn.onclick=()=>{if(!ballTimer)return;stopBallTimer();const slipRoll=Math.random(),slip=slipRoll<.15?0:slipRoll<.60?1:2;const final=(ballCursor+slip)%cells.length;cells.forEach((c,i)=>c.classList.toggle("active",i===final));stopBtn.disabled=true;const ballKey=state.run.capture.balls[final];setTimeout(()=>resolveCapture(ballKey),450)}}
 function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="notice" style="margin-bottom:10px">階を1つ進むたび、所持中のすべての卵に孵化ポイント+1。必要ポイントに達した卵は、クリア・全滅・撤退時に孵化します。<br><b>所持上限：</b>初期2個、ダンジョンクリア累計10回ごとに+1（最大10個）。現在${clears}回クリア${next?`／次の上限アップまであと${Math.max(0,next-clears)}回`:"／上限最大"}。</div>${state.eggs.length?`<div class="eggGrid">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.kind==="type"?"タイプのみ判明":"中身は孵化まで不明"}</small><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ダンジョンのボスを倒すと、卵ルーレットで1個獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
-function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
+function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
 function renderOwned(){
  reconcileDexState();
  const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean);
@@ -3495,7 +3496,7 @@ function renderDex(){
 }
 
 function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download=`frenda-dungeon-save-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-function importSave(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||typeof x!=="object")throw new Error("形式不正");state=Object.assign(stateDefault(),x);migrateState();alert("セーブデータを読み込みました。");screen="home";render()}catch(e){alert("読み込みに失敗しました。\n"+e.message)}};rd.readAsText(file)}
+function importSave(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||typeof x!=="object")throw new Error("形式不正");state=Object.assign(stateDefault(),x);migrateState();UI.dialog.alert("セーブデータを読み込みました。");screen="home";render()}catch(e){UI.dialog.alert("読み込みに失敗しました。\n"+e.message)}};rd.readAsText(file)}
 function renderSaveMenu(){app.innerHTML=`<div class="card"><div class="sectionTitle">セーブ管理</div><div class="row"><button id="exportBtn">セーブを書き出す</button><button class="secondary" id="importBtn">セーブを読み込む</button><button class="danger" id="resetBtn">初期化</button></div><input type="file" id="importFile" accept="application/json,.json" class="hidden"><div class="notice" style="margin-top:12px">通常は自動保存されます。書き出しファイルは端末移行・バックアップ用です。</div></div>`;document.getElementById("exportBtn").onclick=exportSave;document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("importFile").onchange=e=>{if(e.target.files[0])importSave(e.target.files[0])};document.getElementById("resetBtn").onclick=resetSave}
 
 homeBtn.onclick=async()=>{const oldText=homeBtn.textContent;homeBtn.disabled=true;homeBtn.textContent="更新確認中…";const updating=await checkForAppUpdate(true);if(updating)return;homeBtn.disabled=false;homeBtn.textContent=oldText;if(state.postRun){renderPostRun();return}if(state.run){screen="home";renderRun()}else{screen="home";render()}};
@@ -3572,4 +3573,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 20:32:00 JST / Ver1.28 -->
+<!-- Updated: 2026-09-27 20:41:00 JST / Ver1.29 -->
