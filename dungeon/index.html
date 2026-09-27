@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.17 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.18 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.17</title>
+<title>フレンダダンジョン Ver1.18</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -15,10 +15,15 @@ header{position:sticky;top:0;z-index:30;background:#0d2535eF;color:#fff;backdrop
 /* Eye-care play timer: 30 min play / 10 min mandatory break, shared across Frenda pages. */
 .eyeTimerBadge{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:112px;padding:6px 10px;border-radius:999px;background:#e8f8ff;color:#09394e;border:1px solid #91d9ef;font-size:11px;font-weight:1000;white-space:nowrap;box-shadow:0 2px 8px #0002}
 .eyeTimerBadge.rest{background:#dff5e9;color:#155d3d;border-color:#83cfaa}.eyeTimerBadge.warn{background:#fff0ba;color:#694c00;border-color:#e5bd42}.eyeTimerBadge.danger{background:#ffe0e0;color:#922d2d;border-color:#e89696}
+.careCluster{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.manualRestBtn{padding:6px 9px!important;border-radius:999px!important;background:#2d8c62!important;color:#fff!important;border:1px solid #7ed2a8!important;font-size:10px!important;font-weight:1000!important;white-space:nowrap;box-shadow:0 2px 8px #0002}
+.manualRestBtn:hover{background:#257752!important}
+.expeditionTimerBadge{display:inline-flex;align-items:center;justify-content:center;min-width:150px;padding:6px 10px;border-radius:999px;background:#efe8ff;color:#4d2b7a;border:1px solid #bca3ed;font-size:10px;font-weight:1000;white-space:nowrap;box-shadow:0 2px 8px #0002}
+.expeditionTimerBadge.done{background:#fff2ba;color:#765000;border-color:#e5c149;box-shadow:0 0 12px #ffda5d55}
 .eyeRestOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 34%,#2c6177 0,#153747 40%,#07151d 100%);color:#fff;text-align:center;touch-action:none}
 .eyeRestPanel{width:min(720px,94vw);padding:32px 26px;border:2px solid #83d7b1;border-radius:28px;background:linear-gradient(160deg,#123c4b,#0c2733);box-shadow:0 22px 70px #0009,0 0 34px #69ddb144}
 .eyeRestIcon{font-size:clamp(58px,11vw,96px);line-height:1}.eyeRestTitle{font-size:clamp(30px,6vw,52px);font-weight:1000;margin:10px 0 6px}.eyeRestText{font-size:clamp(14px,2.5vw,19px);line-height:1.65;color:#d8eef4}.eyeRestCountdown{font-variant-numeric:tabular-nums;font-size:clamp(56px,13vw,104px);font-weight:1000;letter-spacing:.04em;color:#b9ffdc;margin:18px 0 10px;text-shadow:0 0 25px #55d89d66}.eyeRestRule{display:inline-block;margin-top:8px;padding:7px 12px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff2b;font-size:12px;font-weight:900;color:#e4f6fb}
-@media(max-width:700px){.eyeTimerBadge{min-width:94px;padding:5px 7px;font-size:9px}.eyeRestPanel{padding:26px 18px;border-radius:22px}.headrow,.head{flex-wrap:wrap}.eyeTimerBadge{margin-left:auto}.headerBtns{margin-left:auto}}
+@media(max-width:700px){.eyeTimerBadge{min-width:94px;padding:5px 7px;font-size:9px}.eyeRestPanel{padding:26px 18px;border-radius:22px}.headrow,.head{flex-wrap:wrap}.careCluster{width:100%;justify-content:center;order:3}.eyeTimerBadge{margin-left:0}.expeditionTimerBadge{min-width:142px;padding:5px 7px;font-size:9px}.manualRestBtn{font-size:9px!important;padding:5px 7px!important}.headerBtns{margin-left:auto}}
 
 main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);border:1px solid #dce5eb;border-radius:18px;padding:15px;margin-bottom:13px;box-shadow:0 7px 22px #0c243015}.heroCard{background:linear-gradient(145deg,#092a3d,#104d69);border-color:#28718e;color:#fff;overflow:hidden;position:relative}.heroCard:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-140px;background:#28d8ff1d}.heroCard h1{font-size:24px;margin:0 0 5px}.heroCard p{margin:0;color:#d6f6ff;line-height:1.6}.kicker{font-size:11px;font-weight:950;letter-spacing:.16em;color:#69e7ff;margin-bottom:5px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}.muted{color:var(--muted);font-size:12px}.sectionTitle{font-size:17px;font-weight:950;margin:0 0 11px}.hidden{display:none!important}.badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;background:#edf3f7;color:#40515d;font-size:11px;font-weight:850}.badge.good{background:#dff4e7;color:#167744}.badge.bad{background:#fee5e5;color:#a22929}.badge.gold{background:#fff2bd;color:#785500}.badge.dark{background:#173d54;color:#fff}.badge.purple{background:#eee6ff;color:#5b3c92}
 .menuGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.menuBtn{min-height:74px;background:linear-gradient(180deg,#fff,#eef5f8);border:1px solid #cfdde5;color:#173243;box-shadow:0 3px 0 #c5d0d6}.menuBtn b{display:block;font-size:20px;margin-bottom:2px}.menuBtn span{font-size:10px;color:#657580}.continueBtn{width:100%;font-size:17px;background:linear-gradient(180deg,#29b865,#178b4b);box-shadow:0 4px 0 #0e6b39;margin-bottom:12px}
@@ -1825,18 +1830,23 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.17</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.18</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.17"></script>
-<script src="../frenda-core.js?v=1.17"></script>
+<script src="../frenda-master.js?v=1.18"></script>
+<script src="../frenda-core.js?v=1.18"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=1.17"></script>
+<script src="../frenda-cloud.js?v=1.18"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.17";
+const APP_VERSION="1.18";
+
+
+const EXPEDITION_TIMER_KEY="frenda:expedition:v1";
+function expeditionTimerState(){try{const x=JSON.parse(localStorage.getItem(EXPEDITION_TIMER_KEY)||"null");return x&&typeof x==="object"?x:null}catch{return null}}
+function updateExpeditionTimerBadge(now=Date.now()){const el=document.getElementById("expeditionTimerBadge");if(!el)return;const x=expeditionTimerState(),m=x?.mission;if(x?.status==="exploring"&&m&&Number.isFinite(Number(m.returnAt))){const remain=Number(m.returnAt)-now;if(remain<=0){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の帰還時間になりました"}else{const min=Math.max(1,Math.ceil(remain/60000));el.className="expeditionTimerBadge";el.textContent=`🧭 探索終了まで あと${min}分`;el.title=`帰還予定 ${new Date(Number(m.returnAt)).toLocaleString("ja-JP")}`}}else if(x?.status==="returned"){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の成果を受け取れます"}else{el.className="expeditionTimerBadge";el.textContent="🧭 探索なし";el.title="現在、おでかけ探索には出ていません"}}
 
 const EYE_TIMER_KEY="frenda_eye_timer_v1",EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
 let eyeTimerHandle=null,eyeLocked=false;
@@ -1848,23 +1858,25 @@ function eyeResolveState(now=Date.now()){
  if(!x||!Number.isFinite(Number(x.playUntil)))return eyeFreshPlay(now);
  if(x.phase==="rest"){
   const restUntil=Number(x.restUntil)||Number(x.playUntil)+EYE_REST_MS;
-  if(now<restUntil){x.restUntil=restUntil;return x}
+  if(now<restUntil){x.restUntil=restUntil;x.reason=x.reason||"auto";return x}
   return eyeFreshPlay(now);
  }
  const playUntil=Number(x.playUntil);
  if(now<playUntil)return x;
  const restUntil=playUntil+EYE_REST_MS;
- if(now<restUntil){x={phase:"rest",playUntil,restUntil,updatedAt:now};eyeWriteState(x);return x}
+ if(now<restUntil){x={phase:"rest",playUntil,restUntil,reason:"auto",updatedAt:now};eyeWriteState(x);return x}
  return eyeFreshPlay(now);
 }
 function eyeFmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
-function eyeEnsureOverlay(){let ov=document.getElementById("eyeRestOverlay");if(ov)return ov;ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle">目を休めよう</div><div class="eyeRestText">30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。</div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule">30分プレイ → 10分休憩</div></div>`;document.body.appendChild(ov);return ov}
-function eyeSetLocked(rest){eyeLocked=rest;document.body.classList.toggle("eyeResting",rest);const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns");try{if(main)main.inert=rest;if(buttons)buttons.inert=rest}catch{}if(rest)eyeEnsureOverlay();else document.getElementById("eyeRestOverlay")?.remove()}
-function eyeTimerTick(){const now=Date.now(),x=eyeResolveState(now),rest=x.phase==="rest",until=rest?Number(x.restUntil):Number(x.playUntil),remain=Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");if(badge){badge.className=`eyeTimerBadge ${rest?"rest":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${eyeFmt(remain)}`:`👁 あと ${eyeFmt(remain)}`;badge.title="30分遊んだら10分休憩"}eyeSetLocked(rest);const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=eyeFmt(remain)}
+function eyeEnsureOverlay(state){let ov=document.getElementById("eyeRestOverlay");if(!ov){ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule">10分休んだら → また30分遊べます</div></div>`;document.body.appendChild(ov)}const txt=ov.querySelector("#eyeRestText");if(txt)txt.innerHTML=state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";return ov}
+function eyeSetLocked(rest,state){eyeLocked=rest;document.body.classList.toggle("eyeResting",rest);const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns"),manual=document.getElementById("manualRestBtn");try{if(main)main.inert=rest;if(buttons)buttons.inert=rest;if(manual)manual.disabled=rest}catch{}if(rest)eyeEnsureOverlay(state);else document.getElementById("eyeRestOverlay")?.remove()}
+function eyeStartManualRest(){const now=Date.now(),x=eyeResolveState(now);if(x.phase==="rest")return;eyeWriteState({phase:"rest",playUntil:now,restUntil:now+EYE_REST_MS,reason:"manual",updatedAt:now});eyeTimerTick()}
+function eyeTimerTick(){const now=Date.now(),x=eyeResolveState(now),rest=x.phase==="rest",until=rest?Number(x.restUntil):Number(x.playUntil),remain=Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");if(badge){badge.className=`eyeTimerBadge ${rest?"rest":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${eyeFmt(remain)}`:`👁 あと ${eyeFmt(remain)}`;badge.title="30分遊んだら10分休憩"}eyeSetLocked(rest,x);const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=eyeFmt(remain);updateExpeditionTimerBadge(now); }
 function eyeTimerStart(){if(eyeTimerHandle)clearInterval(eyeTimerHandle);eyeTimerTick();eyeTimerHandle=setInterval(eyeTimerTick,1000)}
 document.addEventListener("keydown",e=>{if(eyeLocked&&!document.getElementById("eyeRestOverlay")?.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}},true);
-window.addEventListener("storage",e=>{if(e.key===EYE_TIMER_KEY)eyeTimerTick()});
+window.addEventListener("storage",e=>{if(e.key===EYE_TIMER_KEY||e.key===EXPEDITION_TIMER_KEY)eyeTimerTick()});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")eyeTimerTick()});
+document.addEventListener("click",e=>{const b=e.target.closest?.("#manualRestBtn");if(b&&!eyeLocked)eyeStartManualRest()});
 
 const SAVE_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
@@ -3658,4 +3670,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 19:08:00 JST / Ver1.17 -->
+<!-- Updated: 2026-09-27 19:25:00 JST / Ver1.18 -->
