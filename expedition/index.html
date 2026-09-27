@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おでかけ探索 Ver0.10</title>
+<title>おでかけ探索 Ver0.12</title>
 <style>
 :root{--bg:#eaf1f5;--ink:#183342;--muted:#627785;--card:#fff;--line:#c9d8e1;--blue:#1679a8;--blue2:#0e5e86;--gold:#e7ad24;--green:#1e9c6c;--red:#c74b4b;--shadow:0 10px 28px #13354a18}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;background:linear-gradient(180deg,#0e3147 0,#174c69 150px,var(--bg) 150px);color:var(--ink)}button,select,input{font:inherit}button{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;background:linear-gradient(180deg,#1a8dc0,#0f6f9e);color:#fff;box-shadow:0 3px 0 #0b567c}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}.ghost{background:#eef5f8;color:#24495d;box-shadow:none;border:1px solid #bfd1dc}.danger{background:linear-gradient(180deg,#e96b6b,#b94141);box-shadow:0 3px 0 #913131}.goldBtn{background:linear-gradient(180deg,#ffd85e,#eca928);color:#583a00;box-shadow:0 3px 0 #b87a13}.greenBtn{background:linear-gradient(180deg,#32b983,#1b8b61);box-shadow:0 3px 0 #126d4c}
@@ -79,16 +79,17 @@ main{max-width:1280px;margin:auto;padding:12px}.card{background:var(--card);bord
 </style>
 </head>
 <body>
-<header><div class="head"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.10</span></b><small>フレンダダンジョン連動・放置探索</small></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">探索ホーム</button><button class="ghost" id="dungeonBtn">⚔️ ダンジョンへ</button></div></div></header>
+<header><div class="head"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.12</span></b><small>フレンダダンジョン連動・放置探索</small></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">探索ホーム</button><button class="ghost" id="dungeonBtn">⚔️ ダンジョンへ</button></div></div></header>
 <main id="app"></main>
-<script src="../frenda-master.js?v=1.05"></script>
-<script src="../frenda-core.js?v=1.05"></script>
+<script src="../frenda-master.js?v=0.11"></script>
+<script src="../frenda-core.js?v=0.11"></script>
+<script src="../frenda-rules.js?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.10";
+const APP_VERSION="0.12";
 
 const EYE_TIMER_KEY="frenda_eye_timer_v1",EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
 let eyeTimerHandle=null,eyeLocked=false;
@@ -125,24 +126,23 @@ const EXP_KEY="frenda:expedition:v1";
 const EVO_CACHE_KEY="frenda:dungeon:evolutionMap:v2";
 const EVO_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
 const EVO_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
-const EXP_TO_DRILL=100;
-const BOND_LEVEL_THRESHOLDS=[0,1,3,6,10,15];
 const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
-const MASTER=window.FRENDA_MASTER,CORE=window.FRENDA_CORE,RECORDS=Array.isArray(MASTER?.records)?MASTER.records:[];
+const MASTER=window.FRENDA_MASTER,CORE=window.FRENDA_CORE,RULES=window.FRENDA_RULES,RECORDS=Array.isArray(MASTER?.records)?MASTER.records:[];
+if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。");
+const EXP_TO_DRILL=RULES.EXP_TO_DRILL;
+const BOND_LEVEL_THRESHOLDS=RULES.BOND_LEVEL_THRESHOLDS;
 const app=document.getElementById("app");
-const THEME_ORDER=["forest","wetlands","volcano","icefire","steelmine","powerplant","skygarden","dragon","nightcity","phantom"];
-const THEMES={
- forest:{name:"森のダンジョン",types:["くさ","むし"],icon:"🌳"},wetlands:{name:"湿地のダンジョン",types:["みず","じめん"],icon:"💧"},volcano:{name:"火山のダンジョン",types:["ほのお","いわ"],icon:"🌋"},icefire:{name:"氷炎の洞窟",types:["こおり","ほのお"],icon:"❄️"},steelmine:{name:"鋼鉄鉱山",types:["はがね","じめん"],icon:"⛏️"},powerplant:{name:"廃発電所",types:["でんき","どく"],icon:"⚡"},skygarden:{name:"天空庭園",types:["ひこう","フェアリー"],icon:"☁️"},dragon:{name:"竜の修練場",types:["ドラゴン","かくとう"],icon:"🐉"},nightcity:{name:"夜の街",types:["あく","ノーマル"],icon:"🌙"},phantom:{name:"幻影遺跡",types:["ゴースト","エスパー"],icon:"👻"}
-};
+const THEME_ORDER=RULES.THEME_ORDER;
+const THEMES=RULES.THEMES;
 const TIME_DEF={1:{label:"ちょこっと探索",hours:1,boxes:2,baseXp:6,baseBond:.05,report:3,style:"回数向き",benefit:"短時間で回数をこなして箱数を稼ぐ"},4:{label:"じっくり探索",hours:4,boxes:4,baseXp:22,baseBond:.12,report:5,style:"バランス",benefit:"4箱目はレア率アップ"},8:{label:"大探索",hours:8,boxes:6,baseXp:48,baseBond:.22,report:7,style:"高品質重視",benefit:"5箱目はレア率アップ・6箱目はレア以上確定"}};
 const BASE_BOX={1:{normal:.90,rare:.09,jackpot:.01},4:{normal:.78,rare:.19,jackpot:.03},8:{normal:.66,rare:.29,jackpot:.05}};
 const DIFF_BOX={1:{rare:0,jackpot:0},2:{rare:.02,jackpot:0},3:{rare:.04,jackpot:.01},4:{rare:.07,jackpot:.02},5:{rare:.10,jackpot:.03}};
 const RANK_BOX={D:{rare:-.05,jackpot:-.005},C:{rare:-.02,jackpot:0},B:{rare:0,jackpot:0},A:{rare:.04,jackpot:.01},S:{rare:.08,jackpot:.02}};
-const ENEMY_GRADE_RATES={1:{2:60,3:30,4:9,5:1},2:{2:45,3:35,4:17,5:3},3:{2:30,3:40,4:24,5:6},4:{2:20,3:35,4:35,5:10},5:{2:10,3:30,4:40,5:20}};
-const EGG_DEF={normal:{label:"ふつうの卵",required:10},type:{label:"タイプ卵",required:12},rare:{label:"レア卵",required:12},super:{label:"スーパーレア卵",required:16}};
+const ENEMY_GRADE_RATES=RULES.ENEMY_GRADE_RATES;
+const EGG_DEF=RULES.EGG_DEF;
 const EGG_RATE={1:{normal:80,type:15,rare:5,super:0},2:{normal:65,type:20,rare:13,super:2},3:{normal:45,type:25,rare:25,super:5},4:{normal:25,type:25,rare:38,super:12},5:{normal:10,type:25,rare:45,super:20}};
-const LEGENDARY=new Set(["フリーザー","サンダー","ファイヤー","ミュウツー","ライコウ","エンテイ","スイクン","ルギア","ホウオウ","レジロック","レジアイス","レジスチル","ラティアス","ラティオス","カイオーガ","グラードン","レックウザ","ユクシー","エムリット","アグノム","ディアルガ","パルキア","ヒードラン","レジギガス","ギラティナ","クレセリア","コバルオン","テラキオン","ビリジオン","トルネロス","ボルトロス","レシラム","ゼクロム","ランドロス","キュレム","ゼルネアス","イベルタル","ジガルデ","タイプ：ヌル","タイプ:ヌル","シルヴァディ","カプ・コケコ","カプ・テテフ","カプ・ブルル","カプ・レヒレ","コスモッグ","コスモウム","ソルガレオ","ルナアーラ","ネクロズマ","ザシアン","ザマゼンタ","ムゲンダイナ","ダクマ","ウーラオス","レジエレキ","レジドラゴ","ブリザポス","レイスポス","バドレックス","ラブトロス","コライドン","ミライドン","チオンジェン","パオジアン","ディンルー","イーユイ","オーガポン","テラパゴス"]);
-const MYTHICAL=new Set(["ミュウ","セレビィ","ジラーチ","デオキシス","フィオネ","マナフィ","ダークライ","シェイミ","アルセウス","ビクティニ","ケルディオ","メロエッタ","ゲノセクト","ディアンシー","フーパ","ボルケニオン","マギアナ","マーシャドー","ゼラオラ","メルタン","メルメタル","ザルード","モモワロウ"]);
+const LEGENDARY=RULES.LEGENDARY_NAMES;
+const MYTHICAL=RULES.MYTHICAL_NAMES;
 const REPORTS={
  forest:["深い草むらをかき分けて進んだ。","大きな木の根元でひと休みした。","木々の奥からポケモンの気配を感じた。","木漏れ日の差す道を見つけた。","落ち葉の下に足跡を見つけた。"],
  wetlands:["ぬかるみを慎重に進んだ。","水辺で小さな足跡を見つけた。","突然の水しぶきに驚いた。","浮き石を渡って奥へ進んだ。","霧の向こうに気配を感じた。"],
@@ -160,11 +160,11 @@ let screen="home",prep={dungeonId:null,difficulty:null,hours:8,teamIds:[]};
 let ticker=null,lootRevealSeq=0,lootAnimating=false;
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
-function validBattle(r){return r&&Number(r.hp)>0&&Number(r.atk)>0&&Number(r.def)>0&&Number(r.sp_atk)>0&&Number(r.sp_def)>0&&r.move_type}
+function validBattle(r){return RULES.validBattle(r)}
 function imageOf(r){return r?.official_image||""}
-function gradeText(r){return r?.grade?"★"+r.grade:"★-"}
-function specialBase(r){return String(r?.name_ja||"").replace(/[（(].*$/," ").trim()}
-function isSpecial(r){const n=specialBase(r);return LEGENDARY.has(n)||MYTHICAL.has(n)}
+function gradeText(r){return RULES.gradeText(r)}
+function specialBase(r){return RULES.specialBaseName(r)}
+function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){try{return JSON.parse(localStorage.getItem(DUNGEON_KEY)||"null")||null}catch{return null}}
 function defaultExp(){return {version:1,appVersion:APP_VERSION,status:"idle",mission:null,lastTeamIds:[],updatedAt:Date.now()}}
 function readExp(){let a=null;try{a=JSON.parse(localStorage.getItem(EXP_KEY)||"null")}catch{}const d=readDungeon(),b=d?.expeditionShared;if(b&&(!a||Number(b.updatedAt||0)>Number(a.updatedAt||0)))a=b;return Object.assign(defaultExp(),a||{})}
@@ -179,24 +179,24 @@ function clearedDestinations(){const d=readDungeon();if(!d)return[];const out=[]
 function formatRemain(ms){if(ms<=0)return"帰還できます";const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
 function formatTime(ts){return new Date(ts).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}
 function pickRandom(a){return a[Math.floor(Math.random()*a.length)]}
-function weighted(obj){const entries=Object.entries(obj),sum=entries.reduce((s,[,w])=>s+Number(w),0);let x=Math.random()*sum;for(const [k,w] of entries){x-=Number(w);if(x<=0)return k}return entries.at(-1)?.[0]}
+function weighted(obj){return RULES.weightedChoice(obj)}
 function splitRegionalName(name){for(const r of REGION_PREFIXES)if(String(name||"").startsWith(r))return{base:String(name).slice(r.length),region:r};return{base:String(name||""),region:null}}
 function evoEntry(name){if(!evoReady)return null;return (EVO_BY_NAME.get(splitRegionalName(name).base)||[])[0]||null}
 function evoRoot(e){if(!e)return null;let n=e.no,seen=new Set();while(!seen.has(n)){seen.add(n);const ps=[...(EVO_PARENTS.get(n)||[])];if(!ps.length)break;n=ps[0]}return n}
 function hasEvolution(id){const r=rec(id),e=evoEntry(r?.name_ja);if(!e)return false;for(const x of EVO_BY_NO.values())if(Number(x.parent)===Number(e.no))return true;return false}
-function growthKey(id){const r=rec(id),e=evoEntry(r?.name_ja);return e?`evo:${evoRoot(e)}`:(r?.evolution_family||r?.evo_family||r?.family_id||r?.name_ja||id)}
+function growthKey(id){const r=rec(id),e=evoEntry(r?.name_ja);return RULES.familyKey(id,r,e?evoRoot(e):null)}
 function bondKey(id){return growthKey(id)}
 function bondPoints(d,id){return Number(d?.bondPoints?.[bondKey(id)]||0)}
-function bondLevel(d,id){const p=bondPoints(d,id);let lv=0;for(let i=1;i<BOND_LEVEL_THRESHOLDS.length;i++)if(p>=BOND_LEVEL_THRESHOLDS[i])lv=i;return lv}
-function addBond(d,id,n=1){d.bondPoints=d.bondPoints||{};const k=bondKey(id);d.bondPoints[k]=Number(d.bondPoints[k]||0)+n}
-function addXp(d,id,n){d.experience=d.experience||{};d.drillPoints=d.drillPoints||{};let xp=Number(d.experience[id]||0)+n,g=0;while(xp>=EXP_TO_DRILL){xp-=EXP_TO_DRILL;g++}d.experience[id]=xp;if(g)d.drillPoints[id]=Number(d.drillPoints[id]||0)+g;return g}
-function awardGrowth(d,id,n=1){d.trainingPoints=d.trainingPoints||{};d.drillPoints=d.drillPoints||{};if(hasEvolution(id)){const k=growthKey(id);d.trainingPoints[k]=Number(d.trainingPoints[k]||0)+n;return"growth"}d.drillPoints[id]=Number(d.drillPoints[id]||0)+n;return"drill"}
+function bondLevel(d,id){return RULES.bondLevelFromPoints(bondPoints(d,id))}
+function addBond(d,id,n=1){return RULES.addBondPoints(d,bondKey(id),n)}
+function addXp(d,id,n){return RULES.applyXp(d,id,n).drillGained}
+function awardGrowth(d,id,n=1){return RULES.awardGrowthOrDrill(d,id,n,{key:growthKey(id),hasEvolution:hasEvolution(id)}).kind}
 function ownNew(d,id){d.owned=d.owned||[];d.dex=d.dex||{};d.seenPicks=d.seenPicks||{};if(d.owned.some(x=>x.id===id))return false;d.owned.push({id});d.dex[id]=Object.assign({},d.dex[id]||{},{obtained:true,current:true});d.seenPicks[id]=true;return true}
-function themePool(did,diff,{companions=false}={}){const th=THEMES[did],rates=ENEMY_GRADE_RATES[diff]||ENEMY_GRADE_RATES[1];let pool=RECORDS.filter(validBattle).filter(r=>diff===5||!isSpecial(r));if(companions)pool=pool.filter(r=>!isSpecial(r));const themed=pool.filter(r=>[r.type1,r.type2,r.move_type].some(t=>th.types.includes(t)));if(themed.length>=10)pool=themed;return pool.map(r=>({r,w:Number(rates[Number(r.grade)]||0)})).filter(x=>x.w>0)}
+function themePool(did,diff,{companions=false}={}){return RULES.themePool(RECORDS,did,diff,{companions})}
 function weightedRecord(weightedPool){const sum=weightedPool.reduce((s,x)=>s+x.w,0);let x=Math.random()*sum;for(const it of weightedPool){x-=it.w;if(x<=0)return it.r}return weightedPool.at(-1)?.r||null}
-function baselineEnergy(did,diff){const arr=[];for(const {r,w} of themePool(did,diff)){const e=Number(r.poke_ene)||0;if(!e)continue;const n=Math.max(1,Math.round(w/5));for(let i=0;i<n;i++)arr.push(e)}arr.sort((a,b)=>a-b);return arr.length?arr[Math.floor(arr.length/2)]:100}
-function recommended(r,did){const th=THEMES[did];if(!r||!CORE?.rawEff)return false;return th.types.some(t=>(Number(CORE.rawEff(r.move_type,{type1:t,type2:null}))||1)>1)}
-function scoreTeam(ids,did,diff){const d=readDungeon(),team=ids.map(rec).filter(Boolean),count=team.length;const numberPts=count===3?30:count===2?18:count===1?8:0;const base=baselineEnergy(did,diff);const avg=count?team.reduce((s,r)=>s+(Number(r.poke_ene)||0),0)/count:0;const ratio=base?avg/base:0;const strength=ratio<.7?5:ratio<.9?12:ratio<1.1?20:ratio<1.3?27:35;const good=team.filter(r=>recommended(r,did)).length;const typePts=good>=3?25:good===2?18:good===1?10:0;const avgBond=count?team.reduce((s,r)=>s+bondLevel(d,r.master_id),0)/count:0;const bondPts=Math.round(avgBond/5*10);let total=numberPts+strength+typePts+bondPts;let rank=total>=85?"S":total>=70?"A":total>=55?"B":total>=40?"C":"D";if(count===2&&rank==="S")rank="A";if(count===1&&["S","A"].includes(rank))rank="B";return{total,rank,parts:{number:numberPts,strength,type:typePts,bond:bondPts},baseline:Math.round(base),avgEnergy:Math.round(avg),recommended:good}}
+function baselineEnergy(did,diff){return RULES.baselineEnergy(RECORDS,did,diff)}
+function recommended(r,did){return RULES.recommendedForTheme(r,did,CORE?.rawEff)}
+function scoreTeam(ids,did,diff){const d=readDungeon(),team=ids.map(rec).filter(Boolean);return RULES.explorationScore({team,dungeonId:did,difficulty:diff,records:RECORDS,rawEff:CORE?.rawEff,bondLevelForRecord:r=>bondLevel(d,r.master_id)})}
 function eligiblePickIds(){const d=readDungeon(),run=new Set(currentRunIds()),owned=(d?.owned||[]).map(x=>x.id);return owned.filter(id=>!run.has(id))}
 function highestDifficultyForDungeon(did,dests=clearedDestinations()){const diffs=dests.filter(x=>x.did===did).map(x=>Number(x.diff)).filter(Number.isFinite);return diffs.length?Math.max(...diffs):null}
 function autoTeam(did,diff){
@@ -368,7 +368,8 @@ window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){e
 // Ver0.07: おでかけ探索はダンジョンと同じ dungeon_data をクラウド正本として共有する。
 // Ver0.08: 派遣メンバー選択をダンジョン編成UIに合わせ、検索・絞り込み・おすすめ順・表示サイズ切替を追加。
 // Ver0.09: ダンジョン選択時は解放済み最高★を初期選択。おまかせ編成は探索点が最大になる3体を厳密選択。3体選択後のおまかせダンジョンで最高点の派遣先＋★を自動選択。
-// Ver0.10: ログイン時にローカルとクラウドが異なる場合は、使用するセーブデータを明示選択。
+// Ver0.11: ダンジョン/探索共通の成長・出現・評価ルールを frenda-rules.js に一本化。
+// Ver0.12: 卵基本定義・育成/絆家族キー・育成振り分けを frenda-rules.js v1.1 に追加集約。
 function expeditionDungeonCloudData(){
  const saved=readDungeon();
  return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}};
@@ -391,6 +392,6 @@ render();loadEvolution();
 
 </body>
 </html>
-<!-- FRENDA_EXPEDITION_VERSION: 0.10 / Updated: 2026-09-27 18:59 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.12 / Updated: 2026-09-27 19:55 JST -->
 
-<!-- Updated: 2026-09-27 18:59:00 JST / Ver0.10 -->
+<!-- Updated: 2026-09-27 19:55:00 JST / Ver0.12 -->
