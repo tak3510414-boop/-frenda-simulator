@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おでかけ探索 Ver0.14</title>
+<title>おでかけ探索 Ver0.15</title>
 <style>
 :root{--bg:#eaf1f5;--ink:#183342;--muted:#627785;--card:#fff;--line:#c9d8e1;--blue:#1679a8;--blue2:#0e5e86;--gold:#e7ad24;--green:#1e9c6c;--red:#c74b4b;--shadow:0 10px 28px #13354a18}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;background:linear-gradient(180deg,#0e3147 0,#174c69 150px,var(--bg) 150px);color:var(--ink)}button,select,input{font:inherit}button{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;background:linear-gradient(180deg,#1a8dc0,#0f6f9e);color:#fff;box-shadow:0 3px 0 #0b567c}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}.ghost{background:#eef5f8;color:#24495d;box-shadow:none;border:1px solid #bfd1dc}.danger{background:linear-gradient(180deg,#e96b6b,#b94141);box-shadow:0 3px 0 #913131}.goldBtn{background:linear-gradient(180deg,#ffd85e,#eca928);color:#583a00;box-shadow:0 3px 0 #b87a13}.greenBtn{background:linear-gradient(180deg,#32b983,#1b8b61);box-shadow:0 3px 0 #126d4c}
@@ -79,50 +79,25 @@ main{max-width:1280px;margin:auto;padding:12px}.card{background:var(--card);bord
 </style>
 </head>
 <body>
-<header><div class="head"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.14</span></b><small>フレンダダンジョン連動・放置探索</small></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">探索ホーム</button><button class="ghost" id="dungeonBtn">⚔️ ダンジョンへ</button></div></div></header>
+<header><div class="head"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.15</span></b><small>フレンダダンジョン連動・放置探索</small></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">探索ホーム</button><button class="ghost" id="dungeonBtn">⚔️ ダンジョンへ</button></div></div></header>
 <main id="app"></main>
 <script src="../frenda-master.js?v=0.11"></script>
 <script src="../frenda-core.js?v=0.11"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
-<script src="../frenda-data.js?v=1.1"></script>
+<script src="../frenda-data.js?v=1.2"></script>
+<script src="../frenda-ui.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.14";
+const APP_VERSION="0.15";
 const DATA=window.FRENDA_DATA;
+const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
+if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 
-const EYE_TIMER_KEY=DATA.KEYS.eyeTimer,EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
-let eyeTimerHandle=null,eyeLocked=false;
-function eyeReadState(){const x=DATA.readJSON(EYE_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
-function eyeWriteState(x){try{DATA.writeJSON(EYE_TIMER_KEY,x)}catch{}return x}
-function eyeFreshPlay(now=Date.now()){return eyeWriteState({phase:"play",playUntil:now+EYE_PLAY_MS,updatedAt:now})}
-function eyeResolveState(now=Date.now()){
- let x=eyeReadState();
- if(!x||!Number.isFinite(Number(x.playUntil)))return eyeFreshPlay(now);
- if(x.phase==="rest"){
-  const restUntil=Number(x.restUntil)||Number(x.playUntil)+EYE_REST_MS;
-  if(now<restUntil){x.restUntil=restUntil;x.reason=x.reason||"auto";return x}
-  return eyeFreshPlay(now);
- }
- const playUntil=Number(x.playUntil);
- if(now<playUntil)return x;
- const restUntil=playUntil+EYE_REST_MS;
- if(now<restUntil){x={phase:"rest",playUntil,restUntil,reason:"auto",updatedAt:now};eyeWriteState(x);return x}
- return eyeFreshPlay(now);
-}
-function eyeFmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
-function eyeEnsureOverlay(state){let ov=document.getElementById("eyeRestOverlay");if(!ov){ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule">10分休んだら → また30分遊べます</div></div>`;document.body.appendChild(ov)}const txt=ov.querySelector("#eyeRestText");if(txt)txt.innerHTML=state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";return ov}
-function eyeSetLocked(rest,state){eyeLocked=rest;document.body.classList.toggle("eyeResting",rest);const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns"),manual=document.getElementById("manualRestBtn");try{if(main)main.inert=rest;if(buttons)buttons.inert=rest;if(manual)manual.disabled=rest}catch{}if(rest)eyeEnsureOverlay(state);else document.getElementById("eyeRestOverlay")?.remove()}
-function eyeStartManualRest(){const now=Date.now(),x=eyeResolveState(now);if(x.phase==="rest")return;eyeWriteState({phase:"rest",playUntil:now,restUntil:now+EYE_REST_MS,reason:"manual",updatedAt:now});eyeTimerTick()}
-function eyeTimerTick(){const now=Date.now(),x=eyeResolveState(now),rest=x.phase==="rest",until=rest?Number(x.restUntil):Number(x.playUntil),remain=Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");if(badge){badge.className=`eyeTimerBadge ${rest?"rest":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${eyeFmt(remain)}`:`👁 あと ${eyeFmt(remain)}`;badge.title="30分遊んだら10分休憩"}eyeSetLocked(rest,x);const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=eyeFmt(remain); }
-function eyeTimerStart(){if(eyeTimerHandle)clearInterval(eyeTimerHandle);eyeTimerTick();eyeTimerHandle=setInterval(eyeTimerTick,1000)}
-document.addEventListener("keydown",e=>{if(eyeLocked&&!document.getElementById("eyeRestOverlay")?.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}},true);
-window.addEventListener("storage",e=>{if(e.key===EYE_TIMER_KEY)eyeTimerTick()});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")eyeTimerTick()});
-document.addEventListener("click",e=>{const b=e.target.closest?.("#manualRestBtn");if(b&&!eyeLocked)eyeStartManualRest()});
+const eyeCare=UI.createEyeCare({data:DATA});
 
 const DUNGEON_KEY=DATA.KEYS.dungeon;
 const EXP_KEY=DATA.KEYS.expedition;
@@ -155,10 +130,10 @@ const REPORTS={
  nightcity:["ネオンの陰に気配を感じた。","路地裏を慎重に探索した。","遠くから誰かがこちらを見ていた。","静かな交差点を横切った。","看板の明かりを頼りに進んだ。"],
  phantom:["同じ場所に戻ってきたような感覚に襲われた。","壁の向こうから声が聞こえた気がした。","帰り道でも何かの気配が消えなかった。","紫色の光を追って奥へ進んだ。","古い石碑の前で不思議な風が吹いた。"]
 };
-let EVO_BY_NAME=new Map(),EVO_BY_NO=new Map(),EVO_PARENTS=new Map(),evoReady=false;
+let EVO_INDEX=null,evoReady=false;
 let screen="home",prep={dungeonId:null,difficulty:null,hours:8,teamIds:[]};
 let ticker=null,lootRevealSeq=0,lootAnimating=false;
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const esc=UI.escapeHtml;
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
 function validBattle(r){return RULES.validBattle(r)}
 function imageOf(r){return r?.official_image||""}
@@ -176,14 +151,14 @@ function ownedIds(){return (readDungeon()?.owned||[]).map(x=>x.id)}
 function currentRunIds(){return (readDungeon()?.run?.team||[]).map(x=>x.id)}
 function statKey(did,diff){return `${did}:${diff}`}
 function clearedDestinations(){const d=readDungeon();if(!d)return[];const out=[];for(const did of THEME_ORDER){for(let diff=1;diff<=5;diff++){const st=d.stats?.[statKey(did,diff)];if(Number(st?.clears||0)>0)out.push({did,diff})}}return out}
-function formatRemain(ms){if(ms<=0)return"帰還できます";const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
-function formatTime(ts){return new Date(ts).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}
+const formatRemain=UI.formatRemain;
+const formatTime=UI.formatShortDateTime;
 function pickRandom(a){return a[Math.floor(Math.random()*a.length)]}
 function weighted(obj){return RULES.weightedChoice(obj)}
 function splitRegionalName(name){for(const r of REGION_PREFIXES)if(String(name||"").startsWith(r))return{base:String(name).slice(r.length),region:r};return{base:String(name||""),region:null}}
-function evoEntry(name){if(!evoReady)return null;return (EVO_BY_NAME.get(splitRegionalName(name).base)||[])[0]||null}
-function evoRoot(e){if(!e)return null;let n=e.no,seen=new Set();while(!seen.has(n)){seen.add(n);const ps=[...(EVO_PARENTS.get(n)||[])];if(!ps.length)break;n=ps[0]}return n}
-function hasEvolution(id){const r=rec(id),e=evoEntry(r?.name_ja);if(!e)return false;for(const x of EVO_BY_NO.values())if(Number(x.parent)===Number(e.no))return true;return false}
+function evoEntry(name){return evoReady?EVO_INDEX.entryByName(splitRegionalName(name).base):null}
+function evoRoot(e){return EVO_INDEX?.root(e)??null}
+function hasEvolution(id){const r=rec(id),e=evoEntry(r?.name_ja);return !!(e&&EVO_INDEX.children(e).length)}
 function growthKey(id){const r=rec(id),e=evoEntry(r?.name_ja);return RULES.familyKey(id,r,e?evoRoot(e):null)}
 function bondKey(id){return growthKey(id)}
 function bondPoints(d,id){return Number(d?.bondPoints?.[bondKey(id)]||0)}
@@ -352,7 +327,7 @@ function lootRarityLabel(box){return box.rarity==="jackpot"?"🌟 大当たり�
 function rewardVisualHTML(rw,final=true){if(rw?.type==="companion"&&rw.target){const r=rec(rw.target);return `<img class="lootRewardImage${final?"":" silhouette"}" src="${esc(imageOf(r))}" alt="">`}if(rw?.type==="egg"){const e=rw.egg||{},icon=e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚";return `<div class="lootRewardIcon">${icon}</div>`}return `<div class="lootRewardIcon">${rewardIcon(rw)}</div>`}
 function rewardRevealTitle(rw){if(rw?.type==="companion")return rw.target?"誰かがついてきた！":"気配が消えた……";if(rw?.type==="egg")return"タマゴを発見！";if(rw?.type==="growth")return rw.amount>=2?"大きく成長した！":"成長のきざし！";if(rw?.type==="bond")return"絆が深まった！";if(rw?.type==="xp"||rw?.type==="allxp")return"たくさん経験した！";if(rw?.type==="combo")return"すごい成果！";return"探索成果！"}
 function lootRevealFinalHTML(box){return `${rewardVisualHTML(box.reward,true)}<div class="lootRewardTitle">${esc(rewardRevealTitle(box.reward))}</div><div class="lootRewardText">${esc(box.resultText||"")}</div>`}
-function lootSleep(ms){return new Promise(r=>setTimeout(r,ms))}
+const lootSleep=UI.sleep;
 async function playLootReveal(box){if(lootAnimating)return;lootAnimating=true;const seq=++lootRevealSeq,companion=box.reward?.type==="companion"&&box.reward?.target;const ov=document.createElement("div");ov.className=`lootRevealOverlay ${box.rarity}`;ov.innerHTML=`<span class="lootSpark s1">✦</span><span class="lootSpark s2">★</span><span class="lootSpark s3">✧</span><span class="lootSpark s4">✦</span><div class="lootBurst"></div><div class="lootRevealStage"><div class="lootRevealKicker">EXPEDITION REWARD</div><div class="lootChest"><div class="lootChestLid"></div><div class="lootChestBody"></div><div class="lootChestBand"></div><div class="lootChestLock"></div></div><div class="lootRarityText">${esc(lootRarityLabel(box))}</div><div class="lootMystery">！？</div><div class="lootRewardReveal" id="lootRewardReveal"></div><div class="lootRevealHint"></div></div>`;document.body.appendChild(ov);const prevOverflow=document.body.style.overflow;document.body.style.overflow="hidden";let final=false;const showFinal=()=>{if(final)return;final=true;ov.classList.remove("phase-shake","phase-rarity","phase-companion");ov.classList.add("phase-final");const rr=ov.querySelector("#lootRewardReveal");if(rr){rr.style.display="";rr.innerHTML=lootRevealFinalHTML(box)}try{navigator.vibrate?.(box.rarity==="jackpot"?[30,35,70]:box.rarity==="rare"?[25,25,35]:20)}catch{}};const close=()=>{if(!final){lootRevealSeq++;showFinal();return}ov.remove();document.body.style.overflow=prevOverflow;lootAnimating=false;render()};ov.onclick=close;ov.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();close()}};ov.tabIndex=0;ov.focus();await lootSleep(220);if(seq!==lootRevealSeq||!ov.isConnected)return;ov.classList.add("phase-shake");await lootSleep(box.rarity==="jackpot"?1150:850);if(seq!==lootRevealSeq||!ov.isConnected)return;ov.classList.remove("phase-shake");ov.classList.add("phase-rarity");try{navigator.vibrate?.(box.rarity==="jackpot"?[20,35,20,35,45]:box.rarity==="rare"?[20,20,30]:15)}catch{}await lootSleep(box.rarity==="jackpot"?1050:700);if(seq!==lootRevealSeq||!ov.isConnected)return;if(companion){ov.classList.remove("phase-rarity");ov.classList.add("phase-companion");const rr=ov.querySelector("#lootRewardReveal");if(rr){rr.innerHTML=`${rewardVisualHTML(box.reward,false)}<div class="lootRewardTitle">後ろから足音がする……</div>`;rr.style.display="flex"}await lootSleep(1250);if(seq!==lootRevealSeq||!ov.isConnected)return;if(rr)rr.style.display=""}showFinal()}
 
 function renderBoxes(){const m=exp.mission;if(maybeNeedEggDiscard())return renderEggDiscard();const opened=m.boxes.filter(b=>b.opened).length;app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">🎁 持ち帰った成果</div><span class="badge gold">${opened}/${m.boxes.length} 開封</span></div><div class="notice" style="margin-bottom:10px">箱を開けると、まずレア度が判明してから中身を開示します。大当たりや仲間発見には特別演出があります。中身はすでに確定保存されているため、リロードしても変わりません。</div><div class="boxGrid">${m.boxes.map((b,i)=>b.opened?`<div class="lootBox opened ${b.rarity==="rare"?"revealRare":b.rarity==="jackpot"?"revealJackpot":""}"><div class="lootResult"><div class="bigIcon">${rewardIcon(b.reward)}</div><b>${b.rarity==="jackpot"?"🌟 大当たり！":b.rarity==="rare"?"✨ RARE":"成果"}</b><small>${esc(b.resultText)}</small></div></div>`:`<div class="lootBox" data-box="${i}"><div class="boxIcon">🎁</div></div>`).join("")}</div>${opened===m.boxes.length?'<button class="goldBtn" id="summaryBtn" style="width:100%;margin-top:12px;font-size:17px">今回の探索成果をまとめる</button>':'<div class="muted" style="text-align:center;margin-top:9px">未開封の箱をタップしてください</div>'}</div>`;app.querySelectorAll("[data-box]").forEach(el=>el.onclick=()=>{if(lootAnimating)return;const b=m.boxes[Number(el.dataset.box)];if(b.opened)return;b.opened=true;applyReward(b);writeExp();el.classList.add("opening");playLootReveal(b)});const sb=document.getElementById("summaryBtn");if(sb)sb.onclick=()=>{m.stage="summary";writeExp();render()}}
@@ -360,7 +335,7 @@ function renderEggDiscard(){const d=readDungeon();app.innerHTML=`<div class="car
 function renderSummary(){const m=exp.mission;app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ★${m.difficulty} / ${m.hours}時間 / ランク${m.rank}</p></div><div class="sectionTitle" style="margin-top:12px">今回の成果</div><div class="finalList">${m.summary.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、派遣していた${m.teamIds.length}体が再び本編・特訓・進化で使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=completeMission}
 function startTicker(){if(ticker)clearInterval(ticker);ticker=setInterval(()=>{if(exp.status!=="exploring"){clearInterval(ticker);ticker=null;return}const m=exp.mission,now=Date.now();if(now>=m.returnAt){prepareReturn();render();return}const el=document.getElementById("countdown");if(el)el.textContent=formatRemain(m.returnAt-now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,Math.max(0,(now-m.startAt)/(m.returnAt-m.startAt)*100))}%`;const log=document.getElementById("liveLogBox");if(log){const html=liveLogHTML(m,now);if(log.innerHTML!==html)log.innerHTML=html}},1000)}
 function render(){if(ticker){clearInterval(ticker);ticker=null}prepareReturn();if(screen==="prep")renderPrep();else if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else renderHome()}
-async function loadEvolution(){try{const rows=await DATA.evolution.loadRows();for(const e of rows){const x={no:Number(e.no),name:String(e.name||""),parent:Number(e.parent)||null};if(!x.no||!x.name)continue;if(!EVO_BY_NAME.has(x.name))EVO_BY_NAME.set(x.name,[]);EVO_BY_NAME.get(x.name).push(x);EVO_BY_NO.set(x.no,x);if(x.parent){if(!EVO_PARENTS.has(x.no))EVO_PARENTS.set(x.no,new Set());EVO_PARENTS.get(x.no).add(x.parent)}}evoReady=true;render()}catch(e){console.warn(e);evoReady=false;render()}}
+async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;render()}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;render()}}
 document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("dungeonBtn").onclick=()=>{location.href="../dungeon/"};
 window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();render()}});
 
@@ -369,6 +344,7 @@ window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){e
 // Ver0.09: ダンジョン選択時は解放済み最高★を初期選択。おまかせ編成は探索点が最大になる3体を厳密選択。3体選択後のおまかせダンジョンで最高点の派遣先＋★を自動選択。
 // Ver0.11: ダンジョン/探索共通の成長・出現・評価ルールを frenda-rules.js に一本化。
 // Ver0.14: ダンジョン共有セーブ・探索状態・進化データキャッシュを frenda-data.js v1.1 に集約。
+// Ver0.15: 進化インデックス・目休憩タイマー・共通UI補助を frenda-data.js v1.2 / frenda-ui.js v1.0 に集約。
 function expeditionDungeonCloudData(){
  const saved=readDungeon();
  return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}};
@@ -384,7 +360,7 @@ function expeditionHasLocalData(){const s=DATA.dungeon.read();return !!(s&&(s.in
 function expeditionCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s.owned)?s.owned.length:0,eggs=Array.isArray(s.eggs)?s.eggs.length:0,ex=s.expeditionShared?.status==="running"?"探索中":"探索なし";return `所持 ${owned}体 / 卵 ${eggs}個 / ${ex}`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン＋おでかけ探索",column:"dungeon_data",getData:expeditionDungeonCloudData,applyData:applyExpeditionDungeonCloudData,watchStorage:k=>k===DUNGEON_KEY,hasLocalData:expeditionHasLocalData,describeData:expeditionCloudSummary});
 
-eyeTimerStart();
+eyeCare.start();
 render();loadEvolution();
 })();
 </script>
@@ -393,4 +369,4 @@ render();loadEvolution();
 </html>
 <!-- FRENDA_EXPEDITION_VERSION: 0.14 / Updated: 2026-09-27 20:30 JST -->
 
-<!-- Updated: 2026-09-27 20:30:00 JST / Ver0.14 -->
+<!-- Updated: 2026-09-27 20:17:00 JST / Ver0.15 -->
