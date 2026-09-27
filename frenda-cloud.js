@@ -1,7 +1,7 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.1";
+const CLOUD_VERSION="1.2";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -42,10 +42,18 @@ function getReloadGuard(){try{return sessionStorage.getItem(reloadGuardKey())||"
 
 function setStatus(text,kind=""){
   statusText=text;
+  // Background sync is intentionally quiet. The header button shows only the
+  // stable account state so auto-save/pull does not flicker between messages.
   if(button){
-    const prefix=kind==="error"?"⚠️":"☁️";
-    button.textContent=`${prefix} ${text}`;
-    button.dataset.kind=kind;
+    if(session){
+      button.textContent="☁️ ログイン中";
+      button.dataset.kind=kind==="error"?"error":"";
+      button.title=kind==="error"?text:"クラウド同期はバックグラウンドで自動実行中";
+    }else{
+      button.textContent="☁️ 未ログイン";
+      button.dataset.kind=kind==="error"?"error":"";
+      button.title=kind==="error"?text:"クリックしてログイン";
+    }
   }
   const s=modal?.querySelector("#frendaCloudStatus");
   if(s)s.textContent=text;
@@ -67,7 +75,7 @@ function injectStyles(){
 function injectButton(){
   if(button)return;
   injectStyles();
-  button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="☁️ 未ログイン";button.onclick=openModal;
+  button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="☁️ アカウント";button.title="アカウント状態を確認中";button.onclick=openModal;
   const host=document.querySelector(".headerBtns")||document.querySelector("header")||document.body;
   host.appendChild(button);
 }
