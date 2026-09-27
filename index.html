@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.79 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.80</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.81</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -390,7 +390,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 
 /* Ver6.78: desktop responsive layout */
-/* Ver6.80: cloud sync prefers the newer local/cloud data and excludes expedition shadow data. */
+/* Ver6.81: cloud sync prefers the newer local/cloud data and excludes expedition shadow data. */
 @media (min-width:900px){
   main{max-width:1180px;padding:16px 18px}
   .detailPanel{max-width:1180px;padding:16px 18px}
@@ -406,7 +406,7 @@ body.battleOverlayOpen{overflow:hidden}
   .pickGrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 }
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.80</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.81</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -643,14 +643,17 @@ body.battleOverlayOpen{overflow:hidden}
 </section>
 <script src="frenda-master.js"></script>
 <script src="frenda-core.js"></script>
+<script src="frenda-rules.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?v=1.4"></script>
 <script>
 const $=id=>document.getElementById(id);
 const DB=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
+const RULES=window.FRENDA_RULES;
 if(!DB||!Array.isArray(DB.records))throw new Error("frenda-master.js を読み込めませんでした。");
 if(!CORE)throw new Error("frenda-core.js を読み込めませんでした。");
+if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。");
 const R=DB.records;
 const {TYPES,TYPE,FRIENDA_STEP,FRIENDA_EFFECT,rawEff,eff,speedLevel,compareSpeed,skillName,movePowerRef,moveAccuracyRef,displaySpeed}=CORE;
 const fields=[
@@ -1807,7 +1810,7 @@ function setDamageModel(m){
  if(!$("enemyPickOverlay")?.classList.contains("hidden"))renderEnemyRandomRecommendations();
  renderBestThreeMode();
 }
-function hasBattleStats(r){return [r.hp,r.atk,r.def,r.sp_atk,r.sp_def].every(numOk)&&!!r.move_type&&!!r.type1}
+function hasBattleStats(r){return RULES.validBattle(r)&&!!r.type1}
 function updateEnemyRandomButtonLabel(){const b=$("randomEnemyBtn");if(!b)return;const grade=$("enemyGrade")?.value||"";b.textContent=`${scopeLabel(enemyPickScope)}${grade?`・★${grade}`:""}からランダム`}
 function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>inPickScope(r,enemyPickScope)&&hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
 
@@ -2290,7 +2293,7 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 
-// Ver6.80: Supabase cloud sync with conflict-safe timestamping.
+// Ver6.81: Supabase cloud sync with conflict-safe timestamping.
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
  const storage={};
@@ -2307,4 +2310,4 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-09-27 18:59:00 JST / Ver6.80 -->
+<!-- Updated: 2026-09-27 19:38:00 JST / Ver6.81 -->
