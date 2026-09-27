@@ -1,7 +1,7 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.2";
+const CLOUD_VERSION="1.3";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -20,7 +20,7 @@ let statusText="未ログイン";
 let storagePatched=false;
 let initialized=false;
 
-const META_KEYS=new Set(["format_version","simulator_version","dungeon_version","appVersion","saveVersion","exported_at","master_version"]);
+const META_KEYS=new Set(["format_version","simulator_version","dungeon_version","appVersion","saveVersion","exported_at","master_version","sync_updated_at"]);
 function comparableValue(v){
   if(Array.isArray(v))return v.map(comparableValue);
   if(v&&typeof v==="object"){
@@ -121,12 +121,27 @@ function openModal(){
 }
 function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function columnName(){return cfg?.column||"simulator_data"}
+function syncStampKey(){return `frenda:cloud:updatedAt:${cfg?.app||"app"}`}
+function readLocalSyncTime(){try{return Number(localStorage.getItem(syncStampKey())||0)||0}catch{return 0}}
+function writeLocalSyncTime(ts=Date.now()){const n=Math.max(0,Number(ts)||0);try{localStorage.setItem(syncStampKey(),String(n))}catch{}return n}
+function syncTimeOf(data){
+  const direct=Number(data?.sync_updated_at||0);if(direct>0)return direct;
+  // Legacy fallback: expeditionShared already had updatedAt before Cloud v1.3.
+  const nested=Number(data?.state?.updatedAt||data?.state?.expeditionShared?.updatedAt||data?.updatedAt||0);
+  return nested>0?nested:0;
+}
+function withSyncMeta(data){
+  if(!data||typeof data!=="object"||Array.isArray(data))return data;
+  return Object.assign({},data,{sync_updated_at:readLocalSyncTime()});
+}
+function localData(){return withSyncMeta(cfg.getData())}
 function patchStorage(){
   if(storagePatched)return;storagePatched=true;
   const p=Storage.prototype,origSet=p.setItem,origRemove=p.removeItem,origClear=p.clear;
-  p.setItem=function(k,v){origSet.call(this,k,v);if(this===localStorage&&!applying&&cfg?.watchStorage?.(String(k)))scheduleSync()};
-  p.removeItem=function(k){origRemove.call(this,k);if(this===localStorage&&!applying&&cfg?.watchStorage?.(String(k)))scheduleSync()};
-  p.clear=function(){origClear.call(this);if(this===localStorage&&!applying)scheduleSync()};
+  const touch=()=>{try{origSet.call(localStorage,syncStampKey(),String(Date.now()))}catch{}};
+  p.setItem=function(k,v){origSet.call(this,k,v);if(this===localStorage&&!applying&&cfg?.watchStorage?.(String(k))){touch();scheduleSync()}};
+  p.removeItem=function(k){origRemove.call(this,k);if(this===localStorage&&!applying&&cfg?.watchStorage?.(String(k))){touch();scheduleSync()}};
+  p.clear=function(){origClear.call(this);if(this===localStorage&&!applying){touch();scheduleSync()}};
 }
 async function login(email,password){
   if(!client)return;
@@ -143,34 +158,55 @@ async function rowForUser(){
   return await client.from(TABLE).select(`user_id,${columnName()},updated_at`).eq("user_id",session.user.id).maybeSingle();
 }
 async function uploadLocal(local,localStr){
+  if(syncTimeOf(local)<=0){writeLocalSyncTime(Date.now());local=localData();localStr=safeJSON(local)}
   const payload={user_id:session.user.id,[columnName()]:local,updated_at:new Date().toISOString()};
   const {error}=await client.from(TABLE).upsert(payload,{onConflict:"user_id"});if(error)throw error;
   lastUploaded=localStr;clearReloadGuard();setStatus("同期済み");
+}
+function applyCloudAndReload(cloud,cloudStr,cloudTs){
+  const sig=hashString(cloudStr);setReloadGuard(sig);
+  applying=true;
+  return Promise.resolve(cfg.applyData(cloud)).finally(()=>{
+    applying=false;writeLocalSyncTime(cloudTs>0?cloudTs:Date.now());
+    lastUploaded=cloudStr;setStatus("クラウドから読み込みました");
+    setTimeout(()=>location.reload(),180);
+  });
 }
 async function pullOrSeed(){
   if(!session||syncing)return;
   syncing=true;setStatus("同期確認中…","syncing");
   try{
     const {data,error}=await rowForUser();if(error)throw error;
-    const local=cfg.getData(),localStr=safeJSON(local);
+    let local=localData(),localStr=safeJSON(local),localTs=syncTimeOf(local);
     if(!data){await uploadLocal(local,localStr);return}
     const cloud=data[columnName()];
     if(cloud===null||typeof cloud==="undefined"){await uploadLocal(local,localStr);return}
-    const cloudStr=safeJSON(cloud);
+    const cloudStr=safeJSON(cloud),cloudTs=syncTimeOf(cloud);
+
     if(cloudStr!==localStr){
       const sig=hashString(cloudStr);
       if(getReloadGuard()===sig){
-        // 同じクラウド内容を直前の再読み込みで適用済み。アプリ側の移行・並び替えで差分が残った場合は、
-        // 再読み込みを繰り返さず、現在の端末データをクラウドへ戻して収束させる。
+        // The same cloud payload was just applied. If app-side migration changed it,
+        // the migrated local data becomes the new source of truth.
+        writeLocalSyncTime(Math.max(Date.now(),localTs+1,cloudTs+1));
+        local=localData();localStr=safeJSON(local);
         await uploadLocal(local,localStr);return;
       }
-      setReloadGuard(sig);
-      applying=true;
-      try{await cfg.applyData(cloud)}finally{applying=false}
-      lastUploaded=cloudStr;setStatus("クラウドから読み込みました");
-      setTimeout(()=>location.reload(),180);
-      return;
+      if(localTs>0||cloudTs>0){
+        if(localTs>cloudTs){await uploadLocal(local,localStr);return}
+        if(cloudTs>localTs){await applyCloudAndReload(cloud,cloudStr,cloudTs);return}
+        // Same timestamp but different contents: keep legacy cloud-first behavior.
+      }
+      await applyCloudAndReload(cloud,cloudStr,cloudTs);return;
     }
+
+    // Same contents: converge the sync timestamp without changing gameplay data.
+    if(localTs<=0&&cloudTs<=0){
+      writeLocalSyncTime(Date.now());local=localData();localStr=safeJSON(local);
+      await uploadLocal(local,localStr);return;
+    }
+    if(localTs>cloudTs){await uploadLocal(local,localStr);return}
+    if(cloudTs>localTs)writeLocalSyncTime(cloudTs);
     lastUploaded=cloudStr;clearReloadGuard();setStatus("同期済み");
   }catch(e){console.error("FrendaCloud pull/seed",e);setStatus("同期エラー","error")}
   finally{syncing=false}
@@ -181,17 +217,16 @@ async function pullNow(force=false){
     const {data,error}=await rowForUser();if(error)throw error;
     const cloud=data?.[columnName()];
     if(cloud===null||typeof cloud==="undefined"){setStatus("クラウドにデータがありません","error");return}
-    const cloudStr=safeJSON(cloud),localStr=safeJSON(cfg.getData());
+    const cloudStr=safeJSON(cloud),localStr=safeJSON(localData()),cloudTs=syncTimeOf(cloud);
     if(cloudStr===localStr){lastUploaded=cloudStr;clearReloadGuard();setStatus("同期済み");return}
-    setReloadGuard(hashString(cloudStr));
-    applying=true;try{await cfg.applyData(cloud)}finally{applying=false}
-    lastUploaded=cloudStr;setStatus("クラウドから読み込みました");closeModal();setTimeout(()=>location.reload(),180)
+    closeModal();await applyCloudAndReload(cloud,cloudStr,cloudTs)
   }catch(e){console.error("FrendaCloud pull",e);setStatus("読込エラー","error")}
   finally{syncing=false}
 }
 async function pushNow(showResult=false){
   if(!session||syncing||applying)return;
-  const local=cfg.getData(),s=safeJSON(local);if(!s)return;
+  if(showResult)writeLocalSyncTime(Date.now());
+  const local=localData(),s=safeJSON(local);if(!s)return;
   if(!showResult&&s===lastUploaded)return;
   syncing=true;setStatus("クラウド保存中…","syncing");
   try{await uploadLocal(local,s)}
@@ -221,5 +256,6 @@ async function init(options){
   if(session)await pullOrSeed();else setStatus("未ログイン")
 }
 
-window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session};
+window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,localSyncTime:readLocalSyncTime};
 })();
+// Updated: 2026-09-27 18:12:38 JST / Cloud Ver1.3
