@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.23 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.24 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.23</title>
+<title>フレンダダンジョン Ver1.24</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1837,7 +1837,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 @media(max-width:700px){.floorHeroBadge{min-width:112px;padding:6px 9px!important}.floorHeroBadge strong{font-size:23px!important}.encounterProgressBadge{min-width:auto;padding:6px 8px;gap:5px}.encounterProgressBadge b{font-size:20px}.encounterProgressBadge small{display:none}.battleEnemyCounter{right:8px;top:8px;padding:5px 8px;font-size:9px}.battleEnemyCounter b{font-size:17px}.nextEnemyInner{padding:10px}.nextEnemyQuestion{margin:12px 0 8px}}
 
 /* Ver1.20: hatch scene centered vertically; bond endure gets a full praise moment. */
-/* Ver1.23: shared game rules moved to frenda-rules.js; cloud conflict selection remains enabled. */
+/* Ver1.24: shared game rules moved to frenda-rules.js; cloud conflict selection remains enabled. */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1865,19 +1865,19 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.23</span></b><small>Simulator Ver6.81 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.24</span></b><small>Simulator Ver6.82 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
 <script src="../frenda-master.js?v=1.23"></script>
 <script src="../frenda-core.js?v=1.23"></script>
-<script src="../frenda-rules.js?v=1.0"></script>
+<script src="../frenda-rules.js?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.23";
+const APP_VERSION="1.24";
 
 
 const EXPEDITION_TIMER_KEY="frenda:expedition:v1";
@@ -2112,20 +2112,20 @@ const BOND_START_BUFF_RATE={4:.20,5:.30};
 const FLOOR_PICKUP_RATE=.12;
 const PICKUP_WEIGHTS={berry:30,ball:25,candy:20,charm:15,revive:10};
 const CAPTURE_CHANCE={battle:.15,elite:.30};
-const CAPTURE_BASE_RATE={2:.30,3:.15,4:.07,5:.03};
+const CAPTURE_BASE_RATE=RULES.CAPTURE_BASE_RATE;
 const BALL_IMG_BASE="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/";
-const BALL_DEF={poke:{label:"モンスターボール",short:"モンボ",mult:1,icon:"🔴",img:BALL_IMG_BASE+"poke-ball.png"},super:{label:"スーパーボール",short:"スーパー",mult:3,icon:"🔵",img:BALL_IMG_BASE+"great-ball.png"},hyper:{label:"ハイパーボール",short:"ハイパー",mult:10,icon:"🟡",img:BALL_IMG_BASE+"ultra-ball.png"},master:{label:"マスターボール",short:"マスター",mult:Infinity,icon:"🟣",img:BALL_IMG_BASE+"master-ball.png"}};
-const EGG_DEF={normal:{label:"ふつうの卵",short:"ふつう",icon:"🥚",required:10},rare:{label:"レア卵",short:"レア",icon:"✨🥚",required:12},super:{label:"スーパーレア卵",short:"Sレア",icon:"🌟🥚",required:16},type:{label:"タイプ卵",short:"タイプ",icon:"🎨🥚",required:12}};
+const BALL_DEF={poke:{label:"モンスターボール",short:"モンボ",mult:RULES.BALL_MULT.poke,icon:"🔴",img:BALL_IMG_BASE+"poke-ball.png"},super:{label:"スーパーボール",short:"スーパー",mult:RULES.BALL_MULT.super,icon:"🔵",img:BALL_IMG_BASE+"great-ball.png"},hyper:{label:"ハイパーボール",short:"ハイパー",mult:RULES.BALL_MULT.hyper,icon:"🟡",img:BALL_IMG_BASE+"ultra-ball.png"},master:{label:"マスターボール",short:"マスター",mult:RULES.BALL_MULT.master,icon:"🟣",img:BALL_IMG_BASE+"master-ball.png"}};
+const EGG_DEF=RULES.EGG_DEF;
 const EGG_SLOT_RATES={1:{normal:72,rare:18,super:2,type:8},2:{normal:62,rare:24,super:4,type:10},3:{normal:52,rare:28,super:8,type:12},4:{normal:42,rare:30,super:13,type:15},5:{normal:35,rare:28,super:17,type:20}};
 const EGG_HATCH_GRADE={normal:{2:60,3:30,4:9,5:1},rare:{2:20,3:45,4:30,5:5},super:{2:5,3:20,4:50,5:25},type:{2:40,3:35,4:20,5:5}};
 const EVOLUTION_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
 const EVOLUTION_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
 const EVO_CACHE_KEY="frenda:dungeon:evolutionMap:v2";
-const EVO_GRADE_WEIGHTS={2:50,3:30,4:15,5:5};
+const EVO_GRADE_WEIGHTS=RULES.EVO_GRADE_WEIGHTS;
 const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
 const SPECIAL_EVOLUTION_TARGETS={"カモネギ":[],"ガラルカモネギ":["ネギガナイト"],"ニャース":["ペルシアン"],"ガラルニャース":["ニャイキング"],"バリヤード":[],"パルデアウパー":["ドオー"]};
-const TRAINING_STEP=3;
-const PERMANENT_BOOST_MAX=30;
+const TRAINING_STEP=RULES.TRAINING_STEP;
+const PERMANENT_BOOST_MAX=RULES.PERMANENT_BOOST_MAX;
 const TEMP_BOOST_MAX=30;
 
 const TYPE_FX={"ノーマル":["#f5f5ef","#aab3b8","✦"],"ほのお":["#fff07b","#ff5b2d","🔥"],"みず":["#c7f6ff","#2499e8","💧"],"でんき":["#fff78a","#f2c400","⚡"],"くさ":["#c9ff9f","#3aa64b","🍃"],"こおり":["#e7ffff","#6ddbea","❄️"],"かくとう":["#ffd0aa","#d9502f","✊"],"どく":["#f2b8ff","#8e44ad","☠"],"じめん":["#f4d4a1","#9b6a36","◆"],"ひこう":["#e5f4ff","#70a8e8","🪽"],"エスパー":["#ffd1f5","#db5fb4","◉"],"むし":["#e4f7a7","#78952e","✣"],"いわ":["#e7d5b0","#8d7957","⬟"],"ゴースト":["#d4c5ff","#58438e","👻"],"ドラゴン":["#c9c1ff","#5e4bc4","✦"],"あく":["#b7b7c8","#31313d","◈"],"はがね":["#f3fbff","#7898a8","⚙"],"フェアリー":["#ffe1f2","#e78bbb","✧"]};
@@ -2272,7 +2272,7 @@ function registeredCandidatesForTarget(sourceId,targetEntry){const src=rec(sourc
 function targetDisplayName(sourceId,targetEntry){const pool=registeredCandidatesForTarget(sourceId,targetEntry);return pool[0]?.name_ja||targetEntry?.name||"進化先"}
 function evolutionInfoForPick(id){const r=rec(id),entry=evolutionEntryForName(r?.name_ja),targets=entry?targetEntriesForName(r.name_ja).map(e=>({entry:e,name:targetDisplayName(id,e),candidates:registeredCandidatesForTarget(id,e)})):[];const hasEvolution=!!targets.length,cost=evolutionDepth(entry)<=0?EVOLUTION_COST_FIRST:EVOLUTION_COST_LATER,points=growthPointsFor(id),runMember=state.run?.team?.find(t=>t.id===id),fainted=!!runMember?.ko,registered=targets.some(t=>t.candidates.length);return {entry,targets,hasEvolution,cost,points,fainted,registered,canEvolve:hasEvolution&&registered&&!fainted&&!isExpeditionLocked(id)&&points>=cost}}
 function evolutionCueState(id){const r=rec(id),ei=evolutionInfoForPick(id);if(!r||!ei.hasEvolution||!ei.registered||ei.fainted)return {kind:"",html:""};if(ei.canEvolve)return {kind:"ready",html:`<div class="evoCue ready">✨ 進化できそうだ！</div>`};if(ei.points===Math.max(0,ei.cost-1))return {kind:"near",html:`<div class="evoCue near">${esc(r.name_ja)}の ようすが……？</div>`};return {kind:"",html:""}}
-function growthKeyFor(id){const r=rec(id),entry=evolutionEntryForName(r?.name_ja);return entry?`evo:${evolutionRootNo(entry)}`:(r?.evolution_family||r?.evo_family||r?.family_id||r?.name_ja||id)}
+function growthKeyFor(id){const r=rec(id),entry=evolutionEntryForName(r?.name_ja);return RULES.familyKey(id,r,entry?evolutionRootNo(entry):null)}
 function growthPointsFor(id){return Number(state.trainingPoints?.[growthKeyFor(id)]||0)}
 function addGrowthPoint(id,n=1){const k=growthKeyFor(id);state.trainingPoints[k]=Number(state.trainingPoints[k]||0)+n}
 function awardGrowthOrDrill(id,n=1){
@@ -2281,15 +2281,10 @@ function awardGrowthOrDrill(id,n=1){
  // Evolution data is normally ready before these rewards occur. If it is not,
  // keep the old growth bucket rather than incorrectly deciding that no evolution exists.
  if(!evoReady){addGrowthPoint(id,amount);return {kind:"growth",amount,label:`育成ポイント+${amount}`}}
- const ei=evolutionInfoForPick(id);
- if(ei.hasEvolution){
-  addGrowthPoint(id,amount);
-  return {kind:"growth",amount,label:`育成ポイント+${amount}`}
- }
- state.drillPoints[id]=drillFor(id)+amount;
- return {kind:"drill",amount,label:`特訓ポイント+${amount}`}
+ const out=RULES.awardGrowthOrDrill(state,id,amount,{key:growthKeyFor(id),hasEvolution:evolutionInfoForPick(id).hasEvolution});
+ return {...out,label:out.kind==="growth"?`育成ポイント+${amount}`:`特訓ポイント+${amount}`};
 }
-function bondKeyFor(id){const r=rec(id),entry=evolutionEntryForName(r?.name_ja);return entry?`evo:${evolutionRootNo(entry)}`:(r?.evolution_family||r?.evo_family||r?.family_id||r?.name_ja||id)}
+function bondKeyFor(id){return growthKeyFor(id)}
 function bondPointsFor(id){return Number(state.bondPoints?.[bondKeyFor(id)]||0)}
 function bondLevelFromPoints(points){return RULES.bondLevelFromPoints(points)}
 function bondLevelFor(id){return bondLevelFromPoints(bondPointsFor(id))}
@@ -2322,7 +2317,7 @@ function weightedEvolutionGrade(pool,currentGrade,allowLower=false){
  if(!allowed.length)return null;
  const weights={};
  for(const g of allowed)weights[g]=EVO_GRADE_WEIGHTS[g]||1;
- return Number(chooseWeighted(weights))
+ return Number(RULES.weightedChoice(weights))
 }
 function chooseEvolutionPick(sourceId,target,allowLower=false){
  const current=Math.max(2,Number(rec(sourceId)?.grade)||2),
@@ -2480,12 +2475,12 @@ function hasVisitedDungeon(did){for(let d=1;d<=5;d++){const st=state.stats?.[sta
 function updateDeepest(f){if(!state.run)return;const s=getStat(state.run.dungeonId,state.run.difficulty);s.deepest=Math.max(s.deepest,Math.min(10,f));save()}
 function addUnlock(did,diff){if(!THEMES[did]||diff<1||diff>5)return false;const a=state.unlocks[did]||(state.unlocks[did]=[]);if(a.includes(diff))return false;a.push(diff);a.sort((x,y)=>x-y);return true}
 function totalDungeonClears(){return Object.values(state.stats||{}).reduce((n,st)=>n+Math.max(0,Number(st?.clears||0)),0)}
-function eggCapFromClears(){return Math.min(10,2+Math.floor(totalDungeonClears()/10))}
+function eggCapFromClears(){return RULES.eggCapFromClears(totalDungeonClears())}
 function rebuildProgressionFromStats(){addUnlock("forest",1);for(let ti=0;ti<THEME_ORDER.length;ti++){const did=THEME_ORDER[ti];for(let d=1;d<=5;d++){const st=state.stats?.[statKey(did,d)];if(Number(st?.clears||0)>0){addUnlock(did,d);if(d<5)addUnlock(did,d+1);if(d===1&&ti+1<THEME_ORDER.length)addUnlock(THEME_ORDER[ti+1],1)}}}state.eggCap=eggCapFromClears()}
 function applyClearProgression(did,diff,firstClear){const unlockedNow=[];if(diff<5&&addUnlock(did,diff+1))unlockedNow.push(`${THEMES[did].name} ★${diff+1}`);if(diff===1&&firstClear){const ti=THEME_ORDER.indexOf(did);if(ti>=0&&ti+1<THEME_ORDER.length){const nx=THEME_ORDER[ti+1];if(addUnlock(nx,1))unlockedNow.push(`${THEMES[nx].name} ★1`)}}const before=Number(state.eggCap)||2,after=eggCapFromClears();state.eggCap=after;if(after>before)unlockedNow.push(`累計${totalDungeonClears()}回クリア：卵所持上限 ${before}→${after}`);return unlockedNow}
 function eggId(){return `egg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`}
 function eggLabel(e){const d=EGG_DEF[e?.kind]||EGG_DEF.normal;return e?.kind==="type"&&e?.type?`${e.type}タイプの卵`:d.label}
-function eggReq(e){return Number(EGG_DEF[e?.kind]?.required||e?.required||10)}
+function eggReq(e){return RULES.eggRequired(e?.kind,e?.required||10)}
 function eggReady(e){return Number(e?.points||0)>=eggReq(e)}
 function eggVisualHTML(eOrKind,type=null,small=false){const kind=typeof eOrKind==="string"?eOrKind:(eOrKind?.kind||"normal"),tp=type||(typeof eOrKind==="object"?eOrKind?.type:null),c=TYPE_FX[tp]?.[1]||"#46a6df",cls=`eggVisual ${kind}${small?" small":""}`;return `<div class="${cls}"${kind==="type"?` data-type="${esc(tp||"タイプ")}" style="--typeColor:${esc(c)}"`:""} aria-hidden="true"></div>`}
 function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,groups=speciesGroups(RECORDS.filter(validBattle)),counts={};for(const t of th.types)counts[t]=groups.reduce((n,g)=>{const types=new Set(g.records.flatMap(r=>[r.type1,r.type2]).filter(Boolean));if(!types.has(t))return n;return n+(th.types.every(x=>types.has(x))?.5:1)},0);return chooseWeighted(counts)}
@@ -2876,7 +2871,7 @@ function proceedVictory(){const v=state.run?.victory;if(!v)return;if(v.kind==="b
 function proceedAfterBattleReward(){const forced=!!state.run?.encounter?.forcedAlert,c=state.run.capture;if(c?.eligible){state.run.scene="captureIntro";save();render()}else{state.run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}}
 function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;if(c.candidateIds.length>1){state.run.scene="captureSelect";save();render()}else{chooseCaptureTarget(c.candidateIds[0])}}
 function chooseCaptureTarget(id){const c=state.run.capture;if(!c||!c.eligible)return; c.targetId=id;const special=Math.random()<.10;let balls=special?["poke","poke","poke","poke","super","super","hyper","master"]:["poke","poke","poke","poke","poke","super","super","hyper"];c.balls=shuffle(balls);c.special=special;c.pendingOutcome=null;c.result=null;state.run.scene="captureSlot";save();render()}
-function captureRate(targetId,ballKey){if(ballKey==="master")return 1;const g=Number(rec(targetId)?.grade||2),base=CAPTURE_BASE_RATE[g]??.03,m=BALL_DEF[ballKey]?.mult||1,boost=1+Math.max(0,Number(state.run?.captureBoost||0));return Math.min(1,base*m*boost)}
+function captureRate(targetId,ballKey){return RULES.captureRate(Number(rec(targetId)?.grade||2),ballKey,Number(state.run?.captureBoost||0))}
 function resolveCapture(ballKey){const c=state.run.capture;if(!c||!c.targetId||c.result)return;if(!c.pendingOutcome){const boost=Math.max(0,Number(state.run.captureBoost||0)),rate=captureRate(c.targetId,ballKey),success=Math.random()<rate;c.pendingOutcome={ballKey,rate,success,captureBoost:boost};state.run.captureBoost=0;if(boost)addLog(`拾ったモンスターボール効果を使用：捕獲率${Math.round(boost*100)}%アップ。`)}state.run.scene="captureThrow";save();render()}
 function commitCaptureOutcome(){const c=state.run?.capture;if(!c||c.result)return;if(!c.pendingOutcome)return;const {ballKey,rate,success}=c.pendingOutcome,target=rec(c.targetId),newSpeciesRegistration=!!success&&target&&!pickRegistered(target);let duplicate=false,duplicateRewardKind=null;if(success){if(ownedEntry(c.targetId)){duplicate=true;const award=awardGrowthOrDrill(c.targetId,1);duplicateRewardKind=award.kind;addLog(`${rec(c.targetId).name_ja}は所持済み。${award.label}。`)}else{ownNew(c.targetId);state.run.captured=state.run.captured||[];state.run.captured.push(c.targetId);addLog(`${rec(c.targetId).name_ja}が仲間になった！`);if(newSpeciesRegistration)addLog(`📖 ${rec(c.targetId).name_ja}が図鑑に登録された！`)}}else addLog(`${rec(c.targetId).name_ja}のゲットに失敗した。`);c.result={ballKey,rate,success,duplicate,duplicateRewardKind,newSpeciesRegistration};c.pendingOutcome=null;state.run.scene="captureResult";save();render()}
 function finishCapture(){const forced=!!state.run?.encounter?.forcedAlert;state.run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}
@@ -3687,4 +3682,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 19:38:00 JST / Ver1.23 -->
+<!-- Updated: 2026-09-27 19:55:00 JST / Ver1.24 -->
