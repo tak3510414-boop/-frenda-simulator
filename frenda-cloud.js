@@ -1,7 +1,7 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.3";
+const CLOUD_VERSION="1.4";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -19,6 +19,7 @@ let modal=null;
 let statusText="未ログイン";
 let storagePatched=false;
 let initialized=false;
+let conflictPending=null;
 
 const META_KEYS=new Set(["format_version","simulator_version","dungeon_version","appVersion","saveVersion","exported_at","master_version","sync_updated_at"]);
 function comparableValue(v){
@@ -46,9 +47,15 @@ function setStatus(text,kind=""){
   // stable account state so auto-save/pull does not flicker between messages.
   if(button){
     if(session){
-      button.textContent="☁️ ログイン中";
-      button.dataset.kind=kind==="error"?"error":"";
-      button.title=kind==="error"?text:"クラウド同期はバックグラウンドで自動実行中";
+      if(conflictPending){
+        button.textContent="☁️ 要選択";
+        button.dataset.kind="syncing";
+        button.title="ローカルとクラウドのどちらを使うか選択してください";
+      }else{
+        button.textContent="☁️ ログイン中";
+        button.dataset.kind=kind==="error"?"error":"";
+        button.title=kind==="error"?text:"クラウド同期はバックグラウンドで自動実行中";
+      }
     }else{
       button.textContent="☁️ 未ログイン";
       button.dataset.kind=kind==="error"?"error":"";
@@ -70,6 +77,7 @@ function injectStyles(){
   .frendaCloudPanel label{display:block;font-size:12px;font-weight:800;margin:9px 0 4px}.frendaCloudPanel input{width:100%;padding:11px;border:1px solid #c8d2d9;border-radius:10px;font:inherit;background:#fff;color:#17202a}
   .frendaCloudActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.frendaCloudActions button{width:100%;padding:10px!important;border-radius:10px!important}.frendaCloudActions .wide{grid-column:1/-1}.frendaCloudPrimary{background:#1769e0!important;color:#fff!important}.frendaCloudSecondary{background:#edf2f7!important;color:#243747!important}.frendaCloudDanger{background:#a33!important;color:#fff!important}
   .frendaCloudInfo{font-size:12px;line-height:1.55;color:#64737e;background:#f4f7f9;border-radius:10px;padding:10px;margin-top:10px}.frendaCloudUser{font-size:13px;font-weight:800;word-break:break-all;margin:6px 0}.frendaCloudStatus{margin-top:9px;font-size:12px;font-weight:800;color:#31566d;min-height:1.4em}
+  .frendaCloudConflictLead{font-size:13px;line-height:1.65;margin:2px 0 10px}.frendaCloudConflictGrid{display:grid;gap:9px}.frendaCloudChoice{border:1px solid #d7e0e6;border-radius:12px;padding:11px;background:#f8fafb}.frendaCloudChoice b{display:block;font-size:14px;margin-bottom:4px}.frendaCloudChoiceTime{font-size:13px;font-weight:900;color:#254b63}.frendaCloudChoiceSummary{font-size:11px;color:#667782;margin-top:5px;line-height:1.45}.frendaCloudWarn{margin-top:11px;padding:9px 10px;border-radius:10px;background:#fff1f1;color:#8b2727;font-size:12px;font-weight:800;line-height:1.5}.frendaCloudConflictActions{display:grid;gap:8px;margin-top:12px}.frendaCloudConflictActions button{width:100%;padding:11px!important;border-radius:10px!important}.frendaCloudKeepLocal{background:#1769e0!important;color:#fff!important}.frendaCloudKeepCloud{background:#2f7d4b!important;color:#fff!important}.frendaCloudLater{background:#edf2f7!important;color:#243747!important}
   `;document.head.appendChild(st)
 }
 function injectButton(){
@@ -80,7 +88,70 @@ function injectButton(){
   host.appendChild(button);
 }
 function closeModal(){modal?.remove();modal=null}
+function formatSyncTime(ts){
+  const n=Number(ts||0);if(!(n>0))return "不明（旧形式）";
+  try{return new Date(n).toLocaleString("ja-JP",{year:"numeric",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"})}catch{return new Date(n).toString()}
+}
+function hasLocalData(){
+  try{return typeof cfg?.hasLocalData==="function"?!!cfg.hasLocalData():true}catch{return true}
+}
+function describeData(data){
+  try{return typeof cfg?.describeData==="function"?String(cfg.describeData(data)||""):""}catch{return ""}
+}
+function refreshConflictLocal(){
+  if(!conflictPending)return;
+  const local=localData();
+  conflictPending.local=local;
+  conflictPending.localStr=safeJSON(local);
+  conflictPending.localTs=syncTimeOf(local);
+}
+function openConflictChooser(){
+  if(!conflictPending)return;
+  refreshConflictLocal();
+  closeModal();
+  const p=conflictPending;
+  const localSummary=describeData(p.local),cloudSummary=describeData(p.cloud);
+  modal=document.createElement("div");modal.className="frendaCloudOverlay";
+  modal.innerHTML=`
+    <div class="frendaCloudPanel" role="dialog" aria-modal="true" aria-label="セーブデータ選択">
+      <div class="frendaCloudHead"><b>☁️ セーブデータを選択</b></div>
+      <div class="frendaCloudConflictLead">この端末とクラウドの両方に、内容の異なるセーブデータがあります。<br><b>どちらを使用するか選んでください。</b></div>
+      <div class="frendaCloudConflictGrid">
+        <div class="frendaCloudChoice"><b>📱 この端末のデータ</b><div class="frendaCloudChoiceTime">最終更新：${escapeHTML(formatSyncTime(p.localTs))}</div>${localSummary?`<div class="frendaCloudChoiceSummary">${escapeHTML(localSummary)}</div>`:""}</div>
+        <div class="frendaCloudChoice"><b>☁️ クラウドのデータ</b><div class="frendaCloudChoiceTime">最終更新：${escapeHTML(formatSyncTime(p.cloudTs))}</div>${cloudSummary?`<div class="frendaCloudChoiceSummary">${escapeHTML(cloudSummary)}</div>`:""}</div>
+      </div>
+      <div class="frendaCloudWarn">⚠️ 選ばなかった方のデータは、選んだデータで上書きされます。</div>
+      <div id="frendaCloudStatus" class="frendaCloudStatus">選択するまでは自動同期しません。</div>
+      <div class="frendaCloudConflictActions">
+        <button type="button" id="frendaCloudUseLocal" class="frendaCloudKeepLocal">📱 この端末のデータを使う</button>
+        <button type="button" id="frendaCloudUseCloud" class="frendaCloudKeepCloud">☁️ クラウドのデータを使う</button>
+        <button type="button" id="frendaCloudChooseLater" class="frendaCloudLater">今は同期しない</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.querySelector("#frendaCloudUseLocal").onclick=async()=>{
+    if(syncing)return;
+    syncing=true;
+    try{
+      writeLocalSyncTime(Date.now());
+      const local=localData(),s=safeJSON(local);
+      conflictPending=null;closeModal();setStatus("この端末のデータを採用しています…","syncing");
+      await uploadLocal(local,s);setStatus("この端末のデータで同期しました");
+    }catch(e){console.error("FrendaCloud choose local",e);setStatus("保存エラー","error")}
+    finally{syncing=false}
+  };
+  modal.querySelector("#frendaCloudUseCloud").onclick=async()=>{
+    if(syncing)return;
+    syncing=true;
+    const chosen=conflictPending;
+    conflictPending=null;closeModal();setStatus("クラウドのデータを採用しています…","syncing");
+    try{await applyCloudAndReload(chosen.cloud,chosen.cloudStr,chosen.cloudTs)}
+    catch(e){console.error("FrendaCloud choose cloud",e);setStatus("読込エラー","error");syncing=false}
+  };
+  modal.querySelector("#frendaCloudChooseLater").onclick=()=>{closeModal();setStatus("同期保留中：データを選択してください")};
+}
 function openModal(){
+  if(conflictPending){openConflictChooser();return}
   closeModal();
   modal=document.createElement("div");modal.className="frendaCloudOverlay";
   const email=session?.user?.email||"";
@@ -151,7 +222,7 @@ async function login(email,password){
   session=data.session;setStatus("ログインしました","syncing");closeModal();await pullOrSeed();
 }
 async function logout(){
-  if(!client)return;clearReloadGuard();await client.auth.signOut();session=null;lastUploaded="";setStatus("未ログイン");closeModal()
+  if(!client)return;clearReloadGuard();conflictPending=null;await client.auth.signOut();session=null;lastUploaded="";setStatus("未ログイン");closeModal()
 }
 async function rowForUser(){
   if(!session)return {data:null,error:new Error("not signed in")};
@@ -174,33 +245,41 @@ function applyCloudAndReload(cloud,cloudStr,cloudTs){
 }
 async function pullOrSeed(){
   if(!session||syncing)return;
+  if(conflictPending){openConflictChooser();return}
   syncing=true;setStatus("同期確認中…","syncing");
   try{
     const {data,error}=await rowForUser();if(error)throw error;
     let local=localData(),localStr=safeJSON(local),localTs=syncTimeOf(local);
-    if(!data){await uploadLocal(local,localStr);return}
+    const localPresent=hasLocalData();
+    if(!data){
+      if(localPresent)await uploadLocal(local,localStr);else setStatus("同期済み（セーブデータなし）");
+      return
+    }
     const cloud=data[columnName()];
-    if(cloud===null||typeof cloud==="undefined"){await uploadLocal(local,localStr);return}
-    const cloudStr=safeJSON(cloud),cloudTs=syncTimeOf(cloud);
+    if(cloud===null||typeof cloud==="undefined"){
+      if(localPresent)await uploadLocal(local,localStr);else setStatus("同期済み（セーブデータなし）");
+      return
+    }
+    const cloudStr=safeJSON(cloud),cloudTs=syncTimeOf(cloud)||(Date.parse(data.updated_at||"")||0);
+
+    if(!localPresent){await applyCloudAndReload(cloud,cloudStr,cloudTs);return}
 
     if(cloudStr!==localStr){
       const sig=hashString(cloudStr);
       if(getReloadGuard()===sig){
-        // The same cloud payload was just applied. If app-side migration changed it,
-        // the migrated local data becomes the new source of truth.
+        // Cloud was explicitly chosen/applied just before reload. App-side migration
+        // may have normalized it, so save that normalized form without asking again.
         writeLocalSyncTime(Math.max(Date.now(),localTs+1,cloudTs+1));
         local=localData();localStr=safeJSON(local);
         await uploadLocal(local,localStr);return;
       }
-      if(localTs>0||cloudTs>0){
-        if(localTs>cloudTs){await uploadLocal(local,localStr);return}
-        if(cloudTs>localTs){await applyCloudAndReload(cloud,cloudStr,cloudTs);return}
-        // Same timestamp but different contents: keep legacy cloud-first behavior.
-      }
-      await applyCloudAndReload(cloud,cloudStr,cloudTs);return;
+      conflictPending={local,localStr,localTs,cloud,cloudStr,cloudTs};
+      setStatus("データの選択が必要です");
+      openConflictChooser();
+      return;
     }
 
-    // Same contents: converge the sync timestamp without changing gameplay data.
+    // Same contents: no choice is needed; only converge the sync timestamp.
     if(localTs<=0&&cloudTs<=0){
       writeLocalSyncTime(Date.now());local=localData();localStr=safeJSON(local);
       await uploadLocal(local,localStr);return;
@@ -212,6 +291,7 @@ async function pullOrSeed(){
   finally{syncing=false}
 }
 async function pullNow(force=false){
+  if(conflictPending){openConflictChooser();return}
   if(!session||syncing)return;syncing=true;setStatus("クラウド読込中…","syncing");
   try{
     const {data,error}=await rowForUser();if(error)throw error;
@@ -224,6 +304,7 @@ async function pullNow(force=false){
   finally{syncing=false}
 }
 async function pushNow(showResult=false){
+  if(conflictPending){openConflictChooser();return}
   if(!session||syncing||applying)return;
   if(showResult)writeLocalSyncTime(Date.now());
   const local=localData(),s=safeJSON(local);if(!s)return;
@@ -234,7 +315,7 @@ async function pushNow(showResult=false){
   finally{syncing=false}
 }
 function scheduleSync(delay=1400){
-  if(!session||applying)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>pushNow(false),delay)
+  if(!session||applying||conflictPending)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>pushNow(false),delay)
 }
 async function init(options){
   cfg=options||{};injectButton();patchStorage();
@@ -246,7 +327,7 @@ async function init(options){
   const listener=client.auth.onAuthStateChange((event,newSession)=>{
     const oldUserId=session?.user?.id||null,newUserId=newSession?.user?.id||null;
     session=newSession||null;
-    if(!session){lastUploaded="";clearReloadGuard();setStatus("未ログイン");return}
+    if(!session){lastUploaded="";conflictPending=null;clearReloadGuard();setStatus("未ログイン");return}
     // TOKEN_REFRESHED / INITIAL_SESSION / タブ復帰などでは再読込しない。
     // 新規ログイン・ユーザー切替時だけ同期確認する。
     if(initialized&&event==="SIGNED_IN"&&newUserId!==oldUserId&&!syncing){setStatus("同期確認中…","syncing");setTimeout(()=>pullOrSeed(),0)}
@@ -258,4 +339,4 @@ async function init(options){
 
 window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,localSyncTime:readLocalSyncTime};
 })();
-// Updated: 2026-09-27 18:12:38 JST / Cloud Ver1.3
+// Updated: 2026-09-27 18:59:00 JST / Cloud Ver1.4
