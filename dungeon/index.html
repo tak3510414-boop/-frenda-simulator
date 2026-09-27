@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.11 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.12 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.11</title>
+<title>フレンダダンジョン Ver1.12</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -629,6 +629,53 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 @keyframes eggRewardStar{from{transform:scale(.65) rotate(-8deg);opacity:.35}to{transform:scale(1.25) rotate(8deg);opacity:1}}
 @keyframes eggRewardFlash{0%{opacity:.92}30%{opacity:.45}100%{opacity:0}}
 @media(max-width:700px){.eggDiscoveryCard{min-height:350px}.eggDiscoveryInner{min-height:315px}.eggDiscoveryOrb{width:130px;height:170px}.eggRewardBig{min-height:185px}.eggRewardBig .eggVisual{transform:scale(1.55)}}
+
+/* Ver1.12: Make PC reward / boss intro screens use the area more boldly. */
+.postRunBigCard{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:min(72vh,700px);padding:28px 24px!important}
+.postRunBigCard h2{font-size:clamp(34px,4.3vw,52px);line-height:1.12;margin:8px 0 10px;text-align:center}
+.postRunBigCard p{font-size:clamp(18px,2.1vw,24px);line-height:1.58;text-align:center;max-width:min(1000px,94%)}
+.eggDiscoveryCard.postRunBigCard{min-height:min(76vh,760px)}
+.eggDiscoveryCard.postRunBigCard .eggDiscoveryInner{min-height:min(70vh,660px);padding:20px 24px}
+.eggDiscoveryCard.postRunBigCard .eggDiscoveryText{font-size:clamp(28px,4vw,52px);min-height:72px}
+.eggDiscoveryCard.postRunBigCard .eggDiscoveryOrb{width:min(300px,36vw);height:min(360px,40vh);margin:12px auto 18px}
+.eggDiscoveryCard.postRunBigCard .eggDiscoveryOrb .eggVisual{transform:scale(2.7)}
+.eggDiscoveryCard.postRunBigCard .eggDiscoveryHint{font-size:15px;margin-top:10px}
+.eggDiscoveryCard.postRunBigCard .eggDiscoveryContinue{min-width:280px;font-size:24px;padding:16px 28px;border-radius:18px;margin-top:16px}
+.eggRouletteCard{cursor:pointer;touch-action:manipulation}
+.eggRouletteCard .eggRouletteLead{margin-bottom:8px;min-height:120px;display:flex;align-items:center;justify-content:center}
+.eggRouletteCard .eggRouletteLead .eggVisual{transform:scale(2.2)}
+.eggRouletteCard .eggRoulette{width:min(1180px,100%);display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px;margin:18px 0 14px}
+.eggRouletteCard .eggSlot{min-height:152px;padding:12px 6px;font-size:15px;border-radius:20px}
+.eggRouletteCard .eggSlot .eggVisual{width:60px;height:76px;margin-bottom:8px}
+.eggRouletteCard .eggSlot .eggVisual::before{transform:scale(1) rotate(-17deg);transform-origin:left top}
+.eggRouletteCard .eggSlot .eggVisual::after{font-size:10px;bottom:9px}
+.eggRouletteCard .eggSlot.active{transform:translateY(-7px) scale(1.03);box-shadow:0 10px 26px #a9780070}
+.eggRouletteCard .eggRouletteStop{width:min(860px,100%)!important;min-width:320px;font-size:32px!important;padding:17px 24px!important;border-radius:18px!important}
+.eggRouletteCard .eggRouletteTapHint{font-size:14px;font-weight:900;color:#60727e;margin-top:8px;text-align:center}
+.runBossIntroCard{min-height:min(72vh,700px)!important;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:34px 28px!important}
+.runBossIntroCard .resultIcon{font-size:clamp(88px,15vh,146px)!important}
+.runBossIntroCard h2{font-size:clamp(38px,5.2vh,62px)!important;margin:0!important;line-height:1.08!important}
+.runBossIntroCard p{font-size:clamp(19px,2.4vh,28px)!important;line-height:1.62!important;max-width:min(980px,94%)!important}
+.runBossIntroCard .notice{max-width:min(980px,94%)!important;font-size:clamp(18px,2.1vh,24px)!important;line-height:1.6!important;padding:16px 18px!important}
+.runBossIntroCard button{min-width:420px!important;font-size:clamp(24px,2.8vh,32px)!important;padding:16px 30px!important;border-radius:18px!important}
+@media(min-width:701px) and (max-height:760px){
+ .postRunBigCard{min-height:min(68vh,610px);padding:22px 20px!important}
+ .postRunBigCard h2{font-size:clamp(28px,3.4vw,42px)}
+ .postRunBigCard p{font-size:clamp(15px,1.7vw,20px)}
+ .eggDiscoveryCard.postRunBigCard .eggDiscoveryText{font-size:clamp(22px,3vw,40px);min-height:56px}
+ .eggDiscoveryCard.postRunBigCard .eggDiscoveryOrb{width:min(220px,28vw);height:min(250px,30vh);margin:8px auto 10px}
+ .eggDiscoveryCard.postRunBigCard .eggDiscoveryOrb .eggVisual{transform:scale(2.1)}
+ .eggDiscoveryCard.postRunBigCard .eggDiscoveryContinue{font-size:20px;padding:13px 24px}
+ .eggRouletteCard .eggRoulette{gap:8px;margin:12px 0 10px}
+ .eggRouletteCard .eggSlot{min-height:118px;font-size:13px;padding:8px 4px}
+ .eggRouletteCard .eggSlot .eggVisual{width:45px;height:58px;margin-bottom:6px}
+ .eggRouletteCard .eggRouletteStop{font-size:26px!important;padding:13px 20px!important}
+ .runBossIntroCard{min-height:min(66vh,560px)!important;padding:24px 24px!important;gap:10px}
+ .runBossIntroCard .resultIcon{font-size:clamp(66px,11vh,110px)!important}
+ .runBossIntroCard h2{font-size:clamp(30px,4vh,48px)!important}
+ .runBossIntroCard p,.runBossIntroCard .notice{font-size:clamp(16px,1.9vh,22px)!important}
+ .runBossIntroCard button{min-width:340px!important;font-size:clamp(20px,2.3vh,26px)!important;padding:13px 24px!important}
+}
 @keyframes victoryPop{0%{transform:scale(.2) rotate(-5deg);opacity:0}68%{transform:scale(1.12) rotate(1deg)}100%{transform:scale(1);opacity:1}}
 @keyframes victoryCrown{0%{transform:translateY(-28px) scale(.4);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes victoryStars{from{transform:translateX(-3%)}to{transform:translateX(3%)}}
@@ -1228,7 +1275,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.11: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
+/* Ver1.12: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
 @media(min-width:701px){
  body:has(main.dungeonRunScreen){height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
  body:has(main.dungeonRunScreen) header{position:relative;top:auto;flex:0 0 auto;padding:4px 8px}
@@ -1340,7 +1387,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .adventureLogBody{max-height:82px;padding:0 8px 6px;overflow:auto}
  main.dungeonRunScreen .adventureLogBody .battleLog{max-height:70px;margin-top:4px;padding:5px 7px;font-size:8px;line-height:1.25}
 
- /* Ver1.11: make the PC adventure header use its vertical space, with large left images and info on the right. */
+ /* Ver1.12: make the PC adventure header use its vertical space, with large left images and info on the right. */
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview{height:clamp(118px,19vh,154px);min-height:118px;flex:0 0 auto;grid-template-columns:minmax(250px,.46fr) minmax(0,1.54fr);gap:8px;margin-bottom:6px}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card{height:100%;padding:7px 9px;border-radius:12px;display:flex;flex-direction:column}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card .sectionTitle{font-size:12px;margin:0 0 5px}
@@ -1416,7 +1463,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 
 
 
-/* Ver1.11: PC adventure layout — team sidebar on the left, main scene on the right. */
+/* Ver1.12: PC adventure layout — team sidebar on the left, main scene on the right. */
 @media(min-width:701px){
  main.dungeonRunScreen:not(.combatStageScreen)>.dungeonRun{
   display:grid!important;
@@ -1480,7 +1527,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 .expLockedCard{opacity:.48;filter:grayscale(.35);position:relative}.expLockedCard::after{content:"🧭 探索中";position:absolute;left:6px;right:6px;top:6px;z-index:5;padding:5px 7px;border-radius:9px;background:#315f78e8;color:#fff;font-size:9px;font-weight:1000;text-align:center}.homeMenuBtn.expedition{background:linear-gradient(180deg,#fff4c8,#f3c75b)!important;color:#5e4300!important;border-color:#d8ab32!important}
 
 
-/* Ver1.11: PC dungeon UI is permanently split into left party / right scene. */
+/* Ver1.12: PC dungeon UI is permanently split into left party / right scene. */
 @media(min-width:701px){
  main.dungeonRunScreen>.dungeonRun{
   display:grid!important;
@@ -1590,7 +1637,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .pickupCard.singleAdvanceCard .pickupRateNote{max-width:min(900px,92%);font-size:clamp(12px,1.5vh,16px)!important;line-height:1.45!important}
 
 
- /* Ver1.11: PC ball-slot screen uses the whole area more boldly. */
+ /* Ver1.12: PC ball-slot screen uses the whole area more boldly. */
  main.dungeonRunScreen .captureSlotCard .captureCombatBody{display:flex;flex-direction:column;justify-content:center}
  main.dungeonRunScreen .captureSlotCard .sectionTitle{font-size:18px;margin-bottom:10px;text-align:center}
  main.dungeonRunScreen .captureSlotCard .captureSlotLayout{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:18px!important;height:100%;min-height:0}
@@ -1623,7 +1670,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.11: PC post-run screen uses the full viewport instead of a small centered summary. */
+/* Ver1.12: PC post-run screen uses the full viewport instead of a small centered summary. */
 @media(min-width:701px){
  main.dungeonRunScreen .postRunSummary{height:100%;min-height:0;display:grid!important;grid-template-rows:minmax(190px,.9fr) minmax(150px,1fr) auto;gap:clamp(10px,2vh,18px);padding:clamp(18px,3vh,30px) clamp(24px,4vw,56px)!important;text-align:left;overflow:hidden!important;background:linear-gradient(160deg,#fff,#f6fafc)}
  main.dungeonRunScreen .postRunHero{min-height:0;display:grid;grid-template-columns:clamp(150px,18vw,240px) minmax(0,1fr);align-items:center;gap:clamp(18px,3vw,42px);padding:clamp(14px,2.5vh,26px) clamp(18px,3vw,36px);border-radius:22px;background:linear-gradient(135deg,#eef8ff,#fff);border:2px solid #c8dce8;box-shadow:0 10px 30px #17384c18}
@@ -1660,18 +1707,18 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.11</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.12</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.11"></script>
-<script src="../frenda-core.js?v=1.11"></script>
+<script src="../frenda-master.js?v=1.12"></script>
+<script src="../frenda-core.js?v=1.12"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=1.11"></script>
+<script src="../frenda-cloud.js?v=1.12"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.11";
+const APP_VERSION="1.12";
 const SAVE_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 const RUN_END_GUARD_KEY="frenda:dungeon:runEndGuard:v1";
@@ -2753,7 +2800,7 @@ function finishHatchStep(){const p=state.postRun;if(!p)return;p.hatchIndex++;if(
 // Ver0.33: egg roulette awards the slot highlighted at the instant STOP is pressed; no hidden slip.
 let eggTimer=null,eggCursor=0;
 function stopEggTimer(){if(eggTimer){clearInterval(eggTimer);eggTimer=null}}
-function startEggRoulette(){const p=state.postRun;if(!p)return;if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}stopEggTimer();eggCursor=0;const cells=[...app.querySelectorAll("[data-egg-slot]")];const paint=()=>cells.forEach((c,i)=>c.classList.toggle("active",i===eggCursor));paint();eggTimer=setInterval(()=>{eggCursor=(eggCursor+1)%cells.length;paint()},95);const btn=document.getElementById("eggStop");if(btn)btn.onclick=()=>{if(!eggTimer||p.eggAwarded)return;stopEggTimer();const idx=eggCursor;p.eggResultIndex=idx;const slot=p.eggSlots[idx],egg=makeEgg(slot.kind,p.dungeonId,p.difficulty);if(slot.type)egg.type=slot.type;state.eggs.push(egg);p.summary.eggAward={id:egg.id,kind:egg.kind,type:egg.type};p.eggAwarded=true;p.stage="eggResult";save();setTimeout(render,350)}}
+function startEggRoulette(){const p=state.postRun;if(!p)return;if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}stopEggTimer();eggCursor=0;const cells=[...app.querySelectorAll("[data-egg-slot]")];const paint=()=>cells.forEach((c,i)=>c.classList.toggle("active",i===eggCursor));paint();eggTimer=setInterval(()=>{eggCursor=(eggCursor+1)%cells.length;paint()},95);const btn=document.getElementById("eggStop"),stopNow=()=>{if(!eggTimer||p.eggAwarded)return;stopEggTimer();const idx=eggCursor;p.eggResultIndex=idx;const slot=p.eggSlots[idx],egg=makeEgg(slot.kind,p.dungeonId,p.difficulty);if(slot.type)egg.type=slot.type;state.eggs.push(egg);p.summary.eggAward={id:egg.id,kind:egg.kind,type:egg.type};p.eggAwarded=true;p.stage="eggResult";save();setTimeout(render,350)};if(btn)btn.onclick=stopNow;const card=document.getElementById("eggRouletteCard");if(card){card.onclick=e=>{if(e.target.closest("#eggStop"))return;stopNow()};card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();stopNow()}}}}
 function afterEggResult(){const p=state.postRun;if(!p)return;p.stage=state.eggs.length>state.eggCap?"eggDiscard":postRunNextAfterReward(p);save();render()}
 function discardEgg(id){const p=state.postRun;if(!p||state.eggs.length<=state.eggCap)return;state.eggs=state.eggs.filter(e=>e.id!==id);p.stage=state.eggs.length>state.eggCap?"eggDiscard":postRunNextAfterReward(p);save();render()}
 async function finishPostRun(){
@@ -2803,7 +2850,7 @@ function hatchDramaKey(p,x){return `frenda:hatchPlayed:${p?.type||"run"}:${p?.du
 function hatchDramaWasPlayed(p,x){try{return sessionStorage.getItem(hatchDramaKey(p,x))==="1"}catch{return false}}
 function markHatchDramaPlayed(p,x){try{sessionStorage.setItem(hatchDramaKey(p,x),"1")}catch{}}
 async function startHatchDrama(){const p=state.postRun;if(!p||p.stage!=="hatch")return;const x=p.hatchResults?.[p.hatchIndex];if(!x)return;markHatchDramaPlayed(p,x);const seq=++hatchDramaSeq,egg=document.getElementById("hatchEggWrap"),cracks=document.getElementById("hatchCracks"),glow=document.getElementById("hatchGlow"),title=document.getElementById("hatchTitle"),msg=document.getElementById("hatchMessage"),reveal=document.getElementById("hatchReveal"),next=document.getElementById("hatchNext");if(!egg||!title||!msg)return;const alive=()=>seq===hatchDramaSeq&&state.postRun?.stage==="hatch"&&state.postRun?.hatchIndex===p.hatchIndex;title.textContent="おや……？";msg.textContent="卵のようすが……";await fxSleep(950);if(!alive())return;egg.classList.add("wobble");msg.textContent="卵が動いている！";await fxSleep(1550);if(!alive())return;egg.classList.remove("wobble");egg.classList.add("wobbleHard");msg.textContent="もうすぐ生まれそう……！";await fxSleep(1200);if(!alive())return;cracks?.classList.add("show");msg.textContent="ピシッ……！";await fxSleep(760);if(!alive())return;glow?.classList.add("burst");title.textContent="まぶしい光があふれた！";msg.textContent="…………！";await fxSleep(1100);if(!alive())return;egg.style.visibility="hidden";reveal?.classList.add("show");title.textContent="卵が孵化した！";msg.textContent="";next?.classList.remove("hatchNextHidden");next?.classList.add("hatchNextVisible");document.querySelector(".hatchDramaCard")?.classList.add("hatchReady")}
-function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark" id="eggDiscoveryCard"><div class="eggDiscoveryInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="muted">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?(x.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1。":"同一ピック所持済みのため、育成ポイント+1。"):"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary"><div style="margin-bottom:5px">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ★${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" style="width:100%;font-size:20px">STOP!</button></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)}" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
+function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark postRunBigCard" id="eggDiscoveryCard"><div class="eggDiscoveryInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="muted">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?(x.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1。":"同一ピック所持済みのため、育成ポイント+1。"):"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary postRunBigCard eggRouletteCard" id="eggRouletteCard" data-egg-stop="1" role="button" tabindex="0" aria-label="どこを押してもSTOP"><div class="eggRouletteLead">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ★${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" class="eggRouletteStop" style="width:100%;font-size:20px">STOP!</button><div class="eggRouletteTapHint">💡 どこを押しても STOP できます</div></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)}" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
 function renderSummary(){
  updateHeaderStatus();
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
@@ -2975,7 +3022,7 @@ function renderRun(){
  else if(r.scene==="heal")body+=renderHealHTML();
  else if(r.scene==="eventTarget")body+=renderEventTargetHTML();
  else if(r.scene==="eventNotice")body+=renderEventNoticeHTML();
- else if(r.scene==="bossIntro")body+=`<div class="card summary singleAdvanceCard tapAdvance" data-run-advance="boss" role="button" tabindex="0" aria-label="ボス戦を始める"><div class="resultIcon">👑</div><h2>地下10階・ボス戦</h2><p>${r.difficulty===1?"★1のボスは1体です。ここまで育てた3匹で挑みましょう。":"3匹の強敵との連戦です。相手は1匹ずつ登場します。"}</p><div class="notice" style="margin:10px 0">⚔️ 道中戦闘：<b>${Number(r.roadBattleWins||0)}戦</b><br>${Number(r.roadBattleWins||0)>=3?"🔥 3戦以上達成！ BOSS戦開始時に全員の攻撃・防御+2。":"あと"+Math.max(0,3-Number(r.roadBattleWins||0))+"戦でBOSS戦の闘志ボーナス。"}</div><button id="bossStart">ボス戦を始める</button></div>`;
+ else if(r.scene==="bossIntro")body+=`<div class="card summary singleAdvanceCard tapAdvance runBossIntroCard" data-run-advance="boss" role="button" tabindex="0" aria-label="ボス戦を始める"><div class="resultIcon">👑</div><h2>地下10階・ボス戦</h2><p>${r.difficulty===1?"★1のボスは1体です。ここまで育てた3匹で挑みましょう。":"3匹の強敵との連戦です。相手は1匹ずつ登場します。"}</p><div class="notice" style="margin:10px 0">⚔️ 道中戦闘：<b>${Number(r.roadBattleWins||0)}戦</b><br>${Number(r.roadBattleWins||0)>=3?"🔥 3戦以上達成！ BOSS戦開始時に全員の攻撃・防御+2。":"あと"+Math.max(0,3-Number(r.roadBattleWins||0))+"戦でBOSS戦の闘志ボーナス。"}</div><button id="bossStart">ボス戦を始める</button></div>`;
  body+=`<details id="adventureLogDetails" class="card adventureLog"${adventureLogOpen?" open":""}><summary class="adventureLogSummary"><span class="sectionTitle">冒険ログ</span></summary><div class="adventureLogBody"><div class="battleLog">${r.logs.slice(-12).map(x=>`<div class="logline">${esc(x)}</div>`).join("")}</div></div></details></div>`;
  app.innerHTML=body;bindRunHandlers();
  if(combatScene&&window.matchMedia?.("(min-width:701px)").matches)requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"auto"}));
@@ -3444,4 +3491,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 16:12:00 JST / Ver1.11 -->
+<!-- Updated: 2026-09-27 16:12:00 JST / Ver1.12 -->
