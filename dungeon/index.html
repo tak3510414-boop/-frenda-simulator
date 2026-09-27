@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.13 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.14 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.13</title>
+<title>フレンダダンジョン Ver1.14</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -630,7 +630,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 @keyframes eggRewardFlash{0%{opacity:.92}30%{opacity:.45}100%{opacity:0}}
 @media(max-width:700px){.eggDiscoveryCard{min-height:350px}.eggDiscoveryInner{min-height:315px}.eggDiscoveryOrb{width:130px;height:170px}.eggRewardBig{min-height:185px}.eggRewardBig .eggVisual{transform:scale(1.55)}}
 
-/* Ver1.13: Make PC reward / boss intro screens use the area more boldly. */
+/* Ver1.14: Make PC reward / boss intro screens use the area more boldly. */
 .postRunBigCard{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:min(72vh,700px);padding:28px 24px!important}
 .postRunBigCard h2{font-size:clamp(34px,4.3vw,52px);line-height:1.12;margin:8px 0 10px;text-align:center}
 .postRunBigCard p{font-size:clamp(18px,2.1vw,24px);line-height:1.58;text-align:center;max-width:min(1000px,94%)}
@@ -1275,7 +1275,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.13: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
+/* Ver1.14: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
 @media(min-width:701px){
  body:has(main.dungeonRunScreen){height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
  body:has(main.dungeonRunScreen) header{position:relative;top:auto;flex:0 0 auto;padding:4px 8px}
@@ -1387,7 +1387,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .adventureLogBody{max-height:82px;padding:0 8px 6px;overflow:auto}
  main.dungeonRunScreen .adventureLogBody .battleLog{max-height:70px;margin-top:4px;padding:5px 7px;font-size:8px;line-height:1.25}
 
- /* Ver1.13: make the PC adventure header use its vertical space, with large left images and info on the right. */
+ /* Ver1.14: make the PC adventure header use its vertical space, with large left images and info on the right. */
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview{height:clamp(118px,19vh,154px);min-height:118px;flex:0 0 auto;grid-template-columns:minmax(250px,.46fr) minmax(0,1.54fr);gap:8px;margin-bottom:6px}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card{height:100%;padding:7px 9px;border-radius:12px;display:flex;flex-direction:column}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card .sectionTitle{font-size:12px;margin:0 0 5px}
@@ -1463,7 +1463,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 
 
 
-/* Ver1.13: PC adventure layout — team sidebar on the left, main scene on the right. */
+/* Ver1.14: PC adventure layout — team sidebar on the left, main scene on the right. */
 @media(min-width:701px){
  main.dungeonRunScreen:not(.combatStageScreen)>.dungeonRun{
   display:grid!important;
@@ -1527,7 +1527,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 .expLockedCard{opacity:.48;filter:grayscale(.35);position:relative}.expLockedCard::after{content:"🧭 探索中";position:absolute;left:6px;right:6px;top:6px;z-index:5;padding:5px 7px;border-radius:9px;background:#315f78e8;color:#fff;font-size:9px;font-weight:1000;text-align:center}.homeMenuBtn.expedition{background:linear-gradient(180deg,#fff4c8,#f3c75b)!important;color:#5e4300!important;border-color:#d8ab32!important}
 
 
-/* Ver1.13: PC dungeon UI is permanently split into left party / right scene. */
+/* Ver1.14: PC dungeon UI is permanently split into left party / right scene. */
 @media(min-width:701px){
  main.dungeonRunScreen>.dungeonRun{
   display:grid!important;
@@ -1560,6 +1560,15 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .partySideInfo .hpbar{height:11px;margin-top:7px;width:100%}
  main.dungeonRunScreen .partySideHp{display:flex;justify-content:space-between;gap:5px;margin-top:2px;font-size:9px;font-weight:900;color:#425765}
  main.dungeonRunScreen .partySideStats{font-size:9px;line-height:1.35;color:#536572;margin-top:5px}
+ main.dungeonRunScreen .partyEnergyChip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;margin-top:4px;background:linear-gradient(180deg,#fff8da,#ffe58a);border:1px solid #f3ca49;color:#715300;font-size:10px;font-weight:1000}
+ main.dungeonRunScreen .partyEnergyChip b{font-size:12px;color:#352500}
+ main.dungeonRunScreen .partyStatGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 6px;margin-top:6px}
+ main.dungeonRunScreen .partyStatTiny{min-width:0}
+ main.dungeonRunScreen .partyStatTinyHead{display:flex;justify-content:space-between;gap:5px;font-size:8px;font-weight:900;color:#566876;line-height:1.1}
+ main.dungeonRunScreen .partyStatTinyHead b{font-size:9px;color:#1b2630}
+ main.dungeonRunScreen .partyStatTinyBar{height:6px;border-radius:999px;background:#e7eef3;overflow:hidden;display:flex;margin-top:2px;box-shadow:inset 0 1px 2px #7b93a114}
+ main.dungeonRunScreen .partyStatTinyBase{height:100%;background:linear-gradient(90deg,#57a6ff,#266fe8)}
+ main.dungeonRunScreen .partyStatTinyGrowth{height:100%;background:linear-gradient(90deg,#ff8f8f,#df3545)}
  main.dungeonRunScreen .partySideStats .bondChip{font-size:9px}
  main.dungeonRunScreen .partySideCard .matchupAppeal{position:static;margin:0 0 4px;padding:4px 6px;font-size:10px}
  main.dungeonRunScreen .partySideCard .matchupReason{display:block;font-size:8px!important;margin-top:3px}
@@ -1605,6 +1614,12 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .partySideCard .partySideImg{max-height:102px}
  main.dungeonRunScreen .partySideName{font-size:12px}
  main.dungeonRunScreen .partySideMeta,.partySideHp,.partySideStats{font-size:8px!important}
+ main.dungeonRunScreen .partyEnergyChip{font-size:9px!important;padding:3px 6px!important;gap:4px!important}
+ main.dungeonRunScreen .partyEnergyChip b{font-size:10px!important}
+ main.dungeonRunScreen .partyStatGrid{gap:3px 5px!important;margin-top:4px!important}
+ main.dungeonRunScreen .partyStatTinyHead{font-size:7px!important}
+ main.dungeonRunScreen .partyStatTinyHead b{font-size:8px!important}
+ main.dungeonRunScreen .partyStatTinyBar{height:5px!important}
  main.dungeonRunScreen .partySideInfo .hpbar{height:9px;margin-top:5px}
  main.dungeonRunScreen .dungeonEntryIcon{font-size:clamp(52px,11vh,80px)!important}
  main.dungeonRunScreen .dungeonEntryTitle{font-size:clamp(26px,5.2vh,40px)!important}
@@ -1637,7 +1652,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .pickupCard.singleAdvanceCard .pickupRateNote{max-width:min(900px,92%);font-size:clamp(12px,1.5vh,16px)!important;line-height:1.45!important}
 
 
- /* Ver1.13: PC ball-slot screen uses the whole area more boldly. */
+ /* Ver1.14: PC ball-slot screen uses the whole area more boldly. */
  main.dungeonRunScreen .captureSlotCard .captureCombatBody{display:flex;flex-direction:column;justify-content:center}
  main.dungeonRunScreen .captureSlotCard .sectionTitle{font-size:18px;margin-bottom:10px;text-align:center}
  main.dungeonRunScreen .captureSlotCard .captureSlotLayout{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:18px!important;height:100%;min-height:0}
@@ -1670,7 +1685,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.13: PC post-run screen uses the full viewport instead of a small centered summary. */
+/* Ver1.14: PC post-run screen uses the full viewport instead of a small centered summary. */
 @media(min-width:701px){
  main.dungeonRunScreen .postRunSummary{height:100%;min-height:0;display:grid!important;grid-template-rows:minmax(190px,.9fr) minmax(150px,1fr) auto;gap:clamp(10px,2vh,18px);padding:clamp(18px,3vh,30px) clamp(24px,4vw,56px)!important;text-align:left;overflow:hidden!important;background:linear-gradient(160deg,#fff,#f6fafc)}
  main.dungeonRunScreen .postRunHero{min-height:0;display:grid;grid-template-columns:clamp(150px,18vw,240px) minmax(0,1fr);align-items:center;gap:clamp(18px,3vw,42px);padding:clamp(14px,2.5vh,26px) clamp(18px,3vw,36px);border-radius:22px;background:linear-gradient(135deg,#eef8ff,#fff);border:2px solid #c8dce8;box-shadow:0 10px 30px #17384c18}
@@ -1707,18 +1722,18 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.13</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.14</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.13"></script>
-<script src="../frenda-core.js?v=1.13"></script>
+<script src="../frenda-master.js?v=1.14"></script>
+<script src="../frenda-core.js?v=1.14"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=1.13"></script>
+<script src="../frenda-cloud.js?v=1.14"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.13";
+const APP_VERSION="1.14";
 const SAVE_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 const RUN_END_GUARD_KEY="frenda:dungeon:runEndGuard:v1";
@@ -2402,6 +2417,8 @@ function compareTypeText(r){return [r?.type1,r?.type2].filter(Boolean).join(" / 
 function compareStatCell(base,boost=0){const b=Number(base)||0,v=b+Number(boost||0);return `${v}${boost?`<span class="boost">元${b} +${boost}</span>`:""}`}
 function ownedStatGraphHTML(label,base,boost=0,scale=200,valueText=null,baseText=null){const b=Math.max(0,Number(base)||0),g=Math.max(0,Number(boost)||0),max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),gw=Math.min(Math.max(0,100-bw),g/max*100),v=valueText??String(b+g),bt=baseText??String(b);return `<div class="ownedStatGraph"><div class="ownedStatGraphLabel">${esc(label)}</div><div class="ownedStatBar"><span class="ownedStatBarBase" style="width:${bw}%"></span><span class="ownedStatBarGrowth" style="width:${gw}%"></span></div><div class="ownedStatGraphValue">${esc(v)}</div><small>初期 ${esc(bt)}${g?` ＋ 成長 ${g}`:""}</small></div>`}
 function compareStatGraphCell(base,boost=0,scale=200){const b=Math.max(0,Number(base)||0),g=Math.max(0,Number(boost)||0),v=b+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),gw=Math.min(Math.max(0,100-bw),g/max*100);return `<div class="compareStatGraph"><strong>${v}</strong><div class="compareStatMiniBar"><span class="compareStatMiniBase" style="width:${bw}%"></span><span class="compareStatMiniGrowth" style="width:${gw}%"></span></div><small>初期${b}${g?` + 成長${g}`:""}</small></div>`}
+function sidebarStatGraphHTML(label,base,boost=0,scale=200){const b=Math.max(0,Number(base)||0),g=Math.max(0,Number(boost)||0),v=b+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),gw=Math.min(Math.max(0,100-bw),g/max*100);return `<div class="partyStatTiny"><div class="partyStatTinyHead"><span>${esc(label)}</span><b>${v}</b></div><div class="partyStatTinyBar"><span class="partyStatTinyBase" style="width:${bw}%"></span><span class="partyStatTinyGrowth" style="width:${gw}%"></span></div></div>`}
+function sidebarStatGridHTML(r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5;return `<div class="partyStatGrid">${sidebarStatGraphHTML("HP",r.hp,pb.hp,220)}${sidebarStatGraphHTML("ATK",r.atk,pb.atk,200)}${sidebarStatGraphHTML("DEF",r.def,pb.def,200)}${sidebarStatGraphHTML("SPA",r.sp_atk,0,200)}${sidebarStatGraphHTML("SPD",r.sp_def,0,200)}${sidebarStatGraphHTML("SPE",speedBase,0,speedScale)}</div>`}
 function showTeamBackCompare(){const ids=teamSelection.slice(0,3).filter(id=>ownedEntry(id)&&rec(id));if(!ids.length)return;document.getElementById("teamCompareOverlay")?.remove();const picks=ids.map(id=>({id,r:rec(id),pb:state.permanentBoosts[id]||{}}));const hero=picks.map(x=>`<td class="teamCompareHero"><img src="${esc(imageOf(x.r))}" alt=""><b>${esc(x.r.name_ja)}</b><small>${gradeText(x.r)} / ${esc(x.r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(x.r.poke_ene??"-")}</span></td>`).join("");const row=(label,fn,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th>${picks.map(x=>`<td class="${cls}">${fn(x)}</td>`).join("")}</tr>`;const ov=document.createElement("div");ov.id="teamCompareOverlay";ov.className="teamCompareOverlay";ov.innerHTML=`<div class="teamComparePanel" role="dialog" aria-modal="true" aria-label="挑戦チーム裏面比較"><div class="teamCompareHead"><div><small>TEAM PICK COMPARISON</small><b>挑戦チーム・裏面比較（${picks.length}/3）</b></div><button type="button" class="teamCompareClose" id="teamCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="teamCompareTableWrap"><table class="teamCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero}</tr></thead><tbody>${row("タイプ",x=>esc(compareTypeText(x.r)),"teamCompareType")}${row("ポケエネ",x=>`<b style="font-size:16px">⚡ ${esc(x.r.poke_ene??"-")}</b>`)}${row("HP",x=>compareStatGraphCell(x.r.hp,x.pb.hp))}${row("ATK",x=>compareStatGraphCell(x.r.atk,x.pb.atk))}${row("DEF",x=>compareStatGraphCell(x.r.def,x.pb.def))}${row("SP.ATK",x=>compareStatGraphCell(x.r.sp_atk,0))}${row("SP.DEF",x=>compareStatGraphCell(x.r.sp_def,0))}${row("すばやさ",x=>{const sv=Number(x.r.speed_value),sl=Number(x.r.speed_level);return sv>0?compareStatGraphCell(sv,0,200):sl>0?compareStatGraphCell(sl,0,5):"-"})}${row("通常わざ",x=>`<b>${esc(x.r.move||"未登録")}</b>${esc(x.r.move_type||"-")} / ${esc(x.r.move_class||"-")}`,"teamCompareMove")}${row("必殺技",x=>esc((x.r.finisher_move&&String(x.r.finisher_move).trim())?String(x.r.finisher_move).trim():"なし"),"teamCompareMove")}${row("恒久強化",x=>`HP+${x.pb.hp||0}<br>攻+${x.pb.atk||0}<br>防+${x.pb.def||0}`,"teamCompareGrowth")}${row("成長",x=>`育成P ${growthPointsFor(x.id)}<br>EXP ${xpFor(x.id)}/100<br>特訓P ${drillFor(x.id)}`,"teamCompareGrowth")}${row("絆",x=>esc(bondProgressText(x.id)),"teamCompareGrowth")}</tbody></table></div><div class="teamCompareLegend">選択中のピックを最大3体まで、同じ項目・同じ行で比較します。敵ピックの裏面情報は表示しません。</div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#teamCompareClose").onclick=close}
 function teamRecommendationInfo(r){
  const th=THEMES[currentDungeon.id];
@@ -2977,7 +2994,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
  return `<div class="runTop"><div class="runStatus"><div class="kicker">${esc(theme.name)}${battleKind?` / ${battleKind}`:""}</div><div class="floorRow"><div class="floorMain"><div class="floorBig">地下${r.floor}階 / 10</div><div class="runDifficultyBadge" aria-label="★${r.difficulty}に挑戦中"><span class="star">★${r.difficulty}</span><span class="challengeText">挑戦中</span></div></div><button type="button" class="runEggCount" data-run-egg-open>🥚 ${state.eggs.length}/${state.eggCap}</button></div><div class="runAlertRow"><span class="alertBadge ${Number(r.alertLevel||0)>=3?"max":Number(r.alertLevel||0)>=2?"warn":""}">👁 警戒度 <span class="alertDots">${alertDots(r.alertLevel)}</span></span><span class="roadBattleBadge ${Number(r.roadBattleWins||0)>=3?"ready":""}">⚔️ 道中 ${Number(r.roadBattleWins||0)}戦${Number(r.roadBattleWins||0)>=3?"　🔥BOSS+2":" / 3"}</span></div>${floorPathHTML(r.floor)}<div class="progressTrack"><div class="progressFill" style="width:${r.floor*10}%"></div></div></div></div>`
 }
 function partySidebarCardHTML(t,i){
- const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
+ const r=rec(t.id),pb=state.permanentBoosts[t.id]||{},max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
        inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,
        directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
        action=m?m.action:(directSwitch?"switch":""),bond=bondLevelFor(t.id),
@@ -2986,7 +3003,7 @@ function partySidebarCardHTML(t,i){
        cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
- return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>HP</span><span>${t.hp}/${max}</span></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>現在HP</span><span>${t.hp}/${max}</span></div>${sidebarStatGridHTML(r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
 }
 function partySidebarHTML(tm,combatScene=false){
  return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
@@ -3498,4 +3515,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 16:12:00 JST / Ver1.13 -->
+<!-- Updated: 2026-09-27 17:43:00 JST / Ver1.14 -->
