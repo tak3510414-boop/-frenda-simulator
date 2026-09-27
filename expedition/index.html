@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おでかけ探索 Ver0.13</title>
+<title>おでかけ探索 Ver0.14</title>
 <style>
 :root{--bg:#eaf1f5;--ink:#183342;--muted:#627785;--card:#fff;--line:#c9d8e1;--blue:#1679a8;--blue2:#0e5e86;--gold:#e7ad24;--green:#1e9c6c;--red:#c74b4b;--shadow:0 10px 28px #13354a18}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;background:linear-gradient(180deg,#0e3147 0,#174c69 150px,var(--bg) 150px);color:var(--ink)}button,select,input{font:inherit}button{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;background:linear-gradient(180deg,#1a8dc0,#0f6f9e);color:#fff;box-shadow:0 3px 0 #0b567c}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}.ghost{background:#eef5f8;color:#24495d;box-shadow:none;border:1px solid #bfd1dc}.danger{background:linear-gradient(180deg,#e96b6b,#b94141);box-shadow:0 3px 0 #913131}.goldBtn{background:linear-gradient(180deg,#ffd85e,#eca928);color:#583a00;box-shadow:0 3px 0 #b87a13}.greenBtn{background:linear-gradient(180deg,#32b983,#1b8b61);box-shadow:0 3px 0 #126d4c}
@@ -79,22 +79,25 @@ main{max-width:1280px;margin:auto;padding:12px}.card{background:var(--card);bord
 </style>
 </head>
 <body>
-<header><div class="head"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.13</span></b><small>フレンダダンジョン連動・放置探索</small></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">探索ホーム</button><button class="ghost" id="dungeonBtn">⚔️ ダンジョンへ</button></div></div></header>
+<header><div class="head"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.14</span></b><small>フレンダダンジョン連動・放置探索</small></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">探索ホーム</button><button class="ghost" id="dungeonBtn">⚔️ ダンジョンへ</button></div></div></header>
 <main id="app"></main>
 <script src="../frenda-master.js?v=0.11"></script>
 <script src="../frenda-core.js?v=0.11"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
+<script src="../frenda-data.js?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.13";
+const APP_VERSION="0.14";
+const DATA=window.FRENDA_DATA;
+if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 
-const EYE_TIMER_KEY="frenda_eye_timer_v1",EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
+const EYE_TIMER_KEY=DATA.KEYS.eyeTimer,EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
 let eyeTimerHandle=null,eyeLocked=false;
-function eyeReadState(){try{const x=JSON.parse(localStorage.getItem(EYE_TIMER_KEY)||"null");return x&&typeof x==="object"?x:null}catch{return null}}
-function eyeWriteState(x){try{localStorage.setItem(EYE_TIMER_KEY,JSON.stringify(x))}catch{}return x}
+function eyeReadState(){const x=DATA.readJSON(EYE_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
+function eyeWriteState(x){try{DATA.writeJSON(EYE_TIMER_KEY,x)}catch{}return x}
 function eyeFreshPlay(now=Date.now()){return eyeWriteState({phase:"play",playUntil:now+EYE_PLAY_MS,updatedAt:now})}
 function eyeResolveState(now=Date.now()){
  let x=eyeReadState();
@@ -121,11 +124,8 @@ window.addEventListener("storage",e=>{if(e.key===EYE_TIMER_KEY)eyeTimerTick()});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")eyeTimerTick()});
 document.addEventListener("click",e=>{const b=e.target.closest?.("#manualRestBtn");if(b&&!eyeLocked)eyeStartManualRest()});
 
-const DUNGEON_KEY="frenda:dungeon:v1";
-const EXP_KEY="frenda:expedition:v1";
-const EVO_CACHE_KEY="frenda:dungeon:evolutionMap:v2";
-const EVO_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
-const EVO_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
+const DUNGEON_KEY=DATA.KEYS.dungeon;
+const EXP_KEY=DATA.KEYS.expedition;
 const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
 const MASTER=window.FRENDA_MASTER,CORE=window.FRENDA_CORE,RULES=window.FRENDA_RULES,RECORDS=Array.isArray(MASTER?.records)?MASTER.records:[];
 if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。");
@@ -165,12 +165,12 @@ function imageOf(r){return r?.official_image||""}
 function gradeText(r){return RULES.gradeText(r)}
 function specialBase(r){return RULES.specialBaseName(r)}
 function isSpecial(r){return RULES.isSpecial(r)}
-function readDungeon(){try{return JSON.parse(localStorage.getItem(DUNGEON_KEY)||"null")||null}catch{return null}}
+function readDungeon(){return DATA.dungeon.read()}
 function defaultExp(){return {version:1,appVersion:APP_VERSION,status:"idle",mission:null,lastTeamIds:[],updatedAt:Date.now()}}
-function readExp(){let a=null;try{a=JSON.parse(localStorage.getItem(EXP_KEY)||"null")}catch{}const d=readDungeon(),b=d?.expeditionShared;if(b&&(!a||Number(b.updatedAt||0)>Number(a.updatedAt||0)))a=b;return Object.assign(defaultExp(),a||{})}
+function readExp(){return DATA.expedition.read(defaultExp)}
 let exp=readExp();
-function writeExp(){exp.updatedAt=Date.now();exp.appVersion=APP_VERSION;localStorage.setItem(EXP_KEY,JSON.stringify(exp));const d=readDungeon();if(d){d.expeditionShared=JSON.parse(JSON.stringify(exp));localStorage.setItem(DUNGEON_KEY,JSON.stringify(d))}}
-function mutateDungeon(fn){const d=readDungeon();if(!d)return null;fn(d);d.expeditionShared=JSON.parse(JSON.stringify(exp));localStorage.setItem(DUNGEON_KEY,JSON.stringify(d));return d}
+function writeExp(){DATA.expedition.write(exp,{appVersion:APP_VERSION})}
+function mutateDungeon(fn){return DATA.dungeon.mutate(fn,{expedition:exp})}
 function initialized(){const d=readDungeon();return !!d?.initialized}
 function ownedIds(){return (readDungeon()?.owned||[]).map(x=>x.id)}
 function currentRunIds(){return (readDungeon()?.run?.team||[]).map(x=>x.id)}
@@ -360,7 +360,7 @@ function renderEggDiscard(){const d=readDungeon();app.innerHTML=`<div class="car
 function renderSummary(){const m=exp.mission;app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ★${m.difficulty} / ${m.hours}時間 / ランク${m.rank}</p></div><div class="sectionTitle" style="margin-top:12px">今回の成果</div><div class="finalList">${m.summary.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、派遣していた${m.teamIds.length}体が再び本編・特訓・進化で使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=completeMission}
 function startTicker(){if(ticker)clearInterval(ticker);ticker=setInterval(()=>{if(exp.status!=="exploring"){clearInterval(ticker);ticker=null;return}const m=exp.mission,now=Date.now();if(now>=m.returnAt){prepareReturn();render();return}const el=document.getElementById("countdown");if(el)el.textContent=formatRemain(m.returnAt-now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,Math.max(0,(now-m.startAt)/(m.returnAt-m.startAt)*100))}%`;const log=document.getElementById("liveLogBox");if(log){const html=liveLogHTML(m,now);if(log.innerHTML!==html)log.innerHTML=html}},1000)}
 function render(){if(ticker){clearInterval(ticker);ticker=null}prepareReturn();if(screen==="prep")renderPrep();else if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else renderHome()}
-async function loadEvolution(){try{let rows=null;const cached=localStorage.getItem(EVO_CACHE_KEY);if(cached){try{rows=JSON.parse(cached)}catch{}}if(!Array.isArray(rows)||!rows.length){const [sp,nm]=await Promise.all([fetch(EVO_SPECIES_URL,{cache:"force-cache"}),fetch(EVO_NAMES_URL,{cache:"force-cache"})]);if(!sp.ok||!nm.ok)throw new Error("evolution data");const names={};for(const line of (await nm.text()).split(/\r?\n/).slice(1)){const c=line.split(","),id=Number(c[0]),lang=Number(c[1]);if(id&&lang===1&&!names[id])names[id]=c[2]}rows=[];for(const line of (await sp.text()).split(/\r?\n/).slice(1)){const c=line.split(","),no=Number(c[0]),parent=Number(c[3])||null,name=names[no];if(no&&name)rows.push({no,name,parent})}try{localStorage.setItem(EVO_CACHE_KEY,JSON.stringify(rows))}catch{}}for(const e of rows){const x={no:Number(e.no),name:String(e.name||""),parent:Number(e.parent)||null};if(!x.no||!x.name)continue;if(!EVO_BY_NAME.has(x.name))EVO_BY_NAME.set(x.name,[]);EVO_BY_NAME.get(x.name).push(x);EVO_BY_NO.set(x.no,x);if(x.parent){if(!EVO_PARENTS.has(x.no))EVO_PARENTS.set(x.no,new Set());EVO_PARENTS.get(x.no).add(x.parent)}}evoReady=true;render()}catch(e){console.warn(e);evoReady=false;render()}}
+async function loadEvolution(){try{const rows=await DATA.evolution.loadRows();for(const e of rows){const x={no:Number(e.no),name:String(e.name||""),parent:Number(e.parent)||null};if(!x.no||!x.name)continue;if(!EVO_BY_NAME.has(x.name))EVO_BY_NAME.set(x.name,[]);EVO_BY_NAME.get(x.name).push(x);EVO_BY_NO.set(x.no,x);if(x.parent){if(!EVO_PARENTS.has(x.no))EVO_PARENTS.set(x.no,new Set());EVO_PARENTS.get(x.no).add(x.parent)}}evoReady=true;render()}catch(e){console.warn(e);evoReady=false;render()}}
 document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("dungeonBtn").onclick=()=>{location.href="../dungeon/"};
 window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();render()}});
 
@@ -368,19 +368,19 @@ window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){e
 // Ver0.08: 派遣メンバー選択をダンジョン編成UIに合わせ、検索・絞り込み・おすすめ順・表示サイズ切替を追加。
 // Ver0.09: ダンジョン選択時は解放済み最高★を初期選択。おまかせ編成は探索点が最大になる3体を厳密選択。3体選択後のおまかせダンジョンで最高点の派遣先＋★を自動選択。
 // Ver0.11: ダンジョン/探索共通の成長・出現・評価ルールを frenda-rules.js に一本化。
-// Ver0.13: 卵基本定義・育成/絆家族キー・育成振り分けを frenda-rules.js v1.1 に追加集約。
+// Ver0.14: ダンジョン共有セーブ・探索状態・進化データキャッシュを frenda-data.js v1.1 に集約。
 function expeditionDungeonCloudData(){
  const saved=readDungeon();
  return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}};
 }
 function applyExpeditionDungeonCloudData(data){
  if(!data||typeof data!=="object"||!data.state||typeof data.state!=="object")throw new Error("クラウドデータ形式が不正です");
- localStorage.setItem(DUNGEON_KEY,JSON.stringify(data.state));
+ DATA.dungeon.write(data.state);
  const shared=data.state.expeditionShared;
  if(shared&&typeof shared==="object")localStorage.setItem(EXP_KEY,JSON.stringify(shared));
  else localStorage.removeItem(EXP_KEY);
 }
-function expeditionHasLocalData(){try{const s=JSON.parse(localStorage.getItem(DUNGEON_KEY)||"null");return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}catch{return false}}
+function expeditionHasLocalData(){const s=DATA.dungeon.read();return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}
 function expeditionCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s.owned)?s.owned.length:0,eggs=Array.isArray(s.eggs)?s.eggs.length:0,ex=s.expeditionShared?.status==="running"?"探索中":"探索なし";return `所持 ${owned}体 / 卵 ${eggs}個 / ${ex}`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン＋おでかけ探索",column:"dungeon_data",getData:expeditionDungeonCloudData,applyData:applyExpeditionDungeonCloudData,watchStorage:k=>k===DUNGEON_KEY,hasLocalData:expeditionHasLocalData,describeData:expeditionCloudSummary});
 
@@ -391,6 +391,6 @@ render();loadEvolution();
 
 </body>
 </html>
-<!-- FRENDA_EXPEDITION_VERSION: 0.13 / Updated: 2026-09-27 19:58 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.14 / Updated: 2026-09-27 20:30 JST -->
 
-<!-- Updated: 2026-09-27 19:55:00 JST / Ver0.13 -->
+<!-- Updated: 2026-09-27 20:30:00 JST / Ver0.14 -->
