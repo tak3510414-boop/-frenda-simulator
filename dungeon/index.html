@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.27 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.28 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.27</title>
+<title>フレンダダンジョン Ver1.28</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1839,6 +1839,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 /* Ver1.20: hatch scene centered vertically; bond endure gets a full praise moment. */
 /* Ver1.26: セーブ・探索共有状態・進化データキャッシュを frenda-data.js v1.1 に集約。 */
 /* Ver1.27: 進化インデックス・目休憩タイマー・共通UI補助を frenda-data.js v1.2 / frenda-ui.js v1.0 に集約。 */
+/* Ver1.28: ピック検索・絞り込み・表示サイズUIを frenda-ui.js v1.1 に共通化。 */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1866,7 +1867,7 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.27</span></b><small>Simulator Ver6.85 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.28</span></b><small>Simulator Ver6.86 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
@@ -1874,13 +1875,13 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 <script src="../frenda-core.js?v=1.23"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
 <script src="../frenda-data.js?v=1.2"></script>
-<script src="../frenda-ui.js?v=1.0"></script>
+<script src="../frenda-ui.js?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.27";
+const APP_VERSION="1.28";
 const DATA=window.FRENDA_DATA;
 const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
@@ -2125,15 +2126,15 @@ let currentDungeon={id:"forest",difficulty:1};
 let message="";
 let autoBattleRunning=false;
 let EVO_INDEX=null,EVO_BY_NAME=new Map(),EVO_BY_NO=new Map(),EVO_PARENTS=new Map(),evoReady=false,evoLoadError=false;
-const makePickFilter=(defaults={})=>Object.assign({search:"",series:"all",type:"all",grade:"all",status:"all",sort:"standard"},defaults);
+const makePickFilter=UI.pickFilter.create;
 let dexLimit=120;
 let dexPickFilter=makePickFilter();
 let ownedPickFilter=makePickFilter();
 let teamPickFilter=makePickFilter({sort:"recommended"});
 const GRID_SIZE_KEY_PREFIX="frenda:dungeon:gridSize:";
-function loadGridSize(scope){const v=localStorage.getItem(GRID_SIZE_KEY_PREFIX+scope);return ["large","medium","small"].includes(v)?v:"medium"}
-function saveGridSize(scope,size){if(["large","medium","small"].includes(size))localStorage.setItem(GRID_SIZE_KEY_PREFIX+scope,size)}
-function gridSizeControlHTML(scope,current){return `<div class="viewSizeControl"><span>表示</span>${[["large","大"],["medium","中"],["small","小"]].map(([k,l])=>`<button type="button" class="${current===k?"active":""}" data-view-size="${scope}" data-size="${k}" aria-pressed="${current===k?"true":"false"}">${l}</button>`).join("")}</div>`}
+function loadGridSize(scope){return UI.viewSize.load(GRID_SIZE_KEY_PREFIX+scope)}
+function saveGridSize(scope,size){return UI.viewSize.save(GRID_SIZE_KEY_PREFIX+scope,size)}
+function gridSizeControlHTML(scope,current){return UI.viewSize.html({scope,current,wrapperClass:"viewSizeControl"})}
 let dexViewSize=loadGridSize("dex"),ownedViewSize=loadGridSize("owned");
 let trainingFocusId=null;
 let trainingStickyIds=new Set();
@@ -2575,69 +2576,24 @@ function buildAutoTeam(need){
  return selected
 }
 
-function commonFilterSeries(records){return [...new Set(records.map(r=>String(r?.series||"").trim()).filter(Boolean))].sort(compareSeriesRelease)}
-function commonFilterTypes(records){
- const typeOrder=Array.isArray(CORE?.TYPES)?CORE.TYPES:[];
- return [...new Set(records.flatMap(r=>[r?.type1,r?.type2].filter(Boolean)))].sort((a,b)=>{const ai=typeOrder.indexOf(a),bi=typeOrder.indexOf(b);return (ai<0?999:ai)-(bi<0?999:bi)||String(a).localeCompare(String(b),"ja")})
-}
-function commonFilterGrades(records){return [...new Set(records.map(r=>Number(r?.grade)).filter(n=>Number.isFinite(n)&&n>0))].sort((a,b)=>a-b)}
+function commonFilterSeries(records){return UI.pickFilter.series(records,compareSeriesRelease)}
+function commonFilterTypes(records){return UI.pickFilter.types(records,Array.isArray(CORE?.TYPES)?CORE.TYPES:[])}
+function commonFilterGrades(records){return UI.pickFilter.grades(records)}
 function normalizeCommonPickFilter(filter,records,statusOptions,sortOptions){
- const series=commonFilterSeries(records),types=commonFilterTypes(records),grades=commonFilterGrades(records).map(String);
- if(filter.series!=="all"&&!series.includes(filter.series))filter.series="all";
- if(filter.type!=="all"&&!types.includes(filter.type))filter.type="all";
- if(filter.grade!=="all"&&!grades.includes(String(filter.grade)))filter.grade="all";
- if(!statusOptions.some(([v])=>v===filter.status))filter.status="all";
- if(!sortOptions.some(([v])=>v===filter.sort))filter.sort="standard";
+ return UI.pickFilter.normalize(filter,records,{statusOptions,sortOptions,seriesCompare:compareSeriesRelease,typeOrder:Array.isArray(CORE?.TYPES)?CORE.TYPES:[],defaultSort:"standard"})
 }
 function applyCommonPickFilter(records,filter,statusPredicate){
- let rows=records.map((r,i)=>({r,i}));
- const q=String(filter.search||"").trim().toLocaleLowerCase("ja");
- if(q)rows=rows.filter(({r})=>[r.name_ja,r.name_en,r.pick_no,r.series].some(v=>String(v||"").toLocaleLowerCase("ja").includes(q)));
- if(filter.series!=="all")rows=rows.filter(({r})=>String(r.series||"").trim()===filter.series);
- if(filter.type!=="all")rows=rows.filter(({r})=>r.type1===filter.type||r.type2===filter.type);
- if(filter.grade!=="all")rows=rows.filter(({r})=>Number(r.grade)===Number(filter.grade));
- if(typeof statusPredicate==="function")rows=rows.filter(({r})=>statusPredicate(r,filter.status));
- const sort=filter.sort||"standard";
- const cmp={
-  standard:(a,b)=>a.i-b.i,
-  number:(a,b)=>String(a.r.pick_no||"").localeCompare(String(b.r.pick_no||""),"ja",{numeric:true})||a.i-b.i,
-  name:(a,b)=>String(a.r.name_ja||"").localeCompare(String(b.r.name_ja||""),"ja")||a.i-b.i,
-  grade:(a,b)=>(Number(b.r.grade)||0)-(Number(a.r.grade)||0)||(Number(b.r.poke_ene)||0)-(Number(a.r.poke_ene)||0)||a.i-b.i,
-  energy:(a,b)=>(Number(b.r.poke_ene)||0)-(Number(a.r.poke_ene)||0)||(Number(b.r.grade)||0)-(Number(a.r.grade)||0)||a.i-b.i,
+ return UI.pickFilter.apply(records,filter,{statusPredicate,sorters:{
   growth:(a,b)=>growthPointsFor(b.r.master_id)-growthPointsFor(a.r.master_id)||a.i-b.i,
   drill:(a,b)=>drillFor(b.r.master_id)-drillFor(a.r.master_id)||a.i-b.i,
   bond:(a,b)=>bondLevelFor(b.r.master_id)-bondLevelFor(a.r.master_id)||a.i-b.i,
   recommended:(a,b)=>teamRecommendationInfo(b.r).score-teamRecommendationInfo(a.r).score||(Number(b.r.poke_ene)||0)-(Number(a.r.poke_ene)||0)||(Number(b.r.grade)||0)-(Number(a.r.grade)||0)||a.i-b.i
- }[sort]||((a,b)=>a.i-b.i);
- rows.sort(cmp);
- return rows.map(x=>x.r)
+ }})
 }
 function commonPickFilterHTML(scope,filter,records,statusOptions,sortOptions,shownCount){
- const series=commonFilterSeries(records),types=commonFilterTypes(records),grades=commonFilterGrades(records);
- const opts=(items,value)=>items.map(([v,l])=>`<option value="${esc(v)}" ${String(value)===String(v)?"selected":""}>${esc(l)}</option>`).join("");
- const seriesOpts=opts([["all","すべての弾"],...series.map(x=>[x,x])],filter.series);
- const typeOpts=opts([["all","全タイプ"],...types.map(x=>[x,x])],filter.type);
- const gradeOpts=opts([["all","全★"],...grades.map(x=>[String(x),`★${x}`])],filter.grade);
- return `<div class="commonPickFilter"><div class="commonPickFilterGrid">
-   <label class="search"><span>検索</span><input type="search" value="${esc(filter.search)}" placeholder="名前・番号で検索" data-pick-filter="${scope}" data-filter-key="search"></label>
-   <label><span>弾</span><select data-pick-filter="${scope}" data-filter-key="series">${seriesOpts}</select></label>
-   <label><span>タイプ</span><select data-pick-filter="${scope}" data-filter-key="type">${typeOpts}</select></label>
-   <label><span>★ランク</span><select data-pick-filter="${scope}" data-filter-key="grade">${gradeOpts}</select></label>
-   <label><span>状態</span><select data-pick-filter="${scope}" data-filter-key="status">${opts(statusOptions,filter.status)}</select></label>
-   <label><span>並び順</span><select data-pick-filter="${scope}" data-filter-key="sort">${opts(sortOptions,filter.sort)}</select></label>
-  </div><div class="commonPickFilterFoot"><span class="commonPickFilterCount">表示 ${shownCount}/${records.length}</span><button type="button" class="commonPickFilterReset" data-pick-filter-reset="${scope}">条件クリア</button></div></div>`
+ return UI.pickFilter.html({scope,filter,records,statusOptions,sortOptions,shownCount,seriesCompare:compareSeriesRelease,typeOrder:Array.isArray(CORE?.TYPES)?CORE.TYPES:[],classes:{wrap:"commonPickFilter",grid:"commonPickFilterGrid",foot:"commonPickFilterFoot",count:"commonPickFilterCount",reset:"commonPickFilterReset",search:"search"}})
 }
-function bindCommonPickFilter(scope,filter,renderFn,defaults={}){
- app.querySelectorAll(`[data-pick-filter="${scope}"]`).forEach(el=>{
-  const key=el.dataset.filterKey;
-  if(el.tagName==="INPUT")el.oninput=e=>{
-   filter[key]=e.target.value;const pos=e.target.selectionStart??filter[key].length;renderFn();
-   requestAnimationFrame(()=>{const n=app.querySelector(`[data-pick-filter="${scope}"][data-filter-key="${key}"]`);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch{}}})
-  };
-  else el.onchange=e=>{filter[key]=e.target.value;renderFn()}
- });
- const reset=app.querySelector(`[data-pick-filter-reset="${scope}"]`);if(reset)reset.onclick=()=>{Object.assign(filter,makePickFilter(defaults));renderFn()}
-}
+function bindCommonPickFilter(scope,filter,renderFn,defaults={}){UI.pickFilter.bind({root:app,scope,filter,render:renderFn,defaults})}
 
 function renderTeamSelect(){
  const availableCount=state.owned.filter(o=>!isExpeditionLocked(o.id)).length,max=Math.min(3,availableCount),need=max,theme=THEMES[currentDungeon.id]||THEMES.forest;
@@ -3340,7 +3296,7 @@ function renderOwned(){
  app.querySelectorAll("[data-owned-detail]").forEach(c=>{const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);c.onclick=e=>{if(e.target.closest("button"))return;open()};c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}});
  app.querySelectorAll("[data-training-jump]").forEach(b=>b.onclick=e=>{e.stopPropagation();openTrainingFor(b.dataset.trainingJump)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
- app.querySelectorAll('[data-view-size="owned"]').forEach(b=>b.onclick=()=>{ownedViewSize=b.dataset.size;saveGridSize("owned",ownedViewSize);renderOwned()});
+ UI.viewSize.bind({root:app,scope:"owned",key:GRID_SIZE_KEY_PREFIX+"owned",onChange:size=>{ownedViewSize=size;renderOwned()}});
  bindCommonPickFilter("owned",ownedPickFilter,renderOwned);
 }
 function ownedPointHelpData(kind,id){
@@ -3533,7 +3489,7 @@ function renderDex(){
  const filterHtml=commonPickFilterHTML("dex",dexPickFilter,all,statusOptions,sortOptions,list.length);
  app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">📖 ポケモン図鑑</div>${gridSizeControlHTML("dex",dexViewSize)}</div><div class="muted">判定はピック単位です。未遭遇ピックは「？？？」、遭遇済みで未所持のピックは姿を薄く表示し、現在所持しているピックだけ通常表示します。</div>${filterHtml}<div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=pickSeen(r),cls=d.current?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}" ${(seen||d.current)?`data-dex-detail="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen?'<span class="dexSeenTag">遭遇済み</span>':""}<img src="${esc(imageOf(r))}" alt=""><div class="dexName">${seen?esc(r.name_ja):"？？？"}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}</div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
  bindCommonPickFilter("dex",dexPickFilter,()=>{dexLimit=120;renderDex()});
- app.querySelectorAll('[data-view-size="dex"]').forEach(b=>b.onclick=()=>{dexViewSize=b.dataset.size;saveGridSize("dex",dexViewSize);renderDex()});
+ UI.viewSize.bind({root:app,scope:"dex",key:GRID_SIZE_KEY_PREFIX+"dex",onChange:size=>{dexViewSize=size;renderDex()}});
  const more=document.getElementById("dexMore");if(more)more.onclick=()=>{dexLimit+=120;renderDex()};
  app.querySelectorAll("[data-dex-detail]").forEach(c=>c.onclick=()=>showDexPickDetail(c.dataset.dexDetail))
 }
@@ -3616,4 +3572,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 20:17:00 JST / Ver1.27 -->
+<!-- Updated: 2026-09-27 20:32:00 JST / Ver1.28 -->
