@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.30 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.31 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.30</title>
+<title>フレンダダンジョン Ver1.31</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1841,7 +1841,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 /* Ver1.27: 進化インデックス・目休憩タイマー・共通UI補助を frenda-data.js v1.2 / frenda-ui.js v1.0 に集約。 */
 /* Ver1.28: ピック検索・絞り込み・表示サイズUIを frenda-ui.js v1.1 に共通化。 */
 /* Ver1.29: ピックカード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に共通化。 */
-/* Ver1.30: 選択済み3体表示・カード小部品を frenda-ui.js v1.3 に共通化。 */
+/* Ver1.31: 選択済み3体表示・カード小部品を frenda-ui.js v1.3 に共通化。 */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1872,21 +1872,21 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.30</span></b><small>Simulator Ver6.88 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.31</span></b><small>Simulator Ver6.89 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
 <script src="../frenda-master.js?v=1.23"></script>
 <script src="../frenda-core.js?v=1.23"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
-<script src="../frenda-data.js?v=1.2"></script>
+<script src="../frenda-data.js?v=1.3"></script>
 <script src="../frenda-ui.js?v=1.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.30";
+const APP_VERSION="1.31";
 const DATA=window.FRENDA_DATA;
 const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
@@ -2104,7 +2104,6 @@ const EGG_DEF=RULES.EGG_DEF;
 const EGG_SLOT_RATES=RULES.EGG_SLOT_RATES;
 const EGG_HATCH_GRADE=RULES.EGG_HATCH_GRADE;
 const EVO_GRADE_WEIGHTS=RULES.EVO_GRADE_WEIGHTS;
-const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
 const SPECIAL_EVOLUTION_TARGETS=RULES.SPECIAL_EVOLUTION_TARGETS;
 const TRAINING_STEP=RULES.TRAINING_STEP;
 const PERMANENT_BOOST_MAX=RULES.PERMANENT_BOOST_MAX;
@@ -2200,7 +2199,8 @@ function migrateState(){
 }
 function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
 const esc=UI.escapeHtml;
-function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
+const RECORD_INDEX=DATA.records.index(RECORDS);
+function rec(id){return RECORD_INDEX.get(id)}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function validBattle(r){return RULES.validBattle(r)}
 function speciesKey(r){return String(r?.name_ja||r?.master_id||"").trim()}
@@ -2211,7 +2211,7 @@ function markPickSeen(r){const id=r?.master_id;if(!id)return false;state.seenPic
 function currentEnemyWasFirstSeen(){const enc=state.run?.encounter;return !!enc?.newSeenIndices?.[enc.index]}
 function markCurrentEnemySeen(){const enc=state.run?.encounter,en=currentEnemy();if(!enc||!en)return false;enc.newSeenIndices=enc.newSeenIndices&&typeof enc.newSeenIndices==="object"?enc.newSeenIndices:{};if(Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index)){markPickSeen(en);return !!enc.newSeenIndices[enc.index]}const first=markPickSeen(en);enc.newSeenIndices[enc.index]=first;if(first)addLog(`NEW! ${en.name_ja}を はじめて見つけた！`);return first}
 function pickRecordBySpecies(records,{boss=false}={}){let groups=speciesGroups(records);if(!groups.length)return null;if(boss){groups=groups.map(g=>({...g,pokeEne:Math.max(0,...g.records.map(r=>Number(r.poke_ene)||0))})).sort((a,b)=>b.pokeEne-a.pokeEne);groups=groups.slice(0,Math.max(8,Math.ceil(groups.length*.35)))}const g=groups[Math.floor(Math.random()*groups.length)];return g?.records?.[Math.floor(Math.random()*g.records.length)]||null}
-function imageOf(r){return r?.official_image||""}
+function imageOf(r){return DATA.records.image(r)}
 function gradeText(r){return RULES.gradeText(r)}
 function maxHpFor(id){const r=rec(id);const b=state.permanentBoosts?.[id]?.hp||0;return Math.max(1,Math.round(Number(r?.hp||1)+b))}
 function ownedEntry(id){return state.owned.find(x=>x.id===id)||null}
@@ -2234,7 +2234,7 @@ function reconcileDexState(){
   state.seenPicks[id]=true
  }
 }
-function splitRegionalName(name){for(const region of REGION_PREFIXES)if(String(name||"").startsWith(region))return {base:String(name).slice(region.length),region};return {base:String(name||""),region:null}}
+function splitRegionalName(name){return DATA.records.splitRegionalName(name)}
 function applyEvolutionIndex(index){EVO_INDEX=index;EVO_BY_NAME=index.byName;EVO_BY_NO=index.byNo;EVO_PARENTS=index.parents;evoReady=true;evoLoadError=false;migrateGrowthPointsToFamilies();migrateBondPointsToFamilies()}
 async function loadEvolutionData(){
  try{
@@ -2417,7 +2417,7 @@ function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpe
  schedule()
 }
 
-function statKey(did,diff){return `${did}:${diff}`}
+function statKey(did,diff){return DATA.dungeon.statKey(did,diff)}
 function getStat(did,diff){const k=statKey(did,diff);if(!state.stats[k])state.stats[k]={deepest:0,clears:0};return state.stats[k]}
 function hasVisitedDungeon(did){for(let d=1;d<=5;d++){const st=state.stats?.[statKey(did,d)];if(Number(st?.deepest||0)>0||Number(st?.clears||0)>0)return true}return false}
 function updateDeepest(f){if(!state.run)return;const s=getStat(state.run.dungeonId,state.run.difficulty);s.deepest=Math.max(s.deepest,Math.min(10,f));save()}
@@ -3576,4 +3576,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 20:52:00 JST / Ver1.30 -->
+<!-- Updated: 2026-09-27 20:58:00 JST / Ver1.31 -->
