@@ -1,7 +1,7 @@
-/* FRENDA_UI_VERSION: 1.0 / Updated: 2026-09-27 20:17 JST */
+/* FRENDA_UI_VERSION: 1.1 / Updated: 2026-09-27 20:32 JST */
 (()=>{
 "use strict";
-const VERSION="1.0";
+const VERSION="1.1";
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function formatRemain(ms,doneText="帰還できます"){
  if(ms<=0)return doneText;
@@ -65,5 +65,67 @@ function createEyeCare({data,onTick,extraStorageKeys=[]}={}){
  function stop(){if(handle)clearInterval(handle);handle=null;if(started){document.removeEventListener("keydown",keydown,true);window.removeEventListener("storage",storage);document.removeEventListener("visibilitychange",visibility);document.removeEventListener("click",click);started=false}}
  return Object.freeze({start,stop,tick,startManualRest,isLocked:()=>locked,resolve,format:fmt});
 }
-window.FRENDA_UI=Object.freeze({VERSION,escapeHtml,formatRemain,formatShortDateTime,sleep,createEyeCare});
+
+const VIEW_SIZES=Object.freeze(["large","medium","small"]);
+function createPickFilter(defaults={}){return Object.assign({search:"",series:"all",type:"all",grade:"all",status:"all",sort:"standard"},defaults)}
+function pickFilterSeries(records,compare){
+ const out=[...new Set((records||[]).map(r=>String(r?.series||"").trim()).filter(Boolean))];
+ return out.sort(typeof compare==="function"?compare:(a,b)=>String(a).localeCompare(String(b),"ja",{numeric:true}));
+}
+function pickFilterTypes(records,typeOrder=[]){
+ const out=[...new Set((records||[]).flatMap(r=>[r?.type1,r?.type2]).filter(Boolean))];
+ return out.sort((a,b)=>{const ai=typeOrder.indexOf(a),bi=typeOrder.indexOf(b);if(typeOrder.length&&(ai>=0||bi>=0))return (ai<0?999:ai)-(bi<0?999:bi)||String(a).localeCompare(String(b),"ja");return String(a).localeCompare(String(b),"ja")});
+}
+function pickFilterGrades(records){return [...new Set((records||[]).map(r=>Number(r?.grade)).filter(n=>Number.isFinite(n)&&n>0))].sort((a,b)=>a-b)}
+function normalizePickFilter(filter,records,{statusOptions=[],sortOptions=[],seriesCompare=null,typeOrder=[],defaultSort="standard"}={}){
+ const series=pickFilterSeries(records,seriesCompare),types=pickFilterTypes(records,typeOrder),grades=pickFilterGrades(records).map(String);
+ if(filter.series!=="all"&&!series.includes(filter.series))filter.series="all";
+ if(filter.type!=="all"&&!types.includes(filter.type))filter.type="all";
+ if(filter.grade!=="all"&&!grades.includes(String(filter.grade)))filter.grade="all";
+ if(statusOptions.length&&!statusOptions.some(([v])=>v===filter.status))filter.status="all";
+ if(sortOptions.length&&!sortOptions.some(([v])=>v===filter.sort))filter.sort=defaultSort;
+ return filter;
+}
+function applyPickFilter(records,filter,{statusPredicate=null,sorters={}}={}){
+ let rows=(records||[]).map((r,i)=>({r,i})),q=String(filter?.search||"").trim().toLocaleLowerCase("ja");
+ if(q)rows=rows.filter(({r})=>[r?.name_ja,r?.name_en,r?.pick_no,r?.series].some(v=>String(v||"").toLocaleLowerCase("ja").includes(q)));
+ if(filter?.series!=="all")rows=rows.filter(({r})=>String(r?.series||"").trim()===filter.series);
+ if(filter?.type!=="all")rows=rows.filter(({r})=>r?.type1===filter.type||r?.type2===filter.type);
+ if(filter?.grade!=="all")rows=rows.filter(({r})=>Number(r?.grade)===Number(filter.grade));
+ if(typeof statusPredicate==="function")rows=rows.filter(({r})=>statusPredicate(r,filter?.status));
+ const builtins={
+  standard:(a,b)=>a.i-b.i,
+  number:(a,b)=>String(a.r?.pick_no||"").localeCompare(String(b.r?.pick_no||""),"ja",{numeric:true})||a.i-b.i,
+  name:(a,b)=>String(a.r?.name_ja||"").localeCompare(String(b.r?.name_ja||""),"ja")||a.i-b.i,
+  grade:(a,b)=>(Number(b.r?.grade)||0)-(Number(a.r?.grade)||0)||(Number(b.r?.poke_ene)||0)-(Number(a.r?.poke_ene)||0)||a.i-b.i,
+  energy:(a,b)=>(Number(b.r?.poke_ene)||0)-(Number(a.r?.poke_ene)||0)||(Number(b.r?.grade)||0)-(Number(a.r?.grade)||0)||a.i-b.i
+ };
+ const cmp=sorters?.[filter?.sort]||builtins[filter?.sort]||builtins.standard;
+ rows.sort(cmp);return rows.map(x=>x.r);
+}
+function pickFilterHTML({scope,filter,records,statusOptions,sortOptions,shownCount,seriesCompare=null,typeOrder=[],classes={},footerExtra="",searchPlaceholder="名前・番号で検索"}={}){
+ const series=pickFilterSeries(records,seriesCompare),types=pickFilterTypes(records,typeOrder),grades=pickFilterGrades(records);
+ const cls=Object.assign({wrap:"commonPickFilter",grid:"commonPickFilterGrid",foot:"commonPickFilterFoot",count:"commonPickFilterCount",reset:"commonPickFilterReset",search:"search"},classes||{});
+ const opts=(items,value)=>items.map(([v,l])=>`<option value="${escapeHtml(v)}" ${String(value)===String(v)?"selected":""}>${escapeHtml(l)}</option>`).join("");
+ return `<div class="${cls.wrap}"><div class="${cls.grid}">
+  <label class="${cls.search}"><span>検索</span><input type="search" value="${escapeHtml(filter.search)}" placeholder="${escapeHtml(searchPlaceholder)}" data-ui-pick-filter="${escapeHtml(scope)}" data-ui-filter-key="search"></label>
+  <label><span>弾</span><select data-ui-pick-filter="${escapeHtml(scope)}" data-ui-filter-key="series">${opts([["all","すべての弾"],...series.map(x=>[x,x])],filter.series)}</select></label>
+  <label><span>タイプ</span><select data-ui-pick-filter="${escapeHtml(scope)}" data-ui-filter-key="type">${opts([["all","全タイプ"],...types.map(x=>[x,x])],filter.type)}</select></label>
+  <label><span>★ランク</span><select data-ui-pick-filter="${escapeHtml(scope)}" data-ui-filter-key="grade">${opts([["all","全★"],...grades.map(x=>[String(x),`★${x}`])],filter.grade)}</select></label>
+  <label><span>状態</span><select data-ui-pick-filter="${escapeHtml(scope)}" data-ui-filter-key="status">${opts(statusOptions||[],filter.status)}</select></label>
+  <label><span>並び順</span><select data-ui-pick-filter="${escapeHtml(scope)}" data-ui-filter-key="sort">${opts(sortOptions||[],filter.sort)}</select></label>
+ </div><div class="${cls.foot}"><span class="${cls.count}">表示 ${shownCount}/${(records||[]).length}</span>${footerExtra}<button type="button" class="${cls.reset}" data-ui-pick-filter-reset="${escapeHtml(scope)}">条件クリア</button></div></div>`;
+}
+function bindPickFilter({root=document,scope,filter,render,defaults={}}={}){
+ root.querySelectorAll(`[data-ui-pick-filter="${scope}"]`).forEach(el=>{const key=el.dataset.uiFilterKey;if(el.tagName==="INPUT")el.oninput=e=>{filter[key]=e.target.value;const pos=e.target.selectionStart??filter[key].length;render();requestAnimationFrame(()=>{const n=root.querySelector(`[data-ui-pick-filter="${scope}"][data-ui-filter-key="${key}"]`);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch{}}})};else el.onchange=e=>{filter[key]=e.target.value;render()}});
+ const reset=root.querySelector(`[data-ui-pick-filter-reset="${scope}"]`);if(reset)reset.onclick=()=>{Object.assign(filter,createPickFilter(defaults));render()};
+}
+function loadViewSize(key,fallback="medium"){try{const v=localStorage.getItem(key);return VIEW_SIZES.includes(v)?v:fallback}catch{return fallback}}
+function saveViewSize(key,size){try{if(VIEW_SIZES.includes(size))localStorage.setItem(key,size)}catch{}return size}
+function viewSizeHTML({scope,current,wrapperClass="viewSizeControl",label="表示"}={}){return `<div class="${wrapperClass}"><span>${escapeHtml(label)}</span>${[["large","大"],["medium","中"],["small","小"]].map(([v,l])=>`<button type="button" class="${current===v?"active":""}" data-ui-view-scope="${escapeHtml(scope)}" data-ui-view-size="${v}" aria-pressed="${current===v?"true":"false"}">${l}</button>`).join("")}</div>`}
+function bindViewSize({root=document,scope,key,onChange}={}){root.querySelectorAll(`[data-ui-view-scope="${scope}"]`).forEach(b=>b.onclick=()=>{const size=saveViewSize(key,b.dataset.uiViewSize);if(typeof onChange==="function")onChange(size)})}
+const pickFilter=Object.freeze({create:createPickFilter,series:pickFilterSeries,types:pickFilterTypes,grades:pickFilterGrades,normalize:normalizePickFilter,apply:applyPickFilter,html:pickFilterHTML,bind:bindPickFilter});
+const viewSize=Object.freeze({SIZES:VIEW_SIZES,load:loadViewSize,save:saveViewSize,html:viewSizeHTML,bind:bindViewSize});
+
+window.FRENDA_UI=Object.freeze({VERSION,escapeHtml,formatRemain,formatShortDateTime,sleep,createEyeCare,pickFilter,viewSize});
 })();
