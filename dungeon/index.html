@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.06 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.07 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.06</title>
+<title>フレンダダンジョン Ver1.07</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -523,7 +523,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 .victoryCard{position:relative;overflow:hidden;border:2px solid #ffd04b;background:radial-gradient(circle at 50% 0,#fff6ad 0,#fff 44%,#f4fbff 100%);box-shadow:0 18px 38px #0b2d4528}
 .victoryCard:before,.victoryCard:after{content:"★  ✦  ★  ✦  ★";position:absolute;left:-12%;width:124%;font-size:30px;letter-spacing:22px;color:#f0b80033;white-space:nowrap;animation:victoryStars 3.5s linear infinite;pointer-events:none;z-index:0}
 .victoryCard:before{top:14px}.victoryCard:after{bottom:16px;animation-direction:reverse}
-.victoryCard>*{position:relative;z-index:1}#victoryNext{position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;min-width:180px}
+.victoryCard>*{position:relative;z-index:1}.victoryCard{cursor:pointer}#victoryNext{position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;min-width:180px}
 .victoryCrown{font-size:58px;line-height:1;animation:victoryCrown .65s cubic-bezier(.17,1.6,.36,1);filter:drop-shadow(0 6px 7px #7d570033)}
 .victoryWord{margin:4px 0 2px;font-size:clamp(46px,13vw,82px);font-weight:1000;letter-spacing:.06em;line-height:1;color:#e59b00;text-shadow:0 3px 0 #fff,0 6px 0 #9d6818,0 12px 25px #7952003b;animation:victoryPop .7s cubic-bezier(.17,1.7,.36,1)}
 .victorySub{font-size:14px;font-weight:950;color:#415666}
@@ -1223,7 +1223,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.06: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
+/* Ver1.07: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
 @media(min-width:701px){
  body:has(main.dungeonRunScreen){height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
  body:has(main.dungeonRunScreen) header{position:relative;top:auto;flex:0 0 auto;padding:4px 8px}
@@ -1335,7 +1335,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .adventureLogBody{max-height:82px;padding:0 8px 6px;overflow:auto}
  main.dungeonRunScreen .adventureLogBody .battleLog{max-height:70px;margin-top:4px;padding:5px 7px;font-size:8px;line-height:1.25}
 
- /* Ver1.06: make the PC adventure header use its vertical space, with large left images and info on the right. */
+ /* Ver1.07: make the PC adventure header use its vertical space, with large left images and info on the right. */
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview{height:clamp(118px,19vh,154px);min-height:118px;flex:0 0 auto;grid-template-columns:minmax(250px,.46fr) minmax(0,1.54fr);gap:8px;margin-bottom:6px}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card{height:100%;padding:7px 9px;border-radius:12px;display:flex;flex-direction:column}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card .sectionTitle{font-size:12px;margin:0 0 5px}
@@ -1411,7 +1411,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 
 
 
-/* Ver1.06: PC adventure layout — team sidebar on the left, main scene on the right. */
+/* Ver1.07: PC adventure layout — team sidebar on the left, main scene on the right. */
 @media(min-width:701px){
  main.dungeonRunScreen:not(.combatStageScreen)>.dungeonRun{
   display:grid!important;
@@ -1475,7 +1475,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 .expLockedCard{opacity:.48;filter:grayscale(.35);position:relative}.expLockedCard::after{content:"🧭 探索中";position:absolute;left:6px;right:6px;top:6px;z-index:5;padding:5px 7px;border-radius:9px;background:#315f78e8;color:#fff;font-size:9px;font-weight:1000;text-align:center}.homeMenuBtn.expedition{background:linear-gradient(180deg,#fff4c8,#f3c75b)!important;color:#5e4300!important;border-color:#d8ab32!important}
 
 
-/* Ver1.06: PC dungeon UI is permanently split into left party / right scene. */
+/* Ver1.07: PC dungeon UI is permanently split into left party / right scene. */
 @media(min-width:701px){
  main.dungeonRunScreen>.dungeonRun{
   display:grid!important;
@@ -1564,7 +1564,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.06: PC post-run screen uses the full viewport instead of a small centered summary. */
+/* Ver1.07: PC post-run screen uses the full viewport instead of a small centered summary. */
 @media(min-width:701px){
  main.dungeonRunScreen .postRunSummary{height:100%;min-height:0;display:grid!important;grid-template-rows:minmax(190px,.9fr) minmax(150px,1fr) auto;gap:clamp(10px,2vh,18px);padding:clamp(18px,3vh,30px) clamp(24px,4vw,56px)!important;text-align:left;overflow:hidden!important;background:linear-gradient(160deg,#fff,#f6fafc)}
  main.dungeonRunScreen .postRunHero{min-height:0;display:grid;grid-template-columns:clamp(150px,18vw,240px) minmax(0,1fr);align-items:center;gap:clamp(18px,3vw,42px);padding:clamp(14px,2.5vh,26px) clamp(18px,3vw,36px);border-radius:22px;background:linear-gradient(135deg,#eef8ff,#fff);border:2px solid #c8dce8;box-shadow:0 10px 30px #17384c18}
@@ -1601,18 +1601,18 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.06</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.07</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.06"></script>
-<script src="../frenda-core.js?v=1.06"></script>
+<script src="../frenda-master.js?v=1.07"></script>
+<script src="../frenda-core.js?v=1.07"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=1.06"></script>
+<script src="../frenda-cloud.js?v=1.07"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.06";
+const APP_VERSION="1.07";
 const SAVE_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 const RUN_END_GUARD_KEY="frenda:dungeon:runEndGuard:v1";
@@ -3020,7 +3020,7 @@ function renderCaptureSlotHTML(){const c=state.run.capture,r=rec(c.targetId);ret
 function renderCaptureThrowHTML(){const c=state.run.capture,o=c?.pendingOutcome,r=rec(c?.targetId),ball=BALL_DEF[o?.ballKey]||BALL_DEF.poke;return `<div class="card battleMainCard combatStageCard captureCombatCard captureThrowCompact"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="kicker" style="color:#14739a">SELECTED BALL</div><div class="captureChosenBall"><img class="captureBallImg" src="${esc(ball.img)}" alt="${esc(ball.label)}"><b>${esc(ball.label)}</b></div><h2 id="captureDramaTitle">${esc(ball.label)}になった！</h2><div class="captureStage" id="captureStage"><img id="captureTargetSprite" class="captureTargetSprite" src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"")}"><img id="captureThrownBall" class="captureThrownBall" src="${esc(ball.img)}" alt="${esc(ball.label)}"></div><div id="captureDramaText" class="captureDramaText">このボールでゲットに挑戦！</div><div id="captureDots" class="captureDots"></div></div></div>`}
 function renderCaptureResultHTML(){const c=state.run.capture,r=rec(c.targetId),res=c.result,ball=BALL_DEF[res.ballKey];return `<div class="card battleMainCard combatStageCard captureCombatCard captureResultCompact"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="resultIcon tapAdvance" data-run-advance="captureResult" role="button" tabindex="0" aria-label="次へ進む">${res.success?"🎉":"💨"}</div><img class="captureBallImg captureResultBall tapAdvance" data-run-advance="captureResult" role="button" tabindex="0" src="${esc(ball.img)}" alt="${esc(ball.label)}"><h2>${res.success?"ゲット成功！":"ゲット失敗"}</h2><p>${esc(ball.label)}<br>${esc(r.name_ja)}：捕獲率 ${Math.round(res.rate*100)}%</p>${res.success?`<div class="notice">${res.duplicate?(res.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1になりました。":"同一ピック所持済みのため、育成ポイント+1になりました。"):"新しい仲間として所持ピックに追加されました。次回のダンジョンから編成できます。"}</div>${res.newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}`:""}<div class="captureCombatButtons"><button id="captureNext" class="captureActionBtn">次へ進む</button></div></div></div>`}
 
-function renderVictoryHTML(){const v=state.run?.victory||{},label=v.kind==="elite"?"強敵戦":v.kind==="boss"?"ボス戦":"通常戦",next=v.kind==="boss"?"落とし物を確認":"報酬へ";return `<div class="card summary victoryCard"><div class="victoryCrown tapAdvance" data-run-advance="victory" role="button" tabindex="0" aria-label="${esc(next)}">${v.kind==="boss"?"👑":"🏆"}</div><div class="victoryWord">勝利！</div><div class="victorySub">${esc(label)}を制した！</div>${v.bonus?`<div class="victoryBonus">🔥 闘志ボーナス <b>攻撃・防御 +${v.bonus}</b></div>`:""}<p>${v.enemyName?`${esc(v.enemyName)}を倒した！`:"戦闘に勝利した！"}</p><button type="button" id="victoryNext" style="margin-top:8px">${next}</button></div>`}
+function renderVictoryHTML(){const v=state.run?.victory||{},label=v.kind==="elite"?"強敵戦":v.kind==="boss"?"ボス戦":"通常戦",next=v.kind==="boss"?"落とし物を確認":"報酬へ";return `<div class="card summary victoryCard tapAdvance" data-run-advance="victory" role="button" tabindex="0" aria-label="${esc(next)}"><div class="victoryCrown">${v.kind==="boss"?"👑":"🏆"}</div><div class="victoryWord">勝利！</div><div class="victorySub">${esc(label)}を制した！</div>${v.bonus?`<div class="victoryBonus">🔥 闘志ボーナス <b>攻撃・防御 +${v.bonus}</b></div>`:""}<p>${v.enemyName?`${esc(v.enemyName)}を倒した！`:"戦闘に勝利した！"}</p><button type="button" id="victoryNext" style="margin-top:8px">${next}</button></div>`}
 function renderPickupHTML(){const p=state.run?.pickup||{icon:"🎁",name:"拾い物",effect:"何かを見つけた！"};return `<div class="card pickupCard"><div class="pickupInner"><div class="pickupFound">道ばたに何か落ちている……</div><div class="pickupIcon tapAdvance" data-run-advance="pickup" role="button" tabindex="0" aria-label="先へ進む">${esc(p.icon)}</div><div class="pickupName">${esc(p.name)}を ひろった！</div><div class="pickupEffect">${esc(p.effect)}</div><div class="pickupRateNote">拾い物は階を進んだ時に低確率で見つかります。効果は自動で適用されます。</div><button id="pickupNext" style="margin-top:12px">先へ進む</button></div></div>`}
 function renderHealHTML(){return `<div class="card"><div class="sectionTitle">❤️ 回復ポイント</div><div class="rewardGrid"><button class="rewardBtn" id="healOne"><span>💚</span><b>1匹を全回復</b><small>ひんし状態も復活</small></button><button class="rewardBtn" id="healAll"><span>💞</span><b>全員50%回復</b><small>ひんしは復活しない</small></button></div></div>`}
 function eventLabel(k){return {heal30:"1匹40%回復",heal20:"1匹25%回復",healAll15:"全員20%回復",atk2:"攻撃+3",def2:"防御+3",shield20:"次戦被ダメ25%減",danger:"危険な泉：HP20%減・攻撃+5",guard:"守りの祭壇：HP10%減・防御+5",lucky:"幸運の休息：60%回復",healSingleSelect:"1匹を全回復"}[k]||"イベント"}
@@ -3385,4 +3385,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 15:49:00 JST / Ver1.06 -->
+<!-- Updated: 2026-09-27 15:58:00 JST / Ver1.07 -->
