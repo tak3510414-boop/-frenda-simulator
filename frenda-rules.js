@@ -1,4 +1,4 @@
-/* FRENDA_RULES_VERSION: 1.0 / Updated: 2026-09-27 19:35 JST */
+/* FRENDA_RULES_VERSION: 1.1 / Updated: 2026-09-27 19:55 JST */
 (()=>{
 "use strict";
 const CORE=window.FRENDA_CORE||null;
@@ -18,6 +18,13 @@ const THEMES={
 const ENEMY_GRADE_RATES={1:{2:60,3:30,4:9,5:1},2:{2:45,3:35,4:17,5:3},3:{2:30,3:40,4:24,5:6},4:{2:20,3:35,4:35,5:10},5:{2:10,3:30,4:40,5:20}};
 const EXP_TO_DRILL=100;
 const BOND_LEVEL_THRESHOLDS=[0,1,3,6,10,15];
+const EGG_DEF={normal:{label:"ふつうの卵",short:"ふつう",icon:"🥚",required:10},rare:{label:"レア卵",short:"レア",icon:"✨🥚",required:12},super:{label:"スーパーレア卵",short:"Sレア",icon:"🌟🥚",required:16},type:{label:"タイプ卵",short:"タイプ",icon:"🎨🥚",required:12}};
+const CAPTURE_BASE_RATE={2:.30,3:.15,4:.07,5:.03};
+const BALL_MULT={poke:1,super:3,hyper:10,master:Infinity};
+const EVO_GRADE_WEIGHTS={2:50,3:30,4:15,5:5};
+const TRAINING_STEP=3;
+const PERMANENT_BOOST_MAX=30;
+const EGG_CAP_BASE=2,EGG_CAP_PER_CLEARS=10,EGG_CAP_MAX=10;
 const LEGENDARY_NAMES=new Set([
 "フリーザー","サンダー","ファイヤー","ミュウツー","ライコウ","エンテイ","スイクン","ルギア","ホウオウ",
 "レジロック","レジアイス","レジスチル","ラティアス","ラティオス","カイオーガ","グラードン","レックウザ",
@@ -31,6 +38,36 @@ const MYTHICAL_NAMES=new Set([
 "ミュウ","セレビィ","ジラーチ","デオキシス","フィオネ","マナフィ","ダークライ","シェイミ","アルセウス",
 "ビクティニ","ケルディオ","メロエッタ","ゲノセクト","ディアンシー","フーパ","ボルケニオン","マギアナ","マーシャドー","ゼラオラ","メルタン","メルメタル","ザルード","モモワロウ"
 ]);
+
+function weightedChoice(map,rng=Math.random){
+ const a=Object.entries(map||{}),sum=a.reduce((n,[,w])=>n+Math.max(0,Number(w)||0),0);
+ if(!a.length||sum<=0)return null;
+ let x=Math.max(0,Math.min(.9999999999999999,Number(rng())||0))*sum;
+ for(const [k,w0] of a){x-=Math.max(0,Number(w0)||0);if(x<=0)return k}
+ return a[a.length-1]?.[0]??null;
+}
+function familyKey(id,record,evolutionRootNo=null){
+ if(evolutionRootNo!==null&&evolutionRootNo!==undefined&&evolutionRootNo!=="")return `evo:${evolutionRootNo}`;
+ return record?.evolution_family||record?.evo_family||record?.family_id||record?.name_ja||id;
+}
+function addBondPoints(state,key,n=1){
+ if(!state||!key)return 0;state.bondPoints=state.bondPoints||{};
+ const next=Number(state.bondPoints[key]||0)+Math.max(0,Number(n)||0);state.bondPoints[key]=next;return next;
+}
+function awardGrowthOrDrill(state,id,n=1,{key=id,hasEvolution=false}={}){
+ const amount=Math.max(0,Number(n)||0);
+ if(!state||!id||!amount)return {kind:"none",amount:0};
+ state.trainingPoints=state.trainingPoints||{};state.drillPoints=state.drillPoints||{};
+ if(hasEvolution){state.trainingPoints[key]=Number(state.trainingPoints[key]||0)+amount;return {kind:"growth",amount}}
+ state.drillPoints[id]=Number(state.drillPoints[id]||0)+amount;return {kind:"drill",amount};
+}
+function eggRequired(kind,fallback=10){return Number(EGG_DEF[kind]?.required||fallback||10)}
+function eggCapFromClears(totalClears){return Math.min(EGG_CAP_MAX,EGG_CAP_BASE+Math.floor(Math.max(0,Number(totalClears)||0)/EGG_CAP_PER_CLEARS))}
+function captureRate(grade,ballKey,captureBoost=0){
+ if(ballKey==="master")return 1;
+ const base=CAPTURE_BASE_RATE[Number(grade)]??.03,m=BALL_MULT[ballKey]||1,boost=1+Math.max(0,Number(captureBoost)||0);
+ return Math.min(1,base*m*boost);
+}
 function validBattle(r){return !!(r&&Number(r.hp)>0&&Number(r.atk)>0&&Number(r.def)>0&&Number(r.sp_atk)>0&&Number(r.sp_def)>0&&r.move_type)}
 function gradeText(r){return r?.grade?"★"+r.grade:"★-"}
 function specialBaseName(r){return String(r?.name_ja||"").replace(/[（(].*$/," ").trim()}
@@ -85,5 +122,5 @@ function explorationScore({team,dungeonId,difficulty,records,rawEff,bondLevelFor
  if(count===2&&rank==="S")rank="A";if(count===1&&["S","A"].includes(rank))rank="B";
  return {total,rank,parts:{number:numberPts,strength,type:typePts,bond:bondPts},baseline:Math.round(base),avgEnergy:Math.round(avg),recommended:good};
 }
-window.FRENDA_RULES={version:"1.0",THEME_ORDER,THEMES,ENEMY_GRADE_RATES,EXP_TO_DRILL,BOND_LEVEL_THRESHOLDS,LEGENDARY_NAMES,MYTHICAL_NAMES,validBattle,gradeText,specialBaseName,isLegendary,isMythical,isSpecial,allowedByDungeonDifficulty,bondLevelFromPoints,applyXp,themePool,baselineEnergy,recommendedForTheme,explorationScore};
+window.FRENDA_RULES={version:"1.1",THEME_ORDER,THEMES,ENEMY_GRADE_RATES,EXP_TO_DRILL,BOND_LEVEL_THRESHOLDS,EGG_DEF,CAPTURE_BASE_RATE,BALL_MULT,EVO_GRADE_WEIGHTS,TRAINING_STEP,PERMANENT_BOOST_MAX,EGG_CAP_BASE,EGG_CAP_PER_CLEARS,EGG_CAP_MAX,LEGENDARY_NAMES,MYTHICAL_NAMES,weightedChoice,familyKey,addBondPoints,awardGrowthOrDrill,eggRequired,eggCapFromClears,captureRate,validBattle,gradeText,specialBaseName,isLegendary,isMythical,isSpecial,allowedByDungeonDifficulty,bondLevelFromPoints,applyXp,themePool,baselineEnergy,recommendedForTheme,explorationScore};
 })();
