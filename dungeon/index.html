@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.07 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.08 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.07</title>
+<title>フレンダダンジョン Ver1.08</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1007,22 +1007,24 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
  main.encounterRevealScreen .legendaryTitle{flex:0 0 auto;font-size:clamp(20px,4vw,34px);line-height:1;margin:2px 0 4px}
  main.encounterRevealScreen .encounterCutinSpriteWrap,
  main.encounterRevealScreen .legendarySpriteWrap{
-   flex:1 1 auto;
+   flex:1 1 0;
    width:100%;
    height:auto;
    min-height:0;
    max-height:none;
+   margin-bottom:16px;
+   box-sizing:border-box;
  }
  main.encounterRevealScreen .encounterCutinSprite,
  main.encounterRevealScreen .legendarySprite{
-   height:100%;
+   height:calc(100% - 10px);
    width:auto;
    max-width:min(72vw,560px);
-   max-height:100%;
+   max-height:calc(100% - 10px);
    object-fit:contain;
  }
  main.encounterRevealScreen .encounterCutinName,
- main.encounterRevealScreen .legendaryName{flex:0 0 auto;min-height:0;margin-top:2px;font-size:clamp(17px,3vw,26px);line-height:1.05}
+ main.encounterRevealScreen .legendaryName{flex:0 0 auto;min-height:32px;margin-top:0;font-size:clamp(17px,3vw,26px);line-height:1.05;display:flex;align-items:center;justify-content:center}
  main.encounterRevealScreen .encounterCutinHint,
  main.encounterRevealScreen .legendaryTapHint{flex:0 0 auto;margin-top:3px;font-size:8px;line-height:1.1}
  main.encounterRevealScreen .encounterCutinContinue,
@@ -1035,8 +1037,10 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
  main.encounterRevealScreen .legendaryIntroInner{padding:5px 10px 6px}
  main.encounterRevealScreen .encounterCutinTitle,
  main.encounterRevealScreen .legendaryTitle{font-size:20px;margin:1px 0 2px}
+ main.encounterRevealScreen .encounterCutinSpriteWrap,
+ main.encounterRevealScreen .legendarySpriteWrap{margin-bottom:10px}
  main.encounterRevealScreen .encounterCutinName,
- main.encounterRevealScreen .legendaryName{font-size:17px}
+ main.encounterRevealScreen .legendaryName{font-size:17px;min-height:24px}
 }
 
 
@@ -1223,7 +1227,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.07: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
+/* Ver1.08: PC dungeon-wide one-screen layout. Every dungeon scene uses the viewport as the outer frame. */
 @media(min-width:701px){
  body:has(main.dungeonRunScreen){height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
  body:has(main.dungeonRunScreen) header{position:relative;top:auto;flex:0 0 auto;padding:4px 8px}
@@ -1335,7 +1339,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .adventureLogBody{max-height:82px;padding:0 8px 6px;overflow:auto}
  main.dungeonRunScreen .adventureLogBody .battleLog{max-height:70px;margin-top:4px;padding:5px 7px;font-size:8px;line-height:1.25}
 
- /* Ver1.07: make the PC adventure header use its vertical space, with large left images and info on the right. */
+ /* Ver1.08: make the PC adventure header use its vertical space, with large left images and info on the right. */
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview{height:clamp(118px,19vh,154px);min-height:118px;flex:0 0 auto;grid-template-columns:minmax(250px,.46fr) minmax(0,1.54fr);gap:8px;margin-bottom:6px}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card{height:100%;padding:7px 9px;border-radius:12px;display:flex;flex-direction:column}
  main.dungeonRunScreen:not(.combatStageScreen) .runOverview>.card .sectionTitle{font-size:12px;margin:0 0 5px}
@@ -1411,7 +1415,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 
 
 
-/* Ver1.07: PC adventure layout — team sidebar on the left, main scene on the right. */
+/* Ver1.08: PC adventure layout — team sidebar on the left, main scene on the right. */
 @media(min-width:701px){
  main.dungeonRunScreen:not(.combatStageScreen)>.dungeonRun{
   display:grid!important;
@@ -1475,7 +1479,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 .expLockedCard{opacity:.48;filter:grayscale(.35);position:relative}.expLockedCard::after{content:"🧭 探索中";position:absolute;left:6px;right:6px;top:6px;z-index:5;padding:5px 7px;border-radius:9px;background:#315f78e8;color:#fff;font-size:9px;font-weight:1000;text-align:center}.homeMenuBtn.expedition{background:linear-gradient(180deg,#fff4c8,#f3c75b)!important;color:#5e4300!important;border-color:#d8ab32!important}
 
 
-/* Ver1.07: PC dungeon UI is permanently split into left party / right scene. */
+/* Ver1.08: PC dungeon UI is permanently split into left party / right scene. */
 @media(min-width:701px){
  main.dungeonRunScreen>.dungeonRun{
   display:grid!important;
@@ -1564,7 +1568,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 }
 
 
-/* Ver1.07: PC post-run screen uses the full viewport instead of a small centered summary. */
+/* Ver1.08: PC post-run screen uses the full viewport instead of a small centered summary. */
 @media(min-width:701px){
  main.dungeonRunScreen .postRunSummary{height:100%;min-height:0;display:grid!important;grid-template-rows:minmax(190px,.9fr) minmax(150px,1fr) auto;gap:clamp(10px,2vh,18px);padding:clamp(18px,3vh,30px) clamp(24px,4vw,56px)!important;text-align:left;overflow:hidden!important;background:linear-gradient(160deg,#fff,#f6fafc)}
  main.dungeonRunScreen .postRunHero{min-height:0;display:grid;grid-template-columns:clamp(150px,18vw,240px) minmax(0,1fr);align-items:center;gap:clamp(18px,3vw,42px);padding:clamp(14px,2.5vh,26px) clamp(18px,3vw,36px);border-radius:22px;background:linear-gradient(135deg,#eef8ff,#fff);border:2px solid #c8dce8;box-shadow:0 10px 30px #17384c18}
@@ -1601,18 +1605,18 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.07</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.08</span></b><small>Simulator Ver6.78 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
-<script src="../frenda-master.js?v=1.07"></script>
-<script src="../frenda-core.js?v=1.07"></script>
+<script src="../frenda-master.js?v=1.08"></script>
+<script src="../frenda-core.js?v=1.08"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../frenda-cloud.js?v=1.07"></script>
+<script src="../frenda-cloud.js?v=1.08"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.07";
+const APP_VERSION="1.08";
 const SAVE_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 const RUN_END_GUARD_KEY="frenda:dungeon:runEndGuard:v1";
@@ -3385,4 +3389,4 @@ function applyDungeonCloudData(data){
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY});
 })();
 </script>
-<!-- Updated: 2026-09-27 15:58:00 JST / Ver1.07 -->
+<!-- Updated: 2026-09-27 15:58:00 JST / Ver1.08 -->
