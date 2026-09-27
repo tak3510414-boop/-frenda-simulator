@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.34 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.35 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.34</title>
+<title>フレンダダンジョン Ver1.35</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1886,7 +1886,7 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.34";
+const APP_VERSION="1.35";
 const DUNGEON_TEST_MODE=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
 const DUNGEON_TIMER_CASE=new URLSearchParams(location.search).get("timer")||"";
@@ -1894,6 +1894,14 @@ const DATA=window.FRENDA_DATA;
 const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
+
+
+const FRENDA_TEST_BACKUP_KEY="frenda:test:storageBackup:v2";
+function frendaManagedStorageKeys(){const out=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith("frenda:")||k.startsWith("frenda_")))out.push(k)}return out}
+function captureFrendaStorage(){const data={};for(const k of frendaManagedStorageKeys())data[k]=localStorage.getItem(k);return data}
+function restoreFrendaStorage({clearBackup=false}={}){let raw=null;try{raw=sessionStorage.getItem(FRENDA_TEST_BACKUP_KEY)}catch{}if(!raw)return false;let data=null;try{data=JSON.parse(raw)}catch{}if(!data||typeof data!=="object")return false;for(const k of frendaManagedStorageKeys())localStorage.removeItem(k);for(const [k,v] of Object.entries(data))if(v!==null&&v!==undefined)localStorage.setItem(k,String(v));if(clearBackup)try{sessionStorage.removeItem(FRENDA_TEST_BACKUP_KEY)}catch{}return true}
+function prepareFrendaTestStorage(isTest){if(isTest){let has=false;try{has=!!sessionStorage.getItem(FRENDA_TEST_BACKUP_KEY)}catch{}if(has)restoreFrendaStorage({clearBackup:false});else try{sessionStorage.setItem(FRENDA_TEST_BACKUP_KEY,JSON.stringify(captureFrendaStorage()))}catch{}}else restoreFrendaStorage({clearBackup:true})}
+prepareFrendaTestStorage(DUNGEON_TEST_MODE);
 
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
@@ -2156,7 +2164,7 @@ function clearRunEndGuard(){try{localStorage.removeItem(RUN_END_GUARD_KEY)}catch
 function writeRunEndGuard(run,summary){try{localStorage.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
 function enforceRunEndGuard(target){const g=readRunEndGuard();if(!g||!target?.run)return false;const started=String(target.run.startedAt||"");if(g.startedAt&&started&&g.startedAt!==started)return false;target.run=null;target.postRun=null;if(g.summary)target.lastSummary=g.summary;return true}
 function save(){try{state.appVersion=APP_VERSION;state.saveVersion=11;DATA.dungeon.write(state)}catch(e){console.error(e)}}
-function installDungeonTestGuard(){const keys=[SAVE_KEY,EXPEDITION_KEY,DATA.KEYS.eyeTimer],backup=Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]));const restore=()=>{for(const k of keys){const v=backup[k];if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}};window.addEventListener("pagehide",restore,{once:true});window.addEventListener("beforeunload",restore,{once:true});return restore}
+function installDungeonTestGuard(){let done=false;const restore=()=>{if(done)return;done=true;restoreFrendaStorage({clearBackup:true})};window.__FRENDA_TEST_RESTORE=restore;window.addEventListener("pagehide",restore,{once:true});window.addEventListener("beforeunload",restore,{once:true});return restore}
 function applyDungeonTimerPreset(){if(!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();return ids}
 function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 閉じると元のセーブへ戻します</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
@@ -3588,4 +3596,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 21:48:00 JST / Ver1.33 -->
+<!-- Updated: 2026-09-28 06:35:00 JST / Ver1.35 -->

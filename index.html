@@ -27,17 +27,20 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 @media(max-width:640px){.wrap{padding-left:12px;padding-right:12px}.hero{padding:22px 14px 16px;border-radius:22px}.logo{font-size:48px}h1{font-size:32px}.lead{font-size:12px}.app{grid-template-columns:72px minmax(0,1fr) 18px;padding:12px 11px;gap:10px;border-radius:18px}.icon{width:72px;height:72px;border-radius:18px}.app b{font-size:16px}.app small{font-size:10px}.ver{font-size:10px;margin-top:6px}.arrow{font-size:20px}}
 </style>
 </head>
+<script>
+(()=>{const KEY="frenda:test:storageBackup:v2";let raw=null;try{raw=sessionStorage.getItem(KEY)}catch{}if(!raw)return;let data=null;try{data=JSON.parse(raw)}catch{}if(!data||typeof data!=="object")return;const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith("frenda:")||k.startsWith("frenda_")))keys.push(k)}for(const k of keys)localStorage.removeItem(k);for(const [k,v] of Object.entries(data))if(v!==null&&v!==undefined)localStorage.setItem(k,String(v));try{sessionStorage.removeItem(KEY)}catch{}})();
+</script>
 <body><main class="wrap">
 <section class="hero"><div class="logo">🎴</div><h1>ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div><div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div></section>
 <div id="testRibbon" class="testRibbon" hidden>🧪 テストモードです。ここからテストセンターへ入れます。</div>
 <section class="apps" id="apps">
   <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.png" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver">Ver6.91</span></div><div class="arrow">›</div></a>
-  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.png" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.34</span></div><div class="arrow">›</div></a>
-  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.png" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.24</span></div><div class="arrow">›</div></a>
+  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.png" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.35</span></div><div class="arrow">›</div></a>
+  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.png" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.25</span></div><div class="arrow">›</div></a>
 </section>
 <div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。<br>旧URLのショートカットもそのまま使える互換構成じゃ。</div><div class="credit">背景画像と各モード画像は、このホーム画面用に新規作成したものです。</div>
 </main>
 <script>
-(()=>{const q=new URLSearchParams(location.search),test=q.get('test')==='1';if(!test)return;document.getElementById('testRibbon').hidden=false;const apps=document.getElementById('apps');const a=document.createElement('a');a.className='app';a.href='test-center.html';a.innerHTML='<div class="icon emoji">🧪</div><div><b>テストセンター</b><small>タイマー・★5・伝説演出などを一発再現</small><span class="ver">Phase1</span></div><div class="arrow">›</div>';apps.appendChild(a);})();
+(()=>{const q=new URLSearchParams(location.search),test=q.get('test')==='1';if(!test)return;document.getElementById('testRibbon').hidden=false;const apps=document.getElementById('apps');const a=document.createElement('a');a.className='app';a.href='test-center.html';a.innerHTML='<div class="icon emoji">🧪</div><div><b>テストセンター</b><small>タイマー・★5・伝説演出などを一発再現</small><span class="ver">Phase2</span></div><div class="arrow">›</div>';apps.appendChild(a);})();
 </script>
 </body></html>
