@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.24 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.27 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.26</title>
+<title>フレンダダンジョン Ver1.27</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1838,6 +1838,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 
 /* Ver1.20: hatch scene centered vertically; bond endure gets a full praise moment. */
 /* Ver1.26: セーブ・探索共有状態・進化データキャッシュを frenda-data.js v1.1 に集約。 */
+/* Ver1.27: 進化インデックス・目休憩タイマー・共通UI補助を frenda-data.js v1.2 / frenda-ui.js v1.0 に集約。 */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1865,57 +1866,32 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.26</span></b><small>Simulator Ver6.84 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.27</span></b><small>Simulator Ver6.85 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
 <script src="../frenda-master.js?v=1.23"></script>
 <script src="../frenda-core.js?v=1.23"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
-<script src="../frenda-data.js?v=1.1"></script>
+<script src="../frenda-data.js?v=1.2"></script>
+<script src="../frenda-ui.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.26";
+const APP_VERSION="1.27";
 const DATA=window.FRENDA_DATA;
+const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
+if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
 function expeditionTimerState(){const x=DATA.readJSON(EXPEDITION_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
 function updateExpeditionTimerBadge(now=Date.now()){const el=document.getElementById("expeditionTimerBadge");if(!el)return;const x=expeditionTimerState(),m=x?.mission;if(x?.status==="exploring"&&m&&Number.isFinite(Number(m.returnAt))){const remain=Number(m.returnAt)-now;if(remain<=0){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の帰還時間になりました"}else{const min=Math.max(1,Math.ceil(remain/60000));el.className="expeditionTimerBadge";el.textContent=`🧭 探索終了まで あと${min}分`;el.title=`帰還予定 ${new Date(Number(m.returnAt)).toLocaleString("ja-JP")}`}}else if(x?.status==="returned"){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の成果を受け取れます"}else{el.className="expeditionTimerBadge";el.textContent="🧭 探索なし";el.title="現在、おでかけ探索には出ていません"}}
 
-const EYE_TIMER_KEY=DATA.KEYS.eyeTimer,EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
-let eyeTimerHandle=null,eyeLocked=false;
-function eyeReadState(){const x=DATA.readJSON(EYE_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
-function eyeWriteState(x){try{DATA.writeJSON(EYE_TIMER_KEY,x)}catch{}return x}
-function eyeFreshPlay(now=Date.now()){return eyeWriteState({phase:"play",playUntil:now+EYE_PLAY_MS,updatedAt:now})}
-function eyeResolveState(now=Date.now()){
- let x=eyeReadState();
- if(!x||!Number.isFinite(Number(x.playUntil)))return eyeFreshPlay(now);
- if(x.phase==="rest"){
-  const restUntil=Number(x.restUntil)||Number(x.playUntil)+EYE_REST_MS;
-  if(now<restUntil){x.restUntil=restUntil;x.reason=x.reason||"auto";return x}
-  return eyeFreshPlay(now);
- }
- const playUntil=Number(x.playUntil);
- if(now<playUntil)return x;
- const restUntil=playUntil+EYE_REST_MS;
- if(now<restUntil){x={phase:"rest",playUntil,restUntil,reason:"auto",updatedAt:now};eyeWriteState(x);return x}
- return eyeFreshPlay(now);
-}
-function eyeFmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
-function eyeEnsureOverlay(state){let ov=document.getElementById("eyeRestOverlay");if(!ov){ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule">10分休んだら → また30分遊べます</div></div>`;document.body.appendChild(ov)}const txt=ov.querySelector("#eyeRestText");if(txt)txt.innerHTML=state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";return ov}
-function eyeSetLocked(rest,state){eyeLocked=rest;document.body.classList.toggle("eyeResting",rest);const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns"),manual=document.getElementById("manualRestBtn");try{if(main)main.inert=rest;if(buttons)buttons.inert=rest;if(manual)manual.disabled=rest}catch{}if(rest)eyeEnsureOverlay(state);else document.getElementById("eyeRestOverlay")?.remove()}
-function eyeStartManualRest(){const now=Date.now(),x=eyeResolveState(now);if(x.phase==="rest")return;eyeWriteState({phase:"rest",playUntil:now,restUntil:now+EYE_REST_MS,reason:"manual",updatedAt:now});eyeTimerTick()}
-function eyeTimerTick(){const now=Date.now(),x=eyeResolveState(now),rest=x.phase==="rest",until=rest?Number(x.restUntil):Number(x.playUntil),remain=Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");if(badge){badge.className=`eyeTimerBadge ${rest?"rest":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${eyeFmt(remain)}`:`👁 あと ${eyeFmt(remain)}`;badge.title="30分遊んだら10分休憩"}eyeSetLocked(rest,x);const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=eyeFmt(remain);updateExpeditionTimerBadge(now); }
-function eyeTimerStart(){if(eyeTimerHandle)clearInterval(eyeTimerHandle);eyeTimerTick();eyeTimerHandle=setInterval(eyeTimerTick,1000)}
-document.addEventListener("keydown",e=>{if(eyeLocked&&!document.getElementById("eyeRestOverlay")?.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}},true);
-window.addEventListener("storage",e=>{if(e.key===EYE_TIMER_KEY||e.key===EXPEDITION_TIMER_KEY)eyeTimerTick()});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")eyeTimerTick()});
-document.addEventListener("click",e=>{const b=e.target.closest?.("#manualRestBtn");if(b&&!eyeLocked)eyeStartManualRest()});
+const eyeCare=UI.createEyeCare({data:DATA,onTick:now=>updateExpeditionTimerBadge(now),extraStorageKeys:[EXPEDITION_TIMER_KEY]});
 
 const SAVE_KEY=DATA.KEYS.dungeon;
 const EXPEDITION_KEY=DATA.KEYS.expedition;
@@ -2148,7 +2124,7 @@ let teamSelection=[];
 let currentDungeon={id:"forest",difficulty:1};
 let message="";
 let autoBattleRunning=false;
-let EVO_BY_NAME=new Map(),EVO_BY_NO=new Map(),EVO_PARENTS=new Map(),evoReady=false,evoLoadError=false;
+let EVO_INDEX=null,EVO_BY_NAME=new Map(),EVO_BY_NO=new Map(),EVO_PARENTS=new Map(),evoReady=false,evoLoadError=false;
 const makePickFilter=(defaults={})=>Object.assign({search:"",series:"all",type:"all",grade:"all",status:"all",sort:"standard"},defaults);
 let dexLimit=120;
 let dexPickFilter=makePickFilter();
@@ -2217,7 +2193,7 @@ function migrateState(){
  save();
 }
 function resetSave(){if(!confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const esc=UI.escapeHtml;
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function validBattle(r){return RULES.validBattle(r)}
@@ -2253,16 +2229,16 @@ function reconcileDexState(){
  }
 }
 function splitRegionalName(name){for(const region of REGION_PREFIXES)if(String(name||"").startsWith(region))return {base:String(name).slice(region.length),region};return {base:String(name||""),region:null}}
-function buildEvolutionIndex(rows){EVO_BY_NAME=new Map();EVO_BY_NO=new Map();EVO_PARENTS=new Map();for(const e of rows){if(!EVO_BY_NAME.has(e.name))EVO_BY_NAME.set(e.name,[]);EVO_BY_NAME.get(e.name).push(e);EVO_BY_NO.set(e.no,e);if(e.parent){if(!EVO_PARENTS.has(e.no))EVO_PARENTS.set(e.no,new Set());EVO_PARENTS.get(e.no).add(e.parent)}}evoReady=true;evoLoadError=false;migrateGrowthPointsToFamilies();migrateBondPointsToFamilies()}
+function applyEvolutionIndex(index){EVO_INDEX=index;EVO_BY_NAME=index.byName;EVO_BY_NO=index.byNo;EVO_PARENTS=index.parents;evoReady=true;evoLoadError=false;migrateGrowthPointsToFamilies();migrateBondPointsToFamilies()}
 async function loadEvolutionData(){
  try{
-  const rows=await DATA.evolution.loadRows();buildEvolutionIndex(rows);save();if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render();
+  const index=await DATA.evolution.loadIndex();applyEvolutionIndex(index);save();if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render();
  }catch(e){console.warn("evolution data load failed",e);evoLoadError=true;evoReady=false;if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render()}
 }
 function evolutionEntryForName(name){if(!evoReady)return null;const p=splitRegionalName(name),arr=EVO_BY_NAME.get(p.base)||[];return arr[0]||null}
-function evolutionRootNo(entry){if(!entry)return null;let n=entry.no,seen=new Set();while(!seen.has(n)){seen.add(n);const parents=[...(EVO_PARENTS.get(n)||[])];if(!parents.length)break;n=parents[0]}return n}
-function evolutionDepth(entry){if(!entry)return 0;let n=entry.no,d=0,seen=new Set();while(!seen.has(n)){seen.add(n);const parents=[...(EVO_PARENTS.get(n)||[])];if(!parents.length)break;n=parents[0];d++}return d}
-function targetEntriesForName(name){const forced=Object.prototype.hasOwnProperty.call(SPECIAL_EVOLUTION_TARGETS,name)?SPECIAL_EVOLUTION_TARGETS[name]:null;if(forced)return forced.map(n=>(EVO_BY_NAME.get(n)||[])[0]).filter(Boolean);const src=evolutionEntryForName(name);if(!src)return[];const out=[];for(const e of EVO_BY_NO.values())if(Number(e.parent)===Number(src.no))out.push(e);return out}
+function evolutionRootNo(entry){return EVO_INDEX?.root(entry)??null}
+function evolutionDepth(entry){return EVO_INDEX?.depth(entry)??0}
+function targetEntriesForName(name){const forced=Object.prototype.hasOwnProperty.call(SPECIAL_EVOLUTION_TARGETS,name)?SPECIAL_EVOLUTION_TARGETS[name]:null;if(forced)return forced.map(n=>(EVO_BY_NAME.get(n)||[])[0]).filter(Boolean);const src=evolutionEntryForName(name);return src?EVO_INDEX.children(src):[]}
 function registeredCandidatesForTarget(sourceId,targetEntry){const src=rec(sourceId),srcRegion=splitRegionalName(src?.name_ja).region;if(srcRegion){const regional=RECORDS.filter(r=>r.name_ja===srcRegion+targetEntry.name&&validBattle(r));if(regional.length)return regional}return RECORDS.filter(r=>r.name_ja===targetEntry.name&&validBattle(r))}
 function targetDisplayName(sourceId,targetEntry){const pool=registeredCandidatesForTarget(sourceId,targetEntry);return pool[0]?.name_ja||targetEntry?.name||"進化先"}
 function evolutionInfoForPick(id){const r=rec(id),entry=evolutionEntryForName(r?.name_ja),targets=entry?targetEntriesForName(r.name_ja).map(e=>({entry:e,name:targetDisplayName(id,e),candidates:registeredCandidatesForTarget(id,e)})):[];const hasEvolution=!!targets.length,cost=evolutionDepth(entry)<=0?EVOLUTION_COST_FIRST:EVOLUTION_COST_LATER,points=growthPointsFor(id),runMember=state.run?.team?.find(t=>t.id===id),fainted=!!runMember?.ko,registered=targets.some(t=>t.candidates.length);return {entry,targets,hasEvolution,cost,points,fainted,registered,canEvolve:hasEvolution&&registered&&!fainted&&!isExpeditionLocked(id)&&points>=cost}}
@@ -3411,7 +3387,7 @@ function registeredCandidatesForName(sourceId,targetEntry){
 function evolutionPrevInfoForPick(id){
  const r=rec(id),entry=evolutionEntryForName(r?.name_ja);
  if(!entry)return [];
- const parents=[...(EVO_PARENTS.get(entry.no)||[])].map(no=>EVO_BY_NO.get(no)).filter(Boolean);
+ const parents=EVO_INDEX?.parentEntries(entry)||[];
  return parents.map(e=>({entry:e,name:e.name,candidates:registeredCandidatesForName(id,e)}));
 }
 function candidateStatusForId(id){const r=rec(id);if(ownedEntry(id))return "owned";if(r&&pickSeen(r))return "seen";return "unseen"}
@@ -3614,7 +3590,7 @@ function showStartupSplash(){
  ov.querySelector(".startupSplashStage").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();start()}}
 }
 document.addEventListener("pointerdown",()=>{if(soundVolume()>0)ensureAudio()},{passive:true});
-eyeTimerStart();
+eyeCare.start();
 render();loadEvolutionData();
 // Ver0.79: Do not overlay the startup jacket while resuming a dungeon or post-run flow.
 if(!state.run&&!state.postRun){
@@ -3640,4 +3616,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 20:30:00 JST / Ver1.26 -->
+<!-- Updated: 2026-09-27 20:17:00 JST / Ver1.27 -->
