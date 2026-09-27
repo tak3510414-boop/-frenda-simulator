@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.25</title>
+<title>フレンダダンジョン Ver1.26</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1837,7 +1837,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 @media(max-width:700px){.floorHeroBadge{min-width:112px;padding:6px 9px!important}.floorHeroBadge strong{font-size:23px!important}.encounterProgressBadge{min-width:auto;padding:6px 8px;gap:5px}.encounterProgressBadge b{font-size:20px}.encounterProgressBadge small{display:none}.battleEnemyCounter{right:8px;top:8px;padding:5px 8px;font-size:9px}.battleEnemyCounter b{font-size:17px}.nextEnemyInner{padding:10px}.nextEnemyQuestion{margin:12px 0 8px}}
 
 /* Ver1.20: hatch scene centered vertically; bond endure gets a full praise moment. */
-/* Ver1.25: evolution selection and egg hatch/slot rules moved to frenda-rules.js v1.2. */
+/* Ver1.26: セーブ・探索共有状態・進化データキャッシュを frenda-data.js v1.1 に集約。 */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1865,29 +1865,32 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.25</span></b><small>Simulator Ver6.83 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.26</span></b><small>Simulator Ver6.84 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
 <script src="../frenda-master.js?v=1.23"></script>
 <script src="../frenda-core.js?v=1.23"></script>
 <script src="../frenda-rules.js?v=1.2"></script>
+<script src="../frenda-data.js?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.25";
+const APP_VERSION="1.26";
+const DATA=window.FRENDA_DATA;
+if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 
 
-const EXPEDITION_TIMER_KEY="frenda:expedition:v1";
-function expeditionTimerState(){try{const x=JSON.parse(localStorage.getItem(EXPEDITION_TIMER_KEY)||"null");return x&&typeof x==="object"?x:null}catch{return null}}
+const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
+function expeditionTimerState(){const x=DATA.readJSON(EXPEDITION_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
 function updateExpeditionTimerBadge(now=Date.now()){const el=document.getElementById("expeditionTimerBadge");if(!el)return;const x=expeditionTimerState(),m=x?.mission;if(x?.status==="exploring"&&m&&Number.isFinite(Number(m.returnAt))){const remain=Number(m.returnAt)-now;if(remain<=0){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の帰還時間になりました"}else{const min=Math.max(1,Math.ceil(remain/60000));el.className="expeditionTimerBadge";el.textContent=`🧭 探索終了まで あと${min}分`;el.title=`帰還予定 ${new Date(Number(m.returnAt)).toLocaleString("ja-JP")}`}}else if(x?.status==="returned"){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の成果を受け取れます"}else{el.className="expeditionTimerBadge";el.textContent="🧭 探索なし";el.title="現在、おでかけ探索には出ていません"}}
 
-const EYE_TIMER_KEY="frenda_eye_timer_v1",EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
+const EYE_TIMER_KEY=DATA.KEYS.eyeTimer,EYE_PLAY_MS=30*60*1000,EYE_REST_MS=10*60*1000;
 let eyeTimerHandle=null,eyeLocked=false;
-function eyeReadState(){try{const x=JSON.parse(localStorage.getItem(EYE_TIMER_KEY)||"null");return x&&typeof x==="object"?x:null}catch{return null}}
-function eyeWriteState(x){try{localStorage.setItem(EYE_TIMER_KEY,JSON.stringify(x))}catch{}return x}
+function eyeReadState(){const x=DATA.readJSON(EYE_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
+function eyeWriteState(x){try{DATA.writeJSON(EYE_TIMER_KEY,x)}catch{}return x}
 function eyeFreshPlay(now=Date.now()){return eyeWriteState({phase:"play",playUntil:now+EYE_PLAY_MS,updatedAt:now})}
 function eyeResolveState(now=Date.now()){
  let x=eyeReadState();
@@ -1914,8 +1917,8 @@ window.addEventListener("storage",e=>{if(e.key===EYE_TIMER_KEY||e.key===EXPEDITI
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")eyeTimerTick()});
 document.addEventListener("click",e=>{const b=e.target.closest?.("#manualRestBtn");if(b&&!eyeLocked)eyeStartManualRest()});
 
-const SAVE_KEY="frenda:dungeon:v1";
-const EXPEDITION_KEY="frenda:expedition:v1";
+const SAVE_KEY=DATA.KEYS.dungeon;
+const EXPEDITION_KEY=DATA.KEYS.expedition;
 const RUN_END_GUARD_KEY="frenda:dungeon:runEndGuard:v1";
 const SKIP_SPLASH_ON_UPDATE_KEY="frenda:dungeon:skipSplashOnUpdate:v1";
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
@@ -2118,9 +2121,6 @@ const BALL_DEF={poke:{label:"モンスターボール",short:"モンボ",mult:RU
 const EGG_DEF=RULES.EGG_DEF;
 const EGG_SLOT_RATES=RULES.EGG_SLOT_RATES;
 const EGG_HATCH_GRADE=RULES.EGG_HATCH_GRADE;
-const EVOLUTION_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
-const EVOLUTION_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
-const EVO_CACHE_KEY="frenda:dungeon:evolutionMap:v2";
 const EVO_GRADE_WEIGHTS=RULES.EVO_GRADE_WEIGHTS;
 const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
 const SPECIAL_EVOLUTION_TARGETS=RULES.SPECIAL_EVOLUTION_TARGETS;
@@ -2171,8 +2171,8 @@ function readRunEndGuard(){try{const x=JSON.parse(localStorage.getItem(RUN_END_G
 function clearRunEndGuard(){try{localStorage.removeItem(RUN_END_GUARD_KEY)}catch{}}
 function writeRunEndGuard(run,summary){try{localStorage.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
 function enforceRunEndGuard(target){const g=readRunEndGuard();if(!g||!target?.run)return false;const started=String(target.run.startedAt||"");if(g.startedAt&&started&&g.startedAt!==started)return false;target.run=null;target.postRun=null;if(g.summary)target.lastSummary=g.summary;return true}
-function save(){try{state.appVersion=APP_VERSION;state.saveVersion=11;localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.error(e)}}
-function loadState(){try{const x=JSON.parse(localStorage.getItem(SAVE_KEY)||"null"),s=x&&typeof x==="object"?Object.assign(stateDefault(),x):stateDefault();enforceRunEndGuard(s);return s}catch{const s=stateDefault();enforceRunEndGuard(s);return s}}
+function save(){try{state.appVersion=APP_VERSION;state.saveVersion=11;DATA.dungeon.write(state)}catch(e){console.error(e)}}
+function loadState(){try{const x=DATA.dungeon.read(),s=x&&typeof x==="object"?Object.assign(stateDefault(),x):stateDefault();enforceRunEndGuard(s);return s}catch{const s=stateDefault();enforceRunEndGuard(s);return s}}
 function migrateState(){
  const v=Number(state.saveVersion||1);
  if(v<2)state=stateDefault();
@@ -2216,7 +2216,7 @@ function migrateState(){
  state.saveVersion=10;
  save();
 }
-function resetSave(){if(!confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;localStorage.removeItem(SAVE_KEY);state=stateDefault();screen="home";render()}
+function resetSave(){if(!confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function rec(id){return RECORDS.find(r=>r.master_id===id)||null}
 function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -2233,7 +2233,7 @@ function imageOf(r){return r?.official_image||""}
 function gradeText(r){return RULES.gradeText(r)}
 function maxHpFor(id){const r=rec(id);const b=state.permanentBoosts?.[id]?.hp||0;return Math.max(1,Math.round(Number(r?.hp||1)+b))}
 function ownedEntry(id){return state.owned.find(x=>x.id===id)||null}
-function expeditionSnapshot(){try{const x=JSON.parse(localStorage.getItem(EXPEDITION_KEY)||"null");const y=state.expeditionShared&&typeof state.expeditionShared==="object"?state.expeditionShared:null;if(y&&(!x||Number(y.updatedAt||0)>Number(x.updatedAt||0)))return y;return x}catch{return state.expeditionShared||null}}
+function expeditionSnapshot(){return DATA.expedition.snapshot(state)||state.expeditionShared||null}
 function expeditionLockedIds(){const x=expeditionSnapshot();if(!x||!["exploring","returned"].includes(x.status)||!x.mission)return new Set();return new Set((x.mission.teamIds||[]).filter(Boolean))}
 function isExpeditionLocked(id){return expeditionLockedIds().has(id)}
 function xpFor(id){return Number(state.experience?.[id]||0)}
@@ -2253,15 +2253,10 @@ function reconcileDexState(){
  }
 }
 function splitRegionalName(name){for(const region of REGION_PREFIXES)if(String(name||"").startsWith(region))return {base:String(name).slice(region.length),region};return {base:String(name||""),region:null}}
-function parseCsvLineSimple(line){return String(line||"").split(",")}
-function buildEvolutionRowsFromCsv(speciesCsv,namesCsv){const nameByNo={};for(const line of String(namesCsv||"").split(/\r?\n/).slice(1)){const c=parseCsvLineSimple(line);if(c.length<3)continue;const id=Number(c[0]),lang=Number(c[1]);if(id&&lang===1&&!nameByNo[id])nameByNo[id]=c[2]}const rows=[];for(const line of String(speciesCsv||"").split(/\r?\n/).slice(1)){const c=parseCsvLineSimple(line);if(c.length<4)continue;const no=Number(c[0]),parent=Number(c[3])||null,name=nameByNo[no];if(no&&name)rows.push({no,name,parent})}return rows}
-function compactEvolutionRows(rows){return (Array.isArray(rows)?rows:[]).map(x=>({no:Number(x.no),name:String(x.name||""),parent:Number(x.parent)||null})).filter(x=>x.no&&x.name)}
 function buildEvolutionIndex(rows){EVO_BY_NAME=new Map();EVO_BY_NO=new Map();EVO_PARENTS=new Map();for(const e of rows){if(!EVO_BY_NAME.has(e.name))EVO_BY_NAME.set(e.name,[]);EVO_BY_NAME.get(e.name).push(e);EVO_BY_NO.set(e.no,e);if(e.parent){if(!EVO_PARENTS.has(e.no))EVO_PARENTS.set(e.no,new Set());EVO_PARENTS.get(e.no).add(e.parent)}}evoReady=true;evoLoadError=false;migrateGrowthPointsToFamilies();migrateBondPointsToFamilies()}
 async function loadEvolutionData(){
  try{
-  let rows=null;const cached=localStorage.getItem(EVO_CACHE_KEY);if(cached){try{rows=JSON.parse(cached)}catch{}}
-  if(!Array.isArray(rows)||!rows.length){const [sp,nm]=await Promise.all([fetch(EVOLUTION_SPECIES_URL,{cache:"force-cache"}),fetch(EVOLUTION_NAMES_URL,{cache:"force-cache"})]);if(!sp.ok||!nm.ok)throw new Error(`HTTP ${sp.status}/${nm.status}`);rows=buildEvolutionRowsFromCsv(await sp.text(),await nm.text());try{localStorage.setItem(EVO_CACHE_KEY,JSON.stringify(rows))}catch{}}
-  rows=compactEvolutionRows(rows);buildEvolutionIndex(rows);save();if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render();
+  const rows=await DATA.evolution.loadRows();buildEvolutionIndex(rows);save();if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render();
  }catch(e){console.warn("evolution data load failed",e);evoLoadError=true;evoReady=false;if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render()}
 }
 function evolutionEntryForName(name){if(!evoReady)return null;const p=splitRegionalName(name),arr=EVO_BY_NAME.get(p.base)||[];return arr[0]||null}
@@ -3631,18 +3626,18 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 
 // Ver0.30: Supabase cloud sync shared by simulator / dungeon.
 function dungeonCloudData(){
- let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null")}catch{}
+ const saved=DATA.dungeon.read()
  return {format_version:1,dungeon_version:APP_VERSION,state:saved||state};
 }
 function applyDungeonCloudData(data){
  if(!data||typeof data!=="object"||!data.state||typeof data.state!=="object")throw new Error("クラウドデータ形式が不正です");
  const incoming=clone(data.state);
  enforceRunEndGuard(incoming);
- localStorage.setItem(SAVE_KEY,JSON.stringify(incoming));
+ DATA.dungeon.write(incoming);
 }
-function dungeonHasLocalData(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}catch{return false}}
+function dungeonHasLocalData(){const s=DATA.dungeon.read();return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}
 function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s.owned)?s.owned.length:0,eggs=Array.isArray(s.eggs)?s.eggs.length:0,exp=s.expeditionShared?.status==="running"?"探索中":"探索なし";return `所持 ${owned}体 / 卵 ${eggs}個 / ${exp}`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 19:58:00 JST / Ver1.25 -->
+<!-- Updated: 2026-09-27 20:30:00 JST / Ver1.26 -->
