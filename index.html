@@ -6,15 +6,58 @@
 <meta name="theme-color" content="#102c40">
 <title>ポケモンフレンダ 家庭版</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}body{min-height:100dvh;background:radial-gradient(circle at 50% -10%,#2b7598 0,#173f58 30%,#0b2434 68%,#071923 100%);color:#fff;padding:env(safe-area-inset-top) 14px calc(20px + env(safe-area-inset-bottom))}.wrap{width:min(760px,100%);margin:auto;padding:28px 0}.hero{text-align:center;margin-bottom:22px}.logo{font-size:56px;filter:drop-shadow(0 8px 14px #0006)}h1{font-size:clamp(27px,8vw,42px);margin:8px 0 4px;letter-spacing:.02em}.sub{font-size:12px;color:#b9d7e7;font-weight:700}.apps{display:grid;gap:12px}.app{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:13px;align-items:center;text-decoration:none;color:#143246;background:#f7fcff;border:2px solid #ffffff80;border-radius:20px;padding:15px 14px;box-shadow:0 10px 28px #0005;transition:.13s transform,.13s filter}.app:active{transform:scale(.985)}.icon{width:64px;height:64px;border-radius:17px;display:grid;place-items:center;font-size:34px;background:#dceff8}.app b{display:block;font-size:18px}.app small{display:block;color:#587181;font-weight:700;margin-top:4px;line-height:1.4}.ver{display:inline-block;margin-top:6px;padding:3px 7px;border-radius:999px;background:#e6eef3;color:#496270;font-size:10px;font-weight:900}.arrow{font-size:26px;color:#7595a7;font-weight:900}.sim .icon{background:#dff5ff}.dun .icon{background:#def3e4}.exp .icon{background:#fff0c9}.note{margin:17px 4px 0;padding:11px 13px;border:1px solid #ffffff25;border-radius:13px;background:#ffffff0d;color:#c4dbe7;font-size:11px;line-height:1.65;text-align:center}@media(max-width:520px){.wrap{padding-top:20px}.logo{font-size:45px}.app{grid-template-columns:52px minmax(0,1fr) 18px;padding:12px 10px;gap:9px;border-radius:16px}.icon{width:52px;height:52px;font-size:28px;border-radius:14px}.app b{font-size:15px}.app small{font-size:9px}.arrow{font-size:20px}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+body{min-height:100dvh;color:#fff;overflow-x:hidden;background:#071923}
+body::before{content:"";position:fixed;inset:0;background:url("home-bg.png") center center / cover no-repeat;z-index:-3}
+body::after{content:"";position:fixed;inset:0;background:
+linear-gradient(180deg,rgba(4,15,24,.25) 0%,rgba(5,18,29,.45) 22%,rgba(6,18,29,.72) 60%,rgba(5,16,26,.9) 100%),
+radial-gradient(circle at 50% 10%,rgba(143,214,255,.28) 0,rgba(16,44,64,.08) 28%,rgba(7,25,35,.76) 72%);z-index:-2}
+.wrap{width:min(920px,100%);margin:auto;padding:calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.hero{padding:28px 20px 18px;text-align:center;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:linear-gradient(180deg,rgba(9,30,43,.42),rgba(8,26,38,.68));backdrop-filter:blur(8px);box-shadow:0 18px 46px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);margin-bottom:18px}
+.logo{font-size:58px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-shadow:0 4px 16px rgba(0,0,0,.36)}
+.sub{font-size:12px;color:#d7ebf8;font-weight:800;letter-spacing:.08em}
+.lead{margin:12px auto 0;max-width:700px;font-size:13px;line-height:1.7;color:#e9f5fb}
+.apps{display:grid;gap:14px}
+.app{display:grid;grid-template-columns:88px minmax(0,1fr) auto;gap:14px;align-items:center;text-decoration:none;color:#f5fbff;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);border-radius:24px;padding:14px 15px;box-shadow:0 16px 36px rgba(0,0,0,.28);backdrop-filter:blur(8px);transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease}
+.app:hover{transform:translateY(-1px);box-shadow:0 18px 40px rgba(0,0,0,.33);border-color:rgba(255,255,255,.35)}
+.app:active{transform:scale(.987)}
+.icon{width:88px;height:88px;border-radius:22px;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.24),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 24px rgba(0,0,0,.28)}
+.icon img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.28))}
+.app b{display:block;font-size:20px;letter-spacing:.01em}
+.app small{display:block;color:#dcf0fb;font-weight:700;margin-top:5px;line-height:1.5;font-size:12px}
+.ver{display:inline-block;margin-top:8px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.12);color:#eef9ff;font-size:11px;font-weight:900;letter-spacing:.04em}
+.arrow{font-size:28px;color:#fff;font-weight:900;opacity:.75;padding:0 4px}
+.note{margin:18px 4px 0;padding:14px 16px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:rgba(255,255,255,.08);color:#d6ebf5;font-size:12px;line-height:1.7;text-align:center;backdrop-filter:blur(6px)}
+.credit{margin-top:12px;text-align:center;font-size:10px;color:rgba(230,244,251,.75)}
+@media(max-width:640px){
+  .wrap{padding-left:12px;padding-right:12px}
+  .hero{padding:22px 14px 16px;border-radius:22px}
+  .logo{font-size:48px}
+  h1{font-size:32px}
+  .lead{font-size:12px}
+  .app{grid-template-columns:72px minmax(0,1fr) 18px;padding:12px 11px;gap:10px;border-radius:18px}
+  .icon{width:72px;height:72px;border-radius:18px}
+  .app b{font-size:16px}
+  .app small{font-size:10px}
+  .ver{font-size:10px;margin-top:6px}
+  .arrow{font-size:20px}
+}
 </style>
 </head>
 <body><main class="wrap">
-<section class="hero"><div class="logo">🎴</div><h1>ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div></section>
-<section class="apps">
-<a class="app sim" href="simulator.html"><div class="icon">⚔️</div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver">Ver6.91</span></div><div class="arrow">›</div></a>
-<a class="app dun" href="dungeon.html"><div class="icon">🏰</div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.33</span></div><div class="arrow">›</div></a>
-<a class="app exp" href="expedition.html"><div class="icon">🧭</div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.23</span></div><div class="arrow">›</div></a>
+<section class="hero">
+  <div class="logo">🎴</div>
+  <h1>ポケモンフレンダ</h1>
+  <div class="sub">家庭版 フレンダホーム</div>
+  <div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div>
 </section>
-<div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。</div>
+<section class="apps">
+  <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.png" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver">Ver6.91</span></div><div class="arrow">›</div></a>
+  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.png" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.33</span></div><div class="arrow">›</div></a>
+  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.png" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.23</span></div><div class="arrow">›</div></a>
+</section>
+<div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。<br>旧URLのショートカットもそのまま使える互換構成じゃ。</div>
+<div class="credit">背景画像と各モード画像は、このホーム画面用に新規作成したものです。</div>
 </main></body></html>
