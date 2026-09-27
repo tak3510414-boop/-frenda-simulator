@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.24</title>
+<title>フレンダダンジョン Ver1.25</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1837,7 +1837,7 @@ main.dungeonRunScreen .runMetricHot{font-size:10px;font-weight:1000;color:#fff1a
 @media(max-width:700px){.floorHeroBadge{min-width:112px;padding:6px 9px!important}.floorHeroBadge strong{font-size:23px!important}.encounterProgressBadge{min-width:auto;padding:6px 8px;gap:5px}.encounterProgressBadge b{font-size:20px}.encounterProgressBadge small{display:none}.battleEnemyCounter{right:8px;top:8px;padding:5px 8px;font-size:9px}.battleEnemyCounter b{font-size:17px}.nextEnemyInner{padding:10px}.nextEnemyQuestion{margin:12px 0 8px}}
 
 /* Ver1.20: hatch scene centered vertically; bond endure gets a full praise moment. */
-/* Ver1.24: shared game rules moved to frenda-rules.js; cloud conflict selection remains enabled. */
+/* Ver1.25: evolution selection and egg hatch/slot rules moved to frenda-rules.js v1.2. */
 main.dungeonRunScreen .hatchDramaCard{height:100%!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:clamp(18px,3vh,30px) clamp(16px,3vw,34px)!important;overflow:hidden!important;text-align:center}
 main.dungeonRunScreen .hatchDramaCard .hatchStage{width:min(760px,96%);height:clamp(280px,43vh,410px);flex:0 1 auto;margin:0 auto 10px!important;background:radial-gradient(circle at 50% 50%,#fff 0,#f4fbff 30%,#e7f4fb 64%,transparent 65%)}
 main.dungeonRunScreen .hatchDramaCard .hatchEggWrap{transform:scale(2.05)}
@@ -1865,19 +1865,19 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.24</span></b><small>Simulator Ver6.82 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
+<header><div class="headrow"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.25</span></b><small>Simulator Ver6.83 共通データ対応</small></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="careCluster"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 今から10分休憩</button></div><div class="headerBtns"><button class="ghost" id="homeBtn">ホーム</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div></header>
 <main id="app"></main>
 
 <!-- 配置想定: 共通ファイルの1階層下に dungeon/index.html を置く -->
 <script src="../frenda-master.js?v=1.23"></script>
 <script src="../frenda-core.js?v=1.23"></script>
-<script src="../frenda-rules.js?v=1.1"></script>
+<script src="../frenda-rules.js?v=1.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../frenda-cloud.js?v=1.4"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.24";
+const APP_VERSION="1.25";
 
 
 const EXPEDITION_TIMER_KEY="frenda:expedition:v1";
@@ -2103,27 +2103,27 @@ function allowedByDungeonDifficulty(r,diff){return RULES.allowedByDungeonDifficu
 const FOREST1_NORMAL_GRADE_RATES={2:85,3:14,4:1,5:0};
 const DIFF_BONUS={1:0,2:.10,3:.20,4:.35,5:.50};
 const EXP_TO_DRILL=RULES.EXP_TO_DRILL;
-const EVOLUTION_COST_FIRST=2;
-const EVOLUTION_COST_LATER=3;
+const EVOLUTION_COST_FIRST=RULES.EVOLUTION_COST_FIRST;
+const EVOLUTION_COST_LATER=RULES.EVOLUTION_COST_LATER;
 const BOND_LEVEL_THRESHOLDS=RULES.BOND_LEVEL_THRESHOLDS;
 const BOND_HEAL_RATE={2:.20,3:.20,4:.20,5:.30};
 const BOND_ENDURE_RATE={3:.10,4:.10,5:.15};
 const BOND_START_BUFF_RATE={4:.20,5:.30};
-const FLOOR_PICKUP_RATE=.12;
-const PICKUP_WEIGHTS={berry:30,ball:25,candy:20,charm:15,revive:10};
+const FLOOR_PICKUP_RATE=RULES.FLOOR_PICKUP_RATE;
+const PICKUP_WEIGHTS=RULES.PICKUP_WEIGHTS;
 const CAPTURE_CHANCE={battle:.15,elite:.30};
 const CAPTURE_BASE_RATE=RULES.CAPTURE_BASE_RATE;
 const BALL_IMG_BASE="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/";
 const BALL_DEF={poke:{label:"モンスターボール",short:"モンボ",mult:RULES.BALL_MULT.poke,icon:"🔴",img:BALL_IMG_BASE+"poke-ball.png"},super:{label:"スーパーボール",short:"スーパー",mult:RULES.BALL_MULT.super,icon:"🔵",img:BALL_IMG_BASE+"great-ball.png"},hyper:{label:"ハイパーボール",short:"ハイパー",mult:RULES.BALL_MULT.hyper,icon:"🟡",img:BALL_IMG_BASE+"ultra-ball.png"},master:{label:"マスターボール",short:"マスター",mult:RULES.BALL_MULT.master,icon:"🟣",img:BALL_IMG_BASE+"master-ball.png"}};
 const EGG_DEF=RULES.EGG_DEF;
-const EGG_SLOT_RATES={1:{normal:72,rare:18,super:2,type:8},2:{normal:62,rare:24,super:4,type:10},3:{normal:52,rare:28,super:8,type:12},4:{normal:42,rare:30,super:13,type:15},5:{normal:35,rare:28,super:17,type:20}};
-const EGG_HATCH_GRADE={normal:{2:60,3:30,4:9,5:1},rare:{2:20,3:45,4:30,5:5},super:{2:5,3:20,4:50,5:25},type:{2:40,3:35,4:20,5:5}};
+const EGG_SLOT_RATES=RULES.EGG_SLOT_RATES;
+const EGG_HATCH_GRADE=RULES.EGG_HATCH_GRADE;
 const EVOLUTION_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
 const EVOLUTION_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
 const EVO_CACHE_KEY="frenda:dungeon:evolutionMap:v2";
 const EVO_GRADE_WEIGHTS=RULES.EVO_GRADE_WEIGHTS;
 const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
-const SPECIAL_EVOLUTION_TARGETS={"カモネギ":[],"ガラルカモネギ":["ネギガナイト"],"ニャース":["ペルシアン"],"ガラルニャース":["ニャイキング"],"バリヤード":[],"パルデアウパー":["ドオー"]};
+const SPECIAL_EVOLUTION_TARGETS=RULES.SPECIAL_EVOLUTION_TARGETS;
 const TRAINING_STEP=RULES.TRAINING_STEP;
 const PERMANENT_BOOST_MAX=RULES.PERMANENT_BOOST_MAX;
 const TEMP_BOOST_MAX=30;
@@ -2300,38 +2300,9 @@ function trainingAvailable(id){if(!ownedEntry(id)||isExpeditionLocked(id))return
 function addBattleXp(ids,amount,label="戦闘"){const uniq=[...new Set((ids||[]).filter(Boolean))];if(!uniq.length||amount<=0)return;for(const id of uniq){const {drillGained:gained}=RULES.applyXp(state,id,amount);if(state.run){state.run.xpGained=state.run.xpGained||{};state.run.xpGained[id]=Number(state.run.xpGained[id]||0)+amount;if(gained){state.run.drillGained=state.run.drillGained||{};state.run.drillGained[id]=Number(state.run.drillGained[id]||0)+gained}}const nm=rec(id)?.name_ja||"仲間";addLog(`${nm}が${label}でEXP ${amount}を獲得${gained?`、特訓ポイント+${gained}`:""}。`)}save()}
 function spendDrill(id,stat){if(!ownedEntry(id)||isExpeditionLocked(id)||drillFor(id)<=0)return;const pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0});if(!["hp","atk","def"].includes(stat)||Number(pb[stat]||0)>=PERMANENT_BOOST_MAX)return;pb[stat]=Math.min(PERMANENT_BOOST_MAX,Number(pb[stat]||0)+TRAINING_STEP);state.drillPoints[id]=drillFor(id)-1;trainingStickyIds.add(id);save();render()}
 
-function evolutionSafeCandidates(sourceId,target){
- const current=Math.max(2,Number(rec(sourceId)?.grade)||2);
- return (target?.candidates||[]).filter(r=>Number(r.grade)>=current)
-}
-function weightedEvolutionGrade(pool,currentGrade,allowLower=false){
- const by={};
- for(const r of pool||[]){
-  const g=Number(r.grade);
-  if(g>=2&&g<=5)(by[g]||(by[g]=[])).push(r)
- }
- const grades=Object.keys(by).map(Number).sort((a,b)=>a-b);
- if(!grades.length)return null;
- let allowed=grades.filter(g=>g>=currentGrade);
- if(!allowed.length&&allowLower)allowed=grades;
- if(!allowed.length)return null;
- const weights={};
- for(const g of allowed)weights[g]=EVO_GRADE_WEIGHTS[g]||1;
- return Number(RULES.weightedChoice(weights))
-}
-function chooseEvolutionPick(sourceId,target,allowLower=false){
- const current=Math.max(2,Number(rec(sourceId)?.grade)||2),
-       all=(target?.candidates||[]).filter(r=>Number(r.grade)>=2&&Number(r.grade)<=5),
-       safe=all.filter(r=>Number(r.grade)>=current);
- let pool=safe.length?safe:(allowLower?all:[]);
- if(!pool.length)return null;
- const g=weightedEvolutionGrade(pool,current,allowLower);
- let p=g?pool.filter(r=>Number(r.grade)===g):pool.slice();
- if(!p.length)return null;
- const newOnes=p.filter(r=>!ownedEntry(r.master_id));
- if(newOnes.length)p=newOnes;
- return p[Math.floor(Math.random()*p.length)]||null
-}
+function evolutionSafeCandidates(sourceId,target){return RULES.evolutionSafeCandidates(target?.candidates||[],Math.max(2,Number(rec(sourceId)?.grade)||2))}
+function weightedEvolutionGrade(pool,currentGrade,allowLower=false){return RULES.weightedEvolutionGrade(pool,currentGrade,allowLower)}
+function chooseEvolutionPick(sourceId,target,allowLower=false){return RULES.chooseEvolutionCandidate(target?.candidates||[],Math.max(2,Number(rec(sourceId)?.grade)||2),{allowLower,isOwned:r=>!!ownedEntry(r.master_id)})}
 function evolutionGradeWarning(currentGrade){
  return `現在の★${currentGrade}以上の進化先ピックがありません。\nそれでも進化しますか？`
 }
@@ -2486,9 +2457,9 @@ function eggVisualHTML(eOrKind,type=null,small=false){const kind=typeof eOrKind=
 function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,groups=speciesGroups(RECORDS.filter(validBattle)),counts={};for(const t of th.types)counts[t]=groups.reduce((n,g)=>{const types=new Set(g.records.flatMap(r=>[r.type1,r.type2]).filter(Boolean));if(!types.has(t))return n;return n+(th.types.every(x=>types.has(x))?.5:1)},0);return chooseWeighted(counts)}
 function makeEgg(kind,did,diff){const d=EGG_DEF[kind]||EGG_DEF.normal;return {id:eggId(),kind:d===EGG_DEF.normal&&kind!=="normal"?"normal":kind,type:kind==="type"?chooseThemeEggType(did):null,points:0,required:d.required,sourceDungeon:did,sourceDifficulty:diff,createdAt:new Date().toISOString()}}
 function advanceEggs(n=1){if(!Array.isArray(state.eggs)||!state.eggs.length)return;for(const e of state.eggs)e.points=Math.min(eggReq(e),Number(e.points||0)+n);addLog(`所持している卵すべての孵化ポイント +${n}。`)}
-function chooseHatchRecord(egg){const rates=EGG_HATCH_GRADE[egg.kind]||EGG_HATCH_GRADE.normal;let g=Number(chooseWeighted(rates));let pool=RECORDS.filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,Number(egg?.sourceDifficulty||1)));if(egg?.source==="expedition")pool=pool.filter(r=>!isSpecialLimitedRecord(r));if(egg?.source==="expedition"&&egg?.sourceDungeonId&&THEMES[egg.sourceDungeonId]){const ts=THEMES[egg.sourceDungeonId].types,themed=pool.filter(r=>[r.type1,r.type2,r.move_type].some(t=>ts.includes(t)));if(themed.length)pool=themed}if(egg.kind==="type"&&egg.type)pool=pool.filter(r=>r.type1===egg.type||r.type2===egg.type);let gp=pool.filter(r=>Number(r.grade)===g);if(!gp.length){const grades=[...new Set(pool.map(r=>Number(r.grade)).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=pool.filter(r=>Number(r.grade)===grades[0])}return pickRecordBySpecies(gp)||pickRecordBySpecies(pool)}
+function chooseHatchRecord(egg){return RULES.chooseHatchRecord({egg,records:RECORDS,pickRecordBySpecies,isSpecialLimitedRecord})}
 function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id),newSpeciesRegistration=!pickRegistered(r);let duplicateRewardKind=null;if(duplicate){duplicateRewardKind=awardGrowthOrDrill(r.master_id,1).kind}else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate,duplicateRewardKind,newSpeciesRegistration})}return results}
-function eggSlotsFor(diff,did){const rates=EGG_SLOT_RATES[diff]||EGG_SLOT_RATES[1];return Array.from({length:8},()=>{const kind=chooseWeighted(rates);return {kind,type:kind==="type"?chooseThemeEggType(did):null}})}
+function eggSlotsFor(diff,did){return RULES.eggSlotsFor(diff,did,{chooseThemeEggType})}
 function pct(n,d){return d?Math.max(0,Math.min(100,Math.round(n/d*100))):0}
 function hpClass(p){return p<=25?" low":p<=50?" mid":""}
 function chooseWeighted(map){const a=Object.entries(map),sum=a.reduce((n,[,w])=>n+Number(w),0);let x=Math.random()*sum;for(const [k,w] of a){x-=Number(w);if(x<0)return k}return a[a.length-1]?.[0]}
@@ -2903,15 +2874,7 @@ function applyEventTarget(index){
  if(before===after)return showEventNoEffect();
  showEventResult(title,message,icon,visual,value);
 }
-function pickupEligibleWeights(){
- const w={candy:PICKUP_WEIGHTS.candy};
- const living=runTeam().filter(t=>!t.ko);
- if(living.some(t=>t.hp<maxHpFor(t.id)))w.berry=PICKUP_WEIGHTS.berry;
- if(Number(state.run?.captureBoost||0)<.25)w.ball=PICKUP_WEIGHTS.ball;
- if(Number(state.run?.shield||0)<.50)w.charm=PICKUP_WEIGHTS.charm;
- if(runTeam().some(t=>t.ko))w.revive=PICKUP_WEIGHTS.revive;
- return w
-}
+function pickupEligibleWeights(){const team=runTeam(),living=team.filter(t=>!t.ko);return RULES.floorPickupEligibleWeights({hasInjured:living.some(t=>t.hp<maxHpFor(t.id)),captureBoost:Number(state.run?.captureBoost||0),shield:Number(state.run?.shield||0),hasFainted:team.some(t=>t.ko)})}
 function applyFloorPickup(kind){
  const r=state.run;if(!r)return null;
  if(kind==="berry"){
@@ -2949,9 +2912,9 @@ function applyFloorPickup(kind){
  return null
 }
 function tryFloorPickup(){
- const r=state.run;if(!r||Math.random()>=FLOOR_PICKUP_RATE)return false;
- const kind=chooseWeighted(pickupEligibleWeights()),pickup=applyFloorPickup(kind);
- if(!pickup)return false;
+ const r=state.run;if(!r)return false;
+ const team=runTeam(),living=team.filter(t=>!t.ko),kind=RULES.rollFloorPickup({hasInjured:living.some(t=>t.hp<maxHpFor(t.id)),captureBoost:Number(r.captureBoost||0),shield:Number(r.shield||0),hasFainted:team.some(t=>t.ko)});if(!kind)return false;
+ const pickup=applyFloorPickup(kind);if(!pickup)return false;
  r.pickup=pickup;r.scene="pickupNotice";save();render();return true
 }
 function continueAfterFloorAdvance(){
@@ -3682,4 +3645,4 @@ function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s
 if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-27 19:55:00 JST / Ver1.24 -->
+<!-- Updated: 2026-09-27 19:58:00 JST / Ver1.25 -->
