@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.35 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.37 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.35</title>
+<title>フレンダダンジョン Ver1.37</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1881,15 +1881,19 @@ main.dungeonRunScreen .hatchDramaCard.hatchReady .hatchReveal{min-height:clamp(3
 <script src="frenda-rules.js?b=20260927_2148"></script>
 <script src="frenda-data.js?b=20260927_2148"></script>
 <script src="frenda-ui.js?b=20260927_2148"></script>
+<script src="frenda-parental.js?b=20260928_0810"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?b=20260927_2148"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.35";
-const DUNGEON_TEST_MODE=new URLSearchParams(location.search).get("test")==="1";
+const APP_VERSION="1.37";
+const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
+const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
 const DUNGEON_TIMER_CASE=new URLSearchParams(location.search).get("timer")||"";
+const PARENTAL=window.FRENDA_PARENTAL;
+if(!DUNGEON_TEST_MODE&&PARENTAL?.check("dungeon")?.blocked){PARENTAL.renderBlockedPage({app:"dungeon"});return;}
 const DATA=window.FRENDA_DATA;
 const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
@@ -3596,4 +3600,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 06:35:00 JST / Ver1.35 -->
+<!-- Updated: 2026-09-28 06:35:00 JST / Ver1.36 -->
