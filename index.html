@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.83 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.84 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.83</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.84</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -390,7 +390,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 
 /* Ver6.78: desktop responsive layout */
-/* Ver6.83: cloud sync prefers the newer local/cloud data and excludes expedition shadow data. */
+/* Ver6.84: 所持・お気に入り・修正値・写真などの共通保存処理を frenda-data.js v1.1 に集約。 */
 @media (min-width:900px){
   main{max-width:1180px;padding:16px 18px}
   .detailPanel{max-width:1180px;padding:16px 18px}
@@ -406,7 +406,7 @@ body.battleOverlayOpen{overflow:hidden}
   .pickGrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 }
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.83</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.84</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -644,6 +644,7 @@ body.battleOverlayOpen{overflow:hidden}
 <script src="frenda-master.js"></script>
 <script src="frenda-core.js"></script>
 <script src="frenda-rules.js?v=1.2"></script>
+<script src="frenda-data.js?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?v=1.4"></script>
 <script>
@@ -651,9 +652,11 @@ const $=id=>document.getElementById(id);
 const DB=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
 const RULES=window.FRENDA_RULES;
+const DATA=window.FRENDA_DATA;
 if(!DB||!Array.isArray(DB.records))throw new Error("frenda-master.js を読み込めませんでした。");
 if(!CORE)throw new Error("frenda-core.js を読み込めませんでした。");
 if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。");
+if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 const R=DB.records;
 const {TYPES,TYPE,FRIENDA_STEP,FRIENDA_EFFECT,rawEff,eff,speedLevel,compareSpeed,skillName,movePowerRef,moveAccuracyRef,displaySpeed}=CORE;
 const fields=[
@@ -663,10 +666,10 @@ const fields=[
  ["move_class","物理/特殊"],["special","特殊要素（Zワザ・テラスタル等）"]
 ];
 let selected=null, editing=false;
-const key=r=>"frenda:"+r.master_id;
-const OWNED_KEY="frenda:owned:v1",FAVORITE_KEY="frenda:favorites:v1",LEGACY_TEAM_KEY="frenda:team:v1";
-function getIds(k){try{return JSON.parse(localStorage.getItem(k)||"[]")}catch{return []}}
-function setIds(k,a){localStorage.setItem(k,JSON.stringify([...new Set(a)]))}
+const key=r=>DATA.simulator.pickKey(r);
+const OWNED_KEY=DATA.KEYS.simulator.owned,FAVORITE_KEY=DATA.KEYS.simulator.favorites,LEGACY_TEAM_KEY=DATA.KEYS.simulator.legacyTeam;
+function getIds(k){return DATA.readList(k)}
+function setIds(k,a){return DATA.writeList(k,a)}
 function isOwned(r){return getIds(OWNED_KEY).includes(r.master_id)}
 function isFavorite(r){return getIds(FAVORITE_KEY).includes(r.master_id)}
 function migrateLegacyTeamToFavorites(){
@@ -674,7 +677,7 @@ function migrateLegacyTeamToFavorites(){
  if(legacy.length)setIds(FAVORITE_KEY,[...getIds(FAVORITE_KEY),...legacy]);
  if(localStorage.getItem(LEGACY_TEAM_KEY)!==null)localStorage.removeItem(LEGACY_TEAM_KEY);
 }
-function pickImage(r){return localStorage.getItem(key(r)+":photo")||r.official_image||svgPlaceholder(r.name_ja)}
+function pickImage(r){return DATA.simulator.pickImage(r,svgPlaceholder)}
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
 let browseSeries=null;
 const BROWSER_PAGE_SIZE=80;
@@ -684,7 +687,7 @@ let strengthDeferredRunning=false;
 function resetBrowserLimit(){browserRenderLimit=BROWSER_PAGE_SIZE}
 function browseScopeValue(){return document.querySelector('input[name="browseScope"]:checked')?.value||"all"}
 
-function overrides(r){try{return JSON.parse(localStorage.getItem(key(r))||"{}")}catch{return {}}}
+function overrides(r){return DATA.simulator.readOverride(r)}
 function merged(r){return Object.assign({},r,overrides(r))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function norm(s){return String(s||"").toLowerCase().replace(/[‐‑‒–—―ー−]/g,"-").replace(/\s/g,"")}
@@ -913,7 +916,7 @@ function render(){
  $("status").className="status"+(edited?" edited":"");$("status").textContent=edited?"ユーザー修正値を適用中":"マスターDB値";
  $("fields").innerHTML="";
  for(const [k,label] of fields){const l=document.createElement("label");l.textContent=label;const i=document.createElement("input");i.id="v_"+k;i.value=Array.isArray(r[k])?r[k].join(" / "):(r[k]??"");i.disabled=!editing;l.appendChild(i);$("fields").appendChild(l)}
- const img=localStorage.getItem(key(selected)+":photo");$("photo").src=img||r.official_image||svgPlaceholder(r.name_ja);
+ $("photo").src=DATA.simulator.pickImage(selected,svgPlaceholder);
  const ownedNow=isOwned(selected);$("ownedBtn").textContent=ownedNow?"✓ 所持中":"未所持";$("ownedBtn").classList.toggle("on",ownedNow);
  const favoriteNow=isFavorite(selected);$("favoriteBtn").textContent=favoriteNow?"★ お気に入り登録済":"☆ お気に入りに追加";$("favoriteBtn").classList.toggle("on",favoriteNow);
  $("editBtn").classList.toggle("hidden",editing);$("saveBtn").classList.toggle("hidden",!editing);$("cancelBtn").classList.toggle("hidden",!editing)
@@ -928,10 +931,10 @@ $("browseGrade").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseTyp
 $("q").addEventListener("input",()=>{resetBrowserLimit();renderSeriesButtons();renderBrowser()});$("clearQ").onclick=()=>{$("q").value="";resetBrowserLimit();renderSeriesButtons();renderBrowser();$("q").focus()};
 $("editBtn").onclick=()=>{editing=true;render()};
 $("cancelBtn").onclick=()=>{editing=false;render()};
-$("saveBtn").onclick=()=>{const o={};for(const [k] of fields){let v=$("v_"+k).value.trim();if(["poke_ene","grade","speed_level","speed_value","hp","atk","def","sp_atk","sp_def"].includes(k)&&v!=="")v=Number(v);if(k==="special")v=v?String(v).split(/\s*[/／,、]\s*/).filter(Boolean):[];const base=selected[k];const same=Array.isArray(base)?JSON.stringify(v)===JSON.stringify(base):v===String(base??"");if(!same)o[k]=v===""?null:v}localStorage.setItem(key(selected),JSON.stringify(o));invalidateBest3CounterCache();editing=false;render();renderBrowser()};
-$("resetBtn").onclick=()=>{if(confirm("このピックの修正値を削除してマスター値に戻しますか？")){localStorage.removeItem(key(selected));invalidateBest3CounterCache();editing=false;render();renderBrowser()}};
+$("saveBtn").onclick=()=>{const o={};for(const [k] of fields){let v=$("v_"+k).value.trim();if(["poke_ene","grade","speed_level","speed_value","hp","atk","def","sp_atk","sp_def"].includes(k)&&v!=="")v=Number(v);if(k==="special")v=v?String(v).split(/\s*[/／,、]\s*/).filter(Boolean):[];const base=selected[k];const same=Array.isArray(base)?JSON.stringify(v)===JSON.stringify(base):v===String(base??"");if(!same)o[k]=v===""?null:v}DATA.simulator.writeOverride(selected,o);invalidateBest3CounterCache();editing=false;render();renderBrowser()};
+$("resetBtn").onclick=()=>{if(confirm("このピックの修正値を削除してマスター値に戻しますか？")){DATA.simulator.removeOverride(selected);invalidateBest3CounterCache();editing=false;render();renderBrowser()}};
 $("photoBtn").onclick=()=>$("photoFile").click();
-$("photoFile").onchange=e=>{const f=e.target.files[0];if(!f||!selected)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),max=900,sc=Math.min(1,max/Math.max(im.width,im.height));c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const data=c.toDataURL("image/jpeg",.82);try{localStorage.setItem(key(selected)+":photo",data);$("photo").src=data;renderBrowser()}catch{alert("画像を保存できませんでした。画像サイズを小さくしてください。")}};im.src=rd.result};rd.readAsDataURL(f)};
+$("photoFile").onchange=e=>{const f=e.target.files[0];if(!f||!selected)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),max=900,sc=Math.min(1,max/Math.max(im.width,im.height));c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const data=c.toDataURL("image/jpeg",.82);try{DATA.simulator.writePhoto(selected,data);$("photo").src=data;renderBrowser()}catch{alert("画像を保存できませんでした。画像サイズを小さくしてください。")}};im.src=rd.result};rd.readAsDataURL(f)};
 
 // タイプ相性・ダメージ基礎計算は frenda-core.js を共通利用。
 let battle={me:null,enemy:null,mhp:0,ehp:0,over:false,turn:1,busy:false,intro:false,stats:null};
@@ -2293,7 +2296,7 @@ $("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=ne
 migrateLegacyTeamToFavorites();initBrowser();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 
-// Ver6.83: Supabase cloud sync with conflict-safe timestamping.
+// Ver6.84: 共通データアクセスは frenda-data.js v1.1 を利用。クラウド競合解決は frenda-cloud.js が担当。
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
  const storage={};
@@ -2310,4 +2313,4 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-09-27 19:58:00 JST / Ver6.83 -->
+<!-- Updated: 2026-09-27 20:30:00 JST / Ver6.84 -->
