@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.84 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.85 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.84</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.85</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:13px 15px;font-weight:800}
@@ -391,6 +391,7 @@ body.battleOverlayOpen{overflow:hidden}
 
 /* Ver6.78: desktop responsive layout */
 /* Ver6.84: 所持・お気に入り・修正値・写真などの共通保存処理を frenda-data.js v1.1 に集約。 */
+/* Ver6.85: HTMLエスケープ等の共通UI補助を frenda-ui.js v1.0 に集約。 */
 @media (min-width:900px){
   main{max-width:1180px;padding:16px 18px}
   .detailPanel{max-width:1180px;padding:16px 18px}
@@ -406,7 +407,7 @@ body.battleOverlayOpen{overflow:hidden}
   .pickGrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 }
 </style></head><body>
-<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.84</header>
+<header>ポケモンフレンダ 家庭版シミュレーター　Ver6.85</header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -644,7 +645,8 @@ body.battleOverlayOpen{overflow:hidden}
 <script src="frenda-master.js"></script>
 <script src="frenda-core.js"></script>
 <script src="frenda-rules.js?v=1.2"></script>
-<script src="frenda-data.js?v=1.1"></script>
+<script src="frenda-data.js?v=1.2"></script>
+<script src="frenda-ui.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?v=1.4"></script>
 <script>
@@ -653,10 +655,12 @@ const DB=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
 const RULES=window.FRENDA_RULES;
 const DATA=window.FRENDA_DATA;
+const UI=window.FRENDA_UI;
 if(!DB||!Array.isArray(DB.records))throw new Error("frenda-master.js を読み込めませんでした。");
 if(!CORE)throw new Error("frenda-core.js を読み込めませんでした。");
 if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。");
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
+if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 const R=DB.records;
 const {TYPES,TYPE,FRIENDA_STEP,FRIENDA_EFFECT,rawEff,eff,speedLevel,compareSpeed,skillName,movePowerRef,moveAccuracyRef,displaySpeed}=CORE;
 const fields=[
@@ -689,7 +693,7 @@ function browseScopeValue(){return document.querySelector('input[name="browseSco
 
 function overrides(r){return DATA.simulator.readOverride(r)}
 function merged(r){return Object.assign({},r,overrides(r))}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const esc=UI.escapeHtml;
 function norm(s){return String(s||"").toLowerCase().replace(/[‐‑‒–—―ー−]/g,"-").replace(/\s/g,"")}
 function svgPlaceholder(name){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="360"><rect width="100%" height="100%" fill="#e8ebee"/><text x="50%" y="48%" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#66717b">${name}</text><text x="50%" y="56%" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#89939c">ピック画像</text></svg>`)}
 
@@ -2297,6 +2301,7 @@ migrateLegacyTeamToFavorites();initBrowser();
 setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 
 // Ver6.84: 共通データアクセスは frenda-data.js v1.1 を利用。クラウド競合解決は frenda-cloud.js が担当。
+// Ver6.85: 共通UI補助は frenda-ui.js v1.0 を利用。
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
  const storage={};
@@ -2313,4 +2318,4 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-09-27 20:30:00 JST / Ver6.84 -->
+<!-- Updated: 2026-09-27 20:17:00 JST / Ver6.85 -->

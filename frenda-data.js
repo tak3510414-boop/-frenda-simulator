@@ -1,7 +1,7 @@
-/* FRENDA_DATA_VERSION: 1.1 / Updated: 2026-09-27 20:30 JST */
+/* FRENDA_DATA_VERSION: 1.2 / Updated: 2026-09-27 20:17 JST */
 (()=>{
 "use strict";
-const VERSION="1.1";
+const VERSION="1.2";
 const KEYS=Object.freeze({
  simulator:Object.freeze({
   owned:"frenda:owned:v1",
@@ -93,6 +93,22 @@ function buildEvolutionRowsFromCsv(speciesCsv,namesCsv){
  }
  return rows;
 }
+function buildEvolutionIndex(rows){
+ rows=compactEvolutionRows(rows);
+ const byName=new Map(),byNo=new Map(),parents=new Map();
+ for(const e of rows){
+  if(!byName.has(e.name))byName.set(e.name,[]);
+  byName.get(e.name).push(e);
+  byNo.set(e.no,e);
+  if(e.parent){if(!parents.has(e.no))parents.set(e.no,new Set());parents.get(e.no).add(e.parent)}
+ }
+ function entryByName(name){return (byName.get(String(name||""))||[])[0]||null}
+ function root(entry){if(!entry)return null;let n=entry.no,seen=new Set();while(!seen.has(n)){seen.add(n);const ps=[...(parents.get(n)||[])];if(!ps.length)break;n=ps[0]}return n}
+ function depth(entry){if(!entry)return 0;let n=entry.no,d=0,seen=new Set();while(!seen.has(n)){seen.add(n);const ps=[...(parents.get(n)||[])];if(!ps.length)break;n=ps[0];d++}return d}
+ function children(entry){if(!entry)return[];const out=[];for(const e of byNo.values())if(Number(e.parent)===Number(entry.no))out.push(e);return out}
+ function parentEntries(entry){return entry?[...(parents.get(entry.no)||[])].map(no=>byNo.get(no)).filter(Boolean):[]}
+ return Object.freeze({rows,byName,byNo,parents,entryByName,root,depth,children,parentEntries});
+}
 async function loadEvolutionRows(){
  let rows=compactEvolutionRows(readJSON(KEYS.evolutionCache,[]));
  if(rows.length)return rows;
@@ -105,6 +121,7 @@ async function loadEvolutionRows(){
  try{writeJSON(KEYS.evolutionCache,rows)}catch{}
  return rows;
 }
+async function loadEvolutionIndex(){return buildEvolutionIndex(await loadEvolutionRows())}
 window.FRENDA_DATA=Object.freeze({
  VERSION,KEYS,clone,readJSON,writeJSON,remove,readList,writeList,uniqueList,
  simulator:Object.freeze({
@@ -113,6 +130,6 @@ window.FRENDA_DATA=Object.freeze({
  }),
  dungeon:Object.freeze({read:readDungeon,write:writeDungeon,mutate:mutateDungeon}),
  expedition:Object.freeze({read:readExpedition,write:writeExpedition,snapshot:expeditionSnapshot,resolve:resolveExpedition}),
- evolution:Object.freeze({loadRows:loadEvolutionRows,compactRows:compactEvolutionRows,speciesUrl:EVOLUTION_SPECIES_URL,namesUrl:EVOLUTION_NAMES_URL})
+ evolution:Object.freeze({loadRows:loadEvolutionRows,loadIndex:loadEvolutionIndex,buildIndex:buildEvolutionIndex,compactRows:compactEvolutionRows,speciesUrl:EVOLUTION_SPECIES_URL,namesUrl:EVOLUTION_NAMES_URL})
 });
 })();
