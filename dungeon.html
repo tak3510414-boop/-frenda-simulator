@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.47</title>
+<title>フレンダダンジョン Ver1.48</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2195,10 +2195,38 @@ body.homeNavVisible .headerTop{padding-right:44px}
   .postRunSummary.resultV3 .postRunHomeBtn{min-height:50px!important;font-size:18px!important}
 }
 
+
+/* Ver1.48: mobile route selection keeps all three roads visible in one screen. */
+@media(max-width:700px){
+  main.dungeonRunScreen[data-run-scene="route"]{padding-top:5px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .runOverview{margin-bottom:5px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partySidebar{padding:7px 8px!important;border-radius:13px!important;margin-bottom:5px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partySidebar .sectionTitle{font-size:14px!important;margin:0 0 5px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamStrip{gap:5px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMini{padding:4px!important;border-radius:9px!important;min-height:72px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMiniHead{display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;gap:5px!important;align-items:center!important;text-align:left!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMini img{width:38px!important;height:52px!important;margin:0!important;border-radius:6px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMini b{font-size:9.5px!important;line-height:1.05!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMini small{font-size:6.8px!important;line-height:1.05!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMini .hpbar{height:5px!important;margin-top:3px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .partyMobileCards .teamMini .buffs{display:none!important}
+
+  main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard{padding:9px 10px!important;margin-bottom:5px!important;overflow:visible!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard>.sectionTitle{font-size:17px!important;margin:0 0 7px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeGrid{display:grid!important;grid-template-columns:1fr!important;grid-auto-rows:auto!important;gap:7px!important;min-height:0!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard{height:auto!important;min-height:68px!important;padding:7px 10px!important;border-radius:13px!important;display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;grid-template-rows:auto auto!important;column-gap:9px!important;row-gap:1px!important;align-items:center!important;justify-items:start!important;text-align:left!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard .ico{grid-column:1!important;grid-row:1 / 3!important;font-size:29px!important;line-height:1!important;justify-self:center!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard b{grid-column:2!important;grid-row:1!important;font-size:15px!important;line-height:1.1!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard small{grid-column:2!important;grid-row:2!important;font-size:9.5px!important;line-height:1.2!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeAlertNote,
+  main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard>.muted,
+  main.dungeonRunScreen[data-run-scene="route"] .adventureLog{display:none!important}
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.47</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.48</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3476,7 +3504,7 @@ function renderRun(){
  const logDetails=document.getElementById("adventureLogDetails");if(logDetails)logDetails.ontoggle=()=>{adventureLogOpen=logDetails.open}
  const battleDetails=document.getElementById("battleLogDetails");if(battleDetails)battleDetails.ontoggle=()=>{battleLogOpen=battleDetails.open}
 }
-function renderRoutesHTML(){const r=state.run,lv=Math.max(0,Math.min(3,Number(r.alertLevel||0)));return `<div class="card"><div class="sectionTitle">進む道を選ぶ</div><div class="routeGrid">${r.routeOptions.map(x=>{const d=ROUTE_DEF[x.type];return `<button class="routeCard ${d.cls}" data-route="${esc(x.id)}"><span class="ico">${d.icon}</span><b>${d.label}</b><small>${d.hint}</small></button>`}).join("")}</div><div class="routeAlertNote">👁 現在の警戒度 ${alertDots(lv)}　❤️回復・✨ボーナスで+1。⚔️通常戦で-1、💀強敵で-2。❓ハプニングは結果に応じて変化。<br>${lv>=2?"<b>あと1回戦闘を避けると、次の階で敵に見つかります！</b>":"警戒度が3になると、次の階で強制通常戦が発生します。"}</div><div class="muted" style="margin-top:8px">一度選ぶと戻れません。</div></div>`}
+function renderRoutesHTML(){const r=state.run,lv=Math.max(0,Math.min(3,Number(r.alertLevel||0)));return `<div class="card routeSelectionCard"><div class="sectionTitle">進む道を選ぶ</div><div class="routeGrid">${r.routeOptions.map(x=>{const d=ROUTE_DEF[x.type];return `<button class="routeCard ${d.cls}" data-route="${esc(x.id)}"><span class="ico">${d.icon}</span><b>${d.label}</b><small>${d.hint}</small></button>`}).join("")}</div><div class="routeAlertNote">👁 現在の警戒度 ${alertDots(lv)}　❤️回復・✨ボーナスで+1。⚔️通常戦で-1、💀強敵で-2。❓ハプニングは結果に応じて変化。<br>${lv>=2?"<b>あと1回戦闘を避けると、次の階で敵に見つかります！</b>":"警戒度が3になると、次の階で強制通常戦が発生します。"}</div><div class="muted" style="margin-top:8px">一度選ぶと戻れません。</div></div>`}
 function renderEncounterIntroHTML(){const enc=state.run.encounter,count=enc?.enemies?.length||0;return `<div class="card summary singleAdvanceCard tapAdvance" data-run-advance="encounterIntro" role="button" tabindex="0" aria-label="強敵戦を始める"><div class="resultIcon">💀</div><h2>強敵戦！</h2><p><b>敵は${count}体です。</b><br>${count}体との連戦になります。1体倒してもHPは回復しません。</p><div class="notice">相手は1体ずつ登場します。各戦闘の前に、出すポケモンを選べます。</div><button id="encounterIntroNext" style="margin-top:12px">強敵戦を始める</button></div>`}
 function encounterCutinData(){const enc=state.run?.encounter||{},kind=enc.kind||"battle",en=currentEnemy();if(enc.forcedAlert)return {kind:"elite",omen:"⚠️ 敵に見つかった！",title:"ALERT ENCOUNTER",reveal:`${en?.name_ja||"ポケモン"}が 追いかけてきた！`};if(kind==="boss")return {kind:"boss",omen:"この先から強い気配がする……",title:"BOSS BATTLE",reveal:`${en?.name_ja||"ボス"}が 待ち構えている！`};if(kind==="elite")return {kind:"elite",omen:"強い気配がする……",title:"STRONG ENCOUNTER",reveal:`${en?.name_ja||"強敵"}が 立ちはだかった！`};return {kind:"normal",omen:"……何かが動いた！",title:"WILD ENCOUNTER",reveal:`${en?.name_ja||"ポケモン"}が とびだしてきた！`}}
 function renderEncounterCutinHTML(){const en=currentEnemy(),d=encounterCutinData(),first=currentEnemyWasFirstSeen();return `<div class="card encounterCutinCard ${d.kind} phase-omen" id="encounterCutinCard"><div class="encounterCutinInner">${first?`<div class="encounterNewBadge">NEW! はじめての発見</div>`:""}<div class="encounterCutinOmen" id="encounterCutinOmen">${esc(d.omen)}</div><div class="encounterCutinTitle">${esc(d.title)}</div><div class="encounterCutinSpriteWrap"><img class="encounterCutinSprite" id="encounterCutinSprite" src="${esc(imageOf(en))}" alt=""></div><div class="encounterCutinName" id="encounterCutinName">${esc(en?.name_ja||"ポケモン")}</div><div class="encounterCutinHint">画面をタップすると演出を早送りします</div><button type="button" class="encounterCutinContinue" id="encounterCutinContinue">戦闘準備へ</button></div></div>`}
