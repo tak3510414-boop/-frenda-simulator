@@ -1,10 +1,11 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.7";
+const CLOUD_VERSION="1.8";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
+function testModeActive(){try{const p=new URLSearchParams(location.search);return !!window.FRENDA_TEST?.active||p.get("test")==="1"||p.get("selftest")==="1"}catch{return !!window.FRENDA_TEST?.active}}
 
 let client=null;
 let session=null;
@@ -341,6 +342,7 @@ async function pullOrSeed(){
   finally{syncing=false}
 }
 async function pullNow(force=false){
+  if(testModeActive())return;
   if(conflictPending){openConflictChooser();return}
   if(!session||syncing)return;syncing=true;setStatus("クラウド読込中…","syncing");
   try{
@@ -354,6 +356,7 @@ async function pullNow(force=false){
   finally{syncing=false}
 }
 async function pushNow(showResult=false){
+  if(testModeActive())return;
   if(conflictPending){openConflictChooser();return}
   if(!session||syncing||applying)return;
   if(showResult)writeLocalSyncTime(Date.now());
@@ -365,9 +368,11 @@ async function pushNow(showResult=false){
   finally{syncing=false}
 }
 function scheduleSync(delay=1400){
+  if(testModeActive())return;
   if(!session||applying||conflictPending)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>pushNow(false),delay)
 }
 async function init(options){
+  if(testModeActive())return;
   cfg=options||{};injectButton();if(!cfg?.accountOnly)patchStorage();
   if(!window.supabase?.createClient){setStatus("クラウド未接続","error");return}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
@@ -391,4 +396,4 @@ async function init(options){
 
 window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,localSyncTime:readLocalSyncTime};
 })();
-// Updated: 2026-09-28 / Cloud Ver1.7
+// Updated: 2026-09-28 / Cloud Ver1.8

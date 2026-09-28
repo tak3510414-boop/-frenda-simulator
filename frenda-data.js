@@ -1,7 +1,7 @@
-/* FRENDA_DATA_VERSION: 1.3 / Updated: 2026-09-27 20:58 JST */
+/* FRENDA_DATA_VERSION: 1.4 / Updated: 2026-09-28 */
 (()=>{
 "use strict";
-const VERSION="1.3";
+const VERSION="1.4";
 const KEYS=Object.freeze({
  simulator:Object.freeze({
   owned:"frenda:owned:v1",
@@ -13,6 +13,7 @@ const KEYS=Object.freeze({
  eyeTimer:"frenda_eye_timer_v1",
  evolutionCache:"frenda:dungeon:evolutionMap:v2"
 });
+const STORAGE=window.FRENDA_TEST?.active?window.FRENDA_TEST.storage:window.localStorage;
 const EVOLUTION_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
 const EVOLUTION_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
 
@@ -35,13 +36,13 @@ function clone(v){
 }
 function readJSON(key,fallback=null){
  try{
-  const raw=localStorage.getItem(key);
+  const raw=STORAGE.getItem(key);
   if(raw===null)return clone(fallback);
   return JSON.parse(raw);
  }catch{return clone(fallback)}
 }
-function writeJSON(key,value){localStorage.setItem(key,JSON.stringify(value));return value}
-function remove(key){localStorage.removeItem(key)}
+function writeJSON(key,value){STORAGE.setItem(key,JSON.stringify(value));return value}
+function remove(key){STORAGE.removeItem(key)}
 function readList(key){const v=readJSON(key,[]);return Array.isArray(v)?v:[]}
 function uniqueList(values){return [...new Set(Array.isArray(values)?values:[])]}
 function writeList(key,values){const v=uniqueList(values);writeJSON(key,v);return v}
@@ -51,8 +52,8 @@ function pickPhotoKey(recordOrId){return `${pickKey(recordOrId)}:photo`}
 function readPickOverride(recordOrId){const v=readJSON(pickKey(recordOrId),{});return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}
 function writePickOverride(recordOrId,value){return writeJSON(pickKey(recordOrId),value&&typeof value==="object"?value:{})}
 function removePickOverride(recordOrId){remove(pickKey(recordOrId))}
-function readPickPhoto(recordOrId){return localStorage.getItem(pickPhotoKey(recordOrId))||""}
-function writePickPhoto(recordOrId,data){localStorage.setItem(pickPhotoKey(recordOrId),String(data||""));return data}
+function readPickPhoto(recordOrId){return STORAGE.getItem(pickPhotoKey(recordOrId))||""}
+function writePickPhoto(recordOrId,data){STORAGE.setItem(pickPhotoKey(recordOrId),String(data||""));return data}
 function removePickPhoto(recordOrId){remove(pickPhotoKey(recordOrId))}
 function pickImage(record,placeholder){
  const photo=readPickPhoto(record);

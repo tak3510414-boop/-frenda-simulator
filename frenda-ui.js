@@ -1,7 +1,8 @@
-/* FRENDA_UI_VERSION: 1.5 / Updated: 2026-09-28 */
+/* FRENDA_UI_VERSION: 1.6 / Updated: 2026-09-28 */
 (()=>{
 "use strict";
-const VERSION="1.5";
+const VERSION="1.6";
+const STORAGE=window.FRENDA_TEST?.active?window.FRENDA_TEST.storage:window.localStorage;
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function formatRemain(ms,doneText="帰還できます"){
  if(ms<=0)return doneText;
@@ -149,8 +150,8 @@ function bindPickFilter({root=document,scope,filter,render,defaults={}}={}){
  root.querySelectorAll(`[data-ui-pick-filter="${scope}"]`).forEach(el=>{const key=el.dataset.uiFilterKey;if(el.tagName==="INPUT")el.oninput=e=>{filter[key]=e.target.value;const pos=e.target.selectionStart??filter[key].length;render();requestAnimationFrame(()=>{const n=root.querySelector(`[data-ui-pick-filter="${scope}"][data-ui-filter-key="${key}"]`);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch{}}})};else el.onchange=e=>{filter[key]=e.target.value;render()}});
  const reset=root.querySelector(`[data-ui-pick-filter-reset="${scope}"]`);if(reset)reset.onclick=()=>{Object.assign(filter,createPickFilter(defaults));render()};
 }
-function loadViewSize(key,fallback="medium"){try{const v=localStorage.getItem(key);return VIEW_SIZES.includes(v)?v:fallback}catch{return fallback}}
-function saveViewSize(key,size){try{if(VIEW_SIZES.includes(size))localStorage.setItem(key,size)}catch{}return size}
+function loadViewSize(key,fallback="medium"){try{const v=STORAGE.getItem(key);return VIEW_SIZES.includes(v)?v:fallback}catch{return fallback}}
+function saveViewSize(key,size){try{if(VIEW_SIZES.includes(size))STORAGE.setItem(key,size)}catch{}return size}
 function viewSizeHTML({scope,current,wrapperClass="viewSizeControl",label="表示"}={}){return `<div class="${wrapperClass}"><span>${escapeHtml(label)}</span>${[["large","大"],["medium","中"],["small","小"]].map(([v,l])=>`<button type="button" class="${current===v?"active":""}" data-ui-view-scope="${escapeHtml(scope)}" data-ui-view-size="${v}" aria-pressed="${current===v?"true":"false"}">${l}</button>`).join("")}</div>`}
 function bindViewSize({root=document,scope,key,onChange}={}){root.querySelectorAll(`[data-ui-view-scope="${scope}"]`).forEach(b=>b.onclick=()=>{const size=saveViewSize(key,b.dataset.uiViewSize);if(typeof onChange==="function")onChange(size)})}
 

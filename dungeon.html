@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.53 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.54 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.53</title>
+<title>フレンダダンジョン Ver1.54</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2332,22 +2332,23 @@ main.battleScreen .battleRun .battleLogDetails{display:none!important}
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.53</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.54</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
 <script src="frenda-rules.js?b=20260927_2148"></script>
-<script src="frenda-data.js?b=20260927_2148"></script>
-<script src="frenda-ui.js?b=20260928_2018"></script>
+<script src="frenda-test.js?b=20260928_2245"></script>
+<script src="frenda-data.js?b=20260928_2245"></script>
+<script src="frenda-ui.js?b=20260928_2245"></script>
 <script src="frenda-parental.js?b=20260928_1345"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="frenda-cloud.js?b=20260928_1925"></script>
+<script src="frenda-cloud.js?b=20260928_2245"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.53";
+const APP_VERSION="1.54";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -2360,12 +2361,9 @@ if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 
 
-const FRENDA_TEST_BACKUP_KEY="frenda:test:storageBackup:v2";
-function frendaManagedStorageKeys(){const out=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith("frenda:")||k.startsWith("frenda_")))out.push(k)}return out}
-function captureFrendaStorage(){const data={};for(const k of frendaManagedStorageKeys())data[k]=localStorage.getItem(k);return data}
-function restoreFrendaStorage({clearBackup=false}={}){let raw=null;try{raw=sessionStorage.getItem(FRENDA_TEST_BACKUP_KEY)}catch{}if(!raw)return false;let data=null;try{data=JSON.parse(raw)}catch{}if(!data||typeof data!=="object")return false;for(const k of frendaManagedStorageKeys())localStorage.removeItem(k);for(const [k,v] of Object.entries(data))if(v!==null&&v!==undefined)localStorage.setItem(k,String(v));if(clearBackup)try{sessionStorage.removeItem(FRENDA_TEST_BACKUP_KEY)}catch{}return true}
-function prepareFrendaTestStorage(isTest){if(isTest){let has=false;try{has=!!sessionStorage.getItem(FRENDA_TEST_BACKUP_KEY)}catch{}if(has)restoreFrendaStorage({clearBackup:false});else try{sessionStorage.setItem(FRENDA_TEST_BACKUP_KEY,JSON.stringify(captureFrendaStorage()))}catch{}}else restoreFrendaStorage({clearBackup:true})}
-prepareFrendaTestStorage(DUNGEON_TEST_MODE);
+const TEST_SANDBOX=window.FRENDA_TEST;
+const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
+if(DUNGEON_TEST_REQUESTED&&!DUNGEON_TEST_MODE){location.replace("admin.html?next=test-center.html");return;}
 
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
@@ -2402,7 +2400,7 @@ function compareSeriesRelease(a,b){
 }
 const SOUND_KEY="frenda:dungeon:sound:v1";
 let audioCtx=null;
-function soundMode(){const v=localStorage.getItem(SOUND_KEY);return ["100","50","off"].includes(v)?v:"100"}
+function soundMode(){const v=STORE.getItem(SOUND_KEY);return ["100","50","off"].includes(v)?v:"100"}
 function soundVolume(){const m=soundMode();return m==="100"?1:m==="50"?.5:0}
 function soundModeLabel(){const m=soundMode();return m==="100"?"🔊 100%":m==="50"?"🔉 50%":"🔇 OFF"}
 function ensureAudio(){
@@ -2518,7 +2516,7 @@ function sfx(name){
 }
 function cycleSoundMode(){
  const m=soundMode(),next=m==="100"?"50":m==="50"?"off":"100";
- localStorage.setItem(SOUND_KEY,next);
+ STORE.setItem(SOUND_KEY,next);
  if(next!=="off"){ensureAudio();sfx("battleStart")}
  const b=document.getElementById("soundModeBtn");if(b)b.textContent=soundModeLabel()
 }
@@ -2621,15 +2619,14 @@ let battleLogOpen=false;
 let postRunFinishBusy=false;
 
 
-function readRunEndGuard(){try{const x=JSON.parse(localStorage.getItem(RUN_END_GUARD_KEY)||"null");return x&&typeof x==="object"?x:null}catch{return null}}
-function clearRunEndGuard(){try{localStorage.removeItem(RUN_END_GUARD_KEY)}catch{}}
-function writeRunEndGuard(run,summary){try{localStorage.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
+function readRunEndGuard(){try{const x=JSON.parse(STORE.getItem(RUN_END_GUARD_KEY)||"null");return x&&typeof x==="object"?x:null}catch{return null}}
+function clearRunEndGuard(){try{STORE.removeItem(RUN_END_GUARD_KEY)}catch{}}
+function writeRunEndGuard(run,summary){try{STORE.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
 function enforceRunEndGuard(target){const g=readRunEndGuard();if(!g||!target?.run)return false;const started=String(target.run.startedAt||"");if(g.startedAt&&started&&g.startedAt!==started)return false;target.run=null;target.postRun=null;if(g.summary)target.lastSummary=g.summary;return true}
 function save(){try{state.appVersion=APP_VERSION;state.saveVersion=11;DATA.dungeon.write(state)}catch(e){console.error(e)}}
-function installDungeonTestGuard(){let done=false;const restore=()=>{if(done)return;done=true;restoreFrendaStorage({clearBackup:true})};window.__FRENDA_TEST_RESTORE=restore;window.addEventListener("pagehide",restore,{once:true});window.addEventListener("beforeunload",restore,{once:true});return restore}
-function applyDungeonTimerPreset(){if(!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
+function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();return ids}
-function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 閉じると元のセーブへ戻します</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
+function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
 function loadState(){try{const x=DATA.dungeon.read(),s=x&&typeof x==="object"?Object.assign(stateDefault(),x):stateDefault();enforceRunEndGuard(s);return s}catch{const s=stateDefault();enforceRunEndGuard(s);return s}}
 function migrateState(){
  const v=Number(state.saveVersion||1);
@@ -3148,7 +3145,7 @@ function pickEnemy({elite=false,boss=false,exclude=[]}={}){
  return scaleEnemy(base,{elite,boss})
 }
 function floorBonus(){const f=state.run.floor;return f>=10?.15:f>=7?.10:f>=4?.05:0}
-function scaleEnemy(base,{elite=false,boss=false}={}){const bonus=(DIFF_BONUS[state.run.difficulty]||0)+floorBonus()+(elite&&!boss ? .10 : 0);const damageModel=localStorage.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1";const forest1Ease=(state.run.dungeonId==="forest"&&state.run.difficulty===1)?(damageModel==="v2"?0.40:0.55):1;const r=clone(base);for(const k of ["hp","atk","def","sp_atk","sp_def"])if(Number(r[k])>0)r[k]=Math.max(1,Math.round(Number(r[k])*(1+bonus)*forest1Ease));r._dungeonBonus=bonus;r._forest1Ease=forest1Ease;r._elite=elite;r._boss=boss;return r}
+function scaleEnemy(base,{elite=false,boss=false}={}){const bonus=(DIFF_BONUS[state.run.difficulty]||0)+floorBonus()+(elite&&!boss ? .10 : 0);const damageModel=STORE.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1";const forest1Ease=(state.run.dungeonId==="forest"&&state.run.difficulty===1)?(damageModel==="v2"?0.40:0.55):1;const r=clone(base);for(const k of ["hp","atk","def","sp_atk","sp_def"])if(Number(r[k])>0)r[k]=Math.max(1,Math.round(Number(r[k])*(1+bonus)*forest1Ease));r._dungeonBonus=bonus;r._forest1Ease=forest1Ease;r._elite=elite;r._boss=boss;return r}
 function adjustAlert(delta,reason=""){
  const r=state.run;if(!r)return 0;
  const before=Math.max(0,Math.min(3,Number(r.alertLevel||0))),after=Math.max(0,Math.min(3,before+Number(delta||0)));
@@ -3190,7 +3187,7 @@ function startFighter(teamIndex){battleLogOpen=false;state.run.switchSelecting=f
 function handleFaintedReplacement(){const r=state.run,fallenIndex=r?.battle?.teamIndex,fallen=Number.isInteger(fallenIndex)?runTeam()[fallenIndex]:null,fallenName=fallen?rec(fallen.id)?.name_ja||"仲間":"仲間",alive=runTeam().map((t,i)=>({t,i})).filter(x=>!x.t.ko);r.battle=null;if(!alive.length){runDefeat();return}r.faintedNotice={fallenName,remaining:alive.length,onlyIndex:alive.length===1?alive[0].i:null,onlyName:alive.length===1?(rec(alive[0].t.id)?.name_ja||"仲間"):null};r.scene="faintedNotice";addLog(`${fallenName}がひんし！ 次に出す仲間を決めよう。`);save();render()}
 function proceedFaintedNotice(){const r=state.run;if(!r||r.scene!=="faintedNotice")return;const n=r.faintedNotice||{},alive=runTeam().map((t,i)=>({t,i})).filter(x=>!x.t.ko);r.faintedNotice=null;if(!alive.length){runDefeat();return}if(alive.length===1){const x=alive[0],name=rec(x.t.id)?.name_ja||n.onlyName||"仲間";addLog(`残る仲間は${name}！ 自動でバトルへ。`);save();startFighter(x.i);return}r.scene="chooseFighter";save();render()}
 function renderFaintedNoticeHTML(){const r=state.run,n=r?.faintedNotice||{},alive=runTeam().filter(x=>!x.ko),one=alive.length===1,onlyName=one?(rec(alive[0].id)?.name_ja||n.onlyName||"仲間"):"";return `<div class="card faintedNextCard singleAdvanceCard" data-run-advance="faintedNotice" role="button" tabindex="0" aria-label="次に出す仲間へ"><div class="faintedNextInner"><div class="faintedNextKo">DOWN...</div><div class="faintedNextName">${esc(n.fallenName||"仲間")}が たおれた！</div><div class="faintedNextQuestion">${one?`${esc(onlyName)}、いけ！`:`次は誰だ！？`}</div><div class="faintedNextPrompt">${one?"残る1体でバトル続行":"次に出すポケモンを選ぼう"}</div><div class="faintedNextHint">自動で次のポケモン選択へ進みます</div></div></div>`}
-function attackValue(a,d){const model=localStorage.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1",x=CORE.dmg(a,d,model);const hit=Math.random()<(x.accuracy??1);return {damage:hit?Math.max(1,Number(x.hitN??x.n)||1):0,hit,e:x.e,model:x.model}}
+function attackValue(a,d){const model=STORE.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1",x=CORE.dmg(a,d,model);const hit=Math.random()<(x.accuracy??1);return {damage:hit?Math.max(1,Number(x.hitN??x.n)||1):0,hit,e:x.e,model:x.model}}
 function battleLine(s){state.run.battle.log.push(s);if(state.run.battle.log.length>30)state.run.battle.log=state.run.battle.log.slice(-30)}
 const fxSleep=ms=>new Promise(r=>setTimeout(r,ms));
 function launchTypeFx(type,target){const layer=document.getElementById("battleFxLayer");if(!layer)return;const v=TYPE_FX[type]||TYPE_FX["ノーマル"],el=document.createElement("div");el.className=`battleTypeFx ${target==="enemy"?"toEnemy":"toMe"}${type==="あく"||type==="ゴースト"?" fxDark":""}`;el.style.setProperty("--fx1",v[0]);el.style.setProperty("--fx2",v[1]);el.innerHTML=`<span class="fxSymbol">${v[2]}</span>`;layer.appendChild(el);setTimeout(()=>el.remove(),780)}
@@ -4045,10 +4042,9 @@ function applyDungeonCloudData(data){
 }
 function dungeonHasLocalData(){const s=DATA.dungeon.read();return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}
 function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s.owned)?s.owned.length:0,eggs=Array.isArray(s.eggs)?s.eggs.length:0,exp=s.expeditionShared?.status==="running"?"探索中":"探索なし";return `所持 ${owned}体 / 卵 ${eggs}個 / ${exp}`}
-if(DUNGEON_TEST_MODE)installDungeonTestGuard();
 applyDungeonTimerPreset();
 applyDungeonTestCase();
-if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
+if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 / Ver1.53 -->
+<!-- Updated: 2026-09-28 / Ver1.54 -->
