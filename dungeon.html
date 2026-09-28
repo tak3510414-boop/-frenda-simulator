@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.51 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.52 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
@@ -1575,6 +1575,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .partySideStats .bondChip{font-size:9px}
  main.dungeonRunScreen .partySideCard .matchupAppeal{position:static;display:inline-flex;align-items:center;gap:4px;max-width:calc(100% - 48px);margin:0 0 8px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:1000;line-height:1.1;box-shadow:0 2px 7px #0002}
  main.dungeonRunScreen .partySideCard .matchupAppeal.good{background:linear-gradient(180deg,#ffe978,#ffc939);color:#563800;border:2px solid #e0a400}
+ main.dungeonRunScreen .partySideCard.matchupGood .partySideImg{animation:matchupVolunteerHop 1.05s ease-in-out infinite;transform-origin:50% 100%;will-change:transform}
  main.dungeonRunScreen .partySideCard .matchupAppeal.bad{background:linear-gradient(180deg,#eff3f6,#dee5ea);color:#53616c;border:2px solid #c6d0d6}
  main.dungeonRunScreen .partySideCard .matchupAppeal.veryBad{background:linear-gradient(180deg,#ff9764,#eb5f2c);color:#fff;border:2px solid #bf4216;box-shadow:0 2px 7px #8d2f1638}
  main.dungeonRunScreen .partySideCard .matchupReason{display:block;font-size:10px!important;line-height:1.3!important;margin-top:6px;padding:6px 8px;border-radius:8px}
@@ -2304,7 +2305,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.51";
+const APP_VERSION="1.52";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -3059,22 +3060,12 @@ function renderTeamSelect(){
 }
 function startRun(){if(!teamSelection.length){UI.dialog.alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){UI.dialog.alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id];state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"route",entryFirstVisit:false,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},captured:[],logs:[`${th.name}★${currentDungeon.difficulty}に挑戦！`,`地下1階の探索を開始。`],startedAt:new Date().toISOString()};generateRoutes();updateDeepest(1);save();render()}
 function runTeam(){return state.run?.team||[]}
-const BATTLE_MOOD_RATE={energetic:.20,tired:.20};
-function ensureCurrentEnemyMoods(){
- const enc=state.run?.encounter;if(!enc)return {};
- enc.moods=enc.moods&&typeof enc.moods==="object"?enc.moods:{};
- const key=String(Number(enc.index)||0);
- if(!enc.moods[key]||typeof enc.moods[key]!=="object"){
-  const m={};
-  for(const t of runTeam()){const x=Math.random();m[t.id]=x<BATTLE_MOOD_RATE.energetic?"energetic":x<BATTLE_MOOD_RATE.energetic+BATTLE_MOOD_RATE.tired?"tired":"normal"}
-  enc.moods[key]=m;save();
- }
- return enc.moods[key];
-}
-function battleMoodFor(id){return ensureCurrentEnemyMoods()?.[id]||"normal"}
-function battleMoodMultiplier(id){const m=battleMoodFor(id);return m==="energetic"?1.05:m==="tired"?0.95:1}
-function battleMoodBadgeHTML(id){const m=battleMoodFor(id);return m==="energetic"?'<span class="battleMoodBadge energetic">🔥 元気　攻・防 ×1.05</span>':m==="tired"?'<span class="battleMoodBadge tired">😴 疲れた　攻・防 ×0.95</span>':""}
-function battleMoodNoticeHTML(id){const m=battleMoodFor(id);return m==="energetic"?'<div class="battleMoodNotice energetic"><b>🔥 元気ボーナス発動中！</b><br>このバトルでは攻撃・防御が <b>1.05倍</b></div>':m==="tired"?'<div class="battleMoodNotice tired"><b>😴 疲れた状態…</b><br>このバトルでは攻撃・防御が <b>0.95倍</b></div>':""}
+// Ver1.52: 「元気ボーナス」「疲れた」は廃止。旧セーブ互換のため関数名だけ残す。
+function ensureCurrentEnemyMoods(){return {}}
+function battleMoodFor(id){return "normal"}
+function battleMoodMultiplier(id){return 1}
+function battleMoodBadgeHTML(id){return ""}
+function battleMoodNoticeHTML(id){return ""}
 function teamRec(t){const base=clone(rec(t.id)),pb=state.permanentBoosts[t.id]||{},mul=battleMoodMultiplier(t.id);base.hp=maxHpFor(t.id);base.atk=Math.max(1,Math.round((Number(base.atk||0)+(pb.atk||0)+(t.tempAtk||0)+(t.bondAtk||0))*mul));base.def=Math.max(1,Math.round((Number(base.def||0)+(pb.def||0)+(t.tempDef||0)+(t.bondDef||0))*mul));return base}
 function healTeamMember(t,amount){if(t.ko)return 0;const max=maxHpFor(t.id),old=t.hp;t.hp=Math.min(max,Math.round(t.hp+amount));return t.hp-old}
 function healPercent(t,p){return healTeamMember(t,maxHpFor(t.id)*p)}
@@ -3153,7 +3144,7 @@ function enemyStrengthOrderValue(e){const grade=Number(e?.grade)||0,energy=Numbe
 function sortEnemiesWeakToStrong(enemies){return enemies.sort((a,b)=>{const x=enemyStrengthOrderValue(a),y=enemyStrengthOrderValue(b);return x.grade-y.grade||x.energy-y.energy||x.stats-y.stats||String(a?.name_ja||"").localeCompare(String(b?.name_ja||""),"ja")})}
 function beginEncounter(kind,opts={}){if(kind==="boss")applyBossRoadBonus();const count=kind==="battle"?1:kind==="elite"?2:(state.run.difficulty===1?1:3),elite=kind==="elite",boss=kind==="boss",enemies=[],used=[];for(let i=0;i<count;i++){const e=pickEnemy({elite,boss,exclude:used});enemies.push(e);used.push(e.master_id)}if(enemies.length>1)sortEnemiesWeakToStrong(enemies);state.run.encounter={kind,enemies,index:0,enemyHps:enemies.map(e=>Number(e.hp)),currentParticipants:[],newSeenIndices:{},moods:{},specialReward:!!opts.specialReward,forcedAlert:!!opts.forcedAlert};state.run.battle=null;state.run.scene=kind==="elite"?"encounterIntro":currentEnemyEntryScene();if(kind!=="elite")markCurrentEnemySeen();addLog(`${opts.forcedAlert?"⚠️ 強制通常戦":kind==="battle"?"通常戦":kind==="elite"?`強敵戦（敵${count}体）`:"ボス戦"}が始まる！`);if(enemies.length>1)addLog("敵は弱い順に登場する。最後が最も強い相手だ！");if(currentEnemyNeedsLegendaryIntro())addLog("……ものすごい気配を感じる。");save();render()}
 function currentEnemy(){return state.run?.encounter?.enemies?.[state.run.encounter.index]||null}
-function startFighter(teamIndex){battleLogOpen=false;state.run.switchSelecting=false;const t=runTeam()[teamIndex];if(!t||t.ko)return;applyBondBattleStart();sfx("battleStart");const en=currentEnemy(),enc=state.run.encounter;enc.currentParticipants=Array.isArray(enc.currentParticipants)?enc.currentParticipants:[];if(!Array.isArray(enc.enemyHps))enc.enemyHps=enc.enemies.map(e=>Number(e.hp));if(enc.enemyHps.length!==enc.enemies.length)enc.enemyHps=enc.enemies.map((e,i)=>Number(enc.enemyHps?.[i]??e.hp));const savedHp=Number(enc.enemyHps[enc.index]);const mood=battleMoodFor(t.id),moodLine=mood==="energetic"?`${rec(t.id).name_ja}は元気いっぱい！ 攻撃・防御が5%アップ。`:mood==="tired"?`${rec(t.id).name_ja}は少し疲れている…。攻撃・防御が5%ダウン。`:null;state.run.battle={teamIndex,enemyHp:Number.isFinite(savedHp)?Math.max(0,savedHp):Number(en.hp),turn:1,busy:false,hasAttacked:false,log:[`${en.name_ja}が現れた！`,`${rec(t.id).name_ja}をくりだした！`,...(moodLine?[moodLine]:[]),`最初の攻撃前なら自由に交代できる。`]};state.run.scene="battle";save();render()}
+function startFighter(teamIndex){battleLogOpen=false;state.run.switchSelecting=false;const t=runTeam()[teamIndex];if(!t||t.ko)return;applyBondBattleStart();sfx("battleStart");const en=currentEnemy(),enc=state.run.encounter;enc.currentParticipants=Array.isArray(enc.currentParticipants)?enc.currentParticipants:[];if(!Array.isArray(enc.enemyHps))enc.enemyHps=enc.enemies.map(e=>Number(e.hp));if(enc.enemyHps.length!==enc.enemies.length)enc.enemyHps=enc.enemies.map((e,i)=>Number(enc.enemyHps?.[i]??e.hp));const savedHp=Number(enc.enemyHps[enc.index]);state.run.battle={teamIndex,enemyHp:Number.isFinite(savedHp)?Math.max(0,savedHp):Number(en.hp),turn:1,busy:false,hasAttacked:false,log:[`${en.name_ja}が現れた！`,`${rec(t.id).name_ja}をくりだした！`,`最初の攻撃前なら自由に交代できる。`]};state.run.scene="battle";save();render()}
 function handleFaintedReplacement(){const r=state.run,fallenIndex=r?.battle?.teamIndex,fallen=Number.isInteger(fallenIndex)?runTeam()[fallenIndex]:null,fallenName=fallen?rec(fallen.id)?.name_ja||"仲間":"仲間",alive=runTeam().map((t,i)=>({t,i})).filter(x=>!x.t.ko);r.battle=null;if(!alive.length){runDefeat();return}r.faintedNotice={fallenName,remaining:alive.length,onlyIndex:alive.length===1?alive[0].i:null,onlyName:alive.length===1?(rec(alive[0].t.id)?.name_ja||"仲間"):null};r.scene="faintedNotice";addLog(`${fallenName}がひんし！ 次に出す仲間を決めよう。`);save();render()}
 function proceedFaintedNotice(){const r=state.run;if(!r||r.scene!=="faintedNotice")return;const n=r.faintedNotice||{},alive=runTeam().map((t,i)=>({t,i})).filter(x=>!x.t.ko);r.faintedNotice=null;if(!alive.length){runDefeat();return}if(alive.length===1){const x=alive[0],name=rec(x.t.id)?.name_ja||n.onlyName||"仲間";addLog(`残る仲間は${name}！ 自動でバトルへ。`);save();startFighter(x.i);return}r.scene="chooseFighter";save();render()}
 function renderFaintedNoticeHTML(){const r=state.run,n=r?.faintedNotice||{},alive=runTeam().filter(x=>!x.ko),one=alive.length===1,onlyName=one?(rec(alive[0].id)?.name_ja||n.onlyName||"仲間"):"";return `<div class="card faintedNextCard singleAdvanceCard" data-run-advance="faintedNotice" role="button" tabindex="0" aria-label="次に出す仲間へ"><div class="faintedNextInner"><div class="faintedNextKo">DOWN...</div><div class="faintedNextName">${esc(n.fallenName||"仲間")}が たおれた！</div><div class="faintedNextQuestion">${one?`${esc(onlyName)}、いけ！`:`次は誰だ！？`}</div><div class="faintedNextPrompt">${one?"残る1体でバトル続行":"次に出すポケモンを選ぼう"}</div><div class="faintedNextHint">自動で次のポケモン選択へ進みます</div></div></div>`}
@@ -3416,7 +3407,7 @@ function fighterMatchupAppeal(t){
  if(kind==="neutral")return null;
  return {kind,text,reason,offense,incoming}
 }
-function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:"チームから、出すポケモンをタップしてください。相性に加えて、その敵との戦闘ごとに『元気ボーナス』や『疲れた』が付くことがあります。",can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;const can=(t)=>{if(k==="healSingleSelect")return true;if(t.ko)return false;if(k==="heal30"||k==="heal20"||k==="lucky")return t.hp<maxHpFor(t.id);if(k==="atk2")return Number(t.tempAtk||0)<TEMP_BOOST_MAX;if(k==="def2")return Number(t.tempDef||0)<TEMP_BOOST_MAX;return true};return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"チームから対象をタップしてください。ひんし状態も選べます。":"効果を受けられる仲間を選んでください。",can}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
+function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:"チームから、出すポケモンをタップしてください。相性表示を参考に選べます。",can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;const can=(t)=>{if(k==="healSingleSelect")return true;if(t.ko)return false;if(k==="heal30"||k==="heal20"||k==="lucky")return t.hp<maxHpFor(t.id);if(k==="atk2")return Number(t.tempAtk||0)<TEMP_BOOST_MAX;if(k==="def2")return Number(t.tempDef||0)<TEMP_BOOST_MAX;return true};return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"チームから対象をタップしてください。ひんし状態も選べます。":"効果を受けられる仲間を選んでください。",can}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
 function teamMiniHTML(t,i){
  const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
        inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,
@@ -3424,9 +3415,9 @@ function teamMiniHTML(t,i){
        action=m?m.action:(directSwitch?"switch":""),
        pb=state.permanentBoosts[t.id]||{},growth=growthPointsFor(t.id),drill=drillFor(t.id),bond=bondLevelFor(t.id),
        battleRec=inBattle?teamRec(t):r,bondProc=!!((t.bondAtk||0)||(t.bondDef||0)),
-       appeal=m?.action==="fighter"?fighterMatchupAppeal(t):null,mood=(m?.action==="fighter"||inBattle)?battleMoodFor(t.id):"normal",
-       appealCls=appeal?` matchup${appeal.kind==="good"?"Good":appeal.kind==="veryBad"?"VeryBad":"Bad"}`:"",moodCls=mood==="energetic"?" moodEnergetic":mood==="tired"?" moodTired":"",
-       cls=`teamMini ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${bondProc?" bondProc":""}${appealCls}${moodCls}`,
+       appeal=m?.action==="fighter"?fighterMatchupAppeal(t):null,
+       appealCls=appeal?` matchup${appeal.kind==="good"?"Good":appeal.kind==="veryBad"?"VeryBad":"Bad"}`:"",
+       cls=`teamMini ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${bondProc?" bondProc":""}${appealCls}`,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:"";
  if(!inBattle){
   return `<div class="${cls}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)} / EXP ${xp}/100<br><span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div></div>`
@@ -3513,8 +3504,8 @@ function partySidebarCardHTML(t,i){
        directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
        action=m?m.action:(directSwitch?"switch":""),bond=bondLevelFor(t.id),
        appeal=m?.action==="fighter"?fighterMatchupAppeal(t):null,
-       mood=m?.action==="fighter"?battleMoodFor(t.id):"normal",
-       cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}`,
+       appealCls=appeal?` matchup${appeal.kind==="good"?"Good":appeal.kind==="veryBad"?"VeryBad":"Bad"}`:"",
+       cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${appealCls}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
  return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>現在HP</span><span>${t.hp}/${max}</span></div>${sidebarStatGridHTML(r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
@@ -4018,4 +4009,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 / Ver1.51 -->
+<!-- Updated: 2026-09-28 / Ver1.52 -->
