@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.50 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.51 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.50</title>
+<title>フレンダダンジョン Ver1.51</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2196,6 +2196,30 @@ body.homeNavVisible .headerTop{padding-right:44px}
 }
 
 
+
+/* Ver1.51: hatch crack alignment + compact cross-table result summary */
+.hatchDramaCard .hatchCracks span{top:calc(50% - 48px)!important}
+.postRunSummary.resultV3 .resultCrossWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:2px solid #dce7ed;border-radius:15px;background:#fff}
+.postRunSummary.resultV3 .resultCrossTable{width:100%;border-collapse:collapse;table-layout:fixed;min-width:500px}
+.postRunSummary.resultV3 .resultCrossTable th,.postRunSummary.resultV3 .resultCrossTable td{padding:10px 9px;border-bottom:1px solid #e2ebef;border-right:1px solid #e7eef2;text-align:center;vertical-align:middle}
+.postRunSummary.resultV3 .resultCrossTable th:last-child,.postRunSummary.resultV3 .resultCrossTable td:last-child{border-right:0}
+.postRunSummary.resultV3 .resultCrossTable tr:last-child td{border-bottom:0}
+.postRunSummary.resultV3 .resultCrossTable thead th{background:#eef6fa;color:#294858;font-size:12px;font-weight:1000;white-space:nowrap}
+.postRunSummary.resultV3 .resultCrossTable thead th:first-child{text-align:left;width:30%}
+.postRunSummary.resultV3 .resultCrossTable tbody td:first-child{text-align:left;font-weight:1000;color:#203a49;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.postRunSummary.resultV3 .resultCrossTable .xp{color:#0d648e;font-weight:1000}
+.postRunSummary.resultV3 .resultCrossTable .drill{color:#5a62a3;font-weight:1000}
+.postRunSummary.resultV3 .resultCrossTable .bond{color:#ac3f60;font-weight:1000}
+.postRunSummary.resultV3 .resultCrossTable .none{color:#9aa8b0;font-weight:800}
+@media(max-width:700px){
+  .hatchDramaCard .hatchCracks span{top:calc(50% - 43px)!important}
+  .postRunSummary.resultV3 .resultCrossTable{min-width:0!important;table-layout:fixed!important}
+  .postRunSummary.resultV3 .resultCrossTable th,.postRunSummary.resultV3 .resultCrossTable td{padding:8px 5px!important;font-size:10.5px!important}
+  .postRunSummary.resultV3 .resultCrossTable thead th{font-size:9.5px!important;line-height:1.15!important;white-space:normal!important}
+  .postRunSummary.resultV3 .resultCrossTable thead th:first-child{width:29%!important}
+  .postRunSummary.resultV3 .resultCrossTable tbody td:first-child{font-size:10px!important}
+}
+
 /* Ver1.48: mobile route selection keeps all three roads visible in one screen. */
 /* Ver1.49: hide home button on the dungeon home screen; keep it on sub-screens. */
 @media(max-width:700px){
@@ -2225,7 +2249,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 }
 
 
-/* Ver1.50: battle reward choice fits in one mobile viewport; remove repeated explanation. */
+/* Ver1.51: battle reward choice fits in one mobile viewport; remove repeated explanation. */
 @media(max-width:700px){
  main.dungeonRunScreen[data-run-scene="reward"]{padding-top:4px!important;padding-bottom:4px!important}
  main.dungeonRunScreen[data-run-scene="reward"] .runOverview{margin-bottom:5px!important}
@@ -2262,7 +2286,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.50</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.51</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3329,19 +3353,6 @@ function renderSummary(){
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
        clear=x.type==="clear",def=x.type==="defeat",th=THEMES[x.dungeonId]||THEMES.forest;
 
- const xpRows=Object.entries(x.xpGained||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>{
-   const name=esc(rec(id)?.name_ja||id);
-   return `<div class="resultLine3"><span class="nm">${name}</span><span class="val">＋${Number(v)} EXP</span></div>`;
- }).join("");
- const drillRows=Object.entries(x.drillGained||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>{
-   const name=esc(rec(id)?.name_ja||id);
-   return `<div class="resultLine3"><span class="nm">${name}</span><span class="val">＋${Number(v)}</span></div>`;
- }).join("");
- const bondRows=(x.bondGained||[]).map(v=>{
-   const lv=Number(v.level)||0, before=Math.max(0,lv-1), value=v.leveled?`Lv${before} → Lv${lv}`:`＋1　Lv${lv}`;
-   return `<div class="resultLine3"><span class="nm">${esc(v.name)}</span><span class="val">♥ ${value}</span></div>`;
- }).join("");
-
  const captures=(x.captured||[]).map(id=>esc(rec(id)?.name_ja||id));
  const unlocks=(x.unlocked||[]).map(v=>esc(v));
  const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"";
@@ -3350,10 +3361,19 @@ function renderSummary(){
  if(eggName)highlights.push(`<div class="resultHighlight3 reward"><div class="rhLabel">🥚 クリア報酬</div><div class="rhValue">${eggName}</div></div>`);
  if(unlocks.length)highlights.push(`<div class="resultHighlight3 unlock"><div class="rhLabel">🔓 新しく解放</div><div class="rhValue">${unlocks.join("・")}</div></div>`);
 
- const groups=[];
- if(xpRows)groups.push(`<div class="resultGroup3 growth"><div class="resultGroupTitle3">⭐ 成長EXP</div><div class="resultList3">${xpRows}</div></div>`);
- if(drillRows)groups.push(`<div class="resultGroup3 drill"><div class="resultGroupTitle3">💪 特訓ポイント</div><div class="resultList3">${drillRows}</div></div>`);
- if(bondRows)groups.push(`<div class="resultGroup3 bond"><div class="resultGroupTitle3">♥ 絆</div><div class="resultList3">${bondRows}</div></div>`);
+ const xp=x.xpGained||{},drill=x.drillGained||{},bond=x.bondGained||[];
+ const bondMap=new Map(bond.map(v=>[String(v.id),v]));
+ const ids=[];
+ const seen=new Set();
+ const addId=id=>{id=String(id||"");if(id&&!seen.has(id)){seen.add(id);ids.push(id)}};
+ Object.keys(xp).forEach(addId);Object.keys(drill).forEach(addId);bond.forEach(v=>addId(v.id));
+ const rows=ids.map(id=>{
+   const name=esc(rec(id)?.name_ja||bondMap.get(id)?.name||id);
+   const xv=Number(xp[id]||0),dv=Number(drill[id]||0),bv=bondMap.get(id);
+   let bondText="−";
+   if(bv){const lv=Number(bv.level)||0,before=Math.max(0,lv-1);bondText=bv.leveled?`Lv${before} → Lv${lv}`:`＋1（Lv${lv}）`}
+   return `<tr><td>${name}</td><td class="${xv>0?"xp":"none"}">${xv>0?`＋${xv}`:"−"}</td><td class="${dv>0?"drill":"none"}">${dv>0?`＋${dv}`:"−"}</td><td class="${bv?"bond":"none"}">${bondText}</td></tr>`;
+ }).join("");
 
  const title=clear?"ダンジョンクリア！":def?"全滅……":"撤退しました",
        kicker=clear?"DUNGEON CLEAR":def?"ADVENTURE END":"RETREAT";
@@ -3363,9 +3383,9 @@ function renderSummary(){
      <div class="resultHeroTitle3"><div class="resultKicker3">${kicker}</div><h2>${title}</h2><div class="resultHeroMeta3"><span>${esc(th.name)}</span><span>★${Number(x.difficulty)||1}</span><span>${clear?"地下10階 CLEAR":`地下${Number(x.floor)||1}階`}</span></div></div>
    </div>
    <div class="resultSave3">✓ 結果は保存済み</div>
-   <div class="resultHeadline3">今回の結果</div>
    ${highlights.length?`<div class="resultHighlights3">${highlights.join("")}</div>`:""}
-   ${groups.length?`<div class="resultGroups3">${groups.join("")}</div>`:`<div class="resultEmpty3">今回の結果は保存されています。</div>`}
+   <div class="resultHeadline3">今回の結果</div>
+   ${rows?`<div class="resultCrossWrap"><table class="resultCrossTable"><thead><tr><th>ポケモン</th><th>成長EXP</th><th>特訓P</th><th>絆</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="resultEmpty3">今回の成長結果はありません。</div>`}
    <button id="summaryHome" class="postRunHomeBtn">ホームへ</button>
  </div>`;
  const sh=document.getElementById("summaryHome");if(sh)sh.onclick=e=>{e.stopPropagation();finishPostRun()};
@@ -3995,4 +4015,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 / Ver1.50 -->
+<!-- Updated: 2026-09-28 / Ver1.51 -->
