@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.41 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.45 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.44</title>
+<title>フレンダダンジョン Ver1.45</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -1932,10 +1932,198 @@ body.homeNavVisible .headerTop{padding-right:44px}
  .runUnifiedBottom{grid-template-columns:1fr;gap:4px;margin-top:5px}.runUnifiedPath .floorStep{height:15px!important}.runUnifiedPath .floorPathCaption{display:none!important}.runWithdrawInside{justify-self:end;font-size:8px!important;padding:4px 7px!important}
 }
 
+
+/* Ver1.45: post-run result screen readability overhaul */
+.postRunSummary.resultV2{
+  width:min(1180px,100%);
+  margin:0 auto;
+  padding:clamp(14px,2.2vw,28px)!important;
+  text-align:left!important;
+  display:flex!important;
+  flex-direction:column;
+  gap:14px;
+  overflow:visible!important;
+  background:linear-gradient(160deg,#ffffff,#f5f9fb)!important;
+}
+.postRunSummary.resultV2 .postRunHero{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
+  gap:16px!important;
+  align-items:center!important;
+  min-height:0!important;
+  padding:16px 18px!important;
+  border-radius:20px!important;
+  box-shadow:none!important;
+}
+.postRunSummary.resultV2 .postRunHero .resultIcon{
+  width:78px;
+  font-size:58px!important;
+  line-height:1!important;
+  text-align:center;
+}
+.postRunSummary.resultV2 .postRunHeroText .kicker{
+  font-size:10px!important;
+  letter-spacing:.12em;
+  margin:0 0 3px!important;
+  opacity:.7;
+}
+.postRunSummary.resultV2 .postRunHeroText h2{
+  margin:0 0 7px!important;
+  font-size:clamp(30px,5vw,48px)!important;
+  line-height:1.05!important;
+}
+.postRunSummary.resultV2 .postRunMeta{
+  display:flex!important;
+  flex-wrap:wrap;
+  gap:6px!important;
+}
+.postRunSummary.resultV2 .postRunMeta span{
+  min-height:0!important;
+  padding:5px 9px!important;
+  font-size:12px!important;
+  border-radius:999px!important;
+}
+.postRunSummary.resultV2 .postRunSaved{
+  padding:10px 12px;
+  border-radius:12px;
+  background:#eef5f8;
+  color:#58707d;
+  font-size:12px;
+  font-weight:800;
+  text-align:center;
+}
+.postRunSummary.resultV2 .postRunSectionTitle{
+  margin:0 2px -4px;
+  font-size:14px;
+  font-weight:1000;
+  color:#344e5d;
+}
+.postRunSummary.resultV2 .postRunDetails{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-auto-rows:auto!important;
+  gap:10px!important;
+  overflow:visible!important;
+}
+.postRunSummary.resultV2 .postRunResultBlock{
+  min-height:0!important;
+  padding:13px 14px!important;
+  border-radius:16px!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+  box-shadow:none!important;
+}
+.postRunSummary.resultV2 .postRunResultBlock>b{
+  display:flex!important;
+  align-items:center;
+  gap:6px;
+  margin:0 0 8px!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+}
+.postRunSummary.resultV2 .resultRows{
+  display:grid;
+  gap:5px;
+}
+.postRunSummary.resultV2 .resultRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  min-height:32px;
+  padding:6px 8px;
+  border-radius:10px;
+  background:#ffffffb8;
+  border:1px solid #dfe8ed;
+}
+.postRunSummary.resultV2 .resultRow .resultName{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-weight:900;
+  color:#294654;
+}
+.postRunSummary.resultV2 .resultRow .resultValue{
+  white-space:nowrap;
+  font-weight:1000;
+  color:#164d69;
+}
+.postRunSummary.resultV2 .resultRow .resultSub{
+  grid-column:1/-1;
+  margin-top:-2px;
+  font-size:11px;
+  color:#6d7e87;
+}
+.postRunSummary.resultV2 .postRunResultBlock.bond .resultValue{color:#ad405c}
+.postRunSummary.resultV2 .postRunResultBlock.drill{background:#f1f5ff;border-color:#c7d4f2}
+.postRunSummary.resultV2 .postRunResultBlock.capture{background:#effaf5;border-color:#b8e0cb}
+.postRunSummary.resultV2 .postRunResultBlock.unlock{background:#edf9f0;border-color:#b7dec1}
+.postRunSummary.resultV2 .postRunResultBlock.reward{background:#fff9dc;border-color:#ead17a}
+.postRunSummary.resultV2 .postRunHomeBtn{
+  width:100%!important;
+  min-height:56px!important;
+  margin:2px 0 0!important;
+  padding:12px 18px!important;
+  border-radius:15px!important;
+  font-size:20px!important;
+}
+@media(max-width:700px){
+  .postRunSummary.resultV2{
+    width:calc(100% - 20px)!important;
+    margin:10px auto 24px!important;
+    padding:12px!important;
+    gap:10px!important;
+    border-radius:18px!important;
+  }
+  .postRunSummary.resultV2 .postRunHero{
+    grid-template-columns:58px minmax(0,1fr)!important;
+    gap:10px!important;
+    padding:12px!important;
+    border-radius:14px!important;
+  }
+  .postRunSummary.resultV2 .postRunHero .resultIcon{
+    width:58px;
+    font-size:44px!important;
+  }
+  .postRunSummary.resultV2 .postRunHeroText h2{
+    font-size:30px!important;
+    margin-bottom:6px!important;
+  }
+  .postRunSummary.resultV2 .postRunMeta span{
+    padding:4px 7px!important;
+    font-size:10.5px!important;
+  }
+  .postRunSummary.resultV2 .postRunSaved{
+    padding:8px 10px;
+    font-size:11px;
+  }
+  .postRunSummary.resultV2 .postRunDetails{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  .postRunSummary.resultV2 .postRunResultBlock{
+    padding:11px 12px!important;
+  }
+  .postRunSummary.resultV2 .postRunResultBlock>b{
+    font-size:14px!important;
+    margin-bottom:6px!important;
+  }
+  .postRunSummary.resultV2 .resultRow{
+    min-height:30px;
+    padding:5px 7px;
+    font-size:12px;
+  }
+  .postRunSummary.resultV2 .postRunHomeBtn{
+    min-height:52px!important;
+    font-size:19px!important;
+  }
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.44</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.45</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -1950,7 +2138,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.44";
+const APP_VERSION="1.45";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -3000,24 +3188,51 @@ function renderSummary(){
  updateHeaderStatus();
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
        clear=x.type==="clear",def=x.type==="defeat",th=THEMES[x.dungeonId]||THEMES.forest;
- const bondRows=(x.bondGained||[]).map(v=>`♥ ${esc(v.name)}：絆+1 → Lv${v.level}${v.leveled?(v.level===1?"（少し仲良くなった！）":`（絆Lv${v.level}になった！）`):""}`).join("<br>"),
-       xpRows=Object.entries(x.xpGained||{}).filter(([,v])=>v>0).map(([id,v])=>`${esc(rec(id)?.name_ja||id)} +${v}EXP`).join("<br>"),
-       caps=(x.captured||[]).map(id=>esc(rec(id)?.name_ja||id)).join("・"),
-       unlocks=(x.unlocked||[]).map(v=>`<div>🔓 ${esc(v)}</div>`).join(""),
-       eggAward=x.eggAward?`<div>🥚 ${esc(x.eggAward.kind==="type"?`${x.eggAward.type}タイプの卵`:EGG_DEF[x.eggAward.kind]?.label||"卵")}</div>`:"";
+
+ const xpRows=Object.entries(x.xpGained||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>{
+   const name=esc(rec(id)?.name_ja||id);
+   return `<div class="resultRow"><span class="resultName">${name}</span><span class="resultValue">＋${Number(v)} EXP</span></div>`;
+ }).join("");
+
+ const drillRows=Object.entries(x.drillGained||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>{
+   const name=esc(rec(id)?.name_ja||id);
+   return `<div class="resultRow"><span class="resultName">${name}</span><span class="resultValue">＋${Number(v)}</span></div>`;
+ }).join("");
+
+ const bondRows=(x.bondGained||[]).map(v=>{
+   const note=v.leveled?(v.level===1?"少し仲良くなった！":`絆Lv${Number(v.level)}になった！`):"";
+   return `<div class="resultRow"><span class="resultName">${esc(v.name)}</span><span class="resultValue">♥ ＋1 → Lv${Number(v.level)}</span>${note?`<span class="resultSub">${esc(note)}</span>`:""}</div>`;
+ }).join("");
+
+ const captureRows=(x.captured||[]).map(id=>`<div class="resultRow"><span class="resultName">${esc(rec(id)?.name_ja||id)}</span><span class="resultValue">仲間になった！</span></div>`).join("");
+
+ const unlockRows=(x.unlocked||[]).map(v=>`<div class="resultRow"><span class="resultName">${esc(v)}</span><span class="resultValue">解放</span></div>`).join("");
+
+ const eggRows=x.eggAward?`<div class="resultRow"><span class="resultName">${esc(x.eggAward.kind==="type"?`${x.eggAward.type}タイプの卵`:EGG_DEF[x.eggAward.kind]?.label||"卵")}</span><span class="resultValue">獲得</span></div>`:"";
+
  const blocks=[];
- if(xpRows||caps)blocks.push(`<div class="postRunResultBlock growth"><b>⭐ 今回の恒久成長</b>${xpRows||""}${caps?`${xpRows?"<br>":""}<strong>新しい仲間：</strong>${caps}`:""}</div>`);
- if(bondRows)blocks.push(`<div class="postRunResultBlock bond"><b>♥ 今回の絆</b>${bondRows}</div>`);
- if(unlocks)blocks.push(`<div class="postRunResultBlock unlock"><b>🔓 新しく解放</b>${unlocks}</div>`);
- if(eggAward)blocks.push(`<div class="postRunResultBlock reward"><b>🥚 クリア報酬</b>${eggAward}</div>`);
+ if(xpRows)blocks.push(`<div class="postRunResultBlock growth"><b>⭐ 経験値</b><div class="resultRows">${xpRows}</div></div>`);
+ if(drillRows)blocks.push(`<div class="postRunResultBlock drill"><b>💪 特訓ポイント</b><div class="resultRows">${drillRows}</div></div>`);
+ if(bondRows)blocks.push(`<div class="postRunResultBlock bond"><b>♥ 絆</b><div class="resultRows">${bondRows}</div></div>`);
+ if(captureRows)blocks.push(`<div class="postRunResultBlock capture"><b>🤝 新しい仲間</b><div class="resultRows">${captureRows}</div></div>`);
+ if(unlockRows)blocks.push(`<div class="postRunResultBlock unlock"><b>🔓 新しく解放</b><div class="resultRows">${unlockRows}</div></div>`);
+ if(eggRows)blocks.push(`<div class="postRunResultBlock reward"><b>🥚 クリア報酬</b><div class="resultRows">${eggRows}</div></div>`);
+
  const title=clear?"ダンジョンクリア！":def?"全滅……":"撤退しました",
        kicker=clear?"DUNGEON CLEAR":def?"ADVENTURE END":"RETREAT",
-       desc=clear?"クリア報酬と恒久成長は保存されました。":"獲得した仲間・経験値・卵の進行は保存されています。";
- app.innerHTML=`<div class="card summary postRunSummary singleAdvanceCard" id="postRunSummaryAdvance" role="button" tabindex="0" aria-label="ホームへ">
+       saved=clear?"報酬・経験値・仲間・卵の進行は保存済みです。":"獲得した仲間・経験値・卵の進行は保存済みです。";
+
+ app.innerHTML=`<div class="card summary postRunSummary resultV2 singleAdvanceCard" id="postRunSummaryAdvance" role="button" tabindex="0" aria-label="ホームへ">
   <div class="postRunHero ${clear?"clear":def?"defeat":"withdraw"}">
    <div class="resultIcon">${clear?"🏆":def?"💥":"🚪"}</div>
-   <div class="postRunHeroText"><div class="kicker">${kicker}</div><h2>${title}</h2><div class="postRunMeta"><span>${esc(th.name)}</span><span class="postRunStar">★${x.difficulty}</span><span>到達：地下${x.floor}階</span></div><p>${desc}</p></div>
+   <div class="postRunHeroText">
+    <div class="kicker">${kicker}</div>
+    <h2>${title}</h2>
+    <div class="postRunMeta"><span>${esc(th.name)}</span><span class="postRunStar">★${Number(x.difficulty)||1}</span><span>地下${Number(x.floor)||1}階</span></div>
+   </div>
   </div>
+  <div class="postRunSaved">✓ ${saved}</div>
+  <div class="postRunSectionTitle">今回の獲得</div>
   <div class="postRunDetails">${blocks.length?blocks.join(""):`<div class="postRunEmptyResult">今回の冒険結果は保存されています。</div>`}</div>
   <button id="summaryHome" class="postRunHomeBtn">ホームへ</button>
  </div>`;
@@ -3648,4 +3863,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 / Ver1.44 -->
+<!-- Updated: 2026-09-28 / Ver1.45 -->
