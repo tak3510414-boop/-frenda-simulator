@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おでかけ探索 Ver0.31</title>
+<title>おでかけ探索 Ver0.32</title>
 <style>
 :root{--bg:#eaf1f5;--ink:#183342;--muted:#627785;--card:#fff;--line:#c9d8e1;--blue:#1679a8;--blue2:#0e5e86;--gold:#e7ad24;--green:#1e9c6c;--red:#c74b4b;--shadow:0 10px 28px #13354a18}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;background:linear-gradient(180deg,#0e3147 0,#174c69 150px,var(--bg) 150px);color:var(--ink)}button,select,input{font:inherit}button{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;background:linear-gradient(180deg,#1a8dc0,#0f6f9e);color:#fff;box-shadow:0 3px 0 #0b567c}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}.ghost{background:#eef5f8;color:#24495d;box-shadow:none;border:1px solid #bfd1dc}.danger{background:linear-gradient(180deg,#e96b6b,#b94141);box-shadow:0 3px 0 #913131}.goldBtn{background:linear-gradient(180deg,#ffd85e,#eca928);color:#583a00;box-shadow:0 3px 0 #b87a13}.greenBtn{background:linear-gradient(180deg,#32b983,#1b8b61);box-shadow:0 3px 0 #126d4c}
@@ -80,34 +80,34 @@ main{max-width:1280px;margin:auto;padding:12px}.card{background:var(--card);bord
 /* Shared selected-team strip (frenda-ui.js v1.3 component) */
 .frendaSelectedStrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0 10px}.frendaSelectedSlot{min-height:88px;border:2px solid #cfdae1;border-radius:13px;background:#f7fafc;position:relative;min-width:0;padding:7px}.frendaSelectedSlot.filled{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:center;background:linear-gradient(180deg,#f3fdff,#e5f8ff);border-color:#5fc4df;box-shadow:0 3px 9px #167da51a}.frendaSelectedSlot img{width:52px;height:72px;object-fit:cover;border-radius:8px;background:#e1e8ec;box-shadow:0 2px 5px #24475d25}.frendaSelectedInfo{min-width:0;padding-right:20px}.frendaSelectedInfo b{display:block;font-size:11px;line-height:1.15;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.frendaSelectedInfo small{display:block;margin-top:4px;font-size:8px;line-height:1.25;color:#526c7a;white-space:normal;overflow:hidden}.frendaSelectedRemove{position:absolute!important;right:4px!important;top:4px!important;width:23px!important;height:23px!important;min-width:0!important;padding:0!important;border-radius:50%!important;background:#fff!important;color:#58707e!important;border:1px solid #c7d4dc!important;box-shadow:none!important;font-size:16px!important;line-height:1!important}.frendaSelectedSlot.empty{display:flex;align-items:center;justify-content:center;gap:7px;color:#87969f;border-style:dashed}.frendaSelectedSlot.empty>span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#e4ebef;font-size:12px;font-weight:1000}.frendaSelectedSlot.empty b{display:block;font-size:9px}.frendaSelectedSlot.empty small{display:block;font-size:7px;color:#8a979f}@media(max-width:600px){.frendaSelectedStrip{gap:4px}.frendaSelectedSlot{min-height:79px;padding:5px}.frendaSelectedSlot.filled{grid-template-columns:40px minmax(0,1fr);gap:5px}.frendaSelectedSlot img{width:40px;height:56px}.frendaSelectedInfo{padding-right:16px}.frendaSelectedInfo b{font-size:9px}.frendaSelectedInfo small{font-size:6.8px}.frendaSelectedRemove{width:19px!important;height:19px!important;font-size:13px!important}.frendaSelectedSlot.empty{gap:4px}.frendaSelectedSlot.empty>span{width:24px;height:24px;font-size:10px}}
 
-/* Ver0.31: compact header + navigation cleanup */
-.head{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}.headerTop{display:flex;align-items:center;gap:8px}.headerTop .brand{min-width:0}.headerTop .brand b{white-space:nowrap}.headerTop .headerBtns{margin-left:auto;flex-wrap:nowrap}.headerIconBtn{width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important;font-size:16px!important;line-height:1!important}.careCluster{width:100%;display:flex!important;justify-content:center!important;gap:8px!important;flex-wrap:nowrap!important}.careCombo{display:inline-flex;align-items:center;overflow:hidden;border:1px solid #91d9ef;border-radius:999px;background:#e8f8ff;box-shadow:0 2px 8px #0002}.careCombo .eyeTimerBadge{min-width:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:6px 8px!important}.careCombo .manualRestBtn{border:0!important;border-left:1px solid #9bcfbe!important;border-radius:0!important;box-shadow:none!important;padding:6px 9px!important;background:#dff5e9!important;color:#155d3d!important}.careCombo:has(.eyeTimerBadge.warn){background:#fff0ba;border-color:#e5bd42}.careCombo:has(.eyeTimerBadge.danger){background:#ffe0e0;border-color:#e89696}.careCombo:has(.eyeTimerBadge.rest){background:#dff5e9;border-color:#83cfaa}.frendaCloudBtn.compact{flex:0 0 auto}
+/* Ver0.32: compact header + navigation cleanup */
+.head{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}.headerTop{display:flex;align-items:center;gap:8px;min-width:0}.headerTop .brand{min-width:0;flex:1 1 auto}.headerTop .brand b{display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:0}.headerTop .headerBtns{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto;min-width:0}.headerIconBtn{width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important;font-size:16px!important;line-height:1!important;flex:0 0 34px!important}.careCluster{width:100%;display:flex!important;justify-content:center!important;gap:8px!important;flex-wrap:nowrap!important}.careCombo{display:inline-flex;align-items:center;overflow:hidden;border:1px solid #91d9ef;border-radius:999px;background:#e8f8ff;box-shadow:0 2px 8px #0002}.careCombo .eyeTimerBadge{min-width:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:6px 8px!important}.careCombo .manualRestBtn{border:0!important;border-left:1px solid #9bcfbe!important;border-radius:0!important;box-shadow:none!important;padding:6px 9px!important;background:#dff5e9!important;color:#155d3d!important}.careCombo:has(.eyeTimerBadge.warn){background:#fff0ba;border-color:#e5bd42}.careCombo:has(.eyeTimerBadge.danger){background:#ffe0e0;border-color:#e89696}.careCombo:has(.eyeTimerBadge.rest){background:#dff5e9;border-color:#83cfaa}.frendaCloudBtn.compact{flex:0 0 auto}
 @media(max-width:700px){.headerTop{gap:5px}.headerTop .brand b{font-size:14px}.careCluster{order:initial!important}.careCombo .eyeTimerBadge{font-size:9px!important;padding:5px 7px!important}.careCombo .manualRestBtn{font-size:9px!important;padding:5px 7px!important}.headerIconBtn{width:32px!important;height:32px!important;min-width:32px!important;font-size:15px!important}}
 
 
-/* Ver0.31: navigation cleanup */
+/* Ver0.32: navigation cleanup */
 #homeBtn.homeCornerBtn{position:fixed!important;top:calc(env(safe-area-inset-top) + 8px)!important;right:10px!important;z-index:1200!important;width:36px!important;height:36px!important;min-width:36px!important;padding:0!important;border-radius:50%!important;display:grid;place-items:center;font-size:17px!important;line-height:1!important;box-shadow:0 4px 14px #0004}
-#dungeonBtn.dungeonTextBtn{width:auto!important;height:auto!important;min-width:0!important;padding:8px 11px!important;border-radius:11px!important;font-size:11px!important;line-height:1.1!important;white-space:nowrap!important}
+#dungeonBtn.dungeonTextBtn{width:auto!important;height:auto!important;min-width:0!important;max-width:min(48vw,210px)!important;padding:8px 11px!important;border-radius:11px!important;font-size:11px!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;flex:0 1 auto!important}
 body.homeNavVisible .headerTop{padding-right:44px}
-@media(max-width:700px){#homeBtn.homeCornerBtn{top:calc(env(safe-area-inset-top) + 7px)!important;right:7px!important;width:34px!important;height:34px!important;min-width:34px!important}#dungeonBtn.dungeonTextBtn{padding:7px 9px!important;font-size:10px!important}}
+@media(max-width:700px){#homeBtn.homeCornerBtn{top:calc(env(safe-area-inset-top) + 7px)!important;right:7px!important;width:34px!important;height:34px!important;min-width:34px!important}#dungeonBtn.dungeonTextBtn{max-width:44vw!important;padding:7px 9px!important;font-size:10px!important}}@media(max-width:430px){.headerTop{gap:4px!important}.headerTop .brand b{gap:4px!important}.headerTop .headerBtns{gap:4px!important}#dungeonBtn.dungeonTextBtn{max-width:39vw!important;padding:6px 8px!important;font-size:9px!important}}
 
 </style>
 </head>
 <body>
-<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.31</span></b></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div></div></div></header>
+<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver">Ver0.32</span></b></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div></div></div></header>
 <main id="app"></main>
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
 <script src="frenda-rules.js?b=20260927_2148"></script>
 <script src="frenda-data.js?b=20260927_2148"></script>
-<script src="frenda-ui.js?b=20260928_2018"></script>
+<script src="frenda-ui.js?b=20260928_1345"></script>
 <script src="frenda-parental.js?b=20260928_1345"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?b=20260928_1925"></script>
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="0.31";
+const APP_VERSION="0.30";
 const DATA=window.FRENDA_DATA;
 const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
@@ -357,6 +357,9 @@ function startTicker(){if(ticker)clearInterval(ticker);ticker=setInterval(()=>{i
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),show=screen!=="home";if(hb)hb.style.display=show?"inline-grid":"none";document.body.classList.toggle("homeNavVisible",show)}
 function render(){if(ticker){clearInterval(ticker);ticker=null}prepareReturn();updateHeaderNav();if(screen==="prep")renderPrep();else if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else renderHome()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
+function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
+window.addEventListener("resize",updateHeaderNavLayout);
+updateHeaderNavLayout();
 document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
 window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();render()}});
 
@@ -445,4 +448,4 @@ loadEvolution();
 </html>
 <!-- FRENDA_EXPEDITION_VERSION: 0.30 / Updated: 2026-09-28 -->
 
-<!-- Updated: 2026-09-28 / Ver0.31 -->
+<!-- Updated: 2026-09-28 / Ver0.32 -->
