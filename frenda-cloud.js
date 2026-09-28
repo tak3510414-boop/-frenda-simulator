@@ -1,7 +1,7 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.5";
+const CLOUD_VERSION="1.6";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -44,10 +44,15 @@ function getReloadGuard(){try{return sessionStorage.getItem(reloadGuardKey())||"
 function renderHeaderButton(text,kind=""){
   if(!button)return;
   const compact=!!cfg?.compactButton;
+  const compactError=()=>{button.innerHTML='☁️<span class="frendaCloudAlertBang">❗</span>'};
   if(session){
-    if(conflictPending){button.textContent=compact?"☁️!":"☁️ 要選択";button.dataset.kind="syncing";button.title="ローカルとクラウドのどちらを使うか選択してください"}
-    else{button.textContent=compact?(kind==="error"?"☁️!":"☁️✓"):"☁️ ログイン中";button.dataset.kind=kind==="error"?"error":"";button.title=kind==="error"?text:"クラウド同期はバックグラウンドで自動実行中"}
-  }else{button.textContent=compact?(kind==="error"?"☁️!":"☁️"):"☁️ 未ログイン";button.dataset.kind=kind==="error"?"error":"";button.title=kind==="error"?text:"クリックしてログイン"}
+    if(conflictPending){if(compact)compactError();else button.textContent="☁️ 要選択";button.dataset.kind="syncing";button.title="ローカルとクラウドのどちらを使うか選択してください"}
+    else if(kind==="error"){if(compact)compactError();else button.textContent="☁️ エラー";button.dataset.kind="error";button.title=text}
+    else{button.textContent=compact?"☁️":"☁️ ログイン中";button.dataset.kind="";button.title="クラウド同期はバックグラウンドで自動実行中"}
+  }else{
+    if(kind==="error"){if(compact)compactError();else button.textContent="☁️ エラー";button.dataset.kind="error";button.title=text}
+    else{button.textContent=compact?"💾":"💾 未ログイン";button.dataset.kind="";button.title="未ログイン（この端末に保存）／クリックしてログイン"}
+  }
 }
 function setStatus(text,kind=""){
   statusText=text;
@@ -60,7 +65,7 @@ function injectStyles(){
   .frendaCloudBtn{background:#eaf4ff!important;color:#17384d!important;border:1px solid #b9d7eb!important;border-radius:999px!important;padding:7px 10px!important;font-size:11px!important;font-weight:900!important;white-space:nowrap!important;box-shadow:none!important}
   .frendaCloudBtn[data-kind="error"]{background:#fff0f0!important;color:#9a2e2e!important;border-color:#e9b8b8!important}
   .frendaCloudBtn[data-kind="syncing"]{background:#fff8dd!important;color:#6f5700!important;border-color:#e5d48a!important}
-  .frendaCloudBtn.compact{width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:50%!important;font-size:15px!important;display:inline-grid!important;place-items:center!important;line-height:1!important}
+  .frendaCloudBtn.compact{width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:50%!important;font-size:15px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:0!important;line-height:1!important}.frendaCloudAlertBang{color:#e32636!important;font-size:.78em!important;font-weight:1000!important;margin-left:-2px!important;filter:none!important}
   .frendaCloudOverlay{position:fixed;inset:0;z-index:3000;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px}
   .frendaCloudPanel{width:min(430px,100%);background:#fff;color:#17202a;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0007;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
   .frendaCloudHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaCloudHead b{font-size:18px}.frendaCloudClose{background:#edf2f7!important;color:#243747!important;padding:8px 10px!important}
@@ -73,7 +78,7 @@ function injectStyles(){
 function injectButton(){
   if(button)return;
   injectStyles();
-  button=document.createElement("button");button.type="button";button.className=`frendaCloudBtn${cfg?.compactButton?" compact":""}`;button.textContent=cfg?.compactButton?"☁️":"☁️ アカウント";button.title="アカウント状態を確認中";button.onclick=openModal;
+  button=document.createElement("button");button.type="button";button.className=`frendaCloudBtn${cfg?.compactButton?" compact":""}`;button.textContent=cfg?.compactButton?"💾":"☁️ アカウント";button.title="アカウント状態を確認中";button.onclick=openModal;
   const host=document.querySelector(".headerBtns")||document.querySelector("header")||document.body;
   host.appendChild(button);
 }
