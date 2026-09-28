@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.47 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.50 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.48</title>
+<title>フレンダダンジョン Ver1.50</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2197,6 +2197,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 
 
 /* Ver1.48: mobile route selection keeps all three roads visible in one screen. */
+/* Ver1.49: hide home button on the dungeon home screen; keep it on sub-screens. */
 @media(max-width:700px){
   main.dungeonRunScreen[data-run-scene="route"]{padding-top:5px!important}
   main.dungeonRunScreen[data-run-scene="route"] .runOverview{margin-bottom:5px!important}
@@ -2223,10 +2224,45 @@ body.homeNavVisible .headerTop{padding-right:44px}
   main.dungeonRunScreen[data-run-scene="route"] .adventureLog{display:none!important}
 }
 
+
+/* Ver1.50: battle reward choice fits in one mobile viewport; remove repeated explanation. */
+@media(max-width:700px){
+ main.dungeonRunScreen[data-run-scene="reward"]{padding-top:4px!important;padding-bottom:4px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runOverview{margin-bottom:5px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runStatusUnified{padding:6px 8px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runUnifiedTop{margin-bottom:4px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runUnifiedMetrics{gap:4px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runUnifiedMetric{padding:4px 6px!important;font-size:8.5px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runUnifiedPath{height:22px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .runWithdrawInside{padding:5px 8px!important;font-size:8px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partySidebar{padding:6px 7px!important;margin-bottom:5px!important;border-radius:13px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partySidebar>.sectionTitle{display:none!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamStrip{gap:4px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMini{padding:3px!important;min-height:64px!important;border-radius:9px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMiniHead{display:grid!important;grid-template-columns:34px minmax(0,1fr)!important;gap:4px!important;align-items:center!important;text-align:left!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMini img{width:34px!important;height:47px!important;margin:0!important;border-radius:5px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMini b{font-size:9px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMini small{font-size:6.5px!important;line-height:1.05!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMini .hpbar{height:5px!important;margin-top:3px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .partyMobileCards .teamMini .buffs{display:none!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardChoiceCard{padding:9px 10px!important;margin-bottom:0!important;overflow:visible!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardChoiceCard>.sectionTitle{font-size:17px!important;line-height:1.2!important;margin:0 0 8px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardGrid{display:grid!important;grid-auto-rows:1fr!important;gap:7px!important;min-height:0!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardCount2 .rewardGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardCount3 .rewardGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardBtn{height:auto!important;min-height:112px!important;padding:8px 5px!important;border-radius:14px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-width:0!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardBtn>span{font-size:28px!important;line-height:1!important;margin-bottom:3px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardBtn b{font-size:13px!important;line-height:1.15!important;margin:3px 0!important;overflow-wrap:anywhere!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardBtn small{font-size:8px!important;line-height:1.2!important;overflow-wrap:anywhere!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardCount3 .rewardBtn{min-height:108px!important;padding:7px 3px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardCount3 .rewardBtn b{font-size:11px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .rewardCount3 .rewardBtn small{font-size:7px!important}
+ main.dungeonRunScreen[data-run-scene="reward"] .adventureLog{display:none!important}
+}
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.48</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.50</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -2241,7 +2277,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.47";
+const APP_VERSION="1.50";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -2848,7 +2884,7 @@ function homeHero(){
  const s=getStat("forest",1),clears=totalDungeonClears();
  return `<div class="homeHeroPanel"><div class="homeHeroTitle"><div class="kicker">FRENDA DUNGEON</div><h1>ダンジョンを攻略しよう！</h1></div><div class="homeStats"><span><b>B${s.deepest}F</b><small>森★1 最深</small></span><span><b>${clears}</b><small>クリア</small></span><span><b>${state.owned.length}</b><small>所持ピック</small></span><span><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></span></div></div>`
 }
-function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;if(isDungeonRunScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const showHomeNav=!!state.initialized&&(!!state.run||!!state.postRun||screen!=="home");homeBtn.style.display=showHomeNav?"inline-grid":"none";document.body.classList.toggle("homeNavVisible",showHomeNav);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
+function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;if(isDungeonRunScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
 dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();return}if(state.run){renderRun();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="eggs")return renderEggs();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_value)>0?r.speed_value:(Number(r.speed_level)>0?`Lv${r.speed_level}`:"-");const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
@@ -2866,6 +2902,7 @@ function renderStarter(){
  });
 }
 function renderHome(){
+ homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeMenuGrid">
   <button class="homeMenuBtn dungeon" data-menu="dungeons"><b>🌳</b><span>ダンジョンへ</span><small>冒険を始める</small></button>
   <button class="homeMenuBtn" data-menu="owned"><b>🎴</b><span>所持ピック</span><small>${state.owned.length}枚</small></button>
@@ -3597,7 +3634,7 @@ function renderBattleHTML(){
   <div class="fighterBox" id="enemyFighter"><img src="${esc(imageOf(en))}" alt=""><h3>${esc(en.name_ja)}</h3><small>${gradeText(en)} / ${esc(compareTypeText(en))}</small><div class="hpbar"><div id="enemyHpFill" class="hpfill${hpClass(ep)}" style="width:${ep}%"></div></div><b id="enemyHpText">HP ${b.enemyHp}/${en.hp}</b></div>
  </div><div class="battleMessage" id="battleMessage">${freeSwitch?"攻撃前：左の控えカードを直接タップして自由に交代できます（ターン消費なし）":"VS「1ターン」で攻撃 / VS「最後まで」で自動戦闘 / 左の控えカードを直接タップで交代"}</div><div class="battleControlHint">🆚 1ターン：1ターンだけ攻撃　／　🆚 最後まで：自動戦闘・もう一度押すと停止　／　控えカード：${freeSwitch?"直接タップで無料交代":"直接タップで交代（相手の攻撃あり）"}</div><details id="battleLogDetails" class="battleLog battleLogDetails"${battleLogOpen?" open":""}><summary>戦闘ログ</summary><div class="battleLogEntries">${b.log.slice(-10).map(x=>`<div class="logline">${esc(x)}</div>`).join("")}</div></details></div></div>`
 }
-function renderRewardHTML(){const rw=state.run.reward;const title=rw.kind==="elite"?"💀 強敵撃破！ 報酬を1つ選ぶ":"⚔️ 通常戦勝利！ 報酬を1つ選ぶ";return `<div class="card"><div class="sectionTitle">${title}</div><div class="notice" style="margin-bottom:10px">報酬は選んだ瞬間に自動適用されます。HP回復・攻撃アップ・防御アップは生存中のパーティ全員が対象です。さらに戦闘勝利では闘志ボーナス（通常戦：攻防+2、強敵戦：攻防+4）を全員が獲得します。通常戦は2択、強敵戦は3択。選択後、通常戦15％・強敵戦30％でゲットチャンスが発生します。</div><div class="rewardGrid">${rw.options.map((x,i)=>`<button class="rewardBtn" data-reward="${i}"><span>🎁</span><b>${esc(x.label)}</b><small>${esc(x.desc)}</small></button>`).join("")}</div></div>`}
+function renderRewardHTML(){const rw=state.run.reward;const title=rw.kind==="elite"?"💀 強敵撃破！ 報酬を1つ選ぶ":"⚔️ 通常戦勝利！ 報酬を1つ選ぶ",count=Math.max(1,rw.options?.length||0);return `<div class="card rewardChoiceCard rewardCount${count}"><div class="sectionTitle">${title}</div><div class="rewardGrid">${rw.options.map((x,i)=>`<button class="rewardBtn" data-reward="${i}"><span>🎁</span><b>${esc(x.label)}</b><small>${esc(x.desc)}</small></button>`).join("")}</div></div>`}
 function renderCaptureSelectHTML(){const c=state.run.capture;return `<div class="card battleMainCard combatStageCard captureCombatCard"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody"><div class="sectionTitle">🎯 ゲットしたいポケモンを選ぼう</div><div class="notice" style="margin-bottom:8px">強敵の中から、ゲットしたい1匹を選んでください。</div><div class="captureSelectLayout">${c.candidateIds.map(id=>{const r=rec(id);return `<button class="capturePick captureLarge" data-capture-target="${esc(id)}"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></button>`}).join("")}</div></div></div>`}
 function renderCaptureSlotHTML(){const c=state.run.capture,r=rec(c.targetId);return `<div class="card battleMainCard combatStageCard captureCombatCard captureSlotCard" data-slot-stop="1"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody"><div class="sectionTitle">🎯 ボールスロット</div><div class="captureSlotLayout"><div class="captureTargetPanel"><img src="${esc(imageOf(r))}" alt=""><h2>${esc(r.name_ja)}</h2><span class="badge gold">${gradeText(r)}</span></div><div class="captureSlotMain"><div class="notice">目押し可能ですが高速＋STOP後に少し滑ります。上位ボールほどゲット率が大幅に上がります。${state.run.captureBoost?`<br><b>🔴 拾い物ボーナス：次の捕獲率 +${Math.round(state.run.captureBoost*100)}%</b>`:""}</div><div class="ballSlot">${c.balls.map((k,i)=>`<div class="ballCell" data-ball-cell="${i}"><div><img src="${esc(BALL_DEF[k].img)}" alt="${esc(BALL_DEF[k].label)}"><div>${esc(BALL_DEF[k].short)}</div></div></div>`).join("")}</div><button id="ballStop" class="captureActionBtn" style="width:100%;font-size:20px">STOP!</button><div class="captureSlotTapHint">💡 画面内のどこを押しても STOP できます</div></div></div></div></div>`}
 function renderCaptureThrowHTML(){const c=state.run.capture,o=c?.pendingOutcome,r=rec(c?.targetId),ball=BALL_DEF[o?.ballKey]||BALL_DEF.poke;return `<div class="card battleMainCard combatStageCard captureCombatCard captureThrowCompact"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="kicker" style="color:#14739a">SELECTED BALL</div><div class="captureChosenBall"><img class="captureBallImg" src="${esc(ball.img)}" alt="${esc(ball.label)}"><b>${esc(ball.label)}</b></div><h2 id="captureDramaTitle">${esc(ball.label)}になった！</h2><div class="captureStage" id="captureStage"><img id="captureTargetSprite" class="captureTargetSprite" src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"")}"><img id="captureThrownBall" class="captureThrownBall" src="${esc(ball.img)}" alt="${esc(ball.label)}"></div><div id="captureDramaText" class="captureDramaText">このボールでゲットに挑戦！</div><div id="captureDots" class="captureDots"></div></div></div>`}
@@ -3958,4 +3995,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!DUNGEON_TEST_MODE)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 / Ver1.46 -->
+<!-- Updated: 2026-09-28 / Ver1.50 -->
