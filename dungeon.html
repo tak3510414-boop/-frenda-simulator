@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.64</title>
+<title>フレンダダンジョン Ver1.65</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -3139,7 +3139,7 @@ body[data-dungeon-page="team"] #startRunBtn:disabled{opacity:.38!important;box-s
 }
 
 
-/* Ver1.64: adventure log removed. Fighter selection must fit in one viewport. */
+/* Ver1.65: adventure log removed. Fighter selection must fit in one viewport. */
 .adventureLog,#adventureLogDetails{display:none!important}
 @media(max-width:700px){
   /* Fighter selection: save vertical space in the status area. */
@@ -3187,9 +3187,59 @@ body[data-dungeon-page="team"] #startRunBtn:disabled{opacity:.38!important;box-s
 }
 </style>
 
+
+<style id="v165-battle-card-info">
+/* Ver1.65: use the full three-card area for useful battle status. */
+main.battleScreen .combatTeamStrip .teamMini{
+  display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+  min-height:0!important;overflow:hidden!important;
+}
+main.battleScreen .combatTeamStrip .teamTypeRow{display:flex!important;gap:2px!important;flex-wrap:wrap!important;margin-top:2px!important}
+main.battleScreen .combatTeamStrip .teamTypeRow .badge{font-size:6px!important;padding:1px 3px!important}
+main.battleScreen .combatTeamStrip .battleMiniStats{
+  display:block!important;margin:4px 0 0!important;padding:0!important;
+  background:transparent!important;border:0!important;min-height:0!important;
+}
+main.battleScreen .combatTeamStrip .battleMiniGraphGrid{
+  display:grid!important;grid-template-columns:1fr!important;gap:3px!important;margin:0!important;
+}
+main.battleScreen .combatTeamStrip .battleMiniGraphHead{font-size:7px!important;line-height:1!important}
+main.battleScreen .combatTeamStrip .battleMiniGraphHead b{font-size:7px!important;display:flex!important;align-items:center!important;gap:3px!important}
+main.battleScreen .combatTeamStrip .battleMiniGraphHead em{font-style:normal!important;color:#e56f25!important;font-size:6px!important;font-weight:1000!important}
+main.battleScreen .combatTeamStrip .battleMiniGraphBar{height:6px!important;margin-top:1px!important}
+main.battleScreen .combatTeamStrip .battleMiniLegend{
+  display:flex!important;justify-content:center!important;gap:2px 5px!important;flex-wrap:wrap!important;
+  margin-top:4px!important;font-size:5.5px!important;line-height:1!important;
+}
+main.battleScreen .combatTeamStrip .battleMiniLegend i{width:6px!important;height:6px!important;margin-right:2px!important}
+main.battleScreen .combatTeamStrip .battleMiniMove{
+  display:block!important;min-height:0!important;margin-top:4px!important;padding:3px!important;
+  font-size:6px!important;line-height:1.12!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+main.battleScreen .combatTeamStrip .battleMiniGrowth{
+  display:flex!important;justify-content:center!important;align-items:center!important;gap:2px 5px!important;flex-wrap:wrap!important;
+  margin-top:3px!important;font-size:5.8px!important;line-height:1.05!important;
+}
+main.battleScreen .combatTeamStrip .battleMiniGrowth span{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+main.battleScreen .combatTeamStrip .battleMiniGrowth .bondChip{padding:1px 3px!important;font-size:5.8px!important}
+@media(max-width:700px){
+  main.battleScreen .combatTeamStrip .teamMini{padding:4px!important}
+  main.battleScreen .combatTeamStrip .teamMiniHead{grid-template-columns:38px minmax(0,1fr)!important;gap:4px!important}
+  main.battleScreen .combatTeamStrip .teamMini img{width:38px!important;height:50px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGraphGrid{gap:2px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGraphHead{font-size:6.2px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGraphHead b{font-size:6.2px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGraphHead em{font-size:5.4px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGraphBar{height:5px!important}
+  main.battleScreen .combatTeamStrip .battleMiniLegend{font-size:5px!important;gap:2px 4px!important}
+  main.battleScreen .combatTeamStrip .battleMiniMove{font-size:5.5px!important;padding:2px 3px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGrowth{font-size:5.2px!important;gap:1px 4px!important}
+  main.battleScreen .combatTeamStrip .battleMiniGrowth .bondChip{font-size:5.2px!important}
+}
+</style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.64</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.65</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3205,7 +3255,7 @@ body[data-dungeon-page="team"] #startRunBtn:disabled{opacity:.38!important;box-s
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.64";
+const APP_VERSION="1.65";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -3867,8 +3917,8 @@ function compareStatGraphCell(base,boost=0,scale=200){const b=Math.max(0,Number(
 function sidebarStatGraphHTML(label,base,boost=0,scale=200){const b=Math.max(0,Number(base)||0),g=Math.max(0,Number(boost)||0),v=b+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),gw=Math.min(Math.max(0,100-bw),g/max*100);return `<div class="partyStatTiny"><div class="partyStatTinyHead"><span>${esc(label)}</span><b>${v}</b></div><div class="partyStatTinyBar"><span class="partyStatTinyBase" style="width:${bw}%"></span><span class="partyStatTinyGrowth" style="width:${gw}%"></span></div></div>`}
 function sidebarStatGridHTML(r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5;return `<div class="partyStatGrid">${sidebarStatGraphHTML("HP",r.hp,pb.hp,220)}${sidebarStatGraphHTML("ATK",r.atk,pb.atk,200)}${sidebarStatGraphHTML("DEF",r.def,pb.def,200)}${sidebarStatGraphHTML("SPA",r.sp_atk,0,200)}${sidebarStatGraphHTML("SPD",r.sp_def,0,200)}${sidebarStatGraphHTML("SPE",speedBase,0,speedScale)}</div>`}
 
-function battleMiniStatGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100);return `<div class="battleMiniGraph"><div class="battleMiniGraphHead"><span>${esc(label)}</span><b>${v}</b></div><div class="battleMiniGraphBar"><span class="battleMiniGraphBase" style="width:${bw}%"></span><span class="battleMiniGraphPerm" style="width:${pw}%"></span><span class="battleMiniGraphRun" style="width:${gw}%"></span></div></div>`}
-function battleMiniGraphGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="battleMiniGraphGrid">${battleMiniStatGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${battleMiniStatGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${battleMiniStatGraphHTML("HP",r.hp,pb.hp||0,0,240)}${battleMiniStatGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="battleMiniLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
+function battleMiniStatGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100);return `<div class="battleMiniGraph"><div class="battleMiniGraphHead"><span>${esc(label)}</span><b>${v}${g?`<em>+${g}</em>`:""}</b></div><div class="battleMiniGraphBar"><span class="battleMiniGraphBase" style="width:${bw}%"></span><span class="battleMiniGraphPerm" style="width:${pw}%"></span><span class="battleMiniGraphRun" style="width:${gw}%"></span></div></div>`}
+function battleMiniGraphGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="battleMiniGraphGrid">${battleMiniStatGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${battleMiniStatGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${battleMiniStatGraphHTML("SPA",r.sp_atk,0,0,220)}${battleMiniStatGraphHTML("SPD",r.sp_def,0,0,220)}${battleMiniStatGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="battleMiniLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function partyAdventureGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100);const detail=[p?`恒+${p}`:"",g?`冒+${g}`:""] .filter(Boolean).join(" / ");return `<div class="partyAdventureGraph"><div class="partyAdventureHead"><span>${esc(label)}</span><b>${v}</b></div><div class="partyAdventureBar"><span class="partyAdventureBase" style="width:${bw}%"></span><span class="partyAdventurePerm" style="width:${pw}%"></span><span class="partyAdventureRun" style="width:${gw}%"></span></div><small>${detail?`元${b} / ${detail}`:`元${b}`}</small></div>`}
 function partyAdventureGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partyAdventureGrid">${partyAdventureGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partyAdventureGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${partyAdventureGraphHTML("HP",r.hp,pb.hp||0,0,240)}${partyAdventureGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partyAdventureLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function showTeamBackCompare(){const ids=teamSelection.slice(0,3).filter(id=>ownedEntry(id)&&rec(id));if(!ids.length)return;document.getElementById("teamCompareOverlay")?.remove();const picks=ids.map(id=>({id,r:rec(id),pb:state.permanentBoosts[id]||{}}));const hero=picks.map(x=>`<td class="teamCompareHero"><img src="${esc(imageOf(x.r))}" alt=""><b>${esc(x.r.name_ja)}</b><small>${gradeText(x.r)} / ${esc(x.r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(x.r.poke_ene??"-")}</span></td>`).join("");const row=(label,fn,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th>${picks.map(x=>`<td class="${cls}">${fn(x)}</td>`).join("")}</tr>`;const ov=document.createElement("div");ov.id="teamCompareOverlay";ov.className="teamCompareOverlay";ov.innerHTML=`<div class="teamComparePanel" role="dialog" aria-modal="true" aria-label="挑戦チーム裏面比較"><div class="teamCompareHead"><div><small>TEAM PICK COMPARISON</small><b>挑戦チーム・裏面比較（${picks.length}/3）</b></div><button type="button" class="teamCompareClose" id="teamCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="teamCompareTableWrap"><table class="teamCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero}</tr></thead><tbody>${row("タイプ",x=>esc(compareTypeText(x.r)),"teamCompareType")}${row("ポケエネ",x=>`<b style="font-size:16px">⚡ ${esc(x.r.poke_ene??"-")}</b>`)}${row("HP",x=>compareStatGraphCell(x.r.hp,x.pb.hp))}${row("ATK",x=>compareStatGraphCell(x.r.atk,x.pb.atk))}${row("DEF",x=>compareStatGraphCell(x.r.def,x.pb.def))}${row("SP.ATK",x=>compareStatGraphCell(x.r.sp_atk,0))}${row("SP.DEF",x=>compareStatGraphCell(x.r.sp_def,0))}${row("すばやさ",x=>{const sv=Number(x.r.speed_value),sl=Number(x.r.speed_level);return sv>0?compareStatGraphCell(sv,0,200):sl>0?compareStatGraphCell(sl,0,5):"-"})}${row("通常わざ",x=>`<b>${esc(x.r.move||"未登録")}</b>${esc(x.r.move_type||"-")} / ${esc(x.r.move_class||"-")}`,"teamCompareMove")}${row("必殺技",x=>esc((x.r.finisher_move&&String(x.r.finisher_move).trim())?String(x.r.finisher_move).trim():"なし"),"teamCompareMove")}${row("恒久強化",x=>`HP+${x.pb.hp||0}<br>攻+${x.pb.atk||0}<br>防+${x.pb.def||0}`,"teamCompareGrowth")}${row("成長",x=>`育成P ${growthPointsFor(x.id)}<br>EXP ${xpFor(x.id)}/100<br>特訓P ${drillFor(x.id)}`,"teamCompareGrowth")}${row("絆",x=>esc(bondProgressText(x.id)),"teamCompareGrowth")}</tbody></table></div><div class="teamCompareLegend">選択中のピックを最大3体まで、同じ項目・同じ行で比較します。敵ピックの裏面情報は表示しません。</div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#teamCompareClose").onclick=close}
@@ -4920,4 +4970,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-29 / Ver1.64 -->
+<!-- Updated: 2026-09-29 / Ver1.65 -->
