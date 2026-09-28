@@ -1558,7 +1558,7 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .partySideCard.activeBattle{border:2px solid #29b7df;box-shadow:0 0 0 3px #8be8ff55 inset;background:linear-gradient(180deg,#f7feff,#e6f8ff)}
  main.dungeonRunScreen .partySideCard .partySideImg{width:100%;max-height:146px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#dce7ec;align-self:center}
  main.dungeonRunScreen .partySideInfo{min-width:0;align-self:center}
- main.dungeonRunScreen .partySideName{font-size:14px;font-weight:1000;line-height:1.15;display:block;padding-right:24px}
+ main.dungeonRunScreen .partySideName{font-size:14px;font-weight:1000;line-height:1.15;display:block;padding-right:30px}
  main.dungeonRunScreen .partySideMeta{font-size:9px;color:#657580;line-height:1.25;margin-top:2px}
  main.dungeonRunScreen .partySideInfo .hpbar{height:11px;margin-top:7px;width:100%}
  main.dungeonRunScreen .partySideHp{display:flex;justify-content:space-between;gap:5px;margin-top:2px;font-size:9px;font-weight:900;color:#425765}
@@ -1573,8 +1573,11 @@ main.battleScreen .battleRun .fighterBox>b{width:100%;display:block;text-align:c
  main.dungeonRunScreen .partyStatTinyBase{height:100%;background:linear-gradient(90deg,#57a6ff,#266fe8)}
  main.dungeonRunScreen .partyStatTinyGrowth{height:100%;background:linear-gradient(90deg,#ff8f8f,#df3545)}
  main.dungeonRunScreen .partySideStats .bondChip{font-size:9px}
- main.dungeonRunScreen .partySideCard .matchupAppeal{position:static;margin:0 0 4px;padding:4px 6px;font-size:10px}
- main.dungeonRunScreen .partySideCard .matchupReason{display:block;font-size:8px!important;margin-top:3px}
+ main.dungeonRunScreen .partySideCard .matchupAppeal{position:static;display:inline-flex;align-items:center;gap:4px;max-width:calc(100% - 48px);margin:0 0 8px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:1000;line-height:1.1;box-shadow:0 2px 7px #0002}
+ main.dungeonRunScreen .partySideCard .matchupAppeal.good{background:linear-gradient(180deg,#ffe978,#ffc939);color:#563800;border:2px solid #e0a400}
+ main.dungeonRunScreen .partySideCard .matchupAppeal.bad{background:linear-gradient(180deg,#eff3f6,#dee5ea);color:#53616c;border:2px solid #c6d0d6}
+ main.dungeonRunScreen .partySideCard .matchupAppeal.veryBad{background:linear-gradient(180deg,#ff9764,#eb5f2c);color:#fff;border:2px solid #bf4216;box-shadow:0 2px 7px #8d2f1638}
+ main.dungeonRunScreen .partySideCard .matchupReason{display:block;font-size:10px!important;line-height:1.3!important;margin-top:6px;padding:6px 8px;border-radius:8px}
  main.dungeonRunScreen .partySideCard .battleMoodBadge{font-size:9px!important;padding:5px 6px!important;margin-top:5px!important}
 
  main.dungeonRunScreen .dungeonRun>.card:not(.adventureLog),
@@ -2301,7 +2304,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.50";
+const APP_VERSION="1.51";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
