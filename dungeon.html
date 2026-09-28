@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.59 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.60 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.58</title>
+<title>フレンダダンジョン Ver1.60</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2649,6 +2649,393 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .postRunHomeBtn{flex:
 }
 
 </style>
+
+<style id="v160-onescreen-fixes">
+/* Ver1.60: compact team filters + strict one-screen recovery/battle layouts. */
+
+/* ---------- Team selection: filters consume one compact band ---------- */
+body[data-dungeon-page="team"] .teamTools{
+  margin:0 0 4px!important;
+  padding:4px!important;
+  border-radius:10px!important;
+}
+body[data-dungeon-page="team"] .teamQuickActions{
+  margin:0 0 3px!important;
+  gap:4px!important;
+}
+body[data-dungeon-page="team"] .teamQuickActions button{
+  min-height:28px!important;
+  padding:4px 7px!important;
+  font-size:9px!important;
+  line-height:1.1!important;
+}
+body[data-dungeon-page="team"] .autoTeamNotice{
+  margin:0 0 3px!important;
+  padding:4px 7px!important;
+  min-height:0!important;
+  max-height:25px!important;
+  border-radius:8px!important;
+  font-size:8px!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+body[data-dungeon-page="team"] .commonPickFilter{
+  margin:0!important;
+  padding:3px 4px!important;
+  border-radius:9px!important;
+}
+body[data-dungeon-page="team"] .commonPickFilterGrid{
+  display:grid!important;
+  grid-template-columns:minmax(155px,1.45fr) repeat(5,minmax(72px,.8fr))!important;
+  gap:3px!important;
+  align-items:end!important;
+}
+body[data-dungeon-page="team"] .commonPickFilter label{
+  gap:1px!important;
+  min-width:0!important;
+}
+body[data-dungeon-page="team"] .commonPickFilter label>span{
+  font-size:7px!important;
+  line-height:1!important;
+}
+body[data-dungeon-page="team"] .commonPickFilter input,
+body[data-dungeon-page="team"] .commonPickFilter select{
+  height:29px!important;
+  min-height:29px!important;
+  padding:3px 5px!important;
+  border-radius:7px!important;
+  font-size:8.5px!important;
+  line-height:1!important;
+}
+body[data-dungeon-page="team"] .commonPickFilterFoot{
+  min-height:19px!important;
+  margin-top:2px!important;
+  gap:5px!important;
+}
+body[data-dungeon-page="team"] .commonPickFilterCount{
+  font-size:7.5px!important;
+}
+body[data-dungeon-page="team"] .commonPickFilterReset{
+  min-height:22px!important;
+  padding:3px 7px!important;
+  font-size:7.5px!important;
+  border-radius:999px!important;
+}
+
+@media(max-width:700px){
+  body[data-dungeon-page="team"] .teamSelectCard{
+    grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto!important;
+    gap:2px!important;
+    padding:6px!important;
+  }
+  body[data-dungeon-page="team"] .teamSelectCard>.sectionTitle{
+    font-size:17px!important;
+    margin:0 0 2px!important;
+  }
+  body[data-dungeon-page="team"] .teamThemeHint{
+    padding:4px 6px!important;
+    min-height:0!important;
+  }
+  body[data-dungeon-page="team"] .teamSelectCard>.muted{
+    display:none!important;
+  }
+  body[data-dungeon-page="team"] .frendaSelectedStrip{
+    margin:2px 0 3px!important;
+    gap:4px!important;
+  }
+  body[data-dungeon-page="team"] .frendaSelectedSlot{
+    min-height:48px!important;
+    padding:3px!important;
+    border-radius:10px!important;
+  }
+  body[data-dungeon-page="team"] .frendaSelectedSlot.filled{
+    grid-template-columns:34px minmax(0,1fr)!important;
+    gap:4px!important;
+  }
+  body[data-dungeon-page="team"] .frendaSelectedSlot img{
+    width:34px!important;
+    height:44px!important;
+  }
+  body[data-dungeon-page="team"] .frendaSelectedInfo b{font-size:8.5px!important}
+  body[data-dungeon-page="team"] .frendaSelectedRemove{
+    width:22px!important;height:22px!important;min-width:22px!important;
+    padding:0!important;font-size:14px!important;
+  }
+  body[data-dungeon-page="team"] .teamTools{
+    padding:3px!important;
+    margin-bottom:3px!important;
+  }
+  body[data-dungeon-page="team"] .teamQuickActions button{
+    min-height:27px!important;
+    font-size:8.5px!important;
+    padding:3px 4px!important;
+  }
+  body[data-dungeon-page="team"] .autoTeamNotice{
+    max-height:20px!important;
+    padding:3px 5px!important;
+    font-size:7px!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilter{
+    padding:3px!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilterGrid{
+    grid-template-columns:1.2fr 1fr 1fr!important;
+    gap:3px!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilter label>span{
+    display:none!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilter input,
+  body[data-dungeon-page="team"] .commonPickFilter select{
+    height:27px!important;
+    min-height:27px!important;
+    padding:2px 4px!important;
+    font-size:8px!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilterFoot{
+    margin-top:1px!important;
+    min-height:18px!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilterCount,
+  body[data-dungeon-page="team"] .commonPickFilterReset{font-size:7px!important}
+  body[data-dungeon-page="team"] .commonPickFilterReset{
+    min-height:20px!important;padding:2px 6px!important;
+  }
+  body[data-dungeon-page="team"] .teamSelectGrid{
+    padding-top:1px!important;
+  }
+  body[data-dungeon-page="team"] .teamCompareActions{
+    margin-top:2px!important;
+    padding:3px!important;
+  }
+  body[data-dungeon-page="team"] .teamCompareActions button{
+    min-height:29px!important;
+    padding:4px 3px!important;
+    font-size:8.5px!important;
+  }
+}
+
+@media(min-width:701px){
+  body[data-dungeon-page="team"] .teamTools{
+    padding:4px 5px!important;
+  }
+  body[data-dungeon-page="team"] .teamQuickActions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body[data-dungeon-page="team"] .commonPickFilterGrid{
+    grid-template-columns:minmax(180px,1.5fr) repeat(5,minmax(82px,.72fr))!important;
+  }
+}
+
+/* ---------- Adventure log should never steal the play area ---------- */
+main.dungeonRunScreen .adventureLog:not([open]){
+  flex:0 0 28px!important;
+  min-height:28px!important;
+  max-height:28px!important;
+  overflow:hidden!important;
+}
+main.dungeonRunScreen .adventureLog:not([open]) .adventureLogSummary{
+  min-height:28px!important;
+  height:28px!important;
+  padding:3px 8px!important;
+}
+main.dungeonRunScreen .adventureLog:not([open]) .sectionTitle{font-size:9px!important}
+main.dungeonRunScreen[data-run-scene="battle"] .adventureLog,
+main.dungeonRunScreen[data-run-scene="heal"] .adventureLog{
+  display:none!important;
+}
+
+/* ---------- Recovery point: compact party + two choices always visible ---------- */
+main.dungeonRunScreen[data-run-scene="heal"]>.dungeonRun{
+  overflow:hidden!important;
+}
+main.dungeonRunScreen[data-run-scene="heal"] .dungeonRun>.card:not(.adventureLog){
+  min-height:0!important;
+  overflow:hidden!important;
+}
+main.dungeonRunScreen[data-run-scene="heal"] .rewardGrid{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-rows:1fr!important;
+  gap:7px!important;
+}
+main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn{
+  height:100%!important;
+  min-height:0!important;
+  padding:8px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn>span{font-size:clamp(28px,6vh,44px)!important}
+main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn b{font-size:clamp(13px,2.3vh,18px)!important}
+main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn small{font-size:clamp(8px,1.5vh,11px)!important}
+
+@media(max-width:700px){
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview>.card{
+    padding:5px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview>.card .sectionTitle{
+    font-size:12px!important;
+    margin:0 0 3px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .teamStrip{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:3px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .teamMini{
+    padding:3px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .teamMiniHead{
+    display:block!important;
+    text-align:center!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .teamMini img{
+    width:34px!important;
+    height:46px!important;
+    margin:0 auto 2px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .teamMini b{font-size:8.5px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .teamMini small{font-size:6.5px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .buffs{display:none!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .runOverview .hpbar{height:6px!important;margin-top:2px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .dungeonRun>.card:not(.adventureLog){
+    padding:7px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .dungeonRun>.card:not(.adventureLog)>.sectionTitle{
+    font-size:17px!important;
+    margin:0 0 5px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="heal"] .rewardGrid{gap:5px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn{padding:6px 4px!important;border-radius:12px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn>span{font-size:28px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn b{font-size:12px!important}
+  main.dungeonRunScreen[data-run-scene="heal"] .rewardBtn small{font-size:7.5px!important;line-height:1.2!important}
+}
+
+/* ---------- Battle: keep all controls and both combatants inside one viewport ---------- */
+main.battleScreen>.dungeonRun,
+main.battleScreen .battleMainCard{
+  min-height:0!important;
+  overflow:hidden!important;
+}
+main.battleScreen .battleMainCard{
+  flex:1 1 auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  padding:4px!important;
+}
+main.battleScreen .battleStageTeam{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  margin:0 0 3px!important;
+}
+main.battleScreen .battleArena{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  padding:5px!important;
+}
+main.battleScreen .battleGrid{
+  width:100%!important;
+  min-height:0!important;
+  align-items:center!important;
+}
+main.battleScreen .battleControlHint,
+main.battleScreen .battleMessage,
+main.battleScreen .battleArena>.battleLog{display:none!important}
+
+@media(max-width:700px){
+  main.battleScreen .runOverview{
+    margin-bottom:3px!important;
+  }
+  main.battleScreen .combatTeamStrip{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:3px!important;
+  }
+  main.battleScreen .combatTeamStrip .teamMini{
+    padding:3px!important;
+    border-radius:8px!important;
+  }
+  main.battleScreen .combatTeamStrip .teamMiniHead{
+    display:grid!important;
+    grid-template-columns:38px minmax(0,1fr)!important;
+    gap:4px!important;
+    align-items:center!important;
+    text-align:left!important;
+  }
+  main.battleScreen .combatTeamStrip .teamMini img{
+    width:38px!important;
+    height:50px!important;
+    margin:0!important;
+  }
+  main.battleScreen .combatTeamStrip .teamMini b{
+    font-size:8.5px!important;
+    line-height:1.05!important;
+  }
+  main.battleScreen .combatTeamStrip .teamMini small{
+    font-size:6.2px!important;
+    line-height:1.05!important;
+  }
+  main.battleScreen .combatTeamStrip .teamTypeRow,
+  main.battleScreen .combatTeamStrip .battleMiniStats,
+  main.battleScreen .combatTeamStrip .battleMiniMove,
+  main.battleScreen .combatTeamStrip .battleMiniGrowth,
+  main.battleScreen .combatTeamStrip .buffs{
+    display:none!important;
+  }
+  main.battleScreen .combatTeamStrip .hpbar{
+    height:6px!important;
+    margin-top:2px!important;
+  }
+  main.battleScreen .battleGrid{
+    grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr)!important;
+    gap:5px!important;
+  }
+  main.battleScreen .fighterBox{
+    padding:5px!important;
+    border-radius:10px!important;
+  }
+  main.battleScreen .fighterBox img{
+    width:auto!important;
+    height:min(205px,28svh)!important;
+    max-width:100%!important;
+    object-fit:contain!important;
+  }
+  main.battleScreen .fighterBox h3{
+    font-size:13px!important;
+    line-height:1.05!important;
+    margin:2px 0 0!important;
+  }
+  main.battleScreen .fighterBox>small{font-size:7px!important}
+  main.battleScreen .fighterBox .hpbar{height:8px!important;margin-top:2px!important}
+  main.battleScreen .fighterBox>b{font-size:8px!important}
+  main.battleScreen .battleVsColumn{padding-top:0!important;gap:5px!important}
+  main.battleScreen .vs{width:40px!important;height:40px!important;font-size:11px!important}
+  main.battleScreen .vs small{font-size:6px!important}
+}
+
+@media(min-width:701px){
+  main.battleScreen .adventureLog{display:none!important}
+  main.battleScreen .battleStageTeam{margin-bottom:4px!important}
+  main.battleScreen .battleArena{padding:6px 8px!important}
+  main.battleScreen .fighterBox img{
+    width:auto!important;
+    height:min(235px,32vh)!important;
+    max-width:100%!important;
+    object-fit:contain!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.58</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
@@ -2667,7 +3054,7 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .postRunHomeBtn{flex:
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.59";
+const APP_VERSION="1.60";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
