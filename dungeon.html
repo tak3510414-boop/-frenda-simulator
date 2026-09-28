@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.55 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.56 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.55</title>
+<title>フレンダダンジョン Ver1.56</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2329,10 +2329,122 @@ main.battleScreen .battleRun .battleLogDetails{display:none!important}
  body:has(main.dungeonRunScreen [data-slot-stop="1"]) main.dungeonRunScreen .captureSlotCard #ballStop{font-size:20px!important;padding:8px 14px!important}
 }
 
+
+/* Ver1.56: one-screen-first layout. Long collections scroll inside their panel, not the page. */
+body.dungeonOneScreen{height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+body.dungeonOneScreen>header{flex:0 0 auto}
+body.dungeonOneScreen>main#app:not(.dungeonRunScreen){flex:1 1 auto;min-height:0;overflow:hidden;width:min(1180px,calc(100vw - 20px));margin:0 auto;padding-top:8px;padding-bottom:8px}
+body.dungeonOneScreen>main#app:not(.dungeonRunScreen)>.card{max-height:100%;margin-bottom:0}
+
+/* Dungeon chooser: 10 dungeons collapse to one selector + five difficulty buttons. */
+body[data-dungeon-page="dungeons"] #app{display:flex;min-height:0}
+body[data-dungeon-page="dungeons"] .dungeonSelectScreen{width:100%;height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;overflow:hidden;padding:14px}
+.dungeonSelectHead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dungeonSelectHead .sectionTitle{margin:0}
+#dungeonThemeSelect{min-width:min(440px,55vw);max-width:100%;padding:10px 12px;border:2px solid #9dc4d6;border-radius:12px;background:#fff;color:#17384c;font-size:15px;font-weight:900}
+.dungeonFocusCard{min-height:0;border:2px solid #9dc9d9;border-radius:20px;background:linear-gradient(160deg,#f8fdff,#e9f6fb);padding:18px;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:12px;align-content:center}
+.dungeonFocusCard.locked{filter:grayscale(.55);opacity:.68}
+.dungeonFocusHero{display:flex;align-items:center;justify-content:center;gap:22px;text-align:left;min-height:0}
+.dungeonFocusIcon{font-size:clamp(70px,14vh,132px);line-height:1}
+.dungeonFocusHero h2{margin:0 0 8px;font-size:clamp(26px,4vh,42px)}
+.dungeonFocusHero small{display:block;margin-top:10px;color:#647782;font-size:12px;font-weight:800}
+.dungeonFocusTypes .badge{font-size:11px;padding:5px 9px}
+.dungeonFocusDiffs{margin:0;gap:8px}
+.dungeonFocusDiffs .diffBtn{min-height:76px;font-size:17px;border-radius:13px}
+.dungeonFocusDiffs .diffStat{font-size:10px}.dungeonFocusDiffs .diffHint{font-size:9px}
+.dungeonNextUnlock{text-align:center;color:#60727d;font-size:11px;font-weight:850}
+.dungeonSelectLegend{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;color:#687983;font-size:10px;font-weight:850}
+.dungeonSelectLegend .lg{width:11px;height:11px;border-radius:3px;display:inline-block;margin-left:7px}.dungeonSelectLegend .lg.cleared{background:#226dd0}.dungeonSelectLegend .lg.inprogress{background:#f39a2c}.dungeonSelectLegend .lg.open{background:#52b9ef}.dungeonSelectLegend .lg.locked{background:#bfc8cd}
+
+/* Team selection: shell stays fixed; only the pick list scrolls. */
+body[data-dungeon-page="team"] #app{display:flex;min-height:0}
+body[data-dungeon-page="team"] .teamSelectCard{height:100%;min-height:0;width:100%;display:grid;grid-template-rows:auto auto auto auto minmax(0,1fr) auto;overflow:hidden;padding:11px}
+body[data-dungeon-page="team"] .teamSelectCard>.sectionTitle{margin:0 0 5px}
+body[data-dungeon-page="team"] .teamThemeHint{padding:7px 9px;gap:2px}
+body[data-dungeon-page="team"] .teamThemeHint small{display:none}
+body[data-dungeon-page="team"] .teamSelectCard>.muted{margin:4px 0!important;font-size:9px}
+body[data-dungeon-page="team"] .frendaSelectedStrip{margin:4px 0 6px;gap:5px}
+body[data-dungeon-page="team"] .frendaSelectedSlot{min-height:64px;padding:4px}
+body[data-dungeon-page="team"] .frendaSelectedSlot.filled{grid-template-columns:38px minmax(0,1fr);gap:5px}
+body[data-dungeon-page="team"] .frendaSelectedSlot img{width:38px;height:52px}
+body[data-dungeon-page="team"] .teamTools{margin:0 0 6px;padding:6px}
+body[data-dungeon-page="team"] .teamQuickActions{margin-bottom:5px}
+body[data-dungeon-page="team"] .teamQuickActions button{padding:6px 7px}
+body[data-dungeon-page="team"] .teamFilterRow input,body[data-dungeon-page="team"] .teamFilterRow select{padding:6px 7px;font-size:10px}
+body[data-dungeon-page="team"] .teamListSummary{margin-top:2px}
+body[data-dungeon-page="team"] .teamSelectGrid{min-height:0;overflow:auto;overscroll-behavior:contain;padding:2px 2px 8px;align-content:start}
+body[data-dungeon-page="team"] .teamCompareActions{position:static;bottom:auto;margin-top:5px;padding:5px;box-shadow:none}
+body[data-dungeon-page="team"] .teamCompareActions button{padding:7px 8px;font-size:10px}
+
+/* Eggs and training are fixed screens with an internal list viewport. */
+body[data-dungeon-page="eggs"] #app,body[data-dungeon-page="training"] #app{display:flex;min-height:0}
+.eggsScreen,.trainingScreen{height:100%;min-height:0;width:100%;overflow:hidden;display:grid;gap:8px;padding:12px}
+.eggsScreen{grid-template-rows:auto auto minmax(0,1fr)}
+.eggsScreenHead,.trainingScreenHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.eggsScreenHead .sectionTitle,.trainingScreenHead .sectionTitle{margin:0}
+.eggInfoCompact,.trainingQuickGuide{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:7px 9px;border-radius:11px;background:#eef7fb;border:1px solid #c8e0eb;color:#426474;font-size:10px;font-weight:800}
+.eggInfoCompact span,.trainingQuickGuide span{padding:2px 5px}
+.eggGridViewport,.trainingGridViewport{min-height:0;overflow:auto;overscroll-behavior:contain;align-content:start;padding:2px 3px 8px}
+.compactEggCard{padding:8px}.compactEggCard .eggVisual{width:48px;height:60px;margin-bottom:3px}.compactEggCard b{margin:3px 0;font-size:11px}.compactEggCard small{font-size:8px}.compactEggCard .eggProgress{height:7px;margin:5px 0}
+.trainingScreen{grid-template-rows:auto auto auto minmax(0,1fr)}
+.trainingScreen>.evoLoadNote{margin:0;padding:4px 7px;font-size:8px}
+
+/* Run / result scenes: never use document scrolling; scene-specific inner logs/lists may scroll. */
+body[data-dungeon-page^="run-"] #app,body[data-dungeon-page="postrun"] #app{overflow:hidden!important}
+body[data-dungeon-page="postrun"] #app>.card{max-height:100%;overflow:hidden}
+body[data-dungeon-page="postrun"] .discardGrid{max-height:100%;overflow:auto;overscroll-behavior:contain}
+
+@media(max-width:700px){
+ body.dungeonOneScreen>main#app:not(.dungeonRunScreen){width:100%;padding:6px}
+ body[data-dungeon-page="dungeons"] .dungeonSelectScreen{padding:9px;gap:7px;grid-template-rows:auto minmax(0,1fr) auto}
+ .dungeonSelectHead{display:grid;grid-template-columns:1fr;gap:5px}.dungeonSelectHead .sectionTitle{font-size:18px}
+ #dungeonThemeSelect{width:100%;min-width:0;padding:8px 9px;font-size:13px}
+ .dungeonFocusCard{padding:10px;gap:7px;border-radius:16px;grid-template-rows:minmax(0,1fr) auto auto}
+ .dungeonFocusHero{gap:11px;justify-content:flex-start}.dungeonFocusIcon{font-size:clamp(52px,10vh,78px)}.dungeonFocusHero h2{font-size:22px;margin-bottom:4px}.dungeonFocusHero small{font-size:9px;margin-top:5px}.dungeonFocusTypes .badge{font-size:8px;padding:3px 5px}
+ .dungeonFocusDiffs{gap:3px}.dungeonFocusDiffs .diffBtn{min-height:52px;padding:5px 1px;font-size:12px}.dungeonFocusDiffs .diffStat{font-size:7px}.dungeonFocusDiffs .diffHint{font-size:6px}.dungeonNextUnlock{font-size:8px}.dungeonSelectLegend{font-size:7px;gap:3px}.dungeonSelectLegend .lg{width:8px;height:8px;margin-left:4px}
+ body[data-dungeon-page="team"] .teamSelectCard{padding:7px;grid-template-rows:auto auto auto auto minmax(0,1fr) auto}
+ body[data-dungeon-page="team"] .teamThemeHint{padding:5px 6px}.teamThemeHint b{font-size:11px}.teamThemeHint span{font-size:8px}
+ body[data-dungeon-page="team"] .frendaSelectedSlot{min-height:55px}.frendaSelectedInfo small{display:none}.frendaSelectedSlot.empty small{display:none}
+ body[data-dungeon-page="team"] .teamTools{padding:4px}.teamQuickActions button{font-size:9px!important;padding:5px!important}.teamFilterRow{grid-template-columns:1.4fr .8fr 1fr;gap:3px}.teamFilterRow input,.teamFilterRow select{font-size:8px!important;padding:5px!important}
+ body[data-dungeon-page="team"] .teamSelectGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.teamSelectGrid .pickCard small:nth-of-type(n+3){display:none}.teamSelectGrid .recommendReason{display:none!important}
+ body[data-dungeon-page="team"] .teamCompareActions{display:grid;grid-template-columns:.7fr 1fr 1.25fr;gap:4px}
+ .eggsScreen,.trainingScreen{padding:8px;gap:5px}.eggInfoCompact,.trainingQuickGuide{font-size:8px;padding:5px 6px;gap:3px}.eggGridViewport{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.compactEggCard{padding:6px}.compactEggCard .eggVisual{width:40px;height:50px}.compactEggCard b{font-size:10px}
+ .trainingGridViewport{grid-template-columns:1fr!important;gap:6px}.trainingGridViewport .trainCard{padding:7px}.trainingGridViewport .trainTop{grid-template-columns:56px 1fr;gap:6px}.trainingGridViewport .trainTop img{width:56px}.trainingGridViewport .trainingCombinedMini{padding:4px 5px}.trainingGridViewport .trainingPointBalance{margin:5px 0 2px;padding:6px}.trainingGridViewport .trainStatTable{gap:3px;margin-top:4px}.trainingGridViewport .trainStatRow button{padding:5px 3px}
+}
+@media(max-height:720px) and (min-width:701px){
+ body[data-dungeon-page="dungeons"] .dungeonFocusIcon{font-size:76px}.dungeonFocusHero h2{font-size:28px}.dungeonFocusDiffs .diffBtn{min-height:58px}
+ body[data-dungeon-page="team"] .frendaSelectedSlot{min-height:54px}.frendaSelectedSlot img{width:36px;height:50px}.teamThemeHint small{display:none}.teamSelectCard>.muted{display:none}.teamTools{padding:4px!important}.teamQuickActions{margin-bottom:4px!important}.teamSelectGrid .pickCard small:nth-of-type(n+3){display:none}
+}
+
+
+/* Ver1.56: post-run result also stays inside one viewport. */
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3{height:100%!important;max-height:100%!important;margin:0 auto!important;padding:10px!important;gap:6px!important;overflow:hidden!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHero3{flex:0 0 auto;padding:9px 11px!important;gap:9px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeroIcon3{font-size:38px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeroTitle3 h2{font-size:25px!important;margin:1px 0 4px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeroMeta3 span{padding:3px 6px!important;font-size:9px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultSave3{display:none!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHighlights3{flex:0 0 auto;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHighlight3{display:block!important;padding:7px 8px!important;min-height:0!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHighlight3 .rhLabel{font-size:8px!important;margin-bottom:2px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHighlight3 .rhValue{font-size:12px!important;line-height:1.15!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeadline3{flex:0 0 auto;font-size:13px!important;margin:0!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossWrap{flex:1 1 auto;min-height:0;overflow:hidden!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable{height:100%;min-width:0!important;table-layout:fixed!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable th,body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable td{padding:6px 5px!important;font-size:10px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .postRunHomeBtn{flex:0 0 auto;min-height:44px!important;font-size:16px!important}
+@media(max-width:700px){
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3{width:100%!important;padding:7px!important;gap:5px!important;border-radius:14px!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHero3{padding:7px 8px!important;border-radius:11px!important}.postRunSummary.resultV3 .resultHeroTitle3 .resultKicker3{font-size:7px!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeroIcon3{font-size:30px!important}.postRunSummary.resultV3 .resultHeroTitle3 h2{font-size:20px!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeroMeta3{gap:3px!important}.postRunSummary.resultV3 .resultHeroMeta3 span{font-size:7px!important;padding:2px 4px!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHighlights3{gap:3px!important}.postRunSummary.resultV3 .resultHighlight3{padding:5px!important;border-radius:9px!important}.postRunSummary.resultV3 .resultHighlight3 .rhLabel{font-size:6.5px!important}.postRunSummary.resultV3 .resultHighlight3 .rhValue{font-size:9px!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultHeadline3{font-size:11px!important}.postRunSummary.resultV3 .resultCrossTable th,.postRunSummary.resultV3 .resultCrossTable td{padding:5px 3px!important;font-size:8.5px!important}.postRunSummary.resultV3 .resultCrossTable thead th{font-size:7.5px!important}.postRunSummary.resultV3 .postRunHomeBtn{min-height:40px!important;font-size:14px!important}
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.55</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.56</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -2348,7 +2460,7 @@ main.battleScreen .battleRun .battleLogDetails{display:none!important}
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.55";
+const APP_VERSION="1.56";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -2598,6 +2710,7 @@ migrateState();
 let screen="home";
 let teamSelection=[];
 let currentDungeon={id:"forest",difficulty:1};
+let dungeonBrowseId="forest";
 let message="";
 let autoBattleRunning=false;
 let EVO_INDEX=null,EVO_BY_NAME=new Map(),EVO_BY_NO=new Map(),EVO_PARENTS=new Map(),evoReady=false,evoLoadError=false;
@@ -2951,7 +3064,7 @@ function homeHero(){
  const s=getStat("forest",1),clears=totalDungeonClears();
  return `<div class="homeHeroPanel"><div class="homeHeroTitle"><div class="kicker">FRENDA DUNGEON</div><h1>ダンジョンを攻略しよう！</h1></div><div class="homeStats"><span><b>B${s.deepest}F</b><small>森★1 最深</small></span><span><b>${clears}</b><small>クリア</small></span><span><b>${state.owned.length}</b><small>所持ピック</small></span><span><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></span></div></div>`
 }
-function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;if(isDungeonRunScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
+function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","team","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
 dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();return}if(state.run){renderRun();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="eggs")return renderEggs();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_value)>0?r.speed_value:(Number(r.speed_level)>0?`Lv${r.speed_level}`:"-");const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
@@ -2984,7 +3097,17 @@ function renderHome(){
  const sb=document.getElementById("soundModeBtn");if(sb)sb.onclick=cycleSoundMode
 }
 function unlockCondition(did,diff){const ti=THEME_ORDER.indexOf(did);if(diff===1)return ti<=0?"最初から解放":`${THEMES[THEME_ORDER[ti-1]].name} ★1をクリア`;return `${THEMES[did].name} ★${diff-1}をクリア`}
-function renderDungeonList(){const cards=THEME_ORDER.map(did=>{const th=THEMES[did],any=unlockedDifficulties(did).length>0;const diffs=[1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff);let cls="locked",hint="🔒";if(ok){if(isCurrent){cls="currentRun";hint="攻略中"}else if(Number(st.clears||0)>0){cls="cleared";hint="クリア"}else if(Number(st.deepest||0)>0){cls="inprogress";hint="攻略中"}else{cls="open";hint="挑戦可"}}return `<button class="diffBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"}>★${diff}${ok?`<span class="diffStat">B${st.deepest} / ${st.clears}回</span><span class="diffHint">${hint}</span>`:`<span class="diffStat">🔒</span><span class="diffHint">LOCK</span>`}</button>`}).join("");const nextLocked=[1,2,3,4,5].find(d=>!unlocked(did,d));return `<div class="dungeonCard ${any?"":"locked"}"><div class="row spread"><h3>${th.icon} ${esc(th.name)}</h3>${any?'':'<span class="badge">LOCK</span>'}</div><div>${th.types.map(t=>`<span class="badge">${esc(t)}</span>`).join(" ")}</div><div class="muted" style="margin-top:7px">${any?"難易度を選択してください。":`解放条件：${esc(unlockCondition(did,1))}`}</div><div class="diffRow">${diffs}</div>${any&&nextLocked?`<div class="muted" style="margin-top:6px">次：${esc(unlockCondition(did,nextLocked))}</div>`:""}</div>`}).join("");app.innerHTML=`<div class="card"><div class="sectionTitle">ダンジョン選択</div><div class="notice" style="margin-bottom:10px">各ダンジョンの★1を初クリアすると、同じダンジョンの★2と次のダンジョン★1が解放されます。<br><b>色の見方：</b>青＝クリア済み／オレンジ＝攻略中／水色＝挑戦可／灰色＝未解放</div><div class="dungeonGrid">${cards}</div></div>`;app.querySelectorAll("[data-dungeon-id]").forEach(b=>b.onclick=()=>{const did=b.dataset.dungeonId,diff=Number(b.dataset.diff);if(!unlocked(did,diff))return;currentDungeon={id:did,difficulty:diff};const avail=state.owned.map(o=>o.id).filter(id=>!isExpeditionLocked(id));teamSelection=avail.length<=3?avail:[];teamAutoNotice="";screen="team";render()})}
+function renderDungeonList(){
+ const firstOpen=THEME_ORDER.find(id=>unlockedDifficulties(id).length>0)||THEME_ORDER[0];
+ if(!THEME_ORDER.includes(dungeonBrowseId))dungeonBrowseId=firstOpen;
+ const did=dungeonBrowseId,th=THEMES[did],any=unlockedDifficulties(did).length>0;
+ const diffs=[1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff);let cls="locked",hint="🔒";if(ok){if(isCurrent){cls="currentRun";hint="攻略中"}else if(Number(st.clears||0)>0){cls="cleared";hint="クリア"}else if(Number(st.deepest||0)>0){cls="inprogress";hint="攻略中"}else{cls="open";hint="挑戦可"}}return `<button class="diffBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"}>★${diff}${ok?`<span class="diffStat">B${st.deepest} / ${st.clears}回</span><span class="diffHint">${hint}</span>`:`<span class="diffStat">🔒</span><span class="diffHint">LOCK</span>`}</button>`}).join("");
+ const nextLocked=[1,2,3,4,5].find(d=>!unlocked(did,d));
+ const options=THEME_ORDER.map(id=>{const t=THEMES[id],open=unlockedDifficulties(id).length>0;return `<option value="${esc(id)}" ${id===did?"selected":""}>${open?"":"🔒 "}${t.icon} ${esc(t.name)}</option>`}).join("");
+ app.innerHTML=`<div class="card dungeonSelectScreen"><div class="dungeonSelectHead"><div class="sectionTitle">ダンジョン選択</div><select id="dungeonThemeSelect" aria-label="ダンジョンを選択">${options}</select></div><div class="dungeonFocusCard ${any?"":"locked"}"><div class="dungeonFocusHero"><div class="dungeonFocusIcon">${th.icon}</div><div><h2>${esc(th.name)}</h2><div class="dungeonFocusTypes">${th.types.map(t=>`<span class="badge">${esc(t)}</span>`).join(" ")}</div><small>${any?"挑戦する難易度を選んでください。":`🔒 解放条件：${esc(unlockCondition(did,1))}`}</small></div></div><div class="diffRow dungeonFocusDiffs">${diffs}</div>${any&&nextLocked?`<div class="dungeonNextUnlock">次の解放：${esc(unlockCondition(did,nextLocked))}</div>`:""}</div><div class="dungeonSelectLegend"><span class="lg cleared"></span>クリア済み <span class="lg inprogress"></span>攻略中 <span class="lg open"></span>挑戦可 <span class="lg locked"></span>未解放</div></div>`;
+ const sel=document.getElementById("dungeonThemeSelect");if(sel)sel.onchange=()=>{dungeonBrowseId=sel.value;renderDungeonList()};
+ app.querySelectorAll("[data-dungeon-id]").forEach(b=>b.onclick=()=>{const did=b.dataset.dungeonId,diff=Number(b.dataset.diff);if(!unlocked(did,diff))return;currentDungeon={id:did,difficulty:diff};const avail=state.owned.map(o=>o.id).filter(id=>!isExpeditionLocked(id));teamSelection=avail.length<=3?avail:[];teamAutoNotice="";screen="team";render()})
+}
 function compareTypeText(r){return [r?.type1,r?.type2].filter(Boolean).join(" / ")||"-"}
 function compareStatCell(base,boost=0){const b=Number(base)||0,v=b+Number(boost||0);return `${v}${boost?`<span class="boost">元${b} +${boost}</span>`:""}`}
 function ownedStatGraphHTML(label,base,boost=0,scale=200,valueText=null,baseText=null){const b=Math.max(0,Number(base)||0),g=Math.max(0,Number(boost)||0),max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),gw=Math.min(Math.max(0,100-bw),g/max*100),v=valueText??String(b+g),bt=baseText??String(b);return `<div class="ownedStatGraph"><div class="ownedStatGraphLabel">${esc(label)}</div><div class="ownedStatBar"><span class="ownedStatBarBase" style="width:${bw}%"></span><span class="ownedStatBarGrowth" style="width:${gw}%"></span></div><div class="ownedStatGraphValue">${esc(v)}</div><small>初期 ${esc(bt)}${g?` ＋ 成長 ${g}`:""}</small></div>`}
@@ -3752,7 +3875,7 @@ function bindRunHandlers(){
 let ballTimer=null,ballCursor=0;
 function stopBallTimer(){if(ballTimer){clearInterval(ballTimer);ballTimer=null}}
 function startBallSlotAnimation(stopBtn){stopBallTimer();ballCursor=0;const cells=[...app.querySelectorAll("[data-ball-cell]")];const paint=()=>cells.forEach((c,i)=>c.classList.toggle("active",i===ballCursor));paint();ballTimer=setInterval(()=>{ballCursor=(ballCursor+1)%cells.length;paint()},65);stopBtn.onclick=()=>{if(!ballTimer)return;stopBallTimer();const slipRoll=Math.random(),slip=slipRoll<.15?0:slipRoll<.60?1:2;const final=(ballCursor+slip)%cells.length;cells.forEach((c,i)=>c.classList.toggle("active",i===final));stopBtn.disabled=true;const ballKey=state.run.capture.balls[final];setTimeout(()=>resolveCapture(ballKey),450)}}
-function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="notice" style="margin-bottom:10px">階を1つ進むたび、所持中のすべての卵に孵化ポイント+1。必要ポイントに達した卵は、クリア・全滅・撤退時に孵化します。<br><b>所持上限：</b>初期2個、ダンジョンクリア累計10回ごとに+1（最大10個）。現在${clears}回クリア${next?`／次の上限アップまであと${Math.max(0,next-clears)}回`:"／上限最大"}。</div>${state.eggs.length?`<div class="eggGrid">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.kind==="type"?"タイプのみ判明":"中身は孵化まで不明"}</small><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ダンジョンのボスを倒すと、卵ルーレットで1個獲得できます。</p></div>`}</div>`}
+function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card eggsScreen"><div class="eggsScreenHead"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="eggInfoCompact"><span>階を進むと <b>全卵 +1pt</b></span><span>クリア累計 <b>${clears}回</b></span><span>${next?`上限UPまで <b>あと${Math.max(0,next-clears)}回</b>`:"所持上限は最大"}</span></div>${state.eggs.length?`<div class="eggGrid eggGridViewport">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard compactEggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary eggEmptyState">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ボスを倒すと卵ルーレットで獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
 function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
 function renderOwned(){
@@ -3954,7 +4077,7 @@ ${evolutionCandidatesSectionHTML(id)}
 }
 function renderTraining(){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
- app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="notice" style="margin-bottom:8px"><b>ポイントの役割を分けました。</b><br><b>🌱 育成ポイント</b>：進化専用。進化先が残っているポケモンの重複入手や成長のアメなどで獲得し、進化系統で共有します。能力強化には使いません。<br><b>🏋️ 特訓ポイント</b>：能力強化専用。EXP ${EXP_TO_DRILL}ごとに+1。進化先がないポケモンは、本来育成Pを得る重複入手・成長のアメでも特訓P+1になります。1PでHP・攻撃・防御のどれか+${TRAINING_STEP}、各能力最大+${PERMANENT_BOOST_MAX}です。</div>${evoLoadNote()}<div class="ownedGrid">${actionable.length?actionable.map(o=>{
+ app.innerHTML=`<div class="card trainingScreen"><div class="trainingScreenHead"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="trainingQuickGuide"><span>🌱 育成P＝<b>進化</b></span><span>🏋️ 特訓P＝<b>HP・攻撃・防御</b></span><span>1Pで <b>+${TRAINING_STEP}</b>（各+${PERMANENT_BOOST_MAX}まで）</span></div>${evoLoadNote()}<div class="ownedGrid trainingGridViewport">${actionable.length?actionable.map(o=>{
   const r=rec(o.id),pb=state.permanentBoosts[o.id]||(state.permanentBoosts[o.id]={hp:0,atk:0,def:0}),xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),kept=trainingStickyIds.has(o.id);
   const rows=[["hp","HP"],["atk","攻撃"],["def","防御"]].map(([k,label])=>`<div class="trainStatRow drillOnly"><span>${label}+${pb[k]||0}</span><button class="drillSpend" data-train-id="${esc(o.id)}" data-stat="${k}" ${dp<=0||Number(pb[k]||0)>=PERMANENT_BOOST_MAX?"disabled":""}>特訓P 1 → +${TRAINING_STEP}</button></div>`).join("");
   return `<div class="trainCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 育成P ${gp}・進化専用</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ 絆Lv${bondLevelFor(o.id)}</span></div></div></div><div class="trainingPointBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓ポイント</span><strong>残り ${dp}</strong><small>P</small></div><div class="trainStatTable">${rows}</div>${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（育成P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし：重複・成長のアメは特訓Pに加算</div>'}</div>`
@@ -4047,4 +4170,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-28 / Ver1.55 -->
+<!-- Updated: 2026-09-28 / Ver1.56 -->
