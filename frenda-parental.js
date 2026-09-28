@@ -1,7 +1,7 @@
-/* FRENDA_PARENTAL_VERSION: 1.2 / Updated: 2026-09-28 */
+/* FRENDA_PARENTAL_VERSION: 1.3 / Updated: 2026-09-28 */
 (()=>{
 "use strict";
-const VERSION="1.2";
+const VERSION="1.3";
 const SETTINGS_KEY="frenda:parental:settings:v1";
 const PIN_KEY="frenda:parental:pin:v1";
 const UNLOCK_KEY="frenda:parental:unlockUntil:v1";
@@ -41,18 +41,33 @@ function holidaySet(y){
 function isHoliday(date=new Date()){return holidaySet(date.getFullYear()).has(dateKey(date))}
 function minOf(t){const m=String(t||"00:00").match(/^(\d{1,2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):0}
 function inRange(now,start,end){const n=now.getHours()*60+now.getMinutes(),a=minOf(start),b=minOf(end);if(a===b)return true;return a<b?n>=a&&n<b:n>=a||n<b}
-function nextAllowedLabel(c){const end=String(c.end||"08:30");return `${end}から遊べます`}
+function isOvernight(start,end){const a=minOf(start),b=minOf(end);return a>b}
+function restrictionRuleDate(now,start,end){
+ const d=new Date(now);
+ if(isOvernight(start,end)){
+  const n=now.getHours()*60+now.getMinutes(),b=minOf(end);
+  if(n<b)d.setDate(d.getDate()-1);
+ }
+ return d
+}
+function nextAllowedLabel(c,now=new Date()){
+ const end=String(c.end||"08:30"),a=minOf(c.start),b=minOf(c.end),n=now.getHours()*60+now.getMinutes();
+ if(a>b&&n>=a)return `明日${end}から遊べます`;
+ return `${end}から遊べます`
+}
 function check(app,now=new Date()){
  if(app!=="dungeon")return {blocked:false};
  const until=temporaryUnlockUntil();if(until>Date.now())return {blocked:false,temporary:true,unlockUntil:until};
  const s=ensure(),c=s.dungeon;if(!c.enabled)return {blocked:false};
- if(!(c.days||[]).map(Number).includes(now.getDay()))return {blocked:false};
- const holiday=isHoliday(now);if(c.allowHolidays&&holiday)return {blocked:false,holiday:true};
- const blocked=inRange(now,c.start,c.end);return {blocked,holiday,start:c.start,end:c.end,nextLabel:blocked?nextAllowedLabel(c):""}
+ const blocked=inRange(now,c.start,c.end);if(!blocked)return {blocked:false,start:c.start,end:c.end};
+ const ruleDate=restrictionRuleDate(now,c.start,c.end);
+ if(!(c.days||[]).map(Number).includes(ruleDate.getDay()))return {blocked:false,start:c.start,end:c.end,ruleDate:dateKey(ruleDate)};
+ const holiday=isHoliday(now);if(c.allowHolidays&&holiday)return {blocked:false,holiday:true,start:c.start,end:c.end,ruleDate:dateKey(ruleDate)};
+ return {blocked:true,holiday,start:c.start,end:c.end,ruleDate:dateKey(ruleDate),overnight:isOvernight(c.start,c.end),nextLabel:nextAllowedLabel(c,now)}
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderBlockedPage({app="dungeon"}={}){
- const r=check(app),root=document.body;root.innerHTML=`<main style="min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(180deg,#10283a,#184b67);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif"><section style="width:min(520px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 46px #0005;color:#193343;text-align:center"><div style="font-size:54px">🔒</div><h1 style="font-size:23px;margin:8px 0">今はダンジョンで遊べません</h1><p style="font-size:13px;line-height:1.7;color:#617887">平日の朝は、おでかけ探索を楽しもう！<br>${escapeHtml(r.nextLabel||"")}</p><a href="expedition.html" style="display:block;text-decoration:none;margin-top:14px;padding:13px;border-radius:13px;background:#1682ae;color:#fff;font-weight:900">🧭 おでかけ探索へ</a><details style="margin-top:16px;text-align:left"><summary style="cursor:pointer;font-size:12px;font-weight:900;color:#506a79">管理者の一時解除</summary><div style="margin-top:10px"><input id="parentPin" type="password" inputmode="numeric" placeholder="管理者PIN" style="width:100%;padding:12px;border:1px solid #bdccd5;border-radius:10px;font:inherit"><button id="parentUnlock" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#657784;color:#fff;font-weight:900">30分だけ解除</button><div id="parentMsg" style="font-size:11px;color:#a44242;margin-top:7px"></div></div></details></section></main>`;
+ const r=check(app),root=document.body;root.innerHTML=`<main style="min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(180deg,#10283a,#184b67);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif"><section style="width:min(520px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 46px #0005;color:#193343;text-align:center"><div style="font-size:54px">🔒</div><h1 style="font-size:23px;margin:8px 0">今はダンジョンで遊べません</h1><p style="font-size:13px;line-height:1.7;color:#617887">設定された利用禁止時間です。<br>${escapeHtml(r.nextLabel||"")}</p><a href="expedition.html" style="display:block;text-decoration:none;margin-top:14px;padding:13px;border-radius:13px;background:#1682ae;color:#fff;font-weight:900">🧭 おでかけ探索へ</a><details style="margin-top:16px;text-align:left"><summary style="cursor:pointer;font-size:12px;font-weight:900;color:#506a79">管理者の一時解除</summary><div style="margin-top:10px"><input id="parentPin" type="password" inputmode="numeric" placeholder="管理者PIN" style="width:100%;padding:12px;border:1px solid #bdccd5;border-radius:10px;font:inherit"><button id="parentUnlock" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#657784;color:#fff;font-weight:900">30分だけ解除</button><div id="parentMsg" style="font-size:11px;color:#a44242;margin-top:7px"></div></div></details></section></main>`;
  const b=document.getElementById("parentUnlock");if(b)b.onclick=async()=>{const pin=document.getElementById("parentPin").value,msg=document.getElementById("parentMsg");if(await verifyPin(pin)){setTemporaryUnlock(30);grantAdminSession(30);location.reload()}else msg.textContent="PINが違います。"}
 }
 window.FRENDA_PARENTAL=Object.freeze({VERSION,ensure,save,eyeCareSettings,resetEyeTimer,hasPin,setPin,verifyPin,check,isHoliday,holidaySet,setTemporaryUnlock,grantAdminSession,revokeAdminSession,isAdminAuthenticated,renderBlockedPage});
