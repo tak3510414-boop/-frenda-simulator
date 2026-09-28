@@ -1,19 +1,66 @@
-/* FRENDA_PARENTAL_VERSION: 1.3 / Updated: 2026-09-28 */
+/* FRENDA_PARENTAL_VERSION: 1.4 / Updated: 2026-09-29 */
 (()=>{
 "use strict";
-const VERSION="1.3";
+const VERSION="1.4";
 const SETTINGS_KEY="frenda:parental:settings:v1";
 const PIN_KEY="frenda:parental:pin:v1";
 const UNLOCK_KEY="frenda:parental:unlockUntil:v1";
 const AUTH_KEY="frenda:admin:auth:v1";
 const EYE_TIMER_KEY="frenda_eye_timer_v1";
-const DEFAULTS=Object.freeze({version:2,dungeon:{enabled:true,days:[1,2,3,4,5],start:"05:00",end:"08:30",allowHolidays:true},eyeCare:{playMinutes:30,restMinutes:10}});
+const DAY_RULES={
+  0:{open:"00:00",close:"23:59"},
+  1:{open:"08:30",close:"23:59"},
+  2:{open:"08:30",close:"23:59"},
+  3:{open:"08:30",close:"23:59"},
+  4:{open:"08:30",close:"23:59"},
+  5:{open:"08:30",close:"23:59"},
+  6:{open:"00:00",close:"23:59"}
+};
+const DEFAULTS=Object.freeze({
+  version:3,
+  dungeon:{enabled:true,weekly:DAY_RULES,holiday:{enabled:true,open:"00:00",close:"23:59"}},
+  eyeCare:{playMinutes:30,restMinutes:10}
+});
 const clone=v=>JSON.parse(JSON.stringify(v));
 function readJSON(k,f=null){try{const x=localStorage.getItem(k);return x===null?clone(f):JSON.parse(x)}catch{return clone(f)}}
 function saveJSON(k,v){localStorage.setItem(k,JSON.stringify(v));return v}
 function clampInt(v,min,max,fallback){const n=Math.round(Number(v));return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback}
-function ensure(){const x=readJSON(SETTINGS_KEY,null),s=x&&typeof x==="object"?x:clone(DEFAULTS);s.version=2;s.dungeon=Object.assign({},DEFAULTS.dungeon,s.dungeon||{});s.dungeon.days=[...new Set((s.dungeon.days||[]).map(Number).filter(n=>n>=0&&n<=6))];s.eyeCare=Object.assign({},DEFAULTS.eyeCare,s.eyeCare||{});s.eyeCare.playMinutes=clampInt(s.eyeCare.playMinutes,1,180,30);s.eyeCare.restMinutes=clampInt(s.eyeCare.restMinutes,1,120,10);return s}
-function save(s){s=s&&typeof s==="object"?s:ensure();s.version=2;s.eyeCare=Object.assign({},DEFAULTS.eyeCare,s.eyeCare||{});s.eyeCare.playMinutes=clampInt(s.eyeCare.playMinutes,1,180,30);s.eyeCare.restMinutes=clampInt(s.eyeCare.restMinutes,1,120,10);return saveJSON(SETTINGS_KEY,s)}
+function validTime(v,fallback="00:00"){const s=String(v||"");return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(s)?s:fallback}
+function minOf(t){const m=String(t||"00:00").match(/^(\d{1,2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):0}
+function normalizeRule(r,fallback){const f=fallback||{open:"00:00",close:"23:59"};return {open:validTime(r?.open,f.open),close:validTime(r?.close,f.close)}}
+function migrateLegacyDungeon(d){
+  const base=clone(DEFAULTS.dungeon);
+  if(!d||typeof d!=="object")return base;
+  if(d.weekly){
+    base.enabled=d.enabled!==false;
+    for(let i=0;i<7;i++)base.weekly[i]=normalizeRule(d.weekly[i]??d.weekly[String(i)],DAY_RULES[i]);
+    const h=d.holiday||{};base.holiday={enabled:h.enabled!==false,open:validTime(h.open,"00:00"),close:validTime(h.close,"23:59")};
+    return base;
+  }
+  // v2以前の「禁止開始〜禁止終了」を、v3の「朝から利用〜夜から停止」に変換する。
+  const selected=new Set((d.days||[]).map(Number));
+  const start=validTime(d.start,"05:00"),end=validTime(d.end,"08:30"),a=minOf(start),b=minOf(end);
+  const converted=a>b?{open:end,close:start}:{open:end,close:"23:59"};
+  base.enabled=d.enabled!==false;
+  for(let i=0;i<7;i++)base.weekly[i]=selected.has(i)?clone(converted):{open:"00:00",close:"23:59"};
+  base.holiday=d.allowHolidays!==false?{enabled:true,open:"00:00",close:"23:59"}:{enabled:false,open:"00:00",close:"23:59"};
+  return base;
+}
+function ensure(){
+  const x=readJSON(SETTINGS_KEY,null),s=x&&typeof x==="object"?x:clone(DEFAULTS);
+  s.version=3;s.dungeon=migrateLegacyDungeon(s.dungeon);
+  s.eyeCare=Object.assign({},DEFAULTS.eyeCare,s.eyeCare||{});
+  s.eyeCare.playMinutes=clampInt(s.eyeCare.playMinutes,1,180,30);
+  s.eyeCare.restMinutes=clampInt(s.eyeCare.restMinutes,1,120,10);
+  return s
+}
+function save(s){
+  s=s&&typeof s==="object"?s:ensure();s.version=3;s.dungeon=migrateLegacyDungeon(s.dungeon);
+  s.eyeCare=Object.assign({},DEFAULTS.eyeCare,s.eyeCare||{});
+  s.eyeCare.playMinutes=clampInt(s.eyeCare.playMinutes,1,180,30);
+  s.eyeCare.restMinutes=clampInt(s.eyeCare.restMinutes,1,120,10);
+  return saveJSON(SETTINGS_KEY,s)
+}
 function eyeCareSettings(){const e=ensure().eyeCare;return {playMinutes:e.playMinutes,restMinutes:e.restMinutes}}
 function resetEyeTimer(){try{localStorage.removeItem(EYE_TIMER_KEY)}catch{}}
 function hasPin(){return !!localStorage.getItem(PIN_KEY)}
@@ -39,36 +86,45 @@ function holidaySet(y){
  return set
 }
 function isHoliday(date=new Date()){return holidaySet(date.getFullYear()).has(dateKey(date))}
-function minOf(t){const m=String(t||"00:00").match(/^(\d{1,2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):0}
-function inRange(now,start,end){const n=now.getHours()*60+now.getMinutes(),a=minOf(start),b=minOf(end);if(a===b)return true;return a<b?n>=a&&n<b:n>=a||n<b}
-function isOvernight(start,end){const a=minOf(start),b=minOf(end);return a>b}
-function restrictionRuleDate(now,start,end){
- const d=new Date(now);
- if(isOvernight(start,end)){
-  const n=now.getHours()*60+now.getMinutes(),b=minOf(end);
-  if(n<b)d.setDate(d.getDate()-1);
+function scheduleForDate(date=new Date(),settings=null){
+ const c=(settings?.dungeon||settings||ensure().dungeon),holiday=isHoliday(date);
+ if(holiday&&c.holiday?.enabled!==false){const r=normalizeRule(c.holiday,{open:"00:00",close:"23:59"});return {...r,holiday:true,source:"holiday",day:date.getDay()}}
+ const r=normalizeRule(c.weekly?.[date.getDay()]??c.weekly?.[String(date.getDay())],DAY_RULES[date.getDay()]);return {...r,holiday,source:"weekday",day:date.getDay()}
+}
+function allowedByRule(now,rule){
+ const n=now.getHours()*60+now.getMinutes(),a=minOf(rule.open),b=minOf(rule.close);
+ if(a===b)return true;
+ return a<b?(n>=a&&n<b):(n>=a||n<b)
+}
+function nextAllowedDate(now,c){
+ const start=new Date(now);
+ for(let offset=0;offset<=8;offset++){
+  const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+offset,0,0,0,0),r=scheduleForDate(d,c),a=minOf(r.open),b=minOf(r.close);
+  const intervals=a===b?[[0,1440]]:a<b?[[a,b]]:[[0,b],[a,1440]];
+  for(const [lo,hi] of intervals){if(hi<=lo)continue;const cand=new Date(d);cand.setMinutes(lo,0,0);if(cand>now)return cand}
  }
- return d
+ return null
 }
 function nextAllowedLabel(c,now=new Date()){
- const end=String(c.end||"08:30"),a=minOf(c.start),b=minOf(c.end),n=now.getHours()*60+now.getMinutes();
- if(a>b&&n>=a)return `明日${end}から遊べます`;
- return `${end}から遊べます`
+ const d=nextAllowedDate(now,c);if(!d)return "";
+ const hm=`${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+ const today=dateKey(d)===dateKey(now),tom=new Date(now);tom.setDate(tom.getDate()+1);
+ if(today)return `今日${hm}から遊べます`;
+ if(dateKey(d)===dateKey(tom))return `明日${hm}から遊べます`;
+ return `${d.getMonth()+1}/${d.getDate()} ${hm}から遊べます`
 }
 function check(app,now=new Date()){
  if(app!=="dungeon")return {blocked:false};
  const until=temporaryUnlockUntil();if(until>Date.now())return {blocked:false,temporary:true,unlockUntil:until};
  const s=ensure(),c=s.dungeon;if(!c.enabled)return {blocked:false};
- const blocked=inRange(now,c.start,c.end);if(!blocked)return {blocked:false,start:c.start,end:c.end};
- const ruleDate=restrictionRuleDate(now,c.start,c.end);
- if(!(c.days||[]).map(Number).includes(ruleDate.getDay()))return {blocked:false,start:c.start,end:c.end,ruleDate:dateKey(ruleDate)};
- const holiday=isHoliday(now);if(c.allowHolidays&&holiday)return {blocked:false,holiday:true,start:c.start,end:c.end,ruleDate:dateKey(ruleDate)};
- return {blocked:true,holiday,start:c.start,end:c.end,ruleDate:dateKey(ruleDate),overnight:isOvernight(c.start,c.end),nextLabel:nextAllowedLabel(c,now)}
+ const rule=scheduleForDate(now,c),blocked=!allowedByRule(now,rule);
+ if(!blocked)return {blocked:false,...rule};
+ return {blocked:true,...rule,nextLabel:nextAllowedLabel(c,now)}
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderBlockedPage({app="dungeon"}={}){
- const r=check(app),root=document.body;root.innerHTML=`<main style="min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(180deg,#10283a,#184b67);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif"><section style="width:min(520px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 46px #0005;color:#193343;text-align:center"><div style="font-size:54px">🔒</div><h1 style="font-size:23px;margin:8px 0">今はダンジョンで遊べません</h1><p style="font-size:13px;line-height:1.7;color:#617887">設定された利用禁止時間です。<br>${escapeHtml(r.nextLabel||"")}</p><a href="expedition.html" style="display:block;text-decoration:none;margin-top:14px;padding:13px;border-radius:13px;background:#1682ae;color:#fff;font-weight:900">🧭 おでかけ探索へ</a><details style="margin-top:16px;text-align:left"><summary style="cursor:pointer;font-size:12px;font-weight:900;color:#506a79">管理者の一時解除</summary><div style="margin-top:10px"><input id="parentPin" type="password" inputmode="numeric" placeholder="管理者PIN" style="width:100%;padding:12px;border:1px solid #bdccd5;border-radius:10px;font:inherit"><button id="parentUnlock" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#657784;color:#fff;font-weight:900">30分だけ解除</button><div id="parentMsg" style="font-size:11px;color:#a44242;margin-top:7px"></div></div></details></section></main>`;
+ const r=check(app),root=document.body;root.innerHTML=`<main style="min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(180deg,#10283a,#184b67);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif"><section style="width:min(520px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 46px #0005;color:#193343;text-align:center"><div style="font-size:54px">🔒</div><h1 style="font-size:23px;margin:8px 0">今はダンジョンで遊べません</h1><p style="font-size:13px;line-height:1.7;color:#617887">設定された利用時間外です。<br>${escapeHtml(r.nextLabel||"")}</p><a href="expedition.html" style="display:block;text-decoration:none;margin-top:14px;padding:13px;border-radius:13px;background:#1682ae;color:#fff;font-weight:900">🧭 おでかけ探索へ</a><details style="margin-top:16px;text-align:left"><summary style="cursor:pointer;font-size:12px;font-weight:900;color:#506a79">管理者の一時解除</summary><div style="margin-top:10px"><input id="parentPin" type="password" inputmode="numeric" placeholder="管理者PIN" style="width:100%;padding:12px;border:1px solid #bdccd5;border-radius:10px;font:inherit"><button id="parentUnlock" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#657784;color:#fff;font-weight:900">30分だけ解除</button><div id="parentMsg" style="font-size:11px;color:#a44242;margin-top:7px"></div></div></details></section></main>`;
  const b=document.getElementById("parentUnlock");if(b)b.onclick=async()=>{const pin=document.getElementById("parentPin").value,msg=document.getElementById("parentMsg");if(await verifyPin(pin)){setTemporaryUnlock(30);grantAdminSession(30);location.reload()}else msg.textContent="PINが違います。"}
 }
-window.FRENDA_PARENTAL=Object.freeze({VERSION,ensure,save,eyeCareSettings,resetEyeTimer,hasPin,setPin,verifyPin,check,isHoliday,holidaySet,setTemporaryUnlock,grantAdminSession,revokeAdminSession,isAdminAuthenticated,renderBlockedPage});
+window.FRENDA_PARENTAL=Object.freeze({VERSION,ensure,save,eyeCareSettings,resetEyeTimer,hasPin,setPin,verifyPin,check,isHoliday,holidaySet,scheduleForDate,setTemporaryUnlock,grantAdminSession,revokeAdminSession,isAdminAuthenticated,renderBlockedPage});
 })();
