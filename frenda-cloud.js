@@ -1,7 +1,7 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.4";
+const CLOUD_VERSION="1.5";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -41,29 +41,18 @@ function clearReloadGuard(){try{sessionStorage.removeItem(reloadGuardKey())}catc
 function setReloadGuard(sig){try{sessionStorage.setItem(reloadGuardKey(),sig)}catch{}}
 function getReloadGuard(){try{return sessionStorage.getItem(reloadGuardKey())||""}catch{return ""}}
 
+function renderHeaderButton(text,kind=""){
+  if(!button)return;
+  const compact=!!cfg?.compactButton;
+  if(session){
+    if(conflictPending){button.textContent=compact?"☁️!":"☁️ 要選択";button.dataset.kind="syncing";button.title="ローカルとクラウドのどちらを使うか選択してください"}
+    else{button.textContent=compact?(kind==="error"?"☁️!":"☁️✓"):"☁️ ログイン中";button.dataset.kind=kind==="error"?"error":"";button.title=kind==="error"?text:"クラウド同期はバックグラウンドで自動実行中"}
+  }else{button.textContent=compact?(kind==="error"?"☁️!":"☁️"):"☁️ 未ログイン";button.dataset.kind=kind==="error"?"error":"";button.title=kind==="error"?text:"クリックしてログイン"}
+}
 function setStatus(text,kind=""){
   statusText=text;
-  // Background sync is intentionally quiet. The header button shows only the
-  // stable account state so auto-save/pull does not flicker between messages.
-  if(button){
-    if(session){
-      if(conflictPending){
-        button.textContent="☁️ 要選択";
-        button.dataset.kind="syncing";
-        button.title="ローカルとクラウドのどちらを使うか選択してください";
-      }else{
-        button.textContent="☁️ ログイン中";
-        button.dataset.kind=kind==="error"?"error":"";
-        button.title=kind==="error"?text:"クラウド同期はバックグラウンドで自動実行中";
-      }
-    }else{
-      button.textContent="☁️ 未ログイン";
-      button.dataset.kind=kind==="error"?"error":"";
-      button.title=kind==="error"?text:"クリックしてログイン";
-    }
-  }
-  const s=modal?.querySelector("#frendaCloudStatus");
-  if(s)s.textContent=text;
+  renderHeaderButton(text,kind);
+  const s=modal?.querySelector("#frendaCloudStatus");if(s)s.textContent=text;
 }
 function injectStyles(){
   if(document.getElementById("frendaCloudStyles"))return;
@@ -71,6 +60,7 @@ function injectStyles(){
   .frendaCloudBtn{background:#eaf4ff!important;color:#17384d!important;border:1px solid #b9d7eb!important;border-radius:999px!important;padding:7px 10px!important;font-size:11px!important;font-weight:900!important;white-space:nowrap!important;box-shadow:none!important}
   .frendaCloudBtn[data-kind="error"]{background:#fff0f0!important;color:#9a2e2e!important;border-color:#e9b8b8!important}
   .frendaCloudBtn[data-kind="syncing"]{background:#fff8dd!important;color:#6f5700!important;border-color:#e5d48a!important}
+  .frendaCloudBtn.compact{width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:50%!important;font-size:15px!important;display:inline-grid!important;place-items:center!important;line-height:1!important}
   .frendaCloudOverlay{position:fixed;inset:0;z-index:3000;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px}
   .frendaCloudPanel{width:min(430px,100%);background:#fff;color:#17202a;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0007;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
   .frendaCloudHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaCloudHead b{font-size:18px}.frendaCloudClose{background:#edf2f7!important;color:#243747!important;padding:8px 10px!important}
@@ -83,7 +73,7 @@ function injectStyles(){
 function injectButton(){
   if(button)return;
   injectStyles();
-  button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="☁️ アカウント";button.title="アカウント状態を確認中";button.onclick=openModal;
+  button=document.createElement("button");button.type="button";button.className=`frendaCloudBtn${cfg?.compactButton?" compact":""}`;button.textContent=cfg?.compactButton?"☁️":"☁️ アカウント";button.title="アカウント状態を確認中";button.onclick=openModal;
   const host=document.querySelector(".headerBtns")||document.querySelector("header")||document.body;
   host.appendChild(button);
 }
@@ -339,4 +329,4 @@ async function init(options){
 
 window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,localSyncTime:readLocalSyncTime};
 })();
-// Updated: 2026-09-27 18:59:00 JST / Cloud Ver1.4
+// Updated: 2026-09-28 / Cloud Ver1.5
