@@ -1,7 +1,7 @@
-/* FRENDA_UI_VERSION: 1.4 / Updated: 2026-09-28 */
+/* FRENDA_UI_VERSION: 1.5 / Updated: 2026-09-28 */
 (()=>{
 "use strict";
-const VERSION="1.4";
+const VERSION="1.5";
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function formatRemain(ms,doneText="帰還できます"){
  if(ms<=0)return doneText;
@@ -40,7 +40,33 @@ function createEyeCare({data,onTick,extraStorageKeys=[]}={}){
  function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
  function ensureOverlay(state){
   const d=durations();let ov=document.getElementById("eyeRestOverlay");
-  if(!ov){ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown"></div><div class="eyeRestRule" id="eyeRestRule"></div></div>`;document.body.appendChild(ov)}
+  if(!ov){
+   ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";
+   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestAdminTrigger">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown"></div><div class="eyeRestRule" id="eyeRestRule"></div><div id="eyeRestAdmin" hidden style="margin:18px auto 0;width:min(360px,100%);padding:14px;border:1px solid #ffffff35;border-radius:16px;background:#06151dcc;text-align:left"><div style="font-size:13px;font-weight:1000;margin-bottom:8px">🔐 管理者解除</div><input id="eyeRestAdminPin" type="password" inputmode="numeric" autocomplete="off" placeholder="管理者PIN" style="box-sizing:border-box;width:100%;padding:11px 12px;border:1px solid #91b5c5;border-radius:10px;background:#fff;color:#173340;font:inherit"><div style="display:flex;gap:8px;margin-top:9px"><button type="button" id="eyeRestAdminUnlock" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2e9f72;color:#fff;font-weight:1000">今回だけ解除</button><button type="button" id="eyeRestAdminCancel" style="padding:10px 12px;border:1px solid #ffffff44;border-radius:10px;background:#ffffff12;color:#fff;font-weight:900">閉じる</button></div><div id="eyeRestAdminMsg" style="min-height:16px;margin-top:7px;font-size:11px;color:#ffd2d2"></div></div></div>`;
+   document.body.appendChild(ov);
+   const trigger=ov.querySelector("#eyeRestAdminTrigger"),panel=ov.querySelector("#eyeRestAdmin"),pin=ov.querySelector("#eyeRestAdminPin"),msg=ov.querySelector("#eyeRestAdminMsg");
+   let holdTimer=null;
+   const cancelHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null}};
+   const openAdmin=()=>{cancelHold();if(!locked)return;panel.hidden=false;pin.value="";msg.textContent="";setTimeout(()=>pin.focus(),0)};
+   const beginHold=e=>{if(!locked)return;cancelHold();holdTimer=setTimeout(openAdmin,3000);try{trigger.setPointerCapture?.(e.pointerId)}catch{}};
+   trigger.style.userSelect="none";trigger.style.webkitUserSelect="none";trigger.style.touchAction="none";
+   trigger.addEventListener("pointerdown",beginHold);
+   trigger.addEventListener("pointerup",cancelHold);
+   trigger.addEventListener("pointercancel",cancelHold);
+   trigger.addEventListener("lostpointercapture",cancelHold);
+   trigger.addEventListener("contextmenu",e=>e.preventDefault());
+   ov.querySelector("#eyeRestAdminCancel").onclick=()=>{panel.hidden=true;pin.value="";msg.textContent=""};
+   const unlock=async()=>{
+    const P=window.FRENDA_PARENTAL;msg.textContent="";
+    if(!P?.hasPin?.()){msg.textContent="管理者PINが設定されていません。";return}
+    let ok=false;try{ok=await P.verifyPin(pin.value)}catch{}
+    if(!ok){msg.textContent="PINが違います。";pin.select();return}
+    if(!window.confirm("今回の休憩を解除しますか？"))return;
+    fresh(Date.now());panel.hidden=true;pin.value="";tick();
+   };
+   ov.querySelector("#eyeRestAdminUnlock").onclick=unlock;
+   pin.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();unlock()}});
+  }
   const txt=ov.querySelector("#eyeRestText");if(txt)txt.innerHTML=state?.reason==="manual"?`自分から${d.restMinutes}分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。`:`${d.playMinutes}分遊びました。最低${d.restMinutes}分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。`;
   const rule=ov.querySelector("#eyeRestRule");if(rule)rule.textContent=`${d.restMinutes}分休んだら → また${d.playMinutes}分遊べます`;
   return ov;
