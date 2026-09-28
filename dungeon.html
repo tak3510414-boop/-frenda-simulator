@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.65</title>
+<title>フレンダダンジョン Ver1.66</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -3139,7 +3139,7 @@ body[data-dungeon-page="team"] #startRunBtn:disabled{opacity:.38!important;box-s
 }
 
 
-/* Ver1.65: adventure log removed. Fighter selection must fit in one viewport. */
+/* Ver1.66: adventure log removed. Fighter selection must fit in one viewport. */
 .adventureLog,#adventureLogDetails{display:none!important}
 @media(max-width:700px){
   /* Fighter selection: save vertical space in the status area. */
@@ -3189,7 +3189,7 @@ body[data-dungeon-page="team"] #startRunBtn:disabled{opacity:.38!important;box-s
 
 
 <style id="v165-battle-card-info">
-/* Ver1.65: use the full three-card area for useful battle status. */
+/* Ver1.66: use the full three-card area for useful battle status. */
 main.battleScreen .combatTeamStrip .teamMini{
   display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
   min-height:0!important;overflow:hidden!important;
@@ -3237,9 +3237,41 @@ main.battleScreen .combatTeamStrip .battleMiniGrowth .bondChip{padding:1px 3px!i
   main.battleScreen .combatTeamStrip .battleMiniGrowth .bondChip{font-size:5.2px!important}
 }
 </style>
+
+<style id="v166-choosefighter-graphs">
+/* Ver1.66: use the empty fighter-selection card space for stat graphs. */
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceCard .teamMiniHead{justify-content:flex-start!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceCard .teamMiniInfo{width:100%!important;min-width:0!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;flex:1 1 auto!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats{display:flex!important;flex-direction:column!important;min-height:0!important;flex:1 1 auto!important;margin-top:6px!important;padding-top:5px!important;border-top:1px solid #c9dce6!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px 7px!important;margin:0!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphHead{font-size:8px!important;line-height:1.05!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphHead b{font-size:8px!important;display:flex!important;align-items:center!important;gap:3px!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphHead em{font-style:normal!important;color:#e56f25!important;font-size:7px!important;font-weight:1000!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphBar{height:7px!important;margin-top:2px!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniLegend{display:flex!important;justify-content:center!important;gap:3px 7px!important;flex-wrap:wrap!important;margin-top:6px!important;font-size:6.5px!important;line-height:1!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniLegend i{width:7px!important;height:7px!important;margin-right:2px!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceMove{margin-top:6px!important;padding:4px 5px!important;border-radius:7px!important;background:#eef5fb!important;color:#34566a!important;font-size:7px!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceGrowth{display:flex!important;align-items:center!important;justify-content:center!important;gap:3px 7px!important;flex-wrap:wrap!important;margin-top:5px!important;font-size:6.7px!important;line-height:1.05!important;color:#5b4b70!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceGrowth span{white-space:nowrap!important}
+main.chooseFighterScreen .combatTeamStrip .fighterChoiceGrowth .bondChip{padding:2px 4px!important;font-size:6.7px!important}
+@media(max-width:700px){
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceCard .teamMiniHead{height:auto!important;flex:1 1 auto!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceCard .teamMiniInfo{flex:1 1 auto!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats{margin-top:4px!important;padding-top:4px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphGrid{grid-template-columns:1fr!important;gap:4px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphHead{font-size:7px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphHead b{font-size:7px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphHead em{font-size:6px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniGraphBar{height:6px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniLegend{font-size:5.8px!important;gap:2px 5px!important;margin-top:4px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceMove{font-size:6.2px!important;margin-top:4px!important;padding:3px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceGrowth{font-size:5.8px!important;gap:2px 4px!important;margin-top:4px!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceGrowth .bondChip{font-size:5.8px!important;padding:1px 3px!important}
+}
+</style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.65</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.66</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3255,7 +3287,7 @@ main.battleScreen .combatTeamStrip .battleMiniGrowth .bondChip{padding:1px 3px!i
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.65";
+const APP_VERSION="1.66";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -4389,7 +4421,9 @@ function teamMiniHTML(t,i){
        cls=`teamMini ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${bondProc?" bondProc":""}${appealCls}`,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:"";
  if(!inBattle){
-  return `<div class="${cls}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)} / EXP ${xp}/100<br><span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div></div>`
+  const fighterChoice=m?.action==="fighter",moveName=CORE.skillName(r)||r.move||"未登録";
+  const fighterExtra=fighterChoice?`<div class="fighterChoiceStats">${battleMiniGraphGridHTML(t,r,pb)}<div class="fighterChoiceMove"><b>${esc(r.move_type||"-")}</b> ${esc(moveName)}</div><div class="fighterChoiceGrowth"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span><span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div>`:"";
+  return `<div class="${cls}${fighterChoice?" fighterChoiceCard":""}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${fighterChoice?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}</div>${fighterExtra}</div></div></div>`
  }
  const moveName=CORE.skillName(r)||r.move||"未登録",
        typeBadges=[r.type1,r.type2].filter(Boolean).map(x=>`<span class="badge">${esc(x)}</span>`).join(""),
@@ -4970,4 +5004,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-29 / Ver1.65 -->
+<!-- Updated: 2026-09-29 / Ver1.66 -->
