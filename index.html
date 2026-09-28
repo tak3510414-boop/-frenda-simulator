@@ -13,8 +13,8 @@ body{min-height:100dvh;color:#fff;overflow-x:hidden;background:#071923}
 body::before{content:"";position:fixed;inset:0;background:url("home-bg.webp") center center / cover no-repeat;z-index:-3}
 body::after{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(4,15,24,.25) 0%,rgba(5,18,29,.45) 22%,rgba(6,18,29,.72) 60%,rgba(5,16,26,.9) 100%),radial-gradient(circle at 50% 10%,rgba(143,214,255,.28) 0,rgba(16,44,64,.08) 28%,rgba(7,25,35,.76) 72%);z-index:-2}
 .wrap{width:min(920px,100%);margin:auto;padding:calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
-.hero{padding:28px 20px 18px;text-align:center;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:linear-gradient(180deg,rgba(9,30,43,.42),rgba(8,26,38,.68));backdrop-filter:blur(8px);box-shadow:0 18px 46px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);margin-bottom:18px}
-.logo{font-size:58px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+.hero{position:relative;padding:28px 20px 18px;text-align:center;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:linear-gradient(180deg,rgba(9,30,43,.42),rgba(8,26,38,.68));backdrop-filter:blur(8px);box-shadow:0 18px 46px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);margin-bottom:18px}
+.randomPick{width:96px;height:96px;margin:0 auto 5px;padding:5px;border-radius:24px;border:1px solid rgba(255,255,255,.25);background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.06));box-shadow:0 10px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.18);display:grid;place-items:center;overflow:hidden;cursor:pointer}.randomPick img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(0,0,0,.28))}.randomPickFallback{font-size:54px}.homeCloudHost{position:absolute;right:14px;top:14px;z-index:2}.homeCloudHost .frendaCloudBtn.compact{background:rgba(239,248,255,.92)!important;box-shadow:0 5px 16px rgba(0,0,0,.22)!important}
 h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-shadow:0 4px 16px rgba(0,0,0,.36)}
 .sub{font-size:12px;color:#d7ebf8;font-weight:800;letter-spacing:.08em}
 .lead{margin:12px auto 0;max-width:700px;font-size:13px;line-height:1.7;color:#e9f5fb}
@@ -25,22 +25,41 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 .app b{display:block;font-size:20px;letter-spacing:.01em}.app small{display:block;color:#dcf0fb;font-weight:700;margin-top:5px;line-height:1.5;font-size:12px}.ver{display:inline-block;margin-top:8px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.12);color:#eef9ff;font-size:11px;font-weight:900;letter-spacing:.04em}.arrow{font-size:28px;color:#fff;font-weight:900;opacity:.75;padding:0 4px}
 .note{margin:18px 4px 0;padding:14px 16px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:rgba(255,255,255,.08);color:#d6ebf5;font-size:12px;line-height:1.7;text-align:center;backdrop-filter:blur(6px)}.adminLink{display:inline-flex;align-items:center;justify-content:center;margin-top:14px;padding:9px 13px;border-radius:12px;text-decoration:none;color:#eaf6fc;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:900}.adminWrap{text-align:center}.adminWrap[hidden]{display:none!important}.adminRevealHint{margin-top:8px;font-size:10px;color:#ffe7a3;animation:fadeHint 2.6s ease forwards}@keyframes fadeHint{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}.credit{margin-top:12px;text-align:center;font-size:10px;color:rgba(230,244,251,.75)}
 .testRibbon{margin:0 0 14px;padding:10px 12px;border-radius:16px;background:rgba(255,214,91,.22);border:1px solid rgba(255,214,91,.42);font-size:12px;line-height:1.6;color:#fff5c6;text-align:center}
-@media(max-width:640px){.wrap{padding-left:12px;padding-right:12px}.hero{padding:22px 14px 16px;border-radius:22px}.logo{font-size:48px}h1{font-size:32px}.lead{font-size:12px}.app{grid-template-columns:72px minmax(0,1fr) 18px;padding:12px 11px;gap:10px;border-radius:18px}.icon{width:72px;height:72px;border-radius:18px}.app b{font-size:16px}.app small{font-size:10px}.ver{font-size:10px;margin-top:6px}.arrow{font-size:20px}}
+@media(max-width:640px){.wrap{padding-left:12px;padding-right:12px}.hero{padding:22px 14px 16px;border-radius:22px}.randomPick{width:82px;height:82px;border-radius:21px}.randomPickFallback{font-size:46px}h1{font-size:32px}.lead{font-size:12px}.app{grid-template-columns:72px minmax(0,1fr) 18px;padding:12px 11px;gap:10px;border-radius:18px}.icon{width:72px;height:72px;border-radius:18px}.app b{font-size:16px}.app small{font-size:10px}.ver{font-size:10px;margin-top:6px}.arrow{font-size:20px}}
 </style>
 </head>
 <script>
 (()=>{const KEY="frenda:test:storageBackup:v2";let raw=null;try{raw=sessionStorage.getItem(KEY)}catch{}if(!raw)return;let data=null;try{data=JSON.parse(raw)}catch{}if(!data||typeof data!=="object")return;const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith("frenda:")||k.startsWith("frenda_")))keys.push(k)}for(const k of keys)localStorage.removeItem(k);for(const [k,v] of Object.entries(data))if(v!==null&&v!==undefined)localStorage.setItem(k,String(v));try{sessionStorage.removeItem(KEY)}catch{}})();
 </script>
 <body><main class="wrap">
-<section class="hero"><div class="logo">🎴</div><h1 id="adminRevealTarget">ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div><div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div></section>
+<section class="hero"><div class="homeCloudHost" id="homeCloudHost"></div><button type="button" class="randomPick" id="randomPickBtn" title="タップで別のピック" aria-label="ランダムピック。タップで変更"><span class="randomPickFallback" id="randomPickFallback">🎴</span><img id="randomPickImage" alt="" hidden></button><h1 id="adminRevealTarget">ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div><div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div></section>
 <section class="apps" id="apps">
-  <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver">Ver6.91</span></div><div class="arrow">›</div></a>
-  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.webp" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.39</span></div><div class="arrow">›</div></a>
-  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.webp" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.28</span></div><div class="arrow">›</div></a>
+  <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver">Ver6.92</span></div><div class="arrow">›</div></a>
+  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.webp" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.40</span></div><div class="arrow">›</div></a>
+  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.webp" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.29</span></div><div class="arrow">›</div></a>
 </section>
 <div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。<br>旧URLのショートカットもそのまま使える互換構成じゃ。</div><div class="adminWrap" id="adminWrap" hidden><a class="adminLink" href="admin.html">⚙️ 管理者メニュー</a><div class="adminRevealHint">管理者メニューを表示しました</div></div><div class="credit">背景画像と各モード画像は、このホーム画面用に新規作成したものです。</div>
 </main>
 <script>
 (()=>{const target=document.getElementById("adminRevealTarget"),wrap=document.getElementById("adminWrap");if(!target||!wrap)return;let timer=null,started=0;const cancel=()=>{if(timer)clearTimeout(timer);timer=null;started=0};const start=e=>{cancel();started=Date.now();timer=setTimeout(()=>{wrap.hidden=false;timer=null;try{navigator.vibrate?.(60)}catch{}},5000)};target.addEventListener("pointerdown",start);["pointerup","pointercancel","pointerleave"].forEach(n=>target.addEventListener(n,cancel));target.addEventListener("contextmenu",e=>{if(Date.now()-started<5000)e.preventDefault()})})();
 </script>
+<script src="frenda-master.js?b=20260928_1925"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="frenda-cloud.js?b=20260928_1925"></script>
+<script>
+(()=>{
+  const btn=document.getElementById("randomPickBtn"),img=document.getElementById("randomPickImage"),fallback=document.getElementById("randomPickFallback");
+  const records=Array.isArray(window.FRENDA_MASTER?.records)?window.FRENDA_MASTER.records:[];
+  const candidates=records.filter(r=>r&&r.official_image);let last="";
+  function showRandom(){
+    if(!candidates.length){img.hidden=true;fallback.hidden=false;return}
+    let r=candidates[Math.floor(Math.random()*candidates.length)];
+    if(candidates.length>1&&String(r.master_id)===last)r=candidates[(candidates.indexOf(r)+1)%candidates.length];
+    last=String(r.master_id||"");fallback.hidden=true;img.hidden=false;img.alt=r.name_ja||"ランダムピック";btn.title=`${r.name_ja||"ピック"}｜タップで変更`;img.onerror=()=>{candidates.splice(candidates.indexOf(r),1);showRandom()};img.src=r.official_image;
+  }
+  btn?.addEventListener("click",showRandom);showRandom();
+  if(window.FrendaCloud)window.FrendaCloud.init({app:"home",label:"フレンダホーム",accountOnly:true,compactButton:true,buttonSelector:"#homeCloudHost"});
+})();
+</script>
+
 </body></html>

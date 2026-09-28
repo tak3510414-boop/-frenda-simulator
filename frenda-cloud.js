@@ -1,7 +1,7 @@
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.6";
+const CLOUD_VERSION="1.7";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -41,10 +41,36 @@ function clearReloadGuard(){try{sessionStorage.removeItem(reloadGuardKey())}catc
 function setReloadGuard(sig){try{sessionStorage.setItem(reloadGuardKey(),sig)}catch{}}
 function getReloadGuard(){try{return sessionStorage.getItem(reloadGuardKey())||""}catch{return ""}}
 
+const HEALTH_PREFIX="frenda:cloud:health:";
+function healthKey(){return `${HEALTH_PREFIX}${cfg?.app||"app"}`}
+function writeHealth(text,kind=""){
+  if(cfg?.accountOnly)return;
+  try{localStorage.setItem(healthKey(),JSON.stringify({text:String(text||""),kind:String(kind||""),ts:Date.now()}))}catch{}
+}
+function accountAttention(){
+  let best=null;
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);if(!k||!k.startsWith(HEALTH_PREFIX))continue;
+      const x=JSON.parse(localStorage.getItem(k)||"null");if(!x||typeof x!=="object")continue;
+      if(Date.now()-Number(x.ts||0)>24*60*60*1000)continue;
+      if(x.kind!=="error"&&x.kind!=="attention")continue;
+      if(!best||Number(x.ts||0)>Number(best.ts||0))best=x;
+    }
+  }catch{}
+  return best;
+}
 function renderHeaderButton(text,kind=""){
   if(!button)return;
   const compact=!!cfg?.compactButton;
   const compactError=()=>{button.innerHTML='☁️<span class="frendaCloudAlertBang">❗</span>'};
+  if(cfg?.accountOnly){
+    if(!session){button.textContent=compact?"💾":"💾 未ログイン";button.dataset.kind="";button.title="未ログイン（この端末に保存）／タップしてログイン";return}
+    const attention=accountAttention();
+    if(attention){compactError();button.dataset.kind="error";button.title=attention.text||"クラウド同期を確認してください"}
+    else{button.textContent=compact?"☁️":"☁️ ログイン中";button.dataset.kind="";button.title="クラウドにログイン中"}
+    return
+  }
   if(session){
     if(conflictPending){if(compact)compactError();else button.textContent="☁️ 要選択";button.dataset.kind="syncing";button.title="ローカルとクラウドのどちらを使うか選択してください"}
     else if(kind==="error"){if(compact)compactError();else button.textContent="☁️ エラー";button.dataset.kind="error";button.title=text}
@@ -56,6 +82,7 @@ function renderHeaderButton(text,kind=""){
 }
 function setStatus(text,kind=""){
   statusText=text;
+  writeHealth(text,kind);
   renderHeaderButton(text,kind);
   const s=modal?.querySelector("#frendaCloudStatus");if(s)s.textContent=text;
 }
@@ -78,8 +105,10 @@ function injectStyles(){
 function injectButton(){
   if(button)return;
   injectStyles();
+  if(cfg?.hideButton)return;
   button=document.createElement("button");button.type="button";button.className=`frendaCloudBtn${cfg?.compactButton?" compact":""}`;button.textContent=cfg?.compactButton?"💾":"☁️ アカウント";button.title="アカウント状態を確認中";button.onclick=openModal;
-  const host=document.querySelector(".headerBtns")||document.querySelector("header")||document.body;
+  const preferred=cfg?.buttonSelector?document.querySelector(cfg.buttonSelector):null;
+  const host=preferred||document.querySelector(".headerBtns")||document.querySelector("header")||document.body;
   host.appendChild(button);
 }
 function closeModal(){modal?.remove();modal=null}
@@ -146,8 +175,34 @@ function openConflictChooser(){
   modal.querySelector("#frendaCloudChooseLater").onclick=()=>{closeModal();setStatus("同期保留中：データを選択してください")};
 }
 function openModal(){
-  if(conflictPending){openConflictChooser();return}
+  if(conflictPending&&!cfg?.accountOnly){openConflictChooser();return}
   closeModal();
+  if(cfg?.accountOnly){
+    modal=document.createElement("div");modal.className="frendaCloudOverlay";
+    const email=session?.user?.email||"";
+    modal.innerHTML=session?`
+      <div class="frendaCloudPanel" role="dialog" aria-modal="true">
+        <div class="frendaCloudHead"><b>☁️ クラウドアカウント</b><button type="button" class="frendaCloudClose">閉じる</button></div>
+        <div class="frendaCloudUser">${escapeHTML(email)}</div>
+        <div class="frendaCloudInfo">ログイン済みです。シミュレーター・ダンジョン・おでかけ探索のデータは、各画面を開いたときにバックグラウンドで自動同期します。<br><small>Cloud v${CLOUD_VERSION}</small></div>
+        <div id="frendaCloudStatus" class="frendaCloudStatus">${accountAttention()?"要確認の同期状態があります":"ログイン・同期機能は有効です"}</div>
+        <div class="frendaCloudActions"><button type="button" id="frendaCloudLogout" class="frendaCloudDanger wide">ログアウト</button></div>
+      </div>`:`
+      <div class="frendaCloudPanel" role="dialog" aria-modal="true">
+        <div class="frendaCloudHead"><b>☁️ クラウドログイン</b><button type="button" class="frendaCloudClose">閉じる</button></div>
+        <div class="frendaCloudInfo">ここでログインすると、各アプリを開いたときにクラウド同期が自動で行われます。<br><small>Cloud v${CLOUD_VERSION}</small></div>
+        <label>メールアドレス</label><input id="frendaCloudEmail" type="email" autocomplete="username">
+        <label>パスワード</label><input id="frendaCloudPassword" type="password" autocomplete="current-password">
+        <div id="frendaCloudStatus" class="frendaCloudStatus">未ログイン</div>
+        <div class="frendaCloudActions"><button type="button" id="frendaCloudLogin" class="frendaCloudPrimary wide">ログイン</button></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener("click",e=>{if(e.target===modal)closeModal()});
+    modal.querySelector(".frendaCloudClose").onclick=closeModal;
+    if(session)modal.querySelector("#frendaCloudLogout").onclick=logout;
+    else modal.querySelector("#frendaCloudLogin").onclick=async()=>{const email=modal.querySelector("#frendaCloudEmail").value.trim(),password=modal.querySelector("#frendaCloudPassword").value;if(!email||!password){setStatus("メールアドレスとパスワードを入力してください。","error");return}await login(email,password)};
+    return
+  }
   modal=document.createElement("div");modal.className="frendaCloudOverlay";
   const email=session?.user?.email||"";
   modal.innerHTML=session?`
@@ -214,7 +269,7 @@ async function login(email,password){
   setStatus("ログイン中…","syncing");
   const {data,error}=await client.auth.signInWithPassword({email,password});
   if(error){setStatus("ログイン失敗："+error.message,"error");return}
-  session=data.session;setStatus("ログインしました","syncing");closeModal();await pullOrSeed();
+  session=data.session;setStatus("ログインしました","syncing");closeModal();if(cfg?.accountOnly){renderHeaderButton("ログインしました");return}await pullOrSeed();
 }
 async function logout(){
   if(!client)return;clearReloadGuard();conflictPending=null;await client.auth.signOut();session=null;lastUploaded="";setStatus("未ログイン");closeModal()
@@ -269,7 +324,7 @@ async function pullOrSeed(){
         await uploadLocal(local,localStr);return;
       }
       conflictPending={local,localStr,localTs,cloud,cloudStr,cloudTs};
-      setStatus("データの選択が必要です");
+      setStatus("データの選択が必要です","attention");
       openConflictChooser();
       return;
     }
@@ -313,7 +368,7 @@ function scheduleSync(delay=1400){
   if(!session||applying||conflictPending)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>pushNow(false),delay)
 }
 async function init(options){
-  cfg=options||{};injectButton();patchStorage();
+  cfg=options||{};injectButton();if(!cfg?.accountOnly)patchStorage();
   if(!window.supabase?.createClient){setStatus("クラウド未接続","error");return}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
   if(authUnsub){try{authUnsub.unsubscribe()}catch{}}
@@ -323,15 +378,17 @@ async function init(options){
     const oldUserId=session?.user?.id||null,newUserId=newSession?.user?.id||null;
     session=newSession||null;
     if(!session){lastUploaded="";conflictPending=null;clearReloadGuard();setStatus("未ログイン");return}
+    if(cfg?.accountOnly){renderHeaderButton("ログイン中");return}
     // TOKEN_REFRESHED / INITIAL_SESSION / タブ復帰などでは再読込しない。
     // 新規ログイン・ユーザー切替時だけ同期確認する。
     if(initialized&&event==="SIGNED_IN"&&newUserId!==oldUserId&&!syncing){setStatus("同期確認中…","syncing");setTimeout(()=>pullOrSeed(),0)}
   });
   authUnsub=listener?.data?.subscription||null;
   initialized=true;
+  if(cfg?.accountOnly){window.addEventListener("pageshow",()=>renderHeaderButton(statusText));setStatus(session?"ログイン中":"未ログイン");renderHeaderButton(statusText);return}
   if(session)await pullOrSeed();else setStatus("未ログイン")
 }
 
 window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,localSyncTime:readLocalSyncTime};
 })();
-// Updated: 2026-09-28 / Cloud Ver1.5
+// Updated: 2026-09-28 / Cloud Ver1.7
