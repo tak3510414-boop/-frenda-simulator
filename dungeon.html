@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.46 -->
+<!-- FRENDA_DUNGEON_VERSION: 1.47 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.46</title>
+<title>フレンダダンジョン Ver1.47</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -2120,10 +2120,85 @@ body.homeNavVisible .headerTop{padding-right:44px}
   }
 }
 
+
+/* Ver1.47: mobile egg roulette + clear result visual hierarchy */
+.eggRouletteCard .eggSlot{overflow:hidden;box-sizing:border-box}
+.eggRouletteCard .eggSlot>div{width:100%;min-width:0}
+.eggRouletteCard .eggSlot>div>div:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.postRunSummary.resultV3{
+  width:min(980px,100%);margin:0 auto;padding:18px!important;text-align:left!important;
+  display:flex!important;flex-direction:column;gap:12px;background:#f7fafc!important;overflow:visible!important
+}
+.postRunSummary.resultV3 .resultHero3{
+  display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;background:#fff;border:2px solid #dce7ed
+}
+.postRunSummary.resultV3 .resultHeroIcon3{font-size:54px;line-height:1;flex:0 0 auto}
+.postRunSummary.resultV3 .resultHeroTitle3{min-width:0;flex:1}
+.postRunSummary.resultV3 .resultHeroTitle3 .resultKicker3{font-size:10px;font-weight:1000;letter-spacing:.12em;color:#56bddd}
+.postRunSummary.resultV3 .resultHeroTitle3 h2{margin:2px 0 7px!important;font-size:34px!important;line-height:1.05!important;color:#152735}
+.postRunSummary.resultV3 .resultHeroMeta3{display:flex;gap:6px;flex-wrap:wrap}
+.postRunSummary.resultV3 .resultHeroMeta3 span{padding:5px 8px;border-radius:999px;background:#edf4f7;font-size:11px;font-weight:950;color:#385565}
+.postRunSummary.resultV3 .resultSave3{text-align:right;color:#788994;font-size:10px;font-weight:900;padding:0 4px}
+.postRunSummary.resultV3 .resultHeadline3{font-size:17px;font-weight:1000;color:#203a49;margin-top:1px}
+.postRunSummary.resultV3 .resultHighlights3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.postRunSummary.resultV3 .resultHighlight3{padding:12px;border-radius:15px;background:#fff;border:2px solid #dbe7ed;min-width:0}
+.postRunSummary.resultV3 .resultHighlight3.capture{background:#effaf5;border-color:#b8e0cb}
+.postRunSummary.resultV3 .resultHighlight3.reward{background:#fff8d8;border-color:#ead17a}
+.postRunSummary.resultV3 .resultHighlight3.unlock{background:#f2efff;border-color:#cec4ed}
+.postRunSummary.resultV3 .resultHighlight3 .rhLabel{font-size:11px;font-weight:1000;color:#627784;margin-bottom:5px}
+.postRunSummary.resultV3 .resultHighlight3 .rhValue{font-size:18px;font-weight:1000;color:#18394b;line-height:1.25;overflow-wrap:anywhere}
+.postRunSummary.resultV3 .resultGroups3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.postRunSummary.resultV3 .resultGroup3{background:#fff;border:2px solid #dce7ed;border-radius:15px;padding:11px 12px;min-width:0}
+.postRunSummary.resultV3 .resultGroup3.growth{background:#f5fbff;border-color:#c8e4f2}
+.postRunSummary.resultV3 .resultGroup3.drill{background:#f3f5ff;border-color:#ccd6f2}
+.postRunSummary.resultV3 .resultGroup3.bond{background:#fff5f8;border-color:#efccd7}
+.postRunSummary.resultV3 .resultGroupTitle3{font-size:15px;font-weight:1000;color:#18394b;margin-bottom:7px}
+.postRunSummary.resultV3 .resultList3{display:grid;gap:5px}
+.postRunSummary.resultV3 .resultLine3{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border-radius:9px;background:#ffffffd9;border:1px solid #e1eaee;min-width:0}
+.postRunSummary.resultV3 .resultLine3 .nm{font-weight:950;color:#2b4654;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.postRunSummary.resultV3 .resultLine3 .val{font-weight:1000;color:#0d648e;white-space:nowrap}
+.postRunSummary.resultV3 .resultGroup3.bond .resultLine3 .val{color:#ac3f60}
+.postRunSummary.resultV3 .resultEmpty3{text-align:center;padding:18px;color:#70838d;background:#fff;border-radius:14px;border:1px solid #dce7ed}
+.postRunSummary.resultV3 .postRunHomeBtn{width:100%!important;min-height:54px!important;margin:0!important;font-size:19px!important;border-radius:14px!important}
+
+@media(max-width:700px){
+  .eggRouletteCard.postRunBigCard{min-height:0!important;padding:14px 10px 18px!important;justify-content:flex-start!important}
+  .eggRouletteCard .eggRouletteLead{min-height:78px!important;margin-bottom:2px!important}
+  .eggRouletteCard .eggRouletteLead .eggVisual{transform:scale(1.45)!important}
+  .eggRouletteCard h2{font-size:24px!important;line-height:1.12!important;margin:4px 0 6px!important}
+  .eggRouletteCard p{font-size:13px!important;line-height:1.45!important;margin:3px 0 8px!important}
+  .eggRouletteCard .eggRoulette{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin:8px 0 10px!important;width:100%!important}
+  .eggRouletteCard .eggSlot{min-height:76px!important;padding:6px 3px!important;font-size:10px!important;border-radius:12px!important}
+  .eggRouletteCard .eggSlot .eggVisual{width:34px!important;height:44px!important;margin:0 auto 3px!important}
+  .eggRouletteCard .eggSlot .eggVisual::before{transform:scale(.62) rotate(-17deg)!important;transform-origin:left top!important}
+  .eggRouletteCard .eggSlot .eggVisual::after{font-size:6px!important;bottom:5px!important}
+  .eggRouletteCard .eggSlot.active{transform:translateY(-2px) scale(1.02)!important;box-shadow:0 4px 12px #a9780060!important}
+  .eggRouletteCard .eggRouletteStop{min-width:0!important;width:100%!important;font-size:25px!important;padding:12px 16px!important;border-radius:14px!important}
+  .eggRouletteCard .eggRouletteTapHint{font-size:11px!important;margin-top:5px!important}
+
+  .postRunSummary.resultV3{width:calc(100% - 16px)!important;margin:8px auto 22px!important;padding:10px!important;gap:8px!important;border-radius:18px!important}
+  .postRunSummary.resultV3 .resultHero3{gap:10px;padding:11px 10px;border-radius:13px}
+  .postRunSummary.resultV3 .resultHeroIcon3{font-size:42px}
+  .postRunSummary.resultV3 .resultHeroTitle3 h2{font-size:27px!important;margin-bottom:5px!important}
+  .postRunSummary.resultV3 .resultHeroMeta3 span{font-size:9.5px;padding:4px 6px}
+  .postRunSummary.resultV3 .resultHeadline3{font-size:15px;margin-top:2px}
+  .postRunSummary.resultV3 .resultHighlights3{grid-template-columns:1fr;gap:6px}
+  .postRunSummary.resultV3 .resultHighlight3{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:7px;padding:9px 10px}
+  .postRunSummary.resultV3 .resultHighlight3 .rhLabel{margin:0;font-size:10px}
+  .postRunSummary.resultV3 .resultHighlight3 .rhValue{font-size:15px}
+  .postRunSummary.resultV3 .resultGroups3{grid-template-columns:1fr;gap:6px}
+  .postRunSummary.resultV3 .resultGroup3{padding:9px 10px}
+  .postRunSummary.resultV3 .resultGroupTitle3{font-size:13px;margin-bottom:5px}
+  .postRunSummary.resultV3 .resultLine3{padding:6px 7px;font-size:11.5px;min-height:30px}
+  .postRunSummary.resultV3 .resultSave3{font-size:9px}
+  .postRunSummary.resultV3 .postRunHomeBtn{min-height:50px!important;font-size:18px!important}
+}
+
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.46</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.47</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -2138,7 +2213,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.45";
+const APP_VERSION="1.47";
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -3191,50 +3266,42 @@ function renderSummary(){
 
  const xpRows=Object.entries(x.xpGained||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>{
    const name=esc(rec(id)?.name_ja||id);
-   return `<div class="resultRow"><span class="resultName">${name}</span><span class="resultValue">＋${Number(v)} EXP</span></div>`;
+   return `<div class="resultLine3"><span class="nm">${name}</span><span class="val">＋${Number(v)} EXP</span></div>`;
  }).join("");
-
  const drillRows=Object.entries(x.drillGained||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>{
    const name=esc(rec(id)?.name_ja||id);
-   return `<div class="resultRow"><span class="resultName">${name}</span><span class="resultValue">＋${Number(v)}</span></div>`;
+   return `<div class="resultLine3"><span class="nm">${name}</span><span class="val">＋${Number(v)}</span></div>`;
  }).join("");
-
  const bondRows=(x.bondGained||[]).map(v=>{
-   const note=v.leveled?(v.level===1?"少し仲良くなった！":`絆Lv${Number(v.level)}になった！`):"";
-   return `<div class="resultRow"><span class="resultName">${esc(v.name)}</span><span class="resultValue">♥ ＋1 → Lv${Number(v.level)}</span>${note?`<span class="resultSub">${esc(note)}</span>`:""}</div>`;
+   const lv=Number(v.level)||0, before=Math.max(0,lv-1), value=v.leveled?`Lv${before} → Lv${lv}`:`＋1　Lv${lv}`;
+   return `<div class="resultLine3"><span class="nm">${esc(v.name)}</span><span class="val">♥ ${value}</span></div>`;
  }).join("");
 
- const captureRows=(x.captured||[]).map(id=>`<div class="resultRow"><span class="resultName">${esc(rec(id)?.name_ja||id)}</span><span class="resultValue">仲間になった！</span></div>`).join("");
+ const captures=(x.captured||[]).map(id=>esc(rec(id)?.name_ja||id));
+ const unlocks=(x.unlocked||[]).map(v=>esc(v));
+ const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"";
+ const highlights=[];
+ if(captures.length)highlights.push(`<div class="resultHighlight3 capture"><div class="rhLabel">🤝 新しい仲間</div><div class="rhValue">${captures.join("・")}</div></div>`);
+ if(eggName)highlights.push(`<div class="resultHighlight3 reward"><div class="rhLabel">🥚 クリア報酬</div><div class="rhValue">${eggName}</div></div>`);
+ if(unlocks.length)highlights.push(`<div class="resultHighlight3 unlock"><div class="rhLabel">🔓 新しく解放</div><div class="rhValue">${unlocks.join("・")}</div></div>`);
 
- const unlockRows=(x.unlocked||[]).map(v=>`<div class="resultRow"><span class="resultName">${esc(v)}</span><span class="resultValue">解放</span></div>`).join("");
-
- const eggRows=x.eggAward?`<div class="resultRow"><span class="resultName">${esc(x.eggAward.kind==="type"?`${x.eggAward.type}タイプの卵`:EGG_DEF[x.eggAward.kind]?.label||"卵")}</span><span class="resultValue">獲得</span></div>`:"";
-
- const blocks=[];
- if(xpRows)blocks.push(`<div class="postRunResultBlock growth"><b>⭐ 経験値</b><div class="resultRows">${xpRows}</div></div>`);
- if(drillRows)blocks.push(`<div class="postRunResultBlock drill"><b>💪 特訓ポイント</b><div class="resultRows">${drillRows}</div></div>`);
- if(bondRows)blocks.push(`<div class="postRunResultBlock bond"><b>♥ 絆</b><div class="resultRows">${bondRows}</div></div>`);
- if(captureRows)blocks.push(`<div class="postRunResultBlock capture"><b>🤝 新しい仲間</b><div class="resultRows">${captureRows}</div></div>`);
- if(unlockRows)blocks.push(`<div class="postRunResultBlock unlock"><b>🔓 新しく解放</b><div class="resultRows">${unlockRows}</div></div>`);
- if(eggRows)blocks.push(`<div class="postRunResultBlock reward"><b>🥚 クリア報酬</b><div class="resultRows">${eggRows}</div></div>`);
+ const groups=[];
+ if(xpRows)groups.push(`<div class="resultGroup3 growth"><div class="resultGroupTitle3">⭐ 成長EXP</div><div class="resultList3">${xpRows}</div></div>`);
+ if(drillRows)groups.push(`<div class="resultGroup3 drill"><div class="resultGroupTitle3">💪 特訓ポイント</div><div class="resultList3">${drillRows}</div></div>`);
+ if(bondRows)groups.push(`<div class="resultGroup3 bond"><div class="resultGroupTitle3">♥ 絆</div><div class="resultList3">${bondRows}</div></div>`);
 
  const title=clear?"ダンジョンクリア！":def?"全滅……":"撤退しました",
-       kicker=clear?"DUNGEON CLEAR":def?"ADVENTURE END":"RETREAT",
-       saved=clear?"報酬・経験値・仲間・卵の進行は保存済みです。":"獲得した仲間・経験値・卵の進行は保存済みです。";
-
- app.innerHTML=`<div class="card summary postRunSummary resultV2 singleAdvanceCard" id="postRunSummaryAdvance" role="button" tabindex="0" aria-label="ホームへ">
-  <div class="postRunHero ${clear?"clear":def?"defeat":"withdraw"}">
-   <div class="resultIcon">${clear?"🏆":def?"💥":"🚪"}</div>
-   <div class="postRunHeroText">
-    <div class="kicker">${kicker}</div>
-    <h2>${title}</h2>
-    <div class="postRunMeta"><span>${esc(th.name)}</span><span class="postRunStar">★${Number(x.difficulty)||1}</span><span>地下${Number(x.floor)||1}階</span></div>
+       kicker=clear?"DUNGEON CLEAR":def?"ADVENTURE END":"RETREAT";
+ app.innerHTML=`<div class="card summary postRunSummary resultV3 singleAdvanceCard" id="postRunSummaryAdvance" role="button" tabindex="0" aria-label="ホームへ">
+   <div class="resultHero3">
+     <div class="resultHeroIcon3">${clear?"🏆":def?"💥":"🚪"}</div>
+     <div class="resultHeroTitle3"><div class="resultKicker3">${kicker}</div><h2>${title}</h2><div class="resultHeroMeta3"><span>${esc(th.name)}</span><span>★${Number(x.difficulty)||1}</span><span>${clear?"地下10階 CLEAR":`地下${Number(x.floor)||1}階`}</span></div></div>
    </div>
-  </div>
-  <div class="postRunSaved">✓ ${saved}</div>
-  <div class="postRunSectionTitle">今回の獲得</div>
-  <div class="postRunDetails">${blocks.length?blocks.join(""):`<div class="postRunEmptyResult">今回の冒険結果は保存されています。</div>`}</div>
-  <button id="summaryHome" class="postRunHomeBtn">ホームへ</button>
+   <div class="resultSave3">✓ 結果は保存済み</div>
+   <div class="resultHeadline3">今回の結果</div>
+   ${highlights.length?`<div class="resultHighlights3">${highlights.join("")}</div>`:""}
+   ${groups.length?`<div class="resultGroups3">${groups.join("")}</div>`:`<div class="resultEmpty3">今回の結果は保存されています。</div>`}
+   <button id="summaryHome" class="postRunHomeBtn">ホームへ</button>
  </div>`;
  const sh=document.getElementById("summaryHome");if(sh)sh.onclick=e=>{e.stopPropagation();finishPostRun()};
  const psa=document.getElementById("postRunSummaryAdvance");if(psa){psa.onclick=finishPostRun;psa.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();finishPostRun()}}}
