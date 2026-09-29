@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.73">
+<html lang="ja" data-app-version="1.74">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3446,6 +3446,125 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable the
 }
 </style>
 
+
+<style id="v174-pc-party-three-visible">
+/* Ver1.74: PC party sidebar always shows all three members.
+   The old layout rendered two separate stat graph blocks per member, which made each card too tall.
+   Use one 6-stat graph block and compact spacing so 3 cards fit without clipping. */
+@media(min-width:701px){
+  main.dungeonRunScreen .partySidebar{
+    padding:7px!important;
+    overflow:hidden!important;
+  }
+  main.dungeonRunScreen .partySidebar .sectionTitle{
+    font-size:14px!important;
+    margin:0 0 4px!important;
+    line-height:1.1!important;
+  }
+  main.dungeonRunScreen .partySidebar .teamChoiceHint{
+    margin:0 0 4px!important;
+    padding:4px 5px!important;
+    font-size:8px!important;
+    line-height:1.15!important;
+  }
+  main.dungeonRunScreen .partyPcCards{
+    grid-template-rows:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+  main.dungeonRunScreen .partySideCard{
+    grid-template-columns:58px minmax(0,1fr)!important;
+    gap:6px!important;
+    padding:5px!important;
+    border-radius:9px!important;
+    overflow:hidden!important;
+    align-items:start!important;
+    height:100%!important;
+  }
+  main.dungeonRunScreen .partySideCard .partySideImg{
+    width:58px!important;
+    height:82px!important;
+    max-height:82px!important;
+    align-self:start!important;
+    border-radius:6px!important;
+  }
+  main.dungeonRunScreen .partySideInfo{
+    align-self:start!important;
+    min-height:0!important;
+  }
+  main.dungeonRunScreen .partySideName{
+    font-size:11px!important;
+    line-height:1.05!important;
+    padding-right:22px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  main.dungeonRunScreen .partySideMeta{font-size:7px!important;line-height:1.05!important;margin-top:1px!important}
+  main.dungeonRunScreen .partyEnergyChip{
+    padding:2px 5px!important;
+    margin-top:2px!important;
+    font-size:7px!important;
+    gap:3px!important;
+  }
+  main.dungeonRunScreen .partyEnergyChip b{font-size:8px!important}
+  main.dungeonRunScreen .partySideInfo .hpbar{height:7px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideHp{font-size:7px!important;margin-top:1px!important}
+  main.dungeonRunScreen .partyAdventureGrid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:2px 4px!important;
+    margin-top:3px!important;
+  }
+  main.dungeonRunScreen .partyAdventureHead{font-size:6.3px!important;line-height:1!important;gap:2px!important}
+  main.dungeonRunScreen .partyAdventureHead b{font-size:6.8px!important}
+  main.dungeonRunScreen .partyAdventureBar{height:4px!important;margin-top:1px!important}
+  main.dungeonRunScreen .partyAdventureGraph small{
+    display:block!important;
+    margin-top:1px!important;
+    font-size:5.6px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  main.dungeonRunScreen .partyAdventureLegend{
+    gap:2px 5px!important;
+    margin-top:2px!important;
+    font-size:5.8px!important;
+    line-height:1!important;
+  }
+  main.dungeonRunScreen .partyAdventureLegend i{width:6px!important;height:6px!important;margin-right:2px!important}
+  main.dungeonRunScreen .partySideStats{
+    margin-top:2px!important;
+    font-size:6.2px!important;
+    line-height:1.08!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  main.dungeonRunScreen .partySideStats .bondChip{font-size:6.2px!important}
+  main.dungeonRunScreen .partySideCard .matchupReason{
+    margin-top:2px!important;
+    padding:3px 4px!important;
+    font-size:7px!important;
+    line-height:1.1!important;
+  }
+  main.dungeonRunScreen .partySideCard .battleMoodBadge{
+    margin-top:2px!important;
+    padding:3px 4px!important;
+    font-size:7px!important;
+  }
+}
+@media(min-width:701px) and (max-height:760px){
+  main.dungeonRunScreen .partySideCard{grid-template-columns:50px minmax(0,1fr)!important;padding:4px!important;gap:5px!important}
+  main.dungeonRunScreen .partySideCard .partySideImg{width:50px!important;height:70px!important;max-height:70px!important}
+  main.dungeonRunScreen .partyAdventureGrid{gap:1px 3px!important;margin-top:2px!important}
+  main.dungeonRunScreen .partyAdventureGraph small{display:none!important}
+  main.dungeonRunScreen .partyAdventureLegend{display:none!important}
+  main.dungeonRunScreen .partySideStats{font-size:5.8px!important}
+}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
@@ -4156,7 +4275,7 @@ function sidebarStatGridHTML(r,pb={}){const sv=Number(r.speed_value),sl=Number(r
 function battleMiniStatGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100);return `<div class="battleMiniGraph"><div class="battleMiniGraphHead"><span>${esc(label)}</span><b>${v}${g?`<em>+${g}</em>`:""}</b></div><div class="battleMiniGraphBar"><span class="battleMiniGraphBase" style="width:${bw}%"></span><span class="battleMiniGraphPerm" style="width:${pw}%"></span><span class="battleMiniGraphRun" style="width:${gw}%"></span></div></div>`}
 function battleMiniGraphGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="battleMiniGraphGrid">${battleMiniStatGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${battleMiniStatGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${battleMiniStatGraphHTML("SPA",r.sp_atk,0,0,220)}${battleMiniStatGraphHTML("SPD",r.sp_def,0,0,220)}${battleMiniStatGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="battleMiniLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function partyAdventureGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100);const detail=[p?`恒+${p}`:"",g?`冒+${g}`:""] .filter(Boolean).join(" / ");return `<div class="partyAdventureGraph"><div class="partyAdventureHead"><span>${esc(label)}</span><b>${v}</b></div><div class="partyAdventureBar"><span class="partyAdventureBase" style="width:${bw}%"></span><span class="partyAdventurePerm" style="width:${pw}%"></span><span class="partyAdventureRun" style="width:${gw}%"></span></div><small>${detail?`元${b} / ${detail}`:`元${b}`}</small></div>`}
-function partyAdventureGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partyAdventureGrid">${partyAdventureGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partyAdventureGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${partyAdventureGraphHTML("HP",r.hp,pb.hp||0,0,240)}${partyAdventureGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partyAdventureLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
+function partyAdventureGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partyAdventureGrid">${partyAdventureGraphHTML("HP",r.hp,pb.hp||0,0,240)}${partyAdventureGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partyAdventureGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${partyAdventureGraphHTML("SPA",r.sp_atk,0,0,220)}${partyAdventureGraphHTML("SPD",r.sp_def,0,0,220)}${partyAdventureGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partyAdventureLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function showTeamBackCompare(){const ids=teamSelection.slice(0,3).filter(id=>ownedEntry(id)&&rec(id));if(!ids.length)return;document.getElementById("teamCompareOverlay")?.remove();const picks=ids.map(id=>({id,r:rec(id),pb:state.permanentBoosts[id]||{}}));const hero=picks.map(x=>`<td class="teamCompareHero"><img src="${esc(imageOf(x.r))}" alt=""><b>${esc(x.r.name_ja)}</b><small>${gradeText(x.r)} / ${esc(x.r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(x.r.poke_ene??"-")}</span></td>`).join("");const row=(label,fn,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th>${picks.map(x=>`<td class="${cls}">${fn(x)}</td>`).join("")}</tr>`;const ov=document.createElement("div");ov.id="teamCompareOverlay";ov.className="teamCompareOverlay";ov.innerHTML=`<div class="teamComparePanel" role="dialog" aria-modal="true" aria-label="挑戦チーム裏面比較"><div class="teamCompareHead"><div><small>TEAM PICK COMPARISON</small><b>挑戦チーム・裏面比較（${picks.length}/3）</b></div><button type="button" class="teamCompareClose" id="teamCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="teamCompareTableWrap"><table class="teamCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero}</tr></thead><tbody>${row("タイプ",x=>esc(compareTypeText(x.r)),"teamCompareType")}${row("ポケエネ",x=>`<b style="font-size:16px">⚡ ${esc(x.r.poke_ene??"-")}</b>`)}${row("HP",x=>compareStatGraphCell(x.r.hp,x.pb.hp))}${row("ATK",x=>compareStatGraphCell(x.r.atk,x.pb.atk))}${row("DEF",x=>compareStatGraphCell(x.r.def,x.pb.def))}${row("SP.ATK",x=>compareStatGraphCell(x.r.sp_atk,0))}${row("SP.DEF",x=>compareStatGraphCell(x.r.sp_def,0))}${row("すばやさ",x=>{const sv=Number(x.r.speed_value),sl=Number(x.r.speed_level);return sv>0?compareStatGraphCell(sv,0,200):sl>0?compareStatGraphCell(sl,0,5):"-"})}${row("通常わざ",x=>`<b>${esc(x.r.move||"未登録")}</b>${esc(x.r.move_type||"-")} / ${esc(x.r.move_class||"-")}`,"teamCompareMove")}${row("必殺技",x=>esc((x.r.finisher_move&&String(x.r.finisher_move).trim())?String(x.r.finisher_move).trim():"なし"),"teamCompareMove")}${row("恒久強化",x=>`HP+${x.pb.hp||0}<br>攻+${x.pb.atk||0}<br>防+${x.pb.def||0}`,"teamCompareGrowth")}${row("成長",x=>`育成P ${growthPointsFor(x.id)}<br>EXP ${xpFor(x.id)}/100<br>特訓P ${drillFor(x.id)}`,"teamCompareGrowth")}${row("絆",x=>esc(bondProgressText(x.id)),"teamCompareGrowth")}</tbody></table></div><div class="teamCompareLegend">選択中のピックを最大3体まで、同じ項目・同じ行で比較します。敵ピックの裏面情報は表示しません。</div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#teamCompareClose").onclick=close}
 function teamRecommendationInfo(r){
  const th=THEMES[currentDungeon.id];
@@ -4709,7 +4828,7 @@ function partySidebarCardHTML(t,i){
        cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${appealCls}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
- return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>現在HP</span><span>${t.hp}/${max}</span></div>${sidebarStatGridHTML(r,pb)}${partyAdventureGridHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">冒険中：攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>現在HP</span><span>${t.hp}/${max}</span></div>${partyAdventureGridHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">冒険中：攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
 }
 function partySidebarHTML(tm,combatScene=false){
  return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
