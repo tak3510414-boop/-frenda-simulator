@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.41">
+<html lang="ja" data-app-version="0.42">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -238,18 +238,19 @@ function legacyMissionStatus(x,m){if(x?.status==="returned")return"returned";if(
 function cloneLegacyMission(m){if(!m||typeof m!=="object")return null;return {...m,teamIds:Array.isArray(m.teamIds)?m.teamIds.slice(0,3):[],boxes:Array.isArray(m.boxes)?m.boxes.map(x=>({...x})):m.boxes,report:Array.isArray(m.report)?m.report.map(x=>({...x})):m.report,liveReport:Array.isArray(m.liveReport)?m.liveReport.map(x=>({...x})):m.liveReport,summary:Array.isArray(m.summary)?m.summary.slice():m.summary}}
 function normalizeExp(x){
  x=x&&typeof x==="object"?x:defaultExp();
+ const sourceVersion=Number(x.version)||0,sourceHadGroups=Array.isArray(x.groups),isLegacySchema=sourceVersion<3||!sourceHadGroups;
  const legacyMission=cloneLegacyMission(x.mission),legacyStatus=x.status,legacyLast=Array.isArray(x.lastTeamIds)?x.lastTeamIds.slice():[];
  if(!x.discovery||typeof x.discovery!=="object")x.discovery={};if(!x.souvenirs||typeof x.souvenirs!=="object")x.souvenirs={};if(!x.secretSpots||typeof x.secretSpots!=="object")x.secretSpots={};
  if(!Array.isArray(x.groups))x.groups=[defaultGroup(1),defaultGroup(2)];
  x.groups=[normalizeGroup(x.groups[0],1),normalizeGroup(x.groups[1],2)];
- /* Ver0.41: pre-0.40 had one mission at the top level. Some readers merge the new default groups before this function runs, so migrate whenever a legacy mission exists and neither group already owns a mission. */
- if(legacyMission&&!x.groups.some(g=>g.mission)){const g1=x.groups[0];g1.status=legacyMissionStatus({status:legacyStatus},legacyMission);g1.mission=legacyMission;g1.lastTeamIds=legacyLast.length?legacyLast:legacyMission.teamIds.slice();if(!g1.prep.dungeonId)g1.prep.dungeonId=legacyMission.dungeonId||null;if(!g1.prep.difficulty)g1.prep.difficulty=Number.isFinite(Number(legacyMission.difficulty))?Number(legacyMission.difficulty):null;if(!g1.prep.teamIds.length)g1.prep.teamIds=legacyMission.teamIds.slice();if([1,4,8].includes(Number(legacyMission.hours)))g1.prep.hours=Number(legacyMission.hours);x.legacyMigratedToGroups=true}
+ /* Ver0.42: legacy import is allowed only for an actual pre-v3 save. In v3+, top-level mission is compatibility data and must never resurrect a completed group. */
+ if(isLegacySchema&&legacyMission&&!x.groups.some(g=>g.mission)){const g1=x.groups[0];g1.status=legacyMissionStatus({status:legacyStatus},legacyMission);g1.mission=legacyMission;g1.lastTeamIds=legacyLast.length?legacyLast:legacyMission.teamIds.slice();if(!g1.prep.dungeonId)g1.prep.dungeonId=legacyMission.dungeonId||null;if(!g1.prep.difficulty)g1.prep.difficulty=Number.isFinite(Number(legacyMission.difficulty))?Number(legacyMission.difficulty):null;if(!g1.prep.teamIds.length)g1.prep.teamIds=legacyMission.teamIds.slice();if([1,4,8].includes(Number(legacyMission.hours)))g1.prep.hours=Number(legacyMission.hours);x.legacyMigratedToGroups=true}
  x.version=3;x.appVersion=APP_VERSION;
  const busyIds=[];for(const gg of x.groups)if(gg.status!=="idle"&&gg.mission)for(const id of gg.mission.teamIds||[])if(!busyIds.includes(id))busyIds.push(id);x.busyTeamIds=busyIds;
  x.status=x.groups.some(gg=>gg.status==="exploring")?"exploring":x.groups.some(gg=>gg.status==="returned")?"returned":"idle";const compatBase=x.groups.find(gg=>gg.mission)?.mission||null;x.mission=compatBase?{...compatBase,teamIds:busyIds}:null;x.lastTeamIds=x.groups[0].lastTeamIds;x.updatedAt=Number(x.updatedAt)||Date.now();return x
 }
 function parseExpCandidate(v){if(!v)return null;if(typeof v==="string"){try{return JSON.parse(v)}catch{return null}}return typeof v==="object"?v:null}
-function expCandidateScore(v){if(!v||typeof v!=="object")return-1;let score=0;const gs=Array.isArray(v.groups)?v.groups:[];score+=gs.filter(g=>g&&g.mission&&g.status!=="idle").length*1000;if(v.mission&&typeof v.mission==="object")score+=900;if(["exploring","returned","running"].includes(v.status))score+=150;if(v.discovery&&typeof v.discovery==="object")score+=Math.min(50,Object.keys(v.discovery).length);score+=Math.min(99,Math.floor((Number(v.updatedAt)||0)/1e10));return score}
+function expCandidateScore(v){if(!v||typeof v!=="object")return-1;let score=0;const gs=Array.isArray(v.groups)?v.groups:[];score+=gs.filter(g=>g&&g.mission&&g.status!=="idle").length*1000;if(v.mission&&typeof v.mission==="object")score+=900;if(["exploring","returned","running"].includes(v.status))score+=150;if(v.legacyMigratedToGroups===true)score+=2000;if(v.discovery&&typeof v.discovery==="object")score+=Math.min(50,Object.keys(v.discovery).length);score+=Math.min(99,Math.floor((Number(v.updatedAt)||0)/1e10));return score}
 function readExp(){
  const candidates=[];
  try{candidates.push(parseExpCandidate(DATA.expedition.read(defaultExp)))}catch(e){console.warn("EXPEDITION_READ_API",e)}
@@ -375,8 +376,8 @@ function applyBaseGrowth(groupIndex=activeGroup){const g=groupState(groupIndex),
 function applyReward(box,groupIndex=activeGroup){if(box.applied)return box.resultText||"受取済み";const g=groupState(groupIndex),m=g.mission;let result="";const applyItem=(rw,d)=>{const r=rec(rw.target);if(rw.type==="xp"){const drill=addXp(d,rw.target,rw.amount);return `⭐ ${r?.name_ja||"仲間"} EXP +${rw.amount}${drill?`／特訓P +${drill}`:""}`}if(rw.type==="allxp"){let drills=0;for(const id of m.teamIds)drills+=addXp(d,id,rw.amount);return `⭐ 全員 EXP +${rw.amount}${drills?`／特訓P 合計+${drills}`:""}`}if(rw.type==="bond"){addBond(d,rw.target,rw.amount||1);return `♥ ${r?.name_ja||"仲間"} 絆 +${rw.amount||1}`}if(rw.type==="growth"){const k=awardGrowth(d,rw.target,rw.amount||1);return `${k==="growth"?"🌱 育成P":"🏋️ 特訓P"} ${r?.name_ja||"仲間"} +${rw.amount||1}`}if(rw.type==="egg"){d.eggs=d.eggs||[];d.eggs.push(rw.egg);return `🥚 ${rw.egg.kind==="type"?`${rw.egg.type}タイプの卵`:EGG_DEF[rw.egg.kind].label}を発見！`}if(rw.type==="companion"){if(!rw.target)return"👣 気配はあったが、仲間は見つからなかった。";const rr=rec(rw.target),dup=(d.owned||[]).some(o=>o.id===rw.target);d.seenPicks=d.seenPicks||{};d.seenPicks[rw.target]=true;if(!dup){ownNew(d,rw.target);return `🎉 ${rr?.name_ja||"ポケモン"}が新しく仲間になった！`}const k=awardGrowth(d,rw.target,1);return `👣 ${rr?.name_ja||"ポケモン"}とまた会えた！ ${k==="growth"?"育成P":"特訓P"} +1`}if(rw.type==="combo")return rw.items.map(x=>applyItem(x,d)).join(" / ");return"成果を受け取った。"};mutateDungeon(d=>{result=applyItem(box.reward,d)});box.applied=true;box.resultText=result;m.summary=m.summary||[];m.summary.push(result);writeExp();return result}
 function maybeNeedEggDiscard(){const d=readDungeon();return (d?.eggs?.length||0)>Number(d?.eggCap||2)}
 function discardEgg(id){mutateDungeon(d=>{d.eggs=(d.eggs||[]).filter(e=>e.id!==id)});render()}
-function completeMission(groupIndex=activeGroup){const g=groupState(groupIndex),m=g.mission;if(!m)return;g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];writeExp();setActiveGroup(groupIndex);screen="home";render()}
-function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return;if(!UI.dialog.confirm(`グループ${groupIndex+1}の探索を中止しますか？\nEXP・絆・成果は一切獲得できません。`))return;g.status="idle";g.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
+function completeMission(groupIndex=activeGroup){const g=groupState(groupIndex),m=g.mission;if(!m)return;g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
+function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return;if(!UI.dialog.confirm(`グループ${groupIndex+1}の探索を中止しますか？\nEXP・絆・成果は一切獲得できません。`))return;g.status="idle";g.mission=null;exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
 
 function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length)return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),now=Date.now(),hours=p.hours;g.status="exploring";g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours,teamIds:ids,startAt:now,returnAt:now+hours*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
 function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),diff=highestDifficultyForDungeon(p.dungeonId),s=scoreTeam(p.teamIds,p.dungeonId,diff);if(!p.teamIds.length)return;if(!diff)return;const names=p.teamIds.map(id=>rec(id)?.name_ja||id).join("・");if(UI.dialog.confirm(`グループ${groupIndex+1}\n${THEMES[p.dungeonId].name} ランク${diff}へ${p.hours}時間探索に出発します。\n\n${names}\n探索ランク ${s.rank}（${s.total}点）\n帰還予定 ${formatTime(Date.now()+p.hours*3600000)}\n\n探索中はこのピックを他の探索グループ・本編・特訓・進化で使用できません。`)){if(startMission(groupIndex))render()}}
@@ -465,8 +466,9 @@ loadEvolution();
 
 </body>
 </html>
-<!-- FRENDA_EXPEDITION_VERSION: 0.41 / Updated: 2026-09-30 05:27 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.42 / Updated: 2026-09-30 07:05 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
-<!-- UpdatedAt: 2026-09-30 04:28 JST -->
+<!-- Ver0.42: v3互換missionを旧データと誤認してグループ1へ再復元するループを修正。旧派遣の移行はpre-v3のみ実行し、完了/中止時は互換missionを明示クリア。移行済みデータを優先して古い派遣データの再選択も防止 -->
+<!-- UpdatedAt: 2026-09-30 07:05 JST -->
