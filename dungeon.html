@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.69">
+<html lang="ja" data-app-version="1.70">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -753,7 +753,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 .homeHeroPanel::before{content:"";position:absolute;inset:auto auto -120px -90px;width:260px;height:260px;border-radius:50%;background:#87ffb51f;filter:blur(4px)}
 .homeHeroPanel::after{content:"✦ ✦ ✦";position:absolute;right:20px;top:12px;font-size:20px;letter-spacing:10px;color:#fff4a8;opacity:.65;text-shadow:0 0 12px #fff0a6aa}
 .homeHeroMain,.homeHeroSide{position:relative;z-index:1;min-width:0}
-.homeHeroMain{display:grid;align-content:start;gap:10px}
+.homeHeroMain{display:grid;align-content:start;gap:8px}
 .homeHeroBadge{display:inline-flex;align-items:center;gap:6px;width:max-content;max-width:100%;padding:6px 12px;border-radius:999px;background:#fff3c2;color:#684b00;font-size:11px;font-weight:1000;letter-spacing:.08em;box-shadow:0 6px 16px #00000020}
 .homeHeroTitle h1{margin:0;font-size:clamp(30px,3.8vw,44px);line-height:1.05;letter-spacing:.02em;text-shadow:0 3px 14px #0000002f}
 .homeHeroLead{margin:0;color:#dff7ff;font-size:14px;line-height:1.55}
@@ -766,7 +766,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 .homeCtaPrimary{background:linear-gradient(180deg,#ffcf4f,#ff9f1c);color:#4d2800;animation:homePulse 1.25s ease-in-out infinite alternate}
 .homeCtaSecondary{background:linear-gradient(180deg,#6ce3ff,#2ca4e0);color:#06283a}
 @keyframes homePulse{from{transform:translateY(0);box-shadow:0 6px 0 #9f5b06,0 12px 24px #00000018}to{transform:translateY(-2px);box-shadow:0 8px 0 #9f5b06,0 16px 28px #00000020}}
-.homeHeroSide{display:grid;grid-template-rows:auto auto auto;gap:8px}
+.homeHeroSide{display:grid;grid-template-rows:auto auto;gap:8px}
 .homeStatRibbon{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
 .homeStatCard{padding:8px 6px;border-radius:16px;background:linear-gradient(180deg,#ffffff1c,#ffffff10);border:1px solid #ffffff24;text-align:center;min-width:0}
 .homeStatCard b{display:block;font-size:20px;line-height:1.05;color:#fff}
@@ -4030,9 +4030,8 @@ function homeNextGoal(){
  return {title:"育成して次の★難易度へ！",body:"お気に入りの3体を強化して、もっと強い敵に挑戦しよう。"};
 }
 function homeHero(){
- const s=getStat("forest",1),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),party=homeFeaturedOwned(3),deepest=Math.max(0,Number(s?.deepest)||0);
- const partyHtml=party.length?party.map(({id,r,pb})=>`<div class="homePartyCard"><img src="${esc(imageOf(r))}" alt="${esc(r.name_ja)}"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / 絆${bondLevelFor(id)} / ⚡${esc(r.poke_ene??"-")}</small></div>`).join(""):`<div class="homePartyEmpty">まずはダンジョンに出発して、お気に入りの仲間を集めよう！</div>`;
- return `<div class="homeHeroPanel"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンをどんどん攻略！ 卵やレアピックとの出会いがキミを待っている！</p><div class="homeGoalCard"><span class="homeGoalLabel">つぎの目標</span><b>${esc(goal.title)}</b><small>${esc(goal.body)}</small></div><div class="homeHeroActions"><button type="button" class="homeCtaPrimary" data-menu="dungeons">⚔️ 冒険スタート</button><button type="button" class="homeCtaSecondary" data-menu="owned">🎴 仲間をみる</button></div></div><div class="homeHeroSide"><div class="homeStatRibbon"><div class="homeStatCard"><b>B${deepest}</b><small>森★1 最深</small></div><div class="homeStatCard"><b>${clears}</b><small>クリア</small></div><div class="homeStatCard"><b>${state.owned.length}</b><small>所持ピック</small></div><div class="homeStatCard"><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></div></div><div class="homePartyPanel"><div class="homePartyHead"><b>おすすめパーティ</b><small>育成・絆が高い仲間</small></div><div class="homePartyRow">${partyHtml}</div></div><div class="homeSubPanels"><div class="homeSubPanel egg"><b>🥚 ${esc(egg.title)}</b><small>${esc(egg.body)}</small><div class="homeMiniMeter"><span style="width:${egg.ratio}%"></span></div></div><div class="homeSubPanel dex"><b>📖 図鑑 ${dex.obtained}種ゲット！</b><small>遭遇済み ${dex.seen}種。まだ見ぬピックを探しに行こう！</small><div class="homeMiniMeter"><span style="width:${Math.min(100,dex.obtained?dex.obtained/Math.max(dex.seen||1,dex.obtained)*100:0)}%;background:linear-gradient(90deg,#46b3ff,#7a8dff)"></span></div></div></div></div></div>`
+ const s=getStat("forest",1),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),deepest=Math.max(0,Number(s?.deepest)||0);
+ return `<div class="homeHeroPanel"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンをどんどん攻略！ 卵やレアピックとの出会いがキミを待っている！</p><div class="homeGoalCard"><span class="homeGoalLabel">つぎの目標</span><b>${esc(goal.title)}</b><small>${esc(goal.body)}</small></div></div><div class="homeHeroSide"><div class="homeStatRibbon"><div class="homeStatCard"><b>B${deepest}</b><small>森★1 最深</small></div><div class="homeStatCard"><b>${clears}</b><small>クリア</small></div><div class="homeStatCard"><b>${state.owned.length}</b><small>所持ピック</small></div><div class="homeStatCard"><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></div></div><div class="homeSubPanels"><div class="homeSubPanel egg"><b>🥚 ${esc(egg.title)}</b><small>${esc(egg.body)}</small><div class="homeMiniMeter"><span style="width:${egg.ratio}%"></span></div></div><div class="homeSubPanel dex"><b>📖 図鑑 ${dex.obtained}種ゲット！</b><small>遭遇済み ${dex.seen}種。まだ見ぬピックを探しに行こう！</small><div class="homeMiniMeter"><span style="width:${Math.min(100,dex.obtained?dex.obtained/Math.max(dex.seen||1,dex.obtained)*100:0)}%;background:linear-gradient(90deg,#46b3ff,#7a8dff)"></span></div></div></div></div></div>`
 }
 function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","team","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
@@ -5148,3 +5147,29 @@ if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dunge
 })();
 </script>
 <!-- Updated: 2026-09-29 -->
+
+<style id="v170-home-compact-fix">
+.homePartyPanel,.homeHeroActions{display:none!important}
+@media(max-width:700px){
+  .homeHeroPanel{padding:10px 11px!important;gap:6px!important}
+  .homeHeroMain{gap:6px!important}
+  .homeHeroLead{font-size:10px!important;line-height:1.4!important}
+  .homeGoalCard{padding:8px 9px!important}
+  .homeGoalCard b{font-size:16px!important}
+  .homeGoalCard small{font-size:9px!important;line-height:1.35!important}
+  .homeHeroSide{gap:5px!important}
+  .homeStatRibbon{gap:3px!important}
+  .homeStatCard{padding:4px 2px!important}
+  .homeSubPanels{gap:5px!important}
+  .homeSubPanel{padding:6px 7px!important}
+  .homeMenuGrid{min-height:270px!important}
+  .homeMenuBtn{min-height:82px!important}
+}
+@media(max-height:760px) and (max-width:700px){
+  .homeHeroLead{display:none!important}
+  .homeGoalCard small{display:none!important}
+  .homeSubPanel small{display:none!important}
+  .homeMiniMeter{margin-top:4px!important}
+  .homeMenuGrid{min-height:250px!important}
+}
+</style>
