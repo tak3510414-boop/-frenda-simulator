@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.77">
+<html lang="ja" data-app-version="1.78">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4899,14 +4899,14 @@ function teamMiniHTML(t,i){
  if(!inBattle){
   const fighterChoice=m?.action==="fighter",moveName=CORE.skillName(r)||r.move||"未登録";
   const fighterExtra=fighterChoice?`<div class="fighterChoiceStats">${battleMiniGraphGridHTML(t,r,pb)}<div class="fighterChoiceMove"><b>${esc(r.move_type||"-")}</b> ${esc(moveName)}</div><div class="fighterChoiceGrowth"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span><span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div>`:"";
-  return `<div class="${cls}${fighterChoice?" fighterChoiceCard":""}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${fighterChoice?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}</div>${fighterExtra}</div></div></div>`
+  return `<div class="${cls}${fighterChoice?" fighterChoiceCard":""}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><span class="teamEnergyBadge">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${fighterChoice?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}</div>${fighterExtra}</div></div></div>`
  }
  const moveName=CORE.skillName(r)||r.move||"未登録",
        typeBadges=[r.type1,r.type2].filter(Boolean).map(x=>`<span class="badge">${esc(x)}</span>`).join(""),
        atkBoost=Number(pb.atk||0)+(t.tempAtk||0)+(t.bondAtk||0),
        defBoost=Number(pb.def||0)+(t.tempDef||0)+(t.bondDef||0);
  return `<div class="${cls}"${attrs}>
-   <div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)}${t.ko?" / ひんし":i===active?" / バトル中":""}</small><div class="teamTypeRow">${typeBadges}</div></div></div>
+   <div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)}${t.ko?" / ひんし":i===active?" / バトル中":""}</small><span class="teamEnergyBadge">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><div class="teamTypeRow">${typeBadges}</div></div></div>
    <div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>
    <div class="teamMiniHpText"><span>HP</span><span>${t.hp}/${max}</span></div>
    ${battleMoodBadgeHTML(t.id)}
@@ -4981,7 +4981,7 @@ function partySidebarCardHTML(t,i){
        cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${appealCls}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
- return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ${esc(r.poke_ene??"-")}</span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>育成P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>育成P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
 }
 function partySidebarHTML(tm,combatScene=false){
  return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
@@ -5579,4 +5579,106 @@ if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dunge
   main.dungeonRunScreen[data-run-scene="route"] .routeCard small{font-size:8px!important}
 }
 
+</style>
+
+
+<style id="v178-energy-pc-readability">
+/* Ver1.78: Poké Energy is a first-class value, and PC party cards use the same clear hierarchy as mobile. */
+.teamEnergyBadge{
+  display:inline-flex;align-items:center;justify-content:center;gap:3px;
+  width:max-content;max-width:100%;box-sizing:border-box;
+  margin:3px auto 2px;padding:3px 8px;border-radius:999px;
+  background:linear-gradient(180deg,#fff5bd,#ffd75d);border:1px solid #eab83c;
+  color:#6b4700;font-size:8px;font-weight:1000;line-height:1.05;
+  box-shadow:0 1px 0 #c98c20,0 2px 5px #9e6c1c20;
+  white-space:nowrap;
+}
+.teamEnergyBadge b{font-size:10px;color:#2e2100;line-height:1}
+@media(max-width:700px){
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge,
+  main.battleScreen .teamEnergyBadge{display:inline-flex!important}
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge{font-size:7.5px!important;padding:3px 7px!important;margin:3px auto 2px!important}
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge b{font-size:10px!important}
+}
+
+@media(min-width:701px){
+  main.dungeonRunScreen>.dungeonRun{
+    grid-template-columns:clamp(355px,29vw,440px) minmax(0,1fr)!important;
+  }
+  main.dungeonRunScreen .partySidebar{
+    padding:9px!important;
+    background:linear-gradient(180deg,#f9fcfe,#edf5f9)!important;
+  }
+  main.dungeonRunScreen .partySidebar .sectionTitle{
+    font-size:17px!important;margin:0 0 6px!important;
+  }
+  main.dungeonRunScreen .partySidebar .teamChoiceHint{
+    font-size:9px!important;line-height:1.25!important;margin:0 0 6px!important;padding:5px 7px!important;
+  }
+  main.dungeonRunScreen .partyPcCards{gap:7px!important}
+  main.dungeonRunScreen .partySideCard{
+    grid-template-columns:88px minmax(0,1fr)!important;
+    gap:9px!important;padding:7px 8px!important;border-radius:12px!important;
+    background:linear-gradient(180deg,#ffffff,#f5fafc)!important;
+    border-color:#c8d8e1!important;
+  }
+  main.dungeonRunScreen .partySideCard .partySideImg{
+    width:88px!important;height:124px!important;max-width:88px!important;max-height:124px!important;
+    object-fit:contain!important;border-radius:9px!important;background:#eef4f7!important;
+  }
+  main.dungeonRunScreen .partySideName{font-size:13.5px!important;line-height:1.08!important}
+  main.dungeonRunScreen .partySideMeta{font-size:8.5px!important}
+  main.dungeonRunScreen .partySideTopLine{margin-top:4px!important;gap:7px!important}
+  main.dungeonRunScreen .partyEnergyChip{
+    display:inline-flex!important;align-items:center!important;gap:3px!important;
+    margin:0!important;padding:4px 8px!important;border-radius:999px!important;
+    background:linear-gradient(180deg,#fff5bd,#ffd75d)!important;
+    border:1px solid #e4b134!important;color:#684600!important;
+    font-size:9px!important;font-weight:1000!important;line-height:1!important;
+    box-shadow:0 1px 0 #c88c1d!important;white-space:nowrap!important;
+  }
+  main.dungeonRunScreen .partyEnergyChip b{font-size:12px!important;color:#2e2100!important}
+  main.dungeonRunScreen .partySideHpText{font-size:9.5px!important}
+  main.dungeonRunScreen .partySideInfo>.hpbar{height:8px!important;margin-top:4px!important}
+  main.dungeonRunScreen .partySideStatRows{gap:2px!important;margin-top:5px!important}
+  main.dungeonRunScreen .partySideStatRow{
+    grid-template-columns:31px minmax(72px,1fr) 31px 52px!important;
+    gap:5px!important;min-height:14px!important;font-size:8.5px!important;
+  }
+  main.dungeonRunScreen .partySideStatLabel{font-size:8.5px!important}
+  main.dungeonRunScreen .partySideStatRow>b{font-size:9.5px!important}
+  main.dungeonRunScreen .partySideStatRow>small{font-size:7px!important}
+  main.dungeonRunScreen .partySideStatBar{height:6px!important}
+  main.dungeonRunScreen .partySideStatLegend{font-size:6.8px!important;gap:8px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideStatLegend i{width:7px!important;height:7px!important}
+  main.dungeonRunScreen .partySideFooter{font-size:7.4px!important;gap:4px 8px!important;margin-top:4px!important}
+  main.dungeonRunScreen .partySideFooter .bondChip{font-size:7.4px!important;padding:2px 5px!important}
+  main.dungeonRunScreen .partySideCard .matchupReason{font-size:8px!important;padding:4px 5px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideCard .battleMoodBadge{font-size:8px!important;padding:4px 5px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideCard.selectable{
+    border-color:#2bb5df!important;box-shadow:0 0 0 2px #8fe9ff55 inset,0 3px 10px #177b9a20!important;
+  }
+}
+@media(min-width:701px) and (max-height:735px){
+  main.dungeonRunScreen>.dungeonRun{grid-template-columns:clamp(325px,27vw,390px) minmax(0,1fr)!important}
+  main.dungeonRunScreen .partySidebar{padding:7px!important}
+  main.dungeonRunScreen .partyPcCards{gap:5px!important}
+  main.dungeonRunScreen .partySideCard{grid-template-columns:72px minmax(0,1fr)!important;gap:7px!important;padding:5px 6px!important}
+  main.dungeonRunScreen .partySideCard .partySideImg{width:72px!important;height:102px!important;max-width:72px!important;max-height:102px!important}
+  main.dungeonRunScreen .partySideName{font-size:11.5px!important}
+  main.dungeonRunScreen .partySideMeta{font-size:7.5px!important}
+  main.dungeonRunScreen .partyEnergyChip{font-size:8px!important;padding:3px 6px!important}
+  main.dungeonRunScreen .partyEnergyChip b{font-size:10px!important}
+  main.dungeonRunScreen .partySideHpText{font-size:8px!important}
+  main.dungeonRunScreen .partySideInfo>.hpbar{height:6px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideStatRows{gap:1px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideStatRow{grid-template-columns:27px minmax(55px,1fr) 28px 44px!important;gap:4px!important;min-height:11px!important;font-size:7.2px!important}
+  main.dungeonRunScreen .partySideStatLabel{font-size:7.2px!important}
+  main.dungeonRunScreen .partySideStatRow>b{font-size:8px!important}
+  main.dungeonRunScreen .partySideStatRow>small{font-size:6px!important}
+  main.dungeonRunScreen .partySideStatBar{height:5px!important}
+  main.dungeonRunScreen .partySideStatLegend{font-size:5.8px!important;margin-top:2px!important}
+  main.dungeonRunScreen .partySideFooter{font-size:6.2px!important;margin-top:2px!important}
+  main.dungeonRunScreen .partySideFooter .bondChip{font-size:6.2px!important}
+}
 </style>
