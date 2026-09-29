@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.79">
+<html lang="ja" data-app-version="1.80">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3705,6 +3705,90 @@ body[data-dungeon-page="dungeons"] .dungeonSelectScreen{display:block!important;
 }
 @media(min-width:900px){
   .dungeonOverviewGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+
+
+<style id="v180-energy-hatch-center">
+/* Ver1.80: never clip Poké Energy values; center the egg-hatch scene vertically. */
+.teamEnergyBadge{
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+.teamEnergyBadge b{
+  display:inline!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+}
+@media(max-width:700px){
+  main.battleScreen .combatTeamStrip .teamMiniHead>div,
+  main.chooseFighterScreen .combatTeamStrip .teamMiniInfo{
+    min-width:0!important;
+    overflow:visible!important;
+  }
+  main.battleScreen .combatTeamStrip .teamEnergyBadge,
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge{
+    width:max-content!important;
+    max-width:none!important;
+    padding:3px 6px!important;
+    gap:2px!important;
+    font-size:7.2px!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+  }
+  main.battleScreen .combatTeamStrip .teamEnergyBadge b,
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge b{
+    font-size:9.5px!important;
+  }
+}
+
+/* The revealed hatch result is one centered block instead of title at top + button at bottom. */
+body[data-dungeon-page="postrun"] #app{
+  align-items:stretch!important;
+}
+body[data-dungeon-page="postrun"] .hatchDramaCard{
+  height:100%!important;
+  min-height:0!important;
+  justify-content:center!important;
+}
+body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady{
+  justify-content:center!important;
+  gap:4px!important;
+}
+body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady .hatchReveal{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  justify-content:center!important;
+  margin:0 auto!important;
+}
+body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady h2,
+body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady .hatchMessage,
+body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady .hatchTapHint,
+body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
+  flex:0 0 auto!important;
+}
+@media(max-width:700px){
+  body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady{
+    padding:12px 10px!important;
+    gap:3px!important;
+  }
+  body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady .hatchReveal img{
+    height:min(185px,24svh)!important;
+    max-width:min(48vw,180px)!important;
+  }
+  body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady .hatchResultName{
+    margin:4px 0!important;
+  }
+  body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
+    margin-top:6px!important;
+  }
 }
 </style>
 
