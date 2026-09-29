@@ -1,10 +1,10 @@
 <!doctype html>
-<!-- FRENDA_DUNGEON_VERSION: 1.67 -->
-<html lang="ja">
+<!-- VERSION_SOURCE: html[data-app-version] -->
+<html lang="ja" data-app-version="1.68">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダダンジョン Ver1.66</title>
+<title>フレンダダンジョン</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#10283a;--blue:#1672e6;--cyan:#24c6e8;--bg:#eef3f7;--card:#fff;--muted:#687985;--line:#d9e2e8;--good:#1b9a56;--warn:#d28a00;--bad:#c53b3b;--purple:#7047b7}
@@ -3359,7 +3359,7 @@ body[data-dungeon-page="postrun"] .hatchDramaCard #hatchNext{min-width:min(220px
 
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge">Ver1.66</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3375,7 +3375,9 @@ body[data-dungeon-page="postrun"] .hatchDramaCard #hatchNext{min-width:min(220px
 <script>
 (()=>{
 "use strict";
-const APP_VERSION="1.67";
+const APP_VERSION=document.documentElement.dataset.appVersion||"0.00";
+document.title=`フレンダダンジョン Ver${APP_VERSION}`;
+const versionBadge=document.getElementById("versionBadge");if(versionBadge)versionBadge.textContent=`Ver${APP_VERSION}`;
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -5052,9 +5054,9 @@ async function checkForAppUpdate(force=false){
   const res=await fetch(checkUrl.toString(),{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
   if(!res.ok)return false;
   const html=await res.text();
-  // Prefer the explicit marker, but also read the embedded APP_VERSION/title.
-  // This prevents a future marker-update omission from disabling auto update.
+  // Version is defined in exactly one place: <html data-app-version="...">.
   const versionCandidates=[
+   html.match(/data-app-version=["']([0-9.]+)["']/i)?.[1],
    html.match(/FRENDA_DUNGEON_VERSION:\s*([0-9.]+)/i)?.[1],
    html.match(/const\s+APP_VERSION\s*=\s*["']([0-9.]+)["']/i)?.[1],
    html.match(/フレンダダンジョン\s+Ver([0-9.]+)/i)?.[1]
@@ -5092,4 +5094,4 @@ applyDungeonTestCase();
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
-<!-- Updated: 2026-09-29 / Ver1.66 -->
+<!-- Updated: 2026-09-29 -->
