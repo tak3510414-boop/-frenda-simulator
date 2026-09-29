@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.71">
+<html lang="ja" data-app-version="1.72">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3385,6 +3385,40 @@ body[data-dungeon-page="postrun"] .hatchDramaCard #hatchNext{min-width:min(220px
 }
 </style>
 
+
+<style id="v172-growth-ui">
+/* Ver1.72: stronger result showcase, compact result table, collection progress and training graphs. */
+.postRunSummary.resultV3 .captureShowcase{grid-column:span 2!important;padding:8px 10px!important}
+.postRunSummary.resultV3 .captureShowcase .rhLabel{margin-bottom:5px!important}
+.resultCaptureGrid{display:flex;gap:8px;align-items:flex-start;justify-content:flex-start;flex-wrap:wrap}
+.resultCapturePick{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:center;min-width:150px;max-width:220px}
+.resultCapturePick img{grid-row:1/3;width:82px;height:112px;object-fit:cover;border-radius:11px;background:#e7eef2;box-shadow:0 5px 12px #17384c25}
+.resultCapturePick b{font-size:14px;line-height:1.1;color:#16394a;overflow-wrap:anywhere}.resultCapturePick small{font-size:10px;color:#667b86}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossWrap{flex:0 0 auto!important;min-height:0!important;overflow:hidden!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable{height:auto!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable th,body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable td{height:auto!important;padding:5px 5px!important;line-height:1.15!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable tbody tr{height:34px!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable thead tr{height:28px!important}
+.trainingGridViewport{grid-template-columns:repeat(auto-fill,minmax(255px,1fr))!important;gap:8px!important}
+.compactTrainingCard{padding:8px!important;min-width:0!important}
+.compactTrainTop{grid-template-columns:52px minmax(0,1fr)!important;gap:7px!important;align-items:start}.compactTrainTop img{width:52px!important;height:72px!important;aspect-ratio:auto!important}
+.compactTrainInfo>b{font-size:13px}.compactTrainInfo>small{font-size:8px;color:#667681}.compactTrainInfo .trainingCombinedMini{padding:3px 4px!important;margin-top:3px!important}.compactTrainInfo .pointChips{gap:3px;margin:3px 0 0!important}.compactTrainInfo .pointChip,.compactTrainInfo .bondChip{font-size:7px!important;padding:2px 4px!important}
+.trainingAbilityGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 7px;margin-top:7px;padding:7px;border-radius:11px;background:#f5f9fc;border:1px solid #dbe7ed}
+.trainingAbility{min-width:0}.trainingAbilityHead{display:flex;align-items:baseline;justify-content:space-between;gap:3px;font-size:8px;font-weight:1000;color:#506673}.trainingAbilityHead b{font-size:10px;color:#18384a;white-space:nowrap}.trainingAbilityHead em{font-style:normal;font-size:7px;color:#8a4fd0;margin-left:2px}
+.trainingAbilityBar{height:6px;margin-top:2px;border-radius:999px;background:#dfe8ee;display:flex;overflow:hidden}.trainingAbilityBase{height:100%;background:linear-gradient(90deg,#4ea4ff,#2f75e8)}.trainingAbilityBoost{height:100%;background:linear-gradient(90deg,#c58af4,#8650db)}
+.trainingAbilityLegend{display:flex;justify-content:flex-end;gap:8px;margin:3px 1px 5px;font-size:7px;color:#667984}.trainingAbilityLegend i{display:inline-block;width:7px;height:7px;border-radius:999px;margin-right:3px;vertical-align:-1px}.trainingAbilityLegend .base{background:#3f88f3}.trainingAbilityLegend .boost{background:#9b63e7}
+.compactBalance{display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:5px 7px!important;margin:4px 0!important}.compactBalance span{font-size:8px!important}.compactBalance strong{font-size:16px!important}.compactBalance small{display:none!important}
+.trainingSpendGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.trainingSpendBtn{min-width:0!important;padding:6px 2px!important;border-radius:8px!important}.trainingSpendBtn b{display:block;font-size:8px}.trainingSpendBtn small{display:block;font-size:7px;white-space:nowrap;margin-top:1px}
+.compactTrainingCard .evoCue{margin:5px 0 3px!important;padding:5px!important;font-size:8px!important}.compactTrainingCard .trainEvo{margin-top:4px!important;padding:7px 5px!important;font-size:9px!important}.compactTrainingCard .noEvolutionTrainingNote{padding:5px!important;font-size:7px!important}
+@media(max-width:700px){
+ .postRunSummary.resultV3 .captureShowcase{grid-column:span 2!important}.resultCaptureGrid{gap:5px;justify-content:center}.resultCapturePick{grid-template-columns:66px minmax(0,1fr);min-width:125px;max-width:170px;column-gap:6px}.resultCapturePick img{width:66px;height:92px;border-radius:9px}.resultCapturePick b{font-size:10px}.resultCapturePick small{font-size:7px}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable th,body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable td{padding:4px 3px!important;font-size:8.5px!important}.postRunSummary.resultV3 .resultCrossTable thead th{font-size:7.5px!important}.postRunSummary.resultV3 .resultCrossTable tbody tr{height:30px!important}.postRunSummary.resultV3 .resultCrossTable thead tr{height:25px!important}
+ .trainingGridViewport{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important}.trainingGridViewport .compactTrainingCard{padding:6px!important}.trainingGridViewport .compactTrainTop{grid-template-columns:43px minmax(0,1fr)!important;gap:5px!important}.trainingGridViewport .compactTrainTop img{width:43px!important;height:60px!important}.compactTrainInfo>b{font-size:10px}.compactTrainInfo>small{font-size:6.5px}.compactTrainInfo .trainingCombinedMini{font-size:7px!important}.compactTrainInfo .pointChip,.compactTrainInfo .bondChip{font-size:6px!important}
+ .trainingAbilityGrid{gap:4px 5px;margin-top:5px;padding:5px}.trainingAbilityHead{font-size:6.5px}.trainingAbilityHead b{font-size:8px}.trainingAbilityHead em{font-size:5.5px}.trainingAbilityBar{height:5px}.trainingAbilityLegend{font-size:5.5px;gap:5px;margin-bottom:3px}
+ .compactBalance{padding:4px!important}.compactBalance span{font-size:6.5px!important}.compactBalance strong{font-size:13px!important}.trainingSpendGrid{gap:3px}.trainingSpendBtn{padding:5px 1px!important}.trainingSpendBtn b{font-size:6.5px}.trainingSpendBtn small{font-size:5.5px}.compactTrainingCard .evoCue{font-size:6.5px!important;padding:4px!important}.compactTrainingCard .trainEvo{font-size:7px!important;padding:6px 3px!important}
+}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
@@ -4020,7 +4054,8 @@ function homeEggSummary(){
 function homeDexSummary(){
  const obtained=Object.values(state.dex||{}).filter(d=>d&&(d.obtained||d.current)).length;
  const seen=Object.keys(state.seenPicks||{}).length;
- return {obtained,seen};
+ const total=Math.max(1,RECORDS.length||0),pct=Math.round(obtained/total*1000)/10;
+ return {obtained,seen,total,pct};
 }
 function homeNextGoal(){
  const eggs=Array.isArray(state.eggs)?state.eggs:[],forest1=getStat("forest",1),deepest=Math.max(0,Number(forest1?.deepest)||0);
@@ -4031,7 +4066,7 @@ function homeNextGoal(){
 }
 function homeHero(){
  const s=getStat("forest",1),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),deepest=Math.max(0,Number(s?.deepest)||0);
- return `<div class="homeHeroPanel"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンをどんどん攻略！ 卵やレアピックとの出会いがキミを待っている！</p><div class="homeGoalCard"><span class="homeGoalLabel">つぎの目標</span><b>${esc(goal.title)}</b><small>${esc(goal.body)}</small></div></div><div class="homeHeroSide"><div class="homeStatRibbon"><div class="homeStatCard"><b>B${deepest}</b><small>森 ランク1 最深</small></div><div class="homeStatCard"><b>${clears}</b><small>クリア</small></div><div class="homeStatCard"><b>${state.owned.length}</b><small>所持ピック</small></div><div class="homeStatCard"><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></div></div><div class="homeSubPanels"><div class="homeSubPanel egg"><b>🥚 ${esc(egg.title)}</b><small>${esc(egg.body)}</small><div class="homeMiniMeter"><span style="width:${egg.ratio}%"></span></div></div><div class="homeSubPanel dex"><b>📖 図鑑 ${dex.obtained}種ゲット！</b><small>遭遇済み ${dex.seen}種。まだ見ぬピックを探しに行こう！</small><div class="homeMiniMeter"><span style="width:${Math.min(100,dex.obtained?dex.obtained/Math.max(dex.seen||1,dex.obtained)*100:0)}%;background:linear-gradient(90deg,#46b3ff,#7a8dff)"></span></div></div></div></div></div>`
+ return `<div class="homeHeroPanel"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンをどんどん攻略！ 卵やレアピックとの出会いがキミを待っている！</p><div class="homeGoalCard"><span class="homeGoalLabel">つぎの目標</span><b>${esc(goal.title)}</b><small>${esc(goal.body)}</small></div></div><div class="homeHeroSide"><div class="homeStatRibbon"><div class="homeStatCard"><b>B${deepest}</b><small>森 ランク1 最深</small></div><div class="homeStatCard"><b>${clears}</b><small>クリア</small></div><div class="homeStatCard"><b>${state.owned.length}</b><small>所持ピック</small></div><div class="homeStatCard"><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></div></div><div class="homeSubPanels"><div class="homeSubPanel egg"><b>🥚 ${esc(egg.title)}</b><small>${esc(egg.body)}</small><div class="homeMiniMeter"><span style="width:${egg.ratio}%"></span></div></div><div class="homeSubPanel dex"><b>📖 図鑑 ${dex.obtained}/${dex.total}　${dex.pct}%</b><small>遭遇済み ${dex.seen}種。まだ見ぬピックを探しに行こう！</small><div class="homeMiniMeter"><span style="width:${Math.min(100,dex.pct)}%;background:linear-gradient(90deg,#46b3ff,#7a8dff)"></span></div></div></div></div></div>`
 }
 function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","team","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
@@ -4490,11 +4525,11 @@ function renderSummary(){
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
        clear=x.type==="clear",def=x.type==="defeat",th=THEMES[x.dungeonId]||THEMES.forest;
 
- const captures=(x.captured||[]).map(id=>esc(rec(id)?.name_ja||id));
+ const captures=(x.captured||[]).map(id=>{const r=rec(id);return {id,r,name:esc(r?.name_ja||id)}});
  const unlocks=(x.unlocked||[]).map(v=>esc(v));
  const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"";
  const highlights=[];
- if(captures.length)highlights.push(`<div class="resultHighlight3 capture"><div class="rhLabel">🤝 新しい仲間</div><div class="rhValue">${captures.join("・")}</div></div>`);
+ if(captures.length)highlights.push(`<div class="resultHighlight3 capture captureShowcase"><div class="rhLabel">🤝 新しい仲間</div><div class="resultCaptureGrid">${captures.map(x=>`<div class="resultCapturePick"><img src="${esc(imageOf(x.r))}" alt=""><b>${x.name}</b><small>${x.r?gradeText(x.r):""}</small></div>`).join("")}</div></div>`);
  if(eggName)highlights.push(`<div class="resultHighlight3 reward"><div class="rhLabel">🥚 クリア報酬</div><div class="rhValue">${eggName}</div></div>`);
  if(unlocks.length)highlights.push(`<div class="resultHighlight3 unlock"><div class="rhLabel">🔓 新しく解放</div><div class="rhValue">${unlocks.join("・")}</div></div>`);
 
@@ -5051,12 +5086,22 @@ ${evolutionCandidatesSectionHTML(id)}
  const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();openTrainingFor(id)};
  const eb=ov.querySelector("#ownedDetailEvo");if(eb)eb.onclick=()=>{close();openEvolutionDialog(id)}
 }
+function trainingGraphStatHTML(label,base,bonus=0,scale=200){
+ const b=Math.max(0,Number(base)||0),g=Math.max(0,Number(bonus)||0),v=b+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),gw=Math.min(Math.max(0,100-bw),g/max*100);
+ return `<div class="trainingAbility"><div class="trainingAbilityHead"><span>${esc(label)}</span><b>${v}${g?`<em>+${g}</em>`:""}</b></div><div class="trainingAbilityBar"><span class="trainingAbilityBase" style="width:${bw}%"></span><span class="trainingAbilityBoost" style="width:${gw}%"></span></div></div>`
+}
+function trainingGraphHTML(r,pb={}){
+ const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5;
+ return `<div class="trainingAbilityGrid">${trainingGraphStatHTML("HP",r.hp,pb.hp||0,240)}${trainingGraphStatHTML("ATK",r.atk,pb.atk||0,220)}${trainingGraphStatHTML("DEF",r.def,pb.def||0,220)}${trainingGraphStatHTML("SPA",r.sp_atk,0,220)}${trainingGraphStatHTML("SPD",r.sp_def,0,220)}${trainingGraphStatHTML("SPE",speedBase,0,speedScale)}</div><div class="trainingAbilityLegend"><span><i class="base"></i>初期</span><span><i class="boost"></i>育成分</span></div>`
+}
+function trainingSpendButtonsHTML(id,r,pb,dp){
+ return `<div class="trainingSpendGrid">${[["hp","HP"],["atk","ATK"],["def","DEF"]].map(([k,label])=>{const cur=(Number(r[k])||0)+(Number(pb[k])||0),can=dp>0&&Number(pb[k]||0)<PERMANENT_BOOST_MAX,next=cur+(can?TRAINING_STEP:0);return `<button class="drillSpend trainingSpendBtn" data-train-id="${esc(id)}" data-stat="${k}" ${can?"":"disabled"}><b>${label}</b><small>${can?`${cur} → ${next}`:`${cur}`}</small></button>`}).join("")}</div>`
+}
 function renderTraining(){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
- app.innerHTML=`<div class="card trainingScreen"><div class="trainingScreenHead"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="trainingQuickGuide"><span>🌱 育成P＝<b>進化</b></span><span>🏋️ 特訓P＝<b>HP・攻撃・防御</b></span><span>1Pで <b>+${TRAINING_STEP}</b>（各+${PERMANENT_BOOST_MAX}まで）</span></div>${evoLoadNote()}<div class="ownedGrid trainingGridViewport">${actionable.length?actionable.map(o=>{
+ app.innerHTML=`<div class="card trainingScreen"><div class="trainingScreenHead"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="trainingQuickGuide"><span>🏋️ 特訓Pで <b>HP・ATK・DEF</b> を強化</span><span>青＝初期　紫＝育成分</span><span>1Pで <b>+${TRAINING_STEP}</b></span></div>${evoLoadNote()}<div class="ownedGrid trainingGridViewport">${actionable.length?actionable.map(o=>{
   const r=rec(o.id),pb=state.permanentBoosts[o.id]||(state.permanentBoosts[o.id]={hp:0,atk:0,def:0}),xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),kept=trainingStickyIds.has(o.id);
-  const rows=[["hp","HP"],["atk","攻撃"],["def","防御"]].map(([k,label])=>`<div class="trainStatRow drillOnly"><span>${label}+${pb[k]||0}</span><button class="drillSpend" data-train-id="${esc(o.id)}" data-stat="${k}" ${dp<=0||Number(pb[k]||0)>=PERMANENT_BOOST_MAX?"disabled":""}>特訓P 1 → +${TRAINING_STEP}</button></div>`).join("");
-  return `<div class="trainCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 育成P ${gp}・進化専用</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ 絆Lv${bondLevelFor(o.id)}</span></div></div></div><div class="trainingPointBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓ポイント</span><strong>残り ${dp}</strong><small>P</small></div><div class="trainStatTable">${rows}</div>${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（育成P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし：重複・成長のアメは特訓Pに加算</div>'}</div>`
+  return `<div class="trainCard compactTrainingCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop compactTrainTop"><img src="${esc(imageOf(r))}" alt=""><div class="compactTrainInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 ${gp}</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ Lv${bondLevelFor(o.id)}</span></div></div></div>${trainingGraphHTML(r,pb)}<div class="trainingPointBalance compactBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓P</span><strong>${dp}</strong></div>${trainingSpendButtonsHTML(o.id,r,pb,dp)}${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（育成P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし</div>'}</div>`
  }).join(""):'<div class="dexEmpty">現在、特訓または進化できるポケモンはいません。</div>'}</div></div>`;
  document.getElementById("trainingBackOwned").onclick=()=>{trainingStickyIds.clear();trainingFocusId=null;screen="owned";render()};
  app.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>spendDrill(b.dataset.trainId,b.dataset.stat));
