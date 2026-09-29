@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.81">
+<html lang="ja" data-app-version="1.82">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4458,15 +4458,41 @@ function renderStarter(){
    if(set&&UI.dialog.confirm(`${set.label}の御三家3体で始めますか？\n${set.names.join("・")}`))pickStarterSet(set.key);
  });
 }
+function homeExpeditionRemain(ms){
+ const min=Math.max(0,Math.ceil(Number(ms||0)/60000));
+ if(min<60)return `あと${min}分`;
+ const h=Math.floor(min/60),m=min%60;return m?`あと${h}時間${m}分`:`あと${h}時間`;
+}
+function homeExpeditionGroups(now=Date.now()){
+ const raw=expeditionSnapshot()||expeditionTimerState()||null;
+ const blank=i=>({id:i+1,status:"idle",mission:null});
+ let groups=[];
+ if(Array.isArray(raw?.groups))groups=[raw.groups[0]||blank(0),raw.groups[1]||blank(1)];
+ else if(raw&&raw.mission)groups=[{id:1,status:raw.status||"exploring",mission:raw.mission},blank(1)];
+ else groups=[blank(0),blank(1)];
+ return groups.map((g,i)=>{
+  const m=g?.mission||null,ret=Number(m?.returnAt||0),done=g?.status==="returned"||(g?.status==="exploring"&&ret>0&&ret<=now);
+  if(done)return {index:i,state:"returned",text:`G${i+1} 🎁 帰還済み`};
+  if(g?.status==="exploring"&&m){const th=THEMES[m.dungeonId],place=th?`${th.icon} ${th.name}`:"探索中",rank=Number.isFinite(Number(m.difficulty))?` R${Number(m.difficulty)}`:"",remain=ret?` ${homeExpeditionRemain(ret-now)}`:"";return {index:i,state:"exploring",text:`G${i+1} ${place}${rank}${remain}`}}
+  return {index:i,state:"idle",text:`G${i+1} 待機`};
+ })
+}
+function homeExpeditionStatusHTML(){
+ return `<div class="homeExpeditionStatus">${homeExpeditionGroups().map(x=>`<span class="${x.state}">${esc(x.text)}</span>`).join("")}</div>`
+}
 function renderHome(){
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
- app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeMenuGrid">
-  <button class="homeMenuBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small>ダンジョンへ出発！</small></button>
-  <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><small>${state.owned.length}枚の仲間</small></button>
-  <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><small>発見・登録状況</small></button>
-  <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><small>${state.eggs.length}/${state.eggCap} 個を確認</small></button>
-  <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><small>強化・進化</small></button>
-  <button class="homeMenuBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small>放置で探索</small></button>
+ app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
+  <div class="homePlayGrid">
+   <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small>ダンジョンへ出発！</small></button>
+   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small>2グループで派遣・探索</small>${homeExpeditionStatusHTML()}</button>
+  </div>
+  <div class="homeManageGrid">
+   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><small>${state.owned.length}枚の仲間</small></button>
+   <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><small>${homeDexSummary().obtained}/${homeDexSummary().total} 登録</small></button>
+   <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><small>${state.eggs.length}/${state.eggCap} 個を確認</small></button>
+   <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><small>強化・進化</small></button>
+  </div>
  </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 セーブ</button></div></div>`;
  app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
  document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()};
@@ -5861,4 +5887,63 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
   }
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 1.81 / Updated: 2026-09-30 05:18 JST -->
+
+
+<style id="v182-home-layout">
+/* Ver1.82: PC home = status / play / manage. Make Adventure and Expedition equal primary actions. */
+.homeActionArea{min-height:0;display:grid;grid-template-rows:minmax(0,1.08fr) minmax(0,.82fr);gap:9px}
+.homePlayGrid{min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.homeManageGrid{min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.homePlayBtn{min-height:0!important;padding:12px 14px!important}
+.homePlayBtn>b{font-size:clamp(44px,4.6vw,62px)!important}
+.homePlayBtn>span{font-size:clamp(20px,2vw,26px)!important}
+.homePlayBtn>small{font-size:11px!important}
+.homePlayBtn.dungeon{grid-column:auto!important}
+.homePlayBtn.expedition{background:linear-gradient(135deg,#ffd966,#f4b62f)!important;border-color:#e0b33b!important;box-shadow:0 6px 0 #c48e16,0 10px 20px #9a710920!important}
+.homeExpeditionStatus{position:relative;z-index:2;display:grid;gap:4px;width:min(94%,430px);margin-top:5px}
+.homeExpeditionStatus span{display:block;min-width:0;padding:4px 8px;border-radius:999px;background:#ffffff9c;border:1px solid #ffffffb8;color:#5a4300;font-size:9px;font-weight:1000;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.homeExpeditionStatus span.exploring{background:#e4f8ff;color:#0a5775;border-color:#9bdcf0}
+.homeExpeditionStatus span.returned{background:#fff0af;color:#6b4b00;border-color:#e8c552}
+.homeManageGrid .homeMenuBtn{padding:9px 8px!important;border-radius:18px!important}
+.homeManageGrid .homeMenuBtn>b{font-size:clamp(30px,3vw,42px)!important}
+.homeManageGrid .homeMenuBtn>span{font-size:clamp(15px,1.5vw,19px)!important}
+.homeManageGrid .homeMenuBtn>small{font-size:9px!important}
+@media(min-width:701px){
+ .homeScreen{grid-template-rows:auto minmax(0,1fr) auto!important;gap:9px!important}
+ .homeHeroPanel{grid-template-columns:minmax(0,1.42fr) minmax(300px,.92fr)!important;gap:10px!important;padding:12px 15px!important;border-radius:21px!important}
+ .homeHeroMain{gap:5px!important}
+ .homeHeroBadge{padding:4px 10px!important;font-size:9px!important}
+ .homeHeroTitle h1{font-size:clamp(29px,3vw,38px)!important}
+ .homeHeroLead{font-size:11.5px!important;line-height:1.38!important}
+ .homeGoalCard{padding:8px 11px!important;border-radius:15px!important}
+ .homeGoalLabel{margin-bottom:2px!important;padding:3px 7px!important;font-size:8px!important}
+ .homeGoalCard b{font-size:18px!important}
+ .homeGoalCard small{margin-top:2px!important;font-size:9.5px!important;line-height:1.35!important}
+ .homeHeroSide{gap:6px!important}
+ .homeStatRibbon{gap:5px!important}
+ .homeStatCard{padding:6px 4px!important;border-radius:13px!important}
+ .homeStatCard b{font-size:17px!important}
+ .homeStatCard small{font-size:7px!important}
+ .homeSubPanels{gap:6px!important}
+ .homeSubPanel{padding:7px 9px!important;border-radius:13px!important}
+ .homeSubPanel b{font-size:12px!important}
+ .homeSubPanel small{font-size:8px!important;line-height:1.3!important}
+ .homeMiniMeter{height:5px!important;margin-top:4px!important}
+}
+@media(max-width:700px){
+ .homeActionArea{grid-template-rows:minmax(82px,.75fr) minmax(164px,1.6fr);gap:6px;min-height:250px}
+ .homePlayGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .homeManageGrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px}
+ .homePlayBtn{padding:6px 4px!important;border-radius:15px!important;gap:2px!important}
+ .homePlayBtn>b{font-size:29px!important}.homePlayBtn>span{font-size:13px!important}.homePlayBtn>small{font-size:7px!important}
+ .homeExpeditionStatus{gap:2px;width:96%;margin-top:1px}
+ .homeExpeditionStatus span{padding:2px 4px;font-size:5.8px}
+ .homeManageGrid .homeMenuBtn{min-height:0!important;padding:6px 4px!important;border-radius:15px!important}
+ .homeManageGrid .homeMenuBtn>b{font-size:28px!important}.homeManageGrid .homeMenuBtn>span{font-size:13px!important}.homeManageGrid .homeMenuBtn>small{font-size:7px!important}
+}
+@media(max-height:700px) and (max-width:700px){
+ .homeActionArea{min-height:230px;grid-template-rows:minmax(72px,.68fr) minmax(150px,1.5fr)}
+ .homeExpeditionStatus span{font-size:5.4px}
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 1.82 / Updated: 2026-09-30 08:34 JST -->
