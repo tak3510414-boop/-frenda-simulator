@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.74">
+<html lang="ja" data-app-version="1.75">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4276,6 +4276,8 @@ function battleMiniStatGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math
 function battleMiniGraphGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="battleMiniGraphGrid">${battleMiniStatGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${battleMiniStatGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${battleMiniStatGraphHTML("SPA",r.sp_atk,0,0,220)}${battleMiniStatGraphHTML("SPD",r.sp_def,0,0,220)}${battleMiniStatGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="battleMiniLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function partyAdventureGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||200),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100);const detail=[p?`恒+${p}`:"",g?`冒+${g}`:""] .filter(Boolean).join(" / ");return `<div class="partyAdventureGraph"><div class="partyAdventureHead"><span>${esc(label)}</span><b>${v}</b></div><div class="partyAdventureBar"><span class="partyAdventureBase" style="width:${bw}%"></span><span class="partyAdventurePerm" style="width:${pw}%"></span><span class="partyAdventureRun" style="width:${gw}%"></span></div><small>${detail?`元${b} / ${detail}`:`元${b}`}</small></div>`}
 function partyAdventureGridHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partyAdventureGrid">${partyAdventureGraphHTML("HP",r.hp,pb.hp||0,0,240)}${partyAdventureGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partyAdventureGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${partyAdventureGraphHTML("SPA",r.sp_atk,0,0,220)}${partyAdventureGraphHTML("SPD",r.sp_def,0,0,220)}${partyAdventureGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partyAdventureLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
+function partySidebarStatRowHTML(label,base,perm=0,run=0,scale=220){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||220),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100),bonus=[p?`恒+${p}`:"",g?`冒+${g}`:""].filter(Boolean).join(" ");return `<div class="partySideStatRow"><span class="partySideStatLabel">${esc(label)}</span><div class="partySideStatBar"><span class="partySideStatBase" style="width:${bw}%"></span><span class="partySideStatPerm" style="width:${pw}%"></span><span class="partySideStatRun" style="width:${gw}%"></span></div><b>${v}</b><small>${bonus||"-"}</small></div>`}
+function partySidebarStatsHTML(t,r,pb={}){const sv=Number(r.speed_value),sl=Number(r.speed_level),speedBase=sv>0?sv:(sl>0?sl:0),speedScale=sv>0?200:5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partySideStatRows">${partySidebarStatRowHTML("HP",r.hp,pb.hp||0,0,240)}${partySidebarStatRowHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partySidebarStatRowHTML("DEF",r.def,pb.def||0,defRun,220)}${partySidebarStatRowHTML("SPA",r.sp_atk,0,0,220)}${partySidebarStatRowHTML("SPD",r.sp_def,0,0,220)}${partySidebarStatRowHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partySideStatLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function showTeamBackCompare(){const ids=teamSelection.slice(0,3).filter(id=>ownedEntry(id)&&rec(id));if(!ids.length)return;document.getElementById("teamCompareOverlay")?.remove();const picks=ids.map(id=>({id,r:rec(id),pb:state.permanentBoosts[id]||{}}));const hero=picks.map(x=>`<td class="teamCompareHero"><img src="${esc(imageOf(x.r))}" alt=""><b>${esc(x.r.name_ja)}</b><small>${gradeText(x.r)} / ${esc(x.r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(x.r.poke_ene??"-")}</span></td>`).join("");const row=(label,fn,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th>${picks.map(x=>`<td class="${cls}">${fn(x)}</td>`).join("")}</tr>`;const ov=document.createElement("div");ov.id="teamCompareOverlay";ov.className="teamCompareOverlay";ov.innerHTML=`<div class="teamComparePanel" role="dialog" aria-modal="true" aria-label="挑戦チーム裏面比較"><div class="teamCompareHead"><div><small>TEAM PICK COMPARISON</small><b>挑戦チーム・裏面比較（${picks.length}/3）</b></div><button type="button" class="teamCompareClose" id="teamCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="teamCompareTableWrap"><table class="teamCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero}</tr></thead><tbody>${row("タイプ",x=>esc(compareTypeText(x.r)),"teamCompareType")}${row("ポケエネ",x=>`<b style="font-size:16px">⚡ ${esc(x.r.poke_ene??"-")}</b>`)}${row("HP",x=>compareStatGraphCell(x.r.hp,x.pb.hp))}${row("ATK",x=>compareStatGraphCell(x.r.atk,x.pb.atk))}${row("DEF",x=>compareStatGraphCell(x.r.def,x.pb.def))}${row("SP.ATK",x=>compareStatGraphCell(x.r.sp_atk,0))}${row("SP.DEF",x=>compareStatGraphCell(x.r.sp_def,0))}${row("すばやさ",x=>{const sv=Number(x.r.speed_value),sl=Number(x.r.speed_level);return sv>0?compareStatGraphCell(sv,0,200):sl>0?compareStatGraphCell(sl,0,5):"-"})}${row("通常わざ",x=>`<b>${esc(x.r.move||"未登録")}</b>${esc(x.r.move_type||"-")} / ${esc(x.r.move_class||"-")}`,"teamCompareMove")}${row("必殺技",x=>esc((x.r.finisher_move&&String(x.r.finisher_move).trim())?String(x.r.finisher_move).trim():"なし"),"teamCompareMove")}${row("恒久強化",x=>`HP+${x.pb.hp||0}<br>攻+${x.pb.atk||0}<br>防+${x.pb.def||0}`,"teamCompareGrowth")}${row("成長",x=>`育成P ${growthPointsFor(x.id)}<br>EXP ${xpFor(x.id)}/100<br>特訓P ${drillFor(x.id)}`,"teamCompareGrowth")}${row("絆",x=>esc(bondProgressText(x.id)),"teamCompareGrowth")}</tbody></table></div><div class="teamCompareLegend">選択中のピックを最大3体まで、同じ項目・同じ行で比較します。敵ピックの裏面情報は表示しません。</div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#teamCompareClose").onclick=close}
 function teamRecommendationInfo(r){
  const th=THEMES[currentDungeon.id];
@@ -4822,13 +4824,13 @@ function partySidebarCardHTML(t,i){
  const r=rec(t.id),pb=state.permanentBoosts[t.id]||{},max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
        inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,
        directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
-       action=m?m.action:(directSwitch?"switch":""),bond=bondLevelFor(t.id),
+       action=m?m.action:(directSwitch?"switch":""),bond=bondLevelFor(t.id),drill=drillFor(t.id),growth=growthPointsFor(t.id),
        appeal=m?.action==="fighter"?fighterMatchupAppeal(t):null,
        appealCls=appeal?` matchup${appeal.kind==="good"?"Good":appeal.kind==="veryBad"?"VeryBad":"Bad"}`:"",
        cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${appealCls}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
- return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<b class="partySideName">${esc(r.name_ja)}</b><div class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</div><div class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div><div class="partySideHp"><span>現在HP</span><span>${t.hp}/${max}</span></div>${partyAdventureGridHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideStats">冒険中：攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}<br>EXP ${xp}/100　<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ${esc(r.poke_ene??"-")}</span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>育成P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
 }
 function partySidebarHTML(tm,combatScene=false){
  return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
@@ -5363,4 +5365,67 @@ if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dunge
   .homeMiniMeter{margin-top:4px!important}
   .homeMenuGrid{min-height:250px!important}
 }
+
+/* Ver1.75: PC route/battle share the same larger party sidebar.
+   Six abilities are listed vertically, and route buttons are compact instead of filling the pane. */
+@media(min-width:701px){
+  main.dungeonRunScreen>.dungeonRun{grid-template-columns:clamp(315px,25vw,390px) minmax(0,1fr)!important;gap:7px 10px!important}
+  main.dungeonRunScreen .partySidebar{padding:8px!important;overflow:hidden!important}
+  main.dungeonRunScreen .partySidebar .sectionTitle{font-size:15px!important;margin:0 0 5px!important}
+  main.dungeonRunScreen .partySidebar .teamChoiceHint{font-size:8px!important;line-height:1.15!important;margin:0 0 4px!important;padding:4px 6px!important}
+  main.dungeonRunScreen .partyPcCards{grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:6px!important;overflow:hidden!important}
+  main.dungeonRunScreen .partySideCard{grid-template-columns:72px minmax(0,1fr)!important;gap:8px!important;padding:6px 7px!important;border-radius:10px!important;align-items:start!important;height:100%!important;overflow:hidden!important}
+  main.dungeonRunScreen .partySideCard .partySideImg{width:72px!important;height:100px!important;max-width:72px!important;max-height:100px!important;object-fit:contain!important;border-radius:7px!important;align-self:start!important}
+  main.dungeonRunScreen .partySideInfo{min-width:0!important;align-self:start!important;width:100%!important}
+  main.dungeonRunScreen .partySideNameRow{display:flex!important;align-items:baseline!important;gap:5px!important;min-width:0!important;padding-right:23px!important}
+  main.dungeonRunScreen .partySideName{display:block!important;min-width:0!important;max-width:100%!important;padding:0!important;font-size:11.5px!important;line-height:1.08!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  main.dungeonRunScreen .partySideMeta{flex:0 0 auto!important;margin:0!important;font-size:7px!important;line-height:1!important;white-space:nowrap!important}
+  main.dungeonRunScreen .partySideTopLine{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:5px!important;margin-top:2px!important}
+  main.dungeonRunScreen .partyEnergyChip{margin:0!important;padding:2px 5px!important;font-size:7px!important;line-height:1!important;gap:2px!important}
+  main.dungeonRunScreen .partySideHpText{font-size:7.5px!important;font-weight:1000!important;color:#405764!important;white-space:nowrap!important}
+  main.dungeonRunScreen .partySideInfo>.hpbar{height:6px!important;margin-top:2px!important}
+  main.dungeonRunScreen .partySideStatRows{display:grid!important;grid-template-columns:1fr!important;gap:1px!important;margin-top:3px!important}
+  main.dungeonRunScreen .partySideStatRow{display:grid!important;grid-template-columns:28px minmax(48px,1fr) 28px 45px!important;align-items:center!important;gap:4px!important;min-height:12px!important;font-size:7px!important;line-height:1!important}
+  main.dungeonRunScreen .partySideStatLabel{font-weight:1000!important;color:#526875!important}
+  main.dungeonRunScreen .partySideStatRow>b{font-size:7.5px!important;text-align:right!important;color:#203744!important}
+  main.dungeonRunScreen .partySideStatRow>small{font-size:6px!important;color:#765d8d!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  main.dungeonRunScreen .partySideStatBar{height:5px!important;border-radius:999px!important;background:#e8eef2!important;overflow:hidden!important;display:flex!important;box-shadow:inset 0 1px 2px #7b93a114!important}
+  main.dungeonRunScreen .partySideStatBase{height:100%!important;background:linear-gradient(90deg,#57a6ff,#266fe8)!important}
+  main.dungeonRunScreen .partySideStatPerm{height:100%!important;background:linear-gradient(90deg,#bf93ff,#8553e9)!important}
+  main.dungeonRunScreen .partySideStatRun{height:100%!important;background:linear-gradient(90deg,#ffbd74,#ef6f2f)!important}
+  main.dungeonRunScreen .partySideStatLegend{display:flex!important;gap:7px!important;align-items:center!important;margin-top:2px!important;font-size:5.8px!important;color:#647884!important;line-height:1!important}
+  main.dungeonRunScreen .partySideStatLegend i{display:inline-block!important;width:6px!important;height:6px!important;border-radius:999px!important;margin-right:2px!important;vertical-align:-1px!important}
+  main.dungeonRunScreen .partySideStatLegend .base i{background:#3f88f3!important}.partySideStatLegend .perm i{background:#9b6af0!important}.partySideStatLegend .run i{background:#f18c3c!important}
+  main.dungeonRunScreen .partySideFooter{display:flex!important;align-items:center!important;gap:3px 7px!important;flex-wrap:wrap!important;margin-top:3px!important;font-size:6.5px!important;line-height:1.05!important;color:#526774!important}
+  main.dungeonRunScreen .partySideFooter .bondChip{font-size:6.5px!important;padding:1px 4px!important}
+  main.dungeonRunScreen .partySideCard .matchupReason{margin-top:2px!important;padding:3px 4px!important;font-size:7px!important;line-height:1.08!important}
+  main.dungeonRunScreen .partySideCard .battleMoodBadge{margin-top:2px!important;padding:3px 4px!important;font-size:7px!important}
+
+  main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;padding:10px 12px!important;overflow:hidden!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard>.sectionTitle{font-size:17px!important;margin:0 0 8px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeGrid{flex:0 0 auto!important;min-height:0!important;height:auto!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:9px!important;align-items:stretch!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard{height:96px!important;min-height:96px!important;max-height:96px!important;padding:8px 10px!important;border-radius:13px!important;display:grid!important;grid-template-columns:45px minmax(0,1fr)!important;grid-template-rows:auto auto!important;column-gap:7px!important;row-gap:2px!important;align-items:center!important;justify-items:start!important;text-align:left!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard .ico{grid-column:1!important;grid-row:1/3!important;font-size:34px!important;line-height:1!important;justify-self:center!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard b{grid-column:2!important;grid-row:1!important;font-size:16px!important;line-height:1.05!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard small{grid-column:2!important;grid-row:2!important;font-size:9px!important;line-height:1.2!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeAlertNote{margin-top:8px!important;padding:6px 8px!important;font-size:9px!important;line-height:1.25!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard>.muted{font-size:8px!important;margin-top:4px!important}
+}
+@media(min-width:701px) and (max-height:720px){
+  main.dungeonRunScreen>.dungeonRun{grid-template-columns:295px minmax(0,1fr)!important;gap:5px 8px!important}
+  main.dungeonRunScreen .partySidebar{padding:6px!important}
+  main.dungeonRunScreen .partyPcCards{gap:4px!important}
+  main.dungeonRunScreen .partySideCard{grid-template-columns:58px minmax(0,1fr)!important;gap:6px!important;padding:4px 5px!important}
+  main.dungeonRunScreen .partySideCard .partySideImg{width:58px!important;height:82px!important;max-width:58px!important;max-height:82px!important}
+  main.dungeonRunScreen .partySideName{font-size:10px!important}
+  main.dungeonRunScreen .partySideStatRow{grid-template-columns:25px minmax(42px,1fr) 25px 38px!important;gap:3px!important;min-height:10px!important}
+  main.dungeonRunScreen .partySideStatRow>small{font-size:5.5px!important}
+  main.dungeonRunScreen .partySideStatLegend{display:none!important}
+  main.dungeonRunScreen .partySideFooter{font-size:5.7px!important;margin-top:2px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard{height:82px!important;min-height:82px!important;max-height:82px!important;grid-template-columns:38px minmax(0,1fr)!important;padding:6px 8px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard .ico{font-size:29px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard b{font-size:14px!important}
+  main.dungeonRunScreen[data-run-scene="route"] .routeCard small{font-size:8px!important}
+}
+
 </style>
