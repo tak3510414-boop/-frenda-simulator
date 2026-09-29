@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.72">
+<html lang="ja" data-app-version="1.73">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3419,6 +3419,33 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV3 .resultCrossTable the
 }
 </style>
 
+
+<style id="v173-dungeon-progress-overview">
+/* Ver1.73: dungeon selection overview = progress at a glance, no encounter examples */
+.dungeonOverviewCard{grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;align-content:start!important;gap:4px 6px!important}
+.dungeonOverviewTitle{font-size:12px!important;line-height:1.15!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.dungeonOverviewLevel{font-size:8px!important;font-weight:900!important;color:#637985!important;white-space:nowrap!important}
+.dungeonOverviewProgress{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;min-width:0}
+.dungeonOverviewRank{min-width:0;padding:4px 1px;border-radius:7px;border:1px solid #c8d5db;background:#eef3f5;text-align:center;line-height:1.05;color:#71828a;font-weight:1000;overflow:hidden}
+.dungeonOverviewRank b{display:block;font-size:8px;white-space:nowrap}.dungeonOverviewRank small{display:block;margin-top:2px;font-size:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dungeonOverviewRank.open{background:#e8f8ff;border-color:#8bcce4;color:#17627e}.dungeonOverviewRank.progress{background:#fff1cf;border-color:#e7b75a;color:#7b5100}.dungeonOverviewRank.cleared{background:#ddf7e7;border-color:#78c796;color:#17663a}.dungeonOverviewRank.current{background:#dff4ff;border:2px solid #28afe0;color:#075c78;box-shadow:0 0 0 2px #b9efff inset}.dungeonOverviewRank.locked{background:#edf1f3;border-color:#d7dfe3;color:#adb8be;filter:none!important;opacity:1!important}
+.dungeonOverviewSummary{grid-column:1/-1;display:flex;justify-content:space-between;gap:5px;align-items:center;font-size:7px;font-weight:900;color:#55717e;min-width:0}.dungeonOverviewSummary span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dungeonOverviewCard.locked .dungeonOverviewTitle,.dungeonOverviewCard.locked .dungeonOverviewLevel{opacity:.6}
+.dungeonCompareTop{grid-template-columns:auto minmax(0,1fr)!important}
+.dungeonComparePreview{display:none!important}
+.dungeonCompareDetail{grid-template-rows:auto auto auto!important}
+@media(max-width:700px){
+ .dungeonOverviewCard{padding:5px 6px!important;gap:3px 4px!important}
+ .dungeonOverviewTitle{font-size:9px!important}.dungeonOverviewLevel{font-size:6.5px!important}
+ .dungeonOverviewProgress{gap:2px!important}.dungeonOverviewRank{padding:3px 0!important;border-radius:6px!important}.dungeonOverviewRank b{font-size:6.5px!important}.dungeonOverviewRank small{font-size:5.1px!important;margin-top:1px!important}
+ .dungeonOverviewSummary{font-size:5.8px!important;gap:3px!important}
+ .dungeonCompareTop{grid-template-columns:auto minmax(0,1fr)!important}.dungeonCompareIcon{font-size:30px!important}.dungeonCompareTitle h2{font-size:14px!important}
+}
+@media(min-width:900px){
+ .dungeonOverviewCard{padding:7px 8px!important}.dungeonOverviewTitle{font-size:11px!important}.dungeonOverviewRank b{font-size:8px!important}.dungeonOverviewRank small{font-size:6px!important}
+}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
@@ -4107,15 +4134,15 @@ function dungeonPreviewPicks(did,count=4){
  return out
 }
 function dungeonMaxUnlockedText(did){const a=unlockedDifficulties(did);return a.length?`解放 ランク1〜ランク${Math.max(...a)}`:"未解放"}
+function dungeonOverviewRankHTML(did,diff){const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff),deep=Math.max(0,Number(st?.deepest||0)),clears=Math.max(0,Number(st?.clears||0));let cls="locked",txt="🔒";if(ok){if(isCurrent){cls="current";txt=deep?`B${deep}`:"攻略中"}else if(clears>0){cls="cleared";txt=`B${deep||10} ✓${clears}`}else if(deep>0){cls="progress";txt=`B${deep}`}else{cls="open";txt="挑戦可"}}return `<span class="dungeonOverviewRank ${cls}"><b>R${diff}</b><small>${txt}</small></span>`}
+function dungeonOverviewSummary(did){const unlockedList=unlockedDifficulties(did),stats=[1,2,3,4,5].map(d=>getStat(did,d));const cleared=stats.filter((s,i)=>unlocked(did,i+1)&&Number(s?.clears||0)>0).length;let bestDiff=0,bestFloor=0;for(let d=1;d<=5;d++){if(!unlocked(did,d))continue;const f=Math.max(0,Number(stats[d-1]?.deepest||0));if(d>bestDiff||(d===bestDiff&&f>bestFloor)){bestDiff=d;bestFloor=f}}const maxUnlocked=unlockedList.length?Math.max(...unlockedList):0;return {cleared,bestDiff,bestFloor,maxUnlocked}}
 function dungeonDiffButtons(did){return [1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff);let cls="locked",hint="🔒";if(ok){if(isCurrent){cls="currentRun";hint="攻略中"}else if(Number(st.clears||0)>0){cls="cleared";hint="クリア"}else if(Number(st.deepest||0)>0){cls="inprogress";hint="攻略中"}else{cls="open";hint="挑戦可"}}return `<button class="diffBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"} >ランク${diff}${ok?`<span class="diffStat">B${st.deepest} / ${st.clears}回</span><span class="diffHint">${hint}</span>`:`<span class="diffStat">🔒</span><span class="diffHint">LOCK</span>`}</button>`}).join("")}
 function renderDungeonList(){
  const firstOpen=THEME_ORDER.find(id=>unlockedDifficulties(id).length>0)||THEME_ORDER[0];
  if(!THEME_ORDER.includes(dungeonBrowseId))dungeonBrowseId=firstOpen;
  const did=dungeonBrowseId,th=THEMES[did],any=unlockedDifficulties(did).length>0,nextLocked=[1,2,3,4,5].find(d=>!unlocked(did,d));
- const overview=THEME_ORDER.map(id=>{const t=THEMES[id],open=unlockedDifficulties(id).length>0,picks=dungeonPreviewPicks(id,3);return `<button type="button" class="dungeonOverviewCard ${id===did?"selected":""} ${open?"":"locked"}" data-browse-dungeon="${esc(id)}"><span class="dungeonOverviewTitle">${t.icon} ${esc(t.name)}</span><span class="dungeonOverviewLevel">${esc(dungeonMaxUnlockedText(id))}</span><span class="dungeonOverviewPicks">${picks.map(r=>`<img src="${esc(imageOf(r))}" alt="${esc(r.name_ja)}" title="${esc(r.name_ja)}">`).join("")}${picks[0]?`<span>${esc(picks.map(r=>r.name_ja).join("・"))}</span>`:"<span>候補未登録</span>"}</span></button>`}).join("");
- const preview=dungeonPreviewPicks(did,4);
- const detailPicks=preview.length?preview.map(r=>`<div class="dungeonPreviewPick"><img src="${esc(imageOf(r))}" alt=""><span>${esc(r.name_ja)}</span></div>`).join(""):`<span class="muted">出現候補未登録</span>`;
- app.innerHTML=`<div class="card dungeonSelectScreen"><div class="dungeonOverviewHead"><div class="sectionTitle">ダンジョン選択</div><div class="dungeonOverviewHint">一覧で比較 → 詳細でランクを選択</div></div><div class="dungeonOverviewBody"><div class="dungeonOverviewGrid">${overview}</div><div class="dungeonCompareDetail ${any?"":"locked"}"><div class="dungeonCompareTop"><div class="dungeonCompareIcon">${th.icon}</div><div class="dungeonCompareTitle"><h2>${esc(th.name)}</h2><div>${th.types.map(t=>`<span class="badge">${esc(t)}</span>`).join(" ")}</div></div><div class="dungeonComparePreview"><span class="dungeonComparePreviewLabel">出現例</span><div class="dungeonComparePreviewPicks">${detailPicks}</div></div></div><div class="dungeonCompareDiffs">${dungeonDiffButtons(did)}</div><div class="dungeonCompareUnlock">${any?(nextLocked?`次の解放：${esc(unlockCondition(did,nextLocked))}`:"ランク5まで解放済み"):`🔒 解放条件：${esc(unlockCondition(did,1))}`}</div></div></div></div>`;
+ const overview=THEME_ORDER.map(id=>{const t=THEMES[id],open=unlockedDifficulties(id).length>0,s=dungeonOverviewSummary(id),ranks=[1,2,3,4,5].map(d=>dungeonOverviewRankHTML(id,d)).join("");const level=s.maxUnlocked?`解放 R1〜R${s.maxUnlocked}`:"未解放";const best=s.bestDiff?`最高 R${s.bestDiff}・B${s.bestFloor}`:"未挑戦";return `<button type="button" class="dungeonOverviewCard ${id===did?"selected":""} ${open?"":"locked"}" data-browse-dungeon="${esc(id)}"><span class="dungeonOverviewTitle">${t.icon} ${esc(t.name)}</span><span class="dungeonOverviewLevel">${level}</span><span class="dungeonOverviewProgress">${ranks}</span><span class="dungeonOverviewSummary"><span>${best}</span><span>クリア ${s.cleared}/5</span></span></button>`}).join("");
+ app.innerHTML=`<div class="card dungeonSelectScreen"><div class="dungeonOverviewHead"><div class="sectionTitle">ダンジョン選択</div><div class="dungeonOverviewHint">各ダンジョンの到達状況を一覧表示 → 選んでランク決定</div></div><div class="dungeonOverviewBody"><div class="dungeonOverviewGrid">${overview}</div><div class="dungeonCompareDetail ${any?"":"locked"}"><div class="dungeonCompareTop"><div class="dungeonCompareIcon">${th.icon}</div><div class="dungeonCompareTitle"><h2>${esc(th.name)}</h2><div>${th.types.map(t=>`<span class="badge">${esc(t)}</span>`).join(" ")}</div></div></div><div class="dungeonCompareDiffs">${dungeonDiffButtons(did)}</div><div class="dungeonCompareUnlock">${any?(nextLocked?`次の解放：${esc(unlockCondition(did,nextLocked))}`:"ランク5まで解放済み"):`🔒 解放条件：${esc(unlockCondition(did,1))}`}</div></div></div></div>`;
  app.querySelectorAll("[data-browse-dungeon]").forEach(b=>b.onclick=()=>{dungeonBrowseId=b.dataset.browseDungeon;renderDungeonList()});
  app.querySelectorAll("[data-dungeon-id]").forEach(b=>b.onclick=()=>{const did=b.dataset.dungeonId,diff=Number(b.dataset.diff);if(!unlocked(did,diff))return;currentDungeon={id:did,difficulty:diff};const avail=state.owned.map(o=>o.id).filter(id=>!isExpeditionLocked(id));teamSelection=avail.length<=3?avail:[];teamAutoNotice="";screen="team";render()})
 }
