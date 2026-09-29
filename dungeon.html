@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.82">
+<html lang="ja" data-app-version="1.83">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -997,8 +997,7 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 /* Ver0.79: startup jacket is shown only on an idle home launch; never interrupt/resume an active run or post-run clear flow. */
 @media(min-width:701px){
  body:has(main.battleScreen) header{padding:5px 10px}
- body:has(main.battleScreen) .headrow{max-width:1180px;gap:6px}
-body:has(main.battleScreen) .brand b{font-size:15px;line-height:1.05}
+ body:has(main.battleScreen) .headrow{max-width:1180px;gap:6px}body:has(main.battleScreen) .brand b{font-size:15px;line-height:1.05}
  body:has(main.battleScreen) .brand small{font-size:9px;line-height:1.05}
  body:has(main.battleScreen) .versionBadge{padding:2px 6px;font-size:9px}
  body:has(main.battleScreen) .runHeaderInfo{padding:4px 8px;font-size:10px}
@@ -1997,8 +1996,7 @@ body.homeNavVisible .headerTop{padding-right:44px}
 }
 
 
-/* Ver1.46: post-run result screen readability overhaul */
-.postRunSummary.resultV2{
+/* Ver1.46: post-run result screen readability overhaul */.postRunSummary.resultV2{
   width:min(1180px,100%);
   margin:0 auto;
   padding:clamp(14px,2.2vw,28px)!important;
@@ -2997,8 +2995,7 @@ main.battleScreen .battleArena{
   flex:1 1 auto!important;
   min-height:0!important;
   overflow:hidden!important;
-  display:flex!important;
-align-items:center!important;
+  display:flex!important;align-items:center!important;
   padding:5px!important;
 }
 main.battleScreen .battleGrid{
@@ -3794,7 +3791,7 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
 
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3997,8 +3994,7 @@ const DUNGEON_INTRO={
  wetlands:"足元には水が広がり、湿った空気が漂っている……",
  volcano:"焼けつくような熱気が、奥から押し寄せてくる……",
  icefire:"凍てつく冷気と熱い炎が入り混じる、不思議な洞窟だ……",
- steelmine:"金属音が響く、薄暗い鉱山が奥へ続いている……",
-powerplant:"止まったはずの設備から、かすかな電気音が聞こえる……",
+ steelmine:"金属音が響く、薄暗い鉱山が奥へ続いている……",powerplant:"止まったはずの設備から、かすかな電気音が聞こえる……",
  skygarden:"雲の上に浮かぶ庭園。淡い光が道を照らしている……",
  dragon:"強い風が吹き抜ける。修練の気配が満ちている……",
  nightcity:"ネオンが揺らめく夜の街。どこかに気配が潜んでいる……",
@@ -4438,8 +4434,7 @@ function homeNextGoal(){
  return {title:"育成して次のランクへ！",body:"お気に入りの3体を強化して、もっと強い敵に挑戦しよう。"};
 }
 function homeHero(){
- const s=getStat("forest",1),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),deepest=Math.max(0,Number(s?.deepest)||0);
- return `<div class="homeHeroPanel"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンをどんどん攻略！ 卵やレアピックとの出会いがキミを待っている！</p><div class="homeGoalCard"><span class="homeGoalLabel">つぎの目標</span><b>${esc(goal.title)}</b><small>${esc(goal.body)}</small></div></div><div class="homeHeroSide"><div class="homeStatRibbon"><div class="homeStatCard"><b>B${deepest}</b><small>森 ランク1 最深</small></div><div class="homeStatCard"><b>${clears}</b><small>クリア</small></div><div class="homeStatCard"><b>${state.owned.length}</b><small>所持ピック</small></div><div class="homeStatCard"><b>${state.eggs.length}/${state.eggCap}</b><small>卵</small></div></div><div class="homeSubPanels"><div class="homeSubPanel egg"><b>🥚 ${esc(egg.title)}</b><small>${esc(egg.body)}</small><div class="homeMiniMeter"><span style="width:${egg.ratio}%"></span></div></div><div class="homeSubPanel dex"><b>📖 図鑑 ${dex.obtained}/${dex.total}　${dex.pct}%</b><small>遭遇済み ${dex.seen}種。まだ見ぬピックを探しに行こう！</small><div class="homeMiniMeter"><span style="width:${Math.min(100,dex.pct)}%;background:linear-gradient(90deg,#46b3ff,#7a8dff)"></span></div></div></div></div></div>`
+ return `<div class="homeHeroPanel homeHeroSimple"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンを攻略！</p></div></div>`
 }
 function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","team","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
@@ -4480,18 +4475,24 @@ function homeExpeditionGroups(now=Date.now()){
 function homeExpeditionStatusHTML(){
  return `<div class="homeExpeditionStatus">${homeExpeditionGroups().map(x=>`<span class="${x.state}">${esc(x.text)}</span>`).join("")}</div>`
 }
+function homeTrainingSummary(){
+ let evolve=0;
+ try{for(const o of state.owned||[]){if(evolutionInfoForPick(o.id)?.canEvolve)evolve++}}catch{}
+ return {evolve};
+}
 function renderHome(){
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
+ const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary();
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
-   <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small>ダンジョンへ出発！</small></button>
-   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small>2グループで派遣・探索</small>${homeExpeditionStatusHTML()}</button>
+   <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardStats"><strong>最深 B${deepest}</strong><strong>クリア ${clears}</strong></div><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
+   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small class="homeCardLead">2グループで派遣・探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
-   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><small>${state.owned.length}枚の仲間</small></button>
-   <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><small>${homeDexSummary().obtained}/${homeDexSummary().total} 登録</small></button>
-   <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><small>${state.eggs.length}/${state.eggCap} 個を確認</small></button>
-   <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><small>強化・進化</small></button>
+   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>仲間の確認・編成</small></button>
+   <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
+   <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><strong class="homeManageValue">${state.eggs.length}/${state.eggCap}</strong><small>${esc(egg.title)}</small><small class="homeManageSub">${esc(egg.body)}</small>${egg.ratio?`<div class="homeCardMeter"><i style="width:${egg.ratio}%"></i></div>`:""}</button>
+   <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><strong class="homeManageValue">強化・進化</strong><small>${training.evolve?`進化可能 ${training.evolve}体`:`育成メニュー`}</small></button>
   </div>
  </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 セーブ</button></div></div>`;
  app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
@@ -4997,8 +4998,7 @@ function fighterMatchupAppeal(t){
 function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:"チームから、出すポケモンをタップしてください。相性表示を参考に選べます。",can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;const can=(t)=>{if(k==="healSingleSelect")return true;if(t.ko)return false;if(k==="heal30"||k==="heal20"||k==="lucky")return t.hp<maxHpFor(t.id);if(k==="atk2")return Number(t.tempAtk||0)<TEMP_BOOST_MAX;if(k==="def2")return Number(t.tempDef||0)<TEMP_BOOST_MAX;return true};return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"チームから対象をタップしてください。ひんし状態も選べます。":"効果を受けられる仲間を選んでください。",can}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
 function teamMiniHTML(t,i){
  const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
-       inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,
-       directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
+       inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
        action=m?m.action:(directSwitch?"switch":""),
        pb=state.permanentBoosts[t.id]||{},growth=growthPointsFor(t.id),drill=drillFor(t.id),bond=bondLevelFor(t.id),
        battleRec=inBattle?teamRec(t):r,bondProc=!!((t.bondAtk||0)||(t.bondDef||0)),
@@ -5946,4 +5946,64 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  .homeExpeditionStatus span{font-size:5.4px}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 1.82 / Updated: 2026-09-30 08:34 JST -->
+<style id="v183-home-info-cloud">
+/* Ver1.83: put information on the menu that owns it; improve readability; show cloud state beside version. */
+.headerTop .brand b{display:flex!important;align-items:center!important;gap:7px!important}
+.headerCloudStatus{display:inline-grid;place-items:center;flex:0 0 auto;min-width:24px;height:24px;padding:0 2px;border-radius:8px;background:#ffffff14;border:1px solid #ffffff20;font-size:16px;line-height:1;vertical-align:middle}
+.headerCloudStatus[data-state="cloud"]{background:#dff5ff;color:#0c5976;border-color:#8fd4ef}
+.headerCloudStatus[data-state="error"]{background:#e8eff5;color:#405668;border-color:#9eafbc}
+.frendaCloudBtn{display:none!important}
+
+.homeHeroSimple{display:block!important;padding:11px 16px!important;min-height:0!important}
+.homeHeroSimple .homeHeroMain{display:flex!important;align-items:center!important;gap:13px!important;flex-wrap:wrap!important}
+.homeHeroSimple .homeHeroBadge{flex:0 0 auto!important;margin:0!important;font-size:11px!important;padding:5px 10px!important}
+.homeHeroSimple .homeHeroTitle{flex:0 0 auto!important}.homeHeroSimple .homeHeroTitle h1{margin:0!important;font-size:clamp(26px,2.8vw,38px)!important;line-height:1.05!important}
+.homeHeroSimple .homeHeroLead{flex:1 1 320px!important;margin:0!important;font-size:14px!important;line-height:1.45!important;color:#d7edf7!important}
+.homeHeroSimple .homeHeroSide,.homeHeroSimple .homeGoalCard{display:none!important}
+
+.homeActionArea{grid-template-rows:minmax(0,1.13fr) minmax(0,.87fr)!important;gap:10px!important}
+.homePlayGrid{gap:11px!important}
+.homePlayBtn{justify-content:flex-start!important;align-items:center!important;text-align:center!important;padding:13px 16px!important;overflow:hidden!important}
+.homePlayBtn>b{font-size:clamp(42px,4vw,58px)!important;line-height:1!important}
+.homePlayBtn>span{font-size:clamp(21px,2vw,27px)!important;line-height:1.1!important}
+.homePlayBtn>.homeCardLead{font-size:13px!important;line-height:1.25!important;margin-top:2px!important}
+.homeCardStats{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:7px;position:relative;z-index:2}
+.homeCardStats strong{padding:6px 10px;border-radius:999px;background:#ffffffb5;border:1px solid #ffffffd0;color:#164d63;font-size:13px;line-height:1;font-weight:1000}
+.homeGoalInline{position:relative;z-index:2;width:min(94%,560px);margin-top:7px;padding:8px 11px;border-radius:12px;background:#ffffffc5;border:1px solid #ffffffd8;color:#254658;text-align:left}
+.homeGoalInline em{display:block;font-style:normal;font-size:11px;font-weight:1000;color:#176b8c;margin-bottom:2px}.homeGoalInline strong{display:block;font-size:15px;line-height:1.2}.homeGoalInline small{display:block;font-size:12px;line-height:1.3;margin-top:2px;color:#536b78}
+.homeExpeditionStatus{gap:5px!important;width:min(94%,520px)!important;margin-top:8px!important}
+.homeExpeditionStatus span{padding:6px 10px!important;font-size:12px!important;line-height:1.2!important}
+
+.homeManageGrid{gap:10px!important}
+.homeManageGrid .homeMenuBtn{padding:11px 10px!important;gap:3px!important;justify-content:center!important;overflow:hidden!important}
+.homeManageGrid .homeMenuBtn>b{font-size:clamp(31px,2.8vw,40px)!important;line-height:1!important}
+.homeManageGrid .homeMenuBtn>span{font-size:clamp(16px,1.5vw,20px)!important;line-height:1.15!important}
+.homeManageValue{position:relative;z-index:2;display:block;margin-top:4px;font-size:15px;line-height:1.15;font-weight:1000;color:#193b4d}
+.homeManageGrid .homeMenuBtn>small{position:relative;z-index:2;font-size:12px!important;line-height:1.25!important;color:#536b78!important}
+.homeManageGrid .homeMenuBtn.owned>small,.homeManageGrid .homeMenuBtn.dex>small{color:#315768!important}
+.homeManageSub{font-size:11px!important;opacity:.92}
+.homeCardMeter{position:relative;z-index:2;width:76%;height:6px;border-radius:999px;background:#ffffffa8;overflow:hidden;margin-top:4px}.homeCardMeter i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#f4a827,#ffd75b)}
+
+@media(max-width:700px){
+ .headerTop .brand b{gap:4px!important}.headerCloudStatus{min-width:21px;height:21px;font-size:14px;border-radius:7px}
+ .homeHeroSimple{padding:8px 10px!important}.homeHeroSimple .homeHeroMain{gap:5px 8px!important}.homeHeroSimple .homeHeroBadge{font-size:8.5px!important;padding:4px 7px!important}.homeHeroSimple .homeHeroTitle h1{font-size:21px!important}.homeHeroSimple .homeHeroLead{font-size:11px!important;line-height:1.3!important;flex-basis:100%!important}
+ .homeActionArea{grid-template-rows:minmax(145px,1fr) minmax(220px,1.45fr)!important;min-height:375px!important;gap:7px!important}
+ .homePlayGrid{gap:7px!important}.homePlayBtn{padding:8px 5px!important}.homePlayBtn>b{font-size:30px!important}.homePlayBtn>span{font-size:14px!important}.homePlayBtn>.homeCardLead{font-size:10px!important}
+ .homeCardStats{gap:4px;margin-top:4px}.homeCardStats strong{font-size:9.5px;padding:4px 6px}.homeGoalInline{margin-top:4px;padding:5px 6px}.homeGoalInline em{font-size:8.5px}.homeGoalInline strong{font-size:10.5px}.homeGoalInline small{font-size:9px;line-height:1.2}
+ .homeExpeditionStatus{gap:3px!important;margin-top:4px!important}.homeExpeditionStatus span{padding:4px 5px!important;font-size:9px!important}
+ .homeManageGrid{gap:7px!important}.homeManageGrid .homeMenuBtn{padding:8px 5px!important}.homeManageGrid .homeMenuBtn>b{font-size:27px!important}.homeManageGrid .homeMenuBtn>span{font-size:13.5px!important}.homeManageValue{font-size:11.5px;margin-top:2px}.homeManageGrid .homeMenuBtn>small{font-size:10px!important}.homeManageSub{font-size:9.5px!important}.homeCardMeter{height:5px;margin-top:2px}
+}
+</style>
+<script id="v183-cloud-indicator">
+(()=>{
+ const el=document.getElementById("headerCloudStatus");if(!el)return;
+ function refresh(){
+  const hidden=document.querySelector(".frendaCloudBtn"),failed=hidden?.dataset?.kind==="error",logged=!!window.FrendaCloud?.isLoggedIn?.();
+  const state=failed?"error":logged?"cloud":"local",icon=failed?"🌧️":logged?"☁️":"💾",label=failed?"クラウドログイン・接続に失敗中":logged?"クラウドログイン中":"ローカル保存（クラウドなし）";
+  el.dataset.state=state;el.textContent=icon;el.title=label;el.setAttribute("aria-label",label);
+ }
+ refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2500);
+ const mo=new MutationObserver(refresh);mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["data-kind"]});
+})();
+</script>
+<!-- FRENDA_DUNGEON_VERSION: 1.83 / Updated: 2026-09-30 08:53 JST -->
