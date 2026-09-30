@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.99">
+<html lang="ja" data-app-version="2.00">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5437,7 +5437,9 @@ function renderRun(){
  }
  updateHeaderStatus();
  if(r.scene==="dungeonEntry"){
-  r.entryFirstVisit=false;generateRoutes();save();return render()
+  app.innerHTML=`<div class="dungeonRun theme-${esc(r.dungeonId)}">${dungeonAtmosphereHTML(r.dungeonId)}${renderDungeonEntryHTML()}</div>`;
+  bindRunHandlers();
+  return
  }
  const theme=THEMES[r.dungeonId],tm=teamTargetMode(),inBattle=r.scene==="battle",
        combatScene=["encounterCutin","legendaryIntro","nextEnemy","faintedNotice","chooseFighter","battle","captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(r.scene),
@@ -6697,6 +6699,6 @@ main.dungeonRunScreen[data-run-scene="reward"] .rewardBtnRich:hover{transform:tr
  .runEffectPanel{padding:6px 7px;border-radius:10px}.runEffectPanel>b{margin-bottom:4px;font-size:8px}.runEffectChips{gap:3px}.runEffectChip{padding:3px 5px;font-size:6.5px}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 1.99 / Updated: 2026-09-30 16:40 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 2.00 / Updated: 2026-09-30 16:28 JST -->
 </body>
 </html>
