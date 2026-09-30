@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.90">
+<html lang="ja" data-app-version="1.91">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3873,7 +3873,81 @@ const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
 function expeditionTimerState(){const x=DATA.readJSON(EXPEDITION_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
 function updateExpeditionTimerBadge(now=Date.now()){const el=document.getElementById("expeditionTimerBadge");if(!el)return;const x=expeditionTimerState(),m=x?.mission;if(x?.status==="exploring"&&m&&Number.isFinite(Number(m.returnAt))){const remain=Number(m.returnAt)-now;if(remain<=0){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の帰還時間になりました"}else{const min=Math.max(1,Math.ceil(remain/60000));el.className="expeditionTimerBadge";el.textContent=`🧭 探索終了まで あと${min}分`;el.title=`帰還予定 ${new Date(Number(m.returnAt)).toLocaleString("ja-JP")}`}}else if(x?.status==="returned"){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の成果を受け取れます"}else{el.className="expeditionTimerBadge";el.textContent="🧭 探索なし";el.title="現在、おでかけ探索には出ていません"}}
 
-const eyeCare=UI.createEyeCare({data:DATA,onTick:now=>updateExpeditionTimerBadge(now),extraStorageKeys:[EXPEDITION_TIMER_KEY]});
+function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
+ if(!data)throw new Error("FRENDA_DATA is required");
+ const KEY=data.KEYS.eyeTimer,PLAY_MS=30*60*1000,REST_MS=10*60*1000;
+ let handle=null,locked=false,started=false;
+ const read=()=>{const x=data.readJSON(KEY,null);return x&&typeof x==="object"?x:null};
+ const write=x=>{try{data.writeJSON(KEY,x)}catch{}return x};
+ const fresh=(now=Date.now())=>write({phase:"play",playUntil:now+PLAY_MS,updatedAt:now});
+ function resolve(now=Date.now()){
+  let x=read();
+  if(!x||!Number.isFinite(Number(x.playUntil)))return fresh(now);
+  if(x.phase==="ready")return x;
+  if(x.phase==="rest"){
+   const restUntil=Number(x.restUntil)||Number(x.playUntil)+REST_MS;
+   if(now<restUntil){x.restUntil=restUntil;x.reason=x.reason||"auto";return x}
+   x={phase:"ready",playUntil:Number(x.playUntil)||now,restUntil,reason:x.reason||"auto",readyAt:restUntil,updatedAt:now};write(x);return x
+  }
+  const playUntil=Number(x.playUntil);
+  if(now<playUntil)return x;
+  const restUntil=playUntil+REST_MS;
+  if(now<restUntil){x={phase:"rest",playUntil,restUntil,reason:"auto",updatedAt:now};write(x);return x}
+  x={phase:"ready",playUntil,restUntil,reason:"auto",readyAt:restUntil,updatedAt:now};write(x);return x
+ }
+ function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
+ function ensureOverlay(state){
+  let ov=document.getElementById("eyeRestOverlay");
+  if(!ov){
+   ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";
+   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule" id="eyeRestRule">10分休んだら → また30分遊べます</div><button type="button" class="eyeRestResumeBtn" id="eyeRestResumeBtn">ゲームを再開</button></div>`;
+   document.body.appendChild(ov)
+  }
+  const ready=state?.phase==="ready",title=ov.querySelector("#eyeRestTitle"),txt=ov.querySelector("#eyeRestText"),rule=ov.querySelector("#eyeRestRule"),btn=ov.querySelector("#eyeRestResumeBtn");
+  ov.classList.toggle("ready",ready);
+  if(title)title.textContent=ready?"休憩終了！":"目を休めよう";
+  if(txt)txt.innerHTML=ready?"休憩時間が終わりました。<br>画面をタップするとゲームに戻り、そこから次の30分が始まります。":state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";
+  if(rule)rule.textContent=ready?"再開するまでプレイ時間は減りません":"10分休んだら → また30分遊べます";
+  if(btn)btn.hidden=!ready;
+  return ov
+ }
+ function setLocked(lock,state){
+  locked=lock;document.body.classList.toggle("eyeResting",lock);
+  const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns"),manual=document.getElementById("manualRestBtn");
+  try{if(main)main.inert=lock;if(buttons)buttons.inert=lock;if(manual)manual.disabled=lock}catch{}
+  if(lock)ensureOverlay(state);else document.getElementById("eyeRestOverlay")?.remove()
+ }
+ function startManualRest(){const now=Date.now(),x=resolve(now);if(x.phase==="rest"||x.phase==="ready")return;write({phase:"rest",playUntil:now,restUntil:now+REST_MS,reason:"manual",updatedAt:now});tick()}
+ function resumePlay(){const x=read();if(x?.phase!=="ready")return;fresh(Date.now());tick()}
+ function tick(){
+  const now=Date.now(),x=resolve(now),rest=x.phase==="rest",ready=x.phase==="ready",lock=rest||ready,until=rest?Number(x.restUntil):Number(x.playUntil),remain=ready?0:Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");
+  if(badge){badge.className=`eyeTimerBadge ${rest?"rest":ready?"ready":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${fmt(remain)}`:ready?"👁 再開待ち":`👁 あと ${fmt(remain)}`;badge.title=ready?"タップして再開すると30分カウント開始":"30分遊んだら10分休憩"}
+  setLocked(lock,x);
+  const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=ready?"再開できます":fmt(remain);
+  if(typeof onTick==="function")onTick(now,x,remain)
+ }
+ function keydown(e){
+  if(!locked)return;
+  const ov=document.getElementById("eyeRestOverlay");
+  if(read()?.phase==="ready"&&ov?.contains(e.target)&&(e.key==="Enter"||e.key===" ")){e.preventDefault();resumePlay();return}
+  if(!ov?.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}
+ }
+ function storage(e){if(e.key===KEY||extraStorageKeys.includes(e.key))tick()}
+ function visibility(){if(document.visibilityState==="visible")tick()}
+ function click(e){
+  const b=e.target.closest?.("#manualRestBtn");if(b&&!locked){startManualRest();return}
+  const ov=e.target.closest?.("#eyeRestOverlay");if(ov&&read()?.phase==="ready")resumePlay()
+ }
+ function start(){
+  if(started)return;started=true;
+  document.addEventListener("keydown",keydown,true);window.addEventListener("storage",storage);document.addEventListener("visibilitychange",visibility);document.addEventListener("click",click);
+  tick();handle=setInterval(tick,1000)
+ }
+ function stop(){if(handle)clearInterval(handle);handle=null;if(started){document.removeEventListener("keydown",keydown,true);window.removeEventListener("storage",storage);document.removeEventListener("visibilitychange",visibility);document.removeEventListener("click",click);started=false}}
+ return Object.freeze({start,stop,tick,startManualRest,resumePlay,isLocked:()=>locked,resolve,format:fmt})
+}
+
+const eyeCare=createEyeCareResume({data:DATA,onTick:now=>updateExpeditionTimerBadge(now),extraStorageKeys:[EXPEDITION_TIMER_KEY]});
 
 const SAVE_KEY=DATA.KEYS.dungeon;
 const EXPEDITION_KEY=DATA.KEYS.expedition;
@@ -4109,7 +4183,7 @@ const makePickFilter=UI.pickFilter.create;
 let dexLimit=120;
 let dexPickFilter=makePickFilter();
 let ownedPickFilter=makePickFilter();
-let teamPickFilter=makePickFilter({sort:"recommended"});
+let teamPickFilter=makePickFilter({sort:"standard"});
 const GRID_SIZE_KEY_PREFIX="frenda:dungeon:gridSize:";
 function loadGridSize(scope){return UI.viewSize.load(GRID_SIZE_KEY_PREFIX+scope)}
 function saveGridSize(scope,size){return UI.viewSize.save(GRID_SIZE_KEY_PREFIX+scope,size)}
@@ -4658,21 +4732,23 @@ function homeTrainingSummary(){
 }
 function renderHome(){
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
- const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary();
+ const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary(),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardStats"><strong>最深 B${deepest}</strong><strong>クリア ${clears}</strong></div><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
    <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">2グループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
-   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small>${training.loading?`進化情報を確認中…`:training.error?`進化情報を確認できません`:training.evolve?`✨ 進化可能 ${training.evolve}体`:`🍀 運育成・ショップ対応`}</small></button>
+   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small>${training.loading?`進化情報を確認中…`:training.error?`進化情報を確認できません`:training.evolve?`✨ 進化可能 ${training.evolve}体`:`育成状況を確認`}</small></button>
    <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
    <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><strong class="homeManageValue">${state.eggs.length}/${state.eggCap}</strong><small>${esc(egg.title)}</small><small class="homeManageSub">${esc(egg.body)}</small>${egg.ratio?`<div class="homeCardMeter"><i style="width:${egg.ratio}%"></i></div>`:""}</button>
+   <button class="homeMenuBtn shop" id="homeShopBtn"><b>🛍️</b><span>ショップ</span><strong class="homeManageValue">🪙 ${coins.toLocaleString("ja-JP")}</strong><small>運アップアイテム</small><small>商品は今後追加予定</small></button>
   </div>
  </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 バックアップ</button></div></div>`;
  app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
  document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()};
  const eb=document.getElementById("expeditionMenuBtn");if(eb)eb.onclick=()=>{location.href="expedition.html"};
+ const shop=document.getElementById("homeShopBtn");if(shop)shop.onclick=()=>showLuckShop("home");
  const sb=document.getElementById("soundModeBtn");if(sb)sb.onclick=cycleSoundMode
 }
 function unlockCondition(did,diff){const ti=THEME_ORDER.indexOf(did);if(diff===1)return ti<=0?"最初から解放":`${THEMES[THEME_ORDER[ti-1]].name} ランク1をクリア`;return `${THEMES[did].name} ランク${diff-1}をクリア`}
@@ -4801,25 +4877,37 @@ function bindCommonPickFilter(scope,filter,renderFn,defaults={}){UI.pickFilter.b
 
 function renderTeamSelect(){
  const availableCount=state.owned.filter(o=>!isExpeditionLocked(o.id)).length,max=Math.min(3,availableCount),need=max,theme=THEMES[currentDungeon.id]||THEMES.forest;
- const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean);
- const statusOptions=[["all","すべて"],["recommended","🔥 オススメのみ"]];
- const sortOptions=[["standard","標準"],["number","番号順"],["name","名前順"],["grade","★高い順"],["energy","ポケエネ高い順"],["recommended","オススメ順"]];
- const statusPredicate=(r,status)=>status!=="recommended"||teamRecommendationInfo(r).recommended;
- normalizeCommonPickFilter(teamPickFilter,allCards,statusOptions,sortOptions);
- const cards=applyCommonPickFilter(allCards,teamPickFilter,statusPredicate);
+ const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
+ if(!["standard","name","grade","energy","evolution","drill","luck"].includes(teamPickFilter.sort))teamPickFilter.sort="standard";
+ let cards=allCards.filter(r=>{
+  const q=String(teamPickFilter.search||"").trim().toLowerCase();if(q&&!`${r.name_ja||""} ${r.pick_no||""}`.toLowerCase().includes(q))return false;
+  if(teamPickFilter.type!=="all"&&r.type1!==teamPickFilter.type&&r.type2!==teamPickFilter.type)return false;
+  if(teamPickFilter.grade!=="all"&&Number(r.grade)!==Number(teamPickFilter.grade))return false;
+  return true
+ });
+ const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
+ cards=cards.slice().sort((a,b)=>teamPickFilter.sort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):teamPickFilter.sort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):teamPickFilter.sort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):teamPickFilter.sort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):teamPickFilter.sort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):teamPickFilter.sort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
  const last=validLastTeam(need);
  const selectedSlots=UI.selectedStrip.html({scope:"dungeon-team",ids:teamSelection,max:need,resolve:rec,imageOf:r=>imageOf(r),nameOf:r=>r.name_ja,metaFor:r=>compareTypeText(r),emptyLabel:"未選択",slotNoun:"体目"});
- const cardsHtml=cards.length?cards.map(r=>{const locked=isExpeditionLocked(r.master_id),sel=teamSelection.includes(r.master_id),pb=state.permanentBoosts[r.master_id]||{},ri=teamRecommendationInfo(r),badges=`${ri.recommended?`<span class="recommendMark">🔥 オススメ</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)} / ポケエネ ${esc(r.poke_ene??"-")}</small><div>${typesHTML(r)}</div>${ri.recommended?`<small class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</small>`:""}<small>強化 HP+${pb.hp||0} / 攻撃+${pb.atk||0} / 防御+${pb.def||0}</small><small>EXP ${xpFor(r.master_id)}/100 / 特訓P ${drillFor(r.master_id)}</small><small><span class="bondChip${bondLevelFor(r.master_id)>=4?" high":""}">${esc(bondProgressText(r.master_id))}</span></small>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}`,attributes:locked?{}:{"data-team-pick":r.master_id},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>`;
- const filterHtml=commonPickFilterHTML("team",teamPickFilter,allCards,statusOptions,sortOptions,cards.length);
- app.innerHTML=`<div class="card teamSelectCard"><div class="sectionTitle">挑戦チーム編成</div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ランク${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div><div class="muted" style="margin:10px 0 6px">${need}体を選択してください。現在 ${teamSelection.length}/${need}体。</div>${selectedSlots}<div class="teamTools"><div class="teamQuickActions two"><button type="button" class="ghost" id="lastTeamBtn" ${last.length?"":"disabled"}>↩ 前回編成</button><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button></div>${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid">${cardsHtml}</div><div class="teamCompareActions"><button class="ghost" id="teamBack">戻る</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button><button id="startRunBtn" ${need>0&&teamSelection.length===need?"":"disabled"}>このチームで挑戦</button></div></div>`;
- app.querySelectorAll("[data-team-pick]").forEach(c=>c.onclick=()=>{teamAutoNotice="";teamSelection=UI.selection.toggle(teamSelection,c.dataset.teamPick,need);renderTeamSelect()});
+ const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid"><input id="teamSearchNew" type="search" placeholder="名前・ピックNo.で検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew"><option value="standard" ${teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${teamPickFilter.sort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${teamPickFilter.sort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${teamPickFilter.sort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${teamPickFilter.sort==="luck"?"selected":""}>こううん高い順</option></select></div><div class="ownedFilterFoot"><span>${cards.length}/${allCards.length}枚</span></div></div>`;
+ const cardsHtml=cards.length?cards.map(r=>{
+   const id=r.master_id,locked=isExpeditionLocked(id),sel=teamSelection.includes(id),pb=state.permanentBoosts[id]||{},ri=teamRecommendationInfo(r);
+   return `<div class="pickCard ownedFrontCardV190 teamManagedCard ${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}" ${locked?"":`data-team-pick="${esc(id)}"`} role="button" tabindex="${locked?"-1":"0"}">${ri.recommended?'<span class="recommendMark">🔥 オススメ</span>':""}${sel?'<span class="selectMark">選択中</span>':""}<div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt="">${ownedRelationBoxHTML(id)}</div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${ri.recommended?`<div class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</div>`:""}${locked?'<div class="ownedDetailHint">🧭 探索中：編成不可</div>':""}</div>`
+ }).join(""):`<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>`;
+ app.innerHTML=`<div class="card teamSelectCard"><div class="sectionTitle">挑戦チーム編成</div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ランク${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div><div class="muted" style="margin:10px 0 6px">${need}体を選択してください。現在 ${teamSelection.length}/${need}体。</div>${selectedSlots}<div class="teamTools"><div class="teamQuickActions three"><button type="button" class="ghost" id="lastTeamBtn" ${last.length?"":"disabled"}>↩ 前回編成</button><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button><button type="button" class="ghost teamClearBtn" id="teamClearBtn" ${teamSelection.length?"":"disabled"}>選択クリア</button></div>${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid">${cardsHtml}</div><div class="teamCompareActions"><button class="ghost" id="teamBack">戻る</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button><button id="startRunBtn" ${need>0&&teamSelection.length===need?"":"disabled"}>このチームで挑戦</button></div></div>`;
+ app.querySelectorAll("[data-team-pick]").forEach(c=>{const toggle=()=>{teamAutoNotice="";teamSelection=UI.selection.toggle(teamSelection,c.dataset.teamPick,need);renderTeamSelect()};c.onclick=toggle;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle()}}});
  UI.selectedStrip.bind({root:app,scope:"dungeon-team",onRemove:id=>{teamAutoNotice="";teamSelection=UI.selection.remove(teamSelection,id);renderTeamSelect()}});
  document.getElementById("teamBack").onclick=()=>{screen="dungeons";render()};
  document.getElementById("teamCompareBtn").onclick=showTeamBackCompare;
  document.getElementById("startRunBtn").onclick=startRun;
  const lastBtn=document.getElementById("lastTeamBtn");if(lastBtn)lastBtn.onclick=()=>{if(last.length){teamSelection=last.slice();teamAutoNotice="前回の編成を呼び出しました。必要なら手動で変更できます。";renderTeamSelect()}};
  const autoBtn=document.getElementById("autoTeamBtn");if(autoBtn)autoBtn.onclick=()=>{const ids=buildAutoTeam(need);if(ids.length){teamSelection=ids;teamAutoNotice="タイプ相性・★・能力・育成・絆・役割バランスを見て自動編成しました。まだ挑戦は開始していません。";renderTeamSelect()}};
- bindCommonPickFilter("team",teamPickFilter,renderTeamSelect,{sort:"recommended"});
+ const clearBtn=document.getElementById("teamClearBtn");if(clearBtn)clearBtn.onclick=()=>{teamSelection=[];teamAutoNotice="選択中のポケモンをすべて外しました。";renderTeamSelect()};
+ const q=document.getElementById("teamSearchNew"),ty=document.getElementById("teamTypeNew"),gr=document.getElementById("teamGradeNew"),so=document.getElementById("teamSortNew");
+ if(q)q.oninput=()=>{teamPickFilter.search=q.value;const pos=q.selectionStart??teamPickFilter.search.length;renderTeamSelect();requestAnimationFrame(()=>{const nq=document.getElementById("teamSearchNew");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})};
+ if(ty)ty.onchange=()=>{teamPickFilter.type=ty.value;renderTeamSelect()};
+ if(gr)gr.onchange=()=>{teamPickFilter.grade=gr.value;renderTeamSelect()};
+ if(so)so.onchange=()=>{teamPickFilter.sort=so.value;renderTeamSelect()}
 }
 function startRun(){if(!teamSelection.length){UI.dialog.alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){UI.dialog.alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id];state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"route",entryFirstVisit:false,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},coinGained:{},captured:[],logs:[`${th.name} ランク${currentDungeon.difficulty}に挑戦！`,`地下1階の冒険を開始。`],startedAt:new Date().toISOString()};generateRoutes();updateDeepest(1);save();render()}
 function runTeam(){return state.run?.team||[]}
@@ -5520,19 +5608,24 @@ function showQuickTraining(id){
  const close=()=>{ov.remove();document.body.style.overflow="";renderOwned()};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#quickTrainingClose").onclick=close;
  ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{spendDrill(b.dataset.trainId,b.dataset.stat);ov.remove();document.body.style.overflow="";if(trainingAvailable(id))showQuickTraining(id);else renderOwned()})
 }
-function showLuckShop(){
+function showLuckShop(returnTo="home"){
  document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";
+ const returnScreen=()=>{ov.remove();document.body.style.overflow="";if(returnTo==="owned")renderOwned();else renderHome()};
  const renderShop=()=>{
   const qty=Math.max(0,Math.floor(Number(state.shopItems?.luckyClover)||0)),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
   const targets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX);
-  ov.innerHTML=`<div class="ownedBackPanel luckShopPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>FRIENDA SHOP</small><b>🪙 フレンダショップ</b></div><button class="ownedBackClose" id="luckShopClose">閉じる</button></div><div class="coinBalance">所持コイン <b>🪙 ${coins}</b></div><div class="shopItemCard"><div class="shopItemIcon">🍀</div><div><b>ラッキークローバー</b><small>所持 ${qty}個</small><p>所持ピック1体の「運」を+1。運は最大5。</p></div><button id="buyLuckyClover" ${coins>=LUCK_ITEM_PRICE?"":"disabled"}>🪙${LUCK_ITEM_PRICE}で購入</button></div><div class="sectionTitle" style="margin-top:12px">クローバーを使う</div><div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qty>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><span>🍀 運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small>探索中</small>`:""}</button>`}).join(""):'<div class="dexEmpty">全所持ピックが運MAXです。</div>'}</div><div class="notice">運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。運5でゲット率・レア卵・探索レア/ボーナス報酬が×1.5、同速先攻が75%になります。</div></div>`;
-  ov.querySelector("#luckShopClose").onclick=()=>{ov.remove();document.body.style.overflow="";renderOwned()};
+  ov.innerHTML=`<div class="ownedBackPanel luckShopPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>FRENDA SHOP</small><b>🪙 フレンダショップ</b></div><button class="ownedBackClose" id="luckShopClose">閉じる</button></div><div class="coinBalance">所持コイン <b>🪙 ${coins.toLocaleString("ja-JP")}</b></div><div class="shopFutureNote">🛍️ 商品はこれから順次追加予定です。</div><div class="shopItemCard"><div class="shopItemIcon">🍀</div><div><b>ラッキークローバー</b><small>所持 ${qty}個</small><p>所持ピック1体の「こううん」を+1。こううんは最大5。</p></div><button id="buyLuckyClover" ${coins>=LUCK_ITEM_PRICE?"":"disabled"}>🪙${LUCK_ITEM_PRICE}で購入</button></div><div class="sectionTitle" style="margin-top:12px">クローバーを使う</div><div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qty>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><span>こううん ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small>探索中</small>`:""}</button>`}).join(""):'<div class="dexEmpty">全所持ピックがこううんMAXです。</div>'}</div><div class="notice">こううんは、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。こううん5でゲット率・レア卵・探索レア/ボーナス報酬が×1.5、同速先攻が75%になります。</div></div>`;
+  ov.querySelector("#luckShopClose").onclick=returnScreen;
   const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{if(Number(state.frendaCoins)<LUCK_ITEM_PRICE)return;state.frendaCoins-=LUCK_ITEM_PRICE;state.shopItems.luckyClover=qty+1;save();renderShop()};
   ov.querySelectorAll("[data-luck-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.luckTarget;if(isExpeditionLocked(id)||luckFor(id)>=LUCK_MAX||Number(state.shopItems.luckyClover)<=0)return;state.shopItems.luckyClover--;setLuck(id,luckFor(id)+1);save();renderShop()})
  };
- document.body.appendChild(ov);document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov){ov.remove();document.body.style.overflow="";renderOwned()}};renderShop()
+ document.body.appendChild(ov);document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov)returnScreen()};renderShop()
 }
-function ownedMoveSummary(r){const normal=String(r?.move||"未登録"),fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<div class="ownedMoveCompact"><div><span>わざ</span><b>${esc(normal)}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small></div><div><span>必殺</span><b>${esc(fin)}</b></div></div>`}
+function ownedRelationBoxHTML(id){
+ const bond=bondLevelFor(id),luck=luckFor(id);
+ return `<div class="ownedRelationBox"><span><small>なつき度</small><b>Lv${bond}</b></span><span><small>こううん</small><b>${luck}/${LUCK_MAX}</b></span></div>`
+}
+function ownedMoveSummary(r){const normal=String(r?.move||"未登録"),fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<div class="ownedMoveCompact"><div><span>わざ</span><b>${esc(normal)}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small></div><div><span>必殺技</span><b>${esc(fin)}</b></div></div>`}
 function renderOwned(){
  reconcileDexState();normalizeMaxedDrillPoints();
  const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
@@ -5545,16 +5638,15 @@ function renderOwned(){
  });
  const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
  cards=cards.slice().sort((a,b)=>ownedSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):ownedSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):ownedSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):ownedSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):ownedSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):ownedSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
- const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>運高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">✨ 特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。もう一度押すと元の条件へ戻ります。</div>':""}</div>`;
+ const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>こううん高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。もう一度押すと元の条件へ戻ります。</div>':""}</div>`;
  const cardsHtml=cards.length?cards.map(r=>{
-   const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),evoOk=ei.canEvolve,bond=bondLevelFor(id),luck=luckFor(id);
-   return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${expLocked?"expLockedCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""><span class="ownedLuckBadge">🍀 ${luck}/${LUCK_MAX}</span><span class="ownedBondBadge${bond>=4?" high":""}">♥ Lv${bond}</span></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}<div class="ownedV190Actions"><button class="ownedActionBtn train" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"}>🏋️ 特訓 <b>${dp}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"}>✨ 進化 <b>${gp}</b></button></div>${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
+   const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),evoOk=ei.canEvolve;
+   return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${expLocked?"expLockedCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt="">${ownedRelationBoxHTML(id)}</div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}<div class="ownedV190Actions"><button class="ownedActionBtn train" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"}><span>特訓</span><b>${dp}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"}><span>進化</span><b>${gp}</b></button></div>${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
  }).join(""):'<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>';
- app.innerHTML=`<div class="card ownedManager"><div class="ownedManagerHead"><div><div class="sectionTitle">🎴 所持ピック</div><small>確認・特訓・進化をここで管理</small></div><div class="ownedEconomy"><span>🪙 ${Math.floor(Number(state.frendaCoins)||0)}</span><button id="luckShopBtn">🍀 ショップ</button>${gridSizeControlHTML("owned",ownedViewSize)}</div></div><div class="ownedRuleLine">進化P＝進化専用　／　特訓P＝能力強化　／　3能力MAX後の余剰特訓Pは1P→🪙${COIN_PER_OVERFLOW_DRILL}</div>${evoLoadNote()}${filterHtml}<div class="ownedGrid size-${ownedViewSize}">${cardsHtml}</div></div>`;
+ app.innerHTML=`<div class="card ownedManager"><div class="ownedManagerHead"><div><div class="sectionTitle">🎴 所持ピック</div><small>確認・特訓・進化をここで管理</small></div><div class="ownedEconomy">${gridSizeControlHTML("owned",ownedViewSize)}</div></div><div class="ownedRuleLine">進化P＝進化専用　／　特訓P＝能力強化　／　3能力MAX後の余剰特訓Pは1P→🪙${COIN_PER_OVERFLOW_DRILL}</div>${evoLoadNote()}${filterHtml}<div class="ownedGrid size-${ownedViewSize}">${cardsHtml}</div></div>`;
  app.querySelectorAll("[data-owned-detail]").forEach(c=>{const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);c.onclick=e=>{if(e.target.closest("button"))return;open()};c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}});
  app.querySelectorAll("[data-quick-train]").forEach(b=>b.onclick=e=>{e.stopPropagation();showQuickTraining(b.dataset.quickTrain)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
- document.getElementById("luckShopBtn").onclick=showLuckShop;
  const q=document.getElementById("ownedSearch"),ty=document.getElementById("ownedType"),gr=document.getElementById("ownedGrade"),so=document.getElementById("ownedSort"),toggle=document.getElementById("ownedActionToggle");
  if(q)q.oninput=()=>{ownedSearch=q.value;if(!ownedActionOnly){const pos=q.selectionStart??ownedSearch.length;renderOwned();requestAnimationFrame(()=>{const nq=document.getElementById("ownedSearch");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})}};
  if(ty)ty.onchange=()=>{ownedType=ty.value;if(!ownedActionOnly)renderOwned()};
@@ -6251,6 +6343,51 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
 .ownedFrontCardV190{display:flex;flex-direction:column;gap:7px;padding:8px!important}.ownedV190Visual{position:relative}.ownedV190Visual>img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px}.ownedLuckBadge{position:absolute;left:5px;top:5px;padding:4px 7px;border-radius:999px;background:#ecffd9e8;color:#39741f;border:1px solid #a7dc80;font-size:9px;font-weight:1000}.ownedV190Identity>b{display:block;font-size:15px;line-height:1.2}.ownedV190Identity>b small{font-size:9px;color:#62727b}.ownedV190Meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px}.starStrong{font-size:17px;color:#b87b00}.energyStrong{font-size:13px;padding:4px 7px;border-radius:999px;background:#fff2a8;color:#664b00}.typeStrong .badge{font-size:10px;padding:4px 7px;font-weight:1000}.ownedMoveCompact{display:grid;grid-template-columns:1fr 1fr;gap:5px}.ownedMoveCompact>div{padding:6px;border-radius:9px;background:#f4f8fa;border:1px solid #dce5ea;min-width:0}.ownedMoveCompact span{display:block;font-size:7px;color:#75848c;font-weight:900}.ownedMoveCompact b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ownedMoveCompact small{display:block;font-size:7px;color:#667985;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ownedV190Actions{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px}.ownedV190Actions button{padding:9px 5px;font-size:11px}.ownedV190Actions button b{font-size:14px}.ownedV190Actions button:disabled{opacity:.38;filter:grayscale(.4)}.quickTrainingPanel{max-width:620px}.quickTrainingBalance{padding:10px;border-radius:12px;background:#edf6fb;font-size:14px;margin-bottom:9px}.quickTrainingBalance b{font-size:22px}.coinBalance{font-size:18px;font-weight:900;padding:9px 11px;border-radius:12px;background:#fff4bd;border:1px solid #e2c25d;margin-bottom:10px}.coinBalance b{font-size:24px;color:#775500}.shopItemCard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:12px;border:2px solid #b9dd8c;border-radius:16px;background:linear-gradient(135deg,#f7ffe9,#efffd9)}.shopItemIcon{font-size:44px}.shopItemCard b{display:block;font-size:17px}.shopItemCard small{display:block;color:#55713d}.shopItemCard p{margin:4px 0 0;font-size:11px;color:#5c6e52}.shopItemCard button{min-width:130px}.luckTargetGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin:8px 0 12px}.luckTarget{background:#f5fbff;color:#284c60;border:1px solid #cbdde7;padding:7px}.luckTarget img{width:62px;height:86px;object-fit:cover;border-radius:8px;display:block;margin:auto}.luckTarget b,.luckTarget span,.luckTarget small{display:block;margin-top:3px}.luckTarget span{font-size:10px;font-weight:1000;color:#487b2f}
 @media(max-width:700px){.ownedFilterGrid{grid-template-columns:1fr 1fr}.ownedFilterGrid #ownedSearch{grid-column:1/-1}.ownedFilterGrid input,.ownedFilterGrid select{font-size:10px;padding:8px 6px}.ownedFrontCardV190{padding:6px!important}.ownedV190Identity>b{font-size:12px}.starStrong{font-size:14px}.energyStrong{font-size:10px}.typeStrong .badge{font-size:8px}.ownedMoveCompact b{font-size:8px}.ownedMoveCompact small{font-size:6.5px}.ownedV190Actions button{font-size:9px;padding:8px 3px}.shopItemCard{grid-template-columns:auto 1fr}.shopItemCard button{grid-column:1/-1;width:100%}}
 </style>
+<style id="v191-ui">
+/* Ver1.91: home shop, card/readability unification, team filters/cards, manual resume after eye rest. */
+.homeManageGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.homeMenuBtn.shop{background:linear-gradient(145deg,#fff8d6,#fff1a8);border-color:#e7c657;color:#624b00}
+.homeMenuBtn.shop>b{filter:drop-shadow(0 3px 5px #8a6c0028)}
+@media(max-width:700px){
+ .homeManageGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,auto)!important}
+ .homeManageGrid .homeMenuBtn{min-height:128px!important}
+}
+.trainingAbilityGrid{grid-template-columns:1fr!important}
+.ownedMoveCompact{grid-template-columns:1fr!important}
+.ownedMoveCompact>div{padding:7px 8px!important}
+.ownedMoveCompact span{font-size:8px!important}
+.ownedMoveCompact b{font-size:11px!important}
+.ownedMoveCompact small{font-size:8px!important}
+.ownedRelationBox{position:absolute;right:5px;top:5px;z-index:3;display:grid;gap:0;min-width:88px;border:1px solid #c7d9a8;border-radius:10px;overflow:hidden;background:#f8fff0eF;box-shadow:0 3px 10px #2b4f1b24}
+.ownedRelationBox>span{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 6px}
+.ownedRelationBox>span+span{border-top:1px solid #dce8c9}
+.ownedRelationBox small{font-size:7px;font-weight:900;color:#60724e}
+.ownedRelationBox b{font-size:10px;color:#31571e}
+.ownedV190Actions button{display:flex!important;align-items:center;justify-content:center;gap:10px;padding:11px 7px!important}
+.ownedV190Actions button span{font-size:16px;font-weight:1000;line-height:1}
+.ownedV190Actions button b{font-size:22px!important;line-height:1}
+.shopFutureNote{margin:0 0 10px;padding:9px 11px;border-radius:11px;background:#f4f7fa;border:1px dashed #b7c7d1;color:#506673;font-size:11px;font-weight:900}
+.teamQuickActions.three{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.teamClearBtn{background:#eef3f6!important;color:#3f5866!important}
+.teamOwnedFilter{margin-bottom:0}
+.teamManagedCard{position:relative;cursor:pointer}
+.teamManagedCard.selected{border-color:#8b5cd1!important;box-shadow:0 0 0 3px #d9c7f2 inset,0 5px 14px #65429520!important}
+.teamManagedCard .selectMark{position:absolute;right:6px;bottom:6px;top:auto;z-index:6}
+.teamManagedCard .recommendMark{left:6px;top:6px}
+.teamManagedCard .ownedRelationBox{top:5px;right:5px}
+.teamSelectGrid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important}
+.eyeTimerBadge.ready{background:#eefbdc!important;color:#416d20!important;border-color:#b9dd94!important}
+.eyeRestOverlay.ready{cursor:pointer}
+.eyeRestOverlay.ready .eyeRestPanel{border-color:#9bcf72;box-shadow:0 18px 55px #18380742}
+.eyeRestResumeBtn{margin-top:14px;width:100%;padding:13px 16px;border-radius:14px;border:0;background:linear-gradient(135deg,#36a35f,#66c979);color:#fff;font-size:17px;font-weight:1000;box-shadow:0 7px 18px #1c7b3f38;cursor:pointer}
+@media(max-width:700px){
+ .ownedRelationBox{min-width:78px}.ownedRelationBox small{font-size:6.5px}.ownedRelationBox b{font-size:9px}
+ .ownedV190Actions button{gap:7px;padding:10px 4px!important}.ownedV190Actions button span{font-size:14px}.ownedV190Actions button b{font-size:19px!important}
+ .ownedMoveCompact b{font-size:9px!important}.ownedMoveCompact small{font-size:7px!important}
+ .teamQuickActions.three{grid-template-columns:1fr 1fr!important}.teamQuickActions.three .teamClearBtn{grid-column:1/-1}
+ .teamSelectGrid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important}
+}
+</style>
 <script id="v183-cloud-indicator">
 (()=>{
  const el=document.getElementById("headerCloudStatus");if(!el)return;
@@ -6265,6 +6402,6 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2000);
 })();
 </script>
-<!-- FRENDA_DUNGEON_VERSION: 1.90 / Updated: 2026-09-30 13:45 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 1.91 / Updated: 2026-09-30 14:25 JST -->
 </body>
 </html>
