@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.18">
+<html lang="ja" data-app-version="2.19">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3871,7 +3871,34 @@ if(DUNGEON_TEST_REQUESTED&&!DUNGEON_TEST_MODE){location.replace("admin.html?next
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
 function expeditionTimerState(){const x=DATA.readJSON(EXPEDITION_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
-function updateExpeditionTimerBadge(now=Date.now()){const el=document.getElementById("expeditionTimerBadge");if(!el)return;const x=expeditionTimerState(),m=x?.mission;if(x?.status==="exploring"&&m&&Number.isFinite(Number(m.returnAt))){const remain=Number(m.returnAt)-now;if(remain<=0){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の帰還時間になりました"}else{const min=Math.max(1,Math.ceil(remain/60000));el.className="expeditionTimerBadge";el.textContent=`🧭 探索終了まで あと${min}分`;el.title=`帰還予定 ${new Date(Number(m.returnAt)).toLocaleString("ja-JP")}`}}else if(x?.status==="returned"){el.className="expeditionTimerBadge done";el.textContent="✨ 探索完了";el.title="おでかけ探索の成果を受け取れます"}else{el.className="expeditionTimerBadge";el.textContent="🧭 探索なし";el.title="現在、おでかけ探索には出ていません"}}
+function expeditionGroupCounts(x){
+ const groups=Array.isArray(x?.groups)?x.groups:[],admin=new Set((x?.adminUnlockedGroups||[]).map(Number)),maxGroups=Math.max(5,groups.length),active=groups.filter(g=>g?.status==="exploring"&&g?.mission).length,returned=groups.filter(g=>g?.status==="returned"&&g?.mission).length;
+ let available=0;
+ for(let i=0;i<maxGroups;i++){
+  const groupNo=i+1,g=groups[i],busy=!!(g&&g.status!=="idle"&&g.mission),adminOpen=admin.has(groupNo);
+  let cleared=false;
+  try{cleared=THEME_ORDER.every(did=>Number(state?.stats?.[statKey(did,groupNo)]?.clears||0)>0)}catch{}
+  if(busy||adminOpen||cleared)available++
+ }
+ return {active,returned,available:Math.max(available,active+returned)}
+}
+function updateExpeditionTimerBadge(){
+ const el=document.getElementById("expeditionTimerBadge");if(!el)return;
+ const x=expeditionTimerState(),c=expeditionGroupCounts(x);
+ if(c.active>0){
+  el.className="expeditionTimerBadge";
+  el.textContent=`🧭 探索中 ${c.active}/${Math.max(c.active,c.available)}`;
+  el.title=`おでかけ探索中：${c.active}グループ / 利用可能${Math.max(c.active,c.available)}グループ`
+ }else if(c.returned>0){
+  el.className="expeditionTimerBadge done";
+  el.textContent=`✨ 帰還済み ${c.returned}`;
+  el.title=`おでかけ探索の成果を受け取れるグループが${c.returned}あります`
+ }else{
+  el.className="expeditionTimerBadge";
+  el.textContent="🧭 探索なし";
+  el.title=c.available>0?`利用可能グループ ${c.available}`:"現在、おでかけ探索には出ていません"
+ }
+}
 
 function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
  if(!data)throw new Error("FRENDA_DATA is required");
@@ -4886,7 +4913,7 @@ function renderHome(){
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardStats"><strong>最深 B${deepest}</strong><strong>クリア ${clears}</strong></div><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
-   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">2グループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
+   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">解放したグループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
    <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small class="homeTrainingReady">${training.train?`🏋️ 特訓可能 ${training.train}体`:"🏋️ 特訓可能 0体"}${training.loading?"　／　進化確認中…":training.error?"　／　進化確認不可":`　／　✨ 進化可能 ${training.evolve}体`}</small></button>
@@ -7692,7 +7719,7 @@ main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.18 / Updated: 2026-09-30 21:35 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 2.19 / Updated: 2026-09-30 21:30 JST -->
 </body>
 </html>
 
@@ -7702,4 +7729,12 @@ main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{
   管理者メニューで指定したプレイ分数・休憩分数をタイマー、手動休憩、休憩画面の文言へ反映。
   設定変更時は現在のプレイ/休憩サイクルにも即時反映し、旧30/10タイマー状態も開始時刻を推定して移行。
   おでかけ探索はVer0.58の方針どおりプレイ時間制限対象外。
+-->
+
+<!-- Ver2.19:
+  自由探索化に合わせ、ダンジョン上部の「探索終了まで あと○分」を廃止。
+  「🧭 探索中 1/2」の形式へ変更。
+  分子=現在探索中のグループ数、分母=現在利用可能なグループ数。
+  グループ1〜5のR1〜R5全ダンジョンクリア条件と管理者解放を分母へ反映。
+  帰還済みで未受取のグループがある場合は「✨ 帰還済み ○」と表示。
 -->
