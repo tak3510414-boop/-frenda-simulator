@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.85">
+<html lang="ja" data-app-version="1.87">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3805,7 +3805,20 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
 @media(max-width:600px){.evoRandomIntro{grid-template-columns:70px minmax(0,1fr);gap:8px}.evoRandomIntro img{width:70px}.evoRandomIntro b{font-size:17px}.evoRandomIntro p{font-size:10px}.evoCandidateBox span{font-size:9px;padding:4px 7px}.evoRandomActions{grid-template-columns:1fr 1.5fr}.evoRandomActions button{font-size:11px!important;min-height:42px}.evoCompareOverlay{padding:8px 5px}.evoCompareHighlight{grid-template-columns:1fr 1fr;gap:5px;padding:7px}.evoCompareHighlight strong{grid-column:1/-1;font-size:13px;text-align:center}.evoCompareHighlight>span{font-size:9px}.evoComparePanel .teamCompareBody{padding:5px}.evoCompareTable .compareLabel{width:48px!important}.evoCompareTable .teamCompareHero img{width:58px;height:82px}.evoCompareTable .teamCompareHero b{font-size:10px}.evoCompareTable .teamCompareHero small{font-size:7px}.evoGain,.evoDrop,.evoSame{font-size:7px}.evoCompareLegend{font-size:8px!important}}
 </style>
 
-</head>
+
+<style id="v187-evolution-mirror-compare">
+/* Ver1.87: emphasize grade stars and compare evolution stats with a mirrored left/right graph. */
+.evoComparePanelV187{width:min(860px,100%)}
+.evoCompareBodyV187{padding:10px!important}
+.evoCompareHighlightV187{grid-template-columns:1.35fr 1fr 1fr!important;padding:10px 12px!important}
+.evoCompareHighlightV187 strong{font-size:17px!important;text-align:left}.evoCompareHighlightV187 strong span{padding:0 5px;color:#8b6a00}
+.evoGradeTransition,.evoEnergyTransition{display:flex;align-items:center;justify-content:center;gap:6px;font-weight:1000}.evoGradeTransition>span,.evoEnergyTransition>span{display:flex;align-items:center;gap:4px}.evoGradeTransition>i,.evoEnergyTransition>i{font-style:normal;color:#8d99a1}
+.evoGradeBadge{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 9px;border-radius:999px;background:linear-gradient(180deg,#fff7bf,#ffd95b);border:1px solid #e8b92f;box-shadow:0 2px 7px #b27b1d2c;color:#6b4a00;font-weight:1000;white-space:nowrap}.evoGradeBadge .evoGradeSpark{font-size:19px;line-height:1;filter:drop-shadow(0 1px 2px #8e5e0033)}.evoGradeBadge b{font-size:15px!important;line-height:1!important;color:#604000!important}
+.evoHeroCompareV187{display:grid;grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr);gap:8px;align-items:center;margin:10px 0}.evoCompareHeroCard{min-width:0;padding:10px;border:1px solid #d7e1e7;border-radius:16px;text-align:center;background:#f8fbfd}.evoCompareHeroCard.after{background:linear-gradient(180deg,#fffdf0,#fff5c9);border-color:#ead470}.evoCompareHeroCard img{display:block;width:90px;height:126px;object-fit:cover;border-radius:10px;margin:5px auto 6px;background:#e7edf1;box-shadow:0 3px 10px #1e354522}.evoCompareHeroName{font-size:18px;font-weight:1000;line-height:1.15;margin-bottom:5px}.evoCompareHeroCard>small{display:block;margin-top:5px;font-size:10px;color:#687985;font-weight:800}.evoCompareHeroCard .teamCompareEnergy{display:inline-block;margin-top:6px;padding:5px 9px;border-radius:999px;background:#ffeaa0;color:#684900;font-size:12px;font-weight:1000}.evoHeroArrow{font-size:30px;font-weight:1000;color:#9a7b18;text-align:center}.evoSideTag{font-size:10px!important;padding:4px 8px!important}
+.evoMirrorChart{padding:10px 10px 8px;border:1px solid #d8e2e8;border-radius:16px;background:#fbfdff}.evoMirrorHeading{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;margin-bottom:7px;font-size:11px;font-weight:1000;color:#667985}.evoMirrorHeading span:first-child{text-align:right;padding-right:10px;color:#356db5}.evoMirrorHeading span:last-child{text-align:left;padding-left:10px;color:#b76b16}.evoMirrorHeading b{text-align:center;font-size:12px;color:#243845}.evoMirrorRow{display:grid;grid-template-columns:48px minmax(0,1fr) 64px minmax(0,1fr) 82px;gap:5px;align-items:center;min-height:43px;border-top:1px solid #edf1f4}.evoMirrorRow:first-of-type{border-top:0}.evoMirrorLabel{text-align:center;font-size:11px;font-weight:1000;color:#344b59}.evoMirrorValue{font-size:13px;font-weight:1000;font-variant-numeric:tabular-nums;white-space:nowrap}.evoMirrorValue.before{text-align:right;color:#295e9b}.evoMirrorValue.after{display:flex;align-items:center;gap:3px;color:#9c5715}.evoMirrorTrack{height:15px;border-radius:999px;background:#e6edf2;overflow:hidden;display:flex;box-shadow:inset 0 1px 2px #48627019}.evoMirrorTrack.left{justify-content:flex-end}.evoMirrorTrack i{display:block;height:100%;border-radius:999px}.evoMirrorTrack.left i{background:linear-gradient(90deg,#6f9ce3,#2e78da)}.evoMirrorTrack.right i{background:linear-gradient(90deg,#e69237,#f6b35f)}.evoMirrorValue.after .evoGain,.evoMirrorValue.after .evoDrop,.evoMirrorValue.after .evoSame{margin:0!important;font-size:9px!important;padding:3px 5px!important}
+.evoDetailCompare{margin-top:10px;border:1px solid #d8e2e8;border-radius:15px;overflow:hidden}.evoDetailRow{display:grid;grid-template-columns:64px minmax(0,1fr) minmax(0,1fr);border-top:1px solid #dfe7ec}.evoDetailRow:first-child{border-top:0}.evoDetailLabel{display:flex;align-items:center;justify-content:center;padding:9px 5px;background:#eef3f7;font-size:11px;font-weight:1000;color:#405766}.evoDetailCell{padding:9px 10px;min-width:0;text-align:center;font-size:12px}.evoDetailCell.after{background:#fffdf2}.evoDetailCell .teamCompareMove b,.evoDetailCell b{font-size:12px!important}.evoDetailCell small,.evoDetailCell em{display:block;font-size:10px!important;line-height:1.4!important;color:#647781;font-style:normal;margin-top:2px}.evoCompareLegend{font-size:11px!important;margin-top:8px!important}
+@media(max-width:600px){.evoCompareOverlay{padding:6px 4px!important}.evoComparePanelV187{border-radius:17px!important}.evoCompareHead{padding:10px!important}.evoCompareHead b{font-size:16px!important}.evoCompareBodyV187{padding:6px!important}.evoCompareHighlightV187{grid-template-columns:1fr 1fr!important;gap:5px!important;padding:7px!important}.evoCompareHighlightV187 strong{grid-column:1/-1!important;text-align:center!important;font-size:14px!important}.evoGradeTransition,.evoEnergyTransition{font-size:10px}.evoGradeBadge{padding:4px 7px;gap:3px}.evoGradeBadge .evoGradeSpark{font-size:17px}.evoGradeBadge b{font-size:13px!important}.evoHeroCompareV187{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:4px;margin:7px 0}.evoCompareHeroCard{padding:7px 4px}.evoCompareHeroCard img{width:72px;height:101px;margin:4px auto 5px}.evoCompareHeroName{font-size:14px}.evoCompareHeroCard .teamCompareEnergy{font-size:10px;padding:4px 6px}.evoHeroArrow{font-size:22px}.evoMirrorChart{padding:7px 5px 5px}.evoMirrorHeading{grid-template-columns:1fr 50px 1fr;font-size:9px}.evoMirrorHeading b{font-size:9px}.evoMirrorRow{grid-template-columns:35px minmax(0,1fr) 50px minmax(0,1fr) 61px;gap:3px;min-height:38px}.evoMirrorLabel{font-size:8.5px}.evoMirrorValue{font-size:10.5px}.evoMirrorTrack{height:12px}.evoMirrorValue.after{gap:2px}.evoMirrorValue.after .evoGain,.evoMirrorValue.after .evoDrop,.evoMirrorValue.after .evoSame{font-size:7px!important;padding:2px 3px!important}.evoDetailRow{grid-template-columns:50px minmax(0,1fr) minmax(0,1fr)}.evoDetailLabel{font-size:9px;padding:7px 3px}.evoDetailCell{padding:7px 5px;font-size:10px}.evoDetailCell .teamCompareMove b,.evoDetailCell b{font-size:10px!important}.evoDetailCell small,.evoDetailCell em{font-size:8px!important}.evoCompareLegend{font-size:9px!important}}
+</style>\n</head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
@@ -4189,8 +4202,8 @@ function splitRegionalName(name){return DATA.records.splitRegionalName(name)}
 function applyEvolutionIndex(index){EVO_INDEX=index;EVO_BY_NAME=index.byName;EVO_BY_NO=index.byNo;EVO_PARENTS=index.parents;evoReady=true;evoLoadError=false;migrateGrowthPointsToFamilies();migrateBondPointsToFamilies()}
 async function loadEvolutionData(){
  try{
-  const index=await DATA.evolution.loadIndex();applyEvolutionIndex(index);save();if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render();
- }catch(e){console.warn("evolution data load failed",e);evoLoadError=true;evoReady=false;if(!state.run&&!state.postRun&&["owned","training"].includes(screen))render()}
+  const index=await DATA.evolution.loadIndex();applyEvolutionIndex(index);save();if(!state.run&&!state.postRun&&["home","owned","training"].includes(screen))render();
+ }catch(e){console.warn("evolution data load failed",e);evoLoadError=true;evoReady=false;if(!state.run&&!state.postRun&&["home","owned","training"].includes(screen))render()}
 }
 function evolutionEntryForName(name){if(!evoReady)return null;const p=splitRegionalName(name),arr=EVO_BY_NAME.get(p.base)||[];return arr[0]||null}
 function evolutionRootNo(entry){return EVO_INDEX?.root(entry)??null}
@@ -4314,19 +4327,47 @@ function evolutionGainHTML(before,after){const d=Number(after)-Number(before);re
 function evolutionCompareStatCell(r,pb,key,scale,beforeTotal=null){const base=Number(r?.[key])||0,boost=Number(pb?.[key])||0,total=base+boost;return `${compareStatGraphCell(base,boost,scale)}${beforeTotal===null?"":evolutionGainHTML(beforeTotal,total)}`}
 function evolutionCompareSpeedCell(r,before=null){const x=evolutionSpeedValue(r),html=x.value?compareStatGraphCell(x.value,0,x.scale):"-";return `${html}${before===null?"":evolutionGainHTML(before,x.value)}`}
 function evolutionMoveHTML(r){const fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<b>${esc(r?.move||"未登録")}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small><em>必殺：${esc(fin)}</em>`}
+function evolutionStarBadgeHTML(r){
+ const g=Math.max(0,Number(r?.grade)||0);
+ return `<span class="evoGradeBadge"><span class="evoGradeSpark">⭐</span><b>★${g||"-"}</b></span>`
+}
+function evolutionMirrorRowHTML(label,beforeValue,afterValue,scale,beforeLabel=null,afterLabel=null){
+ const b=Math.max(0,Number(beforeValue)||0),a=Math.max(0,Number(afterValue)||0),max=Math.max(1,Number(scale)||1),bw=Math.min(100,b/max*100),aw=Math.min(100,a/max*100);
+ return `<div class="evoMirrorRow"><div class="evoMirrorValue before">${esc(beforeLabel??String(b))}</div><div class="evoMirrorTrack left"><i style="width:${bw}%"></i></div><div class="evoMirrorLabel">${esc(label)}</div><div class="evoMirrorTrack right"><i style="width:${aw}%"></i></div><div class="evoMirrorValue after"><b>${esc(afterLabel??String(a))}</b>${evolutionGainHTML(b,a)}</div></div>`
+}
 function showEvolutionComparison(before,after){
  if(!before?.r||!after?.r)return;
  document.getElementById("evoCompareOverlay")?.remove();
  const br=before.r,ar=after.r,bp=before.pb||{},ap=after.pb||{},
        bSpeed=evolutionSpeedValue(br),aSpeed=evolutionSpeedValue(ar),
-       bHp=evolutionTotalStat(br,bp,"hp"),bAtk=evolutionTotalStat(br,bp,"atk"),bDef=evolutionTotalStat(br,bp,"def"),
-       bSpa=Number(br.sp_atk)||0,bSpd=Number(br.sp_def)||0,
+       bHp=evolutionTotalStat(br,bp,"hp"),aHp=evolutionTotalStat(ar,ap,"hp"),
+       bAtk=evolutionTotalStat(br,bp,"atk"),aAtk=evolutionTotalStat(ar,ap,"atk"),
+       bDef=evolutionTotalStat(br,bp,"def"),aDef=evolutionTotalStat(ar,ap,"def"),
+       bSpa=Number(br.sp_atk)||0,aSpa=Number(ar.sp_atk)||0,
+       bSpd=Number(br.sp_def)||0,aSpd=Number(ar.sp_def)||0,
        gradeBefore=Math.max(0,Number(br.grade)||0),gradeAfter=Math.max(0,Number(ar.grade)||0),
        eneBefore=Number(br.poke_ene)||0,eneAfter=Number(ar.poke_ene)||0;
- const row=(label,left,right,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th><td class="${cls} evoBeforeCell">${left}</td><td class="${cls} evoAfterCell">${right}</td></tr>`;
- const hero=(r,tag,cls)=>`<td class="teamCompareHero ${cls}"><span class="evoSideTag">${tag}</span><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(r.poke_ene??"-")}</span></td>`;
+ const hero=(r,tag,cls)=>`<div class="evoCompareHeroCard ${cls}"><span class="evoSideTag">${tag}</span><img src="${esc(imageOf(r))}" alt=""><div class="evoCompareHeroName">${esc(r.name_ja)}</div>${evolutionStarBadgeHTML(r)}<small>${esc(r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(r.poke_ene??"-")}</span></div>`;
+ const mirror=[
+  evolutionMirrorRowHTML("HP",bHp,aHp,240),
+  evolutionMirrorRowHTML("ATK",bAtk,aAtk,220),
+  evolutionMirrorRowHTML("DEF",bDef,aDef,220),
+  evolutionMirrorRowHTML("SP.ATK",bSpa,aSpa,220),
+  evolutionMirrorRowHTML("SP.DEF",bSpd,aSpd,220),
+  evolutionMirrorRowHTML("SPEED",bSpeed.value,aSpeed.value,Math.max(bSpeed.scale,aSpeed.scale),bSpeed.label,aSpeed.label)
+ ].join("");
+ const infoRow=(label,left,right)=>`<div class="evoDetailRow"><div class="evoDetailLabel">${label}</div><div class="evoDetailCell before">${left}</div><div class="evoDetailCell after">${right}</div></div>`;
  const ov=document.createElement("div");ov.id="evoCompareOverlay";ov.className="teamCompareOverlay evoCompareOverlay";
- ov.innerHTML=`<div class="teamComparePanel evoComparePanel" role="dialog" aria-modal="true" aria-label="進化前後の比較"><div class="teamCompareHead evoCompareHead"><div><small>EVOLUTION RESULT</small><b>✨ 強くなった！ 進化前後をくらべよう</b></div><button type="button" class="teamCompareClose" id="evoCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="evoCompareHighlight"><strong>${esc(br.name_ja)} → ${esc(ar.name_ja)}</strong><span>${gradeText(br)} → ${gradeText(ar)} ${evolutionGainHTML(gradeBefore,gradeAfter)}</span><span>⚡ ${eneBefore} → ${eneAfter} ${evolutionGainHTML(eneBefore,eneAfter)}</span></div><div class="teamCompareTableWrap"><table class="teamCompareTable evoCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero(br,"進化前","before")}${hero(ar,"進化後","after")}</tr></thead><tbody>${row("タイプ",esc(compareTypeText(br)),esc(compareTypeText(ar)),"teamCompareType")}${row("HP",evolutionCompareStatCell(br,bp,"hp",240),evolutionCompareStatCell(ar,ap,"hp",240,bHp))}${row("ATK",evolutionCompareStatCell(br,bp,"atk",220),evolutionCompareStatCell(ar,ap,"atk",220,bAtk))}${row("DEF",evolutionCompareStatCell(br,bp,"def",220),evolutionCompareStatCell(ar,ap,"def",220,bDef))}${row("SP.ATK",evolutionCompareStatCell(br,{},"sp_atk",220),evolutionCompareStatCell(ar,{},"sp_atk",220,bSpa))}${row("SP.DEF",evolutionCompareStatCell(br,{},"sp_def",220),evolutionCompareStatCell(ar,{},"sp_def",220,bSpd))}${row("すばやさ",evolutionCompareSpeedCell(br),evolutionCompareSpeedCell(ar,bSpeed.value))}${row("わざ",evolutionMoveHTML(br),evolutionMoveHTML(ar),"teamCompareMove")}</tbody></table></div><div class="teamCompareLegend evoCompareLegend">青いバーはピック本来の能力、紫は恒久強化分です。進化後に上がった項目は「▲ +○」で表示します。</div></div></div>`;
+ ov.innerHTML=`<div class="teamComparePanel evoComparePanel evoComparePanelV187" role="dialog" aria-modal="true" aria-label="進化前後の比較">
+  <div class="teamCompareHead evoCompareHead"><div><small>EVOLUTION RESULT</small><b>✨ 強くなった！ 進化前後をくらべよう</b></div><button type="button" class="teamCompareClose" id="evoCompareClose">閉じる</button></div>
+  <div class="teamCompareBody evoCompareBodyV187">
+   <div class="evoCompareHighlight evoCompareHighlightV187"><strong>${esc(br.name_ja)} <span>→</span> ${esc(ar.name_ja)}</strong><div class="evoGradeTransition"><span>${evolutionStarBadgeHTML(br)}</span><i>→</i><span>${evolutionStarBadgeHTML(ar)} ${evolutionGainHTML(gradeBefore,gradeAfter)}</span></div><div class="evoEnergyTransition"><span>⚡ ${eneBefore}</span><i>→</i><span>⚡ ${eneAfter} ${evolutionGainHTML(eneBefore,eneAfter)}</span></div></div>
+   <div class="evoHeroCompareV187">${hero(br,"進化前","before")}<div class="evoHeroArrow">→</div>${hero(ar,"進化後","after")}</div>
+   <div class="evoMirrorChart"><div class="evoMirrorHeading"><span>進化前</span><b>能力比較</b><span>進化後</span></div>${mirror}</div>
+   <div class="evoDetailCompare">${infoRow("タイプ",esc(compareTypeText(br)),esc(compareTypeText(ar)))}${infoRow("わざ",evolutionMoveHTML(br),evolutionMoveHTML(ar))}</div>
+   <div class="teamCompareLegend evoCompareLegend">中央を基準に、左が進化前・右が進化後です。右側の「▲ +○」で伸びた能力を確認できます。</div>
+  </div>
+ </div>`;
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#evoCompareClose").onclick=close
 }
@@ -4500,9 +4541,10 @@ function homeExpeditionStatusHTML(){
  return `<div class="homeExpeditionStatus">${homeExpeditionGroups().map(x=>`<span class="${x.state}">${esc(x.text)}</span>`).join("")}</div>`
 }
 function homeTrainingSummary(){
+ if(!evoReady)return {evolve:0,loading:!evoLoadError,error:!!evoLoadError};
  let evolve=0;
  try{for(const o of state.owned||[]){if(evolutionInfoForPick(o.id)?.canEvolve)evolve++}}catch{}
- return {evolve};
+ return {evolve,loading:false,error:false};
 }
 function renderHome(){
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
@@ -4516,7 +4558,7 @@ function renderHome(){
    <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>仲間の確認・編成</small></button>
    <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
    <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><strong class="homeManageValue">${state.eggs.length}/${state.eggCap}</strong><small>${esc(egg.title)}</small><small class="homeManageSub">${esc(egg.body)}</small>${egg.ratio?`<div class="homeCardMeter"><i style="width:${egg.ratio}%"></i></div>`:""}</button>
-   <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><strong class="homeManageValue">強化・進化</strong><small>${training.evolve?`進化可能 ${training.evolve}体`:`育成メニュー`}</small></button>
+   <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><strong class="homeManageValue">強化・進化</strong><small>${training.loading?`進化情報を確認中…`:training.error?`進化情報を確認できません`:training.evolve?`進化可能 ${training.evolve}体`:`育成メニュー`}</small></button>
   </div>
  </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 セーブ</button></div></div>`;
  app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
@@ -6032,6 +6074,6 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2000);
 })();
 </script>
-<!-- FRENDA_DUNGEON_VERSION: 1.85 / Updated: 2026-09-30 09:14 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 1.87 / Updated: 2026-09-30 09:32 JST -->
 </body>
 </html>
