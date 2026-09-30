@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.47">
+<html lang="ja" data-app-version="0.48">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -309,6 +309,26 @@ function freeNextMilestoneText(m,now=Date.now()){
  if(!next)return "最大12時間の成果に到達";
  const remain=Math.max(0,(next.h-h)*3600000);
  return `次の成果アップまで ${formatRemain(remain)}（${next.h}時間）`
+}
+
+function milestoneRarePct(hours,diff,rank,luckMul=1){
+ const profile=freeRewardProfile(hours);
+ if(!diff||!rank||rank==="-")return null;
+ const p=RULES.expeditionBoxProbability(profile.ruleHours,diff,rank)||{};
+ const rare=Math.max(0,Number(p.rare)||0),jack=Math.max(0,Number(p.jackpot)||0);
+ return Math.round(Math.min(.98,(rare+jack)*Math.max(1,Number(luckMul)||1))*100)
+}
+function freeReturnMilestoneHTML(d,p){
+ const diff=Number(p?.difficulty)||highestDifficultyForDungeon(p?.dungeonId)||1;
+ const hasTeam=Array.isArray(p?.teamIds)&&p.teamIds.length>0;
+ const score=hasTeam?scoreTeam(p.teamIds,p.dungeonId,diff):null;
+ const avg=hasTeam?averageLuckForIds(d,p.teamIds):0,luckMul=luckMultiplierFromAverage(avg);
+ return FREE_EXP_ANCHORS.map(a=>{
+  const rarePct=hasTeam?milestoneRarePct(a.h,diff,score?.rank,luckMul):null;
+  const bonus=a.h>=8?"<em>最終1箱 RARE+</em>":a.h>=4?"<em>レア率UP枠</em>":"";
+  const time=a.h===.5?"30分":`${a.h}h${a.h===12?" MAX":""}`;
+  return `<div class="freeMilestone ${a.h===12?"max":""}"><b>${time}</b><span>🎁 ${a.boxes}箱</span><span class="rareRate">✨ ${rarePct==null?"編成後":`レア以上 ${rarePct}%`}</span>${bonus}</div>`
+ }).join("")
 }
 
 const BASE_BOX=RULES.EXPEDITION_BASE_BOX;
@@ -667,6 +687,7 @@ function refreshPrepSelectionUI(d,p){
  const strip=document.getElementById("expSelectedStrip");
  if(strip){strip.innerHTML=prepSelectedStripHTML(d,p);bindPrepSelectedStrip(d,p)}
  const autoDungeon=document.getElementById("autoDungeonBtn");if(autoDungeon)autoDungeon.disabled=!p.teamIds.length;
+ const milestones=document.getElementById("freeReturnMilestones");if(milestones)milestones.innerHTML=freeReturnMilestoneHTML(d,p);
  refreshPrepPickCardStates(p);
  refreshPrepGroupCard()
 }
@@ -689,7 +710,7 @@ function renderPrep(){
  const slots=prepSelectedStripHTML(d,p);
  const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)}<br>ポケエネ ${esc(r.poke_ene??"-")} / 絆Lv${bondLevel(d,id)} / 🍀運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>${recOk?`<small class="pickReason">${esc(r.move_type||"-")}わざが探索先に有利</small>`:""}`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card freeReturnGuide"><div class="freeReturnGuideMain"><b>⏱️ 自由探索</b><span>出発後、「帰還」を押した時点まで探索します。最大12時間。</span></div><div class="freeReturnMilestones"><span>30分</span><span>1h</span><span>2h</span><span>4h</span><span>6h</span><span>8h</span><span>10h</span><span>12h MAX</span></div><small>探索時間に応じてEXP・発見率などは徐々に増加。区切り時間では成果箱も増えます。</small></div><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>`<button class="destinationCompact ${x.did===p.dungeonId?"active":""}" data-did="${x.did}"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted" style="margin-top:7px">ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn" ${p.teamIds.length?"":"disabled"}>🗺️ おまかせ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループ${otherGroupIndex()+1}の探索中ピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🎒 おみやげ・発見を見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card freeReturnGuide"><div class="freeReturnGuideMain"><b>⏱️ 自由探索</b><span>出発後、「帰還」を押した時点まで探索します。最大12時間。</span></div><div class="freeReturnMilestoneTitle"><b>成果アップの目安</b><span>現在の編成・派遣先・幸運を反映</span></div><div class="freeReturnMilestones" id="freeReturnMilestones">${freeReturnMilestoneHTML(d,p)}</div><small>🎁＝成果箱の個数。✨＝1箱あたりの基本「レア以上」確率です。探索ランク・派遣先ランク・幸運で変化します。4時間以降はレア率UP枠、8時間以降は最終1箱がレア以上確定。EXP・発見率などは途中の時間でも徐々に増加します。</small></div><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>`<button class="destinationCompact ${x.did===p.dungeonId?"active":""}" data-did="${x.did}"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted" style="margin-top:7px">ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn" ${p.teamIds.length?"":"disabled"}>🗺️ おまかせ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループ${otherGroupIndex()+1}の探索中ピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🎒 おみやげ・発見を見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
@@ -906,21 +927,71 @@ loadEvolution();
   font-weight:800;
   color:#536d79;
 }
+.freeReturnMilestoneTitle{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+  margin:10px 0 5px;
+}
+.freeReturnMilestoneTitle b{
+  font-size:11px;
+  color:#315768;
+}
+.freeReturnMilestoneTitle span{
+  font-size:8px;
+  font-weight:800;
+  color:#718792;
+}
 .freeReturnMilestones{
   display:grid;
-  grid-template-columns:repeat(8,minmax(0,1fr));
-  gap:4px;
-  margin:9px 0 6px;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+  margin:5px 0 8px;
 }
-.freeReturnMilestones span{
-  padding:5px 2px;
-  border-radius:8px;
+.freeMilestone{
+  min-width:0;
+  padding:7px 5px 6px;
+  border-radius:10px;
   background:#fff;
-  border:1px solid #c9dce5;
+  border:1px solid #bfd4de;
   text-align:center;
+  box-shadow:0 2px 6px #17465c10;
+}
+.freeMilestone>b{
+  display:block;
+  font-size:10px;
+  line-height:1.1;
+  color:#244e61;
+  margin-bottom:4px;
+}
+.freeMilestone>span{
+  display:block;
   font-size:8px;
+  line-height:1.3;
   font-weight:1000;
-  color:#36586a;
+  color:#4d6875;
+}
+.freeMilestone .rareRate{
+  color:#8b5a00;
+  margin-top:2px;
+}
+.freeMilestone>em{
+  display:inline-block;
+  margin-top:4px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#fff1b8;
+  color:#8a5900;
+  font-size:7px;
+  line-height:1.1;
+  font-style:normal;
+  font-weight:1000;
+}
+.freeMilestone.max{
+  border-color:#e1b23d;
+  background:linear-gradient(180deg,#fffdf4,#fff3ba);
+  box-shadow:0 0 0 2px #ffd65a33 inset,0 3px 8px #9b6a1519;
 }
 .freeReturnGuide>small{
   display:block;
@@ -978,8 +1049,15 @@ loadEvolution();
 @media(max-width:700px){
   .freeReturnMilestones{
     grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:4px;
+    gap:5px;
   }
+  .freeMilestone{
+    padding:6px 3px 5px;
+  }
+  .freeMilestone>b{font-size:9px}
+  .freeMilestone>span{font-size:7px}
+  .freeMilestone>em{font-size:6px;padding:2px 3px}
+  .freeReturnMilestoneTitle span{font-size:7px}
   .freeReturnGuideMain{
     display:block;
   }
@@ -997,7 +1075,7 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.47 / Updated: 2026-09-30 19:45 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.48 / Updated: 2026-09-30 20:15 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1018,3 +1096,9 @@ loadEvolution();
   旧returnAtはlegacyReturnAtへ保存し、自動帰還を停止。既に経過した時間もそのまま新方式の探索時間として引き継ぐ。
 -->
 <!-- Updated: 2026-09-30 19:45 JST -->
+
+<!-- Ver0.48:
+  自由探索の各時間マイルストーンに、成果箱数・現在編成での基本レア以上率を表示。
+  4時間以降のレア率UP枠、8時間以降の最終1箱RARE以上確定を明示。
+  ピック選択時の部分更新でもレア率表示を即時再計算。
+-->
