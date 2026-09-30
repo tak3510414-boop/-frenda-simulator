@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.48">
+<html lang="ja" data-app-version="0.50">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -728,7 +728,7 @@ function renderPrep(){
  bindExpeditionPickFilters();startTicker()
 }
 
-function renderExplore(){const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone" id="nextMilestone">${freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満は30分相当の最低成果として計算します。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}もう一方のグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button><button class="danger ghostishCancel" id="cancelBtn">探索を中止する（成果なし）</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);document.getElementById("cancelBtn").onclick=()=>cancelMission(activeGroup);startTicker()}
+function renderExplore(){const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone" id="nextMilestone">${freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満は30分相当の最低成果として計算します。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}もう一方のグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);startTicker()}
 function renderReturn(){prepareReturnAll();const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="exploring"){screen="explore";return renderExplore()}if(m.stage==="welcome")return renderWelcome();if(m.stage==="report")return renderReport();if(m.stage==="findings")return renderFindings();if(m.stage==="growth")return renderGrowth();if(m.stage==="boxes")return renderBoxes();if(m.stage==="summary")return renderSummary();m.stage="welcome";writeExp();renderWelcome()}
 function renderWelcome(){const m=groupMission(),th=THEMES[m.dungeonId];app.innerHTML=`<div class="returnHero"><div class="kicker" style="color:#8de5ff">WELCOME BACK! / GROUP ${activeGroup+1}</div><h1>🧭 おかえり！</h1><p>${th.icon} ${esc(th.name)} ランク${m.difficulty}から帰ってきました</p><div class="returnTeam">${m.teamIds.map(id=>`<img src="${esc(imageOf(rec(id)))}" alt="">`).join("")}</div><div class="statusBig">探索ランク ${m.rank}</div><button class="goldBtn" id="nextBtn" style="margin-top:12px;font-size:16px">探索レポートを見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="report";writeExp();render()}}
 function renderReport(){const m=groupMission();app.innerHTML=`<div class="reportGroup"><div class="card"><div class="sectionTitle">📜 探索レポート</div><div class="timeline">${(m.report||reportFor(m)).map(x=>`<div class="timelineRow"><time>${new Date(x.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</time><span>${esc(x.text)}</span></div>`).join("")}</div></div>${journalHTML(m)}<div class="card"><button id="nextBtn" style="width:100%">🔎 発見とおみやげを見る</button></div></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="findings";writeExp();render()}}
@@ -945,9 +945,12 @@ loadEvolution();
 }
 .freeReturnMilestones{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:6px;
+  grid-template-columns:repeat(8,minmax(72px,1fr));
+  gap:5px;
   margin:5px 0 8px;
+  overflow-x:auto;
+  padding-bottom:3px;
+  -webkit-overflow-scrolling:touch;
 }
 .freeMilestone{
   min-width:0;
@@ -1048,8 +1051,9 @@ loadEvolution();
 }
 @media(max-width:700px){
   .freeReturnMilestones{
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:5px;
+    grid-template-columns:repeat(8,minmax(72px,1fr));
+    gap:4px;
+    overflow-x:auto;
   }
   .freeMilestone{
     padding:6px 3px 5px;
@@ -1075,7 +1079,7 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.48 / Updated: 2026-09-30 20:15 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.50 / Updated: 2026-09-30 20:30 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1101,4 +1105,14 @@ loadEvolution();
   自由探索の各時間マイルストーンに、成果箱数・現在編成での基本レア以上率を表示。
   4時間以降のレア率UP枠、8時間以降の最終1箱RARE以上確定を明示。
   ピック選択時の部分更新でもレア率表示を即時再計算。
+-->
+
+<!-- Ver0.49:
+  自由探索の時間別成果説明（30分〜12時間）を常に1列表示へ変更。
+  画面幅が足りない場合は2段折返しせず、横スクロールで全8段階を確認可能。
+-->
+
+<!-- Ver0.50:
+  探索中画面の「探索を中止する（成果なし）」ボタンを削除。
+  探索終了操作は「帰還する」に一本化。
 -->
