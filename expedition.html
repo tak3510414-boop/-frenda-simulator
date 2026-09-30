@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.57">
+<html lang="ja" data-app-version="0.58">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -151,7 +151,7 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 </style>
 </head>
 <body>
-<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span></b></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div></div></div></header>
+<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span></b></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
 <main id="app"></main>
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
@@ -182,128 +182,6 @@ const EXPEDITION_TEST_MODE=EXPEDITION_TEST_REQUESTED&&ADMIN_AUTH;
 const EXPEDITION_TEST_CASE=TEST_PARAMS.get("case")||"";
 const EXPEDITION_TIMER_CASE=TEST_PARAMS.get("timer")||"";
 if((EXPEDITION_TEST_REQUESTED||EXPEDITION_SELFTEST_REQUESTED)&&!ADMIN_AUTH){location.replace("admin.html?next=test-center.html");return;}
-
-function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
- if(!data)throw new Error("FRENDA_DATA is required");
- const KEY=data.KEYS.eyeTimer,PLAY_MS=30*60*1000,REST_MS=10*60*1000;
- let handle=null,locked=false,started=false;
- const read=()=>{const x=data.readJSON(KEY,null);return x&&typeof x==="object"?x:null};
- const write=x=>{try{data.writeJSON(KEY,x)}catch{}return x};
- const fresh=(now=Date.now())=>write({phase:"play",playUntil:now+PLAY_MS,updatedAt:now});
- function resolve(now=Date.now()){
-  let x=read();
-  if(!x||!Number.isFinite(Number(x.playUntil)))return fresh(now);
-  if(x.phase==="ready")return x;
-  if(x.phase==="rest"){
-   const restUntil=Number(x.restUntil)||Number(x.playUntil)+REST_MS;
-   if(now<restUntil){x.restUntil=restUntil;x.reason=x.reason||"auto";return x}
-   x={phase:"ready",playUntil:Number(x.playUntil)||now,restUntil,reason:x.reason||"auto",readyAt:restUntil,updatedAt:now};write(x);return x
-  }
-  const playUntil=Number(x.playUntil);
-  if(now<playUntil)return x;
-  const restUntil=playUntil+REST_MS;
-  if(now<restUntil){x={phase:"rest",playUntil,restUntil,reason:"auto",updatedAt:now};write(x);return x}
-  x={phase:"ready",playUntil,restUntil,reason:"auto",readyAt:restUntil,updatedAt:now};write(x);return x
- }
- function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
- function ensureOverlay(state){
-  let ov=document.getElementById("eyeRestOverlay");
-  if(!ov){
-   ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";
-   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule" id="eyeRestRule">10分休んだら → また30分遊べます</div><div class="eyeRestAdminHint" id="eyeRestAdminHint">🔑 管理者：この画面を2秒長押しで解除</div><button type="button" class="eyeRestResumeBtn" id="eyeRestResumeBtn">ゲームを再開</button></div>`;
-   document.body.appendChild(ov)
-  }
-  const ready=state?.phase==="ready",title=ov.querySelector("#eyeRestTitle"),txt=ov.querySelector("#eyeRestText"),rule=ov.querySelector("#eyeRestRule"),hint=ov.querySelector("#eyeRestAdminHint"),btn=ov.querySelector("#eyeRestResumeBtn");
-  ov.classList.toggle("ready",ready);
-  if(hint)hint.hidden=ready;
-  if(title)title.textContent=ready?"休憩終了！":"目を休めよう";
-  if(txt)txt.innerHTML=ready?"休憩時間が終わりました。<br>画面をタップするとゲームに戻り、そこから次の30分が始まります。":state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";
-  if(rule)rule.textContent=ready?"再開するまでプレイ時間は減りません":"10分休んだら → また30分遊べます";
-  if(btn)btn.hidden=!ready;
-  return ov
- }
- function setLocked(lock,state){
-  locked=lock;document.body.classList.toggle("eyeResting",lock);
-  const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns"),manual=document.getElementById("manualRestBtn");
-  try{if(main)main.inert=lock;if(buttons)buttons.inert=lock;if(manual)manual.disabled=lock}catch{}
-  if(lock)ensureOverlay(state);else document.getElementById("eyeRestOverlay")?.remove()
- }
- function startManualRest(){const now=Date.now(),x=resolve(now);if(x.phase==="rest"||x.phase==="ready")return;write({phase:"rest",playUntil:now,restUntil:now+REST_MS,reason:"manual",updatedAt:now});tick()}
- function resumePlay(){const x=read();if(x?.phase!=="ready")return;fresh(Date.now());tick()}
- function forceResume(){
-  fresh(Date.now());
-  setLocked(false,{phase:"play"});
-  tick()
- }
- let adminHoldTimer=null,adminHoldPointer=null;
- function clearAdminHold(){
-  if(adminHoldTimer)clearTimeout(adminHoldTimer);
-  adminHoldTimer=null;adminHoldPointer=null;
-  document.getElementById("eyeRestOverlay")?.classList.remove("adminHold")
- }
- function openAdminRestOverride(){
-  clearAdminHold();
-  if(window.FRENDA_PARENTAL?.isAdminAuthenticated()){
-   forceResume();
-   setTimeout(()=>UI.dialog.alert("管理者権限で休憩を解除しました。"),0);
-   return
-  }
-  const q=new URLSearchParams(location.search);
-  q.set("adminRestRelease","1");
-  const next=`${location.pathname}?${q.toString()}`;
-  location.href=`admin.html?next=${encodeURIComponent(next)}`
- }
- function pointerdown(e){
-  if(!locked||read()?.phase!=="rest")return;
-  const ov=e.target.closest?.("#eyeRestOverlay");if(!ov)return;
-  clearAdminHold();adminHoldPointer=e.pointerId;ov.classList.add("adminHold");
-  adminHoldTimer=setTimeout(()=>{adminHoldTimer=null;openAdminRestOverride()},2000)
- }
- function pointerend(e){
-  if(adminHoldPointer!==null&&e.pointerId!==undefined&&e.pointerId!==adminHoldPointer)return;
-  clearAdminHold()
- }
- function contextmenu(e){
-  if(e.target.closest?.("#eyeRestOverlay"))e.preventDefault()
- }
- function tick(){
-  const now=Date.now(),x=resolve(now),rest=x.phase==="rest",ready=x.phase==="ready",lock=rest||ready,until=rest?Number(x.restUntil):Number(x.playUntil),remain=ready?0:Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");
-  if(badge){badge.className=`eyeTimerBadge ${rest?"rest":ready?"ready":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${fmt(remain)}`:ready?"👁 再開待ち":`👁 あと ${fmt(remain)}`;badge.title=ready?"タップして再開すると30分カウント開始":"30分遊んだら10分休憩"}
-  setLocked(lock,x);
-  const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=ready?"再開できます":fmt(remain);
-  if(typeof onTick==="function")onTick(now,x,remain)
- }
- function keydown(e){
-  if(!locked)return;
-  const ov=document.getElementById("eyeRestOverlay");
-  if(read()?.phase==="ready"&&ov?.contains(e.target)&&(e.key==="Enter"||e.key===" ")){e.preventDefault();resumePlay();return}
-  if(!ov?.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}
- }
- function storage(e){if(e.key===KEY||extraStorageKeys.includes(e.key))tick()}
- function visibility(){if(document.visibilityState==="visible")tick()}
- function click(e){
-  const b=e.target.closest?.("#manualRestBtn");if(b&&!locked){startManualRest();return}
-  const ov=e.target.closest?.("#eyeRestOverlay");if(ov&&read()?.phase==="ready")resumePlay()
- }
- function start(){
-  if(started)return;started=true;
-  document.addEventListener("keydown",keydown,true);window.addEventListener("storage",storage);document.addEventListener("visibilitychange",visibility);document.addEventListener("click",click);
-  document.addEventListener("pointerdown",pointerdown,true);document.addEventListener("pointerup",pointerend,true);document.addEventListener("pointercancel",pointerend,true);document.addEventListener("contextmenu",contextmenu,true);
-  tick();handle=setInterval(tick,1000)
- }
- function stop(){if(handle)clearInterval(handle);handle=null;clearAdminHold();if(started){document.removeEventListener("keydown",keydown,true);window.removeEventListener("storage",storage);document.removeEventListener("visibilitychange",visibility);document.removeEventListener("click",click);document.removeEventListener("pointerdown",pointerdown,true);document.removeEventListener("pointerup",pointerend,true);document.removeEventListener("pointercancel",pointerend,true);document.removeEventListener("contextmenu",contextmenu,true);started=false}}
- return Object.freeze({start,stop,tick,startManualRest,resumePlay,forceResume,isLocked:()=>locked,resolve,format:fmt})
-}
-
-const eyeCare=createEyeCareResume({data:DATA});
-if(ADMIN_AUTH&&TEST_PARAMS.get("adminRestRelease")==="1"){
- eyeCare.forceResume();
- try{
-  const clean=new URL(location.href);
-  clean.searchParams.delete("adminRestRelease");
-  history.replaceState(null,"",clean.pathname+(clean.searchParams.toString()?`?${clean.searchParams.toString()}`:"")+clean.hash)
- }catch{}
-}
 
 const DUNGEON_KEY=DATA.KEYS.dungeon;
 const EXP_KEY=DATA.KEYS.expedition;
@@ -507,7 +385,6 @@ function flushPrepWrite(){
  clearTimeout(prepWriteTimer);prepWriteTimer=null;writeExp()
 }
 window.addEventListener("pagehide",flushPrepWrite);
-function applyExpeditionTimerPreset(){if(!EXPEDITION_TEST_MODE||!EXPEDITION_TIMER_CASE)return;const now=Date.now();if(EXPEDITION_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(EXPEDITION_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 function seedExpeditionTestDungeon(team){const fake={initialized:true,owned:[...new Set(team)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drill:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};DATA.dungeon.write(fake)}
 function testMission(team){const now=Date.now();return {id:"test-mission",dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3),startAt:now-60000,returnAt:now+3540000,rank:"A",score:82,scoreParts:{number:30,strength:30,type:15,bond:7},baseline:100,avgEnergy:100,boxes:[{rarity:"normal",reward:{type:"xp",target:team[0],amount:10},opened:false,applied:false,resultText:"⭐ EXP +10"},{rarity:"rare",reward:{type:"growth",target:team[1],amount:1},opened:false,applied:false,resultText:"🌱 進化P +1"}],report:[{time:now-30000,text:"テスト探索中"},{time:now-20000,text:"成果箱を持ち帰った"}],liveReport:[{time:now-30000,text:"テスト探索中"}],stage:"exploring",baseApplied:true,baseResults:team.slice(0,3).map(id=>({id,xp:10,drill:0,bond:false})),summary:["⭐ EXP +10"]}}
 function applyExpeditionTestCase(){if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);const team=ids.length>=3?ids:ids.concat(ids,ids).slice(0,3);seedExpeditionTestDungeon(team);const mission=testMission(team);if(EXPEDITION_TEST_CASE==="prep"){exp=defaultExp();prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};screen="prep"}else if(EXPEDITION_TEST_CASE==="exploring"){exp={...defaultExp(),status:"exploring",mission,lastTeamIds:team.slice(0,3)};screen="explore"}else if(EXPEDITION_TEST_CASE==="boxes"){exp={...defaultExp(),status:"returned",mission:{...mission,returnAt:Date.now()-1,stage:"boxes"},lastTeamIds:team.slice(0,3)};screen="return"}else if(EXPEDITION_TEST_CASE==="summary"){exp={...defaultExp(),status:"returned",mission:{...mission,returnAt:Date.now()-1,stage:"summary",boxes:mission.boxes.map(b=>({...b,opened:true,applied:true}))},lastTeamIds:team.slice(0,3)};screen="return"}else{return}writeExp();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${EXPEDITION_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`)}
@@ -915,8 +792,6 @@ function expeditionCloudSummary(data){const s=data?.state||{},owned=Array.isArra
 
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン＋おでかけ探索",compactButton:true,hideButton:true,column:"dungeon_data",getData:expeditionDungeonCloudData,applyData:applyExpeditionDungeonCloudData,watchStorage:k=>k===DUNGEON_KEY,hasLocalData:expeditionHasLocalData,describeData:expeditionCloudSummary});
 
-applyExpeditionTimerPreset();
-eyeCare.start();
 try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e);app.innerHTML=`<div class="card error"><b>おでかけ探索の表示に失敗しました。</b><br>${esc(e?.message||String(e))}<br><small>セーブデータは削除していません。ページを再読み込みしてください。</small></div>`}
 loadEvolution();
 })();
@@ -1488,33 +1363,23 @@ loadEvolution();
 </style>
 
 
-<style id="v057-admin-rest-longpress">
-.eyeRestAdminHint{
-  margin-top:14px;
-  padding:7px 12px;
-  border-radius:999px;
-  border:1px solid #ffffff38;
-  background:#ffffff0d;
-  color:#d9edf5;
-  font-size:10px;
-  font-weight:900;
-  user-select:none;
-  -webkit-user-select:none;
+
+
+<style id="v058-expedition-no-time-limit">
+/* おでかけ探索はプレイ時間制限の対象外。 */
+#eyeTimerBadge,
+#manualRestBtn,
+#eyeRestOverlay,
+.careCluster,
+.careCombo{
+  display:none!important;
 }
-.eyeRestOverlay.adminHold .eyeRestPanel{
-  border-color:#ffd76c!important;
-  box-shadow:0 18px 55px #0008,0 0 0 4px #ffd76c55!important;
-}
-.eyeRestOverlay.adminHold .eyeRestAdminHint{
-  background:#ffd76c;
-  color:#4f3b00;
-}
-.eyeRestOverlay.adminHold .eyeRestAdminHint::after{
-  content:"　長押し中…";
+header .head{
+  min-height:auto!important;
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.57 / Updated: 2026-09-30 21:18 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.58 / Updated: 2026-09-30 21:25 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1603,4 +1468,11 @@ loadEvolution();
   未認証時はadmin.htmlの管理者パスワード画面へ遷移し、認証後に元画面へ戻って休憩を強制解除。
   既に管理者認証済みの場合は長押しだけで即時解除。
   長押し中は枠と案内を黄色に変えて反応を可視化。
+-->
+
+<!-- Ver0.58:
+  おでかけ探索をプレイ時間制限の対象外へ変更。
+  30分プレイ/10分休憩タイマー、手動休憩ボタン、休憩ロック画面、管理者長押し解除をすべて廃止。
+  ダンジョン側の時間制限設定・共有タイマーデータには触れず、おでかけ探索だけが時間制限を無視する。
+  探索そのものの「最大12時間」は報酬計算上の探索時間上限として維持。
 -->
