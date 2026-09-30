@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.16">
+<html lang="ja" data-app-version="2.17">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5370,7 +5370,7 @@ function teamMiniHTML(t,i){
        pb=state.permanentBoosts[t.id]||{},growth=growthPointsFor(t.id),drill=drillFor(t.id),bond=bondLevelFor(t.id),
        battleRec=inBattle?teamRec(t):r,bondProc=!!((t.bondAtk||0)||(t.bondDef||0)),
        appeal=m?.action==="fighter"?fighterMatchupAppeal(t):null,
-       appealCls=appeal?` matchup${appeal.kind==="good"?"Good":appeal.kind==="veryBad"?"VeryBad":"Bad"}`:"",
+       appealCls=appeal?` matchup${appeal.kind==="good"?"Good":appeal.kind==="veryBad"?"VeryBad":"Bad"} matchupTone-${appeal.tone||"neutral"}`:"",
        cls=`teamMini ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${bondProc?" bondProc":""}${appealCls}`,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:"";
  if(!inBattle){
@@ -7471,6 +7471,80 @@ main.dungeonRunScreen .runUnifiedAlwaysPath{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.16 / Updated: 2026-09-30 19:00 JST -->
+
+<style id="v217-matchup-visual-hierarchy">
+/* Ver2.17
+   Matchup severity is expressed by color/border, not by fading the whole card.
+   "攻めにくい" must not look worse than "相性かなり不利". */
+main.chooseFighterScreen .teamMini.matchupBad{
+  transform:none!important;
+  opacity:1!important;
+  filter:none!important;
+}
+main.chooseFighterScreen .teamMini.matchupBad .teamMiniHead img{
+  transform:none!important;
+}
+
+/* Worst: both offense and defense are bad. */
+main.chooseFighterScreen .teamMini.matchupVeryBad{
+  transform:none!important;
+  opacity:1!important;
+  filter:none!important;
+  border-color:#e45728!important;
+  background:linear-gradient(180deg,#fff6ef,#ffd8c4)!important;
+  box-shadow:0 0 0 3px #ff8c5566 inset,0 6px 16px #b7432228!important;
+}
+main.chooseFighterScreen .teamMini.matchupVeryBad .teamMiniHead img{
+  transform:none!important;
+}
+
+/* Opponent hits super-effectively: strong warning, but below veryBad. */
+main.chooseFighterScreen .teamMini.matchupTone-danger{
+  border-color:#e78b43!important;
+  background:linear-gradient(180deg,#fff9ee,#ffe9d0)!important;
+  box-shadow:0 0 0 2px #f7b67155 inset!important;
+}
+
+/* Our move is resisted: caution, not disabled-looking. */
+main.chooseFighterScreen .teamMini.matchupTone-attackBad{
+  border-color:#e7bc42!important;
+  background:linear-gradient(180deg,#fffdf2,#fff4c8)!important;
+  box-shadow:0 0 0 2px #f1d36b55 inset!important;
+}
+main.chooseFighterScreen .partySideCard .matchupAppeal.attackBad{
+  background:linear-gradient(180deg,#fff3b7,#ffe178)!important;
+  color:#725000!important;
+  border:2px solid #d9ad2b!important;
+}
+
+/* Both sides hit hard: neutral-risk purple. */
+main.chooseFighterScreen .teamMini.matchupTone-clash{
+  border-color:#a984df!important;
+  background:linear-gradient(180deg,#fbf8ff,#eee4ff)!important;
+  box-shadow:0 0 0 2px #c7aaf055 inset!important;
+}
+
+/* Both sides are resisted: muted blue-gray, but still full opacity. */
+main.chooseFighterScreen .teamMini.matchupTone-stalemate{
+  border-color:#aabcc8!important;
+  background:linear-gradient(180deg,#fbfdfe,#edf3f6)!important;
+  box-shadow:0 0 0 2px #cbd8df55 inset!important;
+}
+
+/* Appeal label follows the same severity order. */
+main.chooseFighterScreen .partySideCard .matchupAppeal.danger{
+  background:linear-gradient(180deg,#ffd7ad,#ffb56f)!important;
+  color:#743b0d!important;
+  border:2px solid #df8338!important;
+}
+main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{
+  background:linear-gradient(180deg,#ff8456,#e94e24)!important;
+  color:#fff!important;
+  border:2px solid #b73516!important;
+  box-shadow:0 3px 10px #a23b2440!important;
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.17 / Updated: 2026-09-30 19:20 JST -->
 </body>
 </html>
