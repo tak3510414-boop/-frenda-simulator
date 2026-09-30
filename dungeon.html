@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.00">
+<html lang="ja" data-app-version="2.01">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5179,7 +5179,7 @@ function continueAfterFloorAdvance(){
 }
 function continuePickup(){if(!state.run)return;state.run.pickup=null;continueAfterFloorAdvance()}
 function afterFloorResolved(){const r=state.run;if(!r)return;advanceEggs(1);r.floor++;if(r.floor>10)r.floor=10;runTeam().forEach(t=>{if(!t.ko)healPercent(t,.10)});addLog(`地下${r.floor}階へ。生存中の仲間が10%回復。`);updateDeepest(r.floor);if(maybeStartForcedAlertBattle())return;if(tryFloorPickup())return;continueAfterFloorAdvance()}
-function runSummaryData(type,floor){const r=state.run||{};return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,luckAverage:averageLuck(r.team||[]),xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),coinGained:clone(r.coinGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[]}}
+function runSummaryData(type,floor){const r=state.run||{},team=(r.team||[]).map(t=>({id:t.id,hp:Number(t.hp||0),max:maxHpFor(t.id),ko:!!t.ko}));return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,luckAverage:averageLuck(r.team||[]),teamIds:team.map(t=>t.id),teamEnd:team,roadBattleWins:Math.max(0,Number(r.roadBattleWins||0)),battleWins:Math.max(0,Number(r.battleWins||0)),xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),coinGained:clone(r.coinGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[]}}
 function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false};state.run=null;state.lastSummary=summary;save();screen="postRun";render()}
 function runDefeat(){beginRunEnd("defeat",state.run.floor)}
 function runClear(){beginRunEnd("clear",10)}
@@ -5245,43 +5245,59 @@ function renderSummary(){
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
        clear=x.type==="clear",def=x.type==="defeat",th=THEMES[x.dungeonId]||THEMES.forest;
 
- const captures=(x.captured||[]).map(id=>{const r=rec(id);return {id,r,name:esc(r?.name_ja||id)}});
- const unlocks=(x.unlocked||[]).map(v=>esc(v));
- const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"";
- const highlights=[];
- if(captures.length)highlights.push(`<div class="resultHighlight3 capture captureShowcase"><div class="rhLabel">🤝 新しい仲間</div><div class="resultCaptureGrid">${captures.map(x=>`<div class="resultCapturePick"><img src="${esc(imageOf(x.r))}" alt=""><b>${x.name}</b><small>${x.r?gradeText(x.r):""}</small></div>`).join("")}</div></div>`);
- if(eggName)highlights.push(`<div class="resultHighlight3 reward"><div class="rhLabel">🥚 クリア報酬</div><div class="rhValue">${eggName}</div></div>`);
- if(unlocks.length)highlights.push(`<div class="resultHighlight3 unlock"><div class="rhLabel">🔓 新しく解放</div><div class="rhValue">${unlocks.join("・")}</div></div>`);
+ const newAllyIds=[],allySeen=new Set();
+ const addAlly=id=>{id=String(id||"");if(id&&!allySeen.has(id)){allySeen.add(id);newAllyIds.push(id)}};
+ (x.captured||[]).forEach(addAlly);
+ (x.hatchResults||[]).filter(v=>v&&!v.duplicate).forEach(v=>addAlly(v.pickId));
+ const allySlots=Array.from({length:3},(_,i)=>{const id=newAllyIds[i],r=id?rec(id):null;return r?`<div class="result4AllySlot filled"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></div>`:`<div class="result4AllySlot empty"><span>＋</span><b>空き</b><small>新しい仲間なし</small></div>`}).join("");
+
+ const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"なし";
+ const eggVisual=x.eggAward?eggVisualHTML(x.eggAward):'<div class="result4NoReward">—</div>';
+ const unlocks=(x.unlocked||[]).map(v=>String(v));
+ const unlockRows=(unlocks.length?unlocks.slice(0,3):["新しい解放はありません"]).map((v,i)=>`<div class="result4UnlockRow ${unlocks.length?"open":"empty"}"><span>${unlocks.length?"🔓":"・"}</span><b>${esc(v)}</b></div>`).join("");
 
  const xp=x.xpGained||{},drill=x.drillGained||{},coins=x.coinGained||{},bond=x.bondGained||[];
  const bondMap=new Map(bond.map(v=>[String(v.id),v]));
- const ids=[];
- const seen=new Set();
- const addId=id=>{id=String(id||"");if(id&&!seen.has(id)){seen.add(id);ids.push(id)}};
- Object.keys(xp).forEach(addId);Object.keys(drill).forEach(addId);Object.keys(coins).forEach(addId);bond.forEach(v=>addId(v.id));
- const rows=ids.map(id=>{
-   const name=esc(rec(id)?.name_ja||bondMap.get(id)?.name||id);
-   const xv=Number(xp[id]||0),dv=Number(drill[id]||0),cv=Number(coins[id]||0),bv=bondMap.get(id);
-   let bondText="−";
-   if(bv){const lv=Number(bv.level)||0,before=Math.max(0,lv-1);bondText=bv.leveled?`Lv${before} → Lv${lv}`:`＋1（Lv${lv}）`}
-   return `<tr><td>${name}</td><td class="${xv>0?"xp":"none"}">${xv>0?`＋${xv}`:"−"}</td><td class="${dv>0?"drill":"none"}">${dv>0?`＋${dv}`:"−"}</td><td class="${cv>0?"coin":"none"}">${cv>0?`🪙＋${cv}`:"−"}</td><td class="${bv?"bond":"none"}">${bondText}</td></tr>`;
- }).join("");
+ let teamIds=(x.teamIds||[]).map(String).filter(Boolean);
+ if(!teamIds.length){
+   const seen=new Set();
+   const add=id=>{id=String(id||"");if(id&&!seen.has(id)){seen.add(id);teamIds.push(id)}};
+   Object.keys(xp).forEach(add);Object.keys(drill).forEach(add);Object.keys(coins).forEach(add);bond.forEach(v=>add(v.id));
+ }
+ teamIds=teamIds.slice(0,3);
+ const teamEndMap=new Map((x.teamEnd||[]).map(v=>[String(v.id),v]));
+ const teamCards=Array.from({length:3},(_,i)=>{const id=teamIds[i],r=id?rec(id):null;if(!r)return `<div class="result4TeamCard empty"><div class="result4TeamEmpty">—</div><b>未参加</b></div>`;const xv=Number(xp[id]||0),dv=Number(drill[id]||0),cv=Number(coins[id]||0),bv=bondMap.get(id),end=teamEndMap.get(id);let bondText="変化なし";if(bv){const lv=Number(bv.level)||0,before=Math.max(0,lv-1);bondText=bv.leveled?`Lv${before} → Lv${lv}`:`＋1（Lv${lv}）`}const hpText=end?`${Math.max(0,Math.round(Number(end.hp||0)))}/${Math.max(1,Math.round(Number(end.max||1)))}`:"—";return `<div class="result4TeamCard"><div class="result4TeamHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ⚡${esc(r.poke_ene??"-")}</small></div></div><div class="result4TeamStats"><span><small>成長EXP</small><b>${xv>0?`＋${xv}`:"—"}</b></span><span><small>特訓P</small><b>${dv>0?`＋${dv}`:"—"}</b></span><span><small>コイン</small><b>${cv>0?`🪙＋${cv}`:"—"}</b></span><span><small>絆</small><b>${esc(bondText)}</b></span></div><div class="result4Hp"><span>終了HP</span><b>${hpText}${end?.ko?" / ひんし":""}</b></div></div>`}).join("");
+
+ const teamEnd=(x.teamEnd||[]),alive=teamEnd.length?teamEnd.filter(v=>!v.ko&&Number(v.hp)>0).length:teamIds.length;
+ const hpRate=teamEnd.length?Math.round(teamEnd.reduce((s,v)=>s+Math.max(0,Math.min(1,Number(v.hp||0)/Math.max(1,Number(v.max||1)))),0)/teamEnd.length*100):0;
+ const recordChips=[
+   `<span>🏁 到達 <b>地下${clear?10:Number(x.floor)||1}階</b></span>`,
+   `<span>⚔️ 道中戦闘 <b>${Math.max(0,Number(x.roadBattleWins||0))}戦</b></span>`,
+   `<span>🎯 新仲間 <b>${newAllyIds.length}体</b></span>`,
+   `<span>❤️ 生存 <b>${alive}/${Math.max(1,teamEnd.length||teamIds.length||3)}</b></span>`,
+   `<span>💚 残HP平均 <b>${hpRate}%</b></span>`,
+   `<span>🥚 クリア卵 <b>${x.eggAward?1:0}</b></span>`
+ ].join("");
 
  const title=clear?"ダンジョンクリア！":def?"全滅……":"撤退しました",
        kicker=clear?"DUNGEON CLEAR":def?"ADVENTURE END":"RETREAT";
- app.innerHTML=`<div class="card summary postRunSummary resultV3 singleAdvanceCard" id="postRunSummaryAdvance" role="button" tabindex="0" aria-label="ホームへ">
-   <div class="resultHero3">
-     <div class="resultHeroIcon3">${clear?"🏆":def?"💥":"🚪"}</div>
-     <div class="resultHeroTitle3"><div class="resultKicker3">${kicker}</div><h2>${title}</h2><div class="resultHeroMeta3"><span>${esc(th.name)}</span><span>ランク${Number(x.difficulty)||1}</span><span>${clear?"地下10階 CLEAR":`地下${Number(x.floor)||1}階`}</span></div></div>
+ app.innerHTML=`<div class="card postRunSummary resultV4">
+   <div class="result4Hero ${clear?"clear":def?"defeat":"retreat"}"><div class="result4HeroIcon">${clear?"🏆":def?"💥":"🚪"}</div><div class="result4HeroText"><div class="result4Kicker">${kicker}</div><h2>${title}</h2><div class="result4Meta"><span>${esc(th.name)}</span><span>ランク${Number(x.difficulty)||1}</span><span>${clear?"地下10階 CLEAR":`地下${Number(x.floor)||1}階`}</span></div></div><div class="result4Saved">✓ 保存済み</div></div>
+   <div class="result4TopGrid">
+     <section class="result4Panel allies"><div class="result4PanelTitle">🤝 新しく仲間になったポケモン</div><div class="result4AllyGrid">${allySlots}</div></section>
+     <div class="result4RightStack">
+       <section class="result4Panel reward"><div class="result4PanelTitle">🥚 クリア報酬</div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加されました":"今回の卵報酬はありません"}</small></div></div></section>
+       <section class="result4Panel unlock"><div class="result4PanelTitle">🔓 新しく解放</div><div class="result4UnlockList">${unlockRows}</div></section>
+     </div>
    </div>
-   <div class="resultSave3">✓ 結果は保存済み</div>
-   ${highlights.length?`<div class="resultHighlights3">${highlights.join("")}</div>`:""}
-   <div class="resultHeadline3">今回の結果</div>
-   ${rows?`<div class="resultCrossWrap"><table class="resultCrossTable"><thead><tr><th>ポケモン</th><th>成長EXP</th><th>特訓P</th><th>コイン</th><th>絆</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="resultEmpty3">今回の成長結果はありません。</div>`}
-   <button id="summaryHome" class="postRunHomeBtn">ホームへ</button>
+   <section class="result4Panel team"><div class="result4PanelTitle">👥 挑戦チーム結果</div><div class="result4TeamGrid">${teamCards}</div></section>
+   <section class="result4Panel record"><div class="result4PanelTitle">📊 今回の冒険記録</div><div class="result4RecordChips">${recordChips}</div></section>
+   <div class="result4Actions"><button type="button" class="ghost" id="summaryRetry">もう一度挑戦</button><button type="button" class="ghost" id="summaryDungeons">ダンジョン選択へ</button><button type="button" id="summaryHome">ホームへ</button></div>
  </div>`;
- const sh=document.getElementById("summaryHome");if(sh)sh.onclick=e=>{e.stopPropagation();finishPostRun()};
- const psa=document.getElementById("postRunSummaryAdvance");if(psa){psa.onclick=finishPostRun;psa.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();finishPostRun()}}}
+ const closeTo=dest=>{state.postRun=null;screen=dest;save();render()};
+ const retry=document.getElementById("summaryRetry");if(retry)retry.onclick=()=>{const ids=(x.teamIds||[]).filter(id=>ownedEntry(id)&&!isExpeditionLocked(id)).slice(0,3);state.postRun=null;currentDungeon={id:x.dungeonId||"forest",difficulty:Number(x.difficulty)||1};teamSelection=ids;teamAutoNotice=ids.length?"前回の挑戦チームをセットしました。必要なら変更できます。":"";screen="team";save();render()};
+ const sd=document.getElementById("summaryDungeons");if(sd)sd.onclick=()=>closeTo("dungeons");
+ const sh=document.getElementById("summaryHome");if(sh)sh.onclick=finishPostRun;
 }
 function matchupRawEff(moveType,defender){
  const mv=String(moveType||"").trim();
@@ -6699,6 +6715,50 @@ main.dungeonRunScreen[data-run-scene="reward"] .rewardBtnRich:hover{transform:tr
  .runEffectPanel{padding:6px 7px;border-radius:10px}.runEffectPanel>b{margin-bottom:4px;font-size:8px}.runEffectChips{gap:3px}.runEffectChip{padding:3px 5px;font-size:6.5px}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 2.00 / Updated: 2026-09-30 16:28 JST -->
+
+<style id="v201-result-board">
+/* Ver2.01: enlarge battle rewards and rebuild post-run summary as a fixed result board. */
+@media(min-width:701px){
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardResultPanel{padding:20px 28px!important;gap:15px!important;grid-template-rows:auto auto minmax(250px,1fr) auto!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardVictoryHero{width:min(980px,96%)!important;margin:0 auto!important;padding:17px 20px!important;border-radius:19px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardVictoryIcon{font-size:58px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardVictoryText h2{font-size:30px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardBattleMeta span{font-size:10px!important;padding:5px 10px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardEnemyPic{width:76px!important;height:105px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardPrompt{width:min(1000px,96%)!important;margin:0 auto!important}.rewardPrompt b{font-size:19px!important}.rewardPrompt span{font-size:10px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardGrid{width:min(1040px,96%)!important;min-height:250px!important;gap:18px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardBtnRich{min-height:240px!important;padding:24px 18px!important;border-radius:22px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .rewardBtnRich .rewardGift{font-size:56px!important}.rewardBtnRich b{font-size:25px!important}.rewardBtnRich small{font-size:11px!important;line-height:1.45!important}.rewardBtnRich em{font-size:12px!important;padding:8px 14px!important}
+  main.dungeonRunScreen[data-run-scene="reward"] .runEffectPanel{width:min(1000px,96%)!important;margin:0 auto!important;padding:12px 15px!important}.runEffectPanel>b{font-size:13px!important}.runEffectChip{font-size:10px!important;padding:6px 10px!important}
+}
+
+body[data-dungeon-page="postrun"] #app{overflow:hidden!important}
+body[data-dungeon-page="postrun"] .postRunSummary.resultV4{height:100%!important;max-height:100%!important;min-height:0!important;width:100%!important;margin:0!important;padding:12px 14px!important;display:grid!important;grid-template-rows:auto minmax(0,.95fr) minmax(0,1.05fr) auto auto!important;gap:8px!important;overflow:hidden!important;background:linear-gradient(160deg,#f9fcfe,#eef5f8)!important;text-align:left!important}
+.result4Hero{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 14px;border:2px solid #d6e2e8;border-radius:16px;background:linear-gradient(135deg,#fff,#f3f8fb);box-shadow:0 5px 16px #17394e12}
+.result4Hero.clear{background:linear-gradient(135deg,#fff8d7,#f2fff0);border-color:#e5cd70}.result4Hero.defeat{background:linear-gradient(135deg,#fff0f0,#fff7ef);border-color:#ecc0b7}
+.result4HeroIcon{font-size:48px;line-height:1}.result4HeroText{min-width:0}.result4Kicker{font-size:8px;font-weight:1000;letter-spacing:.16em;color:#6f7f89}.result4Hero h2{margin:1px 0 5px!important;font-size:26px!important;line-height:1.05!important;color:#172d3b}.result4Meta{display:flex;gap:5px;flex-wrap:wrap}.result4Meta span{padding:3px 7px;border-radius:999px;background:#ffffffb8;border:1px solid #d5e1e6;font-size:8px;font-weight:950;color:#425b68}.result4Saved{align-self:start;padding:4px 7px;border-radius:999px;background:#e8f6ec;color:#34734b;font-size:8px;font-weight:1000;white-space:nowrap}
+.result4TopGrid{min-height:0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);gap:8px}.result4RightStack{min-height:0;display:grid;grid-template-rows:1fr 1fr;gap:8px}
+.result4Panel{min-height:0;padding:8px 10px;border:2px solid #d9e4e9;border-radius:14px;background:#fff;overflow:hidden}.result4Panel.allies{background:#effaf5;border-color:#b8e0cb}.result4Panel.reward{background:#fff9db;border-color:#ead17a}.result4Panel.unlock{background:#f4f0ff;border-color:#d4c8ef}.result4Panel.team{background:#f4faff;border-color:#c8e1ee}.result4Panel.record{background:#f8fafb;border-color:#d8e2e7}
+.result4PanelTitle{font-size:10px;font-weight:1000;color:#3c5665;margin-bottom:5px}
+.result4AllyGrid{height:calc(100% - 18px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.result4AllySlot{min-width:0;border:1px solid #cbdcd4;border-radius:11px;background:#ffffffcc;padding:6px;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:1fr auto;column-gap:7px;align-items:center}.result4AllySlot img{grid-row:1/3;width:64px;height:88px;object-fit:cover;border-radius:8px;background:#e6edf0}.result4AllySlot b{font-size:11px;line-height:1.15;overflow:hidden;text-overflow:ellipsis}.result4AllySlot small{font-size:8px;color:#687b85}.result4AllySlot.empty{display:flex;flex-direction:column;justify-content:center;text-align:center;color:#8a999f;border-style:dashed}.result4AllySlot.empty span{font-size:24px;line-height:1}.result4AllySlot.empty b{font-size:10px}.result4AllySlot.empty small{font-size:6.5px}
+.result4RewardBody{height:calc(100% - 18px);display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;align-items:center}.result4RewardBody .eggVisual{transform:scale(.9);transform-origin:center}.result4RewardBody b{display:block;font-size:13px;color:#5e4c00}.result4RewardBody small{display:block;margin-top:3px;font-size:7px;color:#7b6c31}.result4NoReward{display:grid;place-items:center;width:58px;height:58px;border:2px dashed #d7c77b;border-radius:50%;color:#a18d3a;font-size:22px}
+.result4UnlockList{display:grid;gap:4px}.result4UnlockRow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px;align-items:center;padding:5px 7px;border-radius:8px;background:#ffffffc8;border:1px solid #ddd6ef}.result4UnlockRow b{font-size:8.5px;color:#59487b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.result4UnlockRow.empty{color:#89949a;border-style:dashed;background:#fff}.result4UnlockRow.empty b{color:#7c898f}
+.result4TeamGrid{height:calc(100% - 18px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.result4TeamCard{min-width:0;display:grid;grid-template-rows:auto 1fr auto;gap:5px;padding:6px 7px;border:1px solid #c8dce7;border-radius:11px;background:#ffffffd9}.result4TeamHead{display:grid;grid-template-columns:42px minmax(0,1fr);gap:6px;align-items:center}.result4TeamHead img{width:42px;height:58px;object-fit:cover;border-radius:7px;background:#e6edf1}.result4TeamHead b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.result4TeamHead small{display:block;margin-top:2px;font-size:6.5px;color:#6d7f89}.result4TeamStats{display:grid;grid-template-columns:1fr 1fr;gap:3px}.result4TeamStats span{display:flex;justify-content:space-between;gap:3px;align-items:center;padding:3px 5px;border-radius:7px;background:#f3f7f9}.result4TeamStats small{font-size:6px;color:#6b7d87}.result4TeamStats b{font-size:7px;color:#235c7b;white-space:nowrap}.result4Hp{display:flex;justify-content:space-between;gap:6px;padding-top:3px;border-top:1px solid #e4ecef;font-size:6.5px;color:#60727c}.result4Hp b{color:#2c556b;white-space:nowrap}.result4TeamCard.empty{place-items:center;text-align:center;color:#8b9aa1}.result4TeamEmpty{font-size:22px}
+.result4RecordChips{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}.result4RecordChips span{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;padding:6px 4px;border-radius:9px;background:#fff;border:1px solid #d8e3e8;font-size:7.5px;color:#5a6e79;white-space:nowrap}.result4RecordChips b{font-size:8px;color:#284b5e}
+.result4Actions{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:7px}.result4Actions button{min-height:38px!important;padding:7px!important;font-size:10px!important;border-radius:10px!important}.result4Actions #summaryHome{background:linear-gradient(180deg,#169be9,#0876c4)!important;color:#fff!important;box-shadow:0 3px 0 #075b99!important}
+@media(max-width:700px){
+ body[data-dungeon-page="postrun"] #app{overflow:auto!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV4{height:auto!important;max-height:none!important;min-height:100%!important;display:flex!important;flex-direction:column!important;gap:6px!important;padding:7px!important;overflow:visible!important}
+ .result4Hero{grid-template-columns:auto minmax(0,1fr);gap:7px;padding:7px 8px}.result4HeroIcon{font-size:36px}.result4Hero h2{font-size:21px!important}.result4Saved{display:none}.result4Kicker{font-size:6.5px}.result4Meta span{font-size:6.5px;padding:2px 5px}
+ .result4TopGrid{display:grid;grid-template-columns:1fr!important;gap:6px}.result4RightStack{grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:6px}
+ .result4Panel{padding:6px 7px;border-radius:11px}.result4PanelTitle{font-size:8px;margin-bottom:4px}
+ .result4AllyGrid{height:auto;gap:4px}.result4AllySlot{padding:4px;grid-template-columns:34px minmax(0,1fr);gap:4px}.result4AllySlot img{width:34px;height:47px;border-radius:5px}.result4AllySlot b{font-size:7.5px}.result4AllySlot small{font-size:5.5px}.result4AllySlot.empty span{font-size:16px}.result4AllySlot.empty b{font-size:7px}.result4AllySlot.empty small{display:none}
+ .result4RewardBody{height:auto;grid-template-columns:42px minmax(0,1fr);gap:4px}.result4RewardBody .eggVisual{transform:scale(.6)}.result4RewardBody b{font-size:9px}.result4RewardBody small{font-size:5.5px}.result4NoReward{width:34px;height:34px;font-size:16px}
+ .result4UnlockRow{padding:3px 4px}.result4UnlockRow b{font-size:6.5px}
+ .result4TeamGrid{height:auto;gap:4px}.result4TeamCard{padding:4px;gap:3px}.result4TeamHead{grid-template-columns:30px minmax(0,1fr);gap:3px}.result4TeamHead img{width:30px;height:41px}.result4TeamHead b{font-size:7px}.result4TeamHead small{font-size:5px}.result4TeamStats{gap:2px}.result4TeamStats span{padding:2px 3px}.result4TeamStats small{font-size:4.8px}.result4TeamStats b{font-size:5.5px}.result4Hp{font-size:5px}.result4RecordChips{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}.result4RecordChips span{padding:4px 2px;font-size:5.8px}.result4RecordChips b{font-size:6.2px}
+ .result4Actions{gap:4px}.result4Actions button{min-height:34px!important;font-size:8px!important;padding:5px 2px!important}
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 2.01 / Updated: 2026-09-30 16:48 JST -->
 </body>
 </html>
