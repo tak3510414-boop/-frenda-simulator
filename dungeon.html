@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.97">
+<html lang="ja" data-app-version="1.98">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5295,14 +5295,36 @@ function fighterMatchupAppeal(t){
  const myMove=String(mine.move_type||"").trim(),enemyMove=String(enemy.move_type||"").trim();
  if(!myMove)return null;
  const offense=matchupRawEff(myMove,enemy),incoming=enemyMove?matchupRawEff(enemyMove,mine):1;
- const safeIncoming=incoming>0?incoming:.0001,ratio=offense/safeIncoming;
- const low=Number(CORE.FRIENDA_EFFECT?.LOW??(1/1.3)),veryLow=Number(CORE.FRIENDA_EFFECT?.VERY_LOW??(1/(1.3*1.3)));
- let kind="neutral",text="",reason="";
- if(ratio>=1.25){kind="good";text="🙋わたしが！";reason=offense>1&&incoming<=1?"攻めも守りも相性◎":offense>1?"わざの相性がいい！":"相手のわざを受けにくい！"}
- else if(ratio<=.60||offense<=veryLow+.0001||incoming>=1/(veryLow||.59)-.0001){kind="veryBad";text="⚠️ 相性かなり不利";reason=offense<1&&incoming>1?"攻めにくく、相手のわざも苦手":"かなり相性が悪い…"}
- else if(ratio<=.80||offense<1||incoming>1){kind="bad";text="😣 にがて…";reason=offense<1&&incoming>1?"攻めも守りも不利":"少し相性が悪い"}
+ const atkGood=offense>1,atkBad=offense<1,defGood=incoming<1,defBad=incoming>1;
+ let kind="neutral",tone="neutral",text="",reason="";
+ // 攻撃側と被攻撃側を別々に評価する。単純な比率だけで相殺しない。
+ if(atkGood&&defGood){
+   kind="good";tone="dominant";text="🙋 わたしが！";
+   reason="こちらはばつぐん・相手のわざは効きにくい！";
+ }else if(atkGood&&defBad){
+   kind="bad";tone="clash";text="⚔️ 打ち合い！";
+   reason="お互いにばつぐん。先に押し切りたい！";
+ }else if(atkGood){
+   kind="good";tone="attack";text="🔥 まかせて！";
+   reason="こちらのわざがばつぐん！";
+ }else if(defGood&&!atkBad){
+   kind="good";tone="guard";text="🛡️ 受けられる！";
+   reason="相手のわざが効きにくい！";
+ }else if(atkBad&&defGood){
+   kind="bad";tone="stalemate";text="🤔 長期戦かも";
+   reason="こちらも効きにくいが、相手のわざも効きにくい";
+ }else if(atkBad&&defBad){
+   kind="veryBad";tone="veryBad";text="⚠️ 相性かなり不利";
+   reason="こちらは効きにくく、相手のわざはばつぐん…";
+ }else if(defBad){
+   kind="bad";tone="danger";text="😨 攻撃に注意！";
+   reason="相手のわざがばつぐん";
+ }else if(atkBad){
+   kind="bad";tone="attackBad";text="😣 攻めにくい…";
+   reason="こちらのわざが効きにくい";
+ }
  if(kind==="neutral")return null;
- return {kind,text,reason,offense,incoming}
+ return {kind,tone,text,reason,offense,incoming}
 }
 function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:"チームから、出すポケモンをタップしてください。相性表示を参考に選べます。",can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;const can=(t)=>{if(k==="healSingleSelect")return true;if(t.ko)return false;if(k==="heal30"||k==="heal20"||k==="lucky")return t.hp<maxHpFor(t.id);if(k==="atk2")return Number(t.tempAtk||0)<TEMP_BOOST_MAX;if(k==="def2")return Number(t.tempDef||0)<TEMP_BOOST_MAX;return true};return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"チームから対象をタップしてください。ひんし状態も選べます。":"効果を受けられる仲間を選んでください。",can}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
 function teamMiniHTML(t,i){
@@ -5318,7 +5340,7 @@ function teamMiniHTML(t,i){
  if(!inBattle){
   const fighterChoice=m?.action==="fighter",moveName=CORE.skillName(r)||r.move||"未登録";
   const fighterExtra=fighterChoice?`<div class="fighterChoiceStats">${battleMiniGraphGridHTML(t,r,pb)}<div class="fighterChoiceMove"><b>${esc(r.move_type||"-")}</b> ${esc(moveName)}</div><div class="fighterChoiceGrowth"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span><span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div>`:"";
-  return `<div class="${cls}${fighterChoice?" fighterChoiceCard":""}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><span class="teamEnergyBadge">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${fighterChoice?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}</div>${fighterExtra}</div></div></div>`
+  return `<div class="${cls}${fighterChoice?" fighterChoiceCard":""}"${attrs}>${appeal?`<div class="matchupAppeal ${appeal.kind} ${appeal.tone||""}">${esc(appeal.text)}</div>`:""}<div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${t.ko?"ひんし":`HP ${t.hp}/${max}`}</small><span class="teamEnergyBadge">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${appeal?`<small class="matchupReason ${appeal.kind} ${appeal.tone||""}">${esc(appeal.reason)}</small>`:""}${fighterChoice?battleMoodBadgeHTML(t.id):""}<div class="buffs">攻+${(t.tempAtk||0)+(t.bondAtk||0)} / 防+${(t.tempDef||0)+(t.bondDef||0)}</div>${fighterExtra}</div></div></div>`
  }
  const moveName=CORE.skillName(r)||r.move||"未登録",
        typeBadges=[r.type1,r.type2].filter(Boolean).map(x=>`<span class="badge">${esc(x)}</span>`).join(""),
@@ -5401,7 +5423,7 @@ function partySidebarCardHTML(t,i){
        cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${appealCls}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
- return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>進化P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind} ${appeal.tone||""}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind} ${appeal.tone||""}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>進化P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
 }
 function partySidebarHTML(tm,combatScene=false){
  return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
@@ -6610,6 +6632,30 @@ body[data-dungeon-page="team"] .teamManagedCard .recommendMark{display:inline-fl
 @media(min-width:701px){main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard{display:grid!important;grid-template-rows:auto minmax(0,1fr) auto auto!important;gap:8px!important;justify-content:stretch!important;padding:14px 16px!important}main.dungeonRunScreen[data-run-scene="route"] .routeGrid{height:100%!important;min-height:150px!important;align-items:stretch!important;gap:14px!important;margin:0!important;max-width:none!important}main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard.routeCount2 .routeGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}main.dungeonRunScreen[data-run-scene="route"] .routeSelectionCard.routeCount3 .routeGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}main.dungeonRunScreen[data-run-scene="route"] .routeCard{height:100%!important;min-height:150px!important;max-height:none!important;padding:20px 18px 34px!important;border-radius:20px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}main.dungeonRunScreen[data-run-scene="route"] .routeCard .ico{font-size:clamp(48px,7vh,72px)!important;margin-bottom:8px!important}main.dungeonRunScreen[data-run-scene="route"] .routeCard b{font-size:clamp(20px,2.4vh,26px)!important;margin:0 0 6px!important}main.dungeonRunScreen[data-run-scene="route"] .routeCard small{font-size:11px!important;line-height:1.45!important;max-width:260px!important}main.dungeonRunScreen[data-run-scene="route"] .routeAlertNote{margin:0!important;padding:7px 10px!important;font-size:9px!important;line-height:1.25!important}main.dungeonRunScreen[data-run-scene="route"] .routeCommitHint{margin:0!important;font-size:8px!important}}
 @media(max-width:700px){.routeChoiceHead{margin-bottom:6px}.routeFloorMove{font-size:8px;padding:3px 6px}.routeTag{top:5px;right:6px;font-size:5.5px;padding:2px 5px}.routeGo{right:8px;bottom:5px;font-size:6.5px}main.dungeonRunScreen[data-run-scene="route"] .routeCard{padding-bottom:18px!important}}
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 1.97 / Updated: 2026-09-30 16:15 JST -->
+
+<style id="v198-matchup-appeal-levels">
+/* Ver1.98: all matchup appeal labels use the same position; messages distinguish attack/defence combinations. */
+main.chooseFighterScreen .partySideCard .matchupAppeal,
+main.chooseFighterScreen .partySideCard.matchupGood .matchupAppeal.good{
+  position:static!important;left:auto!important;top:auto!important;z-index:auto!important;
+  display:inline-flex!important;max-width:100%!important;margin:0 0 5px!important;
+  padding:5px 9px!important;border-radius:999px!important;font-size:11px!important;line-height:1.05!important;white-space:nowrap!important;
+}
+main.chooseFighterScreen .partySideCard .matchupAppeal.dominant{background:linear-gradient(180deg,#ffe978,#ffc939)!important;color:#563800!important;border:2px solid #e0a400!important}
+main.chooseFighterScreen .partySideCard .matchupAppeal.attack{background:linear-gradient(180deg,#fff1a6,#ffd45a)!important;color:#674500!important;border:2px solid #e4b127!important}
+main.chooseFighterScreen .partySideCard .matchupAppeal.guard{background:linear-gradient(180deg,#dff5ff,#b9e8ff)!important;color:#15526f!important;border:2px solid #6bbddd!important}
+main.chooseFighterScreen .partySideCard .matchupAppeal.clash{background:linear-gradient(180deg,#eadfff,#cdb7ff)!important;color:#503082!important;border:2px solid #9c79df!important}
+main.chooseFighterScreen .partySideCard .matchupAppeal.stalemate{background:linear-gradient(180deg,#eef1f3,#dde4e8)!important;color:#53616c!important;border:2px solid #c6d0d6!important}
+main.chooseFighterScreen .partySideCard .matchupAppeal.danger,
+main.chooseFighterScreen .partySideCard .matchupAppeal.attackBad{background:linear-gradient(180deg,#fff0dd,#ffd8b7)!important;color:#8a4b17!important;border:2px solid #e0a067!important}
+main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{background:linear-gradient(180deg,#ff9764,#eb5f2c)!important;color:#fff!important;border:2px solid #bf4216!important}
+main.chooseFighterScreen .partySideCard .matchupReason{margin-top:3px!important}
+main.chooseFighterScreen .partySideCard .matchupReason.clash{background:#f3ecff!important;color:#5d3a8c!important;border:1px solid #d5c2ef!important}
+main.chooseFighterScreen .partySideCard .matchupReason.guard{background:#e8f8ff!important;color:#21617d!important;border:1px solid #b8ddea!important}
+@media(max-width:700px){
+  main.chooseFighterScreen .combatTeamStrip .matchupAppeal{position:absolute!important;left:2px!important;top:2px!important;font-size:7px!important;padding:3px 4px!important}
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 1.98 / Updated: 2026-09-30 16:25 JST -->
 </body>
 </html>
