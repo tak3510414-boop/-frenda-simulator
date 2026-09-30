@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.09">
+<html lang="ja" data-app-version="2.14">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4183,7 +4183,7 @@ const makePickFilter=UI.pickFilter.create;
 let dexLimit=120;
 let dexPickFilter=makePickFilter();
 let ownedPickFilter=makePickFilter();
-let teamPickFilter=makePickFilter({sort:"standard"});
+let teamPickFilter=makePickFilter({sort:"energy"});
 let teamRecommendOnly=false;
 const GRID_SIZE_KEY_PREFIX="frenda:dungeon:gridSize:";
 function loadGridSize(scope){return UI.viewSize.load(GRID_SIZE_KEY_PREFIX+scope)}
@@ -4886,7 +4886,7 @@ function bindCommonPickFilter(scope,filter,renderFn,defaults={}){UI.pickFilter.b
 function renderTeamSelect(){
  const availableCount=state.owned.filter(o=>!isExpeditionLocked(o.id)).length,max=Math.min(3,availableCount),need=max,theme=THEMES[currentDungeon.id]||THEMES.forest;
  const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
- if(!["standard","name","grade","energy","evolution","drill","luck"].includes(teamPickFilter.sort))teamPickFilter.sort="standard";
+ if(!["standard","name","grade","energy","evolution","drill","luck","recommended"].includes(teamPickFilter.sort))teamPickFilter.sort="energy";
  let cards=allCards.filter(r=>{
   const q=String(teamPickFilter.search||"").trim().toLowerCase();if(q&&!`${r.name_ja||""} ${r.pick_no||""}`.toLowerCase().includes(q))return false;
   if(teamPickFilter.type!=="all"&&r.type1!==teamPickFilter.type&&r.type2!==teamPickFilter.type)return false;
@@ -4895,10 +4895,12 @@ function renderTeamSelect(){
   return true
  });
  const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
- cards=cards.slice().sort((a,b)=>teamPickFilter.sort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):teamPickFilter.sort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):teamPickFilter.sort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):teamPickFilter.sort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):teamPickFilter.sort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):teamPickFilter.sort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
+ const recommendCmp=(a,b)=>{const ar=teamRecommendationInfo(a),br=teamRecommendationInfo(b);return (br.score||0)-(ar.score||0)||(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b)};
+ const effectiveTeamSort=teamRecommendOnly?"recommended":teamPickFilter.sort;
+ cards=cards.slice().sort((a,b)=>effectiveTeamSort==="recommended"?recommendCmp(a,b):effectiveTeamSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):effectiveTeamSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):effectiveTeamSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):effectiveTeamSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):effectiveTeamSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):effectiveTeamSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
  const last=validLastTeam(need);
  const selectedSlots=UI.selectedStrip.html({scope:"dungeon-team",ids:teamSelection,max:need,resolve:rec,imageOf:r=>imageOf(r),nameOf:r=>r.name_ja,metaFor:r=>compareTypeText(r),emptyLabel:"未選択",slotNoun:"体目"});
- const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid teamFilterGridOneLine"><button type="button" id="teamRecommendToggle" class="teamRecommendFilter ${teamRecommendOnly?"active":""}">🔥 オススメ表示${teamRecommendOnly?" ON":""}</button><input id="teamSearchNew" type="search" placeholder="検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew"><option value="standard" ${teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${teamPickFilter.sort==="energy"?"selected":""}>ポケエネ順</option><option value="evolution" ${teamPickFilter.sort==="evolution"?"selected":""}>進化P順</option><option value="drill" ${teamPickFilter.sort==="drill"?"selected":""}>特訓P順</option><option value="luck" ${teamPickFilter.sort==="luck"?"selected":""}>幸運順</option></select></div></div>`;
+ const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid teamFilterGridOneLine"><button type="button" id="teamRecommendToggle" class="teamRecommendFilter ${teamRecommendOnly?"active":""}">🔥 オススメ表示${teamRecommendOnly?" ON":""}</button><input id="teamSearchNew" type="search" placeholder="検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew" ${teamRecommendOnly?"disabled":""}><option value="recommended" ${teamRecommendOnly?"selected":""}>🔥 オススメ順</option><option value="standard" ${!teamRecommendOnly&&teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${!teamRecommendOnly&&teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${!teamRecommendOnly&&teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${!teamRecommendOnly&&teamPickFilter.sort==="energy"?"selected":""}>ポケエネ順</option><option value="evolution" ${!teamRecommendOnly&&teamPickFilter.sort==="evolution"?"selected":""}>進化P順</option><option value="drill" ${!teamRecommendOnly&&teamPickFilter.sort==="drill"?"selected":""}>特訓P順</option><option value="luck" ${!teamRecommendOnly&&teamPickFilter.sort==="luck"?"selected":""}>幸運順</option></select></div></div>`;
  const cardsHtml=cards.length?cards.map(r=>{
    const id=r.master_id,locked=isExpeditionLocked(id),sel=teamSelection.includes(id),pb=state.permanentBoosts[id]||{},ri=teamRecommendationInfo(r);
    return `<div class="pickCard ownedFrontCardV190 teamManagedCard ${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}" ${locked?"":`data-team-pick="${esc(id)}"`} role="button" tabindex="${locked?"-1":"0"}">${ri.recommended?'<span class="recommendMark">🔥 オススメ</span>':""}${sel?'<span class="selectMark">選択中</span>':""}<div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${ownedRelationBoxHTML(id)}${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${ri.recommended?`<div class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</div>`:""}${locked?'<div class="ownedDetailHint">🧭 探索中：編成不可</div>':""}</div>`
@@ -4913,12 +4915,12 @@ function renderTeamSelect(){
  const lastBtn=document.getElementById("lastTeamBtn");if(lastBtn)lastBtn.onclick=()=>{if(last.length){teamSelection=last.slice();teamAutoNotice="前回の編成を呼び出しました。必要なら手動で変更できます。";renderTeamSelect()}};
  const autoBtn=document.getElementById("autoTeamBtn");if(autoBtn)autoBtn.onclick=()=>{const ids=buildAutoTeam(need);if(ids.length){teamSelection=ids;teamAutoNotice="タイプ相性・★・能力・育成・絆・役割バランスを見て自動編成しました。まだ挑戦は開始していません。";renderTeamSelect()}};
  const clearBtn=document.getElementById("teamClearBtn");if(clearBtn)clearBtn.onclick=()=>{teamSelection=[];teamAutoNotice="選択中のポケモンをすべて外しました。";renderTeamSelect()};
- const recToggle=document.getElementById("teamRecommendToggle");if(recToggle)recToggle.onclick=()=>{teamRecommendOnly=!teamRecommendOnly;renderTeamSelect()};
+ const recToggle=document.getElementById("teamRecommendToggle");if(recToggle)recToggle.onclick=()=>{teamRecommendOnly=!teamRecommendOnly;if(!teamRecommendOnly&&teamPickFilter.sort==="recommended")teamPickFilter.sort="energy";renderTeamSelect()};
  const q=document.getElementById("teamSearchNew"),ty=document.getElementById("teamTypeNew"),gr=document.getElementById("teamGradeNew"),so=document.getElementById("teamSortNew");
  if(q)q.oninput=()=>{teamPickFilter.search=q.value;const pos=q.selectionStart??teamPickFilter.search.length;renderTeamSelect();requestAnimationFrame(()=>{const nq=document.getElementById("teamSearchNew");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})};
  if(ty)ty.onchange=()=>{teamPickFilter.type=ty.value;renderTeamSelect()};
  if(gr)gr.onchange=()=>{teamPickFilter.grade=gr.value;renderTeamSelect()};
- if(so)so.onchange=()=>{teamPickFilter.sort=so.value;renderTeamSelect()}
+ if(so)so.onchange=()=>{teamPickFilter.sort=so.value==="recommended"?"energy":so.value;renderTeamSelect()}
 }
 function startRun(){if(!teamSelection.length){UI.dialog.alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){UI.dialog.alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id],firstVisit=!hasVisitedDungeon(currentDungeon.id);state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"dungeonEntry",entryFirstVisit:firstVisit,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},coinGained:{},captured:[],logs:[`${th.name} ランク${currentDungeon.difficulty}に挑戦！`],startedAt:new Date().toISOString()};updateDeepest(1);save();render()}
 function runTeam(){return state.run?.team||[]}
@@ -5045,7 +5047,8 @@ function startFighter(teamIndex){battleLogOpen=false;state.run.switchSelecting=f
 function handleFaintedReplacement(){const r=state.run,fallenIndex=r?.battle?.teamIndex,fallen=Number.isInteger(fallenIndex)?runTeam()[fallenIndex]:null,fallenName=fallen?rec(fallen.id)?.name_ja||"仲間":"仲間",alive=runTeam().map((t,i)=>({t,i})).filter(x=>!x.t.ko);r.battle=null;if(!alive.length){runDefeat();return}r.faintedNotice={fallenName,remaining:alive.length,onlyIndex:alive.length===1?alive[0].i:null,onlyName:alive.length===1?(rec(alive[0].t.id)?.name_ja||"仲間"):null};r.scene="faintedNotice";addLog(`${fallenName}がひんし！ 次に出す仲間を決めよう。`);save();render()}
 function proceedFaintedNotice(){const r=state.run;if(!r||r.scene!=="faintedNotice")return;const n=r.faintedNotice||{},alive=runTeam().map((t,i)=>({t,i})).filter(x=>!x.t.ko);r.faintedNotice=null;if(!alive.length){runDefeat();return}if(alive.length===1){const x=alive[0],name=rec(x.t.id)?.name_ja||n.onlyName||"仲間";addLog(`残る仲間は${name}！ 自動でバトルへ。`);save();startFighter(x.i);return}r.scene="chooseFighter";save();render()}
 function renderFaintedNoticeHTML(){const r=state.run,n=r?.faintedNotice||{},alive=runTeam().filter(x=>!x.ko),one=alive.length===1,onlyName=one?(rec(alive[0].id)?.name_ja||n.onlyName||"仲間"):"";return `<div class="card faintedNextCard singleAdvanceCard" data-run-advance="faintedNotice" role="button" tabindex="0" aria-label="次に出す仲間へ"><div class="faintedNextInner"><div class="faintedNextKo">DOWN...</div><div class="faintedNextName">${esc(n.fallenName||"仲間")}が たおれた！</div><div class="faintedNextQuestion">${one?`${esc(onlyName)}、いけ！`:`次は誰だ！？`}</div><div class="faintedNextPrompt">${one?"残る1体でバトル続行":"次に出すポケモンを選ぼう"}</div><div class="faintedNextHint">自動で次のポケモン選択へ進みます</div></div></div>`}
-function attackValue(a,d){const model=STORE.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1",x=CORE.dmg(a,d,model);const hit=Math.random()<(x.accuracy??1);return {damage:hit?Math.max(1,Number(x.hitN??x.n)||1):0,hit,e:x.e,model:x.model}}
+function luckAdjustedAccuracy(baseAccuracy,luckLevel=0){const base=Math.max(0,Math.min(1,Number(baseAccuracy??1))),luck=Math.max(0,Math.min(LUCK_MAX,Number(luckLevel)||0)),miss=1-base,reducedMiss=miss*(1-luck*0.10);return Math.max(0,Math.min(1,1-reducedMiss))}
+function attackValue(a,d,luckLevel=0){const model=STORE.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1",x=CORE.dmg(a,d,model),accuracy=luckAdjustedAccuracy(x.accuracy??1,luckLevel);const hit=Math.random()<accuracy;return {damage:hit?Math.max(1,Number(x.hitN??x.n)||1):0,hit,e:x.e,model:x.model,accuracy}}
 function battleLine(s){state.run.battle.log.push(s);if(state.run.battle.log.length>30)state.run.battle.log=state.run.battle.log.slice(-30)}
 const fxSleep=ms=>new Promise(r=>setTimeout(r,ms));
 function launchTypeFx(type,target){const layer=document.getElementById("battleFxLayer");if(!layer)return;const v=TYPE_FX[type]||TYPE_FX["ノーマル"],el=document.createElement("div");el.className=`battleTypeFx ${target==="enemy"?"toEnemy":"toMe"}${type==="あく"||type==="ゴースト"?" fxDark":""}`;el.style.setProperty("--fx1",v[0]);el.style.setProperty("--fx2",v[1]);el.innerHTML=`<span class="fxSymbol">${v[2]}</span>`;layer.appendChild(el);setTimeout(()=>el.remove(),780)}
@@ -5057,7 +5060,7 @@ function setBattleMessage(s){const el=document.getElementById("battleMessage");i
 function animateDungeonHp(target,newHp,maxHp){const bar=document.getElementById(target==="enemy"?"enemyHpFill":"myHpFill"),txt=document.getElementById(target==="enemy"?"enemyHpText":"myHpText");if(bar){bar.style.width=`${pct(newHp,maxHp)}%`;bar.className=`hpfill${hpClass(pct(newHp,maxHp))}`}if(txt)txt.textContent=`HP ${Math.max(0,newHp)}/${maxHp}`}
 function effectLabel(e){const low=CORE.FRIENDA_EFFECT?.LOW??(1/1.3),veryLow=CORE.FRIENDA_EFFECT?.VERY_LOW??(1/(1.3*1.3));if(e<=veryLow+.0001)return ["ほとんどこうかがない","low"];if(e>1)return ["効果ばつぐん！","good"];if(e<1)return ["効果はいまひとつ","weak"];return ["",""]}
 async function playDungeonAttack(a,target,x,actualDamage,newHp,maxHp){const attacker=document.getElementById(target==="enemy"?"myFighter":"enemyFighter"),defender=document.getElementById(target==="enemy"?"enemyFighter":"myFighter"),stage=document.getElementById("battleStage"),name=CORE.skillName(a),sp=a.finisher_move&&String(a.finisher_move).trim();setBattleMessage(`${a.name_ja}の${sp?"必殺技 ":""}${name}！`);attacker?.classList.add("activeTurn");sfx(sp?"special":"attack");if(sp){stage?.classList.remove("specialFlash");if(stage)void stage.offsetWidth;stage?.classList.add("specialFlash");await showSpecialBanner(a.name_ja,name)}launchTypeFx(a.move_type,target);attacker?.classList.add(target==="enemy"?"attackRight":"attackLeft");await fxSleep(220);attacker?.classList.remove("attackRight","attackLeft");if(!x.hit){sfx("miss");setBattleMessage(`攻撃ミス！ ${name}は外れた！`);await showImpactText("ミス！","miss");attacker?.classList.remove("activeTurn");return}defender?.classList.add("hit");const [label,kind]=effectLabel(x.e);sfx(kind==="good"?"super":"hit");if(label){setBattleMessage(label);await showImpactText(label,kind)}const pop=document.createElement("div");pop.className=`damageFloat${kind==="good"?" good":kind==="weak"?" weak":kind==="low"?" immune":""}`;pop.textContent=`-${actualDamage}`;defender?.appendChild(pop);setBattleMessage(`${actualDamage}ダメージ！`);await fxSleep(400);animateDungeonHp(target,newHp,maxHp);await fxSleep(450);if(newHp<=0){sfx("ko");defender?.classList.add("koBurst");await showImpactText("K.O.!","ko");await fxSleep(260)}attacker?.classList.remove("activeTurn");defender?.classList.remove("hit")}
-async function doAttack(){state.run.switchSelecting=false;const b=state.run.battle;if(!b||b.busy)return;const t=runTeam()[b.teamIndex];if(!t||t.ko)return;const enc=state.run.encounter;enc.currentParticipants=Array.isArray(enc.currentParticipants)?enc.currentParticipants:[];if(!enc.currentParticipants.includes(t.id))enc.currentParticipants.push(t.id);const me=teamRec(t),en=currentEnemy();if(!b.initiative)setBattleInitiative(b,me,en);if(b.initiative?.pending){save();startInitiativeRoulette("once");return}b.hasAttacked=true;const meFirst=!!b.initiative?.meFirst;b.busy=true;const atkBtn=document.getElementById("attackBtn"),swBtn=document.getElementById("switchBtn");if(atkBtn)atkBtn.disabled=true;if(swBtn)swBtn.disabled=true;await showTurnSplash(b.turn,meFirst,me.name_ja,en.name_ja);const meAct=async()=>{if(t.ko||b.enemyHp<=0)return;const x=attackValue(me,en);if(x.hit){b.enemyHp=Math.max(0,b.enemyHp-x.damage);const enc=state.run.encounter;if(!Array.isArray(enc.enemyHps))enc.enemyHps=enc.enemies.map((e,i)=>i===enc.index?b.enemyHp:Number(e.hp));enc.enemyHps[enc.index]=b.enemyHp;battleLine(`${me.name_ja}の${CORE.skillName(me)}！ ${en.name_ja}に${x.damage}ダメージ。`)}else battleLine(`${me.name_ja}の攻撃は外れた！`);await playDungeonAttack(me,"enemy",x,x.damage,b.enemyHp,Number(en.hp)||1)};const enAct=async()=>{if(t.ko||b.enemyHp<=0)return;const x=attackValue(en,me);let dmg=x.damage;if(x.hit&&state.run.shield>0)dmg=Math.max(1,Math.round(dmg*(1-state.run.shield)));if(x.hit){const endured=tryBondEndure(t,dmg);if(!endured)t.hp=Math.max(0,t.hp-dmg);battleLine(`${en.name_ja}の${CORE.skillName(en)}！ ${me.name_ja}に${dmg}ダメージ。`);if(t.hp<=0){t.ko=true;battleLine(`${me.name_ja}はひんしになった。`)}await playDungeonAttack(en,"me",x,dmg,t.hp,maxHpFor(t.id));if(endured){setBattleMessage(`${me.name_ja}はキミとの絆でこらえた！`);await showBondEndurePraise(me.name_ja)}}else{battleLine(`${en.name_ja}の攻撃は外れた！`);await playDungeonAttack(en,"me",x,dmg,t.hp,maxHpFor(t.id))}};if(meFirst){await meAct();if(b.enemyHp>0)await enAct()}else{await enAct();if(!t.ko)await meAct()}b.turn++;b.busy=false;if(b.enemyHp<=0)return enemyDefeated();if(t.ko){handleFaintedReplacement();return}save();render()}
+async function doAttack(){state.run.switchSelecting=false;const b=state.run.battle;if(!b||b.busy)return;const t=runTeam()[b.teamIndex];if(!t||t.ko)return;const enc=state.run.encounter;enc.currentParticipants=Array.isArray(enc.currentParticipants)?enc.currentParticipants:[];if(!enc.currentParticipants.includes(t.id))enc.currentParticipants.push(t.id);const me=teamRec(t),en=currentEnemy();if(!b.initiative)setBattleInitiative(b,me,en);if(b.initiative?.pending){save();startInitiativeRoulette("once");return}b.hasAttacked=true;const meFirst=!!b.initiative?.meFirst;b.busy=true;const atkBtn=document.getElementById("attackBtn"),swBtn=document.getElementById("switchBtn");if(atkBtn)atkBtn.disabled=true;if(swBtn)swBtn.disabled=true;await showTurnSplash(b.turn,meFirst,me.name_ja,en.name_ja);const meAct=async()=>{if(t.ko||b.enemyHp<=0)return;const x=attackValue(me,en,luckFor(t.id));if(x.hit){b.enemyHp=Math.max(0,b.enemyHp-x.damage);const enc=state.run.encounter;if(!Array.isArray(enc.enemyHps))enc.enemyHps=enc.enemies.map((e,i)=>i===enc.index?b.enemyHp:Number(e.hp));enc.enemyHps[enc.index]=b.enemyHp;battleLine(`${me.name_ja}の${CORE.skillName(me)}！ ${en.name_ja}に${x.damage}ダメージ。`)}else battleLine(`${me.name_ja}の攻撃は外れた！`);await playDungeonAttack(me,"enemy",x,x.damage,b.enemyHp,Number(en.hp)||1)};const enAct=async()=>{if(t.ko||b.enemyHp<=0)return;const x=attackValue(en,me);let dmg=x.damage;if(x.hit&&state.run.shield>0)dmg=Math.max(1,Math.round(dmg*(1-state.run.shield)));if(x.hit){const endured=tryBondEndure(t,dmg);if(!endured)t.hp=Math.max(0,t.hp-dmg);battleLine(`${en.name_ja}の${CORE.skillName(en)}！ ${me.name_ja}に${dmg}ダメージ。`);if(t.hp<=0){t.ko=true;battleLine(`${me.name_ja}はひんしになった。`)}await playDungeonAttack(en,"me",x,dmg,t.hp,maxHpFor(t.id));if(endured){setBattleMessage(`${me.name_ja}はキミとの絆でこらえた！`);await showBondEndurePraise(me.name_ja)}}else{battleLine(`${en.name_ja}の攻撃は外れた！`);await playDungeonAttack(en,"me",x,dmg,t.hp,maxHpFor(t.id))}};if(meFirst){await meAct();if(b.enemyHp>0)await enAct()}else{await enAct();if(!t.ko)await meAct()}b.turn++;b.busy=false;if(b.enemyHp<=0)return enemyDefeated();if(t.ko){handleFaintedReplacement();return}save();render()}
 async function autoBattleToEnd(){
  if(autoBattleRunning||!state.run||state.run.scene!=="battle"||!state.run.battle||state.run.battle.busy)return;
  const startEncounter=state.run.encounter,startIndex=startEncounter?.index;
@@ -5681,14 +5684,27 @@ function showQuickTraining(id){
 }
 function showLuckShop(returnTo="home"){
  document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";
+ const shopFilter={search:"",type:"all",grade:"all",luck:"all",sort:"luckAsc"};
  const returnScreen=()=>{ov.remove();document.body.style.overflow="";if(returnTo==="owned")renderOwned();else renderHome()};
- const renderShop=()=>{
+ const renderShop=(focusId="")=>{
   const qty=Math.max(0,Math.floor(Number(state.shopItems?.luckyClover)||0)),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
-  const targets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX);
-  ov.innerHTML=`<div class="ownedBackPanel luckShopPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>FRENDA SHOP</small><b>🪙 フレンダショップ</b></div><button class="ownedBackClose" id="luckShopClose">閉じる</button></div><div class="coinBalance">フレンダコイン <b>🪙 ${coins.toLocaleString("ja-JP")}</b></div><div class="coinHowTo"><b>🪙 フレンダコインの入手方法</b><p>HP・ATK・DEFの3能力をMAXまで特訓したピックは、余った特訓ポイントが自動でフレンダコインに変換されます。</p><span>特訓P 1 → 🪙${COIN_PER_OVERFLOW_DRILL}</span></div><div class="shopFutureNote">🛍️ 商品はこれから順次追加予定です。</div><div class="shopItemCard"><div class="shopItemIcon">🍀</div><div><b>ラッキークローバー</b><small>所持 ${qty}個</small><p>所持ピック1体の「幸運」を+1。幸運は最大5。</p></div><button id="buyLuckyClover" ${coins>=LUCK_ITEM_PRICE?"":"disabled"}>🪙${LUCK_ITEM_PRICE}で購入</button></div><div class="sectionTitle" style="margin-top:12px">クローバーを使う</div><div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qty>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><span>幸運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small>探索中</small>`:""}</button>`}).join(""):'<div class="dexEmpty">全所持ピックが幸運MAXです。</div>'}</div><div class="notice">幸運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。幸運5でゲット率・レア卵・探索レア/ボーナス報酬が×1.5、同速先攻が75%になります。</div></div>`;
+  const baseTargets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX),records=baseTargets.map(id=>rec(id)).filter(Boolean),types=commonFilterTypes(records),grades=commonFilterGrades(records);
+  let targets=baseTargets.filter(id=>{const r=rec(id);if(!r)return false;const q=shopFilter.search.trim().toLowerCase();if(q&&!`${r.name_ja||""} ${r.pick_no||""}`.toLowerCase().includes(q))return false;if(shopFilter.type!=="all"&&r.type1!==shopFilter.type&&r.type2!==shopFilter.type)return false;if(shopFilter.grade!=="all"&&Number(r.grade)!==Number(shopFilter.grade))return false;if(shopFilter.luck!=="all"&&luckFor(id)!==Number(shopFilter.luck))return false;return true});
+  const numCmp=(a,b)=>String(rec(a)?.pick_no||"").localeCompare(String(rec(b)?.pick_no||""),"ja",{numeric:true});
+  targets.sort((a,b)=>{const ar=rec(a),br=rec(b);if(shopFilter.sort==="luckAsc")return luckFor(a)-luckFor(b)||Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||numCmp(a,b);if(shopFilter.sort==="energy")return Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||Number(br?.grade||0)-Number(ar?.grade||0)||numCmp(a,b);if(shopFilter.sort==="grade")return Number(br?.grade||0)-Number(ar?.grade||0)||Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||numCmp(a,b);if(shopFilter.sort==="name")return String(ar?.name_ja||"").localeCompare(String(br?.name_ja||""),"ja")||numCmp(a,b);return numCmp(a,b)});
+  const filterHtml=`<div class="luckShopFilterPanel"><div class="luckShopFilterGrid"><input id="luckShopSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(shopFilter.search)}"><select id="luckShopType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${shopFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="luckShopGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(shopFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="luckShopLuck"><option value="all">幸運：すべて</option>${Array.from({length:LUCK_MAX},(_,i)=>`<option value="${i}" ${String(shopFilter.luck)===String(i)?"selected":""}>幸運 ${i}/${LUCK_MAX}</option>`).join("")}</select><select id="luckShopSort"><option value="luckAsc" ${shopFilter.sort==="luckAsc"?"selected":""}>幸運低い順</option><option value="energy" ${shopFilter.sort==="energy"?"selected":""}>ポケエネ高い順</option><option value="grade" ${shopFilter.sort==="grade"?"selected":""}>★高い順</option><option value="number" ${shopFilter.sort==="number"?"selected":""}>番号順</option><option value="name" ${shopFilter.sort==="name"?"selected":""}>名前順</option></select><button type="button" class="ghost luckShopFilterReset" id="luckShopFilterReset">条件クリア</button></div><div class="luckShopFilterCount">表示 ${targets.length}/${baseTargets.length}体　※幸運MAXのピックは対象外</div></div>`;
+  ov.innerHTML=`<div class="ownedBackPanel luckShopPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>FRENDA SHOP</small><b>🪙 フレンダショップ</b></div><button class="ownedBackClose" id="luckShopClose">閉じる</button></div><div class="coinBalance">フレンダコイン <b>🪙 ${coins.toLocaleString("ja-JP")}</b></div><div class="coinHowTo"><b>🪙 フレンダコインの入手方法</b><p>HP・ATK・DEFの3能力をMAXまで特訓したピックは、余った特訓ポイントが自動でフレンダコインに変換されます。</p><span>特訓P 1 → 🪙${COIN_PER_OVERFLOW_DRILL}</span></div><div class="shopFutureNote">🛍️ 商品はこれから順次追加予定です。</div><div class="shopItemCard"><div class="shopItemIcon">🍀</div><div><b>ラッキークローバー</b><small>所持 ${qty}個</small><p>所持ピック1体の「幸運」を+1。幸運は最大5。</p></div><button id="buyLuckyClover" ${coins>=LUCK_ITEM_PRICE?"":"disabled"}>🪙${LUCK_ITEM_PRICE}で購入</button></div><div class="sectionTitle" style="margin-top:12px">クローバーを使う</div>${filterHtml}<div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qty>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><span>幸運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small class="luckTargetLocked">🧭 探索中</small>`:""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${baseTargets.length?"条件に合うピックがありません。":"全所持ピックが幸運MAXです。"}</div>`}</div><div class="notice">幸運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。さらに戦闘では、そのピック自身の幸運が高いほど攻撃のミス率が下がります。幸運1ごとにミス率を10%ずつ軽減し、幸運5ではミス率が50%減少します。幸運5でゲット率・レア卵・探索レア/ボーナス報酬が×1.5、同速先攻が75%になります。</div></div>`;
   ov.querySelector("#luckShopClose").onclick=returnScreen;
   const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{if(Number(state.frendaCoins)<LUCK_ITEM_PRICE)return;state.frendaCoins-=LUCK_ITEM_PRICE;state.shopItems.luckyClover=qty+1;save();renderShop()};
-  ov.querySelectorAll("[data-luck-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.luckTarget;if(isExpeditionLocked(id)||luckFor(id)>=LUCK_MAX||Number(state.shopItems.luckyClover)<=0)return;state.shopItems.luckyClover--;setLuck(id,luckFor(id)+1);save();renderShop()})
+  const refresh=id=>{const scroll=ov.scrollTop;renderShop(id);ov.scrollTop=scroll};
+  const search=ov.querySelector("#luckShopSearch");if(search)search.oninput=e=>{shopFilter.search=e.target.value;refresh("luckShopSearch")};
+  const type=ov.querySelector("#luckShopType");if(type)type.onchange=e=>{shopFilter.type=e.target.value;refresh("luckShopType")};
+  const grade=ov.querySelector("#luckShopGrade");if(grade)grade.onchange=e=>{shopFilter.grade=e.target.value;refresh("luckShopGrade")};
+  const luck=ov.querySelector("#luckShopLuck");if(luck)luck.onchange=e=>{shopFilter.luck=e.target.value;refresh("luckShopLuck")};
+  const sort=ov.querySelector("#luckShopSort");if(sort)sort.onchange=e=>{shopFilter.sort=e.target.value;refresh("luckShopSort")};
+  const reset=ov.querySelector("#luckShopFilterReset");if(reset)reset.onclick=()=>{shopFilter.search="";shopFilter.type="all";shopFilter.grade="all";shopFilter.luck="all";shopFilter.sort="luckAsc";renderShop("luckShopSearch")};
+  ov.querySelectorAll("[data-luck-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.luckTarget;if(isExpeditionLocked(id)||luckFor(id)>=LUCK_MAX||Number(state.shopItems.luckyClover)<=0)return;const r=rec(id),before=luckFor(id),qtyNow=Math.max(0,Math.floor(Number(state.shopItems.luckyClover)||0));if(!UI.dialog.confirm(`${r?.name_ja||"このピック"}にラッキークローバーを1個使いますか？\n\n幸運 ${before} → ${Math.min(LUCK_MAX,before+1)}\nクローバー ${qtyNow}個 → ${Math.max(0,qtyNow-1)}個`))return;state.shopItems.luckyClover--;setLuck(id,before+1);save();renderShop()});
+  if(focusId){requestAnimationFrame(()=>{const el=ov.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const n=el.value.length;el.setSelectionRange(n,n)}}})}
  };
  document.body.appendChild(ov);document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov)returnScreen()};renderShop()
 }
@@ -6884,7 +6900,7 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV6{
 </style>
 
 <style id="v205-team-result-vertical-stats">
-/* Ver2.09: hatch discovery and hatch result screens are centered, larger, and flashier. */
+/* Ver2.12: Lucky Clover target selection adds search/type/grade/luck filters and sorting. */
 @media(min-width:701px){
   .resultV6 .result6TeamGrid .result4TeamCard{
     grid-template-columns:118px minmax(0,1fr)!important;
@@ -7019,6 +7035,118 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV6{
 .eggCenterCard>.eggCenterInner,.eggCenterCard>.eggDiscoveryInner,.eggCenterCard>.eggRewardInner{min-height:min(68vh,660px)!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important}.eggDiscoveryCard.eggCenterCard .eggDiscoveryText{font-size:clamp(40px,5vw,68px)!important}.eggDiscoveryCard.eggCenterCard .eggDiscoveryOrb{width:min(380px,44vw)!important;height:min(430px,48vh)!important}.eggDiscoveryCard.eggCenterCard .eggDiscoveryOrb .eggVisual{transform:scale(3.35)!important}.hatchEpicCard{position:relative!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-height:min(78vh,760px)!important;padding:20px 24px!important;text-align:center!important;background:radial-gradient(circle at 50% 30%,#ffffff 0,#f8fcff 34%,#edf7ff 72%,#e6f1fa 100%)!important}.hatchEpicCard:before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at 50% 35%,#fff9cf60 0,#ffffff00 40%),radial-gradient(circle at 24% 78%,#8ddcff26 0,#ffffff00 26%),radial-gradient(circle at 78% 18%,#88c8ff1f 0,#ffffff00 24%);pointer-events:none}.hatchEpicCard>*{position:relative;z-index:1}.hatchEpicCard .hatchStage{width:min(860px,100%)!important;height:min(40vh,340px)!important;min-height:260px!important;max-height:none!important;margin:0 auto 14px!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 50% 50%,#fffef7 0,#f8fbff 24%,#e6f5ff 58%,#d9edff 78%,transparent 79%)!important;border-radius:28px!important;box-shadow:inset 0 0 0 1px #d8ebf5,0 12px 35px #8ab8d41f!important}.hatchEpicCard .hatchEggWrap{transform:scale(2.5)!important;filter:drop-shadow(0 12px 24px #0002)!important}.hatchEpicCard .hatchGlow{width:150px!important;height:150px!important;box-shadow:0 0 42px 18px #fff,0 0 120px 55px #9de9ff!important}.hatchEpicCard .hatchCracks span{width:4px!important;height:34px!important;top:calc(50% - 54px)!important}.hatchEpicCard h2{font-size:clamp(42px,5vw,68px)!important;line-height:1.08!important;margin:0 0 8px!important;font-weight:1000!important;letter-spacing:.02em}.hatchEpicCard .hatchMessage{min-height:54px!important;font-size:clamp(20px,2.5vw,30px)!important;line-height:1.35!important;color:#4c6578!important;margin-bottom:6px!important}.hatchEpicCard .hatchReveal{width:min(900px,100%)!important;min-height:min(42vh,430px)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;opacity:0;transform:translateY(12px) scale(.92);transition:opacity .45s,transform .45s}.hatchEpicCard .hatchReveal.show{opacity:1;transform:none}.hatchEpicCard .hatchEggKind{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:#eff8ff;color:#557188;font-size:14px;font-weight:900;box-shadow:0 6px 14px #8cb9d11a}.hatchEpicCard .hatchReveal img{width:min(300px,34vw)!important;height:auto!important;max-width:82%!important;aspect-ratio:auto!important;object-fit:contain!important;border-radius:18px!important;background:#fff!important;padding:8px!important;box-shadow:0 18px 40px #13395426,0 0 0 4px #ffffffcc!important}.hatchEpicCard .hatchResultName{font-size:clamp(34px,4.2vw,58px)!important;line-height:1.08!important;font-weight:1000!important;margin:2px 0!important;color:#112130!important}.hatchEpicCard .badge.gold{font-size:16px!important;padding:7px 14px!important;border-radius:999px!important}.hatchEpicCard .hatchReveal p{font-size:18px!important;line-height:1.65!important;max-width:760px!important;margin:0 auto!important;color:#334a5b!important}.hatchEpicCard .hatchTapHint{font-size:15px!important;margin-top:10px!important}.hatchEpicCard #hatchNext{min-width:280px!important;font-size:22px!important;padding:15px 24px!important;border-radius:18px!important;margin-top:12px!important;box-shadow:0 10px 24px #2352b928!important}.hatchEpicCard.hatchReady .hatchStage{display:none!important}.hatchEpicCard.hatchReady .hatchReveal{min-height:min(54vh,560px)!important}.hatchEpicCard.hatchReady h2{background:linear-gradient(180deg,#0e1f33 0,#1c2f48 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}.hatchEpicCard.hatchReady .hatchReveal img{width:min(360px,40vw)!important;box-shadow:0 20px 44px #0e366628,0 0 0 5px #fff!important}.hatchEpicCard.hatchReady .hatchResultName{font-size:clamp(40px,4.8vw,64px)!important}.hatchEpicCard.hatchReady .hatchReveal p{font-size:19px!important}
 @media(max-width:700px){.eggDiscoveryCard.eggCenterCard .eggDiscoveryText{font-size:clamp(28px,8vw,42px)!important}.eggDiscoveryCard.eggCenterCard .eggDiscoveryOrb{width:min(250px,62vw)!important;height:min(280px,34vh)!important}.eggDiscoveryCard.eggCenterCard .eggDiscoveryOrb .eggVisual{transform:scale(2.45)!important}.hatchEpicCard{min-height:min(72vh,640px)!important;padding:14px 12px!important}.hatchEpicCard .hatchStage{height:min(28vh,240px)!important;min-height:180px!important;border-radius:22px!important;margin-bottom:10px!important}.hatchEpicCard .hatchEggWrap{transform:scale(1.75)!important}.hatchEpicCard h2{font-size:clamp(26px,8.4vw,38px)!important}.hatchEpicCard .hatchMessage{min-height:36px!important;font-size:14px!important;margin-bottom:4px!important}.hatchEpicCard .hatchReveal{min-height:min(40vh,360px)!important;gap:8px!important}.hatchEpicCard .hatchEggKind{font-size:11px!important;padding:5px 10px!important}.hatchEpicCard .hatchReveal img{width:min(210px,54vw)!important;max-width:88%!important;padding:6px!important}.hatchEpicCard .hatchResultName{font-size:clamp(26px,9vw,40px)!important}.hatchEpicCard .badge.gold{font-size:13px!important;padding:6px 10px!important}.hatchEpicCard .hatchReveal p{font-size:13px!important;line-height:1.45!important}.hatchEpicCard .hatchTapHint{font-size:11px!important;margin-top:6px!important}.hatchEpicCard #hatchNext{min-width:0!important;width:min(300px,100%)!important;font-size:18px!important;padding:12px 16px!important}.hatchEpicCard.hatchReady .hatchReveal{min-height:min(44vh,390px)!important}.hatchEpicCard.hatchReady .hatchReveal img{width:min(230px,58vw)!important}.hatchEpicCard.hatchReady .hatchResultName{font-size:clamp(30px,10vw,44px)!important}}
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 2.09 / Updated: 2026-09-30 18:15 JST -->
+
+<style id="v210-mobile-run-scroll-fix">
+/* Ver2.10
+   Mobile Safari: do not lock active dungeon scenes to 100svh.
+   The whole page may scroll when content is taller than the visible viewport,
+   so the bottom of battle/event/pickup screens can always be reached. */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page^="run-"]{
+    height:auto!important;
+    min-height:100svh!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    display:block!important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"]>header{
+    flex:none!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"]>main#app.dungeonRunScreen{
+    display:block!important;
+    flex:none!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:4px 6px calc(24px + env(safe-area-inset-bottom))!important;
+    overflow:visible!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen .runOverview{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun>.card:not(.adventureLog),
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun>.encounterCutinCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun>.legendaryIntroCard{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.combatStageScreen .combatStageCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.combatStageScreen .encounterCutinCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.combatStageScreen .legendaryIntroCard{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen .captureCombatBody,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen .battleMainCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen .battleArena,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen .eventChoiceCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen .pickupCard{
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  /* Keep a little breathing room above Safari's bottom toolbar when scrolled fully down. */
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun::after{
+    content:"";
+    display:block;
+    flex:0 0 calc(18px + env(safe-area-inset-bottom));
+  }
+}
+</style>
+
+
+<style id="v211-team-sort">
+body[data-dungeon-page="team"] #teamSortNew:disabled{opacity:1!important;background:linear-gradient(180deg,#fff7d8,#ffe7a1)!important;color:#7a5100!important;border-color:#e1b54b!important;font-weight:1000!important;-webkit-text-fill-color:#7a5100!important}
+</style>
+
+<style id="v212-clover-filters">
+.luckShopFilterPanel{margin:8px 0 10px;padding:8px;border:1px solid #cfdde5;border-radius:14px;background:#f7fbfd}
+.luckShopFilterGrid{display:grid;grid-template-columns:minmax(170px,1.45fr) minmax(110px,.9fr) minmax(92px,.72fr) minmax(108px,.86fr) minmax(126px,1fr) auto;gap:6px;align-items:center}
+.luckShopFilterGrid input,.luckShopFilterGrid select,.luckShopFilterGrid button{width:100%;min-width:0;height:36px;min-height:36px;padding:6px 8px;border-radius:10px;font-size:10px}
+.luckShopFilterReset{white-space:nowrap;padding-left:10px!important;padding-right:10px!important}
+.luckShopFilterCount{margin-top:6px;color:#617680;font-size:9px;font-weight:800;text-align:right}
+.luckTarget>small{font-size:8px;color:#657781;font-weight:800}
+.luckTarget .luckTargetLocked{color:#b36d22;font-weight:1000}
+.luckFilterEmpty{grid-column:1/-1;padding:24px 12px}
+@media(max-width:700px){
+ .luckShopFilterPanel{padding:6px;margin:7px 0 9px}
+ .luckShopFilterGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ .luckShopFilterGrid #luckShopSearch{grid-column:1/-1}
+ .luckShopFilterGrid #luckShopSort{grid-column:1/2}
+ .luckShopFilterGrid .luckShopFilterReset{grid-column:2/3}
+ .luckShopFilterGrid input,.luckShopFilterGrid select,.luckShopFilterGrid button{height:34px;min-height:34px;padding:5px 6px;font-size:9px}
+ .luckShopFilterCount{font-size:8px;text-align:left}
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.14 / Updated: 2026-09-30 19:10 JST -->
 </body>
 </html>
