@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.60">
+<html lang="ja" data-app-version="0.61">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -726,11 +726,11 @@ function groupCardHTML(groupIndex){
   return `<div class="groupCard groupLocked" data-locked-group="${groupIndex}" aria-disabled="true"><div class="groupCardHead"><b>グループ${groupNo}</b><span class="groupStatus">🔒 未解放</span></div><div class="groupLockedRank">解放条件：全ダンジョン R${rank} クリア</div><div class="groupLockedMessage">${esc(groupUnlockMessage(groupIndex))}</div><button type="button" class="adminUnlockBtn" data-admin-unlock-group="${groupIndex}">🔑 管理者解放</button></div>`
  }
  const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),m=g.mission,did=m?.dungeonId||p.dungeonId,diff=m?.difficulty||p.difficulty,th=did?THEMES[did]:null,score=m?{rank:m.rank,total:m.score}:scoreTeam(p.teamIds,did,diff),selected=groupIndex===activeGroup,status=g.status,d=readDungeon()||{},luckAvg=m?missionLuckAverage(m):averageLuckForIds(d,p.teamIds),luckMul=luckMultiplierFromAverage(luckAvg);let action="",sub="";
- if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<div class="groupActionPair"><button class="groupAction ghost" data-status-group="${groupIndex}">状況</button><button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button></div>`}else if(status==="returned"&&m){sub='<span class="groupReturned">🎉 帰還</span>';action=`<button class="groupAction goldBtn" data-return-group="${groupIndex}">成果</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
+ if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button>`}else if(status==="returned"&&m){sub='<span class="groupReturned">🎉 帰還</span>';action=`<button class="groupAction goldBtn" data-return-group="${groupIndex}">成果</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
  return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0"><div class="groupCardHead"><b>グループ${groupIndex+1}</b><span class="groupStatus">${status==="exploring"?"探索中":status==="returned"?"帰還済":"待機"}</span></div><div class="groupRankLine"><strong class="rank-${score.rank}">${score.rank}</strong><b>${score.total}点</b><em class="groupLuck">🍀${luckAvg.toFixed(1)} ×${luckMul.toFixed(2)}</em></div><div class="groupDest">${th?`${th.icon} ${esc(th.name)} <span>R${diff}</span>`:"派遣先未設定"}</div><div class="groupCardFoot">${sub}${action}</div></div>`
 }
 function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2,3,4].map(groupCardHTML).join("")}</div></div></div>`}
-function bindGroupDock(){bindAdminUnlockButtons();app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;const i=Number(el.dataset.group);if(setActiveGroup(i)===false)return;const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-status-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.statusGroup));screen="explore";render()});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();requestMissionReturn(Number(b.dataset.returnNowGroup))})}
+function bindGroupDock(){bindAdminUnlockButtons();app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;const i=Number(el.dataset.group);if(setActiveGroup(i)===false)return;const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();requestMissionReturn(Number(b.dataset.returnNowGroup))})}
 
 const EXP_PICK_VIEW_KEY="frenda:expedition:pickView:v1";
 let prepPickFilter=UI.pickFilter.create({sort:"recommended"});
@@ -1525,7 +1525,7 @@ header .head{
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.60 / Updated: 2026-09-30 21:40 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.61 / Updated: 2026-09-30 21:45 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1639,4 +1639,9 @@ header .head{
   例：6分経過なら「30分」の行を現在の次目標として強調。
   グループを切り替えると、そのグループの位置へ即時切替。
   探索中は1秒ごとに現在位置表示を更新。
+-->
+
+<!-- Ver0.61:
+  探索中グループカードの「状況」ボタンを削除。
+  探索状況はグループカード選択で直接表示できるため、操作を「帰還」に一本化。
 -->
