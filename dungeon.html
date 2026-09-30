@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.04">
+<html lang="ja" data-app-version="2.05">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6881,6 +6881,92 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV6{
  .resultV6 .result5Actions{grid-template-columns:1fr 1fr!important}.resultV6 .result5Actions #summaryRetry{grid-column:1/-1!important}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 2.04 / Updated: 2026-09-30 17:15 JST -->
+
+<style id="v205-team-result-vertical-stats">
+/* Ver2.05: result team cards use a large pick image + one-column numeric result list. */
+@media(min-width:701px){
+  .resultV6 .result6TeamGrid .result4TeamCard{
+    grid-template-columns:118px minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr) auto!important;
+    gap:5px 10px!important;
+    padding:7px 9px!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamHead{
+    grid-column:1!important;
+    grid-row:1/3!important;
+    justify-content:center!important;
+    gap:4px!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamHead img{
+    width:88px!important;
+    height:122px!important;
+    max-height:calc(100% - 30px)!important;
+    object-fit:cover!important;
+    border-radius:9px!important;
+    box-shadow:0 5px 12px #17394e24!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamHead b{
+    font-size:10px!important;
+    line-height:1.1!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamHead small{
+    font-size:6px!important;
+    line-height:1.1!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamStats{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-auto-rows:minmax(0,1fr)!important;
+    gap:3px!important;
+    align-content:stretch!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamStats span{
+    display:grid!important;
+    grid-template-columns:minmax(64px,.8fr) minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:4px 7px!important;
+    text-align:left!important;
+    min-height:0!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamStats small{
+    font-size:6.5px!important;
+    font-weight:900!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamStats b{
+    font-size:10px!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+  }
+  .resultV6 .result6TeamGrid .result4Hp{
+    grid-column:2!important;
+    grid-row:2!important;
+    padding:4px 7px!important;
+    font-size:6.5px!important;
+  }
+  .resultV6 .result6TeamGrid .result4Hp b{font-size:7.5px!important}
+}
+@media(max-width:700px){
+  .resultV6 .result6TeamGrid .result4TeamCard{
+    grid-template-columns:72px minmax(0,1fr)!important;
+    min-height:118px!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamHead img{
+    width:58px!important;
+    height:82px!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamStats{
+    grid-template-columns:1fr!important;
+    gap:2px!important;
+  }
+  .resultV6 .result6TeamGrid .result4TeamStats span{
+    grid-template-columns:minmax(50px,.8fr) minmax(0,1fr)!important;
+    padding:3px 5px!important;
+  }
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 2.05 / Updated: 2026-09-30 17:20 JST -->
 </body>
 </html>
