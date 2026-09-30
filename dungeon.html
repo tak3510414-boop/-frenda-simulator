@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.83">
+<html lang="ja" data-app-version="1.84">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6000,10 +6000,14 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  function refresh(){
   const hidden=document.querySelector(".frendaCloudBtn"),failed=hidden?.dataset?.kind==="error",logged=!!window.FrendaCloud?.isLoggedIn?.();
   const state=failed?"error":logged?"cloud":"local",icon=failed?"🌧️":logged?"☁️":"💾",label=failed?"クラウドログイン・接続に失敗中":logged?"クラウドログイン中":"ローカル保存（クラウドなし）";
-  el.dataset.state=state;el.textContent=icon;el.title=label;el.setAttribute("aria-label",label);
+  if(el.dataset.state!==state)el.dataset.state=state;
+  if(el.textContent!==icon)el.textContent=icon;
+  if(el.title!==label)el.title=label;
+  if(el.getAttribute("aria-label")!==label)el.setAttribute("aria-label",label);
  }
- refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2500);
- const mo=new MutationObserver(refresh);mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["data-kind"]});
+ refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2000);
 })();
 </script>
-<!-- FRENDA_DUNGEON_VERSION: 1.83 / Updated: 2026-09-30 08:53 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 1.84 / Updated: 2026-09-30 09:02 JST -->
+</body>
+</html>
