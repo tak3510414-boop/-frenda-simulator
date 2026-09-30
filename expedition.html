@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.55">
+<html lang="ja" data-app-version="0.56">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -135,7 +135,7 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 
 /* Ver0.40: dual expedition groups / compact setup */
 .groupDock{position:sticky;z-index:47;margin:0 0 10px;padding:7px;border-radius:17px;background:#0c3047ee;box-shadow:0 9px 24px #08263845;backdrop-filter:blur(10px)}
-.groupCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.groupCard{min-width:0;padding:9px;border:2px solid #ffffff28;border-radius:14px;background:linear-gradient(155deg,#174e6a,#0f344a);color:#fff;cursor:pointer;box-shadow:inset 0 0 0 1px #ffffff0d}.groupCard.active{border-color:#65daf5;box-shadow:0 0 0 2px #4ec9e333,inset 0 0 0 1px #ffffff22}.groupCard.exploring{background:linear-gradient(155deg,#174d64,#176f68)}.groupCard.returned{background:linear-gradient(155deg,#574311,#80651b);border-color:#f1cf66}.groupCardHead,.groupCardFoot,.groupRankLine,.destMeta{display:flex;align-items:center;justify-content:space-between;gap:6px}.groupCardHead b{font-size:11px}.groupStatus{font-size:7px;padding:2px 5px;border-radius:999px;background:#ffffff18}.groupRankLine{justify-content:flex-start;margin:5px 0 3px}.groupRankLine strong{font-size:27px;line-height:.9}.groupRankLine b{font-size:14px}.groupRankLine .rank-S{color:#ffd95a}.groupRankLine .rank-A{color:#6ce2ff}.groupRankLine .rank-B{color:#a7f4c8}.groupRankLine .rank-C{color:#f1d394}.groupRankLine .rank-D{color:#c7cdd1}.groupDest{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e0f1f7}.groupDest span{color:#ffd966;font-weight:1000}.groupCardFoot{margin-top:7px;min-height:29px}.groupCardFoot>span{font-size:9px;font-weight:900}.groupReturned{color:#ffe683}.groupAction{padding:6px 11px!important;min-height:28px!important;font-size:9px!important;border-radius:9px!important}.activeGroupLabel{margin:-2px 0 8px;padding:7px 10px;border:1px solid #c5dbe6;border-radius:12px;background:#f7fbfd;font-size:11px;font-weight:1000}.activeGroupLabel span{color:#17769d}.setupStack{display:grid;gap:10px}.setupStack>.card{margin-bottom:0}.compactDestList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:none}.destinationCompact{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;padding:8px 9px!important;text-align:left;background:#f5f9fb!important;color:#24485a!important;border:2px solid #cfdee6!important;box-shadow:none!important;border-radius:11px!important}.destinationCompact.active{background:#e4f7ff!important;border-color:#42add7!important}.destName{font-size:10px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.destMeta{flex-direction:column;align-items:flex-end;gap:1px}.destMeta b{font-size:8px;color:#0e668c}.destMeta em{font-style:normal;font-size:8px;color:#617985;font-weight:900}.groupBusyPanel{text-align:center}.collectionShortcut{padding:8px!important}.compactDiscovery{margin-top:4px}.compactDiscovery .discoveryMeter{height:4px}.compactDiscovery .discoveryMiniHead{font-size:7px}
+.groupCards{display:grid;grid-template-columns:repeat(5,minmax(155px,1fr));gap:7px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}.groupCard{min-width:0;padding:9px;border:2px solid #ffffff28;border-radius:14px;background:linear-gradient(155deg,#174e6a,#0f344a);color:#fff;cursor:pointer;box-shadow:inset 0 0 0 1px #ffffff0d}.groupCard.active{border-color:#65daf5;box-shadow:0 0 0 2px #4ec9e333,inset 0 0 0 1px #ffffff22}.groupCard.exploring{background:linear-gradient(155deg,#174d64,#176f68)}.groupCard.returned{background:linear-gradient(155deg,#574311,#80651b);border-color:#f1cf66}.groupCardHead,.groupCardFoot,.groupRankLine,.destMeta{display:flex;align-items:center;justify-content:space-between;gap:6px}.groupCardHead b{font-size:11px}.groupStatus{font-size:7px;padding:2px 5px;border-radius:999px;background:#ffffff18}.groupRankLine{justify-content:flex-start;margin:5px 0 3px}.groupRankLine strong{font-size:27px;line-height:.9}.groupRankLine b{font-size:14px}.groupRankLine .rank-S{color:#ffd95a}.groupRankLine .rank-A{color:#6ce2ff}.groupRankLine .rank-B{color:#a7f4c8}.groupRankLine .rank-C{color:#f1d394}.groupRankLine .rank-D{color:#c7cdd1}.groupDest{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e0f1f7}.groupDest span{color:#ffd966;font-weight:1000}.groupCardFoot{margin-top:7px;min-height:29px}.groupCardFoot>span{font-size:9px;font-weight:900}.groupReturned{color:#ffe683}.groupAction{padding:6px 11px!important;min-height:28px!important;font-size:9px!important;border-radius:9px!important}.activeGroupLabel{margin:-2px 0 8px;padding:7px 10px;border:1px solid #c5dbe6;border-radius:12px;background:#f7fbfd;font-size:11px;font-weight:1000}.activeGroupLabel span{color:#17769d}.setupStack{display:grid;gap:10px}.setupStack>.card{margin-bottom:0}.compactDestList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:none}.destinationCompact{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;padding:8px 9px!important;text-align:left;background:#f5f9fb!important;color:#24485a!important;border:2px solid #cfdee6!important;box-shadow:none!important;border-radius:11px!important}.destinationCompact.active{background:#e4f7ff!important;border-color:#42add7!important}.destName{font-size:10px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.destMeta{flex-direction:column;align-items:flex-end;gap:1px}.destMeta b{font-size:8px;color:#0e668c}.destMeta em{font-style:normal;font-size:8px;color:#617985;font-weight:900}.groupBusyPanel{text-align:center}.collectionShortcut{padding:8px!important}.compactDiscovery{margin-top:4px}.compactDiscovery .discoveryMeter{height:4px}.compactDiscovery .discoveryMiniHead{font-size:7px}
 @media(min-width:901px){.setupStack{grid-template-columns:.7fr .9fr 1.7fr}.setupStack>.card:nth-child(3){grid-row:1/span 2;grid-column:3}.setupStack>.collectionShortcut{grid-column:1/3}.compactDestList{grid-template-columns:1fr}.groupCards{max-width:760px;margin:auto}}
 @media(max-width:600px){.groupDock{padding:5px;margin-bottom:7px;border-radius:13px}.groupCards{gap:4px}.groupCard{padding:7px 6px;border-radius:11px}.groupCardHead b{font-size:9px}.groupStatus{font-size:6px}.groupRankLine{margin:4px 0 2px}.groupRankLine strong{font-size:22px}.groupRankLine b{font-size:11px}.groupDest{font-size:7px}.groupCardFoot{margin-top:5px;min-height:25px}.groupCardFoot>span{font-size:7px}.groupAction{padding:5px 7px!important;min-height:24px!important;font-size:7px!important}.activeGroupLabel{font-size:9px;padding:6px 8px}.compactDestList{grid-template-columns:1fr 1fr;gap:4px}.destinationCompact{padding:7px 6px!important}.destName{font-size:8px}.destMeta b,.destMeta em{font-size:6.8px}}
 </style>
@@ -395,7 +395,7 @@ function specialBase(r){return RULES.specialBaseName(r)}
 function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){return DATA.dungeon.read()}
 function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[]}}}
-function defaultExp(){return {version:4,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3)],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
+function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],adminUnlockedGroups:[],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
 function migrateMissionToFreeReturn(g){
  const m=g?.mission;if(!m||g.status!=="exploring")return false;
  const start=Number(m.startAt)||Date.now();
@@ -422,11 +422,12 @@ function normalizeExp(x){
  const sourceVersion=Number(x.version)||0,sourceHadGroups=Array.isArray(x.groups),isLegacySchema=sourceVersion<3||!sourceHadGroups;
  const legacyMission=cloneLegacyMission(x.mission),legacyStatus=x.status,legacyLast=Array.isArray(x.lastTeamIds)?x.lastTeamIds.slice():[];
  if(!x.discovery||typeof x.discovery!=="object")x.discovery={};if(!x.souvenirs||typeof x.souvenirs!=="object")x.souvenirs={};if(!x.secretSpots||typeof x.secretSpots!=="object")x.secretSpots={};
- if(!Array.isArray(x.groups))x.groups=[defaultGroup(1),defaultGroup(2),defaultGroup(3)];
- x.groups=[normalizeGroup(x.groups[0],1),normalizeGroup(x.groups[1],2),normalizeGroup(x.groups[2],3)];
+ if(!Array.isArray(x.groups))x.groups=[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)];
+ x.groups=[normalizeGroup(x.groups[0],1),normalizeGroup(x.groups[1],2),normalizeGroup(x.groups[2],3),normalizeGroup(x.groups[3],4),normalizeGroup(x.groups[4],5)];
+ x.adminUnlockedGroups=Array.isArray(x.adminUnlockedGroups)?[...new Set(x.adminUnlockedGroups.map(Number).filter(n=>n>=1&&n<=5))]:[];
  /* Ver0.42: legacy import is allowed only for an actual pre-v3 save. In v3+, top-level mission is compatibility data and must never resurrect a completed group. */
  if(isLegacySchema&&legacyMission&&!x.groups.some(g=>g.mission)){const g1=x.groups[0];g1.status=legacyMissionStatus({status:legacyStatus},legacyMission);g1.mission=legacyMission;g1.lastTeamIds=legacyLast.length?legacyLast:legacyMission.teamIds.slice();if(!g1.prep.dungeonId)g1.prep.dungeonId=legacyMission.dungeonId||null;if(!g1.prep.difficulty)g1.prep.difficulty=Number.isFinite(Number(legacyMission.difficulty))?Number(legacyMission.difficulty):null;if(!g1.prep.teamIds.length)g1.prep.teamIds=legacyMission.teamIds.slice();if([1,4,8].includes(Number(legacyMission.hours)))g1.prep.hours=Number(legacyMission.hours);x.legacyMigratedToGroups=true}
- x.version=4;x.appVersion=APP_VERSION;
+ x.version=5;x.appVersion=APP_VERSION;
  const busyIds=[];for(const gg of x.groups)if(gg.status!=="idle"&&gg.mission)for(const id of gg.mission.teamIds||[])if(!busyIds.includes(id))busyIds.push(id);x.busyTeamIds=busyIds;
  x.status=x.groups.some(gg=>gg.status==="exploring")?"exploring":x.groups.some(gg=>gg.status==="returned")?"returned":"idle";const compatBase=x.groups.find(gg=>gg.mission)?.mission||null;x.mission=compatBase?{...compatBase,teamIds:busyIds}:null;x.lastTeamIds=x.groups[0].lastTeamIds;x.updatedAt=Number(x.updatedAt)||Date.now();return x
 }
@@ -441,6 +442,14 @@ function readExp(){
  return normalizeExp(best)
 }
 let exp=readExp();prep=exp.groups[0].prep;
+const ADMIN_UNLOCK_GROUP=Number(TEST_PARAMS.get("adminUnlockGroup")||0);
+if(ADMIN_AUTH&&ADMIN_UNLOCK_GROUP>=1&&ADMIN_UNLOCK_GROUP<=5){
+ exp.adminUnlockedGroups=Array.isArray(exp.adminUnlockedGroups)?exp.adminUnlockedGroups:[];
+ if(!exp.adminUnlockedGroups.includes(ADMIN_UNLOCK_GROUP))exp.adminUnlockedGroups.push(ADMIN_UNLOCK_GROUP);
+ normalizeExp(exp);
+ DATA.expedition.write(exp,{appVersion:APP_VERSION});
+ try{history.replaceState(null,"",location.pathname)}catch{}
+}
 function writeExp(){normalizeExp(exp);DATA.expedition.write(exp,{appVersion:APP_VERSION})}
 let prepWriteTimer=null;
 function schedulePrepWrite(){
@@ -554,17 +563,48 @@ function scoreTeam(ids,did,diff){const d=readDungeon(),team=(Array.isArray(ids)?
 /* =========================================================
    Ver0.40: 2グループ同時派遣 / 上部操作カード / UI再編
    ========================================================= */
-function group3Unlocked(){
+const GROUP_COUNT=5;
+function groupRequiredRank(groupIndex){return Math.max(1,Math.min(5,Number(groupIndex)+1))}
+function groupProgressUnlocked(groupIndex){
  const d=readDungeon();if(!d)return false;
- return THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,4)]?.clears||0)>0)
+ const rank=groupRequiredRank(groupIndex);
+ return THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,rank)]?.clears||0)>0)
 }
-function groupState(i=activeGroup){return exp.groups[Math.max(0,Math.min(2,Number(i)||0))]}
+function groupAdminUnlocked(groupIndex){return (exp?.adminUnlockedGroups||[]).includes(Number(groupIndex)+1)}
+function groupUnlocked(groupIndex){
+ const g=exp?.groups?.[groupIndex];
+ /* A mission already in progress/returned before this rule change is never broken. */
+ if(g&&g.status!=="idle"&&g.mission)return true;
+ return groupAdminUnlocked(groupIndex)||groupProgressUnlocked(groupIndex)
+}
+function groupUnlockMessage(groupIndex){
+ const rank=groupRequiredRank(groupIndex);
+ return `このグループは、全てのダンジョンのR${rank}をクリアしたら解放します`
+}
+function groupState(i=activeGroup){return exp.groups[Math.max(0,Math.min(GROUP_COUNT-1,Number(i)||0))]}
 function syncPrep(){prep=groupState().prep;return prep}
-function otherGroupIndexes(i=activeGroup){return [0,1,2].filter(x=>x!==i)}
+function otherGroupIndexes(i=activeGroup){return Array.from({length:GROUP_COUNT},(_,x)=>x).filter(x=>x!==i)}
 function setActiveGroup(i){
- const next=Math.max(0,Math.min(2,Number(i)||0));
- if(next===2&&!group3Unlocked())return false;
+ const next=Math.max(0,Math.min(GROUP_COUNT-1,Number(i)||0));
+ if(!groupUnlocked(next))return false;
  activeGroup=next;syncPrep();return true
+}
+function adminUnlockGroup(groupIndex){
+ const idx=Math.max(0,Math.min(GROUP_COUNT-1,Number(groupIndex)||0)),groupNo=idx+1;
+ if(window.FRENDA_PARENTAL?.isAdminAuthenticated()){
+  exp.adminUnlockedGroups=Array.isArray(exp.adminUnlockedGroups)?exp.adminUnlockedGroups:[];
+  if(!exp.adminUnlockedGroups.includes(groupNo))exp.adminUnlockedGroups.push(groupNo);
+  writeExp();render();
+  UI.dialog.alert(`管理者権限でグループ${groupNo}を解放しました。`);
+  return
+ }
+ const next=`${location.pathname}?adminUnlockGroup=${groupNo}`;
+ location.href=`admin.html?next=${encodeURIComponent(next)}`
+}
+function bindAdminUnlockButtons(){
+ app.querySelectorAll("[data-admin-unlock-group]").forEach(b=>b.onclick=e=>{
+  e.stopPropagation();adminUnlockGroup(Number(b.dataset.adminUnlockGroup))
+ })
 }
 function groupMission(i=activeGroup){return groupState(i)?.mission||null}
 function groupIsBusy(i){const g=groupState(i);return !!g&&g.status!=="idle"&&!!g.mission}
@@ -653,7 +693,7 @@ function requestMissionReturn(groupIndex=activeGroup){
  if(settleMissionReturn(groupIndex)){setActiveGroup(groupIndex);screen="return";render()}
 }
 function prepareReturnForGroup(){return false}
-function prepareReturnAll(){let changed=false;for(let i=0;i<3;i++)changed=prepareReturnForGroup(i)||changed;return changed}
+function prepareReturnAll(){let changed=false;for(let i=0;i<GROUP_COUNT;i++)changed=prepareReturnForGroup(i)||changed;return changed}
 function applyBaseGrowth(groupIndex=activeGroup){
  const g=groupState(groupIndex),m=g.mission;if(!m||m.baseApplied)return;
  const profile=missionRewardProfile(m),rankMul={D:.8,C:.9,B:1,A:1.1,S:1.2}[m.rank]||1,diffBonus={1:0,2:2,3:4,4:7,5:10}[m.difficulty]||0,xp=Math.round((profile.baseXp+diffBonus)*rankMul),bondChance=Math.max(0,profile.baseBond+({1:0,2:.02,3:.04,4:.06,5:.08}[m.difficulty])+({D:-.03,C:-.01,B:0,A:.03,S:.06}[m.rank]||0)),results=[];
@@ -685,15 +725,16 @@ function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=g
 function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
 
 function groupCardHTML(groupIndex){
- if(groupIndex===2&&!group3Unlocked()){
-  return `<div class="groupCard groupLocked" data-locked-group="2" aria-disabled="true"><div class="groupCardHead"><b>グループ3</b><span class="groupStatus">🔒 未解放</span></div><div class="groupLockedMessage">このグループは、全てのダンジョンのR4をクリアしたら解放します</div></div>`
+ if(!groupUnlocked(groupIndex)){
+  const groupNo=groupIndex+1,rank=groupRequiredRank(groupIndex);
+  return `<div class="groupCard groupLocked" data-locked-group="${groupIndex}" aria-disabled="true"><div class="groupCardHead"><b>グループ${groupNo}</b><span class="groupStatus">🔒 未解放</span></div><div class="groupLockedRank">解放条件：全ダンジョン R${rank} クリア</div><div class="groupLockedMessage">${esc(groupUnlockMessage(groupIndex))}</div><button type="button" class="adminUnlockBtn" data-admin-unlock-group="${groupIndex}">🔑 管理者解放</button></div>`
  }
  const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),m=g.mission,did=m?.dungeonId||p.dungeonId,diff=m?.difficulty||p.difficulty,th=did?THEMES[did]:null,score=m?{rank:m.rank,total:m.score}:scoreTeam(p.teamIds,did,diff),selected=groupIndex===activeGroup,status=g.status,d=readDungeon()||{},luckAvg=m?missionLuckAverage(m):averageLuckForIds(d,p.teamIds),luckMul=luckMultiplierFromAverage(luckAvg);let action="",sub="";
  if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<div class="groupActionPair"><button class="groupAction ghost" data-status-group="${groupIndex}">状況</button><button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button></div>`}else if(status==="returned"&&m){sub='<span class="groupReturned">🎉 帰還</span>';action=`<button class="groupAction goldBtn" data-return-group="${groupIndex}">成果</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
  return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0"><div class="groupCardHead"><b>グループ${groupIndex+1}</b><span class="groupStatus">${status==="exploring"?"探索中":status==="returned"?"帰還済":"待機"}</span></div><div class="groupRankLine"><strong class="rank-${score.rank}">${score.rank}</strong><b>${score.total}点</b><em class="groupLuck">🍀${luckAvg.toFixed(1)} ×${luckMul.toFixed(2)}</em></div><div class="groupDest">${th?`${th.icon} ${esc(th.name)} <span>R${diff}</span>`:"派遣先未設定"}</div><div class="groupCardFoot">${sub}${action}</div></div>`
 }
-function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2].map(groupCardHTML).join("")}</div></div></div>`}
-function bindGroupDock(){app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;const i=Number(el.dataset.group);if(setActiveGroup(i)===false)return;const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-status-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.statusGroup));screen="explore";render()});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();requestMissionReturn(Number(b.dataset.returnNowGroup))})}
+function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2,3,4].map(groupCardHTML).join("")}</div></div></div>`}
+function bindGroupDock(){bindAdminUnlockButtons();app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;const i=Number(el.dataset.group);if(setActiveGroup(i)===false)return;const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-status-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.statusGroup));screen="explore";render()});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();requestMissionReturn(Number(b.dataset.returnNowGroup))})}
 
 const EXP_PICK_VIEW_KEY="frenda:expedition:pickView:v1";
 let prepPickFilter=UI.pickFilter.create({sort:"recommended"});
@@ -758,6 +799,10 @@ function renderHome(){return renderPrep()}
 function renderPrep(){
  const d=readDungeon();if(!d||!d.initialized){app.innerHTML=`<div class="card error">フレンダダンジョンのセーブデータが見つかりません。\n先にダンジョンを開始して御三家を取得してください。</div>`;return}
  prepareReturnAll();const dests=clearedDestinations();if(!dests.length){app.innerHTML=`${groupDockHTML()}<div class="card notice">本編ダンジョンを1回クリアすると、おでかけ探索の派遣先が解放されます。</div>`;bindGroupDock();return}
+ if(!groupUnlocked(activeGroup)){
+  app.innerHTML=`${groupDockHTML()}<div class="card groupLockedPanel"><div class="sectionTitle">🔒 グループ${activeGroup+1}は未解放です</div><div class="notice">${esc(groupUnlockMessage(activeGroup))}</div><button class="adminUnlockPanelBtn" data-admin-unlock-group="${activeGroup}">🔑 管理者パスワードで解放</button></div>`;
+  bindGroupDock();bindAdminUnlockButtons();return
+ }
  const g=groupState(),p=ensurePrepValid(),busy=g.status!=="idle";syncPrep();
  if(busy){
   if(g.status==="exploring"){screen="explore";return renderExplore()}
@@ -808,14 +853,14 @@ function renderEggDiscard(){const d=readDungeon();app.innerHTML=`<div class="car
 function renderCollection(){const total=souvenirDistinctTotal(),dids=THEME_ORDER.filter(did=>SOUVENIR_DEF[did]),stepTotal=dids.reduce((n,did)=>n+discoveryStep(did),0),stepMax=dids.length*5;app.innerHTML=`<div class="card"><div class="row spread"><div><div class="kicker">EXPEDITION COLLECTION</div><div class="sectionTitle">🗺️ 探索コレクション</div></div><span class="badge gold">発見 ${stepTotal}/${stepMax}</span></div><div class="discoveryBenefitGuide"><div class="discoveryBenefitIcon">🔎</div><div><b>「発見」は、その探索先をどこまで調査できたかを表します。</b><p>探索するたびに発見率が上がり、20％ごとに 1/5 → 5/5 と進みます。<strong>5/5（100％）へ到達した探索では、レアなおみやげを1つ確定で発見</strong>します。</p></div></div><div class="collectionSummary"><div class="collectionStat"><b>${total.distinct}/${total.max}</b><small>おみやげ種類</small></div><div class="collectionStat"><b>${total.total}</b><small>おみやげ総数</small></div></div><div class="collectionGrid">${dids.map(did=>{const p=discoveryPct(did),step=discoveryStep(did),defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length;return `<div class="collectionCard ${step>=5?"complete":""}"><div class="collectionHead"><b>${THEMES[did].icon} ${esc(THEMES[did].name)}</b><span class="collectionPct">発見 ${step}/5 <em>${p}%</em></span></div><div class="discoveryMeter collectionDiscoveryMeter"><span style="width:${p}%"></span><i>${p}%</i></div><div class="souvenirSlots">${defs.map(s=>{const n=souvenirCount(did,s.id);return `<div class="souvenirSlot ${n?"":"locked"} ${s.rare?"rare":""}"><div class="ico">${n?s.icon:"❓"}</div><b>${n?esc(s.name):"？？？"}</b><small>${n?`×${n}`:"未発見"}</small></div>`}).join("")}</div>${step>=5?'<div class="collectionComplete">🏅 調査コンプリート！ レアおみやげ到達済み</div>':`<div class="muted" style="margin-top:6px">おみやげ ${got}/${defs.length}種類　／　5/5まであと ${100-p}%</div>`}</div>`}).join("")}</div><button class="ghost" id="backPrepBtn" style="width:100%;margin-top:12px">← 派遣設定へ戻る</button></div>`;document.getElementById("backPrepBtn").onclick=()=>{screen="home";render()}}
 function renderSummary(){const m=groupMission(),f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE / GROUP ${activeGroup+1}</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ランク${m.difficulty} / ${formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now()))} / 探索ランク${m.rank}</p></div><div class="summaryFindings"><b>🗺️ 発見 ${beforeStep}/5 → ${afterStep}/5</b><div class="summarySouvenirLine">🎒 ${esc(souvenirNameLine(f))}</div></div>${m.secretSpotUsed?`<div class="summarySecret"><b>🌟 調査したひみつの場所</b><small>${esc(m.secretSpotUsed.name)} を探索し、ボーナスを獲得しました。</small></div>`:""}${secretSpotSummaryHTML(m.secretSpotDiscovered)}<div class="sectionTitle" style="margin-top:12px">成果箱の中身</div><div class="finalList">${m.summary?.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、グループ${activeGroup+1}で派遣していた${m.teamIds.length}体が再び使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=()=>completeMission(activeGroup)}
 
-function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();for(let i=0;i<3;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
+function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");document.body.classList.toggle("homeNavVisible",show)}
 function render(){document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
 function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
 window.addEventListener("resize",updateHeaderNavLayout);updateHeaderNavLayout();
 document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
-window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();setActiveGroup(Math.min(activeGroup,1));render()}});
+window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();if(!setActiveGroup(Math.min(activeGroup,GROUP_COUNT-1))){const first=Array.from({length:GROUP_COUNT},(_,i)=>i).find(groupUnlocked);if(first!==undefined)setActiveGroup(first)}render()}});
 
 function expeditionDungeonCloudData(){const saved=readDungeon();return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}}}
 function applyExpeditionDungeonCloudData(data){if(!data||typeof data!=="object"||!data.state||typeof data.state!=="object")throw new Error("クラウドデータ形式が不正です");DATA.dungeon.write(data.state);const shared=data.state.expeditionShared;if(shared&&typeof shared==="object")STORE.setItem(EXP_KEY,JSON.stringify(shared));else STORE.removeItem(EXP_KEY);exp=readExp();syncPrep()}
@@ -1332,8 +1377,9 @@ loadEvolution();
 }
 @media(max-width:700px){
   .groupCards{
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-template-columns:repeat(5,minmax(132px,1fr))!important;
     gap:4px!important;
+    overflow-x:auto!important;
   }
   .groupCard{
     padding:7px!important;
@@ -1352,7 +1398,50 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.55 / Updated: 2026-09-30 21:00 JST -->
+
+<style id="v056-groups1to5-unlock">
+.groupLockedRank{
+  margin-top:8px;
+  color:#ffe09a;
+  font-size:8px;
+  font-weight:1000;
+}
+.adminUnlockBtn,
+.adminUnlockPanelBtn{
+  border:1px solid #ffd36b!important;
+  background:linear-gradient(180deg,#ffe6a4,#eebc4e)!important;
+  color:#604400!important;
+  font-weight:1000!important;
+  box-shadow:none!important;
+}
+.adminUnlockBtn{
+  width:100%;
+  margin-top:7px;
+  padding:5px 6px!important;
+  min-height:0!important;
+  border-radius:8px!important;
+  font-size:7px!important;
+}
+.groupLockedPanel{
+  max-width:620px;
+  margin:12px auto!important;
+  text-align:center;
+}
+.adminUnlockPanelBtn{
+  margin-top:10px;
+  padding:10px 14px!important;
+  border-radius:12px!important;
+}
+@media(max-width:700px){
+  .groupDockLayout{
+    grid-template-columns:112px minmax(0,1fr)!important;
+  }
+  .groupLockedRank{font-size:6px}
+  .adminUnlockBtn{font-size:6px!important;padding:4px!important}
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.56 / Updated: 2026-09-30 21:10 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1425,4 +1514,13 @@ loadEvolution();
   THEME_ORDER内の全ダンジョンでR4クリア実績が揃うと自動解放し、通常の第3探索グループとして使用可能。
   既存の2グループセーブはそのまま維持し、空のグループ3だけを安全に追加。
   派遣中ピックの排他・タイマー・帰還処理も3グループ対応。
+-->
+
+<!-- Ver0.56:
+  探索グループを1〜5へ拡張。
+  グループ1=全ダンジョンR1クリア、グループ2=R2、グループ3=R3、グループ4=R4、グループ5=R5で自動解放。
+  未解放カードに「管理者解放」ボタンを追加。
+  管理者未認証時はadmin.htmlのパスワード認証へ遷移し、認証後に指定グループを永続解放。
+  既に探索中/帰還済みの旧グループは進行を壊さないため、そのmission完了まではアクセス可能。
+  既存セーブにはグループ4・5を空状態で安全に追加し、管理者解放状態もexpeditionSharedへ保存。
 -->
