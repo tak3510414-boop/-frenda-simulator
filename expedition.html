@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.53">
+<html lang="ja" data-app-version="0.54">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -748,7 +748,14 @@ function renderPrep(){
  const d=readDungeon();if(!d||!d.initialized){app.innerHTML=`<div class="card error">フレンダダンジョンのセーブデータが見つかりません。\n先にダンジョンを開始して御三家を取得してください。</div>`;return}
  prepareReturnAll();const dests=clearedDestinations();if(!dests.length){app.innerHTML=`${groupDockHTML()}<div class="card notice">本編ダンジョンを1回クリアすると、おでかけ探索の派遣先が解放されます。</div>`;bindGroupDock();return}
  const g=groupState(),p=ensurePrepValid(),busy=g.status!=="idle";syncPrep();
- if(busy){app.innerHTML=`${groupDockHTML()}<div class="card groupBusyPanel"><div class="sectionTitle">グループ${activeGroup+1} ${g.status==="exploring"?"は探索中です":"が帰還しました"}</div>${g.status==="exploring"?`<div class="notice">このグループの設定は探索終了まで変更できません。もう一方のグループを選ぶと、新しい派遣を設定できます。</div><button id="busyStatusBtn" style="margin-top:10px;width:100%">探索状況を見る</button>`:`<div class="notice">成果を受け取ると、このグループを再び派遣できます。</div><button class="goldBtn" id="busyReturnBtn" style="margin-top:10px;width:100%">🎁 成果を見る</button>`}</div>`;bindGroupDock();const sb=document.getElementById("busyStatusBtn");if(sb)sb.onclick=()=>{screen="explore";render()};const rb=document.getElementById("busyReturnBtn");if(rb)rb.onclick=()=>{screen="return";render()};startTicker();return}
+ if(busy){
+  if(g.status==="exploring"){screen="explore";return renderExplore()}
+  app.innerHTML=`${groupDockHTML()}<div class="card groupBusyPanel"><div class="sectionTitle">グループ${activeGroup+1} が帰還しました</div><div class="notice">成果を受け取ると、このグループを再び派遣できます。</div><button class="goldBtn" id="busyReturnBtn" style="margin-top:10px;width:100%">🎁 成果を見る</button></div>`;
+  bindGroupDock();
+  const rb=document.getElementById("busyReturnBtn");if(rb)rb.onclick=()=>{screen="return";render()};
+  startTicker();
+  return
+ }
  const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);
  const runSet=new Set(currentRunIds()),otherExp=expeditionBusyIds(activeGroup),busySet=new Set([...runSet,...otherExp]),eligible=new Set(eligiblePickIds(activeGroup)),all=(d.owned||[]).map(o=>rec(o.id)).filter(Boolean),filtered=filterExpeditionPicks(all,d,eligible,busySet),th=THEMES[p.dungeonId],spot=activeSecretSpot(p.dungeonId,p.difficulty),score=scoreTeam(p.teamIds,p.dungeonId,p.difficulty);
  const slots=prepSelectedStripHTML(d,p);
@@ -1286,7 +1293,7 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.53 / Updated: 2026-09-30 20:50 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.54 / Updated: 2026-09-30 20:55 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1344,4 +1351,11 @@ loadEvolution();
   自由探索の成果箱説明を記号方式へ変更。
   ○=通常箱、🪎=レア率UP箱、⭐️=レア以上確定箱。
   例: 8時間は ○○○○🪎⭐️ と表示し、箱数と内訳を1行で把握可能。
+-->
+
+<!-- Ver0.54:
+  探索中グループを選択した際の中間画面
+  「グループXは探索中です / 探索状況を見る」を廃止。
+  探索中グループは直接「探索状況」画面（経過時間・成果箱予定・ログ・帰還）を表示。
+  帰還済みグループの成果受取案内は従来どおり維持。
 -->
