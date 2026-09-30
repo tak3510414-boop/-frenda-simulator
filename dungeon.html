@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.94">
+<html lang="ja" data-app-version="1.95">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5384,7 +5384,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
     ${enemyMetric}
     <button type="button" class="runUnifiedMetric egg" data-run-egg-open aria-label="卵の詳細を表示"><span>🥚 タマゴ</span><b>${state.eggs.length}/${state.eggCap}</b></button>
    </div>
-   <div class="runUnifiedBottom"><div class="runUnifiedPath">${floorPathHTML(r.floor)}</div><button type="button" class="runWithdrawInside" data-run-withdraw>冒険から撤退</button></div>
+   <div class="runUnifiedAlwaysPath">${floorPathHTML(r.floor)}</div><div class="runUnifiedBottom"><button type="button" class="runWithdrawInside" data-run-withdraw>冒険から撤退</button></div>
   </div></div>`
 }
 
@@ -6397,7 +6397,7 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
 }
 </style>
 <style id="v192-team-owned-fixes">
-/* Ver1.94: team action buttons and filters condensed to one row; back button moved beside size controls. */
+/* Ver1.95: B1-B10 floor pieces remain visible throughout every adventure scene, including battles. */
 .teamSelectHead{align-items:center;margin-bottom:8px}
 .teamSelectGrid.size-large{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important;gap:10px!important}
 .teamSelectGrid.size-medium{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important;gap:7px!important}
@@ -6501,6 +6501,73 @@ body[data-dungeon-page="team"] .teamFilterGridOneLine select{width:100%!importan
   body[data-dungeon-page="team"] .teamFilterGridOneLine select{padding:5px 4px!important;font-size:8px!important;height:32px!important;min-height:32px!important}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 1.94 / Updated: 2026-09-30 15:50 JST -->
+
+<style id="v195-floorpath-always">
+/* Ver1.95: the B1-B10 piece map is always visible while an adventure is active. */
+main.dungeonRunScreen .runUnifiedAlwaysPath{
+  display:block!important;
+  min-width:0!important;
+  margin-top:5px!important;
+}
+main.dungeonRunScreen .runUnifiedAlwaysPath .floorPath{
+  display:grid!important;
+  grid-template-columns:repeat(10,minmax(0,1fr))!important;
+  gap:3px!important;
+  margin:0!important;
+  padding:1px 0!important;
+}
+main.dungeonRunScreen .runUnifiedAlwaysPath .floorStep{
+  display:flex!important;
+  height:17px!important;
+  min-height:17px!important;
+  border-radius:5px!important;
+  font-size:7px!important;
+}
+main.dungeonRunScreen .runUnifiedAlwaysPath .floorStep .goalFlag,
+main.dungeonRunScreen .runUnifiedAlwaysPath .floorStep .routeMark{
+  font-size:10px!important;
+}
+main.dungeonRunScreen .runUnifiedAlwaysPath .floorPathCaption{
+  display:none!important;
+}
+main.dungeonRunScreen .runUnifiedBottom{
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  margin-top:3px!important;
+}
+/* Older battle/combat rules hid .floorPath; this final rule intentionally wins. */
+main.battleScreen .runUnifiedAlwaysPath .floorPath,
+main.combatStageScreen .runUnifiedAlwaysPath .floorPath,
+main.encounterRevealScreen .runUnifiedAlwaysPath .floorPath,
+main.chooseFighterScreen .runUnifiedAlwaysPath .floorPath{
+  display:grid!important;
+}
+@media(max-width:700px){
+  main.dungeonRunScreen .runUnifiedAlwaysPath{margin-top:3px!important}
+  main.dungeonRunScreen .runUnifiedAlwaysPath .floorPath{gap:2px!important}
+  main.dungeonRunScreen .runUnifiedAlwaysPath .floorStep{
+    height:14px!important;
+    min-height:14px!important;
+    border-radius:4px!important;
+    font-size:6px!important;
+  }
+  main.dungeonRunScreen .runUnifiedAlwaysPath .floorStep .goalFlag,
+  main.dungeonRunScreen .runUnifiedAlwaysPath .floorStep .routeMark{font-size:8px!important}
+  main.combatStageScreen .runUnifiedAlwaysPath,
+  main.battleScreen .runUnifiedAlwaysPath,
+  main.chooseFighterScreen .runUnifiedAlwaysPath,
+  main.encounterRevealScreen .runUnifiedAlwaysPath{margin-top:2px!important}
+  main.combatStageScreen .runUnifiedAlwaysPath .floorStep,
+  main.battleScreen .runUnifiedAlwaysPath .floorStep,
+  main.chooseFighterScreen .runUnifiedAlwaysPath .floorStep,
+  main.encounterRevealScreen .runUnifiedAlwaysPath .floorStep{
+    height:13px!important;
+    min-height:13px!important;
+    font-size:5.5px!important;
+  }
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 1.95 / Updated: 2026-09-30 15:48 JST -->
 </body>
 </html>
