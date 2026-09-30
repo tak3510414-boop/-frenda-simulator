@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.52">
+<html lang="ja" data-app-version="0.53">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -338,22 +338,14 @@ function freeReturnMilestoneHTML(d,p){
 }
 
 function freeReturnDockGuideHTML(){
- const d=readDungeon()||{},g=groupState(activeGroup),p=ensurePrepValid(activeGroup),m=g.mission;
- let diff=Number(m?.difficulty||p?.difficulty)||highestDifficultyForDungeon(m?.dungeonId||p?.dungeonId)||1;
- let rank="-",luckMul=1,hasTeam=false;
- if(m&&Array.isArray(m.teamIds)&&m.teamIds.length){
-  hasTeam=true;rank=m.rank||"-";luckMul=missionLuckMultiplier(m)
- }else if(Array.isArray(p?.teamIds)&&p.teamIds.length){
-  hasTeam=true;rank=scoreTeam(p.teamIds,p.dungeonId,diff).rank;
-  luckMul=luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds))
- }
  const rows=FREE_EXP_ANCHORS.map(a=>{
-  const rarePct=hasTeam?milestoneRarePct(a.h,diff,rank,luckMul):null;
+  const normal=a.h>=8?Math.max(0,a.boxes-2):a.h>=4?Math.max(0,a.boxes-1):a.boxes;
+  const boost=a.h>=4?1:0,guaranteed=a.h>=8?1:0;
+  const symbols=`${"○".repeat(normal)}${"🪎".repeat(boost)}${"⭐️".repeat(guaranteed)}`;
   const time=a.h===.5?"30分":`${a.h}時間`;
-  const bonus=a.h>=8?"★":a.h>=4?"＋":"";
-  return `<div class="freeGuideRow ${a.h===12?"max":""}"><b>${time}</b><span>${a.boxes}箱</span><em>${rarePct==null?"--":`${rarePct}%`}${bonus}</em></div>`
+  return `<div class="freeGuideRow ${a.h===12?"max":""}"><b>${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`
  }).join("");
- return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuideRows">${rows}</div><div class="freeGuideFoot"><span>✨ レア以上率</span><span>＋=UP枠　★=確定枠</span></div>`
+ return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuideRows">${rows}</div><div class="freeGuideFoot"><span>○ 通常</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
 }
 
 const BASE_BOX=RULES.EXPEDITION_BASE_BOX;
@@ -1191,7 +1183,7 @@ loadEvolution();
 }
 .freeGuideRow{
   display:grid;
-  grid-template-columns:45px 34px minmax(0,1fr);
+  grid-template-columns:46px minmax(0,1fr);
   align-items:center;
   gap:2px;
   min-height:14px;
@@ -1278,12 +1270,12 @@ loadEvolution();
     font-size:5px;
   }
   .freeGuideRow{
-    grid-template-columns:34px 25px minmax(0,1fr);
+    grid-template-columns:34px minmax(0,1fr);
     gap:1px;
     min-height:12px;
   }
   .freeGuideRow b,.freeGuideRow span{font-size:5.8px}
-  .freeGuideRow em{font-size:5.3px}
+  .freeGuideRow .boxSymbols{font-size:6.5px;letter-spacing:.5px}
   .freeGuideFoot{
     display:block;
   }
@@ -1294,7 +1286,7 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.52 / Updated: 2026-09-30 20:45 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.53 / Updated: 2026-09-30 20:50 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1346,4 +1338,10 @@ loadEvolution();
   各行に現在の編成・派遣先・幸運を反映したレア以上率も併記。
   4時間以降のUP枠を＋、8時間以降の確定枠を★で表示。
   従来の大きな自由探索説明カードは削除。
+-->
+
+<!-- Ver0.53:
+  自由探索の成果箱説明を記号方式へ変更。
+  ○=通常箱、🪎=レア率UP箱、⭐️=レア以上確定箱。
+  例: 8時間は ○○○○🪎⭐️ と表示し、箱数と内訳を1行で把握可能。
 -->
