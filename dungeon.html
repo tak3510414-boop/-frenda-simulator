@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.15">
+<html lang="ja" data-app-version="2.16">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4900,7 +4900,7 @@ function renderTeamSelect(){
  cards=cards.slice().sort((a,b)=>effectiveTeamSort==="recommended"?recommendCmp(a,b):effectiveTeamSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):effectiveTeamSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):effectiveTeamSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):effectiveTeamSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):effectiveTeamSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):effectiveTeamSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
  const last=validLastTeam(need);
  const selectedSlots=UI.selectedStrip.html({scope:"dungeon-team",ids:teamSelection,max:need,resolve:rec,imageOf:r=>imageOf(r),nameOf:r=>r.name_ja,metaFor:r=>compareTypeText(r),emptyLabel:"未選択",slotNoun:"体目"});
- const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid teamFilterGridOneLine"><button type="button" id="teamRecommendToggle" class="teamRecommendFilter ${teamRecommendOnly?"active":""}">🔥 オススメ表示${teamRecommendOnly?" ON":""}</button><input id="teamSearchNew" type="search" placeholder="検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew" ${teamRecommendOnly?"disabled":""}><option value="recommended" ${teamRecommendOnly?"selected":""}>🔥 オススメ順</option><option value="standard" ${!teamRecommendOnly&&teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${!teamRecommendOnly&&teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${!teamRecommendOnly&&teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${!teamRecommendOnly&&teamPickFilter.sort==="energy"?"selected":""}>ポケエネ順</option><option value="evolution" ${!teamRecommendOnly&&teamPickFilter.sort==="evolution"?"selected":""}>進化P順</option><option value="drill" ${!teamRecommendOnly&&teamPickFilter.sort==="drill"?"selected":""}>特訓P順</option><option value="luck" ${!teamRecommendOnly&&teamPickFilter.sort==="luck"?"selected":""}>幸運順</option></select></div></div>`;
+ const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid teamFilterGridOneLine"><button type="button" id="teamRecommendToggle" class="teamRecommendFilter ${teamRecommendOnly?"active":""}">🔥 オススメ表示${teamRecommendOnly?" ON":""}</button><input id="teamSearchNew" type="search" placeholder="検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew" ${teamRecommendOnly?"disabled":""}><option value="recommended" ${teamRecommendOnly?"selected":""}>🔥 オススメ順</option><option value="standard" ${!teamRecommendOnly&&teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${!teamRecommendOnly&&teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${!teamRecommendOnly&&teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${!teamRecommendOnly&&teamPickFilter.sort==="energy"?"selected":""}>ポケエネ順</option><option value="evolution" ${!teamRecommendOnly&&teamPickFilter.sort==="evolution"?"selected":""}>進化P順</option><option value="drill" ${!teamRecommendOnly&&teamPickFilter.sort==="drill"?"selected":""}>特訓P順</option><option value="luck" ${!teamRecommendOnly&&teamPickFilter.sort==="luck"?"selected":""}>🍀 幸運高い順</option></select></div></div>`;
  const cardsHtml=cards.length?cards.map(r=>{
    const id=r.master_id,locked=isExpeditionLocked(id),sel=teamSelection.includes(id),pb=state.permanentBoosts[id]||{},ri=teamRecommendationInfo(r);
    return `<div class="pickCard ownedFrontCardV190 teamManagedCard ${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}" ${locked?"":`data-team-pick="${esc(id)}"`} role="button" tabindex="${locked?"-1":"0"}">${ri.recommended?'<span class="recommendMark">🔥 オススメ</span>':""}${sel?'<span class="selectMark">選択中</span>':""}<div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${ownedRelationBoxHTML(id)}${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${ri.recommended?`<div class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</div>`:""}${locked?'<div class="ownedDetailHint">🧭 探索中：編成不可</div>':""}</div>`
@@ -5436,7 +5436,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
  return `<div class="runTop"><div class="runStatus runStatusUnified">
    <div class="runUnifiedTop">
     <div class="runUnifiedTitle"><span class="runThemeIcon">${esc(theme.icon||"🗺️")}</span><strong>${esc(theme.name)}</strong><span class="runUnifiedDifficulty">ランク${r.difficulty}</span>${battleLabel?`<span class="runUnifiedScene">${esc(battleLabel)}</span>`:""}</div>
-    <div class="runUnifiedFloor"><strong>地下${r.floor}階</strong><span>/ 10</span></div>
+    <div class="runUnifiedRight"><button type="button" class="runWithdrawInside runWithdrawTop" data-run-withdraw>冒険から撤退</button><div class="runUnifiedFloor"><strong>地下${r.floor}階</strong><span>/ 10</span></div></div>
    </div>
    <div class="runUnifiedMetrics">
     <span class="runUnifiedMetric alert ${alert>=3?"max":alert>=2?"warn":""}"><span>👁 警戒度</span><b class="alertDots">${alertDots(alert)}</b><b>${alert}/3</b></span>
@@ -5445,7 +5445,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
     ${enemyMetric}
     <button type="button" class="runUnifiedMetric egg" data-run-egg-open aria-label="卵の詳細を表示"><span>🥚 タマゴ</span><b>${state.eggs.length}/${state.eggCap}</b></button>
    </div>
-   <div class="runUnifiedAlwaysPath">${floorPathHTML(r.floor)}</div><div class="runUnifiedBottom"><button type="button" class="runWithdrawInside" data-run-withdraw>冒険から撤退</button></div>
+   <div class="runUnifiedAlwaysPath">${floorPathHTML(r.floor)}</div>
   </div></div>`
 }
 
@@ -5742,7 +5742,7 @@ function renderOwned(){
  });
  const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
  cards=cards.slice().sort((a,b)=>ownedSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):ownedSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):ownedSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):ownedSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):ownedSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):ownedSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
- const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>幸運高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。特訓可能・進化可能に加え、進化Pがあと1のピックは「👀 あと1で進化」と表示します。</div>':""}</div>`;
+ const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>🍀 幸運高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。特訓可能・進化可能に加え、進化Pがあと1のピックは「👀 あと1で進化」と表示します。</div>':""}</div>`;
  const cardsHtml=cards.length?cards.map(r=>{
    const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),evoOk=ei.canEvolve,nearEvo=ei.hasEvolution&&ei.registered&&!ei.fainted&&!ei.canEvolve&&ei.points===Math.max(0,ei.cost-1);
    return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${expLocked?"expLockedCard":""} ${nearEvo?"ownedNearEvoCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${nearEvo?'<div class="ownedNearEvoBadge">👀 あと1で進化</div>':""}${ownedRelationBoxHTML(id)}${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}<div class="ownedV190Actions"><button class="ownedActionBtn train" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"}><span>特訓</span><b>${dp}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"}><span>進化</span><b>${gp}</b></button></div>${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':nearEvo?'<div class="ownedDetailHint">次に進化Pを1獲得すると進化可能</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
@@ -7434,6 +7434,43 @@ body[data-dungeon-page="team"] #teamSortNew:disabled{opacity:1!important;backgro
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.15 / Updated: 2026-09-30 18:40 JST -->
+
+<style id="v216-withdraw-top-luck-sort">
+/* Ver2.16: place withdraw control in the top-right status area so the former bottom row is freed. */
+.runUnifiedRight{
+  margin-left:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  justify-content:center;
+  gap:3px;
+  flex:0 0 auto;
+}
+.runWithdrawTop{
+  min-width:0!important;
+  padding:4px 9px!important;
+  border-radius:999px!important;
+  font-size:8px!important;
+  line-height:1.05!important;
+  margin:0!important;
+}
+.runUnifiedRight .runUnifiedFloor{
+  margin-left:0!important;
+}
+main.dungeonRunScreen .runUnifiedAlwaysPath{
+  margin-top:3px!important;
+}
+@media(max-width:700px){
+  .runUnifiedRight{gap:2px}
+  .runWithdrawTop{
+    padding:3px 7px!important;
+    font-size:7px!important;
+  }
+  .runUnifiedRight .runUnifiedFloor strong{font-size:15px!important}
+  .runUnifiedRight .runUnifiedFloor span{font-size:8px!important}
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.16 / Updated: 2026-09-30 19:00 JST -->
 </body>
 </html>
