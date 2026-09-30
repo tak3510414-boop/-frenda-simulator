@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.89">
+<html lang="ja" data-app-version="1.90">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4094,7 +4094,7 @@ const STARTER_SET_DEFS=[
  {key:"galar",label:"ガラル",names:["サルノリ","ヒバニー","メッソン"]},
  {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
 ];
-const stateDefault=()=>({saveVersion:11,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
+const stateDefault=()=>({saveVersion:12,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
 let state=loadState();
 migrateState();
 let screen="home";
@@ -4115,6 +4115,7 @@ function loadGridSize(scope){return UI.viewSize.load(GRID_SIZE_KEY_PREFIX+scope)
 function saveGridSize(scope,size){return UI.viewSize.save(GRID_SIZE_KEY_PREFIX+scope,size)}
 function gridSizeControlHTML(scope,current){return UI.viewSize.html({scope,current,wrapperClass:"viewSizeControl"})}
 let dexViewSize=loadGridSize("dex"),ownedViewSize=loadGridSize("owned");
+let ownedSearch="",ownedType="all",ownedGrade="all",ownedSort="standard",ownedActionOnly=false;
 let trainingFocusId=null;
 let trainingStickyIds=new Set();
 let teamAutoNotice="";
@@ -4127,7 +4128,7 @@ function readRunEndGuard(){try{const x=JSON.parse(STORE.getItem(RUN_END_GUARD_KE
 function clearRunEndGuard(){try{STORE.removeItem(RUN_END_GUARD_KEY)}catch{}}
 function writeRunEndGuard(run,summary){try{STORE.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
 function enforceRunEndGuard(target){const g=readRunEndGuard();if(!g||!target?.run)return false;const started=String(target.run.startedAt||"");if(g.startedAt&&started&&g.startedAt!==started)return false;target.run=null;target.postRun=null;if(g.summary)target.lastSummary=g.summary;return true}
-function save(){try{state.appVersion=APP_VERSION;state.saveVersion=11;DATA.dungeon.write(state)}catch(e){console.error(e)}}
+function save(){try{state.appVersion=APP_VERSION;state.saveVersion=12;DATA.dungeon.write(state)}catch(e){console.error(e)}}
 function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();return ids}
 function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
@@ -4144,6 +4145,10 @@ function migrateState(){
  if(!state.trainingPoints||typeof state.trainingPoints!=="object")state.trainingPoints={};
  if(!state.permanentBoosts||typeof state.permanentBoosts!=="object")state.permanentBoosts={};
  if(!state.bondPoints||typeof state.bondPoints!=="object")state.bondPoints={};
+ if(!state.luckLevels||typeof state.luckLevels!=="object")state.luckLevels={};
+ state.frendaCoins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
+ if(!state.shopItems||typeof state.shopItems!=="object")state.shopItems={};
+ state.shopItems.luckyClover=Math.max(0,Math.floor(Number(state.shopItems.luckyClover)||0));
  if(!Array.isArray(state.eggs))state.eggs=[];
  state.eggs.forEach(e=>{const d=EGG_DEF[e?.kind]||EGG_DEF.normal;e.required=d.required});
  if(!state.unlocks||typeof state.unlocks!=="object")state.unlocks={forest:[1]};
@@ -4153,7 +4158,7 @@ function migrateState(){
  if(state.postRun&&typeof state.postRun!=="object")state.postRun=null;
  if(state.run){
    state.run.xpGained=state.run.xpGained||{};state.run.drillGained=state.run.drillGained||{};state.run.captured=state.run.captured||[];
-   state.run.battleWins=Number(state.run.battleWins||0);state.run.roadBattleWins=Math.max(0,Number(state.run.roadBattleWins||0));state.run.alertLevel=Math.max(0,Math.min(3,Number(state.run.alertLevel||0)));state.run.bossRoadBonusApplied=!!state.run.bossRoadBonusApplied;state.run.captureBoost=Math.max(0,Number(state.run.captureBoost||0));if(state.run.pickup&&typeof state.run.pickup!=="object")state.run.pickup=null;
+   state.run.battleWins=Number(state.run.battleWins||0);state.run.roadBattleWins=Math.max(0,Number(state.run.roadBattleWins||0));state.run.alertLevel=Math.max(0,Math.min(3,Number(state.run.alertLevel||0)));state.run.bossRoadBonusApplied=!!state.run.bossRoadBonusApplied;state.run.captureBoost=Math.max(0,Number(state.run.captureBoost||0));delete state.run.luck;if(state.run.pickup&&typeof state.run.pickup!=="object")state.run.pickup=null;
    if(state.run.scene==="rewardTarget"){state.run.scene="reward";if(state.run.reward)delete state.run.reward.pick}
    if(state.run.encounter){
      state.run.encounter.currentParticipants=Array.isArray(state.run.encounter.currentParticipants)?state.run.encounter.currentParticipants:[];
@@ -4172,7 +4177,7 @@ function migrateState(){
    }
  }
  rebuildProgressionFromStats();
- state.saveVersion=10;
+ state.saveVersion=12;
  save();
 }
 function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
@@ -4198,6 +4203,23 @@ function expeditionLockedIds(){const x=expeditionSnapshot();if(!x||!["exploring"
 function isExpeditionLocked(id){return expeditionLockedIds().has(id)}
 function xpFor(id){return Number(state.experience?.[id]||0)}
 function drillFor(id){return Number(state.drillPoints?.[id]||0)}
+const LUCK_MAX=5,COIN_PER_OVERFLOW_DRILL=100,LUCK_ITEM_PRICE=500;
+function luckFor(id){return Math.max(0,Math.min(LUCK_MAX,Math.floor(Number(state.luckLevels?.[id])||0)))}
+function setLuck(id,value){state.luckLevels=state.luckLevels&&typeof state.luckLevels==="object"?state.luckLevels:{};state.luckLevels[id]=Math.max(0,Math.min(LUCK_MAX,Math.floor(Number(value)||0)));return state.luckLevels[id]}
+function averageLuck(ids){const a=(ids||[]).map(x=>typeof x==="string"?x:x?.id).filter(Boolean);return a.length?a.reduce((n,id)=>n+luckFor(id),0)/a.length:0}
+function luckMultiplier(avg){return 1+Math.max(0,Math.min(LUCK_MAX,Number(avg)||0))*.1}
+function currentPartyLuck(){return averageLuck(runTeam())}
+function permanentTrainingMaxed(id){const pb=state.permanentBoosts?.[id]||{};return ["hp","atk","def"].every(k=>Number(pb[k]||0)>=PERMANENT_BOOST_MAX)}
+function convertOverflowDrillIfMax(id){
+ if(!id||!permanentTrainingMaxed(id))return 0;
+ const pts=Math.max(0,Math.floor(drillFor(id)));if(!pts)return 0;
+ state.drillPoints[id]=0;const coins=pts*COIN_PER_OVERFLOW_DRILL;state.frendaCoins=Math.max(0,Math.floor(Number(state.frendaCoins)||0))+coins;return coins
+}
+function normalizeMaxedDrillPoints(){let coins=0;for(const o of state.owned||[])coins+=convertOverflowDrillIfMax(o.id);if(coins)save();return coins}
+function applyXpWithCoinConversion(id,amount){
+ const out=RULES.applyXp(state,id,amount),drill=Math.max(0,Number(out?.drillGained)||0),coins=convertOverflowDrillIfMax(id);
+ return {drillGained:coins?0:drill,coinGained:coins}
+}
 function reconcileDexState(){
  const owned=new Set((state.owned||[]).map(x=>x.id));
  state.seenSpecies=state.seenSpecies&&typeof state.seenSpecies==="object"?state.seenSpecies:{};
@@ -4233,11 +4255,14 @@ function addGrowthPoint(id,n=1){const k=growthKeyFor(id);state.trainingPoints[k]
 function awardGrowthOrDrill(id,n=1){
  const amount=Math.max(0,Number(n)||0);
  if(!id||!amount)return {kind:"none",amount:0,label:""};
- // Evolution data is normally ready before these rewards occur. If it is not,
- // keep the old growth bucket rather than incorrectly deciding that no evolution exists.
- if(!evoReady){addGrowthPoint(id,amount);return {kind:"growth",amount,label:`育成ポイント+${amount}`}}
- const out=RULES.awardGrowthOrDrill(state,id,amount,{key:growthKeyFor(id),hasEvolution:evolutionInfoForPick(id).hasEvolution});
- return {...out,label:out.kind==="growth"?`育成ポイント+${amount}`:`特訓ポイント+${amount}`};
+ if(!evoReady){addGrowthPoint(id,amount);return {kind:"growth",amount,label:`進化ポイント+${amount}`}}
+ if(evolutionInfoForPick(id).hasEvolution){
+   addGrowthPoint(id,amount);return {kind:"growth",amount,label:`進化ポイント+${amount}`}
+ }
+ const drillAmount=amount*2;
+ state.drillPoints[id]=drillFor(id)+drillAmount;
+ const coins=convertOverflowDrillIfMax(id);
+ return {kind:"drill",amount:drillAmount,coins,label:coins?`フレンダコイン+${coins}`:`特訓ポイント+${drillAmount}`};
 }
 function bondKeyFor(id){return growthKeyFor(id)}
 function bondPointsFor(id){return Number(state.bondPoints?.[bondKeyFor(id)]||0)}
@@ -4252,8 +4277,19 @@ function tryBondEndure(t,dmg){if(!t||t.ko||Number(dmg)<=0||t.hp-Number(dmg)>0)re
 function applyBondPostBattleHeal(){for(const t of runTeam()){if(t.ko||t.hp>=maxHpFor(t.id))continue;const lv=bondLevelFor(t.id),rate=BOND_HEAL_RATE[lv]||0;if(rate<=0||Math.random()>=rate)continue;const healed=healPercent(t,.10),nm=rec(t.id)?.name_ja||"仲間";if(healed>0)addLog(`♥ ${nm}はうれしそうだ！ 絆でHPが${healed}回復した。`)}}
 function migrateGrowthPointsToFamilies(){if(!evoReady||!state.trainingPoints)return;let changed=false;for(const [k,v] of Object.entries({...state.trainingPoints})){if(k.startsWith("evo:")||!Number(v))continue;const rr=RECORDS.find(r=>r.name_ja===k||r.master_id===k);if(!rr)continue;const nk=growthKeyFor(rr.master_id);if(nk&&nk!==k){state.trainingPoints[nk]=Number(state.trainingPoints[nk]||0)+Number(v);delete state.trainingPoints[k];changed=true}}if(changed)save()}
 function trainingAvailable(id){if(!ownedEntry(id)||isExpeditionLocked(id))return false;const pb=state.permanentBoosts[id]||{};const hasRoom=["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX);return hasRoom&&drillFor(id)>0}
-function addBattleXp(ids,amount,label="戦闘"){const uniq=[...new Set((ids||[]).filter(Boolean))];if(!uniq.length||amount<=0)return;for(const id of uniq){const {drillGained:gained}=RULES.applyXp(state,id,amount);if(state.run){state.run.xpGained=state.run.xpGained||{};state.run.xpGained[id]=Number(state.run.xpGained[id]||0)+amount;if(gained){state.run.drillGained=state.run.drillGained||{};state.run.drillGained[id]=Number(state.run.drillGained[id]||0)+gained}}const nm=rec(id)?.name_ja||"仲間";addLog(`${nm}が${label}でEXP ${amount}を獲得${gained?`、特訓ポイント+${gained}`:""}。`)}save()}
-function spendDrill(id,stat){if(!ownedEntry(id)||isExpeditionLocked(id)||drillFor(id)<=0)return;const pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0});if(!["hp","atk","def"].includes(stat)||Number(pb[stat]||0)>=PERMANENT_BOOST_MAX)return;pb[stat]=Math.min(PERMANENT_BOOST_MAX,Number(pb[stat]||0)+TRAINING_STEP);state.drillPoints[id]=drillFor(id)-1;trainingStickyIds.add(id);save();render()}
+function addBattleXp(ids,amount,label="戦闘"){const uniq=[...new Set((ids||[]).filter(Boolean))];if(!uniq.length||amount<=0)return;for(const id of uniq){const {drillGained:gained,coinGained:coins}=applyXpWithCoinConversion(id,amount);if(state.run){state.run.xpGained=state.run.xpGained||{};state.run.xpGained[id]=Number(state.run.xpGained[id]||0)+amount;if(coins){state.run.coinGained=state.run.coinGained||{};state.run.coinGained[id]=Number(state.run.coinGained[id]||0)+coins}if(gained){state.run.drillGained=state.run.drillGained||{};state.run.drillGained[id]=Number(state.run.drillGained[id]||0)+gained}}const nm=rec(id)?.name_ja||"仲間";addLog(`${nm}が${label}でEXP ${amount}を獲得${coins?`、余剰特訓Pを🪙${coins}コインへ自動変換`:gained?`、特訓ポイント+${gained}`:""}。`)}save()}
+function spendDrill(id,stat){
+ if(!ownedEntry(id)||isExpeditionLocked(id)||drillFor(id)<=0)return;
+ const pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0});
+ if(!["hp","atk","def"].includes(stat)||Number(pb[stat]||0)>=PERMANENT_BOOST_MAX)return;
+ pb[stat]=Math.min(PERMANENT_BOOST_MAX,Number(pb[stat]||0)+TRAINING_STEP);
+ state.drillPoints[id]=drillFor(id)-1;
+ const coins=convertOverflowDrillIfMax(id);
+ trainingStickyIds.add(id);save();
+ if(coins)UI.dialog.alert(`全能力MAX！
+余った特訓ポイントを 🪙${coins} フレンダコインへ自動変換しました。`);
+ render()
+}
 
 function evolutionSafeCandidates(sourceId,target){return RULES.evolutionSafeCandidates(target?.candidates||[],Math.max(2,Number(rec(sourceId)?.grade)||2))}
 function weightedEvolutionGrade(pool,currentGrade,allowLower=false){return RULES.weightedEvolutionGrade(pool,currentGrade,allowLower)}
@@ -4271,7 +4307,7 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){UI.dialog.alert("お
  const info=evolutionInfoForPick(id),src=rec(id);
  if(!info.hasEvolution)return;
  if(!info.canEvolve){
-  const why=!info.registered?"進化先の登録ピックがありません。":info.fainted?"ひんし中は進化できません。":`育成ポイントが不足しています（${info.points}/${info.cost}）。`;
+  const why=!info.registered?"進化先の登録ピックがありません。":info.fainted?"ひんし中は進化できません。":`進化ポイントが不足しています（${info.points}/${info.cost}）。`;
   UI.dialog.alert(why);return
  }
  const current=Math.max(2,Number(src?.grade)||2),
@@ -4290,7 +4326,7 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){UI.dialog.alert("お
  const ov=document.createElement("div");
  ov.id="evoOverlay";ov.className="evoOverlay";
  const candidateNames=targetsWithPicks.map(t=>t.name).filter(Boolean);
- ov.innerHTML=`<div class="evoPanel evoRandomPanel"><div class="evoHead"><div><small>${esc(src.name_ja)} ${gradeText(src)} / 育成P ${info.points}</small><br><b>進化に挑戦</b></div><button class="ghost" id="evoClose">閉じる</button></div><div class="evoRandomIntro"><img src="${esc(imageOf(src))}" alt=""><div><b>進化先はランダム！</b><p>登録済みの進化候補から抽選します。<strong>現在の${gradeText(src)}以上を優先</strong>します。</p></div></div><div class="evoCandidateBox"><small>進化候補</small><div>${candidateNames.map(n=>`<span>${esc(n)}</span>`).join("")}</div></div>${lowerApproved?'<div class="notice">現在と同じ★以上の登録ピックがないため、低い★も抽選対象になります。</div>':""}<div class="evoRandomActions"><button class="ghost" id="evoCancel">やめる</button><button class="evoBtn" id="evoGo">✨ 進化する（育成P ${info.cost}）</button></div></div>`;
+ ov.innerHTML=`<div class="evoPanel evoRandomPanel"><div class="evoHead"><div><small>${esc(src.name_ja)} ${gradeText(src)} / 進化P ${info.points}</small><br><b>進化に挑戦</b></div><button class="ghost" id="evoClose">閉じる</button></div><div class="evoRandomIntro"><img src="${esc(imageOf(src))}" alt=""><div><b>進化先はランダム！</b><p>登録済みの進化候補から抽選します。<strong>現在の${gradeText(src)}以上を優先</strong>します。</p></div></div><div class="evoCandidateBox"><small>進化候補</small><div>${candidateNames.map(n=>`<span>${esc(n)}</span>`).join("")}</div></div>${lowerApproved?'<div class="notice">現在と同じ★以上の登録ピックがないため、低い★も抽選対象になります。</div>':""}<div class="evoRandomActions"><button class="ghost" id="evoCancel">やめる</button><button class="evoBtn" id="evoGo">✨ 進化する（進化P ${info.cost}）</button></div></div>`;
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const close=()=>{ov.remove();document.body.style.overflow=""};
  ov.onclick=e=>{if(e.target===ov)close()};
@@ -4309,10 +4345,10 @@ function performEvolution(sourceId,targetId,cost,targetSpeciesName){
  const info=evolutionInfoForPick(sourceId);if(growthPointsFor(sourceId)<cost)return;
  const oldIdx=state.owned.findIndex(x=>x.id===sourceId),targetAlready=!!ownedEntry(targetId),
        oldPb=Object.assign({hp:0,atk:0,def:0},state.permanentBoosts[sourceId]||{}),
-       oldXp=xpFor(sourceId),oldDp=drillFor(sourceId),familyKey=growthKeyFor(sourceId),
+       oldXp=xpFor(sourceId),oldDp=drillFor(sourceId),oldLuck=luckFor(sourceId),familyKey=growthKeyFor(sourceId),
        beforeSnapshot={r:src,pb:{...oldPb},xp:oldXp,dp:oldDp};
  state.trainingPoints[familyKey]=Math.max(0,Number(state.trainingPoints[familyKey]||0)-cost);
- let duplicateBonusKind=null;
+ let duplicateBonusKind=null,duplicateBonusLabel="";
  if(targetAlready){
   state.owned.splice(oldIdx,1);
   const tp=state.permanentBoosts[targetId]||(state.permanentBoosts[targetId]={hp:0,atk:0,def:0});
@@ -4320,20 +4356,21 @@ function performEvolution(sourceId,targetId,cost,targetSpeciesName){
   let xp=xpFor(targetId)+oldXp,extra=Math.floor(xp/100);
   state.experience[targetId]=xp%100;
   state.drillPoints[targetId]=drillFor(targetId)+oldDp+extra;
-  duplicateBonusKind=awardGrowthOrDrill(targetId,1).kind
+  {const award=awardGrowthOrDrill(targetId,1);duplicateBonusKind=award.kind;duplicateBonusLabel=award.label}
  }else{
   state.owned[oldIdx]={id:targetId};
   state.permanentBoosts[targetId]=oldPb;
   state.experience[targetId]=oldXp;
   state.drillPoints[targetId]=oldDp
  }
- delete state.permanentBoosts[sourceId];delete state.experience[sourceId];delete state.drillPoints[sourceId];
+ setLuck(targetId,Math.max(luckFor(targetId),oldLuck));convertOverflowDrillIfMax(targetId);
+ delete state.permanentBoosts[sourceId];delete state.experience[sourceId];delete state.drillPoints[sourceId];delete state.luckLevels[sourceId];
  state.dex[sourceId]=Object.assign({},state.dex[sourceId]||{},{obtained:true,current:false});
  state.dex[targetId]=Object.assign({},state.dex[targetId]||{},{obtained:true,current:true});
  const tm=state.run?.team?.find(t=>t.id===sourceId);
  if(tm&&!tm.ko){const ratio=Math.max(0,Math.min(1,tm.hp/Math.max(1,Number(src.hp)+(oldPb.hp||0))));tm.id=targetId;tm.hp=Math.max(1,Math.round(maxHpFor(targetId)*ratio))}
  const afterSnapshot={r:dst,pb:{...(state.permanentBoosts[targetId]||{})},xp:xpFor(targetId),dp:drillFor(targetId)};
- reconcileDexState();save();render();showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpeciesRegistration,beforeSnapshot,afterSnapshot)
+ reconcileDexState();save();render();showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,duplicateBonusLabel,newSpeciesRegistration,beforeSnapshot,afterSnapshot)
 }
 function evolutionSpeedValue(r){const sl=Number(r?.speed_level)||0;return sl>0?{value:sl,scale:5,label:`Lv${sl}`}:{value:0,scale:5,label:"-"}}
 function evolutionTotalStat(r,pb,key){return Math.max(0,Number(r?.[key])||0)+Math.max(0,Number(pb?.[key])||0)}
@@ -4385,7 +4422,7 @@ function showEvolutionComparison(before,after){
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#evoCompareClose").onclick=close
 }
-function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpeciesRegistration=false,beforeSnapshot=null,afterSnapshot=null){
+function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,duplicateBonusLabel="",newSpeciesRegistration=false,beforeSnapshot=null,afterSnapshot=null){
  document.getElementById("evoResult")?.remove();
  document.getElementById("evoCinematic")?.remove();
  const ov=document.createElement("div");
@@ -4395,7 +4432,7 @@ function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpe
    <div class="evoCinemaKicker">EVOLUTION</div>
    <div class="evoCinemaMon"><img id="evoCinemaImg" src="${esc(imageOf(src))}" alt=""></div>
    <div class="evoCinemaText" id="evoCinemaText">${esc(src.name_ja)}の からだが 光り始めた……！</div>
-   <div class="evoCinemaMeta" id="evoCinemaMeta">${esc(targetSpeciesName||dst.name_ja)}の ${gradeText(dst)} ピックになりました。${duplicateBonusKind?(duplicateBonusKind==="drill"?"<br>同一ピック所持済み。進化先がないため特訓ポイント+1・恒久強化を統合しました。":"<br>同一ピック所持済みのため、育成ポイント+1・恒久強化を統合しました。"):""}${newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}</div>
+   <div class="evoCinemaMeta" id="evoCinemaMeta">${esc(targetSpeciesName||dst.name_ja)}の ${gradeText(dst)} ピックになりました。${duplicateBonusKind?`<br>同一ピック所持済み。${esc(duplicateBonusLabel||(duplicateBonusKind==="drill"?"特訓ポイント+2":"進化ポイント+1"))}・恒久強化を統合しました。`:""}${newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}</div>
    <div class="evoCinemaHint" id="evoCinemaHint">タップで演出を少し早送りします</div>
  </div>`;
  document.body.appendChild(ov);
@@ -4449,8 +4486,12 @@ function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,groups=spec
 function makeEgg(kind,did,diff){const d=EGG_DEF[kind]||EGG_DEF.normal;return {id:eggId(),kind:d===EGG_DEF.normal&&kind!=="normal"?"normal":kind,type:kind==="type"?chooseThemeEggType(did):null,points:0,required:d.required,sourceDungeon:did,sourceDifficulty:diff,createdAt:new Date().toISOString()}}
 function advanceEggs(n=1){if(!Array.isArray(state.eggs)||!state.eggs.length)return;for(const e of state.eggs)e.points=Math.min(eggReq(e),Number(e.points||0)+n);addLog(`所持している卵すべての孵化ポイント +${n}。`)}
 function chooseHatchRecord(egg){return RULES.chooseHatchRecord({egg,records:RECORDS,pickRecordBySpecies,isSpecialLimitedRecord})}
-function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id),newSpeciesRegistration=!pickRegistered(r);let duplicateRewardKind=null;if(duplicate){duplicateRewardKind=awardGrowthOrDrill(r.master_id,1).kind}else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate,duplicateRewardKind,newSpeciesRegistration})}return results}
-function eggSlotsFor(diff,did){return RULES.eggSlotsFor(diff,did,{chooseThemeEggType})}
+function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id),newSpeciesRegistration=!pickRegistered(r);let duplicateRewardKind=null,duplicateRewardLabel="";if(duplicate){const award=awardGrowthOrDrill(r.master_id,1);duplicateRewardKind=award.kind;duplicateRewardLabel=award.label}else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate,duplicateRewardKind,duplicateRewardLabel,newSpeciesRegistration})}return results}
+function eggSlotsFor(diff,did){
+ const savedLuck=Number(state.postRun?.summary?.luckAverage??state.lastSummary?.luckAverage??0),avgLuck=state.run?currentPartyLuck():savedLuck,base=EGG_SLOT_RATES[diff]||EGG_SLOT_RATES[1],mul=luckMultiplier(avgLuck),rates={};
+ for(const [k,v] of Object.entries(base))rates[k]=Number(v)*((k==="rare"||k==="super")?mul:1);
+ return Array.from({length:8},()=>{const kind=chooseWeighted(rates);return {kind,type:kind==="type"?chooseThemeEggType(did):null}})
+}
 function pct(n,d){return d?Math.max(0,Math.min(100,Math.round(n/d*100))):0}
 function hpClass(p){return p<=25?" low":p<=50?" mid":""}
 function chooseWeighted(map){const a=Object.entries(map),sum=a.reduce((n,[,w])=>n+Number(w),0);let x=Math.random()*sum;for(const [k,w] of a){x-=Number(w);if(x<0)return k}return a[a.length-1]?.[0]}
@@ -4621,15 +4662,14 @@ function renderHome(){
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardStats"><strong>最深 B${deepest}</strong><strong>クリア ${clears}</strong></div><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
-   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small class="homeCardLead">2グループで派遣・探索</small>${homeExpeditionStatusHTML()}</button>
+   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">2グループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
-   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>仲間の確認・編成</small></button>
+   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small>${training.loading?`進化情報を確認中…`:training.error?`進化情報を確認できません`:training.evolve?`✨ 進化可能 ${training.evolve}体`:`🍀 運育成・ショップ対応`}</small></button>
    <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
    <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><strong class="homeManageValue">${state.eggs.length}/${state.eggCap}</strong><small>${esc(egg.title)}</small><small class="homeManageSub">${esc(egg.body)}</small>${egg.ratio?`<div class="homeCardMeter"><i style="width:${egg.ratio}%"></i></div>`:""}</button>
-   <button class="homeMenuBtn training" data-menu="training"><b>✨</b><span>育成</span><strong class="homeManageValue">強化・進化</strong><small>${training.loading?`進化情報を確認中…`:training.error?`進化情報を確認できません`:training.evolve?`進化可能 ${training.evolve}体`:`育成メニュー`}</small></button>
   </div>
- </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 セーブ</button></div></div>`;
+ </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 バックアップ</button></div></div>`;
  app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
  document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()};
  const eb=document.getElementById("expeditionMenuBtn");if(eb)eb.onclick=()=>{location.href="expedition.html"};
@@ -4675,7 +4715,7 @@ function partyAdventureGraphHTML(label,base,perm=0,run=0,scale=200){const b=Math
 function partyAdventureGridHTML(t,r,pb={}){const sl=Number(r.speed_level)||0,speedBase=sl,speedScale=5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partyAdventureGrid">${partyAdventureGraphHTML("HP",r.hp,pb.hp||0,0,240)}${partyAdventureGraphHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partyAdventureGraphHTML("DEF",r.def,pb.def||0,defRun,220)}${partyAdventureGraphHTML("SPA",r.sp_atk,0,0,220)}${partyAdventureGraphHTML("SPD",r.sp_def,0,0,220)}${partyAdventureGraphHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partyAdventureLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
 function partySidebarStatRowHTML(label,base,perm=0,run=0,scale=220){const b=Math.max(0,Number(base)||0),p=Math.max(0,Number(perm)||0),g=Math.max(0,Number(run)||0),v=b+p+g,max=Math.max(1,Number(scale)||220),bw=Math.min(100,b/max*100),pw=Math.min(Math.max(0,100-bw),p/max*100),gw=Math.min(Math.max(0,100-bw-pw),g/max*100),bonus=[p?`恒+${p}`:"",g?`冒+${g}`:""].filter(Boolean).join(" ");return `<div class="partySideStatRow"><span class="partySideStatLabel">${esc(label)}</span><div class="partySideStatBar"><span class="partySideStatBase" style="width:${bw}%"></span><span class="partySideStatPerm" style="width:${pw}%"></span><span class="partySideStatRun" style="width:${gw}%"></span></div><b>${v}</b><small>${bonus||"-"}</small></div>`}
 function partySidebarStatsHTML(t,r,pb={}){const sl=Number(r.speed_level)||0,speedBase=sl,speedScale=5,atkRun=(t.tempAtk||0)+(t.bondAtk||0),defRun=(t.tempDef||0)+(t.bondDef||0);return `<div class="partySideStatRows">${partySidebarStatRowHTML("HP",r.hp,pb.hp||0,0,240)}${partySidebarStatRowHTML("ATK",r.atk,pb.atk||0,atkRun,220)}${partySidebarStatRowHTML("DEF",r.def,pb.def||0,defRun,220)}${partySidebarStatRowHTML("SPA",r.sp_atk,0,0,220)}${partySidebarStatRowHTML("SPD",r.sp_def,0,0,220)}${partySidebarStatRowHTML("SPE",speedBase,0,0,speedScale)}</div><div class="partySideStatLegend"><span class="base"><i></i>初期</span><span class="perm"><i></i>恒久</span><span class="run"><i></i>冒険中</span></div>`}
-function showTeamBackCompare(){const ids=teamSelection.slice(0,3).filter(id=>ownedEntry(id)&&rec(id));if(!ids.length)return;document.getElementById("teamCompareOverlay")?.remove();const picks=ids.map(id=>({id,r:rec(id),pb:state.permanentBoosts[id]||{}}));const hero=picks.map(x=>`<td class="teamCompareHero"><img src="${esc(imageOf(x.r))}" alt=""><b>${esc(x.r.name_ja)}</b><small>${gradeText(x.r)} / ${esc(x.r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(x.r.poke_ene??"-")}</span></td>`).join("");const row=(label,fn,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th>${picks.map(x=>`<td class="${cls}">${fn(x)}</td>`).join("")}</tr>`;const ov=document.createElement("div");ov.id="teamCompareOverlay";ov.className="teamCompareOverlay";ov.innerHTML=`<div class="teamComparePanel" role="dialog" aria-modal="true" aria-label="挑戦チーム裏面比較"><div class="teamCompareHead"><div><small>TEAM PICK COMPARISON</small><b>挑戦チーム・裏面比較（${picks.length}/3）</b></div><button type="button" class="teamCompareClose" id="teamCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="teamCompareTableWrap"><table class="teamCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero}</tr></thead><tbody>${row("タイプ",x=>esc(compareTypeText(x.r)),"teamCompareType")}${row("ポケエネ",x=>`<b style="font-size:16px">⚡ ${esc(x.r.poke_ene??"-")}</b>`)}${row("HP",x=>compareStatGraphCell(x.r.hp,x.pb.hp))}${row("ATK",x=>compareStatGraphCell(x.r.atk,x.pb.atk))}${row("DEF",x=>compareStatGraphCell(x.r.def,x.pb.def))}${row("SP.ATK",x=>compareStatGraphCell(x.r.sp_atk,0))}${row("SP.DEF",x=>compareStatGraphCell(x.r.sp_def,0))}${row("すばやさ",x=>{const sl=Number(x.r.speed_level)||0;return sl>0?`${compareStatGraphCell(sl,0,5)}<small>Lv${sl}</small>`:"-"})}${row("通常わざ",x=>`<b>${esc(x.r.move||"未登録")}</b>${esc(x.r.move_type||"-")} / ${esc(x.r.move_class||"-")}`,"teamCompareMove")}${row("必殺技",x=>esc((x.r.finisher_move&&String(x.r.finisher_move).trim())?String(x.r.finisher_move).trim():"なし"),"teamCompareMove")}${row("恒久強化",x=>`HP+${x.pb.hp||0}<br>攻+${x.pb.atk||0}<br>防+${x.pb.def||0}`,"teamCompareGrowth")}${row("成長",x=>`育成P ${growthPointsFor(x.id)}<br>EXP ${xpFor(x.id)}/100<br>特訓P ${drillFor(x.id)}`,"teamCompareGrowth")}${row("絆",x=>esc(bondProgressText(x.id)),"teamCompareGrowth")}</tbody></table></div><div class="teamCompareLegend">選択中のピックを最大3体まで、同じ項目・同じ行で比較します。敵ピックの裏面情報は表示しません。</div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#teamCompareClose").onclick=close}
+function showTeamBackCompare(){const ids=teamSelection.slice(0,3).filter(id=>ownedEntry(id)&&rec(id));if(!ids.length)return;document.getElementById("teamCompareOverlay")?.remove();const picks=ids.map(id=>({id,r:rec(id),pb:state.permanentBoosts[id]||{}}));const hero=picks.map(x=>`<td class="teamCompareHero"><img src="${esc(imageOf(x.r))}" alt=""><b>${esc(x.r.name_ja)}</b><small>${gradeText(x.r)} / ${esc(x.r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(x.r.poke_ene??"-")}</span></td>`).join("");const row=(label,fn,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th>${picks.map(x=>`<td class="${cls}">${fn(x)}</td>`).join("")}</tr>`;const ov=document.createElement("div");ov.id="teamCompareOverlay";ov.className="teamCompareOverlay";ov.innerHTML=`<div class="teamComparePanel" role="dialog" aria-modal="true" aria-label="挑戦チーム裏面比較"><div class="teamCompareHead"><div><small>TEAM PICK COMPARISON</small><b>挑戦チーム・裏面比較（${picks.length}/3）</b></div><button type="button" class="teamCompareClose" id="teamCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="teamCompareTableWrap"><table class="teamCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero}</tr></thead><tbody>${row("タイプ",x=>esc(compareTypeText(x.r)),"teamCompareType")}${row("ポケエネ",x=>`<b style="font-size:16px">⚡ ${esc(x.r.poke_ene??"-")}</b>`)}${row("HP",x=>compareStatGraphCell(x.r.hp,x.pb.hp))}${row("ATK",x=>compareStatGraphCell(x.r.atk,x.pb.atk))}${row("DEF",x=>compareStatGraphCell(x.r.def,x.pb.def))}${row("SP.ATK",x=>compareStatGraphCell(x.r.sp_atk,0))}${row("SP.DEF",x=>compareStatGraphCell(x.r.sp_def,0))}${row("すばやさ",x=>{const sl=Number(x.r.speed_level)||0;return sl>0?`${compareStatGraphCell(sl,0,5)}<small>Lv${sl}</small>`:"-"})}${row("通常わざ",x=>`<b>${esc(x.r.move||"未登録")}</b>${esc(x.r.move_type||"-")} / ${esc(x.r.move_class||"-")}`,"teamCompareMove")}${row("必殺技",x=>esc((x.r.finisher_move&&String(x.r.finisher_move).trim())?String(x.r.finisher_move).trim():"なし"),"teamCompareMove")}${row("恒久強化",x=>`HP+${x.pb.hp||0}<br>攻+${x.pb.atk||0}<br>防+${x.pb.def||0}`,"teamCompareGrowth")}${row("成長",x=>`進化P ${growthPointsFor(x.id)}<br>EXP ${xpFor(x.id)}/100<br>特訓P ${drillFor(x.id)}`,"teamCompareGrowth")}${row("絆",x=>esc(bondProgressText(x.id)),"teamCompareGrowth")}</tbody></table></div><div class="teamCompareLegend">選択中のピックを最大3体まで、同じ項目・同じ行で比較します。敵ピックの裏面情報は表示しません。</div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#teamCompareClose").onclick=close}
 function teamRecommendationInfo(r){
  const th=THEMES[currentDungeon.id];
  const move=String(r?.move_type||"").trim();
@@ -4781,7 +4821,7 @@ function renderTeamSelect(){
  const autoBtn=document.getElementById("autoTeamBtn");if(autoBtn)autoBtn.onclick=()=>{const ids=buildAutoTeam(need);if(ids.length){teamSelection=ids;teamAutoNotice="タイプ相性・★・能力・育成・絆・役割バランスを見て自動編成しました。まだ挑戦は開始していません。";renderTeamSelect()}};
  bindCommonPickFilter("team",teamPickFilter,renderTeamSelect,{sort:"recommended"});
 }
-function startRun(){if(!teamSelection.length){UI.dialog.alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){UI.dialog.alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id];state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,luck:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"route",entryFirstVisit:false,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},captured:[],logs:[`${th.name} ランク${currentDungeon.difficulty}に挑戦！`,`地下1階の冒険を開始。`],startedAt:new Date().toISOString()};generateRoutes();updateDeepest(1);save();render()}
+function startRun(){if(!teamSelection.length){UI.dialog.alert("使用できるピックがありません。");return}if(teamSelection.some(isExpeditionLocked)){UI.dialog.alert("おでかけ探索中のピックは使用できません。");renderTeamSelect();return}clearRunEndGuard();teamAutoNotice="";adventureLogOpen=false;battleLogOpen=false;const team=teamSelection.map(id=>({id,hp:maxHpFor(id),ko:false,tempAtk:0,tempDef:0})),th=THEMES[currentDungeon.id];state.lastTeamIds=teamSelection.slice();state.run={dungeonId:currentDungeon.id,difficulty:currentDungeon.difficulty,floor:1,team,shield:0,captureBoost:0,pickup:null,battleWins:0,roadBattleWins:0,alertLevel:0,bossRoadBonusApplied:false,routeOptions:null,routeHistory:{},scene:"route",entryFirstVisit:false,encounter:null,battle:null,reward:null,event:null,capture:null,victory:null,xpGained:{},drillGained:{},coinGained:{},captured:[],logs:[`${th.name} ランク${currentDungeon.difficulty}に挑戦！`,`地下1階の冒険を開始。`],startedAt:new Date().toISOString()};generateRoutes();updateDeepest(1);save();render()}
 function runTeam(){return state.run?.team||[]}
 // Ver1.52: 「元気ボーナス」「疲れた」は廃止。旧セーブ互換のため関数名だけ残す。
 function ensureCurrentEnemyMoods(){return {}}
@@ -4867,10 +4907,9 @@ function enemyStrengthOrderValue(e){const grade=Number(e?.grade)||0,energy=Numbe
 function sortEnemiesWeakToStrong(enemies){return enemies.sort((a,b)=>{const x=enemyStrengthOrderValue(a),y=enemyStrengthOrderValue(b);return x.grade-y.grade||x.energy-y.energy||x.stats-y.stats||String(a?.name_ja||"").localeCompare(String(b?.name_ja||""),"ja")})}
 function beginEncounter(kind,opts={}){if(kind==="boss")applyBossRoadBonus();const count=kind==="battle"?1:kind==="elite"?2:(state.run.difficulty===1?1:3),elite=kind==="elite",boss=kind==="boss",enemies=[],used=[];for(let i=0;i<count;i++){const e=pickEnemy({elite,boss,exclude:used});enemies.push(e);used.push(e.master_id)}if(enemies.length>1)sortEnemiesWeakToStrong(enemies);state.run.encounter={kind,enemies,index:0,enemyHps:enemies.map(e=>Number(e.hp)),currentParticipants:[],newSeenIndices:{},moods:{},specialReward:!!opts.specialReward,forcedAlert:!!opts.forcedAlert};state.run.battle=null;state.run.scene=kind==="elite"?"encounterIntro":currentEnemyEntryScene();if(kind!=="elite")markCurrentEnemySeen();addLog(`${opts.forcedAlert?"⚠️ 強制通常戦":kind==="battle"?"通常戦":kind==="elite"?`強敵戦（敵${count}体）`:"ボス戦"}が始まる！`);if(enemies.length>1)addLog("敵は弱い順に登場する。最後が最も強い相手だ！");if(currentEnemyNeedsLegendaryIntro())addLog("……ものすごい気配を感じる。");save();render()}
 function currentEnemy(){return state.run?.encounter?.enemies?.[state.run.encounter.index]||null}
-const ADVENTURE_LUCK_MAX=3,ADVENTURE_LUCK_STEP=5;
 let initiativeRouletteRunning=false;
-function adventureLuck(){return Math.max(0,Math.min(ADVENTURE_LUCK_MAX,Number(state.run?.luck)||0))}
-function initiativeChance(){return Math.min(65,50+adventureLuck()*ADVENTURE_LUCK_STEP)}
+function adventureLuck(){return currentPartyLuck()}
+function initiativeChance(){return Math.min(75,50+adventureLuck()*5)}
 function battleSpeedLevel(r){const v=Number(r?.speed_level);return Number.isFinite(v)&&v>0?Math.max(1,Math.min(5,v)):0}
 function makeBattleInitiative(me,en){
  const meLevel=battleSpeedLevel(me),enemyLevel=battleSpeedLevel(en),luck=adventureLuck(),chance=initiativeChance();
@@ -4881,7 +4920,7 @@ function makeBattleInitiative(me,en){
 function initiativeLogText(ini,me,en){
  if(!ini)return"";
  if(ini.mode==="speed")return `⚡ すばやさLv${ini.meLevel} 対 Lv${ini.enemyLevel}。${ini.meFirst?me.name_ja:en.name_ja}が先攻！`;
- return `⚡ すばやさ互角！ 先制ルーレットで${ini.meFirst?me.name_ja:en.name_ja}が先攻！${ini.luck?`（🍀幸運${ini.luck}：味方${ini.chance}%）`:""}`;
+ return `⚡ すばやさ互角！ 先制ルーレットで${ini.meFirst?me.name_ja:en.name_ja}が先攻！${ini.luck?`（🍀パーティ運${Number(ini.luck).toFixed(1)}：味方${Number(ini.chance).toFixed(1)}%）`:""}`;
 }
 function setBattleInitiative(b,me,en){if(!b)return null;b.initiative=makeBattleInitiative(me,en);if(b.initiative.mode==="speed")battleLine(initiativeLogText(b.initiative,me,en));return b.initiative}
 async function startInitiativeRoulette(){
@@ -4891,7 +4930,7 @@ async function startInitiativeRoulette(){
  const t=runTeam()[b.teamIndex],me=teamRec(t),en=currentEnemy();if(!me||!en){initiativeRouletteRunning=false;return}
  const chance=Math.max(0,Math.min(100,Number(ini.chance)||50)),roll=Math.max(0,Math.min(100,Number(ini.roll)||50));
  const ov=document.createElement("div");ov.id="initiativeRouletteOverlay";ov.className="initiativeRouletteOverlay";
- ov.innerHTML=`<div class="initiativeRoulettePanel"><div class="initiativeKicker">⚡ SPEED TIE!</div><h2>すばやさ互角！</h2><div class="initiativeMatch"><div><img src="${esc(imageOf(me))}" alt=""><b>${esc(me.name_ja)}</b><span>すばやさ Lv${ini.meLevel||"?"}</span></div><em>VS</em><div><img src="${esc(imageOf(en))}" alt=""><b>${esc(en.name_ja)}</b><span>すばやさ Lv${ini.enemyLevel||"?"}</span></div></div><div class="initiativeOdds"><span>味方 <b>${chance}%</b></span><strong>${ini.luck?`🍀 幸運 ${ini.luck}/${ADVENTURE_LUCK_MAX}`:"🍀 幸運 0"}</strong><span>相手 <b>${100-chance}%</b></span></div><div class="initiativeRouletteBar"><div class="initiativeZone ally" style="width:${chance}%">味方</div><div class="initiativeZone enemy" style="width:${100-chance}%">相手</div><i id="initiativeMarker"></i></div><div class="initiativeRouletteText" id="initiativeRouletteText">先攻を決める！</div></div>`;
+ ov.innerHTML=`<div class="initiativeRoulettePanel"><div class="initiativeKicker">⚡ SPEED TIE!</div><h2>すばやさ互角！</h2><div class="initiativeMatch"><div><img src="${esc(imageOf(me))}" alt=""><b>${esc(me.name_ja)}</b><span>すばやさ Lv${ini.meLevel||"?"}</span></div><em>VS</em><div><img src="${esc(imageOf(en))}" alt=""><b>${esc(en.name_ja)}</b><span>すばやさ Lv${ini.enemyLevel||"?"}</span></div></div><div class="initiativeOdds"><span>味方 <b>${chance}%</b></span><strong>${`🍀 パーティ運 ${Number(ini.luck||0).toFixed(1)}/${LUCK_MAX}`}</strong><span>相手 <b>${100-chance}%</b></span></div><div class="initiativeRouletteBar"><div class="initiativeZone ally" style="width:${chance}%">味方</div><div class="initiativeZone enemy" style="width:${100-chance}%">相手</div><i id="initiativeMarker"></i></div><div class="initiativeRouletteText" id="initiativeRouletteText">先攻を決める！</div></div>`;
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const markerEl=ov.querySelector("#initiativeMarker"),textEl=ov.querySelector("#initiativeRouletteText");
  const start=performance.now(),duration=1550;
@@ -4958,9 +4997,9 @@ function proceedVictory(){const v=state.run?.victory;if(!v)return;if(v.kind==="b
 function proceedAfterBattleReward(){const forced=!!state.run?.encounter?.forcedAlert,c=state.run.capture;if(c?.eligible){state.run.scene="captureIntro";save();render()}else{state.run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}}
 function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;if(c.candidateIds.length>1){state.run.scene="captureSelect";save();render()}else{chooseCaptureTarget(c.candidateIds[0])}}
 function chooseCaptureTarget(id){const c=state.run.capture;if(!c||!c.eligible)return; c.targetId=id;const special=Math.random()<.10;let balls=special?["poke","poke","poke","poke","super","super","hyper","master"]:["poke","poke","poke","poke","poke","super","super","hyper"];c.balls=shuffle(balls);c.special=special;c.pendingOutcome=null;c.result=null;state.run.scene="captureSlot";save();render()}
-function captureRate(targetId,ballKey){return RULES.captureRate(Number(rec(targetId)?.grade||2),ballKey,Number(state.run?.captureBoost||0))}
+function captureRate(targetId,ballKey){const base=RULES.captureRate(Number(rec(targetId)?.grade||2),ballKey,Number(state.run?.captureBoost||0));return Math.min(1,base*luckMultiplier(currentPartyLuck()))}
 function resolveCapture(ballKey){const c=state.run.capture;if(!c||!c.targetId||c.result)return;if(!c.pendingOutcome){const boost=Math.max(0,Number(state.run.captureBoost||0)),rate=captureRate(c.targetId,ballKey),success=Math.random()<rate;c.pendingOutcome={ballKey,rate,success,captureBoost:boost};state.run.captureBoost=0;if(boost)addLog(`拾ったモンスターボール効果を使用：捕獲率${Math.round(boost*100)}%アップ。`)}state.run.scene="captureThrow";save();render()}
-function commitCaptureOutcome(){const c=state.run?.capture;if(!c||c.result)return;if(!c.pendingOutcome)return;const {ballKey,rate,success}=c.pendingOutcome,target=rec(c.targetId),newSpeciesRegistration=!!success&&target&&!pickRegistered(target);let duplicate=false,duplicateRewardKind=null;if(success){if(ownedEntry(c.targetId)){duplicate=true;const award=awardGrowthOrDrill(c.targetId,1);duplicateRewardKind=award.kind;addLog(`${rec(c.targetId).name_ja}は所持済み。${award.label}。`)}else{ownNew(c.targetId);state.run.captured=state.run.captured||[];state.run.captured.push(c.targetId);addLog(`${rec(c.targetId).name_ja}が仲間になった！`);if(newSpeciesRegistration)addLog(`📖 ${rec(c.targetId).name_ja}が図鑑に登録された！`)}}else addLog(`${rec(c.targetId).name_ja}のゲットに失敗した。`);c.result={ballKey,rate,success,duplicate,duplicateRewardKind,newSpeciesRegistration};c.pendingOutcome=null;state.run.scene="captureResult";save();render()}
+function commitCaptureOutcome(){const c=state.run?.capture;if(!c||c.result)return;if(!c.pendingOutcome)return;const {ballKey,rate,success}=c.pendingOutcome,target=rec(c.targetId),newSpeciesRegistration=!!success&&target&&!pickRegistered(target);let duplicate=false,duplicateRewardKind=null,duplicateRewardLabel="";if(success){if(ownedEntry(c.targetId)){duplicate=true;const award=awardGrowthOrDrill(c.targetId,1);duplicateRewardKind=award.kind;duplicateRewardLabel=award.label;addLog(`${rec(c.targetId).name_ja}は所持済み。${award.label}。`)}else{ownNew(c.targetId);state.run.captured=state.run.captured||[];state.run.captured.push(c.targetId);addLog(`${rec(c.targetId).name_ja}が仲間になった！`);if(newSpeciesRegistration)addLog(`📖 ${rec(c.targetId).name_ja}が図鑑に登録された！`)}}else addLog(`${rec(c.targetId).name_ja}のゲットに失敗した。`);c.result={ballKey,rate,success,duplicate,duplicateRewardKind,duplicateRewardLabel,newSpeciesRegistration};c.pendingOutcome=null;state.run.scene="captureResult";save();render()}
 function finishCapture(){const forced=!!state.run?.encounter?.forcedAlert;state.run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}
 function rewardPool(kind){const elite=kind==="elite";return [{type:"heal",label:`全員HP${elite?40:20}%回復`,desc:"生存中のパーティ全員",value:elite?.40:.20},{type:"atk",label:`全員 攻撃+${elite?4:2}`,desc:"生存中のパーティ全員・ダンジョン終了まで",value:elite?4:2},{type:"def",label:`全員 防御+${elite?4:2}`,desc:"生存中のパーティ全員・ダンジョン終了まで",value:elite?4:2},{type:"shield",label:`被ダメ${elite?35:20}%減`,desc:"次の戦闘のみ・パーティ共通",value:elite?.35:.20}]}
 function showBattleReward(kind){const n=kind==="elite"?3:2;state.run.reward={kind,options:uniqueSample(rewardPool(kind),n)};state.run.scene="reward"}
@@ -4970,8 +5009,8 @@ function showHeal(){state.run.scene="heal";save();render()}
 function healChoice(mode,targetIndex=null){if(mode==="single"&&targetIndex===null){state.run.event={kind:"healSingleSelect"};state.run.scene="eventTarget";save();render();return}if(mode==="single"){const t=runTeam()[targetIndex];if(t){t.ko=false;t.hp=maxHpFor(t.id);addLog(`${rec(t.id).name_ja}を全回復。`)}}else{runTeam().forEach(t=>{if(!t.ko)healPercent(t,.50)});addLog("生存中の仲間全員を50%回復。") }state.run.event=null;afterFloorResolved()}
 function showEventNoEffect(message="何も起こらなかった……。") {addLog(`イベント：${message}`);state.run.event={kind:"nothing",title:"何も起こらなかった……",icon:"🍃",message};state.run.scene="eventNotice";save();render()}
 function showEventResult(title,message,icon="✨",visual="bonus",value=""){state.run.event={kind:"result",title,icon,message,visual,value};state.run.scene="eventNotice";save();render()}
-function resolvePositiveEvent(){const living=runTeam().filter(x=>!x.ko),damaged=living.some(x=>x.hp<maxHpFor(x.id)),list=[];if(damaged)list.push("heal30","healAll15");if(living.some(x=>Number(x.tempAtk||0)<TEMP_BOOST_MAX))list.push("atk2");if(living.some(x=>Number(x.tempDef||0)<TEMP_BOOST_MAX))list.push("def2");if((state.run.shield||0)<.50)list.push("shield20");if(adventureLuck()<ADVENTURE_LUCK_MAX)list.push("luck1");if(!list.length)return showEventNoEffect("ボーナス効果はすでに最大だった……。");const k=list[Math.floor(Math.random()*list.length)];if(k==="healAll15"){runTeam().forEach(x=>{if(!x.ko)healPercent(x,.20)});addLog("ボーナス：生存中の仲間全員を20%回復。");return showEventResult("✨ ボーナス！","生存中の仲間全員のHPが20%回復した！","💚","heal","HP +20%")}if(k==="shield20"){state.run.shield=Math.min(.50,(state.run.shield||0)+.25);addLog("ボーナス：次の戦闘の被ダメージ25%減。");return showEventResult("✨ ボーナス！","次の戦闘で受けるダメージが25%減少する！","🛡️","def","被ダメ -25%")}if(k==="luck1"){state.run.luck=Math.min(ADVENTURE_LUCK_MAX,adventureLuck()+1);const chance=initiativeChance();addLog(`🍀 幸運+1！ 同速時の先制ルーレットが味方${chance}%になった。`);return showEventResult("🍀 幸運アップ！",`この冒険中の幸運が${adventureLuck()}/${ADVENTURE_LUCK_MAX}になった！ 同じすばやさLvなら、先制ルーレットが味方${chance}%になる。`,"🍀","bonus",`幸運 ${adventureLuck()}/${ADVENTURE_LUCK_MAX}`)}state.run.event={kind:k};state.run.scene="eventTarget";save();render()}
-function resolveUnknown(){let k=chooseWeighted({heal:20,buff:20,battle:20,elite:15,special:10,luck:15});const living=runTeam().filter(x=>!x.ko);if(k==="heal"&&!living.some(x=>x.hp<maxHpFor(x.id)))k="battle";if(k==="buff"&&!living.some(x=>Number(x.tempAtk||0)<TEMP_BOOST_MAX||Number(x.tempDef||0)<TEMP_BOOST_MAX))k="battle";if(k==="luck"&&adventureLuck()>=ADVENTURE_LUCK_MAX)k="battle";addLog(`ハプニングの結果：${k}`);if(k==="battle"){adjustAlert(-1,"ハプニングで通常戦");return beginEncounter("battle")}if(k==="elite"){adjustAlert(-2,"ハプニングで強敵戦");return beginEncounter("elite")}if(k==="heal"){adjustAlert(1,"ハプニングで回復");state.run.event={kind:"heal20"};state.run.scene="eventTarget";save();render();return}if(k==="buff"){adjustAlert(1,"ハプニングでボーナス");const kinds=[];if(living.some(x=>Number(x.tempAtk||0)<TEMP_BOOST_MAX))kinds.push("atk2");if(living.some(x=>Number(x.tempDef||0)<TEMP_BOOST_MAX))kinds.push("def2");state.run.event={kind:kinds[Math.floor(Math.random()*kinds.length)]};state.run.scene="eventTarget";save();render();return}if(k==="luck"){adjustAlert(1,"ハプニングで幸運");state.run.luck=Math.min(ADVENTURE_LUCK_MAX,adventureLuck()+1);const chance=initiativeChance();addLog(`🍀 四つ葉のクローバーを見つけた！ 幸運+1、同速先攻${chance}%。`);return showEventResult("🍀 四つ葉のクローバー！",`この冒険中の幸運が${adventureLuck()}/${ADVENTURE_LUCK_MAX}になった！ 同じすばやさLvの相手には、味方が${chance}%で先攻する。`,"🍀","bonus",`幸運 ${adventureLuck()}/${ADVENTURE_LUCK_MAX}`)}resolveSpecialEvent(true)}
+function resolvePositiveEvent(){const living=runTeam().filter(x=>!x.ko),damaged=living.some(x=>x.hp<maxHpFor(x.id)),list=[];if(damaged)list.push("heal30","healAll15");if(living.some(x=>Number(x.tempAtk||0)<TEMP_BOOST_MAX))list.push("atk2");if(living.some(x=>Number(x.tempDef||0)<TEMP_BOOST_MAX))list.push("def2");if((state.run.shield||0)<.50)list.push("shield20");if(!list.length)return showEventNoEffect("ボーナス効果はすでに最大だった……。");const k=list[Math.floor(Math.random()*list.length)];if(k==="healAll15"){runTeam().forEach(x=>{if(!x.ko)healPercent(x,.20)});addLog("ボーナス：生存中の仲間全員を20%回復。");return showEventResult("✨ ボーナス！","生存中の仲間全員のHPが20%回復した！","💚","heal","HP +20%")}if(k==="shield20"){state.run.shield=Math.min(.50,(state.run.shield||0)+.25);addLog("ボーナス：次の戦闘の被ダメージ25%減。");return showEventResult("✨ ボーナス！","次の戦闘で受けるダメージが25%減少する！","🛡️","def","被ダメ -25%")}state.run.event={kind:k};state.run.scene="eventTarget";save();render()}
+function resolveUnknown(){let k=chooseWeighted({heal:25,buff:25,battle:20,elite:15,special:15});const living=runTeam().filter(x=>!x.ko);if(k==="heal"&&!living.some(x=>x.hp<maxHpFor(x.id)))k="battle";if(k==="buff"&&!living.some(x=>Number(x.tempAtk||0)<TEMP_BOOST_MAX||Number(x.tempDef||0)<TEMP_BOOST_MAX))k="battle";addLog(`ハプニングの結果：${k}`);if(k==="battle"){adjustAlert(-1,"ハプニングで通常戦");return beginEncounter("battle")}if(k==="elite"){adjustAlert(-2,"ハプニングで強敵戦");return beginEncounter("elite")}if(k==="heal"){adjustAlert(1,"ハプニングで回復");state.run.event={kind:"heal20"};state.run.scene="eventTarget";save();render();return}if(k==="buff"){adjustAlert(1,"ハプニングでボーナス");const kinds=[];if(living.some(x=>Number(x.tempAtk||0)<TEMP_BOOST_MAX))kinds.push("atk2");if(living.some(x=>Number(x.tempDef||0)<TEMP_BOOST_MAX))kinds.push("def2");state.run.event={kind:kinds[Math.floor(Math.random()*kinds.length)]};state.run.scene="eventTarget";save();render();return}resolveSpecialEvent(true)}
 function resolveSpecialEvent(fromUnknown=false){const living=runTeam().filter(x=>!x.ko),list=["danger","guard","ambush"];if(living.some(x=>x.hp<maxHpFor(x.id)))list.push("lucky");const k=list[Math.floor(Math.random()*list.length)];if(k==="ambush"){if(fromUnknown)adjustAlert(-2,"ハプニングで奇襲戦");return beginEncounter("elite",{specialReward:true})}if(fromUnknown)adjustAlert(1,"ハプニングでイベント");state.run.event={kind:k};state.run.scene="eventTarget";save();render()}
 function applyEventTarget(index){
  const e=state.run.event,t=runTeam()[index];if(!e||!t||t.ko)return;
@@ -5011,7 +5050,7 @@ function applyFloorPickup(kind){
    const t=unique[Math.floor(Math.random()*unique.length)],nm=rec(t.id)?.name_ja||"仲間";
    const award=awardGrowthOrDrill(t.id,1);
    addLog(`🍬 成長のアメを拾った！ ${nm}の${award.label}。`);
-   return {kind,icon:"🍬",name:"成長のアメ",effect:award.kind==="drill"?`${nm}は進化先がないため、特訓ポイント +1！`:`${nm}の育成ポイント +1！`}
+   return {kind,icon:"🍬",name:"成長のアメ",effect:award.kind==="drill"?`${nm}は進化先がないため、特訓ポイント +2！`:`${nm}の進化ポイント +1！`}
  }
  if(kind==="charm"){
    r.shield=Math.min(.50,Number(r.shield||0)+.10);
@@ -5040,7 +5079,7 @@ function continueAfterFloorAdvance(){
 }
 function continuePickup(){if(!state.run)return;state.run.pickup=null;continueAfterFloorAdvance()}
 function afterFloorResolved(){const r=state.run;if(!r)return;advanceEggs(1);r.floor++;if(r.floor>10)r.floor=10;runTeam().forEach(t=>{if(!t.ko)healPercent(t,.10)});addLog(`地下${r.floor}階へ。生存中の仲間が10%回復。`);updateDeepest(r.floor);if(maybeStartForcedAlertBattle())return;if(tryFloorPickup())return;continueAfterFloorAdvance()}
-function runSummaryData(type,floor){const r=state.run||{};return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[]}}
+function runSummaryData(type,floor){const r=state.run||{};return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,luckAverage:averageLuck(r.team||[]),xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),coinGained:clone(r.coinGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[]}}
 function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false};state.run=null;state.lastSummary=summary;save();screen="postRun";render()}
 function runDefeat(){beginRunEnd("defeat",state.run.floor)}
 function runClear(){beginRunEnd("clear",10)}
@@ -5100,7 +5139,7 @@ function hatchDramaKey(p,x){return `frenda:hatchPlayed:${p?.type||"run"}:${p?.du
 function hatchDramaWasPlayed(p,x){try{return sessionStorage.getItem(hatchDramaKey(p,x))==="1"}catch{return false}}
 function markHatchDramaPlayed(p,x){try{sessionStorage.setItem(hatchDramaKey(p,x),"1")}catch{}}
 async function startHatchDrama(){const p=state.postRun;if(!p||p.stage!=="hatch")return;const x=p.hatchResults?.[p.hatchIndex];if(!x)return;markHatchDramaPlayed(p,x);const seq=++hatchDramaSeq,egg=document.getElementById("hatchEggWrap"),cracks=document.getElementById("hatchCracks"),glow=document.getElementById("hatchGlow"),title=document.getElementById("hatchTitle"),msg=document.getElementById("hatchMessage"),reveal=document.getElementById("hatchReveal"),next=document.getElementById("hatchNext");if(!egg||!title||!msg)return;const alive=()=>seq===hatchDramaSeq&&state.postRun?.stage==="hatch"&&state.postRun?.hatchIndex===p.hatchIndex;title.textContent="おや……？";msg.textContent="卵のようすが……";await fxSleep(950);if(!alive())return;egg.classList.add("wobble");msg.textContent="卵が動いている！";await fxSleep(1550);if(!alive())return;egg.classList.remove("wobble");egg.classList.add("wobbleHard");msg.textContent="もうすぐ生まれそう……！";await fxSleep(1200);if(!alive())return;cracks?.classList.add("show");msg.textContent="ピシッ……！";await fxSleep(760);if(!alive())return;glow?.classList.add("burst");title.textContent="まぶしい光があふれた！";msg.textContent="…………！";await fxSleep(1100);if(!alive())return;egg.style.visibility="hidden";reveal?.classList.add("show");title.textContent="卵が孵化した！";msg.textContent="";next?.classList.remove("hatchNextHidden");next?.classList.add("hatchNextVisible");document.querySelector(".hatchDramaCard")?.classList.add("hatchReady")}
-function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark postRunBigCard" id="eggDiscoveryCard"><div class="eggDiscoveryInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="muted">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?(x.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1。":"同一ピック所持済みのため、育成ポイント+1。"):"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary postRunBigCard eggRouletteCard" id="eggRouletteCard" data-egg-stop="1" role="button" tabindex="0" aria-label="どこを押してもSTOP"><div class="eggRouletteLead">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ランク${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" class="eggRouletteStop" style="width:100%;font-size:20px">STOP!</button><div class="eggRouletteTapHint">💡 どこを押しても STOP できます</div></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)}" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(UI.dialog.confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
+function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark postRunBigCard" id="eggDiscoveryCard"><div class="eggDiscoveryInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="muted">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?`同一ピック所持済み。${esc(x.duplicateRewardLabel|| (x.duplicateRewardKind==="drill"?"特訓ポイント+2":"進化ポイント+1"))}。`:"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary postRunBigCard eggRouletteCard" id="eggRouletteCard" data-egg-stop="1" role="button" tabindex="0" aria-label="どこを押してもSTOP"><div class="eggRouletteLead">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ランク${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" class="eggRouletteStop" style="width:100%;font-size:20px">STOP!</button><div class="eggRouletteTapHint">💡 どこを押しても STOP できます</div></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)}" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(UI.dialog.confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
 function renderSummary(){
  updateHeaderStatus();
  const x=state.postRun?.summary||state.lastSummary||{type:"withdraw",floor:1,dungeonId:"forest",difficulty:1},
@@ -5114,18 +5153,18 @@ function renderSummary(){
  if(eggName)highlights.push(`<div class="resultHighlight3 reward"><div class="rhLabel">🥚 クリア報酬</div><div class="rhValue">${eggName}</div></div>`);
  if(unlocks.length)highlights.push(`<div class="resultHighlight3 unlock"><div class="rhLabel">🔓 新しく解放</div><div class="rhValue">${unlocks.join("・")}</div></div>`);
 
- const xp=x.xpGained||{},drill=x.drillGained||{},bond=x.bondGained||[];
+ const xp=x.xpGained||{},drill=x.drillGained||{},coins=x.coinGained||{},bond=x.bondGained||[];
  const bondMap=new Map(bond.map(v=>[String(v.id),v]));
  const ids=[];
  const seen=new Set();
  const addId=id=>{id=String(id||"");if(id&&!seen.has(id)){seen.add(id);ids.push(id)}};
- Object.keys(xp).forEach(addId);Object.keys(drill).forEach(addId);bond.forEach(v=>addId(v.id));
+ Object.keys(xp).forEach(addId);Object.keys(drill).forEach(addId);Object.keys(coins).forEach(addId);bond.forEach(v=>addId(v.id));
  const rows=ids.map(id=>{
    const name=esc(rec(id)?.name_ja||bondMap.get(id)?.name||id);
-   const xv=Number(xp[id]||0),dv=Number(drill[id]||0),bv=bondMap.get(id);
+   const xv=Number(xp[id]||0),dv=Number(drill[id]||0),cv=Number(coins[id]||0),bv=bondMap.get(id);
    let bondText="−";
    if(bv){const lv=Number(bv.level)||0,before=Math.max(0,lv-1);bondText=bv.leveled?`Lv${before} → Lv${lv}`:`＋1（Lv${lv}）`}
-   return `<tr><td>${name}</td><td class="${xv>0?"xp":"none"}">${xv>0?`＋${xv}`:"−"}</td><td class="${dv>0?"drill":"none"}">${dv>0?`＋${dv}`:"−"}</td><td class="${bv?"bond":"none"}">${bondText}</td></tr>`;
+   return `<tr><td>${name}</td><td class="${xv>0?"xp":"none"}">${xv>0?`＋${xv}`:"−"}</td><td class="${dv>0?"drill":"none"}">${dv>0?`＋${dv}`:"−"}</td><td class="${cv>0?"coin":"none"}">${cv>0?`🪙＋${cv}`:"−"}</td><td class="${bv?"bond":"none"}">${bondText}</td></tr>`;
  }).join("");
 
  const title=clear?"ダンジョンクリア！":def?"全滅……":"撤退しました",
@@ -5138,7 +5177,7 @@ function renderSummary(){
    <div class="resultSave3">✓ 結果は保存済み</div>
    ${highlights.length?`<div class="resultHighlights3">${highlights.join("")}</div>`:""}
    <div class="resultHeadline3">今回の結果</div>
-   ${rows?`<div class="resultCrossWrap"><table class="resultCrossTable"><thead><tr><th>ポケモン</th><th>成長EXP</th><th>特訓P</th><th>絆</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="resultEmpty3">今回の成長結果はありません。</div>`}
+   ${rows?`<div class="resultCrossWrap"><table class="resultCrossTable"><thead><tr><th>ポケモン</th><th>成長EXP</th><th>特訓P</th><th>コイン</th><th>絆</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="resultEmpty3">今回の成長結果はありません。</div>`}
    <button id="summaryHome" class="postRunHomeBtn">ホームへ</button>
  </div>`;
  const sh=document.getElementById("summaryHome");if(sh)sh.onclick=e=>{e.stopPropagation();finishPostRun()};
@@ -5194,7 +5233,7 @@ function teamMiniHTML(t,i){
    <div class="battleMiniStats">${battleMiniGraphGridHTML(t,r,pb)}</div>
    <div class="battleMiniMove"><b>${esc(r.move_type||"-")}</b> ${esc(moveName)}${r.finisher_move&&String(r.finisher_move).trim()?`<br>必殺：${esc(String(r.finisher_move).trim())}`:""}</div>
    <div class="battleMiniGrowth">
-    ${evolutionInfoForPick(t.id).hasEvolution?`<span>育成P ${growth}（進化）</span>`:""}<span>特訓P ${drill}</span><span>EXP ${xp}/100</span>
+    ${evolutionInfoForPick(t.id).hasEvolution?`<span>進化P ${growth}（進化）</span>`:""}<span>特訓P ${drill}</span><span>EXP ${xp}/100</span>
 <span>冒険中 攻+${(t.tempAtk||0)+(t.bondAtk||0)}</span><span>冒険中 防+${(t.tempDef||0)+(t.bondDef||0)}</span>
     <span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span>
    </div>
@@ -5245,7 +5284,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
    <div class="runUnifiedMetrics">
     <span class="runUnifiedMetric alert ${alert>=3?"max":alert>=2?"warn":""}"><span>👁 警戒度</span><b class="alertDots">${alertDots(alert)}</b><b>${alert}/3</b></span>
     <span class="runUnifiedMetric road ${roadReady?"ready":""}"><span>⚔️ 道中戦闘</span><b>${road}戦</b>${roadReady?`<em>🔥 BONUS READY</em>`:`<small>あと${Math.max(0,3-road)}戦</small>`}</span>
-    <span class="runUnifiedMetric luck"><span>🍀 幸運</span><b>${adventureLuck()}/${ADVENTURE_LUCK_MAX}</b><small>同速先攻 ${initiativeChance()}%</small></span>
+    <span class="runUnifiedMetric luck"><span>🍀 パーティ運</span><b>${adventureLuck().toFixed(1)}/${LUCK_MAX}</b><small>同速先攻 ${initiativeChance().toFixed(1).replace(/\.0$/,"")}%</small></span>
     ${enemyMetric}
     <button type="button" class="runUnifiedMetric egg" data-run-egg-open aria-label="卵の詳細を表示"><span>🥚 タマゴ</span><b>${state.eggs.length}/${state.eggCap}</b></button>
    </div>
@@ -5263,7 +5302,7 @@ function partySidebarCardHTML(t,i){
        cls=`partySideCard ${t.ko?"ko":""}${can?" selectable":""}${m&&!can?" disabledTarget":""}${inBattle&&i===active?" activeBattle":""}${appealCls}`,
        detailOk=!m&&!inBattle,
        attrs=can?` data-team-action="${action}" data-team-index="${i}" role="button" tabindex="0"`:(detailOk?` data-party-detail="${esc(t.id)}" role="button" tabindex="0"`:"");
- return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>育成P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
+ return `<div class="${cls}"${attrs}><img class="partySideImg" src="${esc(imageOf(r))}" alt=""><div class="partySideInfo">${appeal?`<div class="matchupAppeal ${appeal.kind}">${esc(appeal.text)}</div>`:""}<div class="partySideNameRow"><b class="partySideName">${esc(r.name_ja)}</b><span class="partySideMeta">${gradeText(r)}${t.ko?" / ひんし":inBattle&&i===active?" / バトル中":""}</span></div><div class="partySideTopLine"><span class="partyEnergyChip">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><span class="partySideHpText">HP ${t.hp}/${max}</span></div><div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>${partySidebarStatsHTML(t,r,pb)}${appeal?`<small class="matchupReason ${appeal.kind}">${esc(appeal.reason)}</small>`:""}${m?.action==="fighter"?battleMoodBadgeHTML(t.id):""}<div class="partySideFooter"><span>EXP ${xp}/100</span><span>特訓P ${drill}</span>${evolutionInfoForPick(t.id).hasEvolution?`<span>進化P ${growth}</span>`:""}<span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span></div></div></div>`
 }
 function partySidebarHTML(tm,combatScene=false){
  return `<div class="card partySidebar${tm?" teamChoiceCard":""}${combatScene?" combatPartySidebar":""}"><div class="sectionTitle">${tm?`🎯 ${esc(tm.title)}`:"パーティ"}</div>${tm?`<div class="teamChoiceHint">${esc(tm.hint)}</div>`:""}<div class="partyPcCards">${runTeam().map(partySidebarCardHTML).join("")}</div><div class="partyMobileCards"><div class="teamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div>`
@@ -5406,7 +5445,7 @@ function renderRewardHTML(){const rw=state.run.reward;const title=rw.kind==="eli
 function renderCaptureSelectHTML(){const c=state.run.capture;return `<div class="card battleMainCard combatStageCard captureCombatCard"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody"><div class="sectionTitle">🎯 ゲットしたいポケモンを選ぼう</div><div class="notice" style="margin-bottom:8px">強敵の中から、ゲットしたい1匹を選んでください。</div><div class="captureSelectLayout">${c.candidateIds.map(id=>{const r=rec(id);return `<button class="capturePick captureLarge" data-capture-target="${esc(id)}"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></button>`}).join("")}</div></div></div>`}
 function renderCaptureSlotHTML(){const c=state.run.capture,r=rec(c.targetId);return `<div class="card battleMainCard combatStageCard captureCombatCard captureSlotCard" data-slot-stop="1"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody"><div class="sectionTitle">🎯 ボールスロット</div><div class="captureSlotLayout"><div class="captureTargetPanel"><img src="${esc(imageOf(r))}" alt=""><h2>${esc(r.name_ja)}</h2><span class="badge gold">${gradeText(r)}</span></div><div class="captureSlotMain"><div class="notice">目押し可能ですが高速＋STOP後に少し滑ります。上位ボールほどゲット率が大幅に上がります。${state.run.captureBoost?`<br><b>🔴 拾い物ボーナス：次の捕獲率 +${Math.round(state.run.captureBoost*100)}%</b>`:""}</div><div class="ballSlot">${c.balls.map((k,i)=>`<div class="ballCell" data-ball-cell="${i}"><div><img src="${esc(BALL_DEF[k].img)}" alt="${esc(BALL_DEF[k].label)}"><div>${esc(BALL_DEF[k].short)}</div></div></div>`).join("")}</div><button id="ballStop" class="captureActionBtn" style="width:100%;font-size:20px">STOP!</button><div class="captureSlotTapHint">💡 画面内のどこを押しても STOP できます</div></div></div></div></div>`}
 function renderCaptureThrowHTML(){const c=state.run.capture,o=c?.pendingOutcome,r=rec(c?.targetId),ball=BALL_DEF[o?.ballKey]||BALL_DEF.poke;return `<div class="card battleMainCard combatStageCard captureCombatCard captureThrowCompact"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="kicker" style="color:#14739a">SELECTED BALL</div><div class="captureChosenBall"><img class="captureBallImg" src="${esc(ball.img)}" alt="${esc(ball.label)}"><b>${esc(ball.label)}</b></div><h2 id="captureDramaTitle">${esc(ball.label)}になった！</h2><div class="captureStage" id="captureStage"><img id="captureTargetSprite" class="captureTargetSprite" src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"")}"><img id="captureThrownBall" class="captureThrownBall" src="${esc(ball.img)}" alt="${esc(ball.label)}"></div><div id="captureDramaText" class="captureDramaText">このボールでゲットに挑戦！</div><div id="captureDots" class="captureDots"></div></div></div>`}
-function renderCaptureResultHTML(){const c=state.run.capture,r=rec(c.targetId),res=c.result,ball=BALL_DEF[res.ballKey];return `<div class="card battleMainCard combatStageCard captureCombatCard captureResultCompact singleAdvanceCard tapAdvance" data-run-advance="captureResult" role="button" tabindex="0" aria-label="次へ進む"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="resultIcon">${res.success?"🎉":"💨"}</div><img class="captureBallImg captureResultBall" src="${esc(ball.img)}" alt="${esc(ball.label)}"><h2>${res.success?"ゲット成功！":"ゲット失敗"}</h2><p>${esc(ball.label)}<br>${esc(r.name_ja)}：捕獲率 ${Math.round(res.rate*100)}%</p>${res.success?`<div class="notice">${res.duplicate?(res.duplicateRewardKind==="drill"?"同一ピック所持済み。進化先がないため、特訓ポイント+1になりました。":"同一ピック所持済みのため、育成ポイント+1になりました。"):"新しい仲間として所持ピックに追加されました。次回のダンジョンから編成できます。"}</div>${res.newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}`:""}<div class="captureCombatButtons"><button id="captureNext" class="captureActionBtn">次へ進む</button></div></div></div>`}
+function renderCaptureResultHTML(){const c=state.run.capture,r=rec(c.targetId),res=c.result,ball=BALL_DEF[res.ballKey];return `<div class="card battleMainCard combatStageCard captureCombatCard captureResultCompact singleAdvanceCard tapAdvance" data-run-advance="captureResult" role="button" tabindex="0" aria-label="次へ進む"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="resultIcon">${res.success?"🎉":"💨"}</div><img class="captureBallImg captureResultBall" src="${esc(ball.img)}" alt="${esc(ball.label)}"><h2>${res.success?"ゲット成功！":"ゲット失敗"}</h2><p>${esc(ball.label)}<br>${esc(r.name_ja)}：捕獲率 ${Math.round(res.rate*100)}%</p>${res.success?`<div class="notice">${res.duplicate?`同一ピック所持済み。${esc(res.duplicateRewardLabel|| (res.duplicateRewardKind==="drill"?"特訓ポイント+2":"進化ポイント+1"))}。`:"新しい仲間として所持ピックに追加されました。次回の冒険から使用できます。"}</div>${res.newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}`:""}<div class="captureCombatButtons"><button id="captureNext" class="captureActionBtn">次へ進む</button></div></div></div>`}
 
 function renderVictoryHTML(){const v=state.run?.victory||{},label=v.kind==="elite"?"強敵戦":v.kind==="boss"?"ボス戦":"通常戦",next=v.kind==="boss"?"落とし物を確認":"報酬へ";return `<div class="card summary victoryCard tapAdvance" data-run-advance="victory" role="button" tabindex="0" aria-label="${esc(next)}"><div class="victoryCrown">${v.kind==="boss"?"👑":"🏆"}</div><div class="victoryWord">勝利！</div><div class="victorySub">${esc(label)}を制した！</div>${v.bonus?`<div class="victoryBonus">🔥 闘志ボーナス <b>攻撃・防御 +${v.bonus}</b></div>`:""}<p>${v.enemyName?`${esc(v.enemyName)}を倒した！`:"戦闘に勝利した！"}</p><button type="button" id="victoryNext" style="margin-top:8px">${next}</button></div>`}
 function renderPickupHTML(){const p=state.run?.pickup||{icon:"🎁",name:"拾い物",effect:"何かを見つけた！"};return `<div class="card pickupCard singleAdvanceCard tapAdvance" data-run-advance="pickup" role="button" tabindex="0" aria-label="先へ進む"><div class="pickupInner"><div class="pickupFound">道ばたに何か落ちている……</div><div class="pickupIcon">${esc(p.icon)}</div><div class="pickupName">${esc(p.name)}を ひろった！</div><div class="pickupEffect">${esc(p.effect)}</div><div class="pickupRateNote">拾い物は階を進んだ時に低確率で見つかります。効果は自動で適用されます。</div><button id="pickupNext" style="margin-top:12px">先へ進む</button></div></div>`}
@@ -5471,57 +5510,70 @@ function startBallSlotAnimation(stopBtn){stopBallTimer();ballCursor=0;const cell
 function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card eggsScreen"><div class="eggsScreenHead"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="eggInfoCompact"><span>階を進むと <b>全卵 +1pt</b></span><span>クリア累計 <b>${clears}回</b></span><span>${next?`上限UPまで <b>あと${Math.max(0,next-clears)}回</b>`:"所持上限は最大"}</span></div>${state.eggs.length?`<div class="eggGrid eggGridViewport">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard compactEggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary eggEmptyState">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ボスを倒すと卵ルーレットで獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
 function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
-function renderOwned(){
- reconcileDexState();
- const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean);
- const statusOptions=[["all","すべて"],["evolveReady","✨ 進化可能"],["trainAvailable","🏋️ 特訓可能"],["hasEvolution","進化先あり"],["boosted","強化済み"]];
- const sortOptions=[["standard","標準"],["number","番号順"],["name","名前順"],["grade","★高い順"],["energy","ポケエネ高い順"],["growth","育成P多い順"],["drill","特訓P多い順"],["bond","絆Lv高い順"]];
- const statusPredicate=(r,status)=>{
-  if(status==="evolveReady")return evolutionInfoForPick(r.master_id).canEvolve;
-  if(status==="trainAvailable")return trainingAvailable(r.master_id);
-  if(status==="hasEvolution")return evolutionInfoForPick(r.master_id).hasEvolution;
-  if(status==="boosted"){const pb=state.permanentBoosts[r.master_id]||{};return Number(pb.hp||0)+Number(pb.atk||0)+Number(pb.def||0)>0}
-  return true
+function showQuickTraining(id){
+ if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("探索中のため特訓できません。");return}
+ const r=rec(id),pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0}),dp=drillFor(id);
+ document.getElementById("quickTrainingOverlay")?.remove();
+ const ov=document.createElement("div");ov.id="quickTrainingOverlay";ov.className="ownedDetailOverlay";
+ ov.innerHTML=`<div class="ownedBackPanel quickTrainingPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>TRAINING</small><b>🏋️ ${esc(r?.name_ja||"ポケモン")}を特訓</b></div><button class="ownedBackClose" id="quickTrainingClose">閉じる</button></div><div class="quickTrainingBalance">特訓ポイント <b>${dp}</b></div>${trainingGraphHTML(r,pb)}${trainingSpendButtonsHTML(id,r,pb,dp)}<div class="notice">1Pで選んだ能力を+${TRAINING_STEP}。HP・ATK・DEFはそれぞれ最大+${PERMANENT_BOOST_MAX}。3能力MAX後に残った特訓Pは自動でフレンダコインへ変換されます。</div></div>`;
+ document.body.appendChild(ov);document.body.style.overflow="hidden";
+ const close=()=>{ov.remove();document.body.style.overflow="";renderOwned()};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#quickTrainingClose").onclick=close;
+ ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{spendDrill(b.dataset.trainId,b.dataset.stat);ov.remove();document.body.style.overflow="";if(trainingAvailable(id))showQuickTraining(id);else renderOwned()})
+}
+function showLuckShop(){
+ document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";
+ const renderShop=()=>{
+  const qty=Math.max(0,Math.floor(Number(state.shopItems?.luckyClover)||0)),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
+  const targets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX);
+  ov.innerHTML=`<div class="ownedBackPanel luckShopPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>FRIENDA SHOP</small><b>🪙 フレンダショップ</b></div><button class="ownedBackClose" id="luckShopClose">閉じる</button></div><div class="coinBalance">所持コイン <b>🪙 ${coins}</b></div><div class="shopItemCard"><div class="shopItemIcon">🍀</div><div><b>ラッキークローバー</b><small>所持 ${qty}個</small><p>所持ピック1体の「運」を+1。運は最大5。</p></div><button id="buyLuckyClover" ${coins>=LUCK_ITEM_PRICE?"":"disabled"}>🪙${LUCK_ITEM_PRICE}で購入</button></div><div class="sectionTitle" style="margin-top:12px">クローバーを使う</div><div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qty>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><span>🍀 運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small>探索中</small>`:""}</button>`}).join(""):'<div class="dexEmpty">全所持ピックが運MAXです。</div>'}</div><div class="notice">運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。運5でゲット率・レア卵・探索レア/ボーナス報酬が×1.5、同速先攻が75%になります。</div></div>`;
+  ov.querySelector("#luckShopClose").onclick=()=>{ov.remove();document.body.style.overflow="";renderOwned()};
+  const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{if(Number(state.frendaCoins)<LUCK_ITEM_PRICE)return;state.frendaCoins-=LUCK_ITEM_PRICE;state.shopItems.luckyClover=qty+1;save();renderShop()};
+  ov.querySelectorAll("[data-luck-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.luckTarget;if(isExpeditionLocked(id)||luckFor(id)>=LUCK_MAX||Number(state.shopItems.luckyClover)<=0)return;state.shopItems.luckyClover--;setLuck(id,luckFor(id)+1);save();renderShop()})
  };
- normalizeCommonPickFilter(ownedPickFilter,allCards,statusOptions,sortOptions);
- const cards=applyCommonPickFilter(allCards,ownedPickFilter,statusPredicate);
- const filterHtml=commonPickFilterHTML("owned",ownedPickFilter,allCards,statusOptions,sortOptions,cards.length);
+ document.body.appendChild(ov);document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov){ov.remove();document.body.style.overflow="";renderOwned()}};renderShop()
+}
+function ownedMoveSummary(r){const normal=String(r?.move||"未登録"),fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<div class="ownedMoveCompact"><div><span>わざ</span><b>${esc(normal)}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small></div><div><span>必殺</span><b>${esc(fin)}</b></div></div>`}
+function renderOwned(){
+ reconcileDexState();normalizeMaxedDrillPoints();
+ const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
+ const actionTarget=r=>{const ei=evolutionInfoForPick(r.master_id);return trainingAvailable(r.master_id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))};
+ let cards=ownedActionOnly?allCards.filter(actionTarget):allCards.filter(r=>{
+   const q=ownedSearch.trim().toLowerCase();if(q&&!`${r.name_ja||""} ${r.pick_no||""}`.toLowerCase().includes(q))return false;
+   if(ownedType!=="all"&&r.type1!==ownedType&&r.type2!==ownedType)return false;
+   if(ownedGrade!=="all"&&Number(r.grade)!==Number(ownedGrade))return false;
+   return true
+ });
+ const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
+ cards=cards.slice().sort((a,b)=>ownedSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):ownedSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):ownedSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):ownedSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):ownedSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):ownedSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
+ const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>運高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">✨ 特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。もう一度押すと元の条件へ戻ります。</div>':""}</div>`;
  const cardsHtml=cards.length?cards.map(r=>{
-   const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},xp=xpFor(id),dp=drillFor(id),gp=growthPointsFor(id),
-         ei=evolutionInfoForPick(id),cue=evolutionCueState(id),bond=bondLevelFor(id),trainOk=trainingAvailable(id),
-         boostAny=Number(pb.hp||0)+Number(pb.atk||0)+Number(pb.def||0)>0,
-         expRemain=Math.max(0,EXP_TO_DRILL-xp),
-         evoState=!ei.hasEvolution?"":!ei.registered?"進化先ピック未登録":ei.fainted?"ひんし中は進化不可":ei.canEvolve?"✨ 進化可能":`進化まで育成あと${Math.max(0,ei.cost-gp)}`,
-         evoButton=ei.hasEvolution?`<button class="ownedActionBtn evolve${ei.canEvolve?" ready":""}" data-evolve-id="${esc(id)}" ${ei.canEvolve?"":"disabled"}>進化</button>`:"";
-   return `<div class="pickCard ownedDetailCard ownedFrontCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""} ${expLocked?"expLockedCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0">
-     <div class="ownedFrontVisual"><img src="${esc(imageOf(r))}" alt=""><span class="ownedBondBadge${bond>=4?" high":""}">♥ Lv${bond}</span></div>
-     <div class="ownedFrontIdentity"><b class="ownedFrontName">${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="ownedFrontTypes">${typesHTML(r)}</div></div>
-     ${ei.hasEvolution?`<div class="ownedEvolutionPoint"><span>🌱</span><div><small>育成P・進化専用</small><b>${gp}</b></div></div>`:""}
-     <div class="ownedTrainingProgress"><div class="ownedTrainingTop"><span>🏋️</span><div><small>特訓P・強化専用</small><b>${dp}</b></div></div><div class="ownedTrainingExp"><div class="ownedExpHead"><b>EXP</b><span>${xp}/${EXP_TO_DRILL}</span></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div><small>あと${expRemain}で特訓P +1</small></div></div>
-     <div class="ownedBoostLine"><span>強化</span><b>${boostAny?`HP+${pb.hp||0}　攻+${pb.atk||0}　防+${pb.def||0}`:"なし"}</b></div>
-     ${ei.hasEvolution?`<div class="ownedEvoCompact ${ei.canEvolve?"ready":cue.kind==="near"?"near":""}">${esc(evoState)}</div>`:'<div class="ownedNoEvolutionNote">進化先なし：重複・成長のアメは特訓Pへ</div>'}
-     <div class="ownedFrontActions"><button class="ownedActionBtn train" data-training-jump="${esc(id)}" ${trainOk?"":"disabled"}>✨ 特訓</button>${evoButton}</div>
-     ${expLocked?`<div class="ownedDetailHint">🧭 おでかけ探索中：特訓・進化・本編参加不可</div>`:`<div class="ownedDetailHint">タップで詳しい裏面データ</div>`}
-   </div>`
-  }).join(""):'<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>';
- app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">ダンジョン所持ピック</div>${gridSizeControlHTML("owned",ownedViewSize)}</div><div class="muted" style="margin-bottom:6px">育成Pは進化専用、特訓Pは能力強化専用です。特訓PとEXPは同じ枠にまとめています。詳しい仕組みはピックをタップした裏面から確認できます。</div>${evoLoadNote()}${filterHtml}<div class="ownedGrid size-${ownedViewSize}">${cardsHtml}</div></div>`;
+   const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),evoOk=ei.canEvolve,bond=bondLevelFor(id),luck=luckFor(id);
+   return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${expLocked?"expLockedCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""><span class="ownedLuckBadge">🍀 ${luck}/${LUCK_MAX}</span><span class="ownedBondBadge${bond>=4?" high":""}">♥ Lv${bond}</span></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}<div class="ownedV190Actions"><button class="ownedActionBtn train" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"}>🏋️ 特訓 <b>${dp}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"}>✨ 進化 <b>${gp}</b></button></div>${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
+ }).join(""):'<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>';
+ app.innerHTML=`<div class="card ownedManager"><div class="ownedManagerHead"><div><div class="sectionTitle">🎴 所持ピック</div><small>確認・特訓・進化をここで管理</small></div><div class="ownedEconomy"><span>🪙 ${Math.floor(Number(state.frendaCoins)||0)}</span><button id="luckShopBtn">🍀 ショップ</button>${gridSizeControlHTML("owned",ownedViewSize)}</div></div><div class="ownedRuleLine">進化P＝進化専用　／　特訓P＝能力強化　／　3能力MAX後の余剰特訓Pは1P→🪙${COIN_PER_OVERFLOW_DRILL}</div>${evoLoadNote()}${filterHtml}<div class="ownedGrid size-${ownedViewSize}">${cardsHtml}</div></div>`;
  app.querySelectorAll("[data-owned-detail]").forEach(c=>{const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);c.onclick=e=>{if(e.target.closest("button"))return;open()};c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}});
- app.querySelectorAll("[data-training-jump]").forEach(b=>b.onclick=e=>{e.stopPropagation();openTrainingFor(b.dataset.trainingJump)});
+ app.querySelectorAll("[data-quick-train]").forEach(b=>b.onclick=e=>{e.stopPropagation();showQuickTraining(b.dataset.quickTrain)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
- UI.viewSize.bind({root:app,scope:"owned",key:GRID_SIZE_KEY_PREFIX+"owned",onChange:size=>{ownedViewSize=size;renderOwned()}});
- bindCommonPickFilter("owned",ownedPickFilter,renderOwned);
+ document.getElementById("luckShopBtn").onclick=showLuckShop;
+ const q=document.getElementById("ownedSearch"),ty=document.getElementById("ownedType"),gr=document.getElementById("ownedGrade"),so=document.getElementById("ownedSort"),toggle=document.getElementById("ownedActionToggle");
+ if(q)q.oninput=()=>{ownedSearch=q.value;if(!ownedActionOnly){const pos=q.selectionStart??ownedSearch.length;renderOwned();requestAnimationFrame(()=>{const nq=document.getElementById("ownedSearch");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})}};
+ if(ty)ty.onchange=()=>{ownedType=ty.value;if(!ownedActionOnly)renderOwned()};
+ if(gr)gr.onchange=()=>{ownedGrade=gr.value;if(!ownedActionOnly)renderOwned()};
+ if(so)so.onchange=()=>{ownedSort=so.value;renderOwned()};
+ if(toggle)toggle.onclick=()=>{ownedActionOnly=!ownedActionOnly;renderOwned()};
+ UI.viewSize.bind({root:app,scope:"owned",key:GRID_SIZE_KEY_PREFIX+"owned",onChange:size=>{ownedViewSize=size;renderOwned()}})
 }
 function ownedPointHelpData(kind,id){
  const r=rec(id),gp=growthPointsFor(id),dp=drillFor(id),xp=xpFor(id),bp=bondPointsFor(id),bl=bondLevelFor(id),ei=evolutionInfoForPick(id);
  if(kind==="growth")return {
-  icon:"🌱",title:"育成ポイント",value:`現在 ${gp}`,
+  icon:"🌱",title:"進化ポイント",value:`現在 ${gp}`,
   body:ei.hasEvolution
-   ?`育成ポイントは「進化専用」です。ピックが重複した時や成長のアメを拾った時など、本来の育成ポイント獲得条件で増えます。進化系統で共有され、能力強化には使いません。このポケモンの次の進化には${ei.cost}ポイント必要です。1段階目の進化は${EVOLUTION_COST_FIRST}P、2段階目以降は${EVOLUTION_COST_LATER}Pを使います。`
-   :`このポケモンには現在の姿から進化先がありません。そのため、本来「育成ポイント+1」になる重複入手や成長のアメでは、代わりに「特訓ポイント+1」が加算されます。`
+   ?`進化ポイントは「進化専用」です。ピックが重複した時や成長のアメを拾った時など、本来の進化ポイント獲得条件で増えます。進化系統で共有され、能力強化には使いません。このポケモンの次の進化には${ei.cost}ポイント必要です。1段階目の進化は${EVOLUTION_COST_FIRST}P、2段階目以降は${EVOLUTION_COST_LATER}Pを使います。`
+   :`このポケモンには現在の姿から進化先がありません。そのため、本来「進化ポイント+1」になる重複入手や成長のアメでは、代わりに「特訓ポイント+2」が加算されます。`
  };
  if(kind==="drill")return {
   icon:"🏋️",title:"特訓ポイント",value:`現在 ${dp}`,
-  body:`特訓ポイントは「能力強化専用」です。EXPが${EXP_TO_DRILL}たまるごとに1ポイント獲得します。また、進化先がないポケモンは、本来育成ポイントを得る重複入手や成長のアメでも特訓ポイント+1になります。このピック専用で、1ポイントを使うとHP・攻撃・防御のどれかを+${TRAINING_STEP}できます。各能力は最大+${PERMANENT_BOOST_MAX}です。`
+  body:`特訓ポイントは「能力強化専用」です。EXPが${EXP_TO_DRILL}たまるごとに1ポイント獲得します。また、進化先がないポケモンは、本来進化ポイントを得る重複入手や成長のアメでは、代わりに特訓ポイント+2になります。このピック専用で、1ポイントを使うとHP・攻撃・防御のどれかを+${TRAINING_STEP}できます。各能力は最大+${PERMANENT_BOOST_MAX}です。`
  };
  if(kind==="exp")return {
   icon:"⭐",title:"EXP",value:`現在 ${xp}/${EXP_TO_DRILL}`,
@@ -5533,7 +5585,7 @@ function ownedPointHelpData(kind,id){
  };
  if(kind==="boost")return {
   icon:"⬆️",title:"恒久強化",value:`${r?.name_ja||"ポケモン"}の強化結果`,
-  body:`特訓ポイントを使って上げた能力です。育成ポイントは進化専用なので、能力強化には使いません。特訓ポイント1でHP・攻撃・防御のどれかを+${TRAINING_STEP}でき、各能力は最大+${PERMANENT_BOOST_MAX}です。この強化値はダンジョンを終えても残ります。`
+  body:`特訓ポイントを使って上げた能力です。進化ポイントは進化専用なので、能力強化には使いません。特訓ポイント1でHP・攻撃・防御のどれかを+${TRAINING_STEP}でき、各能力は最大+${PERMANENT_BOOST_MAX}です。この強化値はダンジョンを終えても残ります。`
  };
  return {icon:"ℹ️",title:"ポイントについて",value:"",body:"この項目の説明はありません。"}
 }
@@ -5604,7 +5656,7 @@ function showOwnedPickDetail(id){
        gp=growthPointsFor(id),dp=drillFor(id),xp=xpFor(id),bond=bondLevelFor(id),bondPts=bondPointsFor(id),
        ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),
        boostAny=Number(pb.hp||0)+Number(pb.atk||0)+Number(pb.def||0)>0,
-       evoState=!ei.hasEvolution?"進化先なし":!ei.registered?"進化先ピック未登録":ei.fainted?"ひんし中は進化不可":ei.canEvolve?"✨ 進化可能":`進化まで育成あと${Math.max(0,ei.cost-gp)}`;
+       evoState=!ei.hasEvolution?"進化先なし":!ei.registered?"進化先ピック未登録":ei.fainted?"ひんし中は進化不可":ei.canEvolve?"✨ 進化可能":`進化まであと${Math.max(0,ei.cost-gp)}P`;
 
  const ov=document.createElement("div");
  ov.id="ownedDetailOverlay";ov.className="ownedDetailOverlay";
@@ -5620,7 +5672,7 @@ function showOwnedPickDetail(id){
   </div></div>
 
   <div class="ownedBackFrontSummary twoRole">
-   ${ei.hasEvolution?`<button type="button" class="ownedBackPoint growth" data-point-help="growth"><span>🌱</span><div><small>育成P・進化専用</small><b>${gp}</b></div><i>?</i></button>`:""}
+   ${ei.hasEvolution?`<button type="button" class="ownedBackPoint growth" data-point-help="growth"><span>🌱</span><div><small>進化P・進化専用</small><b>${gp}</b></div><i>?</i></button>`:""}
    <div class="ownedBackTrainingProgress">
     <button type="button" class="ownedBackTrainingHead" data-point-help="drill"><span>🏋️</span><div><small>特訓P・強化専用</small><b>${dp}</b></div><i>?</i></button>
     <button type="button" class="ownedBackTrainingExp" data-point-help="exp">
@@ -5642,7 +5694,7 @@ function showOwnedPickDetail(id){
    ${ownedStatGraphHTML("DEF",baseDef,pb.def||0,200,String(def))}
    ${ownedStatGraphHTML("SP.ATK",spAtk,0,200,String(spAtk))}
    ${ownedStatGraphHTML("SP.DEF",spDef,0,200,String(spDef))}
-   ${speedValue>0?ownedStatGraphHTML("すばやさ",speedValue,0,200,String(speed)):speedLevel>0?ownedStatGraphHTML("すばやさ",speedLevel,0,5,String(speed),`Lv${speedLevel}`):ownedStatGraphHTML("すばやさ",0,0,5,"-","-")}
+   ${speedLevel>0?ownedStatGraphHTML("すばやさ",speedLevel,0,5,String(speed),`Lv${speedLevel}`):ownedStatGraphHTML("すばやさ",0,0,5,"-","-")}
   </div>
 
   <div class="ownedBackSectionTitle">わざ・特殊要素</div>
@@ -5654,7 +5706,7 @@ function showOwnedPickDetail(id){
 
 ${evolutionCandidatesSectionHTML(id)}
 
-    <div class="ownedBackPointHint">🌱 育成P・🏋️ 特訓P・⭐ EXP・♥ 絆・強化 をタップすると、その仕組みを説明します。</div>
+    <div class="ownedBackPointHint">🌱 進化P・🏋️ 特訓P・⭐ EXP・♥ 絆・強化 をタップすると、その仕組みを説明します。</div>
 
   ${ei.hasEvolution?`${evolutionCueState(id).html}<div class="ownedBackActionRow"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 特訓へ</button><button class="evoBtn${ei.canEvolve?" evoPulse":""}" id="ownedDetailEvo" ${ei.canEvolve?"":"disabled"}>進化する</button></div>`:`<div class="ownedBackActionRow single"><button class="ownedBackTraining" id="ownedDetailTraining" ${trainOk?"":"disabled"}>✨ 特訓へ</button></div>`}
  </div>`;
@@ -5665,7 +5717,7 @@ ${evolutionCandidatesSectionHTML(id)}
  ov.onclick=e=>{if(e.target===ov)close()};
  ov.querySelector("#ownedBackClose").onclick=close;
  ov.querySelectorAll("[data-point-help]").forEach(el=>el.onclick=e=>{e.stopPropagation();showOwnedPointHelp(el.dataset.pointHelp,id)});
- const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();openTrainingFor(id)};
+ const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();showQuickTraining(id)};
  const eb=ov.querySelector("#ownedDetailEvo");if(eb)eb.onclick=()=>{close();openEvolutionDialog(id)}
 }
 function trainingGraphStatHTML(label,base,bonus=0,scale=200){
@@ -5683,7 +5735,7 @@ function renderTraining(){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
  app.innerHTML=`<div class="card trainingScreen"><div class="trainingScreenHead"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="trainingQuickGuide"><span>🏋️ 特訓Pで <b>HP・ATK・DEF</b> を強化</span><span>青＝初期　紫＝育成分</span><span>1Pで <b>+${TRAINING_STEP}</b></span></div>${evoLoadNote()}<div class="ownedGrid trainingGridViewport">${actionable.length?actionable.map(o=>{
   const r=rec(o.id),pb=state.permanentBoosts[o.id]||(state.permanentBoosts[o.id]={hp:0,atk:0,def:0}),xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),kept=trainingStickyIds.has(o.id);
-  return `<div class="trainCard compactTrainingCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop compactTrainTop"><img src="${esc(imageOf(r))}" alt=""><div class="compactTrainInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 ${gp}</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ Lv${bondLevelFor(o.id)}</span></div></div></div>${trainingGraphHTML(r,pb)}<div class="trainingPointBalance compactBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓P</span><strong>${dp}</strong></div>${trainingSpendButtonsHTML(o.id,r,pb,dp)}${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（育成P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし</div>'}</div>`
+  return `<div class="trainCard compactTrainingCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop compactTrainTop"><img src="${esc(imageOf(r))}" alt=""><div class="compactTrainInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 ${gp}</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ Lv${bondLevelFor(o.id)}</span></div></div></div>${trainingGraphHTML(r,pb)}<div class="trainingPointBalance compactBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓P</span><strong>${dp}</strong></div>${trainingSpendButtonsHTML(o.id,r,pb,dp)}${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（進化P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし</div>'}</div>`
  }).join(""):'<div class="dexEmpty">現在、特訓または進化できるポケモンはいません。</div>'}</div></div>`;
  document.getElementById("trainingBackOwned").onclick=()=>{trainingStickyIds.clear();trainingFocusId=null;screen="owned";render()};
  app.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>spendDrill(b.dataset.trainId,b.dataset.stat));
@@ -5751,7 +5803,7 @@ async function checkForAppUpdate(force=false){
 
 document.addEventListener("pointerdown",()=>{if(soundVolume()>0)ensureAudio()},{passive:true});
 eyeCare.start();
-render();loadEvolutionData();
+normalizeMaxedDrillPoints();render();loadEvolutionData();
 setTimeout(()=>checkForAppUpdate(),900);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkForAppUpdate()});
 
@@ -6169,7 +6221,7 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
 </style>
 
 <style id="v189-initiative-luck">
-/* Ver1.89: official speed-level battle order + same-speed initiative roulette + adventure luck. */
+/* Ver1.89 base / Ver1.90: speed-level battle order + same-speed roulette using party luck. */
 .runUnifiedMetric.luck{background:#efffe84a!important;border-color:#a7ef8a88!important;color:#efffe9!important}.runUnifiedMetric.luck b{color:#d8ff91!important}.runUnifiedMetric.luck small{color:#e7ffd8!important}
 .initiativeRouletteOverlay{position:fixed;inset:0;z-index:5200;background:#06131ddd;display:grid;place-items:center;padding:14px;backdrop-filter:blur(5px)}
 .initiativeRoulettePanel{width:min(620px,96vw);background:linear-gradient(180deg,#ffffff,#eef7fb);border:3px solid #8bdcff;border-radius:24px;padding:18px;box-shadow:0 24px 90px #000a;text-align:center;color:#15364a}
@@ -6179,6 +6231,25 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
 .initiativeRouletteBar{position:relative;height:54px;border-radius:999px;overflow:visible;display:flex;border:3px solid #fff;box-shadow:0 0 0 2px #a8c6d7,0 7px 18px #15364a28;background:#fff}.initiativeZone{height:100%;display:grid;place-items:center;font-size:13px;font-weight:1000;color:#fff;text-shadow:0 1px 2px #0005;overflow:hidden}.initiativeZone.ally{background:linear-gradient(90deg,#19a6d6,#55d3ed);border-radius:999px 0 0 999px}.initiativeZone.enemy{background:linear-gradient(90deg,#f09663,#d85b53);border-radius:0 999px 999px 0}.initiativeRouletteBar i{position:absolute;top:-8px;left:50%;width:6px;height:70px;border-radius:999px;background:#ffe549;box-shadow:0 0 0 3px #613d00,0 0 18px #ffdf39;transform:translateX(-50%);z-index:4}.initiativeRouletteBar i:before{content:"▼";position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-style:normal;color:#ffe549;text-shadow:0 2px 0 #613d00;font-size:20px}
 .initiativeRouletteText{margin-top:13px;min-height:1.4em;font-size:20px;font-weight:1000;color:#304d5d}.initiativeRouletteOverlay.allyWin .initiativeRouletteText{color:#08769b}.initiativeRouletteOverlay.enemyWin .initiativeRouletteText{color:#a6473c}
 @media(max-width:600px){.initiativeRoulettePanel{padding:13px 10px;border-radius:18px}.initiativeMatch img{width:62px;height:88px}.initiativeMatch b{font-size:13px}.initiativeMatch span{font-size:10px}.initiativeOdds{font-size:11px}.initiativeOdds strong{font-size:10px;padding:4px 6px}.initiativeRouletteBar{height:46px}.initiativeZone{font-size:11px}.initiativeRouletteText{font-size:17px}}
+</style>
+
+<style id="v190-management-luck">
+/* Ver1.90: consolidate owned/training, permanent luck + coin loop, keep home utility visible. */
+.homeManageGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.homeScreen{max-height:none!important;min-height:0!important;height:calc(100dvh - 72px)!important;overflow:auto!important;padding-bottom:2px}
+.homeActionArea{min-height:max-content!important}
+.homeUtilityBar{position:fixed!important;left:50%!important;transform:translateX(-50%)!important;bottom:max(6px,env(safe-area-inset-bottom))!important;width:min(880px,calc(100vw - 24px))!important;z-index:90!important;flex:none!important}.homeScreen{padding-bottom:62px!important}
+@media(max-width:700px){
+ .homeManageGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:1fr!important}
+ .homeActionArea{grid-template-rows:auto auto!important;min-height:0!important}
+ .homeScreen{height:calc(100dvh - 58px)!important;overflow:auto!important}
+ .homeManageGrid .homeMenuBtn{min-height:150px!important}
+ .homeUtilityBar{width:calc(100vw - 12px)!important;bottom:max(4px,env(safe-area-inset-bottom))!important;margin-top:4px!important}.homeScreen{padding-bottom:54px!important}
+}
+.ownedManagerHead{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.ownedManagerHead small{color:#6b7d87}.ownedEconomy{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.ownedEconomy>span{font-size:16px;font-weight:1000;padding:7px 10px;border-radius:999px;background:#fff4bf;color:#775700;border:1px solid #e5c45b}.ownedEconomy button{padding:8px 10px}.ownedRuleLine{margin:8px 0;padding:7px 9px;border-radius:10px;background:#eef8fc;color:#315467;font-size:10px;font-weight:850}
+.ownedFilterPanel{margin:8px 0 11px;padding:8px;border:1px solid #d3e0e6;border-radius:13px;background:#f8fbfc}.ownedFilterGrid{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(3,minmax(120px,.7fr));gap:6px}.ownedFilterGrid input,.ownedFilterGrid select{min-width:0;width:100%;padding:9px 8px;border:1px solid #bdcbd4;border-radius:10px;background:#fff}.ownedFilterFoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px}.ownedFilterFoot button{padding:8px 12px;background:#eaf1f5;color:#315467}.ownedFilterFoot button.active{background:linear-gradient(135deg,#7d4cc5,#a469e2);color:#fff}.ownedFilterFoot span{font-size:10px;font-weight:900;color:#6a7c86}.ownedFilterBypass{margin-top:5px;font-size:9px;color:#6d5984;font-weight:850}
+.ownedFrontCardV190{display:flex;flex-direction:column;gap:7px;padding:8px!important}.ownedV190Visual{position:relative}.ownedV190Visual>img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px}.ownedLuckBadge{position:absolute;left:5px;top:5px;padding:4px 7px;border-radius:999px;background:#ecffd9e8;color:#39741f;border:1px solid #a7dc80;font-size:9px;font-weight:1000}.ownedV190Identity>b{display:block;font-size:15px;line-height:1.2}.ownedV190Identity>b small{font-size:9px;color:#62727b}.ownedV190Meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px}.starStrong{font-size:17px;color:#b87b00}.energyStrong{font-size:13px;padding:4px 7px;border-radius:999px;background:#fff2a8;color:#664b00}.typeStrong .badge{font-size:10px;padding:4px 7px;font-weight:1000}.ownedMoveCompact{display:grid;grid-template-columns:1fr 1fr;gap:5px}.ownedMoveCompact>div{padding:6px;border-radius:9px;background:#f4f8fa;border:1px solid #dce5ea;min-width:0}.ownedMoveCompact span{display:block;font-size:7px;color:#75848c;font-weight:900}.ownedMoveCompact b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ownedMoveCompact small{display:block;font-size:7px;color:#667985;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ownedV190Actions{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px}.ownedV190Actions button{padding:9px 5px;font-size:11px}.ownedV190Actions button b{font-size:14px}.ownedV190Actions button:disabled{opacity:.38;filter:grayscale(.4)}.quickTrainingPanel{max-width:620px}.quickTrainingBalance{padding:10px;border-radius:12px;background:#edf6fb;font-size:14px;margin-bottom:9px}.quickTrainingBalance b{font-size:22px}.coinBalance{font-size:18px;font-weight:900;padding:9px 11px;border-radius:12px;background:#fff4bd;border:1px solid #e2c25d;margin-bottom:10px}.coinBalance b{font-size:24px;color:#775500}.shopItemCard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:12px;border:2px solid #b9dd8c;border-radius:16px;background:linear-gradient(135deg,#f7ffe9,#efffd9)}.shopItemIcon{font-size:44px}.shopItemCard b{display:block;font-size:17px}.shopItemCard small{display:block;color:#55713d}.shopItemCard p{margin:4px 0 0;font-size:11px;color:#5c6e52}.shopItemCard button{min-width:130px}.luckTargetGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin:8px 0 12px}.luckTarget{background:#f5fbff;color:#284c60;border:1px solid #cbdde7;padding:7px}.luckTarget img{width:62px;height:86px;object-fit:cover;border-radius:8px;display:block;margin:auto}.luckTarget b,.luckTarget span,.luckTarget small{display:block;margin-top:3px}.luckTarget span{font-size:10px;font-weight:1000;color:#487b2f}
+@media(max-width:700px){.ownedFilterGrid{grid-template-columns:1fr 1fr}.ownedFilterGrid #ownedSearch{grid-column:1/-1}.ownedFilterGrid input,.ownedFilterGrid select{font-size:10px;padding:8px 6px}.ownedFrontCardV190{padding:6px!important}.ownedV190Identity>b{font-size:12px}.starStrong{font-size:14px}.energyStrong{font-size:10px}.typeStrong .badge{font-size:8px}.ownedMoveCompact b{font-size:8px}.ownedMoveCompact small{font-size:6.5px}.ownedV190Actions button{font-size:9px;padding:8px 3px}.shopItemCard{grid-template-columns:auto 1fr}.shopItemCard button{grid-column:1/-1;width:100%}}
 </style>
 <script id="v183-cloud-indicator">
 (()=>{
@@ -6194,6 +6265,6 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2000);
 })();
 </script>
-<!-- FRENDA_DUNGEON_VERSION: 1.89 / Updated: 2026-09-30 11:08 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 1.90 / Updated: 2026-09-30 13:45 JST -->
 </body>
 </html>
