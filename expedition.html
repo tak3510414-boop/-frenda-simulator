@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.59">
+<html lang="ja" data-app-version="0.60">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -261,15 +261,39 @@ function freeReturnMilestoneHTML(d,p){
  }).join("")
 }
 
-function freeReturnDockGuideHTML(){
+function compactElapsedLabel(hours){
+ const sec=Math.max(0,Math.round(clampFreeHours(hours)*3600));
+ const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+ return h>0?`${h}時間${String(m).padStart(2,"0")}分`:`${m}分${String(s).padStart(2,"0")}秒`
+}
+function freeReturnDockGuideHTML(now=Date.now()){
+ const g=groupState(activeGroup),m=g?.mission,status=g?.status||"idle";
+ let elapsed=0,hasPosition=false,positionText=`G${activeGroup+1} 待機中`;
+ if(m&&(status==="exploring"||status==="returned")){
+  elapsed=status==="returned"
+   ?clampFreeHours(m.settledHoursExact??((Number(m.returnAt)-Number(m.startAt))/3600000))
+   :missionElapsedHours(m,now);
+  hasPosition=true;
+  positionText=status==="returned"
+   ?`G${activeGroup+1} 帰還 ${compactElapsedLabel(elapsed)}`
+   :`G${activeGroup+1} 現在 ${compactElapsedLabel(elapsed)}`
+ }
+ const nextAnchor=hasPosition?(FREE_EXP_ANCHORS.find(a=>a.h>elapsed+1e-9)||FREE_EXP_ANCHORS[FREE_EXP_ANCHORS.length-1]):null;
+ const targetH=nextAnchor?.h??null;
+ const maxed=hasPosition&&elapsed>=FREE_EXP_MAX_HOURS-1e-9;
  const rows=FREE_EXP_ANCHORS.map(a=>{
   const normal=a.h>=8?Math.max(0,a.boxes-2):a.h>=4?Math.max(0,a.boxes-1):a.boxes;
   const boost=a.h>=4?1:0,guaranteed=a.h>=8?1:0;
   const symbols=`${"○".repeat(normal)}${"🪎".repeat(boost)}${"⭐️".repeat(guaranteed)}`;
   const time=a.h===.5?"30分":`${a.h}時間`;
-  return `<div class="freeGuideRow ${a.h===12?"max":""}"><b>${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`
+  const reached=hasPosition&&elapsed>=a.h-1e-9;
+  const current=hasPosition&&(maxed?a.h===12:Math.abs(a.h-targetH)<1e-9);
+  const currentLabel=current
+   ?(maxed?`<i class="guideNow">▶ 現在 MAX</i>`:`<i class="guideNow">▶ 次 ${time}</i>`)
+   :"";
+  return `<div class="freeGuideRow ${a.h===12?"max ":""}${reached?"reached ":""}${current?"currentStep":""}"><b>${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span>${currentLabel}</div>`
  }).join("");
- return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuideRows">${rows}</div><div class="freeGuideFoot"><span>○ 通常</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
+ return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuidePosition ${status==="exploring"?"running":status==="returned"?"returned":""}">${positionText}</div><div class="freeGuideRows">${rows}</div><div class="freeGuideFoot"><span>○ 通常</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
 }
 
 const BASE_BOX=RULES.EXPEDITION_BASE_BOX;
@@ -825,7 +849,7 @@ function renderEggDiscard(){const d=readDungeon();app.innerHTML=`<div class="car
 function renderCollection(){const total=souvenirDistinctTotal(),dids=THEME_ORDER.filter(did=>SOUVENIR_DEF[did]),stepTotal=dids.reduce((n,did)=>n+discoveryStep(did),0),stepMax=dids.length*5;app.innerHTML=`<div class="card"><div class="row spread"><div><div class="kicker">EXPEDITION COLLECTION</div><div class="sectionTitle">🗺️ 探索コレクション</div></div><span class="badge gold">発見 ${stepTotal}/${stepMax}</span></div><div class="discoveryBenefitGuide"><div class="discoveryBenefitIcon">🔎</div><div><b>「発見」は、その探索先をどこまで調査できたかを表します。</b><p>探索するたびに発見率が上がり、20％ごとに 1/5 → 5/5 と進みます。<strong>5/5（100％）へ到達した探索では、レアなおみやげを1つ確定で発見</strong>します。</p></div></div><div class="collectionSummary"><div class="collectionStat"><b>${total.distinct}/${total.max}</b><small>おみやげ種類</small></div><div class="collectionStat"><b>${total.total}</b><small>おみやげ総数</small></div></div><div class="collectionGrid">${dids.map(did=>{const p=discoveryPct(did),step=discoveryStep(did),defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length;return `<div class="collectionCard ${step>=5?"complete":""}"><div class="collectionHead"><b>${THEMES[did].icon} ${esc(THEMES[did].name)}</b><span class="collectionPct">発見 ${step}/5 <em>${p}%</em></span></div><div class="discoveryMeter collectionDiscoveryMeter"><span style="width:${p}%"></span><i>${p}%</i></div><div class="souvenirSlots">${defs.map(s=>{const n=souvenirCount(did,s.id);return `<div class="souvenirSlot ${n?"":"locked"} ${s.rare?"rare":""}"><div class="ico">${n?s.icon:"❓"}</div><b>${n?esc(s.name):"？？？"}</b><small>${n?`×${n}`:"未発見"}</small></div>`}).join("")}</div>${step>=5?'<div class="collectionComplete">🏅 調査コンプリート！ レアおみやげ到達済み</div>':`<div class="muted" style="margin-top:6px">おみやげ ${got}/${defs.length}種類　／　5/5まであと ${100-p}%</div>`}</div>`}).join("")}</div><button class="ghost" id="backPrepBtn" style="width:100%;margin-top:12px">← 派遣設定へ戻る</button></div>`;document.getElementById("backPrepBtn").onclick=()=>{screen="home";render()}}
 function renderSummary(){const m=groupMission(),f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE / GROUP ${activeGroup+1}</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ランク${m.difficulty} / ${formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now()))} / 探索ランク${m.rank}</p></div><div class="summaryFindings"><b>🗺️ 発見 ${beforeStep}/5 → ${afterStep}/5</b><div class="summarySouvenirLine">🎒 ${esc(souvenirNameLine(f))}</div></div>${m.secretSpotUsed?`<div class="summarySecret"><b>🌟 調査したひみつの場所</b><small>${esc(m.secretSpotUsed.name)} を探索し、ボーナスを獲得しました。</small></div>`:""}${secretSpotSummaryHTML(m.secretSpotDiscovered)}<div class="sectionTitle" style="margin-top:12px">成果箱の中身</div><div class="finalList">${m.summary?.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、グループ${activeGroup+1}で派遣していた${m.teamIds.length}体が再び使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=()=>completeMission(activeGroup)}
 
-function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
+function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");document.body.classList.toggle("homeNavVisible",show)}
 function render(){document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
@@ -1428,7 +1452,80 @@ header .head{
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.59 / Updated: 2026-09-30 21:30 JST -->
+
+<style id="v060-guide-current-position">
+.freeGuidePosition{
+  margin:5px 0 4px;
+  padding:4px 5px;
+  border-radius:7px;
+  background:#ffffff0d;
+  border:1px solid #ffffff18;
+  color:#bdd4df;
+  font-size:6.5px;
+  line-height:1.2;
+  font-weight:1000;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.freeGuidePosition.running{
+  background:#ffd86620;
+  border-color:#ffd86666;
+  color:#ffeaa4;
+}
+.freeGuidePosition.returned{
+  background:#6fe7af20;
+  border-color:#6fe7af55;
+  color:#baffd9;
+}
+.freeGuideRow{
+  position:relative;
+  transition:background .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.freeGuideRow.reached{
+  background:#46d89112;
+}
+.freeGuideRow.reached b{
+  color:#99f0c0!important;
+}
+.freeGuideRow.currentStep{
+  margin:1px -3px;
+  padding:2px 3px;
+  border:1px solid #ffd35e88;
+  border-radius:6px;
+  background:linear-gradient(90deg,#ffcd4b35,#ffffff08);
+  box-shadow:0 0 9px #ffcf4a28;
+}
+.freeGuideRow.currentStep b{
+  color:#ffe38a!important;
+}
+.freeGuideRow .guideNow{
+  grid-column:1/-1;
+  display:block;
+  margin-top:1px;
+  color:#ffd65f;
+  font-size:5.5px;
+  line-height:1.05;
+  font-style:normal;
+  font-weight:1000;
+  white-space:nowrap;
+}
+@media(max-width:600px){
+  .freeGuidePosition{
+    margin:3px 0;
+    padding:3px 2px;
+    font-size:5px;
+  }
+  .freeGuideRow.currentStep{
+    margin:1px -2px;
+    padding:1px 2px;
+  }
+  .freeGuideRow .guideNow{
+    font-size:4.6px;
+  }
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.60 / Updated: 2026-09-30 21:40 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1533,4 +1630,13 @@ header .head{
   30分探索ならログも30分間に収まり、未来時刻の出来事は表示しない。
   旧バージョンで既に保存された未来時刻入りの帰還レポートも読み込み時に自動修復。
   探索ジャーナルも保存済み帰還レポートと同じ出来事を使用する。
+-->
+
+<!-- Ver0.60:
+  上部で選択中の探索グループに連動して、左の「自由探索」表へ現在位置を表示。
+  探索中は「G1 現在 6分28秒」のように経過時間を表示。
+  到達済みの節目を緑系で表示し、次に到達する節目を黄色＋▶で強調。
+  例：6分経過なら「30分」の行を現在の次目標として強調。
+  グループを切り替えると、そのグループの位置へ即時切替。
+  探索中は1秒ごとに現在位置表示を更新。
 -->
