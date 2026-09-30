@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.84">
+<html lang="ja" data-app-version="1.85">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3789,6 +3789,22 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
 }
 </style>
 
+
+<style id="v185-evolution-random-compare">
+/* Ver1.85: evolution target is random, and the final screen compares before/after strength. */
+.evoRandomPanel{width:min(620px,100%)}
+.evoRandomIntro{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center;padding:10px;border-radius:15px;background:linear-gradient(135deg,#f5efff,#eefaff);border:1px solid #d4c7ef}
+.evoRandomIntro img{width:92px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e7edf1}.evoRandomIntro b{font-size:20px;color:#523a91}.evoRandomIntro p{margin:5px 0 0;font-size:12px;line-height:1.55;color:#52636f}.evoRandomIntro strong{color:#7a3fc1}
+.evoCandidateBox{margin-top:10px;padding:9px 10px;border-radius:13px;background:#fff;border:1px solid #d5e0e6}.evoCandidateBox>small{display:block;font-size:10px;font-weight:1000;color:#667985;margin-bottom:5px}.evoCandidateBox>div{display:flex;gap:6px;flex-wrap:wrap}.evoCandidateBox span{padding:5px 9px;border-radius:999px;background:#eef3f7;color:#29475a;font-size:11px;font-weight:1000}
+.evoRandomActions{display:grid;grid-template-columns:.7fr 1.3fr;gap:8px;margin-top:12px}.evoRandomActions button{min-height:46px;font-size:13px!important}
+.evoComparePanel{width:min(820px,100%)}.evoCompareHead{background:linear-gradient(135deg,#583c92,#2e6d9a)}
+.evoCompareHighlight{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:7px;align-items:center;margin-bottom:9px;padding:9px 10px;border-radius:13px;background:linear-gradient(135deg,#fff4bd,#ffe0f4);border:1px solid #e6c86d;color:#493e36}.evoCompareHighlight strong{font-size:15px}.evoCompareHighlight>span{font-size:11px;font-weight:1000;text-align:center}
+.evoSideTag{display:inline-block;margin-bottom:4px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:1000;letter-spacing:.04em}.teamCompareHero.before .evoSideTag{background:#e7edf1;color:#566976}.teamCompareHero.after .evoSideTag{background:#fff0a9;color:#755100}.teamCompareHero.after{background:linear-gradient(180deg,#fffce9,#fff2c5)}
+.evoAfterCell{background:#fffdf2}.evoGain,.evoDrop,.evoSame{display:inline-block;margin-top:3px;padding:2px 5px;border-radius:999px;font-size:8px;font-weight:1000;line-height:1}.evoGain{background:#dff8e8;color:#08763d}.evoDrop{background:#ffe7e7;color:#a83030}.evoSame{background:#edf2f5;color:#71808a}.evoCompareHighlight .evoGain,.evoCompareHighlight .evoDrop,.evoCompareHighlight .evoSame{margin:0 0 0 3px;vertical-align:1px}
+.evoCompareTable .teamCompareMove b{font-size:10px}.evoCompareTable .teamCompareMove small,.evoCompareTable .teamCompareMove em{display:block;font-size:7.5px;line-height:1.25;color:#657681;font-style:normal;margin-top:2px}.evoCompareLegend{font-size:10px!important;line-height:1.45}
+@media(max-width:600px){.evoRandomIntro{grid-template-columns:70px minmax(0,1fr);gap:8px}.evoRandomIntro img{width:70px}.evoRandomIntro b{font-size:17px}.evoRandomIntro p{font-size:10px}.evoCandidateBox span{font-size:9px;padding:4px 7px}.evoRandomActions{grid-template-columns:1fr 1.5fr}.evoRandomActions button{font-size:11px!important;min-height:42px}.evoCompareOverlay{padding:8px 5px}.evoCompareHighlight{grid-template-columns:1fr 1fr;gap:5px;padding:7px}.evoCompareHighlight strong{grid-column:1/-1;font-size:13px;text-align:center}.evoCompareHighlight>span{font-size:9px}.evoComparePanel .teamCompareBody{padding:5px}.evoCompareTable .compareLabel{width:48px!important}.evoCompareTable .teamCompareHero img{width:58px;height:82px}.evoCompareTable .teamCompareHero b{font-size:10px}.evoCompareTable .teamCompareHero small{font-size:7px}.evoGain,.evoDrop,.evoSame{font-size:7px}.evoCompareLegend{font-size:8px!important}}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
@@ -4218,6 +4234,12 @@ function chooseEvolutionPick(sourceId,target,allowLower=false){return RULES.choo
 function evolutionGradeWarning(currentGrade){
  return `現在の★${currentGrade}以上の進化先ピックがありません。\nそれでも進化しますか？`
 }
+function chooseRandomEvolutionTargetAndPick(sourceId,targets,allowLower=false){
+ const pool=(targets||[]).filter(t=>t?.candidates?.length&&(allowLower||evolutionSafeCandidates(sourceId,t).length));
+ if(!pool.length)return null;
+ const target=pool[Math.floor(Math.random()*pool.length)],pick=chooseEvolutionPick(sourceId,target,allowLower);
+ return pick?{target,pick}:null
+}
 function openEvolutionDialog(id){if(isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため進化できません。");return}
  const info=evolutionInfoForPick(id),src=rec(id);
  if(!info.hasEvolution)return;
@@ -4230,51 +4252,29 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){UI.dialog.alert("お
        safeTotal=targetsWithPicks.reduce((n,t)=>n+evolutionSafeCandidates(id,t).length,0);
  let lowerApproved=false;
 
- // 進化ボタンを押した時点で、全進化先に同等以上の★が1枚もない場合は先に確認。
+ // Ver1.85: 進化先はユーザー選択ではなく抽選。現在の★以上を優先する。
  if(safeTotal===0){
   if(!UI.dialog.confirm(evolutionGradeWarning(current)))return;
-  lowerApproved=true;
-  // 分岐進化でなければ「はい」でそのまま進化。
-  if(targetsWithPicks.length===1){
-   const target=targetsWithPicks[0],pick=chooseEvolutionPick(id,target,true);
-   if(!pick)return;
-   performEvolution(id,pick.master_id,info.cost,target.name);
-   return
-  }
+  lowerApproved=true
  }
+ if(!targetsWithPicks.length){UI.dialog.alert("進化先の登録ピックがありません。");return}
 
  document.getElementById("evoOverlay")?.remove();
  const ov=document.createElement("div");
  ov.id="evoOverlay";ov.className="evoOverlay";
- ov.innerHTML=`<div class="evoPanel"><div class="evoHead"><div><small>${esc(src.name_ja)} ${gradeText(src)} / 育成P ${info.points}</small><br><b>進化先を選択</b></div><button class="ghost" id="evoClose">閉じる</button></div><div class="notice" style="margin-bottom:9px">進化には育成ポイント${info.cost}を使います。<b>現在の${gradeText(src)}以上を優先</b>して抽選します。${lowerApproved?" 同等以上がないため、低い★を含めることを了承済みです。":""}</div><div class="evoChoiceGrid">${info.targets.map((t,i)=>{
-  const rep=t.candidates[0],safe=evolutionSafeCandidates(id,t);
-  const detail=!t.candidates.length?"進化先ピック未登録":safe.length?`${gradeText(src)}以上 ${safe.length}枚 / 全${t.candidates.length}枚`:lowerApproved?`低い★を含めて抽選 / 全${t.candidates.length}枚`:`${gradeText(src)}以上なし（選択時に確認）`;
-  return `<button class="evoChoice" data-evo-target="${i}" ${t.candidates.length?"":"disabled"}>${rep?`<img src="${esc(imageOf(rep))}" alt="">`:""}<b>${esc(t.name)}</b><small>${detail}</small></button>`
- }).join("")}</div></div>`;
+ const candidateNames=targetsWithPicks.map(t=>t.name).filter(Boolean);
+ ov.innerHTML=`<div class="evoPanel evoRandomPanel"><div class="evoHead"><div><small>${esc(src.name_ja)} ${gradeText(src)} / 育成P ${info.points}</small><br><b>進化に挑戦</b></div><button class="ghost" id="evoClose">閉じる</button></div><div class="evoRandomIntro"><img src="${esc(imageOf(src))}" alt=""><div><b>進化先はランダム！</b><p>登録済みの進化候補から抽選します。<strong>現在の${gradeText(src)}以上を優先</strong>します。</p></div></div><div class="evoCandidateBox"><small>進化候補</small><div>${candidateNames.map(n=>`<span>${esc(n)}</span>`).join("")}</div></div>${lowerApproved?'<div class="notice">現在と同じ★以上の登録ピックがないため、低い★も抽選対象になります。</div>':""}<div class="evoRandomActions"><button class="ghost" id="evoCancel">やめる</button><button class="evoBtn" id="evoGo">✨ 進化する（育成P ${info.cost}）</button></div></div>`;
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const close=()=>{ov.remove();document.body.style.overflow=""};
  ov.onclick=e=>{if(e.target===ov)close()};
  ov.querySelector("#evoClose").onclick=close;
- ov.querySelectorAll("[data-evo-target]").forEach(b=>b.onclick=()=>{
-  const target=info.targets[Number(b.dataset.evoTarget)],safe=evolutionSafeCandidates(id,target);
-  if(!target?.candidates?.length)return;
-
-  if(!safe.length&&!lowerApproved){
-   if(!UI.dialog.confirm(evolutionGradeWarning(current)))return;
-   const lowerPick=chooseEvolutionPick(id,target,true);
-   if(!lowerPick)return;
-   close();
-   performEvolution(id,lowerPick.master_id,info.cost,target.name);
-   return
-  }
-
-  const pick=chooseEvolutionPick(id,target,lowerApproved);
-  if(!pick)return;
-  const note=safe.length?`進化後は★${current}以上の登録ピックから抽選します。`:`低い★を含む登録ピックから抽選します。`;
-  if(!UI.dialog.confirm(`${src.name_ja}を${target.name}へ進化させますか？\n育成ポイント ${info.cost} 消費\n${note}`))return;
+ ov.querySelector("#evoCancel").onclick=close;
+ ov.querySelector("#evoGo").onclick=()=>{
+  const result=chooseRandomEvolutionTargetAndPick(id,targetsWithPicks,lowerApproved);
+  if(!result){UI.dialog.alert("進化先を抽選できませんでした。");return}
   close();
-  performEvolution(id,pick.master_id,info.cost,target.name)
- })
+  performEvolution(id,result.pick.master_id,info.cost,result.target.name)
+ }
 }
 function performEvolution(sourceId,targetId,cost,targetSpeciesName){
  const src=rec(sourceId),dst=rec(targetId);if(!src||!dst||!ownedEntry(sourceId))return;
@@ -4282,7 +4282,8 @@ function performEvolution(sourceId,targetId,cost,targetSpeciesName){
  const info=evolutionInfoForPick(sourceId);if(growthPointsFor(sourceId)<cost)return;
  const oldIdx=state.owned.findIndex(x=>x.id===sourceId),targetAlready=!!ownedEntry(targetId),
        oldPb=Object.assign({hp:0,atk:0,def:0},state.permanentBoosts[sourceId]||{}),
-       oldXp=xpFor(sourceId),oldDp=drillFor(sourceId),familyKey=growthKeyFor(sourceId);
+       oldXp=xpFor(sourceId),oldDp=drillFor(sourceId),familyKey=growthKeyFor(sourceId),
+       beforeSnapshot={r:src,pb:{...oldPb},xp:oldXp,dp:oldDp};
  state.trainingPoints[familyKey]=Math.max(0,Number(state.trainingPoints[familyKey]||0)-cost);
  let duplicateBonusKind=null;
  if(targetAlready){
@@ -4304,9 +4305,32 @@ function performEvolution(sourceId,targetId,cost,targetSpeciesName){
  state.dex[targetId]=Object.assign({},state.dex[targetId]||{},{obtained:true,current:true});
  const tm=state.run?.team?.find(t=>t.id===sourceId);
  if(tm&&!tm.ko){const ratio=Math.max(0,Math.min(1,tm.hp/Math.max(1,Number(src.hp)+(oldPb.hp||0))));tm.id=targetId;tm.hp=Math.max(1,Math.round(maxHpFor(targetId)*ratio))}
- reconcileDexState();save();render();showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpeciesRegistration)
+ const afterSnapshot={r:dst,pb:{...(state.permanentBoosts[targetId]||{})},xp:xpFor(targetId),dp:drillFor(targetId)};
+ reconcileDexState();save();render();showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpeciesRegistration,beforeSnapshot,afterSnapshot)
 }
-function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpeciesRegistration=false){
+function evolutionSpeedValue(r){const sv=Number(r?.speed_value),sl=Number(r?.speed_level);return sv>0?{value:sv,scale:200,label:String(sv)}:sl>0?{value:sl,scale:5,label:`Lv${sl}`}:{value:0,scale:5,label:"-"}}
+function evolutionTotalStat(r,pb,key){return Math.max(0,Number(r?.[key])||0)+Math.max(0,Number(pb?.[key])||0)}
+function evolutionGainHTML(before,after){const d=Number(after)-Number(before);return d>0?`<span class="evoGain">▲ +${d}</span>`:d<0?`<span class="evoDrop">▼ ${d}</span>`:'<span class="evoSame">→</span>'}
+function evolutionCompareStatCell(r,pb,key,scale,beforeTotal=null){const base=Number(r?.[key])||0,boost=Number(pb?.[key])||0,total=base+boost;return `${compareStatGraphCell(base,boost,scale)}${beforeTotal===null?"":evolutionGainHTML(beforeTotal,total)}`}
+function evolutionCompareSpeedCell(r,before=null){const x=evolutionSpeedValue(r),html=x.value?compareStatGraphCell(x.value,0,x.scale):"-";return `${html}${before===null?"":evolutionGainHTML(before,x.value)}`}
+function evolutionMoveHTML(r){const fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<b>${esc(r?.move||"未登録")}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small><em>必殺：${esc(fin)}</em>`}
+function showEvolutionComparison(before,after){
+ if(!before?.r||!after?.r)return;
+ document.getElementById("evoCompareOverlay")?.remove();
+ const br=before.r,ar=after.r,bp=before.pb||{},ap=after.pb||{},
+       bSpeed=evolutionSpeedValue(br),aSpeed=evolutionSpeedValue(ar),
+       bHp=evolutionTotalStat(br,bp,"hp"),bAtk=evolutionTotalStat(br,bp,"atk"),bDef=evolutionTotalStat(br,bp,"def"),
+       bSpa=Number(br.sp_atk)||0,bSpd=Number(br.sp_def)||0,
+       gradeBefore=Math.max(0,Number(br.grade)||0),gradeAfter=Math.max(0,Number(ar.grade)||0),
+       eneBefore=Number(br.poke_ene)||0,eneAfter=Number(ar.poke_ene)||0;
+ const row=(label,left,right,cls="teamCompareValue")=>`<tr><th class="compareLabel">${label}</th><td class="${cls} evoBeforeCell">${left}</td><td class="${cls} evoAfterCell">${right}</td></tr>`;
+ const hero=(r,tag,cls)=>`<td class="teamCompareHero ${cls}"><span class="evoSideTag">${tag}</span><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><span class="teamCompareEnergy">⚡ ポケエネ ${esc(r.poke_ene??"-")}</span></td>`;
+ const ov=document.createElement("div");ov.id="evoCompareOverlay";ov.className="teamCompareOverlay evoCompareOverlay";
+ ov.innerHTML=`<div class="teamComparePanel evoComparePanel" role="dialog" aria-modal="true" aria-label="進化前後の比較"><div class="teamCompareHead evoCompareHead"><div><small>EVOLUTION RESULT</small><b>✨ 強くなった！ 進化前後をくらべよう</b></div><button type="button" class="teamCompareClose" id="evoCompareClose">閉じる</button></div><div class="teamCompareBody"><div class="evoCompareHighlight"><strong>${esc(br.name_ja)} → ${esc(ar.name_ja)}</strong><span>${gradeText(br)} → ${gradeText(ar)} ${evolutionGainHTML(gradeBefore,gradeAfter)}</span><span>⚡ ${eneBefore} → ${eneAfter} ${evolutionGainHTML(eneBefore,eneAfter)}</span></div><div class="teamCompareTableWrap"><table class="teamCompareTable evoCompareTable"><thead><tr><th class="compareLabel">ピック</th>${hero(br,"進化前","before")}${hero(ar,"進化後","after")}</tr></thead><tbody>${row("タイプ",esc(compareTypeText(br)),esc(compareTypeText(ar)),"teamCompareType")}${row("HP",evolutionCompareStatCell(br,bp,"hp",240),evolutionCompareStatCell(ar,ap,"hp",240,bHp))}${row("ATK",evolutionCompareStatCell(br,bp,"atk",220),evolutionCompareStatCell(ar,ap,"atk",220,bAtk))}${row("DEF",evolutionCompareStatCell(br,bp,"def",220),evolutionCompareStatCell(ar,ap,"def",220,bDef))}${row("SP.ATK",evolutionCompareStatCell(br,{},"sp_atk",220),evolutionCompareStatCell(ar,{},"sp_atk",220,bSpa))}${row("SP.DEF",evolutionCompareStatCell(br,{},"sp_def",220),evolutionCompareStatCell(ar,{},"sp_def",220,bSpd))}${row("すばやさ",evolutionCompareSpeedCell(br),evolutionCompareSpeedCell(ar,bSpeed.value))}${row("わざ",evolutionMoveHTML(br),evolutionMoveHTML(ar),"teamCompareMove")}</tbody></table></div><div class="teamCompareLegend evoCompareLegend">青いバーはピック本来の能力、紫は恒久強化分です。進化後に上がった項目は「▲ +○」で表示します。</div></div></div>`;
+ document.body.appendChild(ov);document.body.style.overflow="hidden";
+ const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#evoCompareClose").onclick=close
+}
+function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpeciesRegistration=false,beforeSnapshot=null,afterSnapshot=null){
  document.getElementById("evoResult")?.remove();
  document.getElementById("evoCinematic")?.remove();
  const ov=document.createElement("div");
@@ -4332,7 +4356,7 @@ function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpe
    if(n===1){sfx("evoRise");msg.textContent="まぶしい光に つつまれている……";try{navigator.vibrate?.(25)}catch{}}
    if(n===2){msg.textContent="……！";try{navigator.vibrate?.([30,40,30])}catch{}}
    if(n===3){img.src=imageOf(dst);msg.textContent=`${dst.name_ja}！`;try{navigator.vibrate?.(45)}catch{}}
-   if(n===4){sfx("evoSuccess");img.src=imageOf(dst);msg.textContent=`おめでとう！ ${src.name_ja}は ${dst.name_ja}に進化した！`;hint.textContent="画面をタップして閉じる"}
+   if(n===4){sfx("evoSuccess");img.src=imageOf(dst);msg.textContent=`おめでとう！ ${src.name_ja}は ${dst.name_ja}に進化した！`;hint.textContent="タップして進化前後をくらべる"}
  };
  const advance=manual=>{
    if(closed||stage>=4)return;
@@ -4345,7 +4369,7 @@ function showEvolutionResult(src,dst,targetSpeciesName,duplicateBonusKind,newSpe
    schedule()
  };
  ov.onclick=e=>{
-   if(stage>=4){close();return}
+   if(stage>=4){close();showEvolutionComparison(beforeSnapshot,afterSnapshot);return}
    advance(true)
  };
  setPhase(0);
@@ -6008,6 +6032,6 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2000);
 })();
 </script>
-<!-- FRENDA_DUNGEON_VERSION: 1.84 / Updated: 2026-09-30 09:02 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 1.85 / Updated: 2026-09-30 09:14 JST -->
 </body>
 </html>
