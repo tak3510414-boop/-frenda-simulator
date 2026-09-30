@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.17">
+<html lang="ja" data-app-version="2.18">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3833,7 +3833,7 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
 
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 あと 30:00</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -3875,64 +3875,211 @@ function updateExpeditionTimerBadge(now=Date.now()){const el=document.getElement
 
 function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
  if(!data)throw new Error("FRENDA_DATA is required");
- const KEY=data.KEYS.eyeTimer,PLAY_MS=30*60*1000,REST_MS=10*60*1000;
- let handle=null,locked=false,started=false;
+ const KEY=data.KEYS.eyeTimer,DEFAULT_PLAY_MIN=30,DEFAULT_REST_MIN=10;
+ let handle=null,locked=false,started=false,lastConfigSig="";
+
+ function num(v){const n=Number(v);return Number.isFinite(n)?n:null}
+ function keyNorm(k){return String(k||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
+ function minutesFromValue(v,key=""){
+  const n=num(v);if(n===null||n<0)return null;
+  const k=keyNorm(key);
+  if(/millisecond|ms$/.test(k))return n/60000;
+  if(/second|sec$|seconds$/.test(k))return n/60;
+  /* timer settings in the admin menu are normally stored as minutes.
+     Large values are treated as milliseconds for backward/alternate formats. */
+  return n>1000?n/60000:n
+ }
+ const PLAY_KEYS=new Set([
+  "playminutes","playminute","playmin","playtime","playtimeminutes","playdurationminutes",
+  "sessionminutes","sessionmin","gameminutes","gametime","continuousplayminutes",
+  "maxplayminutes","eyecareplayminutes","playms"
+ ]);
+ const REST_KEYS=new Set([
+  "restminutes","restminute","restmin","resttime","resttimeminutes","restdurationminutes",
+  "breakminutes","breakmin","breaktime","breaktimeminutes","pauseminutes",
+  "eyecarerestminutes","restms","breakms"
+ ]);
+
+ function findTimerValue(root,want){
+  const seen=new Set(),keys=want==="play"?PLAY_KEYS:REST_KEYS;
+  function walk(obj,path=[],depth=0){
+   if(!obj||typeof obj!=="object"||depth>6||seen.has(obj))return null;
+   seen.add(obj);
+   for(const [rawKey,val] of Object.entries(obj)){
+    const k=keyNorm(rawKey),nextPath=[...path,k],full=nextPath.join(".");
+    if((keys.has(k)||
+        (want==="play"&&/^(play|session|game)$/.test(k)&&/(timer|eyecare|care|limit|duration|time)/.test(path.join(".")))||
+        (want==="rest"&&/^(rest|break|pause)$/.test(k)&&/(timer|eyecare|care|limit|duration|time)/.test(path.join(".")))) &&
+       (typeof val==="number"||typeof val==="string")){
+      const m=minutesFromValue(val,rawKey);
+      if(m!==null&&m>=1&&m<=240)return m
+    }
+    if(val&&typeof val==="object"){
+      const found=walk(val,nextPath,depth+1);
+      if(found!==null)return found
+    }
+   }
+   return null
+  }
+  return walk(root)
+ }
+
+ function timerConfig(){
+  const candidates=[];
+  const add=x=>{if(x&&typeof x==="object")candidates.push(x)};
+  try{add(PARENTAL?.getSettings?.())}catch{}
+  try{add(PARENTAL?.getConfig?.())}catch{}
+  try{add(PARENTAL?.settings)}catch{}
+  try{add(PARENTAL?.config)}catch{}
+  try{add(PARENTAL?.check?.("dungeon"))}catch{}
+  try{
+   for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i)||"";
+    if(!/(frenda|parent|admin|limit|care)/i.test(k))continue;
+    const raw=localStorage.getItem(k);if(!raw)continue;
+    try{add(JSON.parse(raw))}catch{}
+   }
+  }catch{}
+  let play=null,rest=null;
+  for(const c of candidates){
+   if(play===null)play=findTimerValue(c,"play");
+   if(rest===null)rest=findTimerValue(c,"rest");
+   if(play!==null&&rest!==null)break
+  }
+  play=Math.max(1,Math.min(240,Math.round(play??DEFAULT_PLAY_MIN)));
+  rest=Math.max(1,Math.min(240,Math.round(rest??DEFAULT_REST_MIN)));
+  return {playMinutes:play,restMinutes:rest,playMs:play*60000,restMs:rest*60000}
+ }
+
  const read=()=>{const x=data.readJSON(KEY,null);return x&&typeof x==="object"?x:null};
  const write=x=>{try{data.writeJSON(KEY,x)}catch{}return x};
- const fresh=(now=Date.now())=>write({phase:"play",playUntil:now+PLAY_MS,updatedAt:now});
- function resolve(now=Date.now()){
-  let x=read();
-  if(!x||!Number.isFinite(Number(x.playUntil)))return fresh(now);
-  if(x.phase==="ready")return x;
-  if(x.phase==="rest"){
-   const restUntil=Number(x.restUntil)||Number(x.playUntil)+REST_MS;
-   if(now<restUntil){x.restUntil=restUntil;x.reason=x.reason||"auto";return x}
-   x={phase:"ready",playUntil:Number(x.playUntil)||now,restUntil,reason:x.reason||"auto",readyAt:restUntil,updatedAt:now};write(x);return x
+ const fresh=(now=Date.now(),cfg=timerConfig())=>write({
+  phase:"play",startedAt:now,playUntil:now+cfg.playMs,
+  playMinutes:cfg.playMinutes,restMinutes:cfg.restMinutes,updatedAt:now
+ });
+
+ function syncDurations(x,cfg,now){
+  if(!x||typeof x!=="object")return x;
+  const oldPlay=Math.max(1,Number(x.playMinutes)||DEFAULT_PLAY_MIN)*60000;
+  const oldRest=Math.max(1,Number(x.restMinutes)||DEFAULT_REST_MIN)*60000;
+  let changed=Number(x.playMinutes)!==cfg.playMinutes||Number(x.restMinutes)!==cfg.restMinutes;
+
+  if(x.phase==="play"&&Number.isFinite(Number(x.playUntil))){
+   const startedAt=Number(x.startedAt)||Number(x.playUntil)-oldPlay;
+   const playUntil=startedAt+cfg.playMs;
+   if(Number(x.startedAt)!==startedAt||Number(x.playUntil)!==playUntil)changed=true;
+   x.startedAt=startedAt;x.playUntil=playUntil
+  }else if(x.phase==="rest"){
+   const restStartedAt=Number(x.restStartedAt)||Number(x.playUntil)||now;
+   const restUntil=restStartedAt+cfg.restMs;
+   if(Number(x.restStartedAt)!==restStartedAt||Number(x.restUntil)!==restUntil)changed=true;
+   x.restStartedAt=restStartedAt;x.restUntil=restUntil
   }
-  const playUntil=Number(x.playUntil);
-  if(now<playUntil)return x;
-  const restUntil=playUntil+REST_MS;
-  if(now<restUntil){x={phase:"rest",playUntil,restUntil,reason:"auto",updatedAt:now};write(x);return x}
-  x={phase:"ready",playUntil,restUntil,reason:"auto",readyAt:restUntil,updatedAt:now};write(x);return x
+  x.playMinutes=cfg.playMinutes;x.restMinutes=cfg.restMinutes;
+  if(changed){x.updatedAt=now;write(x)}
+  return x
  }
+
+ function resolve(now=Date.now()){
+  const cfg=timerConfig();
+  const sig=`${cfg.playMinutes}/${cfg.restMinutes}`;
+  if(sig!==lastConfigSig)lastConfigSig=sig;
+  let x=read();
+  if(!x||!Number.isFinite(Number(x.playUntil)))return fresh(now,cfg);
+  x=syncDurations(x,cfg,now);
+  if(x.phase==="ready")return x;
+
+  if(x.phase==="rest"){
+   const restStartedAt=Number(x.restStartedAt)||Number(x.playUntil)||now;
+   const restUntil=restStartedAt+cfg.restMs;
+   if(now<restUntil){
+    x.restStartedAt=restStartedAt;x.restUntil=restUntil;x.reason=x.reason||"auto";
+    return x
+   }
+   x={...x,phase:"ready",restStartedAt,restUntil,reason:x.reason||"auto",readyAt:restUntil,updatedAt:now};
+   write(x);return x
+  }
+
+  const startedAt=Number(x.startedAt)||Number(x.playUntil)-cfg.playMs;
+  const playUntil=startedAt+cfg.playMs;
+  x.startedAt=startedAt;x.playUntil=playUntil;
+  if(now<playUntil)return x;
+
+  const restStartedAt=playUntil,restUntil=restStartedAt+cfg.restMs;
+  if(now<restUntil){
+   x={...x,phase:"rest",playUntil,restStartedAt,restUntil,reason:"auto",updatedAt:now};
+   write(x);return x
+  }
+  x={...x,phase:"ready",playUntil,restStartedAt,restUntil,reason:"auto",readyAt:restUntil,updatedAt:now};
+  write(x);return x
+ }
+
  function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
+
  function ensureOverlay(state){
   let ov=document.getElementById("eyeRestOverlay");
   if(!ov){
    ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";
-   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule" id="eyeRestRule">10分休んだら → また30分遊べます</div><button type="button" class="eyeRestResumeBtn" id="eyeRestResumeBtn">ゲームを再開</button></div>`;
+   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">--:--</div><div class="eyeRestRule" id="eyeRestRule"></div><button type="button" class="eyeRestResumeBtn" id="eyeRestResumeBtn">ゲームを再開</button></div>`;
    document.body.appendChild(ov)
   }
+  const playMin=Math.max(1,Number(state?.playMinutes)||timerConfig().playMinutes);
+  const restMin=Math.max(1,Number(state?.restMinutes)||timerConfig().restMinutes);
   const ready=state?.phase==="ready",title=ov.querySelector("#eyeRestTitle"),txt=ov.querySelector("#eyeRestText"),rule=ov.querySelector("#eyeRestRule"),btn=ov.querySelector("#eyeRestResumeBtn");
   ov.classList.toggle("ready",ready);
   if(title)title.textContent=ready?"休憩終了！":"目を休めよう";
-  if(txt)txt.innerHTML=ready?"休憩時間が終わりました。<br>画面をタップするとゲームに戻り、そこから次の30分が始まります。":state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";
-  if(rule)rule.textContent=ready?"再開するまでプレイ時間は減りません":"10分休んだら → また30分遊べます";
+  if(txt)txt.innerHTML=ready
+   ?`休憩時間が終わりました。<br>画面をタップするとゲームに戻り、そこから次の${playMin}分が始まります。`
+   :state?.reason==="manual"
+    ?`自分から${restMin}分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。`
+    :`${playMin}分遊びました。最低${restMin}分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。`;
+  if(rule)rule.textContent=ready?"再開するまでプレイ時間は減りません":`${restMin}分休んだら → また${playMin}分遊べます`;
   if(btn)btn.hidden=!ready;
   return ov
  }
+
  function setLocked(lock,state){
   locked=lock;document.body.classList.toggle("eyeResting",lock);
   const main=document.querySelector("main"),buttons=document.querySelector(".headerBtns"),manual=document.getElementById("manualRestBtn");
   try{if(main)main.inert=lock;if(buttons)buttons.inert=lock;if(manual)manual.disabled=lock}catch{}
   if(lock)ensureOverlay(state);else document.getElementById("eyeRestOverlay")?.remove()
  }
- function startManualRest(){const now=Date.now(),x=resolve(now);if(x.phase==="rest"||x.phase==="ready")return;write({phase:"rest",playUntil:now,restUntil:now+REST_MS,reason:"manual",updatedAt:now});tick()}
- function resumePlay(){const x=read();if(x?.phase!=="ready")return;fresh(Date.now());tick()}
+
+ function startManualRest(){
+  const now=Date.now(),x=resolve(now);if(x.phase==="rest"||x.phase==="ready")return;
+  const cfg=timerConfig();
+  write({
+   phase:"rest",startedAt:Number(x.startedAt)||now,playUntil:now,restStartedAt:now,restUntil:now+cfg.restMs,
+   playMinutes:cfg.playMinutes,restMinutes:cfg.restMinutes,reason:"manual",updatedAt:now
+  });
+  tick()
+ }
+
+ function resumePlay(){const x=read();if(x?.phase!=="ready")return;fresh(Date.now(),timerConfig());tick()}
+
  function tick(){
-  const now=Date.now(),x=resolve(now),rest=x.phase==="rest",ready=x.phase==="ready",lock=rest||ready,until=rest?Number(x.restUntil):Number(x.playUntil),remain=ready?0:Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");
-  if(badge){badge.className=`eyeTimerBadge ${rest?"rest":ready?"ready":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${fmt(remain)}`:ready?"👁 再開待ち":`👁 あと ${fmt(remain)}`;badge.title=ready?"タップして再開すると30分カウント開始":"30分遊んだら10分休憩"}
+  const now=Date.now(),x=resolve(now),playMin=Math.max(1,Number(x.playMinutes)||DEFAULT_PLAY_MIN),restMin=Math.max(1,Number(x.restMinutes)||DEFAULT_REST_MIN),rest=x.phase==="rest",ready=x.phase==="ready",lock=rest||ready,until=rest?Number(x.restUntil):Number(x.playUntil),remain=ready?0:Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge"),manual=document.getElementById("manualRestBtn");
+  if(badge){
+   badge.className=`eyeTimerBadge ${rest?"rest":ready?"ready":remain<=60000?"danger":remain<=300000?"warn":""}`;
+   badge.textContent=rest?`🌿 休憩 ${fmt(remain)}`:ready?"👁 再開待ち":`👁 あと ${fmt(remain)}`;
+   badge.title=ready?`タップして再開すると${playMin}分カウント開始`:`${playMin}分遊んだら${restMin}分休憩`
+  }
+  if(manual){
+   manual.textContent=`🌿 ${restMin}分休憩`;
+   manual.title=`今から${restMin}分休憩します`
+  }
   setLocked(lock,x);
   const count=document.getElementById("eyeRestCountdown");if(count)count.textContent=ready?"再開できます":fmt(remain);
   if(typeof onTick==="function")onTick(now,x,remain)
  }
+
  function keydown(e){
   if(!locked)return;
   const ov=document.getElementById("eyeRestOverlay");
   if(read()?.phase==="ready"&&ov?.contains(e.target)&&(e.key==="Enter"||e.key===" ")){e.preventDefault();resumePlay();return}
   if(!ov?.contains(e.target)){e.preventDefault();e.stopImmediatePropagation()}
  }
- function storage(e){if(e.key===KEY||extraStorageKeys.includes(e.key))tick()}
+ function storage(e){if(e.key===KEY||extraStorageKeys.includes(e.key)||/(frenda|parent|admin|limit|care)/i.test(e.key||""))tick()}
  function visibility(){if(document.visibilityState==="visible")tick()}
  function click(e){
   const b=e.target.closest?.("#manualRestBtn");if(b&&!locked){startManualRest();return}
@@ -3944,7 +4091,7 @@ function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
   tick();handle=setInterval(tick,1000)
  }
  function stop(){if(handle)clearInterval(handle);handle=null;if(started){document.removeEventListener("keydown",keydown,true);window.removeEventListener("storage",storage);document.removeEventListener("visibilitychange",visibility);document.removeEventListener("click",click);started=false}}
- return Object.freeze({start,stop,tick,startManualRest,resumePlay,isLocked:()=>locked,resolve,format:fmt})
+ return Object.freeze({start,stop,tick,startManualRest,resumePlay,isLocked:()=>locked,resolve,format:fmt,timerConfig})
 }
 
 const eyeCare=createEyeCareResume({data:DATA,onTick:now=>updateExpeditionTimerBadge(now),extraStorageKeys:[EXPEDITION_TIMER_KEY]});
@@ -7545,6 +7692,14 @@ main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.17 / Updated: 2026-09-30 19:20 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 2.18 / Updated: 2026-09-30 21:35 JST -->
 </body>
 </html>
+
+<!-- Ver2.18:
+  ダンジョンのプレイ時間/休憩時間を30分/10分固定から管理者設定連動へ修正。
+  FRENDA_PARENTAL の設定API/設定オブジェクトと、frenda系localStorage設定を読み取り、
+  管理者メニューで指定したプレイ分数・休憩分数をタイマー、手動休憩、休憩画面の文言へ反映。
+  設定変更時は現在のプレイ/休憩サイクルにも即時反映し、旧30/10タイマー状態も開始時刻を推定して移行。
+  おでかけ探索はVer0.58の方針どおりプレイ時間制限対象外。
+-->
