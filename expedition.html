@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.50">
+<html lang="ja" data-app-version="0.52">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -291,7 +291,12 @@ function freeAnchorAtOrBelow(h){const x=Math.max(FREE_EXP_MIN_REWARD_HOURS,clamp
 function freeNextAnchor(h){const x=clampFreeHours(h);return FREE_EXP_ANCHORS.find(v=>v.h>x)||null}
 function lerp(a,b,t){return a+(b-a)*t}
 function freeRewardProfile(hours){
- const actual=clampFreeHours(hours),effective=Math.max(FREE_EXP_MIN_REWARD_HOURS,actual),lo=freeAnchorAtOrBelow(effective),hi=FREE_EXP_ANCHORS.find(v=>v.h>effective)||lo,t=hi.h===lo.h?0:(effective-lo.h)/(hi.h-lo.h);
+ const actual=clampFreeHours(hours);
+ if(actual<FREE_EXP_MIN_REWARD_HOURS)return {
+  actualHours:actual,effectiveHours:actual,tierHours:0,nextHours:FREE_EXP_MIN_REWARD_HOURS,
+  boxes:0,baseXp:0,baseBond:0,discovery:0,souvenirs:0,report:1,ruleHours:1,noReward:true
+ };
+ const effective=actual,lo=freeAnchorAtOrBelow(effective),hi=FREE_EXP_ANCHORS.find(v=>v.h>effective)||lo,t=hi.h===lo.h?0:(effective-lo.h)/(hi.h-lo.h);
  return {
   actualHours:actual,effectiveHours:effective,tierHours:lo.h,nextHours:hi.h===lo.h?null:hi.h,
   boxes:lo.boxes,
@@ -300,7 +305,8 @@ function freeRewardProfile(hours){
   discovery:Math.round(lerp(lo.discovery,hi.discovery,t)),
   souvenirs:lo.souvenirs,
   report:Math.max(lo.report,Math.round(lerp(lo.report,hi.report,t))),
-  ruleHours:effective>=8?8:effective>=4?4:1
+  ruleHours:effective>=8?8:effective>=4?4:1,
+  noReward:false
  }
 }
 function missionRewardProfile(m){if(m?.rewardProfile&&m?.settledAt)return m.rewardProfile;return freeRewardProfile(m?.settledHoursExact??missionElapsedHours(m))}
@@ -329,6 +335,25 @@ function freeReturnMilestoneHTML(d,p){
   const time=a.h===.5?"30分":`${a.h}h${a.h===12?" MAX":""}`;
   return `<div class="freeMilestone ${a.h===12?"max":""}"><b>${time}</b><span>🎁 ${a.boxes}箱</span><span class="rareRate">✨ ${rarePct==null?"編成後":`レア以上 ${rarePct}%`}</span>${bonus}</div>`
  }).join("")
+}
+
+function freeReturnDockGuideHTML(){
+ const d=readDungeon()||{},g=groupState(activeGroup),p=ensurePrepValid(activeGroup),m=g.mission;
+ let diff=Number(m?.difficulty||p?.difficulty)||highestDifficultyForDungeon(m?.dungeonId||p?.dungeonId)||1;
+ let rank="-",luckMul=1,hasTeam=false;
+ if(m&&Array.isArray(m.teamIds)&&m.teamIds.length){
+  hasTeam=true;rank=m.rank||"-";luckMul=missionLuckMultiplier(m)
+ }else if(Array.isArray(p?.teamIds)&&p.teamIds.length){
+  hasTeam=true;rank=scoreTeam(p.teamIds,p.dungeonId,diff).rank;
+  luckMul=luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds))
+ }
+ const rows=FREE_EXP_ANCHORS.map(a=>{
+  const rarePct=hasTeam?milestoneRarePct(a.h,diff,rank,luckMul):null;
+  const time=a.h===.5?"30分":`${a.h}時間`;
+  const bonus=a.h>=8?"★":a.h>=4?"＋":"";
+  return `<div class="freeGuideRow ${a.h===12?"max":""}"><b>${time}</b><span>${a.boxes}箱</span><em>${rarePct==null?"--":`${rarePct}%`}${bonus}</em></div>`
+ }).join("");
+ return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuideRows">${rows}</div><div class="freeGuideFoot"><span>✨ レア以上率</span><span>＋=UP枠　★=確定枠</span></div>`
 }
 
 const BASE_BOX=RULES.EXPEDITION_BASE_BOX;
@@ -498,6 +523,14 @@ function secretSpotBonusText(s){return `次回 ${THEMES[s.dungeonId]?.name||s.du
 function homeSecretSpotHTML(){const spots=activeSecretSpots();if(!spots.length)return"";return `<div class="secretSpotBanner"><b>🌟 ひみつの場所を発見！</b><small>次回の同じ探索先でボーナスが発動します。</small><div class="secretSpotList">${spots.map(s=>`<div class="secretSpotChip"><span>${THEMES[s.dungeonId]?.icon||"🌟"} ${esc(THEMES[s.dungeonId]?.name||s.dungeonId)} ランク${s.difficulty}<br><em>${esc(s.name)}</em></span><strong>次回ボーナス</strong></div>`).join("")}</div></div>`}
 function maybeDiscoverSecretSpot(m){if(m.secretSpotDiscovered!==undefined)return m.secretSpotDiscovered;if(m.secretSpotUsed){m.secretSpotDiscovered=null;return null}if(Math.random()>=Math.min(.75,secretSpotChance(m)*missionLuckMultiplier(m))){m.secretSpotDiscovered=null;return null}const labels=SECRET_SPOT_LABELS[m.dungeonId]||[`${THEMES[m.dungeonId]?.name||"探索先"}のひみつスポット`],name=pickRandom(labels);const spot={id:`spot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`,dungeonId:m.dungeonId,difficulty:m.difficulty,name,usesLeft:1,discoveredAt:Date.now()};exp.secretSpots=exp.secretSpots||{};exp.secretSpots[secretSpotKey(m.dungeonId,m.difficulty)]=spot;m.secretSpotDiscovered=spot;writeExp();return spot}
 function claimSecretSpotForMission(m){const spot=activeSecretSpot(m.dungeonId,m.difficulty);if(!spot)return null;m.secretSpotUsed={...spot};delete exp.secretSpots[secretSpotKey(m.dungeonId,m.difficulty)];writeExp();return m.secretSpotUsed}
+function restoreSecretSpotFromMission(m){
+ const spot=m?.secretSpotUsed;if(!spot)return false;
+ exp.secretSpots=exp.secretSpots||{};
+ const key=secretSpotKey(spot.dungeonId||m.dungeonId,spot.difficulty||m.difficulty);
+ if(!exp.secretSpots[key])exp.secretSpots[key]={...spot,usesLeft:Math.max(1,Number(spot.usesLeft)||1)};
+ m.secretSpotUsed=null;
+ return true
+}
 function secretSpotSummaryHTML(spot){if(!spot)return"";return `<div class="summarySecret"><b>🌟 ひみつの場所を発見！</b><div class="spotName">${esc(spot.name)}</div><small>${esc(secretSpotBonusText(spot))}</small></div>`}
 function journalIconForText(text){if(/足あと|気配|仲間|出会/.test(text))return "👣";if(/キノコ|葉|風|花|しずく|貝|鉱石|コイン|石/.test(text))return "🎒";if(/光|きら|ネオン|月|オーロラ|火花|輝/.test(text))return "✨";if(/休|ひと息|休憩/.test(text))return "☕";if(/ひみつ|秘密/.test(text))return "🌟";return "🧭"}
 function journalTitleForText(text){if(/ひみつ|秘密/.test(text))return "ひみつの場所";if(/足あと|気配|仲間|出会/.test(text))return "気になる気配";if(/キノコ|葉|風|花|しずく|貝|鉱石|コイン|石/.test(text))return "小さな発見";if(/光|きら|ネオン|月|オーロラ|火花|輝/.test(text))return "印象に残った景色";return "探索メモ"}
@@ -593,11 +626,30 @@ function settleMissionReturn(groupIndex=activeGroup){
  }
  applyMissionFindings(m);g.status="returned";writeExp();return true
 }
+function finishNoRewardReturn(groupIndex=activeGroup){
+ const g=groupState(groupIndex),m=g.mission;if(g.status!=="exploring"||!m)return false;
+ const restored=restoreSecretSpotFromMission(m);
+ g.lastTeamIds=m.teamIds.slice();
+ g.status="idle";
+ g.mission=null;
+ exp.mission=null;
+ writeExp();
+ setActiveGroup(groupIndex);
+ screen="home";
+ render();
+ UI.dialog.alert(`30分未満で帰還したため、今回の探索成果はありません。${restored?"\n\n使用予定だった「ひみつの場所」は消費せず戻しました。":""}`);
+ return true
+}
 function requestMissionReturn(groupIndex=activeGroup){
  const g=groupState(groupIndex),m=g.mission;if(g.status!=="exploring"||!m)return;
  const elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),short=elapsed<FREE_EXP_MIN_REWARD_HOURS;
- const note=short?`\n\n※30分未満のため、報酬は30分相当の最低成果として計算します。`:"";
- if(!UI.dialog.confirm(`グループ${groupIndex+1}を帰還させますか？\n\n探索時間 ${formatElapsedHours(elapsed)}\n成果箱 ${profile.boxes}個予定\n${freeNextMilestoneText(m)}${note}`))return;
+ if(short){
+  const secretNote=m.secretSpotUsed?"\nひみつの場所：消費しません":"";
+  if(!UI.dialog.confirm(`グループ${groupIndex+1}を帰還させますか？\n\n探索時間 ${formatElapsedHours(elapsed)}\n⚠️ 30分未満のため成果はありません。\n\n成果箱 0個\nEXP・絆 なし\n発見率・おみやげ なし\n卵・仲間・その他報酬 なし${secretNote}`))return;
+  finishNoRewardReturn(groupIndex);
+  return
+ }
+ if(!UI.dialog.confirm(`グループ${groupIndex+1}を帰還させますか？\n\n探索時間 ${formatElapsedHours(elapsed)}\n成果箱 ${profile.boxes}個予定\n${freeNextMilestoneText(m)}`))return;
  if(settleMissionReturn(groupIndex)){setActiveGroup(groupIndex);screen="return";render()}
 }
 function prepareReturnForGroup(){return false}
@@ -629,7 +681,7 @@ function completeMission(groupIndex=activeGroup){const g=groupState(groupIndex),
 function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return;if(!UI.dialog.confirm(`グループ${groupIndex+1}の探索を中止しますか？\nEXP・絆・成果は一切獲得できません。`))return;g.status="idle";g.mission=null;exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
 
 function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length)return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),d=readDungeon()||{},luckAverage=averageLuckForIds(d,ids),luckMultiplier=luckMultiplierFromAverage(luckAverage),now=Date.now();g.status="exploring";g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours:1,freeReturnVersion:1,rewardMode:"freeReturn",teamIds:ids,startAt:now,maxReturnAt:now+FREE_EXP_MAX_HOURS*3600000,returnAt:now+FREE_EXP_MAX_HOURS*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,luckAverage,luckMultiplier,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
-function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),diff=highestDifficultyForDungeon(p.dungeonId),s=scoreTeam(p.teamIds,p.dungeonId,diff);if(!p.teamIds.length)return;if(!diff)return;const names=p.teamIds.map(id=>rec(id)?.name_ja||id).join("・");if(UI.dialog.confirm(`グループ${groupIndex+1}\n${THEMES[p.dungeonId].name} ランク${diff}へ探索に出発します。\n\n${names}\n探索ランク ${s.rank}（${s.total}点）\n🍀 グループ運 ${averageLuckForIds(readDungeon()||{},p.teamIds).toFixed(1)} / 効果×${luckMultiplierFromAverage(averageLuckForIds(readDungeon()||{},p.teamIds)).toFixed(2)}\n\n帰還を押した時点まで探索します（最大12時間）。\n30分未満で帰還した場合は30分相当の最低成果です。\n\n探索中はこのピックを他の探索グループ・本編・特訓・進化で使用できません。`)){if(startMission(groupIndex))render()}}
+function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),diff=highestDifficultyForDungeon(p.dungeonId),s=scoreTeam(p.teamIds,p.dungeonId,diff);if(!p.teamIds.length)return;if(!diff)return;const names=p.teamIds.map(id=>rec(id)?.name_ja||id).join("・");if(UI.dialog.confirm(`グループ${groupIndex+1}\n${THEMES[p.dungeonId].name} ランク${diff}へ探索に出発します。\n\n${names}\n探索ランク ${s.rank}（${s.total}点）\n🍀 グループ運 ${averageLuckForIds(readDungeon()||{},p.teamIds).toFixed(1)} / 効果×${luckMultiplierFromAverage(averageLuckForIds(readDungeon()||{},p.teamIds)).toFixed(2)}\n\n帰還を押した時点まで探索します（最大12時間）。\n30分未満で帰還した場合は成果なしです。\n\n探索中はこのピックを他の探索グループ・本編・特訓・進化で使用できません。`)){if(startMission(groupIndex))render()}}
 function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
 
 function groupCardHTML(groupIndex){
@@ -637,7 +689,7 @@ function groupCardHTML(groupIndex){
  if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<div class="groupActionPair"><button class="groupAction ghost" data-status-group="${groupIndex}">状況</button><button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button></div>`}else if(status==="returned"&&m){sub='<span class="groupReturned">🎉 帰還</span>';action=`<button class="groupAction goldBtn" data-return-group="${groupIndex}">成果</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
  return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0"><div class="groupCardHead"><b>グループ${groupIndex+1}</b><span class="groupStatus">${status==="exploring"?"探索中":status==="returned"?"帰還済":"待機"}</span></div><div class="groupRankLine"><strong class="rank-${score.rank}">${score.rank}</strong><b>${score.total}点</b><em class="groupLuck">🍀${luckAvg.toFixed(1)} ×${luckMul.toFixed(2)}</em></div><div class="groupDest">${th?`${th.icon} ${esc(th.name)} <span>R${diff}</span>`:"派遣先未設定"}</div><div class="groupCardFoot">${sub}${action}</div></div>`
 }
-function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupCards">${[0,1].map(groupCardHTML).join("")}</div></div>`}
+function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1].map(groupCardHTML).join("")}</div></div></div>`}
 function bindGroupDock(){app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;const i=Number(el.dataset.group);setActiveGroup(i);const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-status-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.statusGroup));screen="explore";render()});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();requestMissionReturn(Number(b.dataset.returnNowGroup))})}
 
 const EXP_PICK_VIEW_KEY="frenda:expedition:pickView:v1";
@@ -687,7 +739,7 @@ function refreshPrepSelectionUI(d,p){
  const strip=document.getElementById("expSelectedStrip");
  if(strip){strip.innerHTML=prepSelectedStripHTML(d,p);bindPrepSelectedStrip(d,p)}
  const autoDungeon=document.getElementById("autoDungeonBtn");if(autoDungeon)autoDungeon.disabled=!p.teamIds.length;
- const milestones=document.getElementById("freeReturnMilestones");if(milestones)milestones.innerHTML=freeReturnMilestoneHTML(d,p);
+ const dockGuide=document.getElementById("freeReturnDockGuide");if(dockGuide)dockGuide.innerHTML=freeReturnDockGuideHTML();
  refreshPrepPickCardStates(p);
  refreshPrepGroupCard()
 }
@@ -710,7 +762,7 @@ function renderPrep(){
  const slots=prepSelectedStripHTML(d,p);
  const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)}<br>ポケエネ ${esc(r.poke_ene??"-")} / 絆Lv${bondLevel(d,id)} / 🍀運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>${recOk?`<small class="pickReason">${esc(r.move_type||"-")}わざが探索先に有利</small>`:""}`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card freeReturnGuide"><div class="freeReturnGuideMain"><b>⏱️ 自由探索</b><span>出発後、「帰還」を押した時点まで探索します。最大12時間。</span></div><div class="freeReturnMilestoneTitle"><b>成果アップの目安</b><span>現在の編成・派遣先・幸運を反映</span></div><div class="freeReturnMilestones" id="freeReturnMilestones">${freeReturnMilestoneHTML(d,p)}</div><small>🎁＝成果箱の個数。✨＝1箱あたりの基本「レア以上」確率です。探索ランク・派遣先ランク・幸運で変化します。4時間以降はレア率UP枠、8時間以降は最終1箱がレア以上確定。EXP・発見率などは途中の時間でも徐々に増加します。</small></div><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>`<button class="destinationCompact ${x.did===p.dungeonId?"active":""}" data-did="${x.did}"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted" style="margin-top:7px">ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn" ${p.teamIds.length?"":"disabled"}>🗺️ おまかせ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループ${otherGroupIndex()+1}の探索中ピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🎒 おみやげ・発見を見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>`<button class="destinationCompact ${x.did===p.dungeonId?"active":""}" data-did="${x.did}"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted" style="margin-top:7px">ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn" ${p.teamIds.length?"":"disabled"}>🗺️ おまかせ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループ${otherGroupIndex()+1}の探索中ピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🎒 おみやげ・発見を見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
@@ -728,7 +780,7 @@ function renderPrep(){
  bindExpeditionPickFilters();startTicker()
 }
 
-function renderExplore(){const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone" id="nextMilestone">${freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満は30分相当の最低成果として計算します。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}もう一方のグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);startTicker()}
+function renderExplore(){const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone ${profile.noReward?"noRewardYet":""}" id="nextMilestone">${profile.noReward?`⚠️ 30分到達まで成果なし・${freeNextMilestoneText(m)}`:freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満で帰還すると成果はありません。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}もう一方のグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);startTicker()}
 function renderReturn(){prepareReturnAll();const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="exploring"){screen="explore";return renderExplore()}if(m.stage==="welcome")return renderWelcome();if(m.stage==="report")return renderReport();if(m.stage==="findings")return renderFindings();if(m.stage==="growth")return renderGrowth();if(m.stage==="boxes")return renderBoxes();if(m.stage==="summary")return renderSummary();m.stage="welcome";writeExp();renderWelcome()}
 function renderWelcome(){const m=groupMission(),th=THEMES[m.dungeonId];app.innerHTML=`<div class="returnHero"><div class="kicker" style="color:#8de5ff">WELCOME BACK! / GROUP ${activeGroup+1}</div><h1>🧭 おかえり！</h1><p>${th.icon} ${esc(th.name)} ランク${m.difficulty}から帰ってきました</p><div class="returnTeam">${m.teamIds.map(id=>`<img src="${esc(imageOf(rec(id)))}" alt="">`).join("")}</div><div class="statusBig">探索ランク ${m.rank}</div><button class="goldBtn" id="nextBtn" style="margin-top:12px;font-size:16px">探索レポートを見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="report";writeExp();render()}}
 function renderReport(){const m=groupMission();app.innerHTML=`<div class="reportGroup"><div class="card"><div class="sectionTitle">📜 探索レポート</div><div class="timeline">${(m.report||reportFor(m)).map(x=>`<div class="timelineRow"><time>${new Date(x.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</time><span>${esc(x.text)}</span></div>`).join("")}</div></div>${journalHTML(m)}<div class="card"><button id="nextBtn" style="width:100%">🔎 発見とおみやげを見る</button></div></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="findings";writeExp();render()}}
@@ -1079,7 +1131,170 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.50 / Updated: 2026-09-30 20:30 JST -->
+
+<style id="v051-no-reward-under-30m">
+.nextMilestone.noRewardYet{
+  color:#a44b17!important;
+  background:#fff1df;
+  border:1px solid #e8b377;
+  border-radius:10px;
+  padding:7px 9px;
+}
+.freeReturnGuide>small b{
+  color:#9a4e16;
+}
+</style>
+
+
+<style id="v052-free-guide-left">
+/* Free exploration explanation is now a compact vertical table to the left of Group 1. */
+.groupDockLayout{
+  display:grid;
+  grid-template-columns:165px minmax(0,1fr);
+  gap:7px;
+  align-items:stretch;
+}
+.groupDockLayout .groupCards{
+  max-width:none!important;
+  margin:0!important;
+}
+.freeReturnDockGuide{
+  min-width:0;
+  padding:6px 7px;
+  border:1px solid #ffffff2b;
+  border-radius:12px;
+  background:linear-gradient(160deg,#123d55,#0b293c);
+  color:#fff;
+}
+.freeGuideHead{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:4px;
+  padding-bottom:4px;
+  border-bottom:1px solid #ffffff22;
+}
+.freeGuideHead b{
+  font-size:9px;
+  white-space:nowrap;
+}
+.freeGuideHead small{
+  font-size:6px;
+  color:#ffd88a;
+  font-weight:900;
+  white-space:nowrap;
+}
+.freeGuideRows{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0;
+}
+.freeGuideRow{
+  display:grid;
+  grid-template-columns:45px 34px minmax(0,1fr);
+  align-items:center;
+  gap:2px;
+  min-height:14px;
+  border-bottom:1px solid #ffffff12;
+  font-variant-numeric:tabular-nums;
+}
+.freeGuideRow:last-child{
+  border-bottom:0;
+}
+.freeGuideRow b{
+  font-size:7px;
+  color:#dff6ff;
+  white-space:nowrap;
+}
+.freeGuideRow span{
+  font-size:7px;
+  font-weight:1000;
+  color:#fff;
+  white-space:nowrap;
+}
+.freeGuideRow em{
+  justify-self:end;
+  font-size:6.5px;
+  font-style:normal;
+  font-weight:1000;
+  color:#ffd76f;
+  white-space:nowrap;
+}
+.freeGuideRow.max{
+  background:#ffffff0d;
+}
+.freeGuideRow.max b,
+.freeGuideRow.max span{
+  color:#ffe58a;
+}
+.freeGuideFoot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:3px;
+  margin-top:3px;
+  padding-top:3px;
+  border-top:1px solid #ffffff1c;
+}
+.freeGuideFoot span{
+  font-size:5.5px;
+  line-height:1.1;
+  color:#a9c8d6;
+  white-space:nowrap;
+}
+
+/* After moving the guide out of setupStack, keep desktop layout balanced. */
+@media(min-width:901px){
+  .setupStack{
+    grid-template-columns:.9fr 1.9fr!important;
+  }
+  .setupStack>.card:nth-child(2){
+    grid-row:1/span 2!important;
+    grid-column:2!important;
+  }
+  .setupStack>.collectionShortcut{
+    grid-column:1!important;
+  }
+}
+@media(max-width:600px){
+  .groupDockLayout{
+    grid-template-columns:118px minmax(0,1fr);
+    gap:4px;
+  }
+  .freeReturnDockGuide{
+    padding:5px 4px;
+    border-radius:10px;
+  }
+  .freeGuideHead{
+    display:block;
+  }
+  .freeGuideHead b{
+    display:block;
+    font-size:7px;
+  }
+  .freeGuideHead small{
+    display:block;
+    margin-top:1px;
+    font-size:5px;
+  }
+  .freeGuideRow{
+    grid-template-columns:34px 25px minmax(0,1fr);
+    gap:1px;
+    min-height:12px;
+  }
+  .freeGuideRow b,.freeGuideRow span{font-size:5.8px}
+  .freeGuideRow em{font-size:5.3px}
+  .freeGuideFoot{
+    display:block;
+  }
+  .freeGuideFoot span{
+    display:block;
+    font-size:4.8px;
+  }
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.52 / Updated: 2026-09-30 20:45 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1115,4 +1330,20 @@ loadEvolution();
 <!-- Ver0.50:
   探索中画面の「探索を中止する（成果なし）」ボタンを削除。
   探索終了操作は「帰還する」に一本化。
+-->
+
+<!-- Ver0.51:
+  30分未満の帰還は完全に成果なしへ変更。
+  成果箱・EXP・絆・発見率・おみやげ・卵・仲間・その他報酬をすべて0。
+  30分未満の帰還確認で無報酬を明示。
+  ひみつの場所を使用予定だった場合は未消費として探索先へ復元。
+  30分到達後から通常の自由探索成果を計算。
+-->
+
+<!-- Ver0.52:
+  自由探索の時間別説明を、上部グループカード領域の「グループ1の左側」へ移動。
+  30分→1箱、1時間→2箱…12時間→8箱を縦1列で表示。
+  各行に現在の編成・派遣先・幸運を反映したレア以上率も併記。
+  4時間以降のUP枠を＋、8時間以降の確定枠を★で表示。
+  従来の大きな自由探索説明カードは削除。
 -->
