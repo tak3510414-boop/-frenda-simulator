@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.02">
+<html lang="ja" data-app-version="2.03">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5249,12 +5249,12 @@ function renderSummary(){
  const addAlly=id=>{id=String(id||"");if(id&&!allySeen.has(id)){allySeen.add(id);newAllyIds.push(id)}};
  (x.captured||[]).forEach(addAlly);
  (x.hatchResults||[]).filter(v=>v&&!v.duplicate).forEach(v=>addAlly(v.pickId));
- const allySlots=Array.from({length:3},(_,i)=>{const id=newAllyIds[i],r=id?rec(id):null;return r?`<div class="result4AllySlot filled"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></div>`:`<div class="result4AllySlot empty"><span>＋</span><b>空き</b><small>新しい仲間なし</small></div>`}).join("");
+ const allySlots=Array.from({length:3},(_,i)=>{const id=newAllyIds[i],r=id?rec(id):null;return r?`<div class="result4AllySlot filled"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></div>`:`<div class="result4AllySlot empty"><span>—</span><b>今回はなし</b><small>獲得なし</small></div>`}).join("");
 
  const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"なし";
  const eggVisual=x.eggAward?eggVisualHTML(x.eggAward):'<div class="result4NoReward">—</div>';
  const unlocks=(x.unlocked||[]).map(v=>String(v));
- const unlockRows=(unlocks.length?unlocks.slice(0,3):["新しい解放はありません"]).map((v,i)=>`<div class="result4UnlockRow ${unlocks.length?"open":"empty"}"><span>${unlocks.length?"🔓":"・"}</span><b>${esc(v)}</b></div>`).join("");
+ const unlockRows=Array.from({length:3},(_,i)=>{const v=unlocks[i];return v?`<div class="result4UnlockRow open"><span>🔓</span><b>${esc(v)}</b></div>`:`<div class="result4UnlockRow empty"><span>—</span><b>なし</b></div>`}).join("");
 
  const xp=x.xpGained||{},drill=x.drillGained||{},coins=x.coinGained||{},bond=x.bondGained||[];
  const bondMap=new Map(bond.map(v=>[String(v.id),v]));
@@ -5281,18 +5281,30 @@ function renderSummary(){
 
  const title=clear?"ダンジョンクリア！":def?"全滅……":"撤退しました",
        kicker=clear?"DUNGEON CLEAR":def?"ADVENTURE END":"RETREAT";
- app.innerHTML=`<div class="card postRunSummary resultV4">
-   <div class="result4Hero ${clear?"clear":def?"defeat":"retreat"}"><div class="result4HeroIcon">${clear?"🏆":def?"💥":"🚪"}</div><div class="result4HeroText"><div class="result4Kicker">${kicker}</div><h2>${title}</h2><div class="result4Meta"><span>${esc(th.name)}</span><span>ランク${Number(x.difficulty)||1}</span><span>${clear?"地下10階 CLEAR":`地下${Number(x.floor)||1}階`}</span></div></div><div class="result4Saved">✓ 保存済み</div></div>
-   <div class="result4TopGrid">
-     <section class="result4Panel allies"><div class="result4PanelTitle">🤝 新しく仲間になったポケモン</div><div class="result4AllyGrid">${allySlots}</div></section>
-     <div class="result4RightStack">
-       <section class="result4Panel reward"><div class="result4PanelTitle">🥚 クリア報酬</div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加されました":"今回の卵報酬はありません"}</small></div></div></section>
-       <section class="result4Panel unlock"><div class="result4PanelTitle">🔓 新しく解放</div><div class="result4UnlockList">${unlockRows}</div></section>
+ app.innerHTML=`<div class="card postRunSummary resultV5">
+   <section class="result5Hero ${clear?"clear":def?"defeat":"retreat"}">
+     <div class="result5HeroIcon">${clear?"🏆":def?"💥":"🚪"}</div>
+     <div class="result5HeroText"><div class="result5Kicker">${kicker}</div><h2>${title}</h2><div class="result5Meta"><span>${esc(th.name)}</span><span>ランク${Number(x.difficulty)||1}</span><span>${clear?"B10F CLEAR":`B${Number(x.floor)||1}F`}</span></div></div>
+     <div class="result5HeroStamp">${clear?"CLEAR":"RESULT"}</div>
+   </section>
+
+   <section class="result5LootPanel">
+     <div class="result5SectionHead"><span>🎁</span><div><b>今回の戦利品</b><small>仲間・卵・解放された内容</small></div></div>
+     <div class="result5LootGrid">
+       <div class="result5LootGroup allies"><div class="result5LootLabel"><em>NEW</em><b>新しい仲間</b></div><div class="result4AllyGrid">${allySlots}</div></div>
+       <div class="result5LootGroup reward"><div class="result5LootLabel"><em>REWARD</em><b>クリア報酬</b></div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加":"今回は報酬なし"}</small></div></div></div>
+       <div class="result5LootGroup unlock"><div class="result5LootLabel"><em>UNLOCK</em><b>新しく解放</b></div><div class="result4UnlockList">${unlockRows}</div></div>
      </div>
-   </div>
-   <section class="result4Panel team"><div class="result4PanelTitle">👥 挑戦チーム結果</div><div class="result4TeamGrid">${teamCards}</div></section>
-   <section class="result4Panel record"><div class="result4PanelTitle">📊 今回の冒険記録</div><div class="result4RecordChips">${recordChips}</div></section>
-   <div class="result4Actions"><button type="button" class="ghost" id="summaryRetry">もう一度挑戦</button><button type="button" class="ghost" id="summaryDungeons">ダンジョン選択へ</button><button type="button" id="summaryHome">ホームへ</button></div>
+   </section>
+
+   <section class="result5TeamPanel">
+     <div class="result5SectionHead team"><span>👥</span><div><b>挑戦チーム結果</b><small>今回の成長・特訓・絆</small></div></div>
+     <div class="result4TeamGrid result5TeamGrid">${teamCards}</div>
+   </section>
+
+   <section class="result5RecordBar"><b>📊 冒険記録</b><div class="result4RecordChips">${recordChips}</div></section>
+
+   <div class="result5Actions"><button type="button" id="summaryRetry">↻ もう一度挑戦</button><button type="button" class="ghost" id="summaryDungeons">ダンジョン選択へ</button><button type="button" class="ghost" id="summaryHome">ホームへ</button></div>
  </div>`;
  const closeTo=dest=>{state.postRun=null;screen=dest;save();render()};
  const retry=document.getElementById("summaryRetry");if(retry)retry.onclick=()=>{const ids=(x.teamIds||[]).filter(id=>ownedEntry(id)&&!isExpeditionLocked(id)).slice(0,3);state.postRun=null;currentDungeon={id:x.dungeonId||"forest",difficulty:Number(x.difficulty)||1};teamSelection=ids;teamAutoNotice=ids.length?"前回の挑戦チームをセットしました。必要なら変更できます。":"";screen="team";save();render()};
@@ -6782,6 +6794,37 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV4{height:100%!important
  main.dungeonRunScreen[data-run-scene="dungeonEntry"] .dungeonEntryCard{width:94%!important;max-width:560px!important;margin:auto!important}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 2.02 / Updated: 2026-09-30 16:50 JST -->
+
+<style id="v203-result-visual-redesign">
+/* Ver2.03: stronger hierarchy for dungeon clear/result screen. */
+body[data-dungeon-page="postrun"] .postRunSummary.resultV5{
+  height:100%!important;max-height:100%!important;min-height:0!important;width:100%!important;margin:0!important;padding:10px 12px!important;
+  display:grid!important;grid-template-rows:auto minmax(0,.78fr) minmax(0,1.22fr) auto auto!important;gap:8px!important;overflow:hidden!important;
+  background:linear-gradient(155deg,#f6fbfd 0%,#edf5f8 58%,#e8f0f4 100%)!important;text-align:left!important;border-radius:18px!important;
+}
+.result5Hero{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px;border-radius:17px;overflow:hidden;color:#fff;background:linear-gradient(125deg,#143b50,#0b6d91);border:2px solid #6cc4df;box-shadow:0 7px 20px #163b4e24}
+.result5Hero:after{content:"";position:absolute;right:-35px;top:-75px;width:220px;height:220px;border-radius:50%;background:#ffffff10;box-shadow:-120px 95px 0 18px #ffffff08}.result5Hero.clear{background:linear-gradient(125deg,#183d50 0%,#116f8c 62%,#9a7420 145%);border-color:#f0cf69}.result5Hero.defeat{background:linear-gradient(125deg,#452b35,#8b3d49);border-color:#d88a96}.result5Hero.retreat{background:linear-gradient(125deg,#33434d,#526d7c);border-color:#9eb2be}
+.result5HeroIcon{position:relative;z-index:1;font-size:48px;filter:drop-shadow(0 4px 7px #0004)}.result5HeroText{position:relative;z-index:1;min-width:0}.result5Kicker{font-size:8px;font-weight:1000;letter-spacing:.22em;color:#9ae7ff}.result5Hero.clear .result5Kicker{color:#ffe49a}.result5Hero h2{margin:1px 0 5px!important;font-size:30px!important;line-height:1!important;color:#fff!important;text-shadow:0 2px 5px #0004}.result5Meta{display:flex;gap:5px;flex-wrap:wrap}.result5Meta span{padding:4px 8px;border-radius:999px;background:#ffffff18;border:1px solid #ffffff36;font-size:8px;font-weight:950;color:#fff}.result5HeroStamp{position:relative;z-index:1;align-self:start;padding:7px 10px;border-radius:10px;border:1px solid #ffffff45;background:#ffffff12;color:#fff8d7;font-size:10px;font-weight:1000;letter-spacing:.1em;transform:rotate(2deg)}
+.result5LootPanel,.result5TeamPanel{min-height:0;border:2px solid #d8e4ea;border-radius:15px;background:#ffffffd9;padding:8px 10px;overflow:hidden;box-shadow:0 4px 12px #203f5010}.result5LootPanel{background:linear-gradient(180deg,#fffdf5,#f7fafb);border-color:#e5d9aa}.result5TeamPanel{background:linear-gradient(180deg,#f5fbff,#eef7fb);border-color:#b9dceb}
+.result5SectionHead{display:flex;align-items:center;gap:7px;height:28px;margin-bottom:5px;color:#2a4c5f}.result5SectionHead>span{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:#fff1b9;font-size:15px}.result5SectionHead.team>span{background:#dff3ff}.result5SectionHead b{display:block;font-size:11px;line-height:1.05}.result5SectionHead small{display:block;margin-top:2px;font-size:6.5px;color:#788891}
+.result5LootGrid{height:calc(100% - 33px);min-height:0;display:grid;grid-template-columns:minmax(0,1.48fr) minmax(180px,.62fr) minmax(210px,.72fr);gap:7px}.result5LootGroup{min-height:0;border:1px solid #d9e4e7;border-radius:11px;padding:6px 7px;background:#fff;overflow:hidden;display:grid;grid-template-rows:auto minmax(0,1fr)}.result5LootGroup.allies{border-color:#b9ddc7;background:#f2fbf6}.result5LootGroup.reward{border-color:#e5cf72;background:#fff9d9}.result5LootGroup.unlock{border-color:#d6cbed;background:#f7f3ff}.result5LootLabel{display:flex;align-items:center;gap:6px;margin-bottom:5px}.result5LootLabel em{font-style:normal;padding:2px 5px;border-radius:999px;background:#203e4d;color:#fff;font-size:5.5px;font-weight:1000;letter-spacing:.08em}.result5LootGroup.reward .result5LootLabel em{background:#a77b08}.result5LootGroup.unlock .result5LootLabel em{background:#71529e}.result5LootLabel b{font-size:8.5px;color:#3c5665}
+.resultV5 .result4AllyGrid{height:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}.resultV5 .result4AllySlot{min-height:0!important;padding:5px!important;border-radius:9px!important;grid-template-columns:48px minmax(0,1fr)!important;column-gap:5px!important;background:#fff!important}.resultV5 .result4AllySlot img{width:48px!important;height:66px!important;border-radius:6px!important}.resultV5 .result4AllySlot b{font-size:8.5px!important}.resultV5 .result4AllySlot small{font-size:6px!important}.resultV5 .result4AllySlot.empty{opacity:.45!important;background:#f7faf8!important;border-style:dashed!important}.resultV5 .result4AllySlot.empty span{font-size:16px!important}.resultV5 .result4AllySlot.empty b{font-size:7px!important}.resultV5 .result4AllySlot.empty small{display:none!important}
+.resultV5 .result4RewardBody{height:100%!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:4px!important;text-align:center!important}.resultV5 .result4RewardBody .eggVisual{transform:scale(.78)!important;transform-origin:center!important;margin:-7px auto!important}.resultV5 .result4RewardBody b{font-size:10px!important;color:#674f00!important}.resultV5 .result4RewardBody small{font-size:5.8px!important;color:#826f2a!important}.resultV5 .result4NoReward{width:44px!important;height:44px!important;font-size:17px!important}
+.resultV5 .result4UnlockList{height:100%!important;display:grid!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:4px!important}.resultV5 .result4UnlockRow{min-height:0!important;padding:3px 5px!important;border-radius:7px!important}.resultV5 .result4UnlockRow b{font-size:7px!important}.resultV5 .result4UnlockRow.empty{opacity:.38!important}.resultV5 .result4UnlockRow.empty b{font-size:6.5px!important}
+.result5TeamGrid{height:calc(100% - 33px)!important;min-height:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}.resultV5 .result4TeamCard{min-height:0!important;display:grid!important;grid-template-rows:auto 1fr auto!important;gap:6px!important;padding:7px 8px!important;border:2px solid #c4dae5!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 8px #1b4a6510!important}.resultV5 .result4TeamHead{display:grid!important;grid-template-columns:50px minmax(0,1fr)!important;gap:7px!important;align-items:center!important}.resultV5 .result4TeamHead img{width:50px!important;height:69px!important;border-radius:7px!important}.resultV5 .result4TeamHead b{font-size:11px!important;color:#244454!important}.resultV5 .result4TeamHead small{font-size:6.5px!important}.resultV5 .result4TeamStats{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;align-content:center!important}.resultV5 .result4TeamStats span{display:grid!important;grid-template-columns:1fr!important;justify-items:center!important;gap:1px!important;padding:5px 4px!important;border-radius:8px!important;border:1px solid #e1e9ed!important;background:#f6f9fa!important}.resultV5 .result4TeamStats span:nth-child(1){background:#edf7ff!important;border-color:#cbe5f7!important}.resultV5 .result4TeamStats span:nth-child(2){background:#f2efff!important;border-color:#d9cff4!important}.resultV5 .result4TeamStats span:nth-child(3){background:#fff8dc!important;border-color:#ead68a!important}.resultV5 .result4TeamStats span:nth-child(4){background:#fff1f5!important;border-color:#eccbd5!important}.resultV5 .result4TeamStats small{font-size:6px!important;color:#73848d!important}.resultV5 .result4TeamStats b{font-size:10px!important;line-height:1.05!important;color:#235f82!important}.resultV5 .result4TeamStats span:nth-child(2) b{color:#6e55a8!important}.resultV5 .result4TeamStats span:nth-child(3) b{color:#8c6900!important}.resultV5 .result4TeamStats span:nth-child(4) b{color:#ac4766!important}.resultV5 .result4Hp{padding:4px 5px!important;border:0!important;border-radius:7px!important;background:#edf5f7!important;font-size:6.5px!important}.resultV5 .result4Hp b{font-size:7px!important}.resultV5 .result4TeamCard.empty{opacity:.4!important}
+.result5RecordBar{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center;padding:6px 8px;border:1px solid #d8e2e7;border-radius:11px;background:#f8fafb}.result5RecordBar>b{font-size:8px;color:#425d6b;white-space:nowrap}.resultV5 .result4RecordChips{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important}.resultV5 .result4RecordChips span{padding:5px 3px!important;border-radius:8px!important;font-size:6.5px!important;background:#fff!important}.resultV5 .result4RecordChips b{font-size:7px!important}
+.result5Actions{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:7px}.result5Actions button{min-height:40px!important;padding:7px!important;border-radius:11px!important;font-size:10px!important;font-weight:1000!important}.result5Actions #summaryRetry{background:linear-gradient(180deg,#ffb545,#ee7b1c)!important;color:#fff!important;box-shadow:0 3px 0 #b85b0c!important}.result5Actions #summaryDungeons{background:#eaf1f5!important;color:#315467!important}.result5Actions #summaryHome{background:linear-gradient(180deg,#169be9,#0876c4)!important;color:#fff!important;box-shadow:0 3px 0 #075b99!important}
+@media(max-width:700px){
+ body[data-dungeon-page="postrun"] #app{overflow:auto!important}
+ body[data-dungeon-page="postrun"] .postRunSummary.resultV5{height:auto!important;max-height:none!important;min-height:100%!important;display:flex!important;flex-direction:column!important;gap:6px!important;padding:7px!important;overflow:visible!important}
+ .result5Hero{grid-template-columns:auto minmax(0,1fr);gap:7px;padding:8px 9px;border-radius:13px}.result5HeroIcon{font-size:34px}.result5Hero h2{font-size:21px!important}.result5HeroStamp{display:none}.result5Kicker{font-size:6px}.result5Meta{gap:3px}.result5Meta span{font-size:6px;padding:2px 5px}
+ .result5LootPanel,.result5TeamPanel{padding:6px 7px;border-radius:11px;overflow:visible}.result5SectionHead{height:24px;margin-bottom:4px}.result5SectionHead>span{width:22px;height:22px;font-size:12px}.result5SectionHead b{font-size:9px}.result5SectionHead small{font-size:5.5px}
+ .result5LootGrid{height:auto;grid-template-columns:1fr 1fr!important;gap:5px}.result5LootGroup.allies{grid-column:1/-1}.result5LootGroup{padding:5px}.resultV5 .result4AllyGrid{height:auto!important;gap:4px!important}.resultV5 .result4AllySlot{grid-template-columns:31px minmax(0,1fr)!important;padding:3px!important}.resultV5 .result4AllySlot img{width:31px!important;height:43px!important}.resultV5 .result4AllySlot b{font-size:6.5px!important}.resultV5 .result4AllySlot small{font-size:5px!important}.resultV5 .result4RewardBody{min-height:72px!important}.resultV5 .result4RewardBody .eggVisual{transform:scale(.55)!important}.resultV5 .result4UnlockList{min-height:72px!important}.resultV5 .result4UnlockRow b{font-size:5.8px!important}
+ .result5TeamGrid{height:auto!important;grid-template-columns:1fr!important;gap:5px!important}.resultV5 .result4TeamCard{grid-template-columns:56px minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;gap:4px 6px!important;padding:5px 6px!important;align-items:center!important}.resultV5 .result4TeamHead{grid-row:1/3!important;grid-template-columns:1fr!important;text-align:center!important;gap:2px!important}.resultV5 .result4TeamHead img{width:42px!important;height:58px!important;margin:auto!important}.resultV5 .result4TeamHead b{font-size:7px!important}.resultV5 .result4TeamHead small{font-size:5px!important}.resultV5 .result4TeamStats{grid-column:2!important;grid-row:1/3!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3px!important}.resultV5 .result4TeamStats span{padding:3px 2px!important}.resultV5 .result4TeamStats small{font-size:4.8px!important}.resultV5 .result4TeamStats b{font-size:7px!important}.resultV5 .result4Hp{grid-column:3!important;grid-row:1/3!important;display:grid!important;gap:2px!important;text-align:center!important;padding:5px!important;font-size:5px!important}.resultV5 .result4Hp b{font-size:6px!important}
+ .result5RecordBar{grid-template-columns:1fr;gap:4px;padding:5px}.result5RecordBar>b{font-size:7px}.resultV5 .result4RecordChips{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:3px!important}.resultV5 .result4RecordChips span{padding:4px 2px!important;font-size:5.5px!important}.resultV5 .result4RecordChips b{font-size:6px!important}
+ .result5Actions{grid-template-columns:1fr 1fr!important;gap:4px}.result5Actions #summaryRetry{grid-column:1/-1}.result5Actions button{min-height:34px!important;font-size:8px!important;padding:5px 3px!important}
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 2.03 / Updated: 2026-09-30 17:00 JST -->
 </body>
 </html>
