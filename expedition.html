@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.58">
+<html lang="ja" data-app-version="0.59">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -338,7 +338,7 @@ function migrateMissionToFreeReturn(g){
  m.migratedAt=Date.now();
  return true
 }
-function normalizeGroup(g,id){g=g&&typeof g==="object"?g:defaultGroup(id);g.id=id;if(g.status==="running")g.status="exploring";g.status=["idle","exploring","returned"].includes(g.status)?g.status:"idle";g.lastTeamIds=Array.isArray(g.lastTeamIds)?g.lastTeamIds:[];g.prep=g.prep&&typeof g.prep==="object"?g.prep:{};g.prep.dungeonId=g.prep.dungeonId||null;g.prep.difficulty=Number.isFinite(Number(g.prep.difficulty))?Number(g.prep.difficulty):null;g.prep.hours=[1,4,8].includes(Number(g.prep.hours))?Number(g.prep.hours):8;g.prep.teamIds=Array.isArray(g.prep.teamIds)?g.prep.teamIds.slice(0,3):[];if(!g.mission)g.mission=null;migrateMissionToFreeReturn(g);return g}
+function normalizeGroup(g,id){g=g&&typeof g==="object"?g:defaultGroup(id);g.id=id;if(g.status==="running")g.status="exploring";g.status=["idle","exploring","returned"].includes(g.status)?g.status:"idle";g.lastTeamIds=Array.isArray(g.lastTeamIds)?g.lastTeamIds:[];g.prep=g.prep&&typeof g.prep==="object"?g.prep:{};g.prep.dungeonId=g.prep.dungeonId||null;g.prep.difficulty=Number.isFinite(Number(g.prep.difficulty))?Number(g.prep.difficulty):null;g.prep.hours=[1,4,8].includes(Number(g.prep.hours))?Number(g.prep.hours):8;g.prep.teamIds=Array.isArray(g.prep.teamIds)?g.prep.teamIds.slice(0,3):[];if(!g.mission)g.mission=null;migrateMissionToFreeReturn(g);if(g.status==="returned"&&g.mission)repairReturnedReport(g.mission);return g}
 function legacyMissionStatus(x,m){if(x?.status==="returned")return"returned";if(["welcome","report","findings","growth","boxes","summary"].includes(m?.stage))return"returned";return"exploring"}
 function cloneLegacyMission(m){if(!m||typeof m!=="object")return null;return {...m,teamIds:Array.isArray(m.teamIds)?m.teamIds.slice(0,3):[],boxes:Array.isArray(m.boxes)?m.boxes.map(x=>({...x})):m.boxes,report:Array.isArray(m.report)?m.report.map(x=>({...x})):m.report,liveReport:Array.isArray(m.liveReport)?m.liveReport.map(x=>({...x})):m.liveReport,summary:Array.isArray(m.summary)?m.summary.slice():m.summary}}
 function normalizeExp(x){
@@ -458,7 +458,7 @@ function restoreSecretSpotFromMission(m){
 function secretSpotSummaryHTML(spot){if(!spot)return"";return `<div class="summarySecret"><b>🌟 ひみつの場所を発見！</b><div class="spotName">${esc(spot.name)}</div><small>${esc(secretSpotBonusText(spot))}</small></div>`}
 function journalIconForText(text){if(/足あと|気配|仲間|出会/.test(text))return "👣";if(/キノコ|葉|風|花|しずく|貝|鉱石|コイン|石/.test(text))return "🎒";if(/光|きら|ネオン|月|オーロラ|火花|輝/.test(text))return "✨";if(/休|ひと息|休憩/.test(text))return "☕";if(/ひみつ|秘密/.test(text))return "🌟";return "🧭"}
 function journalTitleForText(text){if(/ひみつ|秘密/.test(text))return "ひみつの場所";if(/足あと|気配|仲間|出会/.test(text))return "気になる気配";if(/キノコ|葉|風|花|しずく|貝|鉱石|コイン|石/.test(text))return "小さな発見";if(/光|きら|ネオン|月|オーロラ|火花|輝/.test(text))return "印象に残った景色";return "探索メモ"}
-function journalEventsFor(m){const base=(reportFor(m)||[]).slice(1,-1);const rows=base.map(x=>({time:x.time,text:x.text,icon:journalIconForText(x.text),title:journalTitleForText(x.text),secret:/ひみつ|秘密/.test(x.text)}));if(m.secretSpotDiscovered)rows.push({time:(m.returnAt||Date.now())-30000,text:`ひみつの場所「${m.secretSpotDiscovered.name}」を見つけた！ 次回ここを調べるとボーナス。`,icon:"🌟",title:"ひみつの場所",secret:true});return rows.sort((a,b)=>a.time-b.time)}
+function journalEventsFor(m){const base=((Array.isArray(m?.report)&&m.report.length?m.report:reportFor(m))||[]).slice(1,-1);const rows=base.map(x=>({time:x.time,text:x.text,icon:journalIconForText(x.text),title:journalTitleForText(x.text),secret:/ひみつ|秘密/.test(x.text)}));if(m.secretSpotDiscovered)rows.push({time:(m.returnAt||Date.now())-30000,text:`ひみつの場所「${m.secretSpotDiscovered.name}」を見つけた！ 次回ここを調べるとボーナス。`,icon:"🌟",title:"ひみつの場所",secret:true});return rows.sort((a,b)=>a.time-b.time)}
 function journalHTML(m){const rows=journalEventsFor(m);return `<div class="journalCard"><div class="sectionTitle">📒 探索中の出来事ログ</div>${rows.map(x=>`<div class="journalEvent ${x.secret?"secret":""}"><div class="ico">${x.icon}</div><div><b>${esc(x.title)}</b><small>${new Date(x.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</small><p>${esc(x.text)}</p></div></div>`).join("")||'<div class="muted">今回は特別な出来事は記録されませんでした。</div>'}</div>`}
 
 function splitRegionalName(name){for(const r of REGION_PREFIXES)if(String(name||"").startsWith(r))return{base:String(name).slice(r.length),region:r};return{base:String(name||""),region:null}}
@@ -564,7 +564,56 @@ function buildLiveReport(m){const th=THEMES[m.dungeonId],arr=REPORTS[m.dungeonId
 function ensureLiveReport(m){if(!m)return[];if(!Array.isArray(m.liveReport)||!m.liveReport.length)m.liveReport=buildLiveReport(m);return m.liveReport}
 function visibleLiveReport(m,now=Date.now()){return ensureLiveReport(m).filter(x=>Number(x.time)<=now)}
 function liveLogHTML(m,now=Date.now()){const rows=visibleLiveReport(m,now),total=Math.max(1,FREE_EXP_ANCHORS[FREE_EXP_ANCHORS.length-1].report-1),body=rows.map((x,i)=>`<div class="timelineRow${i===rows.length-1?" latest":""}"><time>${new Date(x.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</time><span>${esc(x.text)}</span></div>`).join("");return `<div class="liveLogHead"><b>📜 現在までの探索ログ</b><small>${rows.length}/${total}件</small></div><div class="liveTimeline">${body||'<div class="liveLogWaiting">探索の最初の報告を待っています……</div>'}${Date.now()<m.returnAt?'<div class="liveLogWaiting">この先の出来事は、時間が進むと少しずつ追加されます。</div>':""}</div>`}
-function reportFor(m){const out=ensureLiveReport(m).map(x=>({time:x.time,text:x.text})),end=m.returnAt,total=Math.max(1,end-m.startAt);if(m.secretSpotUsed)out.push({time:end-Math.min(9*60000,Math.round(total*.09)),text:`ひみつの場所「${m.secretSpotUsed.name}」を調査し、いつもより奥まで進めた！`});if(m.boxes?.some(b=>b.reward?.type==="companion"))out.push({time:end-Math.min(5*60000,Math.round(total*.04)),text:"帰り道。派遣隊の後ろから、もうひとつ足音が聞こえた……"});else if(m.boxes?.some(b=>b.reward?.type==="egg"))out.push({time:end-Math.min(5*60000,Math.round(total*.04)),text:"帰り道、何かを大切そうに抱えているようだ……"});if(m.secretSpotDiscovered)out.push({time:end-Math.min(2*60000,Math.round(total*.02)),text:`ひみつの場所「${m.secretSpotDiscovered.name}」を見つけた！ 次回ここを調べるとボーナス。`});out.push({time:end,text:m.rank==="S"?"息の合った探索を終え、無事に帰還した！":m.rank==="D"?"苦戦しながらも、無事に帰還した。":"探索を終え、無事に帰還した。"});return out.sort((a,b)=>a.time-b.time)}
+function finalReportMidCount(m){
+ const h=clampFreeHours(m?.settledHoursExact??((Number(m?.returnAt)-Number(m?.startAt))/3600000));
+ if(h<FREE_EXP_MIN_REWARD_HOURS)return 0;
+ if(h<1)return 1;
+ if(h<2)return 2;
+ if(h<4)return 3;
+ if(h<6)return 4;
+ if(h<8)return 5;
+ if(h<10)return 6;
+ return 7
+}
+function finalReportTexts(m,count){
+ const pool=REPORTS[m.dungeonId]||[],visible=ensureLiveReport(m).filter(x=>Number(x.time)>Number(m.startAt)&&Number(x.time)<Number(m.returnAt)).map(x=>x.text),out=[],used=new Set();
+ for(const txt of visible){if(txt&&!used.has(txt)&&out.length<count){used.add(txt);out.push(txt)}}
+ while(out.length<count){
+  let txt="";
+  for(let k=0;k<24;k++){const cand=pickRandom(pool);if(cand&&!used.has(cand)){txt=cand;break}}
+  txt=txt||pickRandom(pool)||"慎重に奥へ進んだ。";
+  used.add(txt);out.push(txt)
+ }
+ return out
+}
+function reportFor(m){
+ const start=Number(m?.startAt)||Date.now(),end=Math.max(start,Number(m?.settledAt||m?.returnAt)||start),total=Math.max(1,end-start),th=THEMES[m.dungeonId],midCount=finalReportMidCount(m),texts=finalReportTexts(m,midCount),out=[];
+ out.push({time:start,text:`${th?.name||"探索先"} ランク${m.difficulty}へ出発した。`});
+ for(let i=0;i<midCount;i++){
+  let txt=texts[i]||"慎重に奥へ進んだ。";
+  if(i===0&&m.scoreParts?.type>=18)txt=`タイプ相性を活かし、${txt}`;
+  else if(i===midCount-1&&m.rank==="S")txt=`息の合った動きで、${txt}`;
+  else if(i===midCount-1&&m.rank==="D")txt=`苦戦しながらも、${txt}`;
+  const t=start+Math.round(total*(i+1)/(midCount+1));
+  out.push({time:Math.min(end-1,Math.max(start+1,t)),text:txt})
+ }
+ const boundedBeforeEnd=(desired,minGap=1000)=>Math.max(start+1,Math.min(end-minGap,desired));
+ if(m.secretSpotUsed&&end>start+2000)out.push({time:boundedBeforeEnd(end-Math.min(9*60000,Math.round(total*.09)),1500),text:`ひみつの場所「${m.secretSpotUsed.name}」を調査し、いつもより奥まで進めた！`});
+ if(m.boxes?.some(b=>b.reward?.type==="companion")&&end>start+2000)out.push({time:boundedBeforeEnd(end-Math.min(5*60000,Math.round(total*.04)),1200),text:"帰り道。派遣隊の後ろから、もうひとつ足音が聞こえた……"});
+ else if(m.boxes?.some(b=>b.reward?.type==="egg")&&end>start+2000)out.push({time:boundedBeforeEnd(end-Math.min(5*60000,Math.round(total*.04)),1200),text:"帰り道、何かを大切そうに抱えているようだ……"});
+ if(m.secretSpotDiscovered&&end>start+2000)out.push({time:boundedBeforeEnd(end-Math.min(2*60000,Math.round(total*.02)),800),text:`ひみつの場所「${m.secretSpotDiscovered.name}」を見つけた！ 次回ここを調べるとボーナス。`});
+ out.push({time:end,text:m.rank==="S"?"息の合った探索を終え、無事に帰還した！":m.rank==="D"?"苦戦しながらも、無事に帰還した。":"探索を終え、無事に帰還した。"});
+ return out.filter(x=>Number(x.time)>=start&&Number(x.time)<=end).sort((a,b)=>a.time-b.time)
+}
+function repairReturnedReport(m){
+ if(!m||!Number.isFinite(Number(m.startAt))||!Number.isFinite(Number(m.returnAt)))return false;
+ const start=Number(m.startAt),end=Number(m.returnAt),rows=Array.isArray(m.report)?m.report:[];
+ const invalid=!rows.length||rows.some(x=>!Number.isFinite(Number(x?.time))||Number(x.time)<start||Number(x.time)>end);
+ if(!invalid)return false;
+ m.report=reportFor(m);
+ m.reportRepairedV059=true;
+ return true
+}
 
 function settleMissionReturn(groupIndex=activeGroup){
  const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return false;
@@ -585,7 +634,7 @@ function settleMissionReturn(groupIndex=activeGroup){
    if(last.rarity==="normal"){last.rarity="rare";last.reward=buildReward("rare",m)}
    else if(last.rarity==="rare"&&Math.random()<.35){last.rarity="jackpot";last.reward=buildReward("jackpot",m)}
   }
-  generateMissionFindings(m);maybeDiscoverSecretSpot(m);m.report=reportFor(m);m.stage="welcome";m.baseApplied=false;m.summary=[]
+  generateMissionFindings(m);maybeDiscoverSecretSpot(m);m.report=reportFor(m);m.reportGeneratedV059=true;m.stage="welcome";m.baseApplied=false;m.summary=[]
  }
  applyMissionFindings(m);g.status="returned";writeExp();return true
 }
@@ -1379,7 +1428,7 @@ header .head{
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.58 / Updated: 2026-09-30 21:25 JST -->
+<!-- FRENDA_EXPEDITION_VERSION: 0.59 / Updated: 2026-09-30 21:30 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1475,4 +1524,13 @@ header .head{
   30分プレイ/10分休憩タイマー、手動休憩ボタン、休憩ロック画面、管理者長押し解除をすべて廃止。
   ダンジョン側の時間制限設定・共有タイマーデータには触れず、おでかけ探索だけが時間制限を無視する。
   探索そのものの「最大12時間」は報酬計算上の探索時間上限として維持。
+-->
+
+<!-- Ver0.59:
+  自由探索の帰還レポート時刻を実探索時間に合わせて修正。
+  12時間予定で先行生成したliveReportをそのまま帰還レポートへ流用せず、
+  実際の出発時刻〜帰還時刻の範囲内で出来事を再配置する。
+  30分探索ならログも30分間に収まり、未来時刻の出来事は表示しない。
+  旧バージョンで既に保存された未来時刻入りの帰還レポートも読み込み時に自動修復。
+  探索ジャーナルも保存済み帰還レポートと同じ出来事を使用する。
 -->
