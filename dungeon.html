@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="1.93">
+<html lang="ja" data-app-version="1.94">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4896,12 +4896,12 @@ function renderTeamSelect(){
  cards=cards.slice().sort((a,b)=>teamPickFilter.sort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):teamPickFilter.sort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):teamPickFilter.sort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):teamPickFilter.sort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):teamPickFilter.sort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):teamPickFilter.sort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
  const last=validLastTeam(need);
  const selectedSlots=UI.selectedStrip.html({scope:"dungeon-team",ids:teamSelection,max:need,resolve:rec,imageOf:r=>imageOf(r),nameOf:r=>r.name_ja,metaFor:r=>compareTypeText(r),emptyLabel:"未選択",slotNoun:"体目"});
- const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid"><input id="teamSearchNew" type="search" placeholder="名前・ピックNo.で検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew"><option value="standard" ${teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${teamPickFilter.sort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${teamPickFilter.sort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${teamPickFilter.sort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${teamPickFilter.sort==="luck"?"selected":""}>幸運高い順</option></select></div><div class="ownedFilterFoot"><span>${cards.length}/${allCards.length}枚</span></div></div>`;
+ const filterHtml=`<div class="ownedFilterPanel teamOwnedFilter"><div class="ownedFilterGrid teamFilterGridOneLine"><input id="teamSearchNew" type="search" placeholder="検索" value="${esc(teamPickFilter.search||"")}"><select id="teamTypeNew"><option value="all">タイプ</option>${types.map(t=>`<option value="${esc(t)}" ${teamPickFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="teamGradeNew"><option value="all">★</option>${grades.map(g=>`<option value="${g}" ${String(teamPickFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="teamSortNew"><option value="standard" ${teamPickFilter.sort==="standard"?"selected":""}>番号順</option><option value="name" ${teamPickFilter.sort==="name"?"selected":""}>名前順</option><option value="grade" ${teamPickFilter.sort==="grade"?"selected":""}>★高い順</option><option value="energy" ${teamPickFilter.sort==="energy"?"selected":""}>ポケエネ順</option><option value="evolution" ${teamPickFilter.sort==="evolution"?"selected":""}>進化P順</option><option value="drill" ${teamPickFilter.sort==="drill"?"selected":""}>特訓P順</option><option value="luck" ${teamPickFilter.sort==="luck"?"selected":""}>幸運順</option></select></div></div>`;
  const cardsHtml=cards.length?cards.map(r=>{
    const id=r.master_id,locked=isExpeditionLocked(id),sel=teamSelection.includes(id),pb=state.permanentBoosts[id]||{},ri=teamRecommendationInfo(r);
    return `<div class="pickCard ownedFrontCardV190 teamManagedCard ${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}" ${locked?"":`data-team-pick="${esc(id)}"`} role="button" tabindex="${locked?"-1":"0"}">${ri.recommended?'<span class="recommendMark">🔥 オススメ</span>':""}${sel?'<span class="selectMark">選択中</span>':""}<div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt="">${ownedRelationBoxHTML(id)}</div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${ri.recommended?`<div class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</div>`:""}${locked?'<div class="ownedDetailHint">🧭 探索中：編成不可</div>':""}</div>`
  }).join(""):`<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>`;
- app.innerHTML=`<div class="card teamSelectCard"><div class="row spread teamSelectHead"><div class="sectionTitle">挑戦チーム編成</div>${gridSizeControlHTML("team",teamViewSize)}</div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ランク${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div><div class="muted" style="margin:10px 0 6px">${need}体を選択してください。現在 ${teamSelection.length}/${need}体。</div>${selectedSlots}<div class="teamCompareActions teamCompareActionsTop"><button class="ghost" id="teamBack">戻る</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button><button id="startRunBtn" ${need>0&&teamSelection.length===need?"":"disabled"}>このチームで挑戦</button></div><div class="teamTools"><div class="teamQuickActions three"><button type="button" class="ghost" id="lastTeamBtn" ${last.length?"":"disabled"}>↩ 前回編成</button><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button><button type="button" class="ghost teamClearBtn" id="teamClearBtn" ${teamSelection.length?"":"disabled"}>選択クリア</button></div>${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid size-${teamViewSize}">${cardsHtml}</div></div>`;
+ app.innerHTML=`<div class="card teamSelectCard"><div class="row spread teamSelectHead"><div class="sectionTitle">挑戦チーム編成</div><div class="teamHeadRight">${gridSizeControlHTML("team",teamViewSize)}<button class="ghost teamBackMini" id="teamBack">戻る</button></div></div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ランク${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div><div class="muted" style="margin:10px 0 6px">${need}体を選択してください。現在 ${teamSelection.length}/${need}体。</div>${selectedSlots}<div class="teamCompareActions teamCompareActionsTop"><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button><button id="startRunBtn" ${need>0&&teamSelection.length===need?"":"disabled"}>このチームで挑戦</button><button type="button" class="ghost teamClearBtn" id="teamClearBtn" ${teamSelection.length?"":"disabled"}>選択クリア</button></div><div class="teamTools">${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid size-${teamViewSize}">${cardsHtml}</div></div>`;
  app.querySelectorAll("[data-team-pick]").forEach(c=>{const toggle=()=>{teamAutoNotice="";teamSelection=UI.selection.toggle(teamSelection,c.dataset.teamPick,need);renderTeamSelect()};c.onclick=toggle;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle()}}});
  UI.viewSize.bind({root:app,scope:"team",key:GRID_SIZE_KEY_PREFIX+"team",onChange:size=>{teamViewSize=size;renderTeamSelect()}});
  UI.selectedStrip.bind({root:app,scope:"dungeon-team",onRemove:id=>{teamAutoNotice="";teamSelection=UI.selection.remove(teamSelection,id);renderTeamSelect()}});
@@ -6397,7 +6397,7 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
 }
 </style>
 <style id="v192-team-owned-fixes">
-/* Ver1.93: team action buttons moved near selected picks, normal page scrolling restored, and mobile team cards widened. */
+/* Ver1.94: team action buttons and filters condensed to one row; back button moved beside size controls. */
 .teamSelectHead{align-items:center;margin-bottom:8px}
 .teamSelectGrid.size-large{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important;gap:10px!important}
 .teamSelectGrid.size-medium{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important;gap:7px!important}
@@ -6476,6 +6476,31 @@ body[data-dungeon-page="team"] .teamSelectGrid{min-height:0!important;max-height
   body[data-dungeon-page="team"] .teamSelectGrid.size-small{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important}
 }
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 1.93 / Updated: 2026-09-30 15:40 JST -->
+
+<style id="v194-team-layout-one-row">
+/* Ver1.94: team action buttons and filters in one row, back button near size selector. */
+body[data-dungeon-page="team"] .teamHeadRight{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:nowrap!important}
+body[data-dungeon-page="team"] .teamBackMini{min-height:34px!important;padding:6px 10px!important;white-space:nowrap!important}
+body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
+body[data-dungeon-page="team"] .teamCompareActionsTop button{min-height:36px!important;padding:6px 4px!important;font-size:9.5px!important;line-height:1.15!important}
+body[data-dungeon-page="team"] .teamTools{padding:6px!important;margin-bottom:8px!important}
+body[data-dungeon-page="team"] .teamQuickActions{display:none!important}
+body[data-dungeon-page="team"] .teamOwnedFilter{margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+body[data-dungeon-page="team"] .teamFilterGridOneLine{display:grid!important;grid-template-columns:minmax(118px,1.5fr) minmax(70px,.8fr) minmax(58px,.62fr) minmax(88px,.95fr)!important;gap:5px!important;align-items:center!important}
+body[data-dungeon-page="team"] .teamFilterGridOneLine input,
+body[data-dungeon-page="team"] .teamFilterGridOneLine select{width:100%!important;min-width:0!important;padding:7px 7px!important;border-radius:10px!important;font-size:10px!important;height:36px!important;min-height:36px!important}
+@media(max-width:700px){
+  body[data-dungeon-page="team"] .teamSelectHead{align-items:center!important}
+  body[data-dungeon-page="team"] .teamHeadRight{gap:4px!important}
+  body[data-dungeon-page="team"] .teamBackMini{min-height:32px!important;padding:5px 8px!important;font-size:9px!important}
+  body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;margin-top:6px!important;margin-bottom:8px!important}
+  body[data-dungeon-page="team"] .teamCompareActionsTop button{min-height:34px!important;padding:5px 2px!important;font-size:8.2px!important;letter-spacing:-.02em!important}
+  body[data-dungeon-page="team"] .teamTools{padding:4px!important;margin-bottom:6px!important}
+  body[data-dungeon-page="team"] .teamFilterGridOneLine{grid-template-columns:minmax(108px,1.55fr) minmax(64px,.82fr) minmax(48px,.56fr) minmax(80px,.92fr)!important;gap:4px!important}
+  body[data-dungeon-page="team"] .teamFilterGridOneLine input,
+  body[data-dungeon-page="team"] .teamFilterGridOneLine select{padding:5px 4px!important;font-size:8px!important;height:32px!important;min-height:32px!important}
+}
+</style>
+<!-- FRENDA_DUNGEON_VERSION: 1.94 / Updated: 2026-09-30 15:50 JST -->
 </body>
 </html>
