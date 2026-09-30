@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.56">
+<html lang="ja" data-app-version="0.57">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -210,11 +210,12 @@ function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
   let ov=document.getElementById("eyeRestOverlay");
   if(!ov){
    ov=document.createElement("div");ov.id="eyeRestOverlay";ov.className="eyeRestOverlay";
-   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule" id="eyeRestRule">10分休んだら → また30分遊べます</div><button type="button" class="eyeRestResumeBtn" id="eyeRestResumeBtn">ゲームを再開</button></div>`;
+   ov.innerHTML=`<div class="eyeRestPanel" role="status" aria-live="polite"><div class="eyeRestIcon">🌿👀</div><div class="eyeRestTitle" id="eyeRestTitle">目を休めよう</div><div class="eyeRestText" id="eyeRestText"></div><div class="eyeRestCountdown" id="eyeRestCountdown">10:00</div><div class="eyeRestRule" id="eyeRestRule">10分休んだら → また30分遊べます</div><div class="eyeRestAdminHint" id="eyeRestAdminHint">🔑 管理者：この画面を2秒長押しで解除</div><button type="button" class="eyeRestResumeBtn" id="eyeRestResumeBtn">ゲームを再開</button></div>`;
    document.body.appendChild(ov)
   }
-  const ready=state?.phase==="ready",title=ov.querySelector("#eyeRestTitle"),txt=ov.querySelector("#eyeRestText"),rule=ov.querySelector("#eyeRestRule"),btn=ov.querySelector("#eyeRestResumeBtn");
+  const ready=state?.phase==="ready",title=ov.querySelector("#eyeRestTitle"),txt=ov.querySelector("#eyeRestText"),rule=ov.querySelector("#eyeRestRule"),hint=ov.querySelector("#eyeRestAdminHint"),btn=ov.querySelector("#eyeRestResumeBtn");
   ov.classList.toggle("ready",ready);
+  if(hint)hint.hidden=ready;
   if(title)title.textContent=ready?"休憩終了！":"目を休めよう";
   if(txt)txt.innerHTML=ready?"休憩時間が終わりました。<br>画面をタップするとゲームに戻り、そこから次の30分が始まります。":state?.reason==="manual"?"自分から10分休憩を始めました。<br>休憩が終わるまでゲームは操作できません。":"30分遊びました。最低10分、画面から目を離して休憩してください。<br>休憩が終わるまでゲームは操作できません。";
   if(rule)rule.textContent=ready?"再開するまでプレイ時間は減りません":"10分休んだら → また30分遊べます";
@@ -229,6 +230,42 @@ function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
  }
  function startManualRest(){const now=Date.now(),x=resolve(now);if(x.phase==="rest"||x.phase==="ready")return;write({phase:"rest",playUntil:now,restUntil:now+REST_MS,reason:"manual",updatedAt:now});tick()}
  function resumePlay(){const x=read();if(x?.phase!=="ready")return;fresh(Date.now());tick()}
+ function forceResume(){
+  fresh(Date.now());
+  setLocked(false,{phase:"play"});
+  tick()
+ }
+ let adminHoldTimer=null,adminHoldPointer=null;
+ function clearAdminHold(){
+  if(adminHoldTimer)clearTimeout(adminHoldTimer);
+  adminHoldTimer=null;adminHoldPointer=null;
+  document.getElementById("eyeRestOverlay")?.classList.remove("adminHold")
+ }
+ function openAdminRestOverride(){
+  clearAdminHold();
+  if(window.FRENDA_PARENTAL?.isAdminAuthenticated()){
+   forceResume();
+   setTimeout(()=>UI.dialog.alert("管理者権限で休憩を解除しました。"),0);
+   return
+  }
+  const q=new URLSearchParams(location.search);
+  q.set("adminRestRelease","1");
+  const next=`${location.pathname}?${q.toString()}`;
+  location.href=`admin.html?next=${encodeURIComponent(next)}`
+ }
+ function pointerdown(e){
+  if(!locked||read()?.phase!=="rest")return;
+  const ov=e.target.closest?.("#eyeRestOverlay");if(!ov)return;
+  clearAdminHold();adminHoldPointer=e.pointerId;ov.classList.add("adminHold");
+  adminHoldTimer=setTimeout(()=>{adminHoldTimer=null;openAdminRestOverride()},2000)
+ }
+ function pointerend(e){
+  if(adminHoldPointer!==null&&e.pointerId!==undefined&&e.pointerId!==adminHoldPointer)return;
+  clearAdminHold()
+ }
+ function contextmenu(e){
+  if(e.target.closest?.("#eyeRestOverlay"))e.preventDefault()
+ }
  function tick(){
   const now=Date.now(),x=resolve(now),rest=x.phase==="rest",ready=x.phase==="ready",lock=rest||ready,until=rest?Number(x.restUntil):Number(x.playUntil),remain=ready?0:Math.max(0,until-now),badge=document.getElementById("eyeTimerBadge");
   if(badge){badge.className=`eyeTimerBadge ${rest?"rest":ready?"ready":remain<=60000?"danger":remain<=300000?"warn":""}`;badge.textContent=rest?`🌿 休憩 ${fmt(remain)}`:ready?"👁 再開待ち":`👁 あと ${fmt(remain)}`;badge.title=ready?"タップして再開すると30分カウント開始":"30分遊んだら10分休憩"}
@@ -251,13 +288,22 @@ function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
  function start(){
   if(started)return;started=true;
   document.addEventListener("keydown",keydown,true);window.addEventListener("storage",storage);document.addEventListener("visibilitychange",visibility);document.addEventListener("click",click);
+  document.addEventListener("pointerdown",pointerdown,true);document.addEventListener("pointerup",pointerend,true);document.addEventListener("pointercancel",pointerend,true);document.addEventListener("contextmenu",contextmenu,true);
   tick();handle=setInterval(tick,1000)
  }
- function stop(){if(handle)clearInterval(handle);handle=null;if(started){document.removeEventListener("keydown",keydown,true);window.removeEventListener("storage",storage);document.removeEventListener("visibilitychange",visibility);document.removeEventListener("click",click);started=false}}
- return Object.freeze({start,stop,tick,startManualRest,resumePlay,isLocked:()=>locked,resolve,format:fmt})
+ function stop(){if(handle)clearInterval(handle);handle=null;clearAdminHold();if(started){document.removeEventListener("keydown",keydown,true);window.removeEventListener("storage",storage);document.removeEventListener("visibilitychange",visibility);document.removeEventListener("click",click);document.removeEventListener("pointerdown",pointerdown,true);document.removeEventListener("pointerup",pointerend,true);document.removeEventListener("pointercancel",pointerend,true);document.removeEventListener("contextmenu",contextmenu,true);started=false}}
+ return Object.freeze({start,stop,tick,startManualRest,resumePlay,forceResume,isLocked:()=>locked,resolve,format:fmt})
 }
 
 const eyeCare=createEyeCareResume({data:DATA});
+if(ADMIN_AUTH&&TEST_PARAMS.get("adminRestRelease")==="1"){
+ eyeCare.forceResume();
+ try{
+  const clean=new URL(location.href);
+  clean.searchParams.delete("adminRestRelease");
+  history.replaceState(null,"",clean.pathname+(clean.searchParams.toString()?`?${clean.searchParams.toString()}`:"")+clean.hash)
+ }catch{}
+}
 
 const DUNGEON_KEY=DATA.KEYS.dungeon;
 const EXP_KEY=DATA.KEYS.expedition;
@@ -1441,7 +1487,34 @@ loadEvolution();
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.56 / Updated: 2026-09-30 21:10 JST -->
+
+<style id="v057-admin-rest-longpress">
+.eyeRestAdminHint{
+  margin-top:14px;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid #ffffff38;
+  background:#ffffff0d;
+  color:#d9edf5;
+  font-size:10px;
+  font-weight:900;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.eyeRestOverlay.adminHold .eyeRestPanel{
+  border-color:#ffd76c!important;
+  box-shadow:0 18px 55px #0008,0 0 0 4px #ffd76c55!important;
+}
+.eyeRestOverlay.adminHold .eyeRestAdminHint{
+  background:#ffd76c;
+  color:#4f3b00;
+}
+.eyeRestOverlay.adminHold .eyeRestAdminHint::after{
+  content:"　長押し中…";
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.57 / Updated: 2026-09-30 21:18 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1523,4 +1596,11 @@ loadEvolution();
   管理者未認証時はadmin.htmlのパスワード認証へ遷移し、認証後に指定グループを永続解放。
   既に探索中/帰還済みの旧グループは進行を壊さないため、そのmission完了まではアクセス可能。
   既存セーブにはグループ4・5を空状態で安全に追加し、管理者解放状態もexpeditionSharedへ保存。
+-->
+
+<!-- Ver0.57:
+  休憩ロック画面で2秒長押しすると管理者解除へ進む機能を追加。
+  未認証時はadmin.htmlの管理者パスワード画面へ遷移し、認証後に元画面へ戻って休憩を強制解除。
+  既に管理者認証済みの場合は長押しだけで即時解除。
+  長押し中は枠と案内を黄色に変えて反応を可視化。
 -->
