@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.61">
+<html lang="ja" data-app-version="0.62">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -151,7 +151,7 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 </style>
 </head>
 <body>
-<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span></b></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
+<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span></b></div><div class="headerBtns"><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
 <main id="app"></main>
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
@@ -191,7 +191,7 @@ if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。"
 const EXP_TO_DRILL=RULES.EXP_TO_DRILL;
 const BOND_LEVEL_THRESHOLDS=RULES.BOND_LEVEL_THRESHOLDS;
 const TRAINING_STEP=RULES.TRAINING_STEP,PERMANENT_BOOST_MAX=RULES.PERMANENT_BOOST_MAX;
-const LUCK_MAX=5,COIN_PER_OVERFLOW_DRILL=100;
+const LUCK_MAX=5,COIN_PER_OVERFLOW_DRILL=100,SOUVENIR_COIN_NORMAL=50,SOUVENIR_COIN_RARE=200;
 const app=document.getElementById("app");
 const THEME_ORDER=RULES.THEME_ORDER;
 const THEMES=RULES.THEMES;
@@ -330,7 +330,7 @@ const SOUVENIR_DEF={
 };
 
 let EVO_INDEX=null,evoReady=false;
-let screen="home",prep={dungeonId:null,difficulty:null,hours:8,teamIds:[]};
+let screen="home",collectionReturnScreen="home",prep={dungeonId:null,difficulty:null,hours:8,teamIds:[]};
 let activeGroup=0;
 let ticker=null,lootRevealSeq=0,lootAnimating=false;
 const esc=UI.escapeHtml;
@@ -443,12 +443,31 @@ function discoveryPct(did){return Math.max(0,Math.min(100,Number(exp.discovery?.
 function souvenirDefs(did){return SOUVENIR_DEF[did]||[{id:"memory",icon:"🎁",name:"旅のおみやげ"}]}
 function souvenirCount(did,id){return Math.max(0,Number(exp.souvenirs?.[did]?.[id]||0))}
 function souvenirDistinctTotal(){let distinct=0,total=0;for(const did of Object.keys(SOUVENIR_DEF)){for(const s of souvenirDefs(did)){const n=souvenirCount(did,s.id);if(n>0)distinct++;total+=n}}return{distinct,total,max:Object.values(SOUVENIR_DEF).reduce((n,a)=>n+a.length,0)}}
+function souvenirExchangeValue(s){return s?.rare?SOUVENIR_COIN_RARE:SOUVENIR_COIN_NORMAL}
+function souvenirProgressText(did){
+ const defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length,rare=defs.find(s=>s.rare),rareGot=rare? souvenirCount(did,rare.id)>0:true;
+ return `🎒 ${got}/${defs.length}${rare&&!rareGot?"・レア未収集":""}`
+}
+function exchangeSouvenir(did,id){
+ const def=souvenirDefs(did).find(s=>s.id===id),n=souvenirCount(did,id);
+ if(!def||n<=1)return;
+ const value=souvenirExchangeValue(def);
+ if(!UI.dialog.confirm(`${def.name}を1個、フレンダコインに交換しますか？\n\n所持 ${n}個 → ${n-1}個\n🪙 フレンダコイン +${value}\n\n※最後の1個はコレクションとして残します。`))return;
+ exp.souvenirs=exp.souvenirs||{};
+ exp.souvenirs[did]=exp.souvenirs[did]||{};
+ exp.souvenirs[did][id]=n-1;
+ writeExp();
+ mutateDungeon(d=>{ensureDungeonEconomy(d);d.frendaCoins+=value});
+ writeExp();
+ renderCollection();
+ UI.dialog.alert(`${def.name}を交換しました。\n🪙 フレンダコイン +${value}`)
+}
 function discoveryAverage(){const dids=THEME_ORDER.filter(d=>SOUVENIR_DEF[d]);return dids.length?Math.round(dids.reduce((n,d)=>n+discoveryPct(d),0)/dids.length):0}
 function discoveryGainFor(m){const base=missionRewardProfile(m).discovery,rank={D:0,C:1,B:2,A:3,S:5}[m.rank]||0,secret=m.secretSpotUsed?8:0;return Math.max(1,base+Math.max(0,Number(m.difficulty||1)-1)+rank+secret)}
 function pickSouvenir(did,rareWanted=false){const defs=souvenirDefs(did),pool=defs.filter(s=>!!s.rare===!!rareWanted),choices=pool.length?pool:defs;const unowned=choices.filter(s=>souvenirCount(did,s.id)===0);return pickRandom(unowned.length&&Math.random()<.72?unowned:choices)}
 function generateMissionFindings(m){if(m.findings)return m.findings;const profile=missionRewardProfile(m),before=discoveryPct(m.dungeonId),gain=Math.min(100-before,discoveryGainFor(m)),after=Math.min(100,before+gain),completedNow=before<100&&after>=100,count=Math.min(4,profile.souvenirs+(m.rank==="S"?1:0)),rankRare={D:0,C:.01,B:.025,A:.05,S:.09}[m.rank]||0,rareBase=Math.min(.34,.05+Number(m.difficulty||1)*.018+rankRare),rareChance=Math.min(.75,rareBase*missionLuckMultiplier(m)),souvenirs=[];for(let i=0;i<count;i++){const rare=completedNow&&i===count-1?true:Math.random()<rareChance,s=pickSouvenir(m.dungeonId,rare);if(s)souvenirs.push({id:s.id,icon:s.icon,name:s.name,rare:!!s.rare})}m.findings={before,after,gain,souvenirs,completedNow,applied:false};return m.findings}
 function applyMissionFindings(m){const f=generateMissionFindings(m);if(f.applied)return f;exp.discovery=exp.discovery||{};exp.souvenirs=exp.souvenirs||{};exp.discovery[m.dungeonId]=f.after;exp.souvenirs[m.dungeonId]=exp.souvenirs[m.dungeonId]||{};f.souvenirs=f.souvenirs.map(s=>{const beforeCount=souvenirCount(m.dungeonId,s.id);exp.souvenirs[m.dungeonId][s.id]=beforeCount+1;return {...s,beforeCount,afterCount:beforeCount+1,isNew:beforeCount===0}});f.applied=true;writeExp();return f}
-function discoveryMiniHTML(did){const p=discoveryPct(did);return `<div class="discoveryMini"><div class="discoveryMiniHead"><span>🔎 発見率</span><b>${p}%</b></div><div class="discoveryMeter"><span style="width:${p}%"></span></div></div>`}
+function discoveryMiniHTML(did){const p=discoveryPct(did);return `<div class="discoveryMini"><div class="discoveryMiniHead"><span>🗺️ 調査度</span><b>${p}%</b></div><div class="discoveryMeter"><span style="width:${p}%"></span></div></div>`}
 function souvenirNameLine(f){return (f?.souvenirs||[]).map(s=>`${s.icon} ${s.name}`).join("・")||"おみやげなし"}
 
 function secretSpotKey(did,diff){return `${did}:${diff}`}
@@ -467,7 +486,7 @@ const SECRET_SPOT_LABELS={
 function activeSecretSpot(did,diff){const key=secretSpotKey(did,diff),s=exp.secretSpots?.[key];return s&&Number(s.usesLeft||0)>0?s:null}
 function activeSecretSpots(){return Object.values(exp.secretSpots||{}).filter(s=>s&&Number(s.usesLeft||0)>0)}
 function secretSpotChance(m){const rankBonus={D:.02,C:.04,B:.06,A:.09,S:.12}[m.rank]||.03,h=missionRewardProfile(m).effectiveHours,hourBonus=h>=10?.07:h>=8?.05:h>=4?.03:h>=2?.015:0;return Math.min(.34,.07+rankBonus+hourBonus+Math.max(0,Number(m.difficulty||1)-1)*.01)}
-function secretSpotBonusText(s){return `次回 ${THEMES[s.dungeonId]?.name||s.dungeonId} ランク${s.difficulty} の探索で、発見率アップ・レア成果箱率アップ・新しい仲間が出やすくなります。`}
+function secretSpotBonusText(s){return `次回 ${THEMES[s.dungeonId]?.name||s.dungeonId} ランク${s.difficulty} の探索で、調査度アップ・レア成果箱率アップ・新しい仲間が出やすくなります。`}
 function homeSecretSpotHTML(){const spots=activeSecretSpots();if(!spots.length)return"";return `<div class="secretSpotBanner"><b>🌟 ひみつの場所を発見！</b><small>次回の同じ探索先でボーナスが発動します。</small><div class="secretSpotList">${spots.map(s=>`<div class="secretSpotChip"><span>${THEMES[s.dungeonId]?.icon||"🌟"} ${esc(THEMES[s.dungeonId]?.name||s.dungeonId)} ランク${s.difficulty}<br><em>${esc(s.name)}</em></span><strong>次回ボーナス</strong></div>`).join("")}</div></div>`}
 function maybeDiscoverSecretSpot(m){if(m.secretSpotDiscovered!==undefined)return m.secretSpotDiscovered;if(m.secretSpotUsed){m.secretSpotDiscovered=null;return null}if(Math.random()>=Math.min(.75,secretSpotChance(m)*missionLuckMultiplier(m))){m.secretSpotDiscovered=null;return null}const labels=SECRET_SPOT_LABELS[m.dungeonId]||[`${THEMES[m.dungeonId]?.name||"探索先"}のひみつスポット`],name=pickRandom(labels);const spot={id:`spot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`,dungeonId:m.dungeonId,difficulty:m.difficulty,name,usesLeft:1,discoveredAt:Date.now()};exp.secretSpots=exp.secretSpots||{};exp.secretSpots[secretSpotKey(m.dungeonId,m.difficulty)]=spot;m.secretSpotDiscovered=spot;writeExp();return spot}
 function claimSecretSpotForMission(m){const spot=activeSecretSpot(m.dungeonId,m.difficulty);if(!spot)return null;m.secretSpotUsed={...spot};delete exp.secretSpots[secretSpotKey(m.dungeonId,m.difficulty)];writeExp();return m.secretSpotUsed}
@@ -561,8 +580,8 @@ function highestDifficultyForDungeon(did,dests=clearedDestinations()){const diff
 function availableDungeonIds(dests=clearedDestinations()){return THEME_ORDER.filter(did=>dests.some(x=>x.did===did))}
 function ensurePrepValid(groupIndex=activeGroup){const g=groupState(groupIndex),p=g.prep,dests=clearedDestinations(),dids=availableDungeonIds(dests);if(!dids.length)return p;if(!p.dungeonId||!dids.includes(p.dungeonId))p.dungeonId=dids[0];p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);p.hours=[1,4,8].includes(Number(p.hours))?Number(p.hours):8;p.teamIds=(p.teamIds||[]).filter(id=>eligiblePickIds(groupIndex).includes(id)).slice(0,3);return p}
 function discoveryStep(did){const p=discoveryPct(did);return p<=0?0:Math.min(5,Math.ceil(p/20))}
-function discoveryStepText(did){return `発見 ${discoveryStep(did)}/5`}
-function discoveryMiniHTML(did){const step=discoveryStep(did),p=discoveryPct(did);return `<div class="discoveryMini compactDiscovery"><div class="discoveryMiniHead"><span>🔎 発見</span><b>${step}/5 <em>${p}%</em></b></div><div class="discoveryMeter"><span style="width:${p}%"></span></div></div>`}
+function discoveryStepText(did){return `調査Lv ${discoveryStep(did)}/5`}
+function discoveryMiniHTML(did){const step=discoveryStep(did),p=discoveryPct(did);return `<div class="discoveryMini compactDiscovery"><div class="discoveryMiniHead"><span>🗺️ 調査Lv</span><b>${step}/5 <em>調査度 ${p}%</em></b></div><div class="discoveryMeter"><span style="width:${p}%"></span></div></div>`}
 function autoTeam(did,diff,groupIndex=activeGroup){
  const ids=eligiblePickIds(groupIndex);if(ids.length<=3)return ids.slice();
  const d=readDungeon(),states=new Map();states.set("0|0|0",{ids:[],energy:0,good:0,bond:0});
@@ -681,7 +700,7 @@ function requestMissionReturn(groupIndex=activeGroup){
  const elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),short=elapsed<FREE_EXP_MIN_REWARD_HOURS;
  if(short){
   const secretNote=m.secretSpotUsed?"\nひみつの場所：消費しません":"";
-  if(!UI.dialog.confirm(`グループ${groupIndex+1}を帰還させますか？\n\n探索時間 ${formatElapsedHours(elapsed)}\n⚠️ 30分未満のため成果はありません。\n\n成果箱 0個\nEXP・絆 なし\n発見率・おみやげ なし\n卵・仲間・その他報酬 なし${secretNote}`))return;
+  if(!UI.dialog.confirm(`グループ${groupIndex+1}を帰還させますか？\n\n探索時間 ${formatElapsedHours(elapsed)}\n⚠️ 30分未満のため成果はありません。\n\n成果箱 0個\nEXP・絆 なし\n調査度・おみやげ なし\n卵・仲間・その他報酬 なし${secretNote}`))return;
   finishNoRewardReturn(groupIndex);
   return
  }
@@ -813,7 +832,7 @@ function renderPrep(){
  const slots=prepSelectedStripHTML(d,p);
  const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)}<br>ポケエネ ${esc(r.poke_ene??"-")} / 絆Lv${bondLevel(d,id)} / 🍀運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>${recOk?`<small class="pickReason">${esc(r.move_type||"-")}わざが探索先に有利</small>`:""}`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>`<button class="destinationCompact ${x.did===p.dungeonId?"active":""}" data-did="${x.did}"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted" style="margin-top:7px">ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn" ${p.teamIds.length?"":"disabled"}>🗺️ おまかせ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🎒 おみやげ・発見を見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>`<button class="destinationCompact ${x.did===p.dungeonId?"active":""}" data-did="${x.did}"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted" style="margin-top:7px">ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn" ${p.teamIds.length?"":"disabled"}>🗺️ おまかせ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
@@ -827,15 +846,15 @@ function renderPrep(){
  document.getElementById("autoBtn").onclick=()=>{flushPrepWrite();p.teamIds=autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
  document.getElementById("autoDungeonBtn").onclick=()=>{flushPrepWrite();const best=bestDungeonForTeam(p.teamIds);if(!best)return;p.dungeonId=best.did;p.difficulty=best.diff;writeExp();renderPrep()};
  document.getElementById("lastBtn").onclick=()=>{flushPrepWrite();const ok=(g.lastTeamIds||[]).filter(id=>eligible.has(id)).slice(0,3);p.teamIds=ok.length?ok:autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
- document.getElementById("collectionBtn").onclick=()=>{screen="collection";render()};
+ document.getElementById("collectionBtn").onclick=()=>openCollection();
  bindExpeditionPickFilters();startTicker()
 }
 
 function renderExplore(){const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone ${profile.noReward?"noRewardYet":""}" id="nextMilestone">${profile.noReward?`⚠️ 30分到達まで成果なし・${freeNextMilestoneText(m)}`:freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満で帰還すると成果はありません。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}ほかのグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);startTicker()}
 function renderReturn(){prepareReturnAll();const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="exploring"){screen="explore";return renderExplore()}if(m.stage==="welcome")return renderWelcome();if(m.stage==="report")return renderReport();if(m.stage==="findings")return renderFindings();if(m.stage==="growth")return renderGrowth();if(m.stage==="boxes")return renderBoxes();if(m.stage==="summary")return renderSummary();m.stage="welcome";writeExp();renderWelcome()}
 function renderWelcome(){const m=groupMission(),th=THEMES[m.dungeonId];app.innerHTML=`<div class="returnHero"><div class="kicker" style="color:#8de5ff">WELCOME BACK! / GROUP ${activeGroup+1}</div><h1>🧭 おかえり！</h1><p>${th.icon} ${esc(th.name)} ランク${m.difficulty}から帰ってきました</p><div class="returnTeam">${m.teamIds.map(id=>`<img src="${esc(imageOf(rec(id)))}" alt="">`).join("")}</div><div class="statusBig">探索ランク ${m.rank}</div><button class="goldBtn" id="nextBtn" style="margin-top:12px;font-size:16px">探索レポートを見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="report";writeExp();render()}}
-function renderReport(){const m=groupMission();app.innerHTML=`<div class="reportGroup"><div class="card"><div class="sectionTitle">📜 探索レポート</div><div class="timeline">${(m.report||reportFor(m)).map(x=>`<div class="timelineRow"><time>${new Date(x.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</time><span>${esc(x.text)}</span></div>`).join("")}</div></div>${journalHTML(m)}<div class="card"><button id="nextBtn" style="width:100%">🔎 発見とおみやげを見る</button></div></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="findings";writeExp();render()}}
-function renderFindings(){const m=groupMission(),f=applyMissionFindings(m),th=THEMES[m.dungeonId],spot=m.secretSpotDiscovered,beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card findingsCard"><div class="findingHero"><div class="big">🗺️</div><div class="kicker">EXPEDITION DISCOVERY</div><h2>探索で新しい発見！</h2></div><div class="discoveryResult"><div class="discoveryResultHead"><b>${th.icon} ${esc(th.name)} の発見</b><strong>${afterStep}/5</strong></div><div class="discoveryMeter"><span style="width:${f.after}%"></span></div><div class="discoveryDelta">発見 ${beforeStep}/5 → ${afterStep}/5${m.secretSpotUsed?` <span class="badge gold">ひみつの場所ボーナス</span>`:""}</div>${f.completedNow?'<div class="discoveryCompleteBurst">🎉 調査コンプリート！ レアなおみやげを発見！</div>':""}</div><div class="sectionTitle" style="margin-top:12px">🎒 持ち帰ったおみやげ</div><div class="foundSouvenirs">${f.souvenirs.map(s=>`<div class="foundSouvenir ${s.isNew?"new":""} ${s.rare?"rare":""}">${s.isNew?'<span class="newTag">NEW!</span>':""}<div class="ico">${s.icon}</div><b>${esc(s.name)}</b><small>${s.rare?"レアおみやげ":"コレクション"} / 所持 ${s.afterCount}</small></div>`).join("")}</div>${m.secretSpotUsed?`<div class="findingsSecret"><b>🌟 ひみつの場所を調査した！</b><div class="spotName">${esc(m.secretSpotUsed.name)}</div><small>いつもより深い調査に成功し、発見とレア成果のチャンスが強化されました。</small></div>`:""}${spot?`<div class="findingsSecret"><b>🌟 新しいひみつの場所を発見！</b><div class="spotName">${esc(spot.name)}</div><small>${esc(secretSpotBonusText(spot))}</small></div>`:""}<button class="goldBtn" id="nextBtn" style="width:100%;margin-top:12px">⭐ 3体の成長を見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{applyBaseGrowth();m.stage="growth";writeExp();render()}}
+function renderReport(){const m=groupMission();app.innerHTML=`<div class="reportGroup"><div class="card"><div class="sectionTitle">📜 探索レポート</div><div class="timeline">${(m.report||reportFor(m)).map(x=>`<div class="timelineRow"><time>${new Date(x.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</time><span>${esc(x.text)}</span></div>`).join("")}</div></div>${journalHTML(m)}<div class="card"><button id="nextBtn" style="width:100%">🗺️ 調査結果とおみやげを見る</button></div></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="findings";writeExp();render()}}
+function renderFindings(){const m=groupMission(),f=applyMissionFindings(m),th=THEMES[m.dungeonId],spot=m.secretSpotDiscovered,beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card findingsCard"><div class="findingHero"><div class="big">🗺️</div><div class="kicker">EXPEDITION SURVEY</div><h2>探索先の調査が進んだ！</h2></div><div class="discoveryResult"><div class="discoveryResultHead"><b>${th.icon} ${esc(th.name)} の調査</b><strong>Lv ${afterStep}/5</strong></div><div class="discoveryMeter"><span style="width:${f.after}%"></span></div><div class="discoveryDelta">調査Lv ${beforeStep}/5 → ${afterStep}/5　／　調査度 ${f.after}%${m.secretSpotUsed?` <span class="badge gold">ひみつの場所ボーナス</span>`:""}</div>${f.completedNow?'<div class="discoveryCompleteBurst">🎉 調査コンプリート！ レアなおみやげを獲得！</div>':""}</div><div class="sectionTitle" style="margin-top:12px">🎒 持ち帰ったおみやげ</div><div class="foundSouvenirs">${f.souvenirs.map(s=>`<div class="foundSouvenir ${s.isNew?"new":""} ${s.rare?"rare":""}">${s.isNew?'<span class="newTag">NEW!</span>':""}<div class="ico">${s.icon}</div><b>${esc(s.name)}</b><small>${s.rare?"レアおみやげ":"コレクション"} / 所持 ${s.afterCount}</small></div>`).join("")}</div>${m.secretSpotUsed?`<div class="findingsSecret"><b>🌟 ひみつの場所を調査した！</b><div class="spotName">${esc(m.secretSpotUsed.name)}</div><small>いつもより深い調査に成功し、調査度とレア成果のチャンスが強化されました。</small></div>`:""}${spot?`<div class="findingsSecret"><b>🌟 新しいひみつの場所を発見！</b><div class="spotName">${esc(spot.name)}</div><small>${esc(secretSpotBonusText(spot))}</small></div>`:""}<button class="goldBtn" id="nextBtn" style="width:100%;margin-top:12px">⭐ 3体の成長を見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{applyBaseGrowth();m.stage="growth";writeExp();render()}}
 function renderGrowth(){applyBaseGrowth();const m=groupMission();app.innerHTML=`<div class="card"><div class="sectionTitle">⭐ 探索メンバーの成長</div><div class="growthGrid">${(m.baseResults||[]).map(x=>{const r=rec(x.id);return `<div class="growthCard"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r?.name_ja||x.id)}</b><div class="growthResult">⭐ EXP +${x.xp}${x.drill?`<br>🏋️ 特訓P +${x.drill}`:""}${x.coins?`<br>🪙 フレンダコイン +${x.coins}`:""}${x.bond?"<br>♥ 絆 +1":""}</div></div>`}).join("")}</div><div class="notice" style="margin-top:10px">この成長は成果箱とは別の確定報酬です。次に、持ち帰った成果箱を1個ずつ開けます。</div><button class="goldBtn" id="nextBtn" style="width:100%;margin-top:10px">🎁 成果箱を開ける</button></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="boxes";writeExp();render()}}
 function rewardIcon(rw){return rw.type==="xp"||rw.type==="allxp"?"⭐":rw.type==="bond"?"♥":rw.type==="growth"?"🌱":rw.type==="egg"?"🥚":rw.type==="companion"?"👣":rw.type==="combo"?"🌟":"🎁"}
 function lootRarityLabel(box){return box.rarity==="jackpot"?"🌟 大当たり！":box.rarity==="rare"?"✨ RARE!":"RESULT"}
@@ -846,16 +865,27 @@ const lootSleep=UI.sleep;
 async function playLootReveal(box,index=0,total=1){if(lootAnimating)return;lootAnimating=true;const seq=++lootRevealSeq,companion=box.reward?.type==="companion"&&box.reward?.target,ov=document.createElement("div");ov.className=`lootRevealOverlay ${box.rarity}`;ov.innerHTML=`<span class="lootSpark s1">✦</span><span class="lootSpark s2">★</span><span class="lootSpark s3">✧</span><span class="lootSpark s4">✦</span><div class="lootBurst"></div><div class="lootRevealStage"><div class="lootRevealCounter">成果箱 ${index+1} / ${total}</div><div class="lootRevealKicker">EXPEDITION REWARD</div><div class="lootChest"><div class="lootChestLid"></div><div class="lootChestBody"></div><div class="lootChestBand"></div><div class="lootChestLock"></div></div><div class="lootRarityText">${esc(lootRarityLabel(box))}</div><div class="lootMystery">！？</div><div class="lootRewardReveal" id="lootRewardReveal"></div><div class="lootRevealHint"></div></div>`;document.body.appendChild(ov);const prevOverflow=document.body.style.overflow;document.body.style.overflow="hidden";let final=false;const showFinal=()=>{if(final)return;final=true;ov.classList.remove("phase-shake","phase-rarity","phase-companion");ov.classList.add("phase-final");const rr=ov.querySelector("#lootRewardReveal");if(rr){rr.style.display="";rr.innerHTML=lootRevealFinalHTML(box)}try{navigator.vibrate?.(box.rarity==="jackpot"?[30,35,70]:box.rarity==="rare"?[25,25,35]:20)}catch{}};const close=()=>{if(!final){lootRevealSeq++;showFinal();return}ov.remove();document.body.style.overflow=prevOverflow;lootAnimating=false;render()};ov.onclick=close;ov.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();close()}};ov.tabIndex=0;ov.focus();await lootSleep(220);if(seq!==lootRevealSeq||!ov.isConnected)return;ov.classList.add("phase-shake");await lootSleep(box.rarity==="jackpot"?1150:850);if(seq!==lootRevealSeq||!ov.isConnected)return;ov.classList.remove("phase-shake");ov.classList.add("phase-rarity");try{navigator.vibrate?.(box.rarity==="jackpot"?[20,35,20,35,45]:box.rarity==="rare"?[20,20,30]:15)}catch{}await lootSleep(box.rarity==="jackpot"?1050:700);if(seq!==lootRevealSeq||!ov.isConnected)return;if(companion){ov.classList.remove("phase-rarity");ov.classList.add("phase-companion");const rr=ov.querySelector("#lootRewardReveal");if(rr){rr.innerHTML=`${rewardVisualHTML(box.reward,false)}<div class="lootRewardTitle">後ろから足音がする……</div>`;rr.style.display="flex"}await lootSleep(1250);if(seq!==lootRevealSeq||!ov.isConnected)return;if(rr)rr.style.display=""}showFinal()}
 function renderBoxes(){const m=groupMission();if(maybeNeedEggDiscard())return renderEggDiscard();const opened=m.boxes.filter(b=>b.opened).length,nextIndex=m.boxes.findIndex(b=>!b.opened);app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">🎁 持ち帰った成果箱</div><span class="badge gold">${opened}/${m.boxes.length} 開封</span></div><div class="boxProgressHead">${m.boxes.map((b,i)=>`<span class="boxProgressDot ${b.opened?"opened":i===nextIndex?"next":""}"></span>`).join("")}</div><div class="notice" style="margin-bottom:10px">箱をタップすると、まずレア度、つづいて中身を1つずつ発表します。中身は帰還時に確定済みなので、リロードしても変わりません。</div><div class="boxGrid">${m.boxes.map((b,i)=>b.opened?`<div class="lootBox opened ${b.rarity==="rare"?"revealRare":b.rarity==="jackpot"?"revealJackpot":""}"><div class="lootResult"><div class="bigIcon">${rewardIcon(b.reward)}</div><b>${b.rarity==="jackpot"?"🌟 大当たり！":b.rarity==="rare"?"✨ RARE":"成果"}</b><small>${esc(b.resultText)}</small></div></div>`:`<div class="lootBox ${i===nextIndex?"nextBox":""}" data-box="${i}"><span class="boxNumber">${i+1}</span><div class="boxIcon">🎁</div><div class="boxMystery">？</div></div>`).join("")}</div>${opened===m.boxes.length?'<button class="goldBtn" id="summaryBtn" style="width:100%;margin-top:12px;font-size:17px">今回の探索成果をまとめる</button>':'<div class="muted" style="text-align:center;margin-top:9px">光っている箱から、1個ずつ開けてみよう！</div>'}</div>`;app.querySelectorAll("[data-box]").forEach(el=>el.onclick=()=>{if(lootAnimating)return;const i=Number(el.dataset.box),b=m.boxes[i];if(b.opened)return;b.opened=true;applyReward(b);writeExp();el.classList.add("opening");playLootReveal(b,i,m.boxes.length)});const sb=document.getElementById("summaryBtn");if(sb)sb.onclick=()=>{m.stage="summary";writeExp();render()}}
 function renderEggDiscard(){const d=readDungeon();app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">卵 ${d.eggs.length}/${d.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。探索で拾った新しい卵を捨てても構いません。</div><div class="discardGrid">${d.eggs.map(e=>`<button class="discardEgg" data-discard="${esc(e.id)}"><div class="eggIcon">${e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚"}</div><b>${esc(e.kind==="type"?`${e.type}タイプの卵`:EGG_DEF[e.kind]?.label||"卵")}</b><small>${e.source==="expedition"?"おでかけ探索産":"本編で入手"}</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard]").forEach(b=>b.onclick=()=>{if(UI.dialog.confirm("この卵を捨てますか？"))discardEgg(b.dataset.discard)})}
-function renderCollection(){const total=souvenirDistinctTotal(),dids=THEME_ORDER.filter(did=>SOUVENIR_DEF[did]),stepTotal=dids.reduce((n,did)=>n+discoveryStep(did),0),stepMax=dids.length*5;app.innerHTML=`<div class="card"><div class="row spread"><div><div class="kicker">EXPEDITION COLLECTION</div><div class="sectionTitle">🗺️ 探索コレクション</div></div><span class="badge gold">発見 ${stepTotal}/${stepMax}</span></div><div class="discoveryBenefitGuide"><div class="discoveryBenefitIcon">🔎</div><div><b>「発見」は、その探索先をどこまで調査できたかを表します。</b><p>探索するたびに発見率が上がり、20％ごとに 1/5 → 5/5 と進みます。<strong>5/5（100％）へ到達した探索では、レアなおみやげを1つ確定で発見</strong>します。</p></div></div><div class="collectionSummary"><div class="collectionStat"><b>${total.distinct}/${total.max}</b><small>おみやげ種類</small></div><div class="collectionStat"><b>${total.total}</b><small>おみやげ総数</small></div></div><div class="collectionGrid">${dids.map(did=>{const p=discoveryPct(did),step=discoveryStep(did),defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length;return `<div class="collectionCard ${step>=5?"complete":""}"><div class="collectionHead"><b>${THEMES[did].icon} ${esc(THEMES[did].name)}</b><span class="collectionPct">発見 ${step}/5 <em>${p}%</em></span></div><div class="discoveryMeter collectionDiscoveryMeter"><span style="width:${p}%"></span><i>${p}%</i></div><div class="souvenirSlots">${defs.map(s=>{const n=souvenirCount(did,s.id);return `<div class="souvenirSlot ${n?"":"locked"} ${s.rare?"rare":""}"><div class="ico">${n?s.icon:"❓"}</div><b>${n?esc(s.name):"？？？"}</b><small>${n?`×${n}`:"未発見"}</small></div>`}).join("")}</div>${step>=5?'<div class="collectionComplete">🏅 調査コンプリート！ レアおみやげ到達済み</div>':`<div class="muted" style="margin-top:6px">おみやげ ${got}/${defs.length}種類　／　5/5まであと ${100-p}%</div>`}</div>`}).join("")}</div><button class="ghost" id="backPrepBtn" style="width:100%;margin-top:12px">← 派遣設定へ戻る</button></div>`;document.getElementById("backPrepBtn").onclick=()=>{screen="home";render()}}
-function renderSummary(){const m=groupMission(),f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE / GROUP ${activeGroup+1}</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ランク${m.difficulty} / ${formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now()))} / 探索ランク${m.rank}</p></div><div class="summaryFindings"><b>🗺️ 発見 ${beforeStep}/5 → ${afterStep}/5</b><div class="summarySouvenirLine">🎒 ${esc(souvenirNameLine(f))}</div></div>${m.secretSpotUsed?`<div class="summarySecret"><b>🌟 調査したひみつの場所</b><small>${esc(m.secretSpotUsed.name)} を探索し、ボーナスを獲得しました。</small></div>`:""}${secretSpotSummaryHTML(m.secretSpotDiscovered)}<div class="sectionTitle" style="margin-top:12px">成果箱の中身</div><div class="finalList">${m.summary?.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、グループ${activeGroup+1}で派遣していた${m.teamIds.length}体が再び使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=()=>completeMission(activeGroup)}
+function renderCollection(){
+ const total=souvenirDistinctTotal(),dids=THEME_ORDER.filter(did=>SOUVENIR_DEF[did]),stepTotal=dids.reduce((n,did)=>n+discoveryStep(did),0),stepMax=dids.length*5,dungeon=readDungeon()||{},coins=Math.max(0,Math.floor(Number(dungeon.frendaCoins)||0));
+ app.innerHTML=`<div class="card collectionPage"><div class="row spread collectionTop"><div><div class="kicker">EXPEDITION COLLECTION</div><div class="sectionTitle">🗺️ 探索コレクション</div></div><span class="badge gold">調査Lv 合計 ${stepTotal}/${stepMax}</span></div>
+ <div class="discoveryBenefitGuide"><div class="discoveryBenefitIcon">🗺️</div><div><b>「調査Lv」は、その探索先をどこまで調べたかを表します。</b><p><strong>調査度</strong>が20％進むごとに調査Lvが 1/5 → 5/5 と上がります。<strong>調査Lv 5/5（100％）到達時はレアおみやげを1つ確定で獲得</strong>します。おみやげの収集状況とは別の進行度です。</p></div></div>
+ <div class="souvenirUseGuide"><b>🎒 おみやげの使い方</b><span>各おみやげは1個をコレクションとして残します。2個目以降は交換可能。</span><strong>通常 🪙${SOUVENIR_COIN_NORMAL}　／　レア 🪙${SOUVENIR_COIN_RARE}</strong></div>
+ <div class="collectionSummary"><div class="collectionStat"><b>${total.distinct}/${total.max}</b><small>おみやげ種類</small></div><div class="collectionStat"><b>${total.total}</b><small>おみやげ総数</small></div><div class="collectionStat coinStat"><b>🪙 ${coins}</b><small>フレンダコイン</small></div></div>
+ <div class="collectionGrid">${dids.map(did=>{const p=discoveryPct(did),step=discoveryStep(did),defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length;return `<div class="collectionCard ${step>=5?"complete":""}"><div class="collectionHead"><b>${THEMES[did].icon} ${esc(THEMES[did].name)}</b><span class="collectionPct">調査Lv ${step}/5 <em>調査度 ${p}%</em></span></div><div class="discoveryMeter collectionDiscoveryMeter"><span style="width:${p}%"></span><i>${p}%</i></div><div class="souvenirSlots">${defs.map(s=>{const n=souvenirCount(did,s.id),value=souvenirExchangeValue(s),canExchange=n>1;return `<div class="souvenirSlot ${n?"":"locked"} ${s.rare?"rare":""}"><div class="ico">${n?s.icon:"❓"}</div><b>${n?esc(s.name):"？？？"}</b><small>${n?`×${n}`:"未収集"}</small>${canExchange?`<button type="button" class="souvenirExchangeBtn" data-exchange-did="${did}" data-exchange-id="${s.id}">1個 → 🪙${value}</button>`:n?'<span class="souvenirKeep">保存用1個</span>':""}</div>`}).join("")}</div><div class="collectionFoot"><span>おみやげ ${got}/${defs.length}種類</span>${step>=5?'<b>🏅 調査コンプリート</b>':""}</div></div>`}).join("")}</div>
+ <button class="ghost" id="backCollectionBtn" style="width:100%;margin-top:12px">← 戻る</button></div>`;
+ app.querySelectorAll("[data-exchange-did][data-exchange-id]").forEach(b=>b.onclick=()=>exchangeSouvenir(b.dataset.exchangeDid,b.dataset.exchangeId));
+ document.getElementById("backCollectionBtn").onclick=()=>{screen=collectionReturnScreen||"home";render()}
+}
+function renderSummary(){const m=groupMission(),f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE / GROUP ${activeGroup+1}</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ランク${m.difficulty} / ${formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now()))} / 探索ランク${m.rank}</p></div><div class="summaryFindings"><b>🗺️ 調査Lv ${beforeStep}/5 → ${afterStep}/5</b><div class="summarySouvenirLine">🎒 ${esc(souvenirNameLine(f))}</div></div>${m.secretSpotUsed?`<div class="summarySecret"><b>🌟 調査したひみつの場所</b><small>${esc(m.secretSpotUsed.name)} を探索し、ボーナスを獲得しました。</small></div>`:""}${secretSpotSummaryHTML(m.secretSpotDiscovered)}<div class="sectionTitle" style="margin-top:12px">成果箱の中身</div><div class="finalList">${m.summary?.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、グループ${activeGroup+1}で派遣していた${m.teamIds.length}体が再び使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=()=>completeMission(activeGroup)}
 
 function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
-function updateHeaderNav(){const hb=document.getElementById("homeBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");document.body.classList.toggle("homeNavVisible",show)}
+function openCollection(){if(screen!=="collection")collectionReturnScreen=screen||"home";screen="collection";render()}
+function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
 function render(){document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
 function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
 window.addEventListener("resize",updateHeaderNavLayout);updateHeaderNavLayout();
-document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
+document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("collectionHeaderBtn").onclick=()=>openCollection();document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
 window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();if(!setActiveGroup(Math.min(activeGroup,GROUP_COUNT-1))){const first=Array.from({length:GROUP_COUNT},(_,i)=>i).find(groupUnlocked);if(first!==undefined)setActiveGroup(first)}render()}});
 
 function expeditionDungeonCloudData(){const saved=readDungeon();return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}}}
@@ -1525,7 +1555,127 @@ header .head{
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.61 / Updated: 2026-09-30 21:45 JST -->
+
+<style id="v062-investigation-collection-exchange">
+.collectionHeaderBtn.active{
+  background:#ffe89a!important;
+  color:#584000!important;
+  border-color:#e4bd45!important;
+  box-shadow:0 0 0 2px #ffe88d44!important;
+}
+.collectionSummary{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.coinStat b{
+  color:#8a6500!important;
+}
+.souvenirUseGuide{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 0 10px;
+  padding:9px 11px;
+  border-radius:12px;
+  background:#fff8d9;
+  border:1px solid #e8cf72;
+  color:#624b11;
+}
+.souvenirUseGuide b{
+  font-size:10px;
+}
+.souvenirUseGuide span{
+  flex:1 1 260px;
+  font-size:8px;
+  color:#6d6546;
+}
+.souvenirUseGuide strong{
+  font-size:9px;
+  white-space:nowrap;
+}
+.collectionFoot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  margin-top:7px;
+  min-height:22px;
+  font-size:8px;
+  color:#627785;
+}
+.collectionFoot b{
+  color:#795900;
+  white-space:nowrap;
+}
+.souvenirSlot{
+  position:relative;
+}
+.souvenirKeep{
+  display:block;
+  margin-top:4px;
+  font-size:6px;
+  line-height:1;
+  color:#82929a;
+  font-weight:900;
+}
+.souvenirExchangeBtn{
+  width:100%!important;
+  min-height:0!important;
+  margin-top:4px!important;
+  padding:4px 2px!important;
+  border-radius:7px!important;
+  border:1px solid #e1b94c!important;
+  background:linear-gradient(180deg,#fff2ae,#f1c94f)!important;
+  color:#624800!important;
+  font-size:6.5px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  box-shadow:none!important;
+}
+.souvenirSlot.rare .souvenirExchangeBtn{
+  background:linear-gradient(180deg,#ffe7a0,#e9a72a)!important;
+  border-color:#d89b27!important;
+  color:#5e3800!important;
+}
+.destMeta em+em{
+  color:#7a6573!important;
+  max-width:140px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+@media(max-width:700px){
+  .collectionSummary{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  .collectionStat{
+    padding:7px 3px!important;
+  }
+  .collectionStat b{
+    font-size:14px!important;
+  }
+  .collectionStat small{
+    font-size:6.5px!important;
+  }
+  .souvenirUseGuide{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:3px;
+    padding:8px 9px;
+  }
+  .souvenirUseGuide b{font-size:9px}
+  .souvenirUseGuide span{font-size:7.5px}
+  .souvenirUseGuide strong{font-size:8px}
+  .souvenirExchangeBtn{
+    font-size:5.8px!important;
+    padding:4px 1px!important;
+  }
+  .souvenirKeep{font-size:5.5px}
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.62 / Updated: 2026-10-01 20:22 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -1644,4 +1794,22 @@ header .head{
 <!-- Ver0.61:
   探索中グループカードの「状況」ボタンを削除。
   探索状況はグループカード選択で直接表示できるため、操作を「帰還」に一本化。
+-->
+
+<!-- Ver0.62:
+  ・探索進行の「発見」表現を「調査Lv」「調査度」へ変更し、おみやげ収集と明確に分離。
+  ・調査完了までの残り％表示を削除。
+  ・派遣先選択カードに「調査Lv」と「おみやげ収集数（レア未収集）」を併記。
+  ・おみやげの2個目以降をフレンダコインへ交換可能にした。
+       通常おみやげ：1個 = 50コイン
+       レアおみやげ：1個 = 200コイン
+    最後の1個はコレクション保護のため交換不可。
+  ・探索コレクション画面にフレンダコイン残高と交換ルールを表示。
+  ・ヘッダーに「🗺️ 探索コレクション」ボタンを常設。
+    全グループ派遣中・探索状況画面・帰還処理中でもいつでも閲覧可能。
+  ・コレクションから戻ると、開く前の画面へ戻る。
+-->
+
+<!-- Ver0.62 corrected snapshot:
+  collection coin-balance expression syntax corrected.
 -->
