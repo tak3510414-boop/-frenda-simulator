@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.65">
+<html lang="ja" data-app-version="0.66">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -476,6 +476,39 @@ function exchangeSouvenir(did,id){
  renderCollection();
  UI.dialog.alert(`${def.name}を交換しました。\n🪙 フレンダコイン +${value}`)
 }
+function bulkSouvenirExchangeSummary(){
+ let itemCount=0,coinTotal=0,normalCount=0,rareCount=0;
+ const targets=[];
+ for(const did of THEME_ORDER){
+  for(const s of souvenirDefs(did)){
+   const n=souvenirCount(did,s.id),extra=Math.max(0,n-1);
+   if(!extra)continue;
+   const value=souvenirExchangeValue(s),coins=extra*value;
+   itemCount+=extra;coinTotal+=coins;
+   if(s.rare)rareCount+=extra;else normalCount+=extra;
+   targets.push({did,id:s.id,name:s.name,rare:!!s.rare,before:n,extra,value,coins})
+  }
+ }
+ return {itemCount,coinTotal,normalCount,rareCount,targets}
+}
+function exchangeAllSouvenirs(){
+ const sum=bulkSouvenirExchangeSummary();
+ if(!sum.itemCount){
+  UI.dialog.alert("交換できる重複おみやげはありません。\n\n各おみやげの最後の1個はコレクションとして残します。");
+  return
+ }
+ if(!UI.dialog.confirm(`重複おみやげを一括交換しますか？\n\n交換 ${sum.itemCount}個\n通常 ${sum.normalCount}個 × 🪙${SOUVENIR_COIN_NORMAL}\nレア ${sum.rareCount}個 × 🪙${SOUVENIR_COIN_RARE}\n\n合計 🪙${sum.coinTotal}\n\n※各おみやげの最後の1個は残します。`))return;
+ exp.souvenirs=exp.souvenirs||{};
+ for(const t of sum.targets){
+  exp.souvenirs[t.did]=exp.souvenirs[t.did]||{};
+  exp.souvenirs[t.did][t.id]=1
+ }
+ writeExp();
+ mutateDungeon(d=>{ensureDungeonEconomy(d);d.frendaCoins+=sum.coinTotal});
+ writeExp();
+ renderCollection();
+ UI.dialog.alert(`重複おみやげを一括交換しました。\n\n${sum.itemCount}個 → 🪙${sum.coinTotal}`)
+}
 function discoveryAverage(){const dids=THEME_ORDER.filter(d=>SOUVENIR_DEF[d]);return dids.length?Math.round(dids.reduce((n,d)=>n+discoveryPct(d),0)/dids.length):0}
 function discoveryGainFor(m){const base=missionRewardProfile(m).discovery,rank={D:0,C:1,B:2,A:3,S:5}[m.rank]||0,secret=m.secretSpotUsed?8:0;return Math.max(1,base+Math.max(0,Number(m.difficulty||1)-1)+rank+secret)}
 function pickSouvenir(did,rareWanted=false){const defs=souvenirDefs(did),pool=defs.filter(s=>!!s.rare===!!rareWanted),choices=pool.length?pool:defs;const unowned=choices.filter(s=>souvenirCount(did,s.id)===0);return pickRandom(unowned.length&&Math.random()<.72?unowned:choices)}
@@ -896,10 +929,12 @@ function renderCollection(){
  app.innerHTML=`<div class="card collectionPage"><div class="row spread collectionTop"><div><div class="kicker">EXPEDITION COLLECTION</div><div class="sectionTitle">🗺️ 探索コレクション</div></div><span class="badge gold">調査Lv 合計 ${stepTotal}/${stepMax}</span></div>
  <div class="discoveryBenefitGuide"><div class="discoveryBenefitIcon">🗺️</div><div><b>「調査Lv」は、その探索先をどこまで調べたかを表します。</b><p><strong>調査度</strong>が20％進むごとに調査Lvが 1/5 → 5/5 と上がります。<strong>調査Lv 5/5（100％）到達時はレアおみやげを1つ確定で獲得</strong>します。おみやげの収集状況とは別の進行度です。</p></div></div>
  <div class="souvenirUseGuide"><b>🎒 おみやげの使い方</b><span>各おみやげは1個をコレクションとして残します。2個目以降は交換可能。</span><strong>通常 🪙${SOUVENIR_COIN_NORMAL}　／　レア 🪙${SOUVENIR_COIN_RARE}</strong></div>
+ ${(()=>{const bulk=bulkSouvenirExchangeSummary();return `<div class="bulkExchangeBar"><div><b>🪙 重複おみやげ一括交換</b><small>${bulk.itemCount?`交換可能 ${bulk.itemCount}個 → 合計 🪙${bulk.coinTotal}`:"交換できる重複おみやげはありません"}</small></div><button type="button" id="bulkExchangeBtn" ${bulk.itemCount?"":"disabled"}>一括交換</button></div>`})()}
  <div class="collectionSummary"><div class="collectionStat"><b>${total.distinct}/${total.max}</b><small>おみやげ種類</small></div><div class="collectionStat"><b>${total.total}</b><small>おみやげ総数</small></div><div class="collectionStat coinStat"><b>🪙 ${coins}</b><small>フレンダコイン</small></div></div>
  <div class="collectionGrid">${dids.map(did=>{const p=discoveryPct(did),step=discoveryStep(did),defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length;return `<div class="collectionCard ${step>=5?"complete":""}"><div class="collectionHead"><b>${THEMES[did].icon} ${esc(THEMES[did].name)}</b><span class="collectionPct">調査Lv ${step}/5 <em>調査度 ${p}%</em></span></div><div class="discoveryMeter collectionDiscoveryMeter"><span style="width:${p}%"></span><i>${p}%</i></div><div class="souvenirSlots">${defs.map(s=>{const n=souvenirCount(did,s.id),value=souvenirExchangeValue(s),canExchange=n>1;return `<div class="souvenirSlot ${n?"":"locked"} ${s.rare?"rare":""}"><div class="ico">${n?s.icon:"❓"}</div><b>${n?esc(s.name):"？？？"}</b><small>${n?`×${n}`:"未収集"}</small>${canExchange?`<button type="button" class="souvenirExchangeBtn" data-exchange-did="${did}" data-exchange-id="${s.id}">1個 → 🪙${value}</button>`:n?'<span class="souvenirKeep">保存用1個</span>':""}</div>`}).join("")}</div><div class="collectionFoot"><span>おみやげ ${got}/${defs.length}種類</span>${step>=5?'<b>🏅 調査コンプリート</b>':""}</div></div>`}).join("")}</div>
  <button class="ghost" id="backCollectionBtn" style="width:100%;margin-top:12px">← 戻る</button></div>`;
  app.querySelectorAll("[data-exchange-did][data-exchange-id]").forEach(b=>b.onclick=()=>exchangeSouvenir(b.dataset.exchangeDid,b.dataset.exchangeId));
+ const bulkBtn=document.getElementById("bulkExchangeBtn");if(bulkBtn)bulkBtn.onclick=()=>exchangeAllSouvenirs();
  document.getElementById("backCollectionBtn").onclick=()=>{screen=collectionReturnScreen||"home";render()}
 }
 function renderSummary(){const m=groupMission(),f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card"><div class="returnHero"><div class="kicker" style="color:#8de5ff">EXPEDITION COMPLETE / GROUP ${activeGroup+1}</div><h1>✨ 探索完了！</h1><p>${THEMES[m.dungeonId].icon} ${esc(THEMES[m.dungeonId].name)} ランク${m.difficulty} / ${formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now()))} / 探索ランク${m.rank}</p></div><div class="summaryFindings"><b>🗺️ 調査Lv ${beforeStep}/5 → ${afterStep}/5</b><div class="summarySouvenirLine">🎒 ${esc(souvenirNameLine(f))}</div></div>${m.secretSpotUsed?`<div class="summarySecret"><b>🌟 調査したひみつの場所</b><small>${esc(m.secretSpotUsed.name)} を探索し、ボーナスを獲得しました。</small></div>`:""}${secretSpotSummaryHTML(m.secretSpotDiscovered)}<div class="sectionTitle" style="margin-top:12px">成果箱の中身</div><div class="finalList">${m.summary?.length?m.summary.map(x=>`<div class="finalRow"><span>${esc(x)}</span><b>✓</b></div>`).join(""):'<div class="notice">成果箱の記録はありません。</div>'}</div><div class="notice" style="margin-top:10px">「探索終了」を押すと、グループ${activeGroup+1}で派遣していた${m.teamIds.length}体が再び使用可能になります。</div><button class="goldBtn" id="completeBtn" style="width:100%;margin-top:10px;font-size:17px">探索終了</button></div>`;document.getElementById("completeBtn").onclick=()=>completeMission(activeGroup)}
@@ -1888,7 +1923,63 @@ header .head{
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.65 / Updated: 2026-10-01 21:39 JST -->
+
+<style id="v066-bulk-souvenir-exchange">
+.bulkExchangeBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 0 10px;
+  padding:9px 11px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#fff7cc,#fffdf2);
+  border:1px solid #e2c45b;
+}
+.bulkExchangeBar>div{min-width:0}
+.bulkExchangeBar b{
+  display:block;
+  color:#674b00;
+  font-size:10px;
+}
+.bulkExchangeBar small{
+  display:block;
+  margin-top:2px;
+  color:#7a6a39;
+  font-size:8px;
+}
+.bulkExchangeBar button{
+  flex:none;
+  min-width:92px!important;
+  padding:8px 10px!important;
+  border-radius:10px!important;
+  border:1px solid #d4a92d!important;
+  background:linear-gradient(180deg,#ffe982,#eabb3e)!important;
+  color:#5c4300!important;
+  font-size:9px!important;
+  font-weight:1000!important;
+  box-shadow:none!important;
+}
+.bulkExchangeBar button:disabled{
+  opacity:.45!important;
+  filter:grayscale(.35);
+}
+@media(max-width:700px){
+  .bulkExchangeBar{
+    padding:8px 9px;
+    gap:7px;
+  }
+  .bulkExchangeBar b{font-size:9px}
+  .bulkExchangeBar small{font-size:7px}
+  .bulkExchangeBar button{
+    min-width:78px!important;
+    padding:7px 8px!important;
+    font-size:8px!important;
+  }
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.66 / Updated: 2026-10-01 21:48 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -2048,4 +2139,11 @@ header .head{
   既存の「おまかせ編成」ロジックで自動セットするよう変更。
   「✓ 選択中」の強調表示は維持し、どの派遣先を選択中か分かりやすくした。
   自動セット後は従来どおり個別にピックを入れ替え可能。
+-->
+
+<!-- Ver0.66:
+  探索コレクションに「重複おみやげ一括交換」を追加。
+  各おみやげは1個を必ず残し、2個目以降のみ一括交換。
+  通常=50コイン、レア=200コインで自動集計し、交換前に対象個数と合計コインを確認。
+  交換対象がない場合は一括交換ボタンを無効化。
 -->
