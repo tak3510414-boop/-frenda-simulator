@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.24">
+<html lang="ja" data-app-version="2.25">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -8434,7 +8434,30 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.24 / Updated: 2026-10-01 19:58 JST -->
+
+<style id="v225-mobile-home-bottom-space">
+@media(max-width:700px){
+  /*
+    Home utility bar is fixed over the scroll area.
+    Give the home screen a larger terminal scroll area so the lower cards
+    (Egg / Shop) can be lifted completely above both the utility bar and
+    Safari's floating bottom toolbar.
+  */
+  .homeScreen{
+    padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;
+    scroll-padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;
+  }
+  .homeScreen::after{
+    content:"";
+    display:block;
+    width:1px;
+    height:calc(18px + env(safe-area-inset-bottom));
+    pointer-events:none;
+  }
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.25 / Updated: 2026-10-01 20:18 JST -->
 </body>
 </html>
 
@@ -8493,4 +8516,9 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
   左から [画像|数値] [画像|数値] [画像|数値] の並びで3体を同時比較可能にした。
   スマホ時は項目名を EXP / 特訓 / コイン / 絆 / HP に短縮。
   PC版の従来レイアウト・表記は変更なし。
+-->
+
+<!-- Ver2.25:
+  スマホのホーム画面最下部が固定ユーティリティバー＋Safari下部バーに少し隠れる問題を修正。
+  ホーム画面の末尾スクロール余白を拡大し、卵・ショップカードの最下部まで完全に表示可能にした。
 -->
