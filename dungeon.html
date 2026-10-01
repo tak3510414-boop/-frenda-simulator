@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.26">
+<html lang="ja" data-app-version="2.27">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -8474,7 +8474,36 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.26 / Updated: 2026-10-01 20:10 JST -->
+<style id="v227-mobile-enemy-meta-separation">
+/* Ver2.27: mobile fighter selection - keep enemy type, grade and remaining count on separate rows. */
+@media(max-width:700px){
+  main.chooseFighterScreen .fighterSelectEnemy{
+    grid-template-rows:auto minmax(0,1fr) auto auto!important;
+  }
+  main.chooseFighterScreen .fighterSelectEnemyImage{
+    grid-row:2/5!important;
+  }
+  main.chooseFighterScreen .fighterSelectEnemy>div:not(.kicker):not(.fighterSelectEnemyImage):not(.fighterSelectEnemyBadges){
+    grid-column:2!important;
+    grid-row:3!important;
+    align-self:center!important;
+    text-align:left!important;
+    margin:1px 0!important;
+    min-height:14px!important;
+  }
+  main.chooseFighterScreen .fighterSelectEnemyBadges{
+    grid-column:2!important;
+    grid-row:4!important;
+    align-self:start!important;
+    justify-content:flex-start!important;
+    margin:1px 0 0!important;
+    gap:4px!important;
+    min-height:15px!important;
+  }
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.27 / Updated: 2026-10-02 06:51 JST -->
 </body>
 </html>
 
@@ -8543,4 +8572,10 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 <!-- Ver2.26:
   ホーム「所持ピック」の特訓/進化可能数からアイコンを削除。
   「特訓可能 0体 / 進化可能 0体」の形式で必ず1行表示。
+-->
+
+<!-- Ver2.27:
+  スマホの「出すポケモンを選択」画面で、相手のタイプ表示と「★ / 残り○匹」バッジが同じグリッド行に配置され、重なっていた問題を修正。
+  相手名・タイプ・★/残り匹を別行に分離し、画像左／情報右のコンパクト配置を維持したまま読みやすくした。
+  更新日時: 2026-10-02 06:51 JST
 -->
