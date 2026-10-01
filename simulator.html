@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.94 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.95 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.94</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.95</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:600px){.simHeaderRow{gap:6px}.simHeaderTitle{font-size:12px}.simHomeLink{font-size:9px;padding:6px 7px}}
@@ -528,8 +528,117 @@ body.battleOverlayOpen{overflow:hidden}
   .pickScanPick img{width:74px}.pickScanPickName{font-size:18px}
 }
 
+
+/* Ver6.95: pick image size selector + image on pick-data screen */
+.pickViewSizeBar{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  margin:-2px 0 9px;padding:0 2px
+}
+.pickViewSizeBar>span{font-size:10px;font-weight:1000;color:#d7f6ff;letter-spacing:.04em}
+.pickViewSizeBtns{display:flex;gap:4px}
+.pickViewSizeBtns button{
+  min-width:38px;padding:6px 10px;border-radius:9px;
+  background:#183b50;color:#dff7ff;border:1px solid #4d7185;
+  font-size:10px;font-weight:1000;box-shadow:none
+}
+.pickViewSizeBtns button.on{
+  background:linear-gradient(180deg,#10bde8,#0675bb);
+  color:#fff;border-color:#57e4ff;box-shadow:0 0 0 2px #71e9ff44 inset
+}
+
+/* Medium = current default */
+.pickGrid.pickSizeMedium{
+  grid-template-columns:repeat(auto-fill,minmax(175px,1fr))
+}
+/* Large = fewer, larger images */
+.pickGrid.pickSizeLarge{
+  grid-template-columns:repeat(auto-fill,minmax(255px,1fr));
+  gap:15px
+}
+.pickGrid.pickSizeLarge .pickName{font-size:17px}
+.pickGrid.pickSizeLarge .pickMeta{font-size:11px}
+.pickGrid.pickSizeLarge .arcadeStars{font-size:16px}
+.pickGrid.pickSizeLarge .arcadeNo{font-size:11px}
+.pickGrid.pickSizeLarge .energyOrb{min-width:48px;height:48px;font-size:13px}
+/* Small = more cards per row */
+.pickGrid.pickSizeSmall{
+  grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
+  gap:7px
+}
+.pickGrid.pickSizeSmall .pickCard{padding:4px;border-radius:12px}
+.pickGrid.pickSizeSmall .arcadeCardTop{padding:1px 2px 4px}
+.pickGrid.pickSizeSmall .arcadeStars{font-size:10px}
+.pickGrid.pickSizeSmall .arcadeNo{font-size:7px;padding:2px 4px}
+.pickGrid.pickSizeSmall .pickImageFrame{padding:2px;border-radius:9px}
+.pickGrid.pickSizeSmall .pickName{font-size:11px;margin-top:4px}
+.pickGrid.pickSizeSmall .pickMeta{font-size:7px;min-height:23px;line-height:1.3}
+.pickGrid.pickSizeSmall .typePill.tiny{font-size:6px;padding:1px 3px}
+.pickGrid.pickSizeSmall .typeMark{width:13px;height:13px}
+.pickGrid.pickSizeSmall .energyOrb{right:5px;bottom:5px;min-width:32px;width:32px;height:32px;padding:0 3px;font-size:8px;border-width:1px}
+.pickGrid.pickSizeSmall .energyOrb small{font-size:5px}
+.pickGrid.pickSizeSmall .strengthBadge{margin:4px auto 2px;padding:3px 5px;gap:2px}
+.pickGrid.pickSizeSmall .strengthBadge span{font-size:5px}
+.pickGrid.pickSizeSmall .strengthBadge b{font-size:11px}
+.pickGrid.pickSizeSmall .strengthBadge small{font-size:5px}
+.pickGrid.pickSizeSmall .miniBadge{font-size:6px;padding:1px 4px}
+.pickGrid.pickSizeSmall .quickActions{gap:3px;margin-top:4px}
+.pickGrid.pickSizeSmall .quickActions button{padding:6px 2px;font-size:7px;border-radius:6px}
+
+/* Pick-data screen: actual pick image */
+.pickBackTop{
+  grid-template-columns:116px minmax(0,1fr) auto!important;
+  align-items:start!important
+}
+.pickBackPhotoWrap{
+  width:116px;min-width:116px
+}
+.pickBackPhoto{
+  display:block;width:116px;aspect-ratio:2/3;object-fit:cover;
+  border-radius:12px;background:#e8ebee;
+  border:2px solid #8be9ff;
+  box-shadow:0 5px 16px #00192466,0 0 13px #4bdcff33
+}
+.pickBackPhotoLabel{
+  display:block;margin-top:4px;text-align:center;
+  color:#83c8da;font-size:7px;font-weight:900;letter-spacing:.06em
+}
+@media(max-width:620px){
+  .pickViewSizeBar{justify-content:space-between}
+  .pickViewSizeBar>span{font-size:9px}
+  .pickViewSizeBtns{flex:1;justify-content:flex-end}
+  .pickViewSizeBtns button{min-width:44px;padding:6px 9px}
+
+  .pickGrid.pickSizeLarge{grid-template-columns:1fr!important;gap:10px!important}
+  .pickGrid.pickSizeMedium{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .pickGrid.pickSizeSmall{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+
+  .pickBackTop{
+    grid-template-columns:82px minmax(0,1fr) auto!important;
+    gap:8px!important
+  }
+  .pickBackPhotoWrap{width:82px;min-width:82px}
+  .pickBackPhoto{width:82px;border-radius:9px}
+  .pickBackPhotoLabel{font-size:6px}
+  .pickBackEnergy{min-width:54px!important;width:54px!important;height:54px!important;font-size:16px!important}
+  .pickBackEnergy small{font-size:6px!important}
+}
+@media(max-width:390px){
+  .pickGrid.pickSizeSmall{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .pickGrid.pickSizeSmall .pickName{font-size:9px}
+  .pickGrid.pickSizeSmall .quickActions button{font-size:6px}
+  .pickBackTop{
+    grid-template-columns:72px minmax(0,1fr)!important;
+  }
+  .pickBackPhotoWrap{width:72px;min-width:72px}
+  .pickBackPhoto{width:72px}
+  .pickBackEnergy{
+    grid-column:2;justify-self:start;margin-top:5px!important;
+    min-width:52px!important;width:52px!important;height:52px!important
+  }
+}
+
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.94</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.95</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -541,6 +650,14 @@ body.battleOverlayOpen{overflow:hidden}
 <div class="consoleHeader"><div><span class="consoleKicker">FRIENDA PICK SELECT</span><h2>① ピックを選ぶ</h2></div><div class="consoleLamp">SELECT</div></div>
 <div id="collectionOverall" class="collectionOverall"></div>
 <div id="masterStatsStatus" class="masterStatsStatus"></div>
+<div class="pickViewSizeBar" id="pickViewSizeBar">
+  <span>画像サイズ</span>
+  <div class="pickViewSizeBtns" role="group" aria-label="ピック画像サイズ">
+    <button type="button" data-pick-view-size="large">大</button>
+    <button type="button" data-pick-view-size="medium">中</button>
+    <button type="button" data-pick-view-size="small">小</button>
+  </div>
+</div>
 <div class="browserToolbar">
   <div class="search"><input id="q" placeholder="番号・ポケモン名・英語名で検索"><button id="clearQ" class="ghost" type="button">消去</button></div>
   <button id="pickScanLaunchBtn" class="pickScanLaunch" type="button">📷 ピック読取</button>
@@ -838,6 +955,18 @@ function migrateLegacyTeamToFavorites(){
 function pickImage(r){return DATA.simulator.pickImage(r,svgPlaceholder)}
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
 let browseSeries=null;
+const PICK_VIEW_SIZE_KEY="frenda:simulator:pickViewSize:v1";
+let pickViewSize=["large","medium","small"].includes(localStorage.getItem(PICK_VIEW_SIZE_KEY))?localStorage.getItem(PICK_VIEW_SIZE_KEY):"medium";
+function applyPickViewSize(){
+ const box=$("pickList");if(!box)return;
+ box.classList.remove("pickSizeLarge","pickSizeMedium","pickSizeSmall");
+ box.classList.add(pickViewSize==="large"?"pickSizeLarge":pickViewSize==="small"?"pickSizeSmall":"pickSizeMedium");
+ document.querySelectorAll("[data-pick-view-size]").forEach(b=>b.classList.toggle("on",b.dataset.pickViewSize===pickViewSize))
+}
+function setPickViewSize(size){
+ if(!["large","medium","small"].includes(size))size="medium";
+ pickViewSize=size;localStorage.setItem(PICK_VIEW_SIZE_KEY,size);applyPickViewSize()
+}
 const BROWSER_PAGE_SIZE=80;
 let browserRenderLimit=BROWSER_PAGE_SIZE;
 let browserObserver=null;
@@ -977,7 +1106,7 @@ function handlePickScanResult(result){
 }
 function addScannedPickOwned(r){
  const a=getIds(OWNED_KEY);if(!a.includes(r.master_id)){a.push(r.master_id);setIds(OWNED_KEY,a)}
- renderCollectionOverall();renderSeriesButtons();renderBrowser();renderBestThreeMode();roundRobinPoolInfo();
+ applyPickViewSize();renderCollectionOverall();renderSeriesButtons();renderBrowser();renderBestThreeMode();roundRobinPoolInfo();
  return true
 }
 function showPickScanMatched(r,result,source){
@@ -1154,6 +1283,7 @@ function renderBrowser(){
  const box=$("pickList"),a=browserRecords(),q=norm($("q").value),scope=browseScopeValue(),stats=$("browseStats").value;
  if(browserObserver){browserObserver.disconnect();browserObserver=null}
  box.innerHTML="";
+ applyPickViewSize();
  renderCollectionOverall();
  const scopeLabel=scope==="owned"?"所持":scope==="favorite"?"お気に入り":"全件";
  const context=q?`検索結果「${$("q").value.trim()}」`:(browseSeries||`全弾・${scopeLabel}`);
@@ -1206,7 +1336,7 @@ function showPickBack(r){
  const atkMatch=pickBackAttackTypes(m.move_type),defMatch=pickBackDefenseTypes(m.type1,m.type2),stab=!!m.move_type&&(m.move_type===m.type1||m.move_type===m.type2);
  const matchupHTML=`<div class="pickBackMatchups"><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>攻撃相性（技タイプ）</span>${stab?'<span class="pickBackStab">タイプ一致</span>':''}</div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">◎ ばつぐん</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.good)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">△ いまひとつ</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.immune)}</div></div><div class="pickBackMatchupNote">このピックの技タイプを、相手が単タイプだった場合の相性です。</div></div><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>防御相性（自分のタイプ）</span></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× 弱点</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.weak)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">○ 耐性</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.immune)}</div></div><div class="pickBackMatchupNote">複合タイプは2タイプを掛け合わせた最終相性で判定します。</div></div></div>`;
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  const body=$("pickBackBody"),strengthBtn=body.querySelector(".pickBackStrength"),topBtn=body.querySelector(".pickBackMatchupTopBtn"),editBtn=body.querySelector(".pickBackEditBtn"),toggle=body.querySelector(".pickBackMatchupToggle"),collapse=body.querySelector(".pickBackMatchupCollapse");
  if(strengthBtn)strengthBtn.onclick=()=>{closePickBack();showStrengthOverlay(r)};
  if(topBtn)topBtn.onclick=()=>{closePickBack();openPickRecommendOverlay(r)};
@@ -1241,6 +1371,7 @@ $("closeDetail").onclick=closeDetail;
 $("detailCard").addEventListener("click",e=>{if(e.target===$("detailCard"))closeDetail()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("detailCard").classList.contains("hidden"))closeDetail()});
 document.querySelectorAll('input[name="browseScope"]').forEach(r=>r.onchange=()=>{resetBrowserLimit();renderSeriesButtons();renderBrowser()});
+document.querySelectorAll("[data-pick-view-size]").forEach(b=>b.onclick=()=>setPickViewSize(b.dataset.pickViewSize));
 $("browseGrade").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseType").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseStats").onchange=()=>{resetBrowserLimit();renderBrowser()};$("browseSort").onchange=()=>{resetBrowserLimit();renderBrowser()};
 $("q").addEventListener("input",()=>{resetBrowserLimit();renderSeriesButtons();renderBrowser()});$("clearQ").onclick=()=>{$("q").value="";resetBrowserLimit();renderSeriesButtons();renderBrowser();$("q").focus()};
 $("editBtn").onclick=()=>{editing=true;render()};
@@ -2610,7 +2741,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.94",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.95",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2630,7 +2761,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const storage={};
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.94",storage};
+ return {format_version:1,simulator_version:"6.95",storage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2642,6 +2773,12 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-10-01 21:30:00 JST / Ver6.94 -->
+<!-- Updated: 2026-10-01 22:58:00 JST / Ver6.95 -->
 
 <!-- Ver6.94: frenda-master.js v1.63 XT2ワンダー先行登録版へ更新。 -->
+
+<!-- Ver6.95:
+  ・ピック一覧の画像表示サイズを「大 / 中 / 小」で切替可能にした。設定は端末に保存。
+  ・スマホでは 大=1列 / 中=2列 / 小=3列。
+  ・ピック画像をタップして開く「ピック裏面データ」画面にも、そのピック画像を表示。
+-->
