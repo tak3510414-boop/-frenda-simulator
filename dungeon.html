@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.19">
+<html lang="ja" data-app-version="2.20">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3833,7 +3833,7 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
 
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -5108,7 +5108,21 @@ function teamRec(t){const base=clone(rec(t.id)),pb=state.permanentBoosts[t.id]||
 function healTeamMember(t,amount){if(t.ko)return 0;const max=maxHpFor(t.id),old=t.hp;t.hp=Math.min(max,Math.round(t.hp+amount));return t.hp-old}
 function healPercent(t,p){return healTeamMember(t,maxHpFor(t.id)*p)}
 function addLog(s){if(!state.run)return;state.run.logs.push(s);if(state.run.logs.length>80)state.run.logs=state.run.logs.slice(-80)}
-function updateHeaderStatus(){const el=document.getElementById("runHeaderInfo");if(el){el.style.display="none";el.textContent=""}if(withdrawBtn)withdrawBtn.style.display="none"}
+function updateHeaderStatus(){
+ const el=document.getElementById("runHeaderInfo");
+ if(el){el.style.display="none";el.textContent=""}
+ if(withdrawBtn)withdrawBtn.style.display="none";
+ const egg=document.getElementById("headerEggBadge");
+ if(egg){
+  const active=!!state.run;
+  egg.hidden=!active;
+  egg.style.display=active?"inline-flex":"none";
+  if(active){
+   egg.textContent=`🥚 ${state.eggs.length}/${state.eggCap}`;
+   egg.title=`タマゴ ${state.eggs.length}/${state.eggCap}（タップで詳細）`
+  }
+ }
+}
 function floorRate(){return state.run.floor>=8?ROUTE_RATES_LATE:ROUTE_RATES_EARLY}
 function generateRoutes(){if(!state.run||state.run.floor>=10)return;const count=Math.random()<.55?3:2,rates=floorRate(),types=Object.keys(rates);let out=[];let attempts=0;while(out.length<count&&attempts++<30){const k=chooseWeighted(rates);if(!out.includes(k)||out.length>=types.length)out.push(k)}while(out.length<count)out.push(chooseWeighted(rates));state.run.routeOptions=out.map((type,i)=>({id:`${state.run.floor}-${i}-${Math.random().toString(36).slice(2,7)}`,type}));state.run.scene="route";save()}
 function themeCandidates(themeId){const theme=THEMES[themeId],valid=RECORDS.filter(validBattle);const themed=valid.filter(r=>theme.types.includes(r.type1)||theme.types.includes(r.type2)),other=valid.filter(r=>!theme.types.includes(r.type1)&&!theme.types.includes(r.type2));return {themed,other}}
@@ -5613,11 +5627,10 @@ function runStatusPanelHTML(r,theme,battleKind=""){
     <div class="runUnifiedRight"><button type="button" class="runWithdrawInside runWithdrawTop" data-run-withdraw>冒険から撤退</button><div class="runUnifiedFloor"><strong>地下${r.floor}階</strong><span>/ 10</span></div></div>
    </div>
    <div class="runUnifiedMetrics">
-    <span class="runUnifiedMetric alert ${alert>=3?"max":alert>=2?"warn":""}"><span>👁 警戒度</span><b class="alertDots">${alertDots(alert)}</b><b>${alert}/3</b></span>
-    <span class="runUnifiedMetric road ${roadReady?"ready":""}"><span>⚔️ 道中戦闘</span><b>${road}戦</b>${roadReady?`<em>🔥 BONUS READY</em>`:`<small>あと${Math.max(0,3-road)}戦</small>`}</span>
+    <span class="runUnifiedMetric alert ${alert>=3?"max":alert>=2?"warn":""}"><span>👁 警戒度</span><b class="alertDots">${alertDots(alert)}</b></span>
+    <span class="runUnifiedMetric road ${roadReady?"ready":""}" title="${roadReady?"道中戦闘3戦以上：ボス戦開始時にパーティ全員の攻撃・防御+2":"道中戦闘3戦でボス戦の闘志ボーナス解放"}"><span>⚔️ 道中戦闘</span><b>${road}戦</b>${roadReady?`<em>🔥 攻防+2</em>`:`<small>あと${Math.max(0,3-road)}戦</small>`}</span>
     <span class="runUnifiedMetric luck"><span>🍀 パーティ運</span><b>${adventureLuck().toFixed(1)}/${LUCK_MAX}</b><small>同速先攻 ${initiativeChance().toFixed(1).replace(/\.0$/,"")}%</small></span>
     ${enemyMetric}
-    <button type="button" class="runUnifiedMetric egg" data-run-egg-open aria-label="卵の詳細を表示"><span>🥚 タマゴ</span><b>${state.eggs.length}/${state.eggCap}</b></button>
    </div>
    <div class="runUnifiedAlwaysPath">${floorPathHTML(r.floor)}</div>
   </div></div>`
@@ -7719,7 +7732,77 @@ main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.19 / Updated: 2026-09-30 21:30 JST -->
+
+<style id="v220-status-spacing-mobile-bottom">
+/* Header egg counter: immediately to the right of the expedition status. */
+.headerEggBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0!important;
+  padding:6px 10px!important;
+  border-radius:999px!important;
+  border:1px solid #d6bfef!important;
+  background:#f5edff!important;
+  color:#5b347d!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  white-space:nowrap;
+  box-shadow:0 2px 8px #0002!important;
+}
+.headerEggBadge:active{transform:scale(.97)}
+
+/* Keep Road Battle + Party Luck adjacent, with Alert compact at the left. */
+main.dungeonRunScreen .runUnifiedMetrics{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:stretch!important;
+  gap:5px!important;
+}
+main.dungeonRunScreen .runUnifiedMetric.alert{
+  flex:0 0 auto!important;
+}
+main.dungeonRunScreen .runUnifiedMetric.road{
+  flex:0 1 auto!important;
+}
+main.dungeonRunScreen .runUnifiedMetric.luck{
+  flex:0 1 auto!important;
+}
+main.dungeonRunScreen .runUnifiedMetric.road.ready em{
+  color:#fff2a8!important;
+  font-weight:1000!important;
+}
+
+/* iPhone Safari: add enough terminal scroll space so the battle card can be
+   scrolled completely above the bottom browser toolbar. */
+@media(max-width:700px){
+  .headerEggBadge{
+    padding:5px 7px!important;
+    font-size:9px!important;
+  }
+  .careCluster{
+    gap:5px!important;
+  }
+  main.dungeonRunScreen .runUnifiedMetrics{
+    gap:3px!important;
+  }
+  main.dungeonRunScreen .runUnifiedMetric{
+    padding:4px 5px!important;
+  }
+  main.dungeonRunScreen .runUnifiedMetric.road em{
+    font-size:6px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page^="run-"]{
+    scroll-padding-bottom:calc(120px + env(safe-area-inset-bottom))!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun::after{
+    flex-basis:calc(110px + env(safe-area-inset-bottom))!important;
+  }
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.20 / Updated: 2026-10-01 13:45 JST -->
 </body>
 </html>
 
@@ -7737,4 +7820,12 @@ main.chooseFighterScreen .partySideCard .matchupAppeal.veryBad{
   分子=現在探索中のグループ数、分母=現在利用可能なグループ数。
   グループ1〜5のR1〜R5全ダンジョンクリア条件と管理者解放を分母へ反映。
   帰還済みで未受取のグループがある場合は「✨ 帰還済み ○」と表示。
+-->
+
+<!-- Ver2.20:
+  ・タマゴ所持数をダンジョン内ステータス行から外し、上部ヘッダーの「探索中 x/y」の右へ移動。
+  ・パーティ運を道中戦闘の右隣に固定。
+  ・警戒度の「0/3」数値を廃止し、○表示のみへ簡素化。
+  ・道中戦闘3戦以上の🔥表示を「🔥 攻防+2」に変更。意味はボス戦開始時にパーティ全員の攻撃・防御+2。
+  ・iPhone Safari下部ツールバーで戦闘画面の最下部が隠れないよう、末尾スクロール余白を拡大。
 -->
