@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.20">
+<html lang="ja" data-app-version="2.21">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5570,18 +5570,14 @@ function teamMiniHTML(t,i){
        typeBadges=[r.type1,r.type2].filter(Boolean).map(x=>`<span class="badge">${esc(x)}</span>`).join(""),
        atkBoost=Number(pb.atk||0)+(t.tempAtk||0)+(t.bondAtk||0),
        defBoost=Number(pb.def||0)+(t.tempDef||0)+(t.bondDef||0);
+ const evoInfo=evolutionInfoForPick(t.id);
  return `<div class="${cls}"${attrs}>
-   <div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)}${t.ko?" / ひんし":i===active?" / バトル中":""}</small><span class="teamEnergyBadge">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><div class="teamTypeRow">${typeBadges}</div></div></div>
+   <div class="teamMiniHead"><img src="${esc(imageOf(r))}" alt=""><div class="teamMiniInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)}${t.ko?" / ひんし":i===active?" / バトル中":""}</small><div class="teamMiniTopMeta"><span class="teamEnergyBadge">⚡ ポケエネ <b>${esc(r.poke_ene??"-")}</b></span><span class="teamBondTop${bond>=4?" high":""}">♥ 絆Lv${bond}</span>${evoInfo.hasEvolution?`<span class="teamEvoTop">進化P ${growth}</span>`:""}</div><div class="teamTypeRow">${typeBadges}</div></div></div>
    <div class="hpbar"><div class="hpfill${hpClass(p)}" style="width:${p}%"></div></div>
    <div class="teamMiniHpText"><span>HP</span><span>${t.hp}/${max}</span></div>
    ${battleMoodBadgeHTML(t.id)}
    <div class="battleMiniStats">${battleMiniGraphGridHTML(t,r,pb)}</div>
    <div class="battleMiniMove"><b>${esc(r.move_type||"-")}</b> ${esc(moveName)}${r.finisher_move&&String(r.finisher_move).trim()?`<br>必殺：${esc(String(r.finisher_move).trim())}`:""}</div>
-   <div class="battleMiniGrowth">
-    ${evolutionInfoForPick(t.id).hasEvolution?`<span>進化P ${growth}（進化）</span>`:""}<span>特訓P ${drill}</span><span>EXP ${xp}/100</span>
-<span>冒険中 攻+${(t.tempAtk||0)+(t.bondAtk||0)}</span><span>冒険中 防+${(t.tempDef||0)+(t.bondDef||0)}</span>
-    <span class="bondChip${bond>=4?" high":""}">♥ 絆Lv${bond}</span>
-   </div>
   </div>`
 }
 function floorPathHTML(floor){const f=Math.max(1,Math.min(10,Number(floor)||1)),history=(state.run&&state.run.routeHistory&&typeof state.run.routeHistory==="object")?state.run.routeHistory:{};const cells=Array.from({length:10},(_,i)=>{const n=i+1,cls=n<f?"done":n===f?"current":"future",goal=n===10?" goal":"",routeType=n<10?history[n]:null,routeDef=routeType?ROUTE_DEF[routeType]:null,label=routeDef?`・${routeDef.label}`:"",content=n===10?'<span class="goalFlag">👑</span>':routeDef?`<span class="routeMark" title="${esc(routeDef.label)}">${routeDef.icon}</span>`:`<span>${n}</span>`;return `<div class="floorStep ${cls}${goal}" aria-label="地下${n}階${n===f?"・現在地":""}${label}${n===10?"・ゴール":""}">${content}</div>`}).join("");return `<div class="floorPath" aria-label="ゴールまでの階層マップ">${cells}</div><div class="floorPathCaption"><span>START</span><span>B10・BOSS</span></div>`}
@@ -7802,7 +7798,81 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.20 / Updated: 2026-10-01 13:45 JST -->
+
+<style id="v221-party-compact-mobile-bottom">
+/* Battle party cards: information needed during battle stays at the top. */
+.battleRun .teamMiniTopMeta{
+  display:flex;
+  align-items:center;
+  gap:3px;
+  flex-wrap:wrap;
+  margin-top:2px;
+}
+.battleRun .teamMiniTopMeta .teamEnergyBadge{
+  margin:0!important;
+}
+.battleRun .teamBondTop,
+.battleRun .teamEvoTop{
+  display:inline-flex;
+  align-items:center;
+  min-width:0;
+  padding:2px 5px;
+  border-radius:999px;
+  font-size:6.4px;
+  line-height:1;
+  font-weight:1000;
+  white-space:nowrap;
+}
+.battleRun .teamBondTop{
+  background:#fff1f7;
+  border:1px solid #efc5db;
+  color:#8a3862;
+}
+.battleRun .teamBondTop.high{
+  background:#ffe9f3;
+  border-color:#e58db9;
+  color:#7a174b;
+}
+.battleRun .teamEvoTop{
+  background:#f0ecff;
+  border:1px solid #d6c9fb;
+  color:#62469a;
+}
+
+/* The old bottom growth block is gone, so the cards can be shorter. */
+.battleRun .teamMini{
+  min-height:174px!important;
+  padding-bottom:4px!important;
+}
+.battleRun .battleMiniMove{
+  min-height:23px!important;
+  margin-bottom:0!important;
+}
+
+/* Safari bottom toolbar still overlaps the visual viewport a little.
+   Give the battle page enough terminal scroll room to lift the entire card above it. */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page^="run-"]{
+    scroll-padding-bottom:calc(175px + env(safe-area-inset-bottom))!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun::after{
+    flex-basis:calc(165px + env(safe-area-inset-bottom))!important;
+  }
+  .battleRun .teamMini{
+    min-height:166px!important;
+  }
+  .battleRun .teamMiniTopMeta{
+    gap:2px;
+  }
+  .battleRun .teamBondTop,
+  .battleRun .teamEvoTop{
+    padding:2px 4px;
+    font-size:5.9px;
+  }
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.21 / Updated: 2026-10-01 13:55 JST -->
 </body>
 </html>
 
@@ -7828,4 +7898,12 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
   ・警戒度の「0/3」数値を廃止し、○表示のみへ簡素化。
   ・道中戦闘3戦以上の🔥表示を「🔥 攻防+2」に変更。意味はボス戦開始時にパーティ全員の攻撃・防御+2。
   ・iPhone Safari下部ツールバーで戦闘画面の最下部が隠れないよう、末尾スクロール余白を拡大。
+-->
+
+<!-- Ver2.21:
+  戦闘中の3体パーティカード最下部にあった
+  「特訓P / EXP / 冒険中 攻+ / 冒険中 防+」を削除。
+  絆Lvはカード上部のポケエネ横へ移動。
+  進化対象のみ進化Pを同じ上部メタ情報として残す。
+  パーティカード自体を低くし、iPhone Safari下部バー対策の末尾スクロール余白も追加。
 -->
