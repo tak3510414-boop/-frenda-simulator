@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.92 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.93 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.92</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.93</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:600px){.simHeaderRow{gap:6px}.simHeaderTitle{font-size:12px}.simHomeLink{font-size:9px;padding:6px 7px}}
@@ -412,8 +412,124 @@ body.battleOverlayOpen{overflow:hidden}
 
 /* Shared selected-team strip (frenda-ui.js v1.3 component) */
 .frendaSelectedStrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0 10px}.frendaSelectedSlot{min-height:88px;border:2px solid #cfdae1;border-radius:13px;background:#f7fafc;position:relative;min-width:0;padding:7px}.frendaSelectedSlot.filled{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:center;background:linear-gradient(180deg,#f3fdff,#e5f8ff);border-color:#5fc4df;box-shadow:0 3px 9px #167da51a}.frendaSelectedSlot img{width:52px;height:72px;object-fit:cover;border-radius:8px;background:#e1e8ec;box-shadow:0 2px 5px #24475d25}.frendaSelectedInfo{min-width:0;padding-right:20px}.frendaSelectedInfo b{display:block;font-size:11px;line-height:1.15;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.frendaSelectedInfo small{display:block;margin-top:4px;font-size:8px;line-height:1.25;color:#526c7a;white-space:normal;overflow:hidden}.frendaSelectedRemove{position:absolute!important;right:4px!important;top:4px!important;width:23px!important;height:23px!important;min-width:0!important;padding:0!important;border-radius:50%!important;background:#fff!important;color:#58707e!important;border:1px solid #c7d4dc!important;box-shadow:none!important;font-size:16px!important;line-height:1!important}.frendaSelectedSlot.empty{display:flex;align-items:center;justify-content:center;gap:7px;color:#87969f;border-style:dashed}.frendaSelectedSlot.empty>span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#e4ebef;font-size:12px;font-weight:1000}.frendaSelectedSlot.empty b{display:block;font-size:9px}.frendaSelectedSlot.empty small{display:block;font-size:7px;color:#8a979f}@media(max-width:600px){.frendaSelectedStrip{gap:4px}.frendaSelectedSlot{min-height:79px;padding:5px}.frendaSelectedSlot.filled{grid-template-columns:40px minmax(0,1fr);gap:5px}.frendaSelectedSlot img{width:40px;height:56px}.frendaSelectedInfo{padding-right:16px}.frendaSelectedInfo b{font-size:9px}.frendaSelectedInfo small{font-size:6.8px}.frendaSelectedRemove{width:19px!important;height:19px!important;font-size:13px!important}.frendaSelectedSlot.empty{gap:4px}.frendaSelectedSlot.empty>span{width:24px;height:24px;font-size:10px}}
+
+/* Ver6.93: camera / Micro QR pick scanner */
+.pickScanLaunch{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  min-width:122px;padding:10px 12px!important;border-radius:11px!important;
+  background:linear-gradient(180deg,#20a66a,#127845)!important;
+  color:#fff!important;border:1px solid #0c6839!important;
+  box-shadow:0 2px 0 #07552e!important;white-space:nowrap
+}
+.pickScanLaunch:active{transform:translateY(1px)}
+.pickScanOverlay{
+  position:fixed;inset:0;z-index:1200;background:#06131cf4;color:#eefbff;
+  overflow:auto;-webkit-overflow-scrolling:touch;padding:0
+}
+.pickScanOverlay.hidden{display:none!important}
+.pickScanShell{width:min(720px,100%);min-height:100%;margin:auto;padding:0 12px 28px}
+.pickScanHead{
+  position:sticky;top:0;z-index:5;margin:0 -12px 10px;padding:11px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:#0b2b3df5;border-bottom:1px solid #4ab7d555;backdrop-filter:blur(9px)
+}
+.pickScanHead small{display:block;color:#6ee8ff;font-size:9px;font-weight:1000;letter-spacing:.14em}
+.pickScanHead b{display:block;font-size:17px}
+.pickScanHead button{background:#eefbff;color:#14384a;padding:8px 10px}
+.pickScanGuide{
+  margin:8px 0 10px;padding:9px 10px;border-radius:12px;
+  background:#103246;border:1px solid #376a7d;color:#d8eff8;font-size:11px;line-height:1.55
+}
+.pickScanStage{
+  position:relative;width:100%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;
+  background:#000;border:2px solid #4bd3f3;box-shadow:0 0 22px #2ccfff33
+}
+.pickScanStage video{width:100%;height:100%;object-fit:cover;display:block}
+.pickScanFrame{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(58vw,250px);max-width:62%;aspect-ratio:1;border:3px solid #ffe15d;
+  border-radius:18px;box-shadow:0 0 0 999px #00000035,0 0 18px #ffe15d99;
+  pointer-events:none
+}
+.pickScanFrame:before,.pickScanFrame:after{
+  content:"";position:absolute;width:42px;height:42px;border-color:#fff;border-style:solid
+}
+.pickScanFrame:before{left:-5px;top:-5px;border-width:5px 0 0 5px;border-radius:13px 0 0 0}
+.pickScanFrame:after{right:-5px;bottom:-5px;border-width:0 5px 5px 0;border-radius:0 0 13px 0}
+.pickScanFrameLabel{
+  position:absolute;left:50%;top:calc(50% + min(29vw,125px) + 12px);transform:translateX(-50%);
+  padding:5px 9px;border-radius:999px;background:#000a;color:#ffe56b;
+  font-size:9px;font-weight:1000;white-space:nowrap;pointer-events:none
+}
+.pickScanStatus{
+  margin:9px 0;padding:9px 10px;border-radius:11px;background:#0b2737;
+  border:1px solid #315c6d;font-size:11px;line-height:1.5;color:#cfe9f3;min-height:38px
+}
+.pickScanStatus.good{background:#123c29;border-color:#39a66d;color:#d8ffe7}
+.pickScanStatus.warn{background:#4a3912;border-color:#c49c31;color:#fff2be}
+.pickScanStatus.bad{background:#461f24;border-color:#ac5961;color:#ffd8dc}
+.pickScanControls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}
+.pickScanControls button,.pickScanPhotoBtn{width:100%}
+.pickScanPhotoBtn{
+  display:flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:10px;
+  background:#edf2f7;color:#273746;font-weight:900;cursor:pointer
+}
+.pickScanPhotoBtn input{display:none}
+.pickScanResult{
+  margin-top:10px;padding:10px;border-radius:16px;background:#f7fbfd;color:#183646;
+  border:2px solid #5cc7e5;box-shadow:0 5px 20px #0004
+}
+.pickScanResult.hidden{display:none!important}
+.pickScanResultTitle{font-size:10px;color:#528296;font-weight:1000;letter-spacing:.1em}
+.pickScanPick{
+  display:grid;grid-template-columns:86px minmax(0,1fr);gap:11px;align-items:center;margin-top:7px
+}
+.pickScanPick img{width:86px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e8ebee}
+.pickScanPickName{font-size:21px;font-weight:1000;line-height:1.1;color:#17394e}
+.pickScanPickMeta{margin-top:4px;font-size:11px;color:#637682;line-height:1.5}
+.pickScanOwnedState{
+  display:inline-flex;margin-top:6px;padding:4px 7px;border-radius:999px;
+  background:#e6edf1;color:#51636d;font-size:9px;font-weight:1000
+}
+.pickScanOwnedState.on{background:#dff4e5;color:#276b3b}
+.pickScanResultActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.pickScanResultActions button{width:100%}
+.pickScanRegister{background:linear-gradient(180deg,#31cc72,#168a4b)!important}
+.pickScanCodeBox{
+  margin-top:8px;padding:7px 8px;border-radius:9px;background:#e9f0f4;
+  color:#536a77;font-size:8px;line-height:1.35;word-break:break-all;font-family:ui-monospace,monospace
+}
+.pickScanUnknown{
+  margin-top:10px;padding:10px;border-radius:13px;background:#fff7dc;border:1px solid #e5c75f;color:#5f4b13
+}
+.pickScanUnknown b{display:block;font-size:12px}
+.pickScanUnknown p{margin:4px 0 8px;font-size:9px;line-height:1.45}
+.pickScanLinkSearch{display:flex;gap:6px}
+.pickScanLinkSearch input{min-width:0;flex:1}
+.pickScanCandidates{display:grid;gap:5px;margin-top:7px;max-height:260px;overflow:auto}
+.pickScanCandidate{
+  display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:7px;align-items:center;
+  width:100%;padding:6px!important;text-align:left;background:#fff!important;color:#1b3746!important;
+  border:1px solid #d0dde4!important
+}
+.pickScanCandidate img{width:42px;height:58px;object-fit:cover;border-radius:6px;background:#e8ebee}
+.pickScanCandidate b{font-size:11px}.pickScanCandidate small{display:block;color:#6e7c84;font-size:8px;margin-top:2px}
+.pickScanCandidate strong{font-size:8px;color:#0b7298}
+.pickScanDebug{margin-top:7px;font-size:8px;color:#83a7b6;line-height:1.45}
+@media(max-width:620px){
+  .browserToolbar{grid-template-columns:1fr!important}
+  .pickScanLaunch{width:100%;min-width:0}
+  .pickScanShell{padding-left:8px;padding-right:8px}
+  .pickScanHead{margin-left:-8px;margin-right:-8px}
+  .pickScanStage{aspect-ratio:3/4}
+  .pickScanFrame{width:min(68vw,245px);max-width:72%}
+  .pickScanFrameLabel{top:calc(50% + min(34vw,123px) + 12px)}
+  .pickScanPick{grid-template-columns:74px minmax(0,1fr)}
+  .pickScanPick img{width:74px}.pickScanPickName{font-size:18px}
+}
+
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.92</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.93</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -427,6 +543,7 @@ body.battleOverlayOpen{overflow:hidden}
 <div id="masterStatsStatus" class="masterStatsStatus"></div>
 <div class="browserToolbar">
   <div class="search"><input id="q" placeholder="番号・ポケモン名・英語名で検索"><button id="clearQ" class="ghost" type="button">消去</button></div>
+  <button id="pickScanLaunchBtn" class="pickScanLaunch" type="button">📷 ピック読取</button>
   <div id="browseScope" class="browserScopeRadios" role="radiogroup" aria-label="表示対象">
     <label class="browserScopeOption"><input type="radio" name="browseScope" value="all" checked><span>全件</span></label>
     <label class="browserScopeOption"><input type="radio" name="browseScope" value="owned"><span>所持</span></label>
@@ -553,6 +670,36 @@ body.battleOverlayOpen{overflow:hidden}
 </section></main>
 
 
+
+<section id="pickScanOverlay" class="pickScanOverlay hidden" aria-modal="true" role="dialog" aria-label="ピックコード読取">
+  <div class="pickScanShell">
+    <div class="pickScanHead">
+      <div><small>FRIENDA PICK SCANNER</small><b>📷 ピックコード読取</b></div>
+      <button id="pickScanCloseBtn" type="button">× 閉じる</button>
+    </div>
+    <div class="pickScanGuide">ピック裏面の<strong>左上にある小さい2次元コード</strong>を黄色い枠いっぱいに映してください。コードを読み取ると、ピックを判別して所持登録できます。</div>
+    <div class="pickScanStage" id="pickScanStage">
+      <video id="pickScanVideo" playsinline muted></video>
+      <div class="pickScanFrame"></div>
+      <div class="pickScanFrameLabel">左上のコードをここに合わせる</div>
+    </div>
+    <canvas id="pickScanCanvas" class="hidden"></canvas>
+    <div id="pickScanStatus" class="pickScanStatus">カメラを準備しています…</div>
+    <div class="pickScanControls">
+      <button id="pickScanRetryBtn" type="button">🔄 再スキャン</button>
+      <label class="pickScanPhotoBtn">🖼️ 写真から読む<input id="pickScanPhotoFile" type="file" accept="image/*" capture="environment"></label>
+    </div>
+    <div id="pickScanResult" class="pickScanResult hidden"></div>
+    <div id="pickScanUnknown" class="pickScanUnknown hidden">
+      <b>コードは読めましたが、ピックを自動判別できませんでした。</b>
+      <p>このコードとピックを一度だけ紐付けると、次回から同じコードを自動判別します。</p>
+      <div class="pickScanLinkSearch"><input id="pickScanLinkQ" placeholder="番号・名前で検索"><button id="pickScanLinkClear" type="button" class="ghost">消去</button></div>
+      <div id="pickScanCandidates" class="pickScanCandidates"></div>
+    </div>
+    <div class="pickScanDebug">読取方式：Micro QR / QR（ZXing-C++ WebAssembly）。カメラはHTTPS環境でのみ利用できます。</div>
+  </div>
+</section>
+
 <section id="myPickOverlay" class="battlePickerOverlay hidden" aria-modal="true" role="dialog" aria-label="自分ピック選択">
   <div class="battlePickerShell">
     <div class="battlePickerHead"><div><small>MY PICK SELECT</small><b>自分のピックを選ぶ</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
@@ -655,6 +802,7 @@ body.battleOverlayOpen{overflow:hidden}
 <script src="frenda-ui.js?b=20260927_2148"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="frenda-cloud.js?b=20260928_1925"></script>
+<script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const DB=window.FRENDA_MASTER;
@@ -702,6 +850,162 @@ function merged(r){return Object.assign({},r,overrides(r))}
 const esc=UI.escapeHtml;
 function norm(s){return String(s||"").toLowerCase().replace(/[‐‑‒–—―ー−]/g,"-").replace(/\s/g,"")}
 function svgPlaceholder(name){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="360"><rect width="100%" height="100%" fill="#e8ebee"/><text x="50%" y="48%" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#66717b">${name}</text><text x="50%" y="56%" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#89939c">ピック画像</text></svg>`)}
+
+const PICK_CODE_MAP_KEY="frenda:simulator:pickCodeMap:v1";
+let pickScanStream=null,pickScanTimer=null,pickScanBusy=false,pickScanPaused=false,pickScanLastResult=null,pickScanLastKey="",pickScanFrameNo=0;
+
+function readPickCodeMap(){try{const x=JSON.parse(localStorage.getItem(PICK_CODE_MAP_KEY)||"{}");return x&&typeof x==="object"&&!Array.isArray(x)?x:{}}catch{return{}}}
+function writePickCodeMap(x){try{localStorage.setItem(PICK_CODE_MAP_KEY,JSON.stringify(x||{}));return true}catch{return false}}
+function pickScanBytesHex(bytes){
+ if(!bytes)return "";
+ try{return Array.from(bytes).map(v=>Number(v).toString(16).padStart(2,"0")).join("")}catch{return ""}
+}
+function pickScanCodeKey(result){
+ const fmt=String(result?.format||result?.symbology||"code");
+ const hex=pickScanBytesHex(result?.bytes);
+ const text=String(result?.text||"").trim();
+ return `${fmt}|${hex||("txt:"+text)}`
+}
+function pickScanDisplayCode(result){
+ const text=String(result?.text||"").trim(),hex=pickScanBytesHex(result?.bytes);
+ return `${result?.format||result?.symbology||"2D Code"}${text?` / text: ${text}`:""}${hex?` / bytes: ${hex}`:""}`
+}
+function pickScanNormCode(v){return String(v??"").trim().toLowerCase().replace(/[‐‑‒–—―ー−]/g,"-").replace(/\s+/g,"")}
+function pickScanDirectMatch(result){
+ const key=pickScanCodeKey(result),map=readPickCodeMap(),mapped=map[key];
+ if(mapped){const r=R.find(x=>String(x.master_id)===String(mapped));if(r)return {record:r,source:"学習済みコード"}}
+ const raw=String(result?.text||"").trim(),n=pickScanNormCode(raw);
+ if(!n)return null;
+ const probes=new Set([n]);
+ try{probes.add(pickScanNormCode(decodeURIComponent(raw)))}catch{}
+ const noMatch=n.match(/[0-9]+-[0-9]+-(?:l?[0-9a-z]+|[0-9]+)/i);
+ if(noMatch)probes.add(pickScanNormCode(noMatch[0]));
+ const exact=[];
+ for(const r of R){
+  const vals=[r.pick_no,r.master_id];
+  for(const [k,v] of Object.entries(r)){
+   if(/(?:qr|barcode|code|serial|uid|micro)/i.test(k)&&["string","number"].includes(typeof v))vals.push(v)
+  }
+  if(vals.some(v=>probes.has(pickScanNormCode(v))))exact.push(r)
+ }
+ if(exact.length===1)return {record:exact[0],source:"コード値"};
+ return null
+}
+function learnPickCode(result,r){
+ if(!result||!r)return false;
+ const key=pickScanCodeKey(result),map=readPickCodeMap();
+ map[key]=r.master_id;
+ return writePickCodeMap(map)
+}
+function pickScanSetStatus(text,kind=""){
+ const el=$("pickScanStatus");if(!el)return;el.className="pickScanStatus"+(kind?` ${kind}`:"");el.textContent=text
+}
+function pickScanStopTimer(){if(pickScanTimer){clearTimeout(pickScanTimer);pickScanTimer=null}}
+function pickScanStopCamera(){
+ pickScanStopTimer();pickScanBusy=false;
+ if(pickScanStream){for(const t of pickScanStream.getTracks())try{t.stop()}catch{}pickScanStream=null}
+ const v=$("pickScanVideo");if(v){try{v.pause()}catch{}v.srcObject=null}
+}
+function closePickScanner(){
+ pickScanStopCamera();pickScanPaused=false;pickScanLastResult=null;pickScanLastKey="";
+ $("pickScanOverlay")?.classList.add("hidden");document.body.style.overflow=""
+}
+function pickScanResetResult(){
+ pickScanPaused=false;pickScanLastResult=null;pickScanLastKey="";
+ $("pickScanResult")?.classList.add("hidden");$("pickScanResult").innerHTML="";
+ $("pickScanUnknown")?.classList.add("hidden");$("pickScanLinkQ").value="";$("pickScanCandidates").innerHTML="";
+ pickScanSetStatus("コードを黄色い枠に合わせてください。自動で読み取ります。");
+}
+async function openPickScanner(){
+ $("pickScanOverlay")?.classList.remove("hidden");document.body.style.overflow="hidden";pickScanResetResult();
+ if(!window.isSecureContext){pickScanSetStatus("カメラはHTTPS環境でのみ利用できます。「写真から読む」は利用できます。","warn");return}
+ if(!navigator.mediaDevices?.getUserMedia){pickScanSetStatus("このブラウザではカメラを起動できません。「写真から読む」をお使いください。","bad");return}
+ if(!window.ZXingWASM?.readBarcodes){pickScanSetStatus("コード読取ライブラリを読み込めませんでした。通信状態を確認してください。","bad");return}
+ try{
+  pickScanStopCamera();
+  pickScanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});
+  const v=$("pickScanVideo");v.srcObject=pickScanStream;await v.play();
+  pickScanSetStatus("コードを黄色い枠に合わせてください。自動で読み取ります。");
+  pickScanLoop()
+ }catch(e){
+  pickScanSetStatus(`カメラを起動できませんでした：${e?.name||"エラー"}。「写真から読む」も利用できます。`,"bad")
+ }
+}
+function pickScanCropImageData(){
+ const v=$("pickScanVideo"),c=$("pickScanCanvas");
+ if(!v||!c||!v.videoWidth||!v.videoHeight)return null;
+ const vw=v.videoWidth,vh=v.videoHeight,size=Math.floor(Math.min(vw,vh)*.64),sx=Math.floor((vw-size)/2),sy=Math.floor((vh-size)/2);
+ const out=720;c.width=out;c.height=out;const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(v,sx,sy,size,size,0,0,out,out);
+ return ctx.getImageData(0,0,out,out)
+}
+async function pickScanDecodeImageData(imageData){
+ if(!window.ZXingWASM?.readBarcodes)throw new Error("ZXing未読込");
+ const opts={formats:["MicroQRCode","QRCode"],tryHarder:true,tryRotate:true,tryInvert:true,maxNumberOfSymbols:2};
+ let results=await window.ZXingWASM.readBarcodes(imageData,opts);
+ if(!results?.length){
+  results=await window.ZXingWASM.readBarcodes(imageData,{tryHarder:true,tryRotate:true,tryInvert:true,maxNumberOfSymbols:2})
+ }
+ return Array.from(results||[])
+}
+async function pickScanLoop(){
+ pickScanStopTimer();
+ if(!pickScanStream||pickScanPaused)return;
+ if(pickScanBusy){pickScanTimer=setTimeout(pickScanLoop,300);return}
+ pickScanBusy=true;
+ try{
+  const data=pickScanCropImageData();
+  if(data){
+   const results=await pickScanDecodeImageData(data);
+   if(results.length){handlePickScanResult(results[0]);pickScanBusy=false;return}
+  }
+  if(++pickScanFrameNo%6===0)pickScanSetStatus("読み取り中… コードを枠いっぱいに近づけ、できるだけ正面から映してください。")
+ }catch(e){
+  pickScanSetStatus(`読取処理でエラー：${e?.message||e}`,"bad")
+ }finally{pickScanBusy=false}
+ if(!pickScanPaused&&pickScanStream)pickScanTimer=setTimeout(pickScanLoop,420)
+}
+function handlePickScanResult(result){
+ const key=pickScanCodeKey(result);if(!key)return;
+ pickScanPaused=true;pickScanLastResult=result;pickScanLastKey=key;pickScanStopTimer();
+ try{navigator.vibrate?.(70)}catch{}
+ const hit=pickScanDirectMatch(result);
+ if(hit){showPickScanMatched(hit.record,result,hit.source);return}
+ pickScanSetStatus("コードを読み取りました。ピックとの対応を確認してください。","warn");
+ $("pickScanResult")?.classList.add("hidden");
+ $("pickScanUnknown")?.classList.remove("hidden");
+ renderPickScanCandidates("")
+}
+function addScannedPickOwned(r){
+ const a=getIds(OWNED_KEY);if(!a.includes(r.master_id)){a.push(r.master_id);setIds(OWNED_KEY,a)}
+ renderCollectionOverall();renderSeriesButtons();renderBrowser();renderBestThreeMode();roundRobinPoolInfo();
+ return true
+}
+function showPickScanMatched(r,result,source){
+ const owned=isOwned(r),box=$("pickScanResult");
+ $("pickScanUnknown")?.classList.add("hidden");
+ box.classList.remove("hidden");
+ box.innerHTML=`<div class="pickScanResultTitle">PICK IDENTIFIED / ${esc(source)}</div><div class="pickScanPick"><img src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><div><div class="pickScanPickName">${esc(r.name_ja)}</div><div class="pickScanPickMeta">${esc(r.pick_no)} / ${esc(r.series||"")} / ${r.grade?`★${esc(r.grade)}`:""}</div><span class="pickScanOwnedState${owned?" on":""}">${owned?"✓ 所持登録済み":"未所持"}</span></div></div><div class="pickScanCodeBox">${esc(pickScanDisplayCode(result))}</div><div class="pickScanResultActions"><button type="button" class="pickScanRegister" id="pickScanRegisterBtn">${owned?"✓ 登録済み":"＋ 所持に登録"}</button><button type="button" class="ghost" id="pickScanAgainBtn">次のピックを読む</button></div>`;
+ pickScanSetStatus(`${r.name_ja}（${r.pick_no}）を判別しました。`,"good");
+ const reg=$("pickScanRegisterBtn");reg.disabled=owned;reg.onclick=()=>{addScannedPickOwned(r);learnPickCode(result,r);showPickScanMatched(r,result,"登録済みコード");pickScanSetStatus(`${r.name_ja}を所持ピックに登録しました。`,"good")};
+ $("pickScanAgainBtn").onclick=()=>{pickScanResetResult();if(pickScanStream)pickScanLoop();else openPickScanner()}
+}
+function renderPickScanCandidates(q){
+ const box=$("pickScanCandidates");if(!box)return;
+ const n=norm(q),arr=R.filter(r=>!n||norm(r.pick_no).includes(n)||norm(r.name_ja).includes(n)||norm(r.name_en).includes(n)).slice(0,30);
+ box.innerHTML=arr.map(r=>`<button type="button" class="pickScanCandidate" data-scan-link-mid="${esc(r.master_id)}"><img src="${esc(pickImage(r))}" alt=""><span><b>${esc(r.name_ja)}</b><small>${esc(r.pick_no)} / ${esc(r.series||"")}</small></span><strong>このピック</strong></button>`).join("")||'<div class="note">該当するピックがありません。</div>';
+ box.querySelectorAll("[data-scan-link-mid]").forEach(b=>b.onclick=()=>{const r=R.find(x=>String(x.master_id)===String(b.dataset.scanLinkMid));if(!r||!pickScanLastResult)return;learnPickCode(pickScanLastResult,r);showPickScanMatched(r,pickScanLastResult,"手動紐付け");})
+}
+async function pickScanImageFile(file){
+ if(!file)return;
+ if(!window.ZXingWASM?.readBarcodes){pickScanSetStatus("コード読取ライブラリを読み込めませんでした。","bad");return}
+ pickScanPaused=true;pickScanStopTimer();pickScanSetStatus("写真を解析しています…");
+ try{
+  let results=await window.ZXingWASM.readBarcodes(file,{formats:["MicroQRCode","QRCode"],tryHarder:true,tryRotate:true,tryInvert:true,maxNumberOfSymbols:4});
+  if(!results?.length)results=await window.ZXingWASM.readBarcodes(file,{tryHarder:true,tryRotate:true,tryInvert:true,maxNumberOfSymbols:4});
+  if(results?.length)handlePickScanResult(results[0]);else{pickScanPaused=false;pickScanSetStatus("コードを検出できませんでした。コードが大きく写った写真で再度お試しください。","warn")}
+ }catch(e){pickScanPaused=false;pickScanSetStatus(`写真の解析に失敗しました：${e?.message||e}`,"bad")}
+}
+
 
 function initBrowser(){
  const ts=$("browseType");
@@ -2294,9 +2598,19 @@ function clearAllFavorites(){
 }
 $("clearOwnedBtn").onclick=clearAllOwned;$("clearFavoritesBtn").onclick=clearAllFavorites;
 
+$("pickScanLaunchBtn").onclick=openPickScanner;
+$("pickScanCloseBtn").onclick=closePickScanner;
+$("pickScanRetryBtn").onclick=()=>{pickScanResetResult();if(pickScanStream)pickScanLoop();else openPickScanner()};
+$("pickScanPhotoFile").onchange=e=>{const f=e.target.files?.[0];if(f)pickScanImageFile(f);e.target.value=""};
+$("pickScanLinkQ").oninput=e=>renderPickScanCandidates(e.target.value);
+$("pickScanLinkClear").onclick=()=>{$("pickScanLinkQ").value="";renderPickScanCandidates("")};
+$("pickScanOverlay").addEventListener("click",e=>{if(e.target===$("pickScanOverlay"))closePickScanner()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickScanOverlay")?.classList.contains("hidden"))pickScanStopCamera()});
+
+
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.91",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.93",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2311,11 +2625,12 @@ setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 // Ver6.86: 共通UI基盤を frenda-ui.js v1.1 に更新。
 // Ver6.87: 共通カード骨格・選択操作・確認/警告を frenda-ui.js v1.2 に集約。
 // Ver6.91: 共通JSをBuild 20260927_2148で一括キャッシュ更新。
+// Ver6.93: 左上のMicro QR/QRをカメラまたは写真で読み取り、ピック判別→所持登録するスキャナーを追加。未解決コードは初回だけ手動紐付けし、次回以降は自動判別。
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
  const storage={};
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.91",storage};
+ return {format_version:1,simulator_version:"6.93",storage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2327,4 +2642,4 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-09-27 21:48:00 JST / Ver6.91 -->
+<!-- Updated: 2026-10-01 22:05:00 JST / Ver6.93 -->
