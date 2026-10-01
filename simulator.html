@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.93 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.94 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.93</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.94</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:600px){.simHeaderRow{gap:6px}.simHeaderTitle{font-size:12px}.simHomeLink{font-size:9px;padding:6px 7px}}
@@ -529,7 +529,7 @@ body.battleOverlayOpen{overflow:hidden}
 }
 
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.93</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.94</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -795,7 +795,7 @@ body.battleOverlayOpen{overflow:hidden}
 <p class="note">所持・お気に入り・修正値・写真はこの端末内に保存し、マスターDBは変更しません。</p>
 </section></div>
 </section>
-<script src="frenda-master.js?b=20260927_2148"></script>
+<script src="frenda-master.js?b=20261001_2130_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
 <script src="frenda-rules.js?b=20260927_2148"></script>
 <script src="frenda-data.js?b=20260927_2148"></script>
@@ -2610,7 +2610,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.93",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.94",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2630,7 +2630,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const storage={};
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.93",storage};
+ return {format_version:1,simulator_version:"6.94",storage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2642,4 +2642,6 @@ function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-10-01 22:05:00 JST / Ver6.93 -->
+<!-- Updated: 2026-10-01 21:30:00 JST / Ver6.94 -->
+
+<!-- Ver6.94: frenda-master.js v1.63 XT2ワンダー先行登録版へ更新。 -->
