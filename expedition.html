@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.64">
+<html lang="ja" data-app-version="0.65">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -342,7 +342,7 @@ function gradeText(r){return RULES.gradeText(r)}
 function specialBase(r){return RULES.specialBaseName(r)}
 function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){return DATA.dungeon.read()}
-function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[],destinationMode:"auto"}}}
+function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[]}}}
 function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],adminUnlockedGroups:[],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
 function migrateMissionToFreeReturn(g){
  const m=g?.mission;if(!m||g.status!=="exploring")return false;
@@ -362,7 +362,7 @@ function migrateMissionToFreeReturn(g){
  m.migratedAt=Date.now();
  return true
 }
-function normalizeGroup(g,id){g=g&&typeof g==="object"?g:defaultGroup(id);g.id=id;if(g.status==="running")g.status="exploring";g.status=["idle","exploring","returned"].includes(g.status)?g.status:"idle";g.lastTeamIds=Array.isArray(g.lastTeamIds)?g.lastTeamIds:[];g.prep=g.prep&&typeof g.prep==="object"?g.prep:{};g.prep.dungeonId=g.prep.dungeonId||null;g.prep.difficulty=Number.isFinite(Number(g.prep.difficulty))?Number(g.prep.difficulty):null;g.prep.hours=[1,4,8].includes(Number(g.prep.hours))?Number(g.prep.hours):8;g.prep.teamIds=Array.isArray(g.prep.teamIds)?g.prep.teamIds.slice(0,3):[];g.prep.destinationMode=g.prep.destinationMode==="manual"?"manual":"auto";if(!g.mission)g.mission=null;migrateMissionToFreeReturn(g);if(g.status==="returned"&&g.mission)repairReturnedReport(g.mission);return g}
+function normalizeGroup(g,id){g=g&&typeof g==="object"?g:defaultGroup(id);g.id=id;if(g.status==="running")g.status="exploring";g.status=["idle","exploring","returned"].includes(g.status)?g.status:"idle";g.lastTeamIds=Array.isArray(g.lastTeamIds)?g.lastTeamIds:[];g.prep=g.prep&&typeof g.prep==="object"?g.prep:{};g.prep.dungeonId=g.prep.dungeonId||null;g.prep.difficulty=Number.isFinite(Number(g.prep.difficulty))?Number(g.prep.difficulty):null;g.prep.hours=[1,4,8].includes(Number(g.prep.hours))?Number(g.prep.hours):8;g.prep.teamIds=Array.isArray(g.prep.teamIds)?g.prep.teamIds.slice(0,3):[];if(!g.mission)g.mission=null;migrateMissionToFreeReturn(g);if(g.status==="returned"&&g.mission)repairReturnedReport(g.mission);return g}
 function legacyMissionStatus(x,m){if(x?.status==="returned")return"returned";if(["welcome","report","findings","growth","boxes","summary"].includes(m?.stage))return"returned";return"exploring"}
 function cloneLegacyMission(m){if(!m||typeof m!=="object")return null;return {...m,teamIds:Array.isArray(m.teamIds)?m.teamIds.slice(0,3):[],boxes:Array.isArray(m.boxes)?m.boxes.map(x=>({...x})):m.boxes,report:Array.isArray(m.report)?m.report.map(x=>({...x})):m.report,liveReport:Array.isArray(m.liveReport)?m.liveReport.map(x=>({...x})):m.liveReport,summary:Array.isArray(m.summary)?m.summary.slice():m.summary}}
 function migrateSecretSpotsByDungeon(x){
@@ -606,7 +606,7 @@ function expeditionBusyIds(exceptGroup=-1){const out=new Set();exp.groups.forEac
 function eligiblePickIds(groupIndex=activeGroup){const d=readDungeon(),run=new Set(currentRunIds()),other=expeditionBusyIds(groupIndex),owned=(d?.owned||[]).map(x=>x.id);return owned.filter(id=>!run.has(id)&&!other.has(id))}
 function highestDifficultyForDungeon(did,dests=clearedDestinations()){const diffs=dests.filter(x=>x.did===did).map(x=>Number(x.diff)).filter(Number.isFinite);return diffs.length?Math.max(...diffs):null}
 function availableDungeonIds(dests=clearedDestinations()){return THEME_ORDER.filter(did=>dests.some(x=>x.did===did))}
-function ensurePrepValid(groupIndex=activeGroup){const g=groupState(groupIndex),p=g.prep,dests=clearedDestinations(),dids=availableDungeonIds(dests);if(!dids.length)return p;p.hours=[1,4,8].includes(Number(p.hours))?Number(p.hours):8;p.teamIds=(p.teamIds||[]).filter(id=>eligiblePickIds(groupIndex).includes(id)).slice(0,3);if(!p.dungeonId||!dids.includes(p.dungeonId)){p.dungeonId=null;p.destinationMode="auto"}applyRecommendedDestination(p,dests);if(!p.dungeonId)p.dungeonId=dids[0];p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);return p}
+function ensurePrepValid(groupIndex=activeGroup){const g=groupState(groupIndex),p=g.prep,dests=clearedDestinations(),dids=availableDungeonIds(dests);if(!dids.length)return p;if(!p.dungeonId||!dids.includes(p.dungeonId))p.dungeonId=dids[0];p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);p.hours=[1,4,8].includes(Number(p.hours))?Number(p.hours):8;p.teamIds=(p.teamIds||[]).filter(id=>eligiblePickIds(groupIndex).includes(id)).slice(0,3);return p}
 function discoveryStep(did){const p=discoveryPct(did);return p<=0?0:Math.min(5,Math.ceil(p/20))}
 function discoveryStepText(did){return `調査Lv ${discoveryStep(did)}/5`}
 function discoveryMiniHTML(did){const step=discoveryStep(did),p=discoveryPct(did);return `<div class="discoveryMini compactDiscovery"><div class="discoveryMiniHead"><span>🗺️ 調査Lv</span><b>${step}/5 <em>調査度 ${p}%</em></b></div><div class="discoveryMeter"><span style="width:${p}%"></span></div></div>`}
@@ -618,48 +618,6 @@ function autoTeam(did,diff,groupIndex=activeGroup){
  return best?.ids||ids.slice(0,3)
 }
 function bestDungeonForTeam(ids){if(!Array.isArray(ids)||!ids.length)return null;const dests=clearedDestinations();let best=null;for(const did of availableDungeonIds(dests)){const diff=highestDifficultyForDungeon(did,dests),score=scoreTeam(ids,did,diff),order=THEME_ORDER.indexOf(did);if(!best||score.total>best.score.total||(score.total===best.score.total&&diff>best.diff)||(score.total===best.score.total&&diff===best.diff&&order<best.order))best={did,diff,score,order}}return best}
-function destinationCollectionState(did){
- const defs=souvenirDefs(did),got=defs.filter(s=>souvenirCount(did,s.id)>0).length,rare=defs.find(s=>s.rare),rareMissing=!!(rare&&souvenirCount(did,rare.id)<=0),pct=discoveryPct(did),step=discoveryStep(did);
- return {pct,step,got,total:defs.length,missing:Math.max(0,defs.length-got),rareMissing}
-}
-function recommendedDestinationForPrep(p,dests=clearedDestinations()){
- const dids=availableDungeonIds(dests);if(!dids.length)return null;
- const hasTeam=Array.isArray(p?.teamIds)&&p.teamIds.length>0;
- let best=null;
- for(const did of dids){
-  const diff=highestDifficultyForDungeon(did,dests),c=destinationCollectionState(did),secret=!!activeSecretSpot(did),team=hasTeam?scoreTeam(p.teamIds,did,diff):null,order=THEME_ORDER.indexOf(did);
-  let value=0;
-  if(secret)value+=100000;
-  if(c.step<5)value+=20000+(100-c.pct)*120;
-  if(c.rareMissing)value+=6000;
-  value+=c.missing*2200;
-  if(team)value+=team.total*18;
-  value+=diff*20;
-  value-=Math.max(0,order);
-  const reason=secret
-   ?"🌟 ひみつの場所ボーナスあり"
-   :c.step<5
-    ?`調査Lv ${c.step}/5・調査を進めやすい`
-    :c.rareMissing
-     ?"レアおみやげ未収集"
-     :c.missing>0
-      ?`おみやげ未収集 ${c.missing}種類`
-      :hasTeam
-       ?`現在のチーム適性 ${team.rank}`
-       :"探索コレクション状況から選択";
-  const x={did,diff,value,reason,team,c,secret,order};
-  if(!best||x.value>best.value||(x.value===best.value&&x.order<best.order))best=x
- }
- return best
-}
-function applyRecommendedDestination(p,dests=clearedDestinations(),{force=false}={}){
- if(!p)return false;
- if(!force&&p.destinationMode==="manual"&&p.dungeonId&&availableDungeonIds(dests).includes(p.dungeonId))return false;
- const best=recommendedDestinationForPrep(p,dests);if(!best)return false;
- const changed=p.dungeonId!==best.did||Number(p.difficulty)!==Number(best.diff);
- p.dungeonId=best.did;p.difficulty=best.diff;p.destinationMode="auto";
- return changed
-}
 function boxProb(hours,diff,rank){return RULES.expeditionBoxProbability(hours,diff,rank)}
 function boxRarityForSlot(hours,diff,rank,index,total,luckMul=1){
  const base=RULES.expeditionBoxRarityForSlot(hours,diff,rank,index,total);if(base!=="normal"||luckMul<=1)return base;
@@ -802,7 +760,7 @@ function applyReward(box,groupIndex=activeGroup){
 }
 function maybeNeedEggDiscard(){const d=readDungeon();return (d?.eggs?.length||0)>Number(d?.eggCap||2)}
 function discardEgg(id){mutateDungeon(d=>{d.eggs=(d.eggs||[]).filter(e=>e.id!==id)});render()}
-function completeMission(groupIndex=activeGroup){const g=groupState(groupIndex),m=g.mission;if(!m)return;g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];g.prep.destinationMode="auto";exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
+function completeMission(groupIndex=activeGroup){const g=groupState(groupIndex),m=g.mission;if(!m)return;g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
 function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return;if(!UI.dialog.confirm(`グループ${groupIndex+1}の探索を中止しますか？\nEXP・絆・成果は一切獲得できません。`))return;g.status="idle";g.mission=null;exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
 
 function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length)return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),d=readDungeon()||{},luckAverage=averageLuckForIds(d,ids),luckMultiplier=luckMultiplierFromAverage(luckAverage),now=Date.now();g.status="exploring";g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours:1,freeReturnVersion:1,rewardMode:"freeReturn",teamIds:ids,startAt:now,maxReturnAt:now+FREE_EXP_MAX_HOURS*3600000,returnAt:now+FREE_EXP_MAX_HOURS*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,luckAverage,luckMultiplier,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
@@ -861,15 +819,12 @@ function refreshPrepPickCardStates(p){
  })
 }
 function refreshPrepSelectionUI(d,p){
- const dests=clearedDestinations();
- if(p.destinationMode!=="manual"&&applyRecommendedDestination(p,dests)){schedulePrepWrite();renderPrep();return}
  const score=scoreTeam(p.teamIds,p.dungeonId,p.difficulty),avg=averageLuckForIds(d,p.teamIds),mul=luckMultiplierFromAverage(avg);
  const label=document.getElementById("expActiveGroupLabel");
  if(label)label.innerHTML=`設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${avg.toFixed(1)}（×${mul.toFixed(2)}）</span>`;
  const count=document.getElementById("expTeamCount");if(count)count.textContent=`${p.teamIds.length}/3`;
  const strip=document.getElementById("expSelectedStrip");
  if(strip){strip.innerHTML=prepSelectedStripHTML(d,p);bindPrepSelectedStrip(d,p)}
- const autoDungeon=document.getElementById("autoDungeonBtn");if(autoDungeon)autoDungeon.disabled=false;
  const dockGuide=document.getElementById("freeReturnDockGuide");if(dockGuide)dockGuide.innerHTML=freeReturnDockGuideHTML();
  refreshPrepPickCardStates(p);
  refreshPrepGroupCard()
@@ -899,16 +854,16 @@ function renderPrep(){
   startTicker();
   return
  }
- const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);const recommendedDest=recommendedDestinationForPrep(p,dests);
+ const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);
  const runSet=new Set(currentRunIds()),otherExp=expeditionBusyIds(activeGroup),busySet=new Set([...runSet,...otherExp]),eligible=new Set(eligiblePickIds(activeGroup)),all=(d.owned||[]).map(o=>rec(o.id)).filter(Boolean),filtered=filterExpeditionPicks(all,d,eligible,busySet),th=THEMES[p.dungeonId],spot=activeSecretSpot(p.dungeonId),score=scoreTeam(p.teamIds,p.dungeonId,p.difficulty);
  const slots=prepSelectedStripHTML(d,p);
  const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)}<br>ポケエネ ${esc(r.poke_ene??"-")} / 絆Lv${bondLevel(d,id)} / 🍀運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>${recOk?`<small class="pickReason">${esc(r.move_type||"-")}わざが探索先に有利</small>`:""}`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId,recommended=x.did===recommendedDest?.did;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${recommended?"recommendedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}"><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destBadges">${selected?'<span class="destSelectedBadge">✓ 選択中</span>':""}${recommended?'<span class="destRecommendBadge">⭐ オススメ</span>':""}${secret?'<span class="destSecretBadge">🌟 ひみつ</span>':""}</span>${recommended?`<small class="destRecommendReason">${esc(recommendedDest.reason)}</small>`:""}${secret?`<small class="destSecretEffect">調査度↑・レア箱↑・仲間↑</small>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`}).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted destinationAutoHint" style="margin-top:7px">⭐ オススメを自動選択します。ひみつの場所・調査Lv・未収集おみやげ・現在のチーム適性を考慮します。手動で選んだ後は、その選択を優先します。<br>ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="ghost" id="autoDungeonBtn">⭐ オススメ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}"><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destBadges">${selected?'<span class="destSelectedBadge">✓ 選択中</span>':""}${secret?'<span class="destSecretBadge">🌟 ひみつ</span>':""}</span>${secret?`<small class="destSecretEffect">調査度↑・レア箱↑・仲間↑</small>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`}).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted destinationAutoHint" style="margin-top:7px">派遣先をタップすると、その探索先に適した3体を「おまかせ編成」で自動セットします。セット後は個別に入れ替えできます。<br>ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
- app.querySelectorAll("[data-did]").forEach(b=>b.onclick=()=>{flushPrepWrite();p.dungeonId=b.dataset.did;p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);p.destinationMode="manual";writeExp();renderPrep()});
+ app.querySelectorAll("[data-did]").forEach(b=>b.onclick=()=>{flushPrepWrite();p.dungeonId=b.dataset.did;p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);p.teamIds=autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()});
  const pickGrid=app.querySelector(".pickGrid");
  if(pickGrid){
   pickGrid.onclick=e=>{const card=e.target.closest("[data-pick]");if(card&&pickGrid.contains(card))togglePrepPickFast(card,d,p)};
@@ -916,7 +871,6 @@ function renderPrep(){
  }
  bindPrepSelectedStrip(d,p);
  document.getElementById("autoBtn").onclick=()=>{flushPrepWrite();p.teamIds=autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
- document.getElementById("autoDungeonBtn").onclick=()=>{flushPrepWrite();p.destinationMode="auto";applyRecommendedDestination(p,dests,{force:true});writeExp();renderPrep()};
  document.getElementById("lastBtn").onclick=()=>{flushPrepWrite();const ok=(g.lastTeamIds||[]).filter(id=>eligible.has(id)).slice(0,3);p.teamIds=ok.length?ok:autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
  document.getElementById("collectionBtn").onclick=()=>openCollection();
  bindExpeditionPickFilters();startTicker()
@@ -1830,13 +1784,6 @@ header .head{
   width:5px;
   background:#0ba9df;
 }
-.destinationCompact.recommendedDestination:not(.selectedDestination){
-  border-color:#d8b02b!important;
-  background:linear-gradient(135deg,#fffdf2,#fff8d6)!important;
-}
-.destinationCompact.hasSecretBonus.recommendedDestination{
-  box-shadow:0 0 0 2px #ffd85a33 inset!important;
-}
 .destNameWrap{
   grid-template-columns:minmax(0,1fr)!important;
   grid-template-rows:auto auto auto!important;
@@ -1876,11 +1823,6 @@ header .head{
   border:1px solid #08789f;
   color:#fff;
 }
-.destRecommendBadge{
-  background:#fff0a5;
-  border:1px solid #d9b238;
-  color:#604700;
-}
 .destSecretBadge{
   grid-column:auto!important;
   grid-row:auto!important;
@@ -1888,7 +1830,6 @@ header .head{
   border:1px solid #dca72b!important;
   color:#604500!important;
 }
-.destRecommendReason,
 .destSecretEffect{
   grid-column:1!important;
   display:block;
@@ -1898,10 +1839,6 @@ header .head{
   font-size:6.5px!important;
   line-height:1.15;
   font-weight:1000;
-}
-.destRecommendReason{
-  grid-row:3!important;
-  color:#8b6900;
 }
 .destSecretEffect{
   position:static!important;
@@ -1919,12 +1856,10 @@ header .head{
     width:4px;
   }
   .destSelectedBadge,
-  .destRecommendBadge,
   .destSecretBadge{
     padding:2px 4px!important;
     font-size:5.4px!important;
   }
-  .destRecommendReason,
   .destSecretEffect{
     font-size:5.4px!important;
   }
@@ -1934,7 +1869,26 @@ header .head{
 }
 </style>
 
-<!-- FRENDA_EXPEDITION_VERSION: 0.64 / Updated: 2026-10-01 21:15 JST -->
+
+<style id="v065-destination-auto-team">
+.destinationCompact.selectedDestination{
+  border-width:2px!important;
+}
+.destinationAutoHint{
+  background:#eefaff;
+  border:1px solid #b9dfef;
+  border-radius:9px;
+  padding:6px 8px;
+  color:#456674!important;
+}
+@media(max-width:600px){
+  .destinationAutoHint{
+    padding:5px 6px;
+  }
+}
+</style>
+
+<!-- FRENDA_EXPEDITION_VERSION: 0.65 / Updated: 2026-10-01 21:39 JST -->
 <!-- Ver0.40: 2グループ同時派遣、上部グループ操作カード、探索時間→派遣先→パーティへ再編、派遣先ランク自動最高化、発見x/5表示、未編成5点バグ修正 -->
 <!-- Ver0.41: Ver0.39以前の1グループ派遣中データを、初回起動時にグループ1へ確実に移行。新既定groupsが先に混入した場合も旧missionを復元し、localStorage・dungeon.expeditionSharedの両方から有効な派遣データを探索 -->
 
@@ -2084,10 +2038,14 @@ header .head{
 
 <!-- Ver0.64:
   ・派遣先の「選択中」を濃い水色枠＋左ライン＋「✓ 選択中」バッジで明確化。
-  ・派遣設定を開いた時、オススメ派遣先を自動選択。
-  ・オススメ判定は「ひみつの場所ボーナス → 未完了の調査Lv → レア/通常おみやげ未収集 → 現在のチーム適性」を優先。
-  ・オススメ先には「⭐ オススメ」と理由を表示。
-  ・ユーザーが派遣先を手動選択した後は自動で上書きしない。
-  ・「⭐ オススメ派遣先」ボタンでいつでも自動選択モードへ戻せる。
-  ・探索完了後の次回派遣は再びオススメ自動選択から開始。
+  ※派遣先の自動選択案はVer0.65で撤回し、派遣先タップ時の自動編成へ変更。
+-->
+
+<!-- Ver0.65:
+  Ver0.64の「派遣先を自動でオススメ選択」は意図違いのため廃止。
+  派遣先はユーザーがタップして選択する方式を維持。
+  派遣先をタップした瞬間、そのダンジョン・現在の最高ランクに適した3体を
+  既存の「おまかせ編成」ロジックで自動セットするよう変更。
+  「✓ 選択中」の強調表示は維持し、どの派遣先を選択中か分かりやすくした。
+  自動セット後は従来どおり個別にピックを入れ替え可能。
 -->
