@@ -1,4 +1,5 @@
 <!-- home lightweight assets 20260928_1745 -->
+<!-- app versions: auto-detected from simulator.html / dungeon.html / expedition.html -->
 <!doctype html>
 <html lang="ja">
 <head>
@@ -34,9 +35,9 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 <body><main class="wrap">
 <section class="hero"><div class="homeCloudHost" id="homeCloudHost"></div><button type="button" class="randomPick" id="randomPickBtn" title="タップで別のピック" aria-label="ランダムピック。タップで変更"><span class="randomPickFallback" id="randomPickFallback">🎴</span><img id="randomPickImage" alt="" hidden></button><h1 id="adminRevealTarget">ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div><div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div></section>
 <section class="apps" id="apps">
-  <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver">Ver6.92</span></div><div class="arrow">›</div></a>
-  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.webp" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver">Ver1.40</span></div><div class="arrow">›</div></a>
-  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.webp" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver">Ver0.29</span></div><div class="arrow">›</div></a>
+  <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver appVer" data-version-file="simulator.html" hidden></span></div><div class="arrow">›</div></a>
+  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.webp" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver appVer" data-version-file="dungeon.html" hidden></span></div><div class="arrow">›</div></a>
+  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.webp" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver appVer" data-version-file="expedition.html" hidden></span></div><div class="arrow">›</div></a>
 </section>
 <div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。<br>旧URLのショートカットもそのまま使える互換構成じゃ。</div><div class="adminWrap" id="adminWrap" hidden><a class="adminLink" href="admin.html">⚙️ 管理者メニュー</a><div class="adminRevealHint">管理者メニューを表示しました</div></div><div class="credit">背景画像と各モード画像は、このホーム画面用に新規作成したものです。</div>
 </main>
@@ -59,6 +60,49 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
   }
   btn?.addEventListener("click",showRandom);showRandom();
   if(window.FrendaCloud)window.FrendaCloud.init({app:"home",label:"フレンダホーム",accountOnly:true,compactButton:true,buttonSelector:"#homeCloudHost"});
+})();
+</script>
+
+
+<script>
+(async()=>{
+  const nodes=[...document.querySelectorAll(".appVer[data-version-file]")];
+
+  function detectVersion(source){
+    const patterns=[
+      /FRENDA_[A-Z0-9_]+_VERSION:\s*([0-9]+(?:\.[0-9]+)+)/i,
+      /data-app-version\s*=\s*["']([0-9]+(?:\.[0-9]+)+)["']/i,
+      /<title[^>]*>[\s\S]*?Ver\s*([0-9]+(?:\.[0-9]+)+)/i
+    ];
+    for(const re of patterns){
+      const m=source.match(re);
+      if(m?.[1]) return m[1];
+    }
+    return "";
+  }
+
+  await Promise.all(nodes.map(async el=>{
+    const file=el.dataset.versionFile;
+    try{
+      const sep=file.includes("?")?"&":"?";
+      const res=await fetch(`${file}${sep}version_check=${Date.now()}`,{
+        cache:"no-store",
+        credentials:"same-origin"
+      });
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const source=await res.text();
+      const version=detectVersion(source);
+      if(!version) throw new Error("version marker not found");
+
+      el.textContent=`Ver${version}`;
+      el.hidden=false;
+    }catch(err){
+      // 取得・判定できない場合は古い番号を出さず、バージョン表示自体を隠す
+      el.textContent="";
+      el.hidden=true;
+      console.warn("Version detection failed:",file,err);
+    }
+  }));
 })();
 </script>
 
