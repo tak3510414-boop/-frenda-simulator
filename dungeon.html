@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.27">
+<html lang="ja" data-app-version="2.28">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3830,6 +3830,7 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
 .starterPairDetails{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);margin-top:8px;border:1px solid #dfe7ec;border-radius:12px;overflow:hidden}.starterPairDetails>div{padding:7px 8px;min-width:0;background:#fafcfd;border-bottom:1px solid #e7edf1}.starterPairDetails>div:nth-last-child(-n+3){border-bottom:0}.starterPairDetails>div:nth-child(3n+1){text-align:right}.starterPairDetails>div:nth-child(3n){text-align:left}.starterPairDetails .centerLabel{display:grid;place-items:center;background:#edf3f7;color:#5b6d78;font-size:9px;font-weight:1000;text-align:center;border-left:1px solid #dfe7ec;border-right:1px solid #dfe7ec}.starterPairDetails small{display:block;font-size:8px;color:#7a8a93}.starterPairDetails b{font-size:10px;color:#2d414e}.starterPairMove{display:grid;gap:2px}.starterPairMove b{font-size:10px}.starterPairMove small,.starterPairMove span{font-size:8px;color:#697b86}
 @media(max-width:700px){.starterCompareGuide{padding:8px 9px}.starterCompareGuide b{font-size:12px}.starterCompareGuide span,.starterCompareGuide em{font-size:9px}.starterViewGrid{grid-template-columns:1fr}.starterViewCard{display:grid;grid-template-columns:82px minmax(0,1fr);column-gap:9px;text-align:left}.starterViewCard>img{grid-row:2/8;width:82px}.starterViewType{grid-column:1/-1}.starterViewName{font-size:15px}.starterViewStats{grid-column:2}.starterViewMove{grid-column:1/-1}.starterSetVsOverlay{padding:6px 4px}.starterSetVsBody{padding:6px;gap:8px}.starterSetVsSummary{padding:7px}.starterSetVsSummary strong{font-size:15px}.starterPairSection{padding:7px;border-radius:14px}.starterPairTitle{font-size:14px;margin-bottom:5px}.starterPairTitle>span{font-size:19px}.starterPairHeroes{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:4px}.starterVsHero{grid-template-columns:52px minmax(0,1fr);gap:5px;padding:5px}.starterVsHero img{width:52px;height:74px}.starterVsHero>div>b{font-size:11px}.starterVsHero .starterGradeBadge{padding:2px 5px;margin:1px 0}.starterVsHero .starterGradeBadge>span{font-size:12px}.starterVsHero .starterGradeBadge>b{font-size:9px!important}.starterVsHero>div>span:last-child{font-size:7.5px}.starterPairVs{font-size:10px}.starterMirrorChart{padding:5px;margin-top:6px}.starterMirrorHeading{grid-template-columns:1fr 52px 1fr;font-size:8px}.starterMirrorRow{grid-template-columns:34px minmax(0,1fr) 50px minmax(0,1fr) 34px;gap:3px;min-height:30px}.starterMirrorValue{font-size:9px}.starterMirrorLabel{font-size:7.5px}.starterMirrorTrack{height:10px}.starterPairDetails{grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr);margin-top:6px}.starterPairDetails>div{padding:5px}.starterPairDetails .centerLabel{font-size:7px}.starterPairDetails b{font-size:8.5px}.starterPairMove b{font-size:8.5px}.starterPairMove small,.starterPairMove span{font-size:7px}}
 </style>
+
 
 </head>
 <body>
@@ -8502,8 +8503,51 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
   }
 }
 </style>
+<style id="v228-mobile-width-stability">
+/* Ver2.28: Mobile Safari width stability.
+   Ver2.10 made active-run cards overflow:visible so tall scenes could scroll,
+   but cinematic pseudo-elements (notably pickupCard:before with inset:-40%)
+   could then expand the visual overflow width and make Safari shrink the page.
+   Keep vertical page scrolling, while clipping only the cinematic decoration to its card. */
+@media(max-width:700px){
+  html,body{
+    max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page^="run-"]>main#app.dungeonRunScreen,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main.dungeonRunScreen>.dungeonRun>*{
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
 
-<!-- FRENDA_DUNGEON_VERSION: 2.27 / Updated: 2026-10-02 06:51 JST -->
+  /* These cards use oversized :before/:after decoration.
+     The card itself must remain the clipping boundary. */
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .pickupCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .nextEnemyCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .faintedNextCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .encounterCutinCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .legendaryIntroCard,
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .dungeonEntryCard{
+    overflow:hidden!important;
+    max-width:100%!important;
+  }
+
+  /* Pickup is the reproducible case: keep the glow animation, but never let
+     its inset:-40% pseudo-element participate in page width calculation. */
+  body.dungeonOneScreen[data-dungeon-page^="run-"] main#app.dungeonRunScreen .pickupCard::before{
+    pointer-events:none!important;
+  }
+}
+</style>
+
+
+<!-- FRENDA_DUNGEON_VERSION: 2.28 / Updated: 2026-10-02 07:10 JST -->
 </body>
 </html>
 
@@ -8578,4 +8622,12 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
   スマホの「出すポケモンを選択」画面で、相手のタイプ表示と「★ / 残り○匹」バッジが同じグリッド行に配置され、重なっていた問題を修正。
   相手名・タイプ・★/残り匹を別行に分離し、画像左／情報右のコンパクト配置を維持したまま読みやすくした。
   更新日時: 2026-10-02 06:51 JST
+-->
+
+<!-- Ver2.28:
+  スマホで拾い物など一部の演出画面に入った際、ページ全体が縮小表示されることがある問題を修正。
+  Ver2.10のスクロール対策で pickupCard 等が overflow:visible となり、inset:-40% の装飾疑似要素が画面幅を押し広げる組み合わせを解消。
+  拾い物・次の敵・ひんし交代・強敵登場・伝説登場・ダンジョン開始の演出カードを clipping boundary に戻した。
+  あわせてスマホのラン画面で横幅100%・min-width:0を保証し、縦スクロールは従来どおり維持。
+  更新日時: 2026-10-02 07:10 JST
 -->
