@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.25">
+<html lang="ja" data-app-version="2.26">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4916,7 +4916,7 @@ function renderHome(){
    <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">解放したグループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
-   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small class="homeTrainingReady">${training.train?`🏋️ 特訓可能 ${training.train}体`:"🏋️ 特訓可能 0体"}${training.loading?"　／　進化確認中…":training.error?"　／　進化確認不可":`　／　✨ 進化可能 ${training.evolve}体`}</small></button>
+   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small class="homeTrainingReady">特訓可能 ${training.train||0}体${training.loading?" / 進化確認中…":training.error?" / 進化確認不可":` / 進化可能 ${training.evolve}体`}</small></button>
    <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
    <button class="homeMenuBtn eggs" data-menu="eggs"><b>🥚</b><span>卵</span><strong class="homeManageValue">${state.eggs.length}/${state.eggCap}</strong><small>${esc(egg.title)}</small><small class="homeManageSub">${esc(egg.body)}</small>${egg.ratio?`<div class="homeCardMeter"><i style="width:${egg.ratio}%"></i></div>`:""}</button>
    <button class="homeMenuBtn shop" id="homeShopBtn"><b>🛍️</b><span>ショップ</span><strong class="homeManageValue">🪙 ${coins.toLocaleString("ja-JP")}</strong><small>運アップアイテム</small><small>商品は今後追加予定</small></button>
@@ -8457,7 +8457,24 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 }
 </style>
 
-<!-- FRENDA_DUNGEON_VERSION: 2.25 / Updated: 2026-10-01 20:18 JST -->
+
+<style id="v226-home-training-one-line">
+.homeTrainingReady{
+  display:block!important;
+  width:100%!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-align:center!important;
+}
+@media(max-width:700px){
+  .homeTrainingReady{
+    font-size:9px!important;
+    letter-spacing:-.2px!important;
+  }
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.26 / Updated: 2026-10-01 20:10 JST -->
 </body>
 </html>
 
@@ -8521,4 +8538,9 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 <!-- Ver2.25:
   スマホのホーム画面最下部が固定ユーティリティバー＋Safari下部バーに少し隠れる問題を修正。
   ホーム画面の末尾スクロール余白を拡大し、卵・ショップカードの最下部まで完全に表示可能にした。
+-->
+
+<!-- Ver2.26:
+  ホーム「所持ピック」の特訓/進化可能数からアイコンを削除。
+  「特訓可能 0体 / 進化可能 0体」の形式で必ず1行表示。
 -->
