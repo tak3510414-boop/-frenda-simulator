@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.49">
+<html lang="ja" data-app-version="2.50">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3998,6 +3998,8 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 <style id="v247-main-habitat-system">
 .rankHabitat{font-size:8px;font-weight:1000;line-height:1.05;opacity:.95;white-space:nowrap}.dungeonOverviewRankBtn.cleared .rankHabitat,.dungeonOverviewRankBtn.currentRun .rankHabitat{color:#fff}
 .teamHabitatBar{display:flex;align-items:center;gap:8px;margin:8px 0 10px;padding:8px 10px;border:1px solid #bcd9c1;border-radius:13px;background:linear-gradient(135deg,#f5fff5,#eaf8ef);color:#28503a}.teamHabitatBar button{flex:0 0 auto;padding:8px 12px;border-radius:11px;background:linear-gradient(180deg,#65c878,#3aa65a);color:#fff;box-shadow:0 3px 0 #277a40;font-size:12px;font-weight:1000}.teamHabitatBar span{min-width:0;font-size:10px;line-height:1.4;font-weight:850}.teamHabitatBar b{color:#155d2f}
+
+.ownedDetailOverlay.habitatDetailTop{z-index:10040!important}
 .habitatOverlay{position:fixed;inset:0;z-index:10020;background:#071923d9;backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px}.habitatPanel{width:min(980px,96vw);max-height:min(88vh,900px);display:flex;flex-direction:column;background:#f7fbf8;border:2px solid #78bf8d;border-radius:22px;box-shadow:0 24px 70px #0007;overflow:hidden}.habitatHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;background:linear-gradient(125deg,#174d35,#25885a);color:#fff}.habitatHeadTitle{min-width:0}.habitatHeadTitle small{display:block;font-size:9px;letter-spacing:.13em;font-weight:1000;color:#c7f4d4}.habitatHeadTitle b{display:block;font-size:22px;line-height:1.15}.habitatClose{flex:0 0 auto;padding:8px 12px;border-radius:11px;background:#ffffff22;color:#fff;border:1px solid #ffffff55;font-weight:1000}
 .habitatSummary{padding:10px 13px;background:#eef8f1;border-bottom:1px solid #cde5d3}.habitatProgressLine{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;font-weight:950;color:#315b40}.habitatProgressLine strong{font-size:17px;color:#176934}.habitatLegend{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:9px;font-weight:850;color:#60756a}.habitatLegend span{padding:4px 7px;border-radius:999px;background:#fff;border:1px solid #d2e2d6}.habitatRuleNote{margin-top:6px;font-size:9px;line-height:1.45;color:#587064}
 .habitatGridWrap{overflow:auto;-webkit-overflow-scrolling:touch;padding:12px}.habitatGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}.habitatGradeGroup{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:5px 0 1px;padding:7px 9px;border-radius:10px;background:linear-gradient(90deg,#dff3e6,#f2faf5);border-left:4px solid #3ca566;color:#245c39}.habitatGradeGroup b{font-size:14px}.habitatGradeGroup span{font-size:9px;font-weight:900;color:#658271}.pickHabitatDetail{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:5px 8px;border-radius:9px;background:#edf8f1;border:1px solid #c6e2cf;color:#315f42;font-size:10px;font-weight:850;line-height:1.25}.pickHabitatDetail b{color:#176a38}.dexHabitatMini{display:inline-block;margin-top:2px;color:#4c765b;font-size:.92em;font-weight:800}.habitatPick{position:relative;min-width:0;min-height:184px;padding:7px;border-radius:14px;border:2px solid #c8ddd0;background:#fff;text-align:center;overflow:hidden;box-shadow:0 4px 12px #173d2810}.habitatPick img{display:block;width:78px;height:109px;object-fit:cover;border-radius:8px;margin:2px auto 5px;background:#e8efeb}.habitatPick b{display:block;font-size:11px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#244b35}.habitatPick small{display:block;margin-top:3px;font-size:7px;line-height:1.25;color:#64786c}
@@ -6396,16 +6398,17 @@ function bindEvolutionCandidateDetailLinks(root){
 }
 function showDexPickDetail(id){
  if(ownedEntry(id))return showOwnedPickDetail(id);
- const r=rec(id);if(!r)return;const seen=pickSeen(r);
+ const r=rec(id);if(!r)return;const seen=pickSeen(r),habitatOpen=!!document.getElementById("habitatOverlay"),prevOverflow=document.body.style.overflow;
  document.getElementById("ownedDetailOverlay")?.remove();
- const ov=document.createElement("div");ov.id="ownedDetailOverlay";ov.className="ownedDetailOverlay";
+ const ov=document.createElement("div");ov.id="ownedDetailOverlay";ov.className=`ownedDetailOverlay${habitatOpen?" habitatDetailTop":""}`;
  ov.innerHTML=`<div class="ownedBackPanel" role="dialog" aria-modal="true" aria-label="図鑑ピック裏面データ"><div class="ownedBackHead"><div><small>FRIENDA PICK DATA</small><b>図鑑ピック・裏面データ</b></div><button type="button" class="ownedBackClose" id="ownedBackClose">閉じる</button></div><div class="ownedBackHero">${seen?`<img src="${esc(imageOf(r))}" alt="">`:`<div class="evoCandidatePlaceholder">未遭遇</div>`}<div><div class="ownedBackName">${seen?esc(r.name_ja):'？？？'}</div><div class="ownedBackMeta">${esc(r.pick_no)}<br>${seen?`${gradeText(r)} / ${esc(r.series||'')}`:'未遭遇'}<br>${seen?'遭遇済み・未所持':'まだ出会っていません'}</div>${seen?`<div class="ownedBackTypes">${typesHTML(r)}</div>`:''}<div class="pickHabitatDetail">🌿 生息地：<b>${esc(habitatLabelForRecord(r,seen))}</b></div><div class="ownedTapLabel">※図鑑から開いたため、育成・絆・強化の個別情報は表示しません。</div></div></div>${evolutionCandidatesSectionHTML(id)}</div>`;
- document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#ownedBackClose").onclick=close;bindEvolutionCandidateDetailLinks(ov)
+ document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=prevOverflow};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#ownedBackClose").onclick=close;bindEvolutionCandidateDetailLinks(ov)
 }
 
 function showOwnedPickDetail(id){
  if(!ownedEntry(id))return;
  const r=rec(id);if(!r)return;
+ const habitatOpen=!!document.getElementById("habitatOverlay"),prevOverflow=document.body.style.overflow;
  document.getElementById("ownedDetailOverlay")?.remove();
  const pb=state.permanentBoosts[id]||{},
        baseHp=Number(r.hp)||0,baseAtk=Number(r.atk)||0,baseDef=Number(r.def)||0,
@@ -6423,7 +6426,7 @@ function showOwnedPickDetail(id){
        evoState=!ei.hasEvolution?"進化先なし":!ei.registered?"進化先ピック未登録":ei.fainted?"ひんし中は進化不可":ei.canEvolve?"✨ 進化可能":`進化まであと${Math.max(0,ei.cost-gp)}P`;
 
  const ov=document.createElement("div");
- ov.id="ownedDetailOverlay";ov.className="ownedDetailOverlay";
+ ov.id="ownedDetailOverlay";ov.className=`ownedDetailOverlay${habitatOpen?" habitatDetailTop":""}`;
  ov.innerHTML=`<div class="ownedBackPanel" role="dialog" aria-modal="true" aria-label="所持ピック裏面データ">
   <div class="ownedBackHead"><div><small>FRIENDA PICK DATA</small><b>所持ピック・裏面データ</b></div><button type="button" class="ownedBackClose" id="ownedBackClose">閉じる</button></div>
 
@@ -6477,7 +6480,7 @@ ${evolutionCandidatesSectionHTML(id)}
  </div>`;
 
  document.body.appendChild(ov);
- const close=()=>{document.getElementById("ownedPointHelpOverlay")?.remove();ov.remove();document.body.style.overflow=""};
+ const close=()=>{document.getElementById("ownedPointHelpOverlay")?.remove();ov.remove();document.body.style.overflow=prevOverflow};
  document.body.style.overflow="hidden";
  ov.onclick=e=>{if(e.target===ov)close()};
  ov.querySelector("#ownedBackClose").onclick=close;
@@ -8980,6 +8983,7 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 @media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunToggle{font-size:7px!important;padding:4px 7px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
 </style>
 <!-- Ver2.49: 図鑑・所持ピック詳細の進化前/進化後候補をタップ可能にし、候補ピックの詳細へ直接展開できるように変更。 -->
+<!-- Ver2.50: 生息地一覧からピック詳細を開いた際、詳細を生息地一覧の前面に表示し、閉じると一覧へ戻るよう重なり順とスクロール状態を修正。 -->
 <!-- Ver2.48: 生息地一覧を★数→ピック番号昇順でグループ表示。「主なすみか」表記を「生息地」に統一し、図鑑・所持ピック詳細にも生息地を表示。未遭遇は「不明」。 -->
 <!-- Ver2.47: 全ピックに「生息地（ダンジョン＋ランク）」を自動割当。生息地85%＋迷い込み15%の遭遇抽選、ランク別生息地コレクション、所持/遭遇/未遭遇表示を追加。 -->
 <!-- Ver2.46: ゲットチャンス画面のモバイル縦収まりを改善。導入・拾い物・捕獲演出の下端見切れを抑え、捕獲演出はボール表示を1個に整理して動きとゲット後のポケモンをより目立たせた。 -->
