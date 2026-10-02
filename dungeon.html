@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.28">
+<html lang="ja" data-app-version="2.29">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5441,7 +5441,8 @@ function renderSummary(){
  const addAlly=id=>{id=String(id||"");if(id&&!allySeen.has(id)){allySeen.add(id);newAllyIds.push(id)}};
  (x.captured||[]).forEach(addAlly);
  (x.hatchResults||[]).filter(v=>v&&!v.duplicate).forEach(v=>addAlly(v.pickId));
- const allySlots=newAllyIds.length?newAllyIds.slice(0,3).map(id=>{const r=rec(id),detailOk=!!ownedEntry(id);return r?`<div class="result6AllyCard summaryAllyDetail ${detailOk?"clickable":""}" ${detailOk?`data-summary-ally="${esc(id)}" role="button" tabindex="0"`:""}><div class="result6NewBadge">NEW</div><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small>${detailOk?`<div class="result6AllyHint">タップで詳しくみる</div>`:""}</div>`:""}).join(""):`<div class="result6AllyEmpty"><span>🤝</span><b>今回は新しい仲間なし</b><small>次の冒険で出会えるかも</small></div>`;
+ const allySlots=newAllyIds.length?newAllyIds.map(id=>{const r=rec(id),detailOk=!!ownedEntry(id);return r?`<div class="result6AllyCard summaryAllyDetail ${detailOk?"clickable":""}" ${detailOk?`data-summary-ally="${esc(id)}" role="button" tabindex="0"`:""}><div class="result6NewBadge">NEW</div><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small>${detailOk?`<div class="result6AllyHint">タップで詳しくみる</div>`:""}</div>`:""}).join(""):`<div class="result6AllyEmpty"><span>🤝</span><b>今回は新しい仲間なし</b><small>次の冒険で出会えるかも</small></div>`;
+ const allyCountClass=newAllyIds.length<=3?`count-${Math.max(1,newAllyIds.length)}`:"count-many";
 
  const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"なし";
  const eggVisual=x.eggAward?eggVisualHTML(x.eggAward):'<div class="result4NoReward">—</div>';
@@ -5490,7 +5491,7 @@ function renderSummary(){
      <section class="result5LootPanel result6LootPanel">
        <div class="result5SectionHead"><span>🎁</span><div><b>今回の戦利品</b><small>新しい仲間を最優先で表示</small></div></div>
        <div class="result6LootGrid">
-         <div class="result5LootGroup allies result6Allies"><div class="result5LootLabel"><em>NEW</em><b>新しい仲間</b></div><div class="result6AllyGrid count-${Math.max(1,Math.min(3,newAllyIds.length))}">${allySlots}</div></div>
+         <div class="result5LootGroup allies result6Allies"><div class="result5LootLabel"><em>NEW</em><b>新しい仲間</b></div><div class="result6AllyGrid ${allyCountClass}">${allySlots}</div></div>
          <div class="result6LootBottom">
            <div class="result5LootGroup reward"><div class="result5LootLabel"><em>REWARD</em><b>クリア報酬</b></div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加":"今回は報酬なし"}</small></div></div></div>
            <div class="result5LootGroup unlock"><div class="result5LootLabel"><em>UNLOCK</em><b>新しく解放</b></div><div class="result4UnlockList">${unlockRows}</div></div>
@@ -8547,7 +8548,47 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 </style>
 
 
-<!-- FRENDA_DUNGEON_VERSION: 2.28 / Updated: 2026-10-02 07:10 JST -->
+
+<style id="v229-summary-all-new-allies">
+/* Ver2.29: Show every new ally on the post-run summary, including 4 or more. */
+.result6AllyGrid.count-many{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-auto-rows:minmax(0,1fr);
+  overflow:auto;
+  align-content:stretch;
+}
+.result6AllyGrid.count-many .result6AllyCard{
+  padding:5px 4px;
+}
+.result6AllyGrid.count-many .result6AllyCard img{
+  width:min(78px,58%);
+  max-height:112px;
+}
+.result6AllyGrid.count-many .result6AllyCard b{font-size:10px}
+.result6AllyGrid.count-many .result6AllyCard small{font-size:6.5px}
+.result6AllyGrid.count-many .result6AllyHint{font-size:7px;padding:4px 5px;margin-top:4px}
+@media(max-width:700px){
+  body[data-dungeon-page="postrun"] .result6AllyGrid.count-many{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-rows:auto!important;
+    overflow:visible!important;
+  }
+  body[data-dungeon-page="postrun"] .result6AllyGrid.count-many .result6AllyCard{
+    min-height:132px!important;
+    height:auto!important;
+    padding:6px 4px!important;
+  }
+  body[data-dungeon-page="postrun"] .result6AllyGrid.count-many .result6AllyCard img{
+    width:min(68px,58%)!important;
+    max-height:none!important;
+    margin-bottom:4px!important;
+  }
+  body[data-dungeon-page="postrun"] .result6AllyGrid.count-many .result6AllyCard b{font-size:9px!important}
+  body[data-dungeon-page="postrun"] .result6AllyGrid.count-many .result6AllyCard small{font-size:5.5px!important}
+}
+</style>
+
+<!-- FRENDA_DUNGEON_VERSION: 2.29 / Updated: 2026-10-02 19:28 JST -->
 </body>
 </html>
 
@@ -8630,4 +8671,12 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
   拾い物・次の敵・ひんし交代・強敵登場・伝説登場・ダンジョン開始の演出カードを clipping boundary に戻した。
   あわせてスマホのラン画面で横幅100%・min-width:0を保証し、縦スクロールは従来どおり維持。
   更新日時: 2026-10-02 07:10 JST
+-->
+
+<!-- Ver2.29:
+  冒険終了後のクリア/結果画面で「新しい仲間」が3体までしか表示されていなかった上限を撤廃。
+  捕獲・卵孵化で新しい仲間が4体以上になった場合も、全員を「今回の戦利品 > 新しい仲間」に表示する。
+  4体以上はPCで4列のコンパクト表示、スマホで2列表示とし、スマホはページ縦スクロールで全員を確認可能。
+  各カードの「タップで詳しくみる」も全員分維持。
+  更新日時: 2026-10-02 19:28 JST
 -->
