@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.51">
+<html lang="ja" data-app-version="2.52">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4527,6 +4527,8 @@ const STARTER_SET_DEFS=[
  {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
 ];
 const stateDefault=()=>({saveVersion:13,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
+// Battle-knowledge cache must exist before migrateState(), because reconcileDexState() invalidates it during startup.
+let battleKnowledgeTypeCache=null;
 let state=loadState();
 migrateState();
 let screen="home";
@@ -4669,7 +4671,6 @@ function speciesTypeKnowledgeKey(r){
  const name=speciesKey(r),types=[r?.type1,r?.type2].map(x=>String(x||"").trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ja"));
  return `${name}||${types.join("/")}`
 }
-let battleKnowledgeTypeCache=null;
 function invalidateBattleKnowledgeCache(){battleKnowledgeTypeCache=null}
 function pickBattleMastered(r){
  const id=r?.master_id;if(!id)return false;
