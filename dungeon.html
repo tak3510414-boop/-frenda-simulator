@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.55">
+<html lang="ja" data-app-version="2.56">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5826,7 +5826,7 @@ function renderSummary(){
  }
  teamIds=teamIds.slice(0,3);
  const teamEndMap=new Map((x.teamEnd||[]).map(v=>[String(v.id),v]));
- const teamCards=Array.from({length:3},(_,i)=>{const id=teamIds[i],r=id?rec(id):null;if(!r)return `<div class="result4TeamCard empty"><div class="result4TeamEmpty">—</div><b>未参加</b></div>`;const xv=Number(xp[id]||0),dv=Number(drill[id]||0),cv=Number(coins[id]||0),bv=bondMap.get(id),end=teamEndMap.get(id);let bondText="変化なし";if(bv){const lv=Number(bv.level)||0,before=Math.max(0,lv-1);bondText=bv.leveled?`Lv${before} → Lv${lv}`:`＋1（Lv${lv}）`}const hpText=end?`${Math.max(0,Math.round(Number(end.hp||0)))}/${Math.max(1,Math.round(Number(end.max||1)))}`:"—";return `<div class="result4TeamCard"><div class="result4TeamHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ⚡${esc(r.poke_ene??"-")}</small></div></div><div class="result4TeamStats"><span><small><i class="resultDeskLabel">成長EXP</i><i class="resultMobileLabel">EXP</i></small><b>${xv>0?`＋${xv}`:"—"}</b></span><span><small><i class="resultDeskLabel">特訓P</i><i class="resultMobileLabel">特訓</i></small><b>${dv>0?`＋${dv}`:"—"}</b></span><span><small><i class="resultDeskLabel">コイン</i><i class="resultMobileLabel">コイン</i></small><b>${cv>0?`🪙＋${cv}`:"—"}</b></span><span><small><i class="resultDeskLabel">絆</i><i class="resultMobileLabel">絆</i></small><b>${esc(bondText)}</b></span></div><div class="result4Hp"><span><i class="resultDeskLabel">終了HP</i><i class="resultMobileLabel">HP</i></span><b>${hpText}${end?.ko?" / ひんし":""}</b></div></div>`}).join("");
+ const teamCards=Array.from({length:3},(_,i)=>{const id=teamIds[i],r=id?rec(id):null;if(!r)return `<div class="result4TeamCard empty"><div class="result4TeamEmpty">—</div><b>未参加</b></div>`;const xv=Number(xp[id]||0),dv=Number(drill[id]||0),cv=Number(coins[id]||0),bv=bondMap.get(id),end=teamEndMap.get(id);let bondText="変化なし";if(bv){const lv=Number(bv.level)||0,before=Math.max(0,lv-1);bondText=bv.leveled?`Lv${before} → Lv${lv}`:`＋1（Lv${lv}）`}const hpText=end?`${Math.max(0,Math.round(Number(end.hp||0)))}/${Math.max(1,Math.round(Number(end.max||1)))}`:"—";const noGrowth=!(xv>0||dv>0||cv>0||bv);return `<div class="result4TeamCard"><div class="result4TeamHead"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ⚡${esc(r.poke_ene??"-")}</small></div></div><div class="result4TeamStats" data-all-zero="${noGrowth?1:0}"><span data-result-zero="${xv>0?0:1}"><small><i class="resultDeskLabel">成長EXP</i><i class="resultMobileLabel">EXP</i></small><b>${xv>0?`＋${xv}`:"—"}</b></span><span data-result-zero="${dv>0?0:1}"><small><i class="resultDeskLabel">特訓P</i><i class="resultMobileLabel">特訓</i></small><b>${dv>0?`＋${dv}`:"—"}</b></span><span data-result-zero="${cv>0?0:1}"><small><i class="resultDeskLabel">コイン</i><i class="resultMobileLabel">コイン</i></small><b>${cv>0?`🪙＋${cv}`:"—"}</b></span><span data-result-zero="${bv?0:1}"><small><i class="resultDeskLabel">絆</i><i class="resultMobileLabel">絆</i></small><b>${esc(bondText)}</b></span></div><div class="result4Hp"><span><i class="resultDeskLabel">終了HP</i><i class="resultMobileLabel">HP</i></span><b>${hpText}${end?.ko?" / ひんし":""}</b></div></div>`}).join("");
 
  const teamEnd=(x.teamEnd||[]),alive=teamEnd.length?teamEnd.filter(v=>!v.ko&&Number(v.hp)>0).length:teamIds.length;
  const hpRate=teamEnd.length?Math.round(teamEnd.reduce((s,v)=>s+Math.max(0,Math.min(1,Number(v.hp||0)/Math.max(1,Number(v.max||1)))),0)/teamEnd.length*100):0;
@@ -5860,7 +5860,7 @@ function renderSummary(){
        <div class="result4TeamGrid result5TeamGrid result6TeamGrid">${teamCards}</div>
      </section>
 
-     <section class="result5LootPanel result6LootPanel">
+     <section class="result5LootPanel result6LootPanel ${newAllyIds.length?"has-allies":"no-allies"} ${x.eggAward?"has-reward":"no-reward"} ${unlocks.length?"has-unlocks":"no-unlocks"}">
        <div class="result5SectionHead"><span>🎁</span><div><b>今回の戦利品</b><small>新しい仲間を最優先で表示</small></div></div>
        <div class="result6LootGrid">
          <div class="result5LootGroup allies result6Allies"><div class="result5LootLabel"><em>NEW</em><b>新しい仲間</b></div><div class="result6AllyGrid ${allyCountClass}">${allySlots}</div></div>
@@ -9633,6 +9633,249 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6
 html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow b{font-size:5.8px!important}
 </style>
 
+<style id="v256-black-pc-wide-result">
+/* Ver2.56: 黒PC / short-wide desktop post-run dashboard.
+   Do not solve a shallow viewport by shrinking everything. Use the available
+   horizontal space, enlarge meaningful text, and hide zero/empty information. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] main#app.dungeonRunScreen{
+  width:calc(100vw - 12px)!important;
+  max-width:none!important;
+  height:100%!important;
+  margin:0 auto!important;
+  padding:5px 6px!important;
+  box-sizing:border-box!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .postRunSummary.resultV5.resultV6{
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:8px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+
+/* One strong header: result + destination + three actions. Detailed record
+   chips are redundant on this compact PC profile and consume precious height. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Hero{
+  flex:0 0 auto!important;
+  min-height:82px!important;
+  display:grid!important;
+  grid-template-columns:54px minmax(280px,1fr) minmax(430px,.95fr)!important;
+  grid-template-rows:auto!important;
+  align-items:center!important;
+  gap:12px!important;
+  padding:10px 14px!important;
+  border-radius:16px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5HeroIcon{
+  grid-column:1!important;grid-row:1!important;
+  font-size:44px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5HeroText{
+  grid-column:2!important;grid-row:1!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Kicker{
+  font-size:9px!important;letter-spacing:.17em!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Hero h2{
+  font-size:29px!important;line-height:1!important;margin:1px 0 7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Meta{gap:7px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Meta span{
+  padding:4px 9px!important;font-size:10px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5HeroStamp,
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroRecord{
+  display:none!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions{
+  grid-column:3!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;margin:0!important;align-self:stretch!important;align-items:center!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions button{
+  min-height:48px!important;padding:8px 7px!important;border-radius:12px!important;
+  font-size:12px!important;line-height:1.15!important;letter-spacing:0!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .autoUnlockBanner{
+  flex:0 0 auto!important;margin:0!important;padding:6px 10px!important;font-size:10px!important;
+}
+
+/* Wide dashboard: team results use one full-width row; loot uses the row below. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Main{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:minmax(218px,.47fr) minmax(0,.53fr)!important;
+  gap:8px!important;
+  overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6TeamPanel,
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel{
+  min-height:0!important;height:auto!important;overflow:hidden!important;
+  padding:9px 11px!important;border-radius:15px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead{
+  height:auto!important;min-height:30px!important;margin:0 0 7px!important;gap:8px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead>span{
+  width:30px!important;height:30px!important;font-size:18px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead b{
+  font-size:16px!important;line-height:1.1!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead small{
+  display:none!important;
+}
+
+/* Three team cards across the screen. Images and important numbers are large;
+   zero-growth rows disappear only on compact desktop. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6TeamGrid{
+  height:calc(100% - 37px)!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:1fr!important;gap:9px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamCard{
+  display:grid!important;
+  grid-template-columns:112px minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  gap:6px 10px!important;padding:9px 11px!important;border-radius:14px!important;
+  min-height:0!important;overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead{
+  grid-column:1!important;grid-row:1/3!important;
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+  gap:5px!important;text-align:center!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead img{
+  width:88px!important;height:122px!important;max-height:122px!important;
+  margin:0 auto!important;border-radius:10px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead b{
+  font-size:14px!important;line-height:1.12!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead small{
+  font-size:9px!important;line-height:1.1!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats{
+  grid-column:2!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-content:center!important;gap:7px!important;min-height:0!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats span[data-result-zero="1"]{
+  display:none!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats[data-all-zero="1"]::after{
+  content:"今回の成長なし";grid-column:1/-1;display:grid;place-items:center;
+  min-height:48px;border-radius:10px;background:#f3f7f9;color:#778892;
+  font-size:11px;font-weight:900;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats span{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  gap:6px!important;padding:8px 10px!important;border-radius:10px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats small{
+  font-size:9px!important;white-space:nowrap!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats b{
+  font-size:12px!important;white-space:nowrap!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4Hp{
+  grid-column:2!important;grid-row:2!important;
+  min-height:28px!important;margin:0!important;padding:5px 9px!important;
+  border-radius:9px!important;background:#edf5f8!important;border-top:0!important;
+  font-size:9px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4Hp b{
+  font-size:10px!important;
+}
+
+/* Loot uses width instead of tiny text. Empty categories vanish. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootGrid{
+  height:calc(100% - 37px)!important;
+  display:grid!important;grid-template-columns:minmax(0,1.7fr) minmax(320px,.65fr)!important;
+  grid-template-rows:1fr!important;gap:9px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-allies .result6LootGrid{
+  grid-template-columns:1fr!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-allies .result6Allies{
+  display:none!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Allies{
+  height:100%!important;min-height:0!important;padding:7px 9px!important;overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel{
+  margin-bottom:5px!important;gap:6px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel em{
+  padding:2px 6px!important;font-size:7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel b{
+  font-size:12px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid{
+  height:calc(100% - 22px)!important;min-height:0!important;
+  display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;
+  gap:8px!important;align-items:stretch!important;overflow:auto!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard{
+  min-height:0!important;padding:7px!important;border-radius:12px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard img{
+  width:min(108px,48%)!important;max-height:150px!important;margin:1px auto 5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard b{font-size:13px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard small{font-size:8px!important;margin-top:3px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyHint{font-size:7px!important;padding:3px 6px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootBottom{
+  height:100%!important;min-height:0!important;
+  display:grid!important;grid-template-columns:1fr!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-unlocks .result5LootGroup.unlock,
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-reward .result5LootGroup.reward{
+  display:none!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-unlocks .result6LootBottom,
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-reward .result6LootBottom{
+  grid-template-rows:1fr!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootBottom .result5LootGroup{
+  padding:8px 10px!important;border-radius:12px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody{
+  grid-template-columns:76px minmax(0,1fr)!important;gap:9px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody .eggVisual{
+  transform:scale(.78)!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody b{font-size:13px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody small{font-size:8px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockList{
+  gap:5px!important;grid-template-rows:none!important;align-content:start!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow{
+  padding:5px 7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow b{
+  font-size:9px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Actions{display:none!important}
+
+/* Do not affect phone result layout. */
+@media(max-width:700px){
+ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] main#app.dungeonRunScreen,
+ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .postRunSummary.resultV5.resultV6{height:auto!important;overflow:visible!important}
+}
+</style>
+
 <script id="v240-adaptive-viewport-script">
 (()=>{
   const root=document.documentElement;
@@ -9688,6 +9931,12 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6
   チケット／ボールは所持確認のみで、実際に使える場面で使用する。
 -->
 
+<!-- Ver2.56:
+  黒PC向け結果画面を「縮小」ではなく横長ダッシュボード型へ再設計。
+  postrunだけ画面横幅をほぼ全面使用し、挑戦チーム3体を横3列に配置。
+  文字・ピック画像・操作ボタンを拡大し、冒険記録の細粒度チップや0値の成長項目、空の解放/報酬欄はpc-compact時に非表示。
+  新しい仲間と戦利品は横方向を使って整理し、黒PC 1520x794で読みやすさを優先。
+-->
 <!-- Ver2.55:
   黒PC（1520×794 / DPR1.25）を短いPC画面としてpc-compact判定へ変更。
   クリア結果の「新しい仲間」上端見切れと「挑戦チーム結果」の縦ズレを同時修正。
