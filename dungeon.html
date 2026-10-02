@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.44">
+<html lang="ja" data-app-version="2.45">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4531,7 +4531,7 @@ function stopAutoAdventure(){
  const r=state.run;if(!r?.autoAdventure)return;
  r.autoAdventure=false;r.autoAdventureStopped=true;clearAutoAdventureTimer();autoBattleRunning=false;
  addLog("🤖 AUTOを解除。ここから手動操作に切り替えます。");save();
- const b=document.getElementById("autoAdventureStop");if(b){b.disabled=true;b.textContent="AUTO解除中…"}
+ const b=document.getElementById("autoAdventureToggle");if(b){b.disabled=true}
  if(!r.battle?.busy&&!initiativeRouletteRunning)render()
 }
 function startAutoAdventureMidRun(){
@@ -4548,7 +4548,7 @@ function startAutoAdventureMidRun(){
  ensureAutoStats(r);
  addLog(`🤖 地下${Number(r.floor)||1}階から自動冒険へ切り替え。方針：バランス`);
  save();
- const b=document.getElementById("autoAdventureStart");if(b){b.disabled=true;b.textContent="🤖 AUTO開始中…"}
+ const b=document.getElementById("autoAdventureToggle");if(b){b.disabled=true}
  if(!r.battle?.busy&&!initiativeRouletteRunning)render();
  scheduleAutoAdventure((r.battle?.busy||initiativeRouletteRunning)?320:160)
 }
@@ -5847,7 +5847,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
  return `<div class="runTop"><div class="runStatus runStatusUnified">
    <div class="runUnifiedTop">
     <div class="runUnifiedTitle"><span class="runThemeIcon">${esc(theme.icon||"🗺️")}</span><strong>${esc(theme.name)}</strong><span class="runUnifiedDifficulty">ランク${r.difficulty}</span>${r.autoAdventure?`<span class="autoRunBadge">🤖 AUTO</span>`:""}${battleLabel?`<span class="runUnifiedScene">${esc(battleLabel)}</span>`:""}</div>
-    <div class="runUnifiedRight">${r.autoAdventure?`<button type="button" class="autoRunStop" id="autoAdventureStop">■ AUTO解除</button>`:(autoAdventureUnlocked(r.dungeonId,r.difficulty)?`<button type="button" class="autoRunStart" id="autoAdventureStart">🤖 AUTO開始</button>`:"")}<button type="button" class="runWithdrawInside runWithdrawTop" data-run-withdraw>冒険から撤退</button><div class="runUnifiedFloor"><strong>地下${r.floor}階</strong><span>/ 10</span></div></div>
+    <div class="runUnifiedRight">${autoAdventureUnlocked(r.dungeonId,r.difficulty)?`<button type="button" class="autoRunToggle ${r.autoAdventure?"is-on":"is-off"}" id="autoAdventureToggle" aria-pressed="${r.autoAdventure?"true":"false"}" title="AUTO ${r.autoAdventure?"ON":"OFF"}">🤖 AUTO</button>`:""}<button type="button" class="runWithdrawInside runWithdrawTop" data-run-withdraw>冒険から撤退</button><div class="runUnifiedFloor"><strong>地下${r.floor}階</strong><span>/ 10</span></div></div>
    </div>
    <div class="runUnifiedMetrics">
     <span class="runUnifiedMetric alert ${alert>=3?"max":alert>=2?"warn":""}"><span>👁 警戒度</span><b class="alertDots">${alertDots(alert)}</b></span>
@@ -6142,8 +6142,7 @@ function bindRunHandlers(){
  app.querySelectorAll("[data-route]").forEach(b=>b.onclick=()=>{const x=state.run.routeOptions.find(r=>r.id===b.dataset.route);if(x)selectRoute(x)});
  document.querySelectorAll("[data-run-egg-open]").forEach(el=>el.onclick=openRunEggDetails);
  document.querySelectorAll("[data-run-withdraw]").forEach(el=>el.onclick=e=>{e.stopPropagation();withdraw()});
- const autoStop=document.getElementById("autoAdventureStop");if(autoStop)autoStop.onclick=e=>{e.stopPropagation();stopAutoAdventure()};
- const autoStart=document.getElementById("autoAdventureStart");if(autoStart)autoStart.onclick=e=>{e.stopPropagation();startAutoAdventureMidRun()};
+ const autoToggle=document.getElementById("autoAdventureToggle");if(autoToggle)autoToggle.onclick=e=>{e.stopPropagation();if(state.run?.autoAdventure)stopAutoAdventure();else startAutoAdventureMidRun()};
  app.querySelectorAll("[data-fighter]").forEach(b=>b.onclick=()=>startFighter(Number(b.dataset.fighter)));
  const vs=document.getElementById("battleVsAttack");if(vs){const hit=()=>{if(autoBattleRunning||state.run?.battle?.busy)return;if(state.run?.battle?.initiative?.pending){startInitiativeRoulette("once");return}doAttack()};vs.onclick=hit;vs.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();hit()}}}
  const vsAuto=document.getElementById("battleVsAuto");if(vsAuto){const go=()=>{if(autoBattleRunning){autoBattleRunning=false;setBattleMessage("自動戦闘を停止します（現在のターン終了後）。");const s=vsAuto.querySelector("small");if(s)s.textContent="停止中";return}if(state.run?.battle?.busy)return;if(state.run?.battle?.initiative?.pending){startInitiativeRoulette("auto");return}autoBattleToEnd()};vsAuto.onclick=go;vsAuto.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}}}
@@ -8940,10 +8939,11 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 .teamAutoAdventureBtn:not(:disabled){animation:autoAdventurePulse 1.9s ease-in-out infinite}.teamAutoAdventureBtn:disabled{background:#d7dde1!important;color:#84929a!important;border-color:#c8d0d5!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;opacity:.76!important}
 @keyframes autoAdventurePulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.13);box-shadow:0 3px 0 #0b5677,0 0 16px #25bde066}}
 .autoAdventureUnlockHint{margin:-4px 0 8px;padding:6px 9px;border-radius:10px;font-size:9px;font-weight:900;line-height:1.35}.autoAdventureUnlockHint.unlocked{background:#eafaff;border:1px solid #9edce9;color:#17677d}.autoAdventureUnlockHint.locked{background:#f4f6f7;border:1px solid #d9e0e4;color:#7a8890}
-.autoRunBadge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:linear-gradient(135deg,#35c4dd,#1b7db5);color:#fff;font-size:9px;font-weight:1000;letter-spacing:.08em;box-shadow:0 0 12px #53d9ec66}.autoRunStop,.autoRunStart{padding:6px 9px!important;border-radius:999px!important;font-size:9px!important;font-weight:1000!important;box-shadow:none!important}.autoRunStop{background:#163f56!important;color:#dffaff!important;border:1px solid #65cfe2!important}.autoRunStop:hover{background:#205a74!important}.autoRunStart{background:linear-gradient(135deg,#27b8d6,#167cae)!important;color:#fff!important;border:1px solid #91e9f4!important;box-shadow:0 0 12px #42d4e755!important}.autoRunStart:hover{filter:brightness(1.08)}
+.autoRunBadge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:linear-gradient(135deg,#35c4dd,#1b7db5);color:#fff;font-size:9px;font-weight:1000;letter-spacing:.08em;box-shadow:0 0 12px #53d9ec66}.autoRunToggle{padding:6px 11px!important;border-radius:999px!important;font-size:9px!important;font-weight:1000!important;color:#fff!important;border:1px solid #91e9f4!important;transition:transform .08s ease,box-shadow .08s ease,filter .08s ease!important;white-space:nowrap!important}.autoRunToggle.is-off{background:linear-gradient(180deg,#39c6df,#1683b5)!important;box-shadow:0 3px 0 #0a587c,0 0 10px #42d4e744!important;transform:translateY(0)!important}.autoRunToggle.is-off:active{transform:translateY(2px)!important;box-shadow:0 1px 0 #0a587c!important}.autoRunToggle.is-on{background:linear-gradient(180deg,#14506a,#0b3447)!important;color:#e9fcff!important;border-color:#5fd4e6!important;box-shadow:inset 0 3px 7px #061c2b99,inset 0 -1px 0 #78eaff55,0 0 9px #36cbe766!important;transform:translateY(2px)!important}.autoRunToggle:disabled{opacity:.72!important;filter:saturate(.65)!important}
 .autoResultRecap{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px}.autoResultRecap>b{color:#dffaff}.autoResultRecap span{padding:2px 6px;border-radius:999px;background:#ffffff22;border:1px solid #ffffff36;font-size:7px;font-weight:900}.autoUnlockBanner{margin:8px 0;padding:9px 12px;border:2px solid #70c9df;border-radius:13px;background:linear-gradient(135deg,#effcff,#dff8ff);color:#15566d;display:flex;align-items:center;gap:10px;box-shadow:0 5px 14px #2c94b122}.autoUnlockBanner strong{font-size:15px;color:#057a9f}.autoUnlockBanner span{font-size:10px;font-weight:900}
-@media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunStop,.autoRunStart{font-size:7px!important;padding:4px 6px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
+@media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunToggle{font-size:7px!important;padding:4px 7px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
 </style>
+<!-- Ver2.45: 戦闘画面上部のAUTO操作を単一トグルボタン化。ボタンが押し込まれている状態=ON、出っ張っている状態=OFF。再タップで切替。 -->
 <!-- Ver2.44: ゲットチャンスの対象選択と、遭遇演出・出撃選択の相手表示に「所持済み / 未所持」を表示。初遭遇は「NEW・未所持」。 -->
 <!-- Ver2.43: スマホ戦闘画面を約5〜8%縦圧縮してSafari下部バーによる見切れを改善。クリア済みランクは冒険途中から「AUTO開始」で自動冒険へ切替可能。 -->
 <!-- Ver2.42: 卵孵化画面を戦闘画面と同様の固定1画面ステージ化。visualViewportの実表示高に追従し、孵化前・孵化後とも枠を画面いっぱいに安定表示。 -->
