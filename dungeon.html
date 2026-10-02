@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.53">
+<html lang="ja" data-app-version="2.54">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4423,12 +4423,12 @@ function sfx(name){
   case "battleStart":
    sndTone(392,.09,"triangle",.055,0);sndTone(523,.10,"triangle",.06,.09);sndTone(659,.14,"triangle",.07,.19);break;
   case "attack":
-   // 振り抜きは短く。重さは命中した瞬間に集中させる。
-   sndNoise(.04,.042,0);sndTone(760,.07,"sawtooth",.045,0,210);break;
+   // Ver2.54: whoosh + snap.
+   sndNoise(.065,.060,0);sndTone(980,.085,"sawtooth",.062,0,190);sndTone(170,.07,"triangle",.038,.035,95);break;
   case "hit":
-   sndHeavyImpact(.235,0,false);break;
+   sndHeavyImpact(.30,0,false);sndCrack(.075,.018);break;
   case "super":
-   sndHeavyImpact(.295,0,true);sndCrack(.105,.012);sndTone(285,.12,"square",.070,.008,92);break;
+   sndHeavyImpact(.37,0,true);sndCrack(.145,.010);sndCrack(.09,.07);sndTone(330,.15,"square",.085,.008,82);sndNoise(.12,.035,.02);break;
   case "miss":
    sndTone(520,.16,"sine",.04,0,150);break;
   case "special":
@@ -4438,7 +4438,7 @@ function sfx(name){
   case "victory":
    sndTone(523,.12,"triangle",.06,0);sndTone(659,.12,"triangle",.065,.12);sndTone(784,.13,"triangle",.07,.24);sndTone(1047,.24,"triangle",.075,.37);break;
   case "clear":
-   sndTone(392,.16,"triangle",.055,0);sndTone(523,.16,"triangle",.06,.12);sndTone(659,.18,"triangle",.065,.24);sndTone(784,.20,"triangle",.07,.38);sndTone(1047,.26,"sine",.075,.55);sndTone(1319,.34,"sine",.06,.72);sndNoise(.16,.018,.58);break;
+   sndNoise(.22,.030,0);sndTone(392,.14,"triangle",.07,0);sndTone(523,.15,"triangle",.075,.10);sndTone(659,.16,"triangle",.08,.21);sndTone(784,.18,"triangle",.085,.34);sndTone(1047,.28,"sine",.09,.50);sndTone(1319,.34,"sine",.075,.66);sndTone(1568,.45,"sine",.06,.88);sndNoise(.26,.024,.72);break;
   case "captureThrow":
    sndTone(280,.20,"sine",.04,0,980);break;
   case "captureShake":
@@ -4455,12 +4455,60 @@ function sfx(name){
    sndTone(220,.34,"sine",.045,0,660);sndTone(330,.36,"triangle",.035,.08,990);break;
   case "evoSuccess":
    sndTone(523,.13,"triangle",.055,0);sndTone(784,.13,"triangle",.065,.12);sndTone(1047,.28,"sine",.075,.25);break;
+  case "hatchWobble":
+   sndTone(120,.12,"triangle",.055,0,92);sndTone(180,.09,"sine",.035,.12,145);break;
+  case "hatchCrack":
+   sndCrack(.16,0);sndCrack(.12,.09);sndTone(1260,.10,"triangle",.06,.04,720);break;
+  case "hatchBurst":
+   sndNoise(.24,.038,0);sndTone(392,.18,"triangle",.055,0,784);sndTone(523,.18,"triangle",.06,.10,1047);sndTone(784,.25,"sine",.075,.22,1568);sndTone(1319,.38,"sine",.055,.42,1976);break;
+  case "eggGet":
+   sndTone(659,.09,"triangle",.05,0);sndTone(988,.11,"triangle",.06,.08);sndTone(1319,.20,"sine",.065,.17);break;
+  case "pickup":
+   sndTone(440,.07,"triangle",.045,0);sndTone(660,.08,"triangle",.052,.07);sndTone(880,.16,"sine",.055,.15);break;
+  case "reward":
+   sndTone(523,.09,"triangle",.05,0);sndTone(659,.09,"triangle",.055,.08);sndTone(784,.10,"triangle",.06,.16);sndTone(1047,.19,"sine",.065,.25);break;
  }
 }
+
+/* Ver2.54: procedural BGM. No external audio files; iPhone Safari starts after the first user gesture. */
+let dungeonBgmTimer=null,dungeonBgmMode="",dungeonBgmStep=0,dungeonAudioUnlocked=false;
+function dungeonBgmScene(){
+ if(state?.postRun){const st=state.postRun.stage||"";if(st==="hatch"||st.startsWith("egg"))return "mystery";return state.postRun.type==="clear"?"victory":"home"}
+ if(state?.run){const sc=state.run.scene||"";if(["battle","chooseFighter","encounterCutin","legendaryIntro","bossIntro","encounterIntro"].includes(sc))return "battle";return "dungeon"}
+ if(screen==="dungeons"||screen==="team")return "adventure";return "home"
+}
+const DUNGEON_BGM={
+ home:{ms:620,notes:[262,330,392,330,294,349,440,349],bass:[131,147,165,147]},
+ adventure:{ms:500,notes:[294,370,440,494,440,370,330,370],bass:[147,165,185,165]},
+ dungeon:{ms:470,notes:[220,262,330,294,247,294,349,330],bass:[110,123,131,123]},
+ battle:{ms:300,notes:[196,233,262,311,294,262,233,247],bass:[98,98,117,123]},
+ mystery:{ms:560,notes:[330,392,494,659,587,494,392,440],bass:[110,123,147,123]},
+ victory:{ms:430,notes:[523,659,784,1047,784,880,1047,1319],bass:[131,165,196,165]}
+};
+function dungeonBgmBeat(){
+ if(document.hidden||soundVolume()<=0)return;const ctx=ensureAudio();if(!ctx||ctx.state!=="running")return;
+ const cfg=DUNGEON_BGM[dungeonBgmMode]||DUNGEON_BGM.home,i=dungeonBgmStep++,n=cfg.notes[i%cfg.notes.length],b=cfg.bass[Math.floor(i/2)%cfg.bass.length];
+ const g=dungeonBgmMode==="battle"?.019:.014;
+ sndTone(n,.24,dungeonBgmMode==="battle"?"square":"triangle",g,0);
+ if(i%2===0)sndTone(b,.34,"sine",g*.72,0);
+ if(dungeonBgmMode==="mystery"&&i%4===3)sndTone(n*2,.30,"sine",g*.52,.08);
+}
+function stopDungeonBgm(){if(dungeonBgmTimer){clearInterval(dungeonBgmTimer);dungeonBgmTimer=null}dungeonBgmMode=""}
+function syncDungeonBgm(force=false){
+ if(soundVolume()<=0||document.hidden){stopDungeonBgm();return}
+ const mode=dungeonBgmScene();if(!force&&dungeonBgmTimer&&dungeonBgmMode===mode)return;
+ if(dungeonBgmTimer)clearInterval(dungeonBgmTimer);dungeonBgmMode=mode;dungeonBgmStep=0;const cfg=DUNGEON_BGM[mode]||DUNGEON_BGM.home;
+ dungeonBgmTimer=setInterval(dungeonBgmBeat,cfg.ms);if(dungeonAudioUnlocked)dungeonBgmBeat()
+}
+function unlockDungeonAudio(){if(soundVolume()<=0)return;const ctx=ensureAudio();if(!ctx)return;dungeonAudioUnlocked=true;syncDungeonBgm(true)}
+document.addEventListener("pointerdown",unlockDungeonAudio,{passive:true});
+document.addEventListener("keydown",unlockDungeonAudio,{passive:true});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)stopDungeonBgm();else if(dungeonAudioUnlocked)syncDungeonBgm(true)});
+
 function cycleSoundMode(){
  const m=soundMode(),next=m==="100"?"50":m==="50"?"off":"100";
  STORE.setItem(SOUND_KEY,next);
- if(next!=="off"){ensureAudio();sfx("battleStart")}
+ if(next!=="off"){ensureAudio();dungeonAudioUnlocked=true;sfx("battleStart");syncDungeonBgm(true)}else stopDungeonBgm();
  const b=document.getElementById("soundModeBtn");if(b)b.textContent=soundModeLabel()
 }
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
@@ -5104,7 +5152,7 @@ function homeNextGoal(){
 function homeHero(){
  return `<div class="homeHeroPanel homeHeroSimple"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンを攻略！</p></div></div>`
 }
-function render(){updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
+function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
 dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();scheduleAutoAdventure();return}if(state.run){renderRun();scheduleAutoAdventure();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="items"||screen==="eggs")return renderItems();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_level)>0?`Lv${r.speed_level}`:"-";const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
@@ -5681,7 +5729,7 @@ function tryFloorPickup(){
  const r=state.run;if(!r)return false;
  const team=runTeam(),living=team.filter(t=>!t.ko),kind=RULES.rollFloorPickup({hasInjured:living.some(t=>t.hp<maxHpFor(t.id)),captureBoost:Number(r.captureBoost||0),shield:Number(r.shield||0),hasFainted:team.some(t=>t.ko)});if(!kind)return false;
  const pickup=applyFloorPickup(kind);if(!pickup)return false;
- r.pickup=pickup;r.scene="pickupNotice";save();render();return true
+ sfx("pickup");r.pickup=pickup;r.scene="pickupNotice";save();render();return true
 }
 function continueAfterFloorAdvance(){
  const r=state.run;if(!r)return;
@@ -5700,7 +5748,7 @@ function finishHatchStep(){const p=state.postRun;if(!p)return;p.hatchIndex++;if(
 // Ver0.33: egg roulette awards the slot highlighted at the instant STOP is pressed; no hidden slip.
 let eggTimer=null,eggCursor=0;
 function stopEggTimer(){if(eggTimer){clearInterval(eggTimer);eggTimer=null}}
-function startEggRoulette(){const p=state.postRun;if(!p)return;if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}stopEggTimer();eggCursor=0;const cells=[...app.querySelectorAll("[data-egg-slot]")];const paint=()=>cells.forEach((c,i)=>c.classList.toggle("active",i===eggCursor));paint();eggTimer=setInterval(()=>{eggCursor=(eggCursor+1)%cells.length;paint()},95);const btn=document.getElementById("eggStop"),stopNow=()=>{if(!eggTimer||p.eggAwarded)return;stopEggTimer();const idx=eggCursor;p.eggResultIndex=idx;const slot=p.eggSlots[idx],egg=makeEgg(slot.kind,p.dungeonId,p.difficulty);if(slot.type)egg.type=slot.type;state.eggs.push(egg);p.summary.eggAward={id:egg.id,kind:egg.kind,type:egg.type};p.eggAwarded=true;p.stage="eggResult";save();setTimeout(render,350)};if(btn)btn.onclick=stopNow;const card=document.getElementById("eggRouletteCard");if(card){card.onclick=e=>{if(e.target.closest("#eggStop"))return;stopNow()};card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();stopNow()}}}}
+function startEggRoulette(){const p=state.postRun;if(!p)return;if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}stopEggTimer();eggCursor=0;const cells=[...app.querySelectorAll("[data-egg-slot]")];const paint=()=>cells.forEach((c,i)=>c.classList.toggle("active",i===eggCursor));paint();eggTimer=setInterval(()=>{eggCursor=(eggCursor+1)%cells.length;paint()},95);const btn=document.getElementById("eggStop"),stopNow=()=>{if(!eggTimer||p.eggAwarded)return;stopEggTimer();sfx("eggGet");const idx=eggCursor;p.eggResultIndex=idx;const slot=p.eggSlots[idx],egg=makeEgg(slot.kind,p.dungeonId,p.difficulty);if(slot.type)egg.type=slot.type;state.eggs.push(egg);p.summary.eggAward={id:egg.id,kind:egg.kind,type:egg.type};p.eggAwarded=true;p.stage="eggResult";save();setTimeout(render,350)};if(btn)btn.onclick=stopNow;const card=document.getElementById("eggRouletteCard");if(card){card.onclick=e=>{if(e.target.closest("#eggStop"))return;stopNow()};card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();stopNow()}}}}
 function afterEggResult(){const p=state.postRun;if(!p)return;p.stage=state.eggs.length>state.eggCap?"eggDiscard":postRunNextAfterReward(p);save();render()}
 function discardEgg(id){const p=state.postRun;if(!p||state.eggs.length<=state.eggCap)return;state.eggs=state.eggs.filter(e=>e.id!==id);p.stage=state.eggs.length>state.eggCap?"eggDiscard":postRunNextAfterReward(p);save();render()}
 async function finishPostRun(){
@@ -5749,7 +5797,7 @@ let hatchDramaSeq=0;
 function hatchDramaKey(p,x){return `frenda:hatchPlayed:${p?.type||"run"}:${p?.dungeonId||""}:${p?.difficulty||0}:${p?.hatchIndex||0}:${x?.egg?.id||x?.pickId||""}`}
 function hatchDramaWasPlayed(p,x){try{return sessionStorage.getItem(hatchDramaKey(p,x))==="1"}catch{return false}}
 function markHatchDramaPlayed(p,x){try{sessionStorage.setItem(hatchDramaKey(p,x),"1")}catch{}}
-async function startHatchDrama(){const p=state.postRun;if(!p||p.stage!=="hatch")return;const x=p.hatchResults?.[p.hatchIndex];if(!x)return;markHatchDramaPlayed(p,x);const seq=++hatchDramaSeq,egg=document.getElementById("hatchEggWrap"),cracks=document.getElementById("hatchCracks"),glow=document.getElementById("hatchGlow"),title=document.getElementById("hatchTitle"),msg=document.getElementById("hatchMessage"),reveal=document.getElementById("hatchReveal"),next=document.getElementById("hatchNext");if(!egg||!title||!msg)return;const alive=()=>seq===hatchDramaSeq&&state.postRun?.stage==="hatch"&&state.postRun?.hatchIndex===p.hatchIndex;title.textContent="おや……？";msg.textContent="卵のようすが……";await fxSleep(950);if(!alive())return;egg.classList.add("wobble");msg.textContent="卵が動いている！";await fxSleep(1550);if(!alive())return;egg.classList.remove("wobble");egg.classList.add("wobbleHard");msg.textContent="もうすぐ生まれそう……！";await fxSleep(1200);if(!alive())return;cracks?.classList.add("show");msg.textContent="ピシッ……！";await fxSleep(760);if(!alive())return;glow?.classList.add("burst");title.textContent="まぶしい光があふれた！";msg.textContent="…………！";await fxSleep(1100);if(!alive())return;egg.style.visibility="hidden";reveal?.classList.add("show");title.textContent="卵が孵化した！";msg.textContent="";next?.classList.remove("hatchNextHidden");next?.classList.add("hatchNextVisible");document.querySelector(".hatchDramaCard")?.classList.add("hatchReady")}
+async function startHatchDrama(){const p=state.postRun;if(!p||p.stage!=="hatch")return;const x=p.hatchResults?.[p.hatchIndex];if(!x)return;markHatchDramaPlayed(p,x);const seq=++hatchDramaSeq,egg=document.getElementById("hatchEggWrap"),cracks=document.getElementById("hatchCracks"),glow=document.getElementById("hatchGlow"),title=document.getElementById("hatchTitle"),msg=document.getElementById("hatchMessage"),reveal=document.getElementById("hatchReveal"),next=document.getElementById("hatchNext");if(!egg||!title||!msg)return;const alive=()=>seq===hatchDramaSeq&&state.postRun?.stage==="hatch"&&state.postRun?.hatchIndex===p.hatchIndex;title.textContent="おや……？";msg.textContent="卵のようすが……";sfx("hatchWobble");await fxSleep(950);if(!alive())return;egg.classList.add("wobble");sfx("hatchWobble");msg.textContent="卵が動いている！";await fxSleep(1550);if(!alive())return;egg.classList.remove("wobble");egg.classList.add("wobbleHard");sfx("hatchWobble");setTimeout(()=>sfx("hatchWobble"),420);msg.textContent="もうすぐ生まれそう……！";await fxSleep(1200);if(!alive())return;cracks?.classList.add("show");sfx("hatchCrack");msg.textContent="ピシッ……！";await fxSleep(760);if(!alive())return;glow?.classList.add("burst");sfx("hatchBurst");title.textContent="まぶしい光があふれた！";msg.textContent="…………！";await fxSleep(1100);if(!alive())return;egg.style.visibility="hidden";reveal?.classList.add("show");sfx("reward");title.textContent="卵が孵化した！";msg.textContent="";next?.classList.remove("hatchNextHidden");next?.classList.add("hatchNextVisible");document.querySelector(".hatchDramaCard")?.classList.add("hatchReady")}
 function renderPostRun(){updateHeaderStatus();withdrawBtn.style.display="none";const p=state.postRun;if(!p)return;const th=THEMES[p.dungeonId]||THEMES.forest;if(p.stage==="eggDiscovery"){app.innerHTML=`<div class="card eggDiscoveryCard phase-dark postRunBigCard eggCenterCard" id="eggDiscoveryCard"><div class="eggDiscoveryInner eggCenterInner"><div class="eggDiscoveryText" id="eggDiscoveryText">何かが落ちている……</div><div class="eggDiscoveryOrb">${eggVisualHTML("normal")}</div><div class="eggDiscoveryHint">画面をタップすると演出を早送りします</div><button type="button" class="eggDiscoveryContinue" id="eggDiscoveryContinue">卵を確認する</button></div></div>`;const btn=document.getElementById("eggDiscoveryContinue");if(btn)btn.onclick=e=>{e.stopPropagation();continueEggDiscovery()};setTimeout(startEggDiscovery,60);return}if(p.stage==="hatch"){const x=p.hatchResults[p.hatchIndex];if(!x){p.stage=(p.type==="clear"&&!p.eggAwarded)?(p.eggDiscoveryPlayed?"eggRoulette":"eggDiscovery"):"summary";save();render();return}const r=rec(x.pickId),played=hatchDramaWasPlayed(p,x);app.innerHTML=`<div class="card summary hatchDramaCard hatchEpicCard${played?" hatchReady":""}"><div class="hatchStage"><div id="hatchEggWrap" class="hatchEggWrap" ${played?'style="visibility:hidden"':""}>${eggVisualHTML(x.egg)}</div><div id="hatchCracks" class="hatchCracks${played?" show":""}"><span></span><span></span><span></span></div><div id="hatchGlow" class="hatchGlow"></div></div><h2 id="hatchTitle">${played?"卵が孵化した！":"おや……？"}</h2><div id="hatchMessage" class="hatchMessage">${played?"":"卵のようすが……"}</div><div id="hatchReveal" class="hatchReveal${played?" show":""}"><div class="hatchEggKind">${esc(eggLabel(x.egg))}</div><img src="${esc(imageOf(r))}" alt=""><div class="hatchResultName">${esc(r?.name_ja||"ポケモン")}</div><span class="badge gold">${gradeText(r)}</span><p>${x.duplicate?`同一ピック所持済み。${esc(x.duplicateRewardLabel|| (x.duplicateRewardKind==="drill"?"特訓ポイント+2":"進化ポイント+1"))}。`:"新しい仲間になりました！"}${x.newSpeciesRegistration?`<br><b>📖 図鑑に登録された！</b>`:""}</p></div><div class="hatchTapHint">画面をタップして次へ</div><button id="hatchNext" class="${played?"hatchNextVisible":"hatchNextHidden"}">${p.hatchIndex+1<p.hatchResults.length?"次の卵を孵化":"次へ"}</button></div>`;const hatchCard=app.querySelector(".hatchDramaCard"),hatchNext=document.getElementById("hatchNext");if(hatchNext)hatchNext.onclick=e=>{e.stopPropagation();finishHatchStep()};if(hatchCard)hatchCard.onclick=e=>{if(!hatchCard.classList.contains("hatchReady")||e.target.closest("button"))return;finishHatchStep()};if(!played)setTimeout(startHatchDrama,80);return}if(p.stage==="eggRoulette"){if(!p.eggSlots){p.eggSlots=eggSlotsFor(p.difficulty,p.dungeonId);save()}app.innerHTML=`<div class="card summary postRunBigCard eggRouletteCard eggCenterCard" id="eggRouletteCard" data-egg-stop="1" role="button" tabindex="0" aria-label="どこを押してもSTOP"><div class="eggRouletteCenter eggCenterInner"><div class="eggRouletteLead">${eggVisualHTML("normal")}</div><h2>クリア報酬・卵ルーレット</h2><p>${esc(th.name)} ランク${p.difficulty} クリア！<br>STOPで1個の卵を獲得します。</p><div class="eggRoulette">${p.eggSlots.map((x,i)=>{const d=EGG_DEF[x.kind];return `<div class="eggSlot" data-egg-slot="${i}"><div>${eggVisualHTML(x.kind,x.type,true)}<div>${x.kind==="type"?esc(x.type):esc(d.short)}</div></div></div>`}).join("")}</div><button id="eggStop" class="eggRouletteStop" style="width:100%;font-size:20px">STOP!</button><div class="eggRouletteTapHint">💡 どこを押しても STOP できます</div></div></div>`;startEggRoulette();return}if(p.stage==="eggResult"){const a=p.summary.eggAward,e=(state.eggs||[]).find(x=>x.id===a?.id),kind=e?.kind||"normal";app.innerHTML=`<div class="card eggRewardResultCard singleAdvanceCard kind-${esc(kind)} eggCenterCard" id="eggResultAdvance" role="button" tabindex="0" aria-label="次へ"><div class="eggRewardStars"><span>✦</span><span>★</span><span>✦</span><span>★</span></div><div class="eggRewardInner eggCenterInner"><div class="kicker" style="color:#8d741c">BOSS REWARD</div><div class="eggRewardBig">${eggVisualHTML(e)}</div><div class="eggRewardTitle">${esc(eggLabel(e))}を手に入れた！</div><div class="eggRewardSub">孵化まで ${eggReq(e)}ポイント。<br>階を1つ進むたび、所持しているすべての卵に+1されます。</div><div class="notice" style="margin-top:10px">卵 ${state.eggs.length}/${state.eggCap}</div><button id="eggResultNext" style="margin-top:12px">次へ</button></div></div>`;const ern=document.getElementById("eggResultNext");if(ern)ern.onclick=e=>{e.stopPropagation();afterEggResult()};const era=document.getElementById("eggResultAdvance");if(era){era.onclick=afterEggResult;era.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();afterEggResult()}}}return}if(p.stage==="eggDiscard"){app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">${state.eggs.length}/${state.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。捨てた卵は戻りません。</div><div class="discardGrid">${state.eggs.map(e=>`<button class="discardEgg" data-discard-egg="${esc(e.id)}">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><small>${e.points}/${eggReq(e)}pt</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard-egg]").forEach(b=>b.onclick=()=>{if(UI.dialog.confirm(`${eggLabel(state.eggs.find(e=>e.id===b.dataset.discardEgg))}を捨てますか？`))discardEgg(b.dataset.discardEgg)});return}renderSummary()}
 function renderSummary(){
  updateHeaderStatus();
