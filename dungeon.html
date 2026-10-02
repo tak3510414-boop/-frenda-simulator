@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.54">
+<html lang="ja" data-app-version="2.55">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -9435,13 +9435,211 @@ body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .
 }
 </style>
 
+<style id="v255-black-pc-result-fit">
+/* Ver2.55: short desktop / 黒PC (1520x794 CSS px) result-screen fit.
+   794px was only 4px above the former compact threshold, so the page was
+   classified as pc-standard even though the post-run split layout did not
+   have enough vertical room.  pc-compact now also covers this height class,
+   and the result cards use a dedicated short-desktop density. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] main#app.dungeonRunScreen{
+  padding-top:4px!important;
+  padding-bottom:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .postRunSummary.resultV5.resultV6{
+  padding:6px 7px!important;
+  gap:5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Hero{
+  padding:6px 9px!important;
+  gap:7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5HeroIcon{font-size:34px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Hero h2{
+  font-size:21px!important;
+  margin:0 0 3px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Meta span{
+  padding:2px 6px!important;
+  font-size:7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5HeroStamp{
+  padding:5px 8px!important;
+  font-size:8px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroRecord{
+  margin-top:4px!important;
+  padding-top:4px!important;
+  gap:5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6HeroRecord .result4RecordChips{
+  gap:3px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6HeroRecord .result4RecordChips span{
+  padding:2px 2px!important;
+  font-size:5.3px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6HeroRecord .result4RecordChips b{
+  font-size:5.7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions{
+  margin-top:4px!important;
+  gap:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions button{
+  min-height:28px!important;
+  padding:3px 3px!important;
+  font-size:7.5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Main{
+  grid-template-columns:minmax(300px,.37fr) minmax(0,.63fr)!important;
+  gap:5px!important;
+  min-height:0!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5TeamPanel,
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootPanel{
+  padding:5px 6px!important;
+  border-radius:12px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead{
+  height:23px!important;
+  margin-bottom:3px!important;
+  gap:5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead>span{
+  width:22px!important;
+  height:22px!important;
+  font-size:13px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead b{font-size:9px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead small{font-size:5.5px!important;margin-top:1px!important}
+
+/* 黒PC: challenge-team cards were tall because the four result stats were
+   forced into four vertical rows.  Use a 2x2 stats block on short desktops. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6TeamGrid{
+  height:calc(100% - 26px)!important;
+  gap:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamCard{
+  grid-template-columns:74px minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  gap:3px 5px!important;
+  padding:4px 5px!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead{
+  gap:2px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead img{
+  width:56px!important;
+  height:78px!important;
+  max-height:78px!important;
+  border-radius:7px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead b{
+  font-size:8px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead small{
+  font-size:5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-auto-rows:minmax(0,1fr)!important;
+  gap:3px!important;
+  align-content:stretch!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats span{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:3px!important;
+  padding:3px 4px!important;
+  min-width:0!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats small{
+  font-size:5.1px!important;
+  white-space:nowrap!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats b{
+  font-size:7px!important;
+  white-space:nowrap!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4Hp{
+  padding:2px 5px!important;
+  font-size:5.2px!important;
+  min-height:18px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4Hp b{font-size:6px!important}
+
+/* New allies: keep the label and the entire card inside the available upper
+   loot cell instead of clipping its top edge on short desktop viewports. */
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootGrid{
+  height:calc(100% - 26px)!important;
+  grid-template-rows:minmax(0,1.48fr) minmax(78px,.52fr)!important;
+  gap:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Allies{
+  padding:4px 5px!important;
+  overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel{
+  margin-bottom:3px!important;
+  gap:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel em{
+  padding:1px 4px!important;
+  font-size:5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel b{font-size:7.5px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid{
+  gap:5px!important;
+  min-height:0!important;
+  align-items:stretch!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard{
+  padding:4px!important;
+  border-radius:10px!important;
+  justify-content:center!important;
+  min-height:0!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard img{
+  width:min(82px,44%)!important;
+  max-height:112px!important;
+  margin:1px auto 3px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard b{font-size:10px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard small{font-size:6px!important;margin-top:2px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyHint{
+  margin-top:3px!important;
+  padding:3px 5px!important;
+  font-size:6px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootBottom{
+  gap:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootBottom .result5LootGroup{
+  padding:4px 5px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody{
+  grid-template-columns:48px minmax(0,1fr)!important;
+  gap:4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody .eggVisual{
+  transform:scale(.52)!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody b{font-size:8px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody small{font-size:5px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow{
+  padding:2px 4px!important;
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow b{font-size:5.8px!important}
+</style>
+
 <script id="v240-adaptive-viewport-script">
 (()=>{
   const root=document.documentElement;
   let raf=0;
   const classify=(w,h)=>{
     if(w<=700)return "mobile";
-    if(h<=790||w<=1100)return "pc-compact";
+    if(h<=820||w<=1100)return "pc-compact";
     if(w>=1700&&h>=950)return "pc-wide";
     return "pc-standard";
   };
@@ -9488,6 +9686,12 @@ body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .
   卵・育成アイテム・ゲットチャンスチケット・購入ボールを一画面で確認。
   ラッキークローバー／特訓キャンディ／進化のアメは、もちもの画面から対象ピックを選んで使用可能。
   チケット／ボールは所持確認のみで、実際に使える場面で使用する。
+-->
+
+<!-- Ver2.55:
+  黒PC（1520×794 / DPR1.25）を短いPC画面としてpc-compact判定へ変更。
+  クリア結果の「新しい仲間」上端見切れと「挑戦チーム結果」の縦ズレを同時修正。
+  短いPCでは挑戦チームの4項目を2×2化し、画像・見出し・戦利品を高さに合わせて圧縮。
 -->
 </body>
 </html>
