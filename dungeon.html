@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.39">
+<html lang="ja" data-app-version="2.40">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3857,6 +3857,86 @@ body[data-dungeon-page="postrun"] .hatchDramaCard.hatchReady #hatchNext{
     pointer-events:none;
   }
 }
+</style>
+
+<style id="v240-adaptive-viewport">
+/* Ver2.40: viewport-aware desktop density profiles.
+   The browser's actual CSS viewport is used, so Windows display scaling and
+   browser zoom are naturally reflected in the selected profile. */
+html{--frenda-view-w:100vw;--frenda-view-h:100vh;--frenda-content-max:920px;--frenda-battle-max:1180px}
+
+/* Compact desktop: typical 1366x768 class screens, high OS scaling, or a
+   desktop browser window made short/narrow. Prioritise vertical fit. */
+html[data-view-profile="pc-compact"] .headrow{max-width:min(1080px,calc(100vw - 12px))}
+html[data-view-profile="pc-compact"] header{padding:7px 10px}
+html[data-view-profile="pc-compact"] .brand b{font-size:15px}
+html[data-view-profile="pc-compact"] .brand small{font-size:9px}
+html[data-view-profile="pc-compact"] .headerBtns button{padding:6px 8px;font-size:10px}
+html[data-view-profile="pc-compact"] .eyeTimerBadge,
+html[data-view-profile="pc-compact"] .expeditionTimerBadge{padding:5px 8px;font-size:9px;min-width:0}
+html[data-view-profile="pc-compact"] main{padding:7px 9px;max-width:min(1040px,calc(100vw - 12px))}
+html[data-view-profile="pc-compact"] .card{padding:10px;margin-bottom:8px;border-radius:14px}
+html[data-view-profile="pc-compact"] .sectionTitle{font-size:15px;margin-bottom:7px}
+html[data-view-profile="pc-compact"] button{padding:8px 10px}
+html[data-view-profile="pc-compact"] .menuGrid{gap:6px}
+html[data-view-profile="pc-compact"] .menuBtn{min-height:58px;padding:7px 8px}
+html[data-view-profile="pc-compact"] .menuBtn b{font-size:17px}
+html[data-view-profile="pc-compact"] .dungeonGrid{gap:7px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+html[data-view-profile="pc-compact"] .dungeonCard{padding:9px;border-radius:14px}
+html[data-view-profile="pc-compact"] .dungeonMeta{margin:6px 0;gap:4px}
+html[data-view-profile="pc-compact"] .metaBox{padding:5px}
+html[data-view-profile="pc-compact"] .teamSelectCard{padding:8px!important}
+html[data-view-profile="pc-compact"] .teamThemeHint{margin-bottom:5px!important}
+html[data-view-profile="pc-compact"] .teamSelectGrid{gap:5px!important}
+html[data-view-profile="pc-compact"] .teamSelectGrid .pickCard{padding:5px!important}
+html[data-view-profile="pc-compact"] .teamSelectGrid .pickCard b{font-size:11px!important;margin-top:3px!important}
+html[data-view-profile="pc-compact"] .teamSelectGrid .pickCard small{font-size:8px!important;line-height:1.2!important}
+html[data-view-profile="pc-compact"] main.battleScreen,
+html[data-view-profile="pc-compact"] main.combatStageScreen,
+html[data-view-profile="pc-compact"] main.dungeonRunScreen{max-width:min(1120px,calc(100vw - 10px))!important;padding-top:3px!important;padding-bottom:3px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .runStatus{padding:5px 8px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .battleTeamCard{padding:4px 5px!important;margin-bottom:4px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .teamMini{padding:3px 4px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .teamMiniHead{grid-template-columns:38px minmax(0,1fr)!important;gap:4px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .teamMini img{width:38px!important;height:53px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .fighterBox img{width:min(clamp(138px,19vh,178px),100%)!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .battleVsColumn{padding-top:34px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .vs{width:45px!important;height:45px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .battleMessage{margin:3px 0!important;padding:5px 7px!important;min-height:23px!important}
+html[data-view-profile="pc-compact"] main.battleScreen .battleRun .adventureLog{padding:3px 7px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .postRunSummary.resultV5.resultV6{padding:7px 8px!important;gap:6px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Hero{padding:8px 10px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Hero h2{font-size:23px!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions button{min-height:34px!important;padding:5px!important;font-size:9px!important}
+
+/* Standard desktop: no aggressive scaling; just allow the content to use a
+   little more width than the legacy 920px shell. */
+html[data-view-profile="pc-standard"] .headrow{max-width:1040px}
+html[data-view-profile="pc-standard"] main:not(.battleScreen):not(.combatStageScreen):not(.dungeonRunScreen){max-width:1040px}
+
+/* Wide/tall desktop: increase useful content size rather than leaving a large
+   unused border around the game. Max widths remain bounded to avoid stretching. */
+html[data-view-profile="pc-wide"] .headrow{max-width:1220px}
+html[data-view-profile="pc-wide"] main:not(.battleScreen):not(.combatStageScreen):not(.dungeonRunScreen){max-width:1180px;padding:17px}
+html[data-view-profile="pc-wide"] .card{padding:18px;margin-bottom:15px}
+html[data-view-profile="pc-wide"] .menuGrid{gap:11px}
+html[data-view-profile="pc-wide"] .menuBtn{min-height:88px}
+html[data-view-profile="pc-wide"] .dungeonGrid{grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px}
+html[data-view-profile="pc-wide"] .dungeonCard{padding:15px}
+html[data-view-profile="pc-wide"] main.battleScreen,
+html[data-view-profile="pc-wide"] main.combatStageScreen,
+html[data-view-profile="pc-wide"] main.dungeonRunScreen{max-width:1380px!important}
+html[data-view-profile="pc-wide"] main.battleScreen .battleRun .fighterBox img{width:min(clamp(195px,26vh,245px),100%)!important}
+html[data-view-profile="pc-wide"] main.battleScreen .battleRun .teamMiniHead{grid-template-columns:54px minmax(0,1fr)!important}
+html[data-view-profile="pc-wide"] main.battleScreen .battleRun .teamMini img{width:54px!important;height:75px!important}
+html[data-view-profile="pc-wide"] main.battleScreen .battleRun .fighterBox h3{font-size:18px!important}
+
+/* Mobile keeps the existing dedicated <=700px rules. This attribute exists
+   mainly for diagnostics and for future mobile-specific tuning. */
+html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:100vw}
+
+/* Optional diagnostics. Add ?screeninfo=1 to the URL when comparing PCs. */
+#frendaViewportDiag{position:fixed;left:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:99998;padding:6px 8px;border-radius:9px;background:#071b27e8;color:#dff8ff;border:1px solid #4da6c7;font:700 10px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;box-shadow:0 4px 16px #0005;pointer-events:none;white-space:pre}
 </style>
 </head>
 <body>
@@ -8787,13 +8867,60 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 .autoResultRecap{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px}.autoResultRecap>b{color:#dffaff}.autoResultRecap span{padding:2px 6px;border-radius:999px;background:#ffffff22;border:1px solid #ffffff36;font-size:7px;font-weight:900}.autoUnlockBanner{margin:8px 0;padding:9px 12px;border:2px solid #70c9df;border-radius:13px;background:linear-gradient(135deg,#effcff,#dff8ff);color:#15566d;display:flex;align-items:center;gap:10px;box-shadow:0 5px 14px #2c94b122}.autoUnlockBanner strong{font-size:15px;color:#057a9f}.autoUnlockBanner span{font-size:10px;font-weight:900}
 @media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunStop{font-size:7px!important;padding:4px 6px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
 </style>
+<!-- Ver2.40: 画面幅・高さから mobile / PCコンパクト / PC標準 / PCワイドを自動判定し、PCごとの解像度・拡大率・ブラウザサイズ差に合わせて密度と表示サイズを自動調整。 -->
 <!-- Ver2.39: クリア画面の主要3ボタンを上部ヒーロー枠内へ移動。 -->
 <!-- Ver2.38: スマホの冒険中画面で下部がSafariツールバーに隠れにくいよう、下端余白を拡大。 -->
 <!-- Ver2.37: ショップ下部の「特訓キャンディを使う」「進化のアメを使う」「クローバーを使う」常設3枠を廃止。各商品カード内の「使う」ボタンから対象選択ダイアログを開く方式へ変更。 -->
 <!-- Ver2.36: ショップにスーパーボール・ハイパーボール・マスターボールを追加。ゲットチャンスチケット使用時に確認を追加。 -->
-<!-- FRENDA_DUNGEON_VERSION: 2.34 / Updated: 2026-10-02 20:46 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 2.40 / Updated: 2026-10-02 JST -->
 <!-- Ver2.30: ラッキークローバーを確認ダイアログなしで連続適用できるよう変更。同じピックを続けてタップすると、所持数がある限り幸運MAXまで+1ずつ適用。所持数・幸運値をその場で更新し、一覧の並びとスクロール位置を維持。 / Updated: 2026-10-02 JST -->
 <!-- Ver2.32: AUTO冒険の演出速度を通常比約1.2倍へ調整（待ち時間を約83.3%）。先制ルーレットも同じ速度基準へ統一。 / Updated: 2026-10-02 JST -->
+
+<script id="v240-adaptive-viewport-script">
+(()=>{
+  const root=document.documentElement;
+  let raf=0;
+  const classify=(w,h)=>{
+    if(w<=700)return "mobile";
+    if(h<=790||w<=1100)return "pc-compact";
+    if(w>=1700&&h>=950)return "pc-wide";
+    return "pc-standard";
+  };
+  const readInfo=()=>{
+    const w=Math.round(window.innerWidth||root.clientWidth||0);
+    const h=Math.round(window.innerHeight||root.clientHeight||0);
+    const vv=window.visualViewport;
+    const visualW=Math.round(vv?.width||w),visualH=Math.round(vv?.height||h);
+    const profile=classify(w,h);
+    const touch=(navigator.maxTouchPoints||0)>0;
+    return {profile,width:w,height:h,visualWidth:visualW,visualHeight:visualH,dpr:Number((window.devicePixelRatio||1).toFixed(2)),touch,orientation:w>=h?"landscape":"portrait"};
+  };
+  const paintDiag=info=>{
+    const enabled=new URLSearchParams(location.search).get("screeninfo")==="1";
+    let box=document.getElementById("frendaViewportDiag");
+    if(!enabled){box?.remove();return}
+    if(!box){box=document.createElement("div");box.id="frendaViewportDiag";document.body.appendChild(box)}
+    box.textContent=`${info.profile}\nlayout ${info.width}×${info.height}\nvisible ${info.visualWidth}×${info.visualHeight}\nDPR ${info.dpr}`;
+  };
+  const apply=()=>{
+    raf=0;
+    const info=readInfo();
+    root.dataset.viewProfile=info.profile;
+    root.style.setProperty("--frenda-view-w",`${info.width}px`);
+    root.style.setProperty("--frenda-view-h",`${info.height}px`);
+    window.FRENDA_VIEWPORT_INFO=info;
+    paintDiag(info);
+  };
+  const schedule=()=>{if(raf)return;raf=requestAnimationFrame(apply)};
+  window.getFrendaViewportInfo=()=>({...readInfo()});
+  window.showFrendaViewportInfo=()=>{const i=readInfo();alert(`表示プロファイル: ${i.profile}\n画面領域: ${i.width} × ${i.height}\n現在表示: ${i.visualWidth} × ${i.visualHeight}\nDPR: ${i.dpr}\nタッチ: ${i.touch?"あり":"なし"}`);return i};
+  apply();
+  addEventListener("resize",schedule,{passive:true});
+  addEventListener("orientationchange",schedule,{passive:true});
+  window.visualViewport?.addEventListener("resize",schedule,{passive:true});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)schedule()});
+})();
+</script>
 </body>
 </html>
 
