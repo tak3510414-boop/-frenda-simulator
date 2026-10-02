@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.43">
+<html lang="ja" data-app-version="2.44">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -3978,6 +3978,22 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
   body[data-dungeon-page="run-battle"] main.battleScreen .vs{width:38px!important;height:38px!important;font-size:10px!important}
 }
 </style>
+
+<style id="v244-ownership-status">
+.pickOwnershipBadge{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:999px;font-size:10px;font-weight:1000;line-height:1;white-space:nowrap;box-shadow:0 2px 7px #0b263429}
+.pickOwnershipBadge.owned{background:#e7edf1;color:#425763;border:2px solid #bdcad2}
+.pickOwnershipBadge.unowned{background:linear-gradient(180deg,#54da89,#1eaa5a);color:#fff;border:2px solid #148547;box-shadow:0 3px 10px #167b3d4d}
+.encounterOwnershipWrap,.legendaryOwnershipWrap{display:flex;justify-content:center;min-height:28px;margin-top:5px;opacity:0;transform:translateY(7px);transition:.32s ease}
+.encounterCutinCard.phase-reveal .encounterOwnershipWrap,.legendaryIntroCard.phase-reveal .legendaryOwnershipWrap{opacity:1;transform:none}
+.fighterSelectEnemyBadges .pickOwnershipBadge{font-size:8px;padding:3px 6px;border-width:1px;box-shadow:none}
+.captureOwnershipBadge{font-size:11px!important;padding:6px 10px!important}
+@media(max-width:700px){
+ .pickOwnershipBadge{font-size:9px;padding:4px 8px}
+ .encounterOwnershipWrap,.legendaryOwnershipWrap{min-height:23px;margin-top:2px}
+ .fighterSelectEnemyBadges .pickOwnershipBadge{font-size:6.8px!important;padding:2px 4px!important}
+ .captureOwnershipBadge{font-size:9px!important;padding:5px 8px!important}
+}
+</style>
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -4637,6 +4653,7 @@ function imageOf(r){return DATA.records.image(r)}
 function gradeText(r){return RULES.gradeText(r)}
 function maxHpFor(id){const r=rec(id);const b=state.permanentBoosts?.[id]?.hp||0;return Math.max(1,Math.round(Number(r?.hp||1)+b))}
 function ownedEntry(id){return state.owned.find(x=>x.id===id)||null}
+function pickOwnershipBadgeHTML(id,first=false,extraClass=""){const owned=!!ownedEntry(String(id||"")),label=owned?"所持済み":first?"NEW・未所持":"未所持";return `<span class="pickOwnershipBadge ${owned?"owned":"unowned"} ${esc(extraClass)}">${label}</span>`}
 function expeditionSnapshot(){return DATA.expedition.snapshot(state)||state.expeditionShared||null}
 function expeditionLockedIds(){const x=expeditionSnapshot();if(!x||!["exploring","returned"].includes(x.status)||!x.mission)return new Set();return new Set((x.mission.teamIds||[]).filter(Boolean))}
 function isExpeditionLocked(id){return expeditionLockedIds().has(id)}
@@ -5988,7 +6005,7 @@ function renderRun(){
 function renderRoutesHTML(){const r=state.run,lv=Math.max(0,Math.min(3,Number(r.alertLevel||0))),count=r.routeOptions?.length||0,tags={battle:"BATTLE",elite:"DANGER",heal:"RECOVER",event:"BONUS",unknown:"MYSTERY"};return `<div class="card routeSelectionCard routeCount${count}"><div class="routeChoiceHead"><div class="sectionTitle">進む道を選ぶ</div><div class="routeFloorMove">B${r.floor}F <span>→</span> B${Math.min(10,Number(r.floor||1)+1)}F</div></div><div class="routeGrid">${r.routeOptions.map(x=>{const d=ROUTE_DEF[x.type];return `<button class="routeCard ${d.cls}" data-route="${esc(x.id)}"><span class="routeTag">${tags[x.type]||"ROUTE"}</span><span class="ico">${d.icon}</span><b>${d.label}</b><small>${d.hint}</small><span class="routeGo">この道へ進む <strong>▶</strong></span></button>`}).join("")}</div><div class="routeAlertNote">👁 現在の警戒度 ${alertDots(lv)}　❤️回復・✨ボーナスで+1。⚔️通常戦で-1、💀強敵で-2。❓ハプニングは結果に応じて変化。<br>${lv>=2?"<b>あと1回戦闘を避けると、次の階で敵に見つかります！</b>":"警戒度が3になると、次の階で強制通常戦が発生します。"}</div><div class="muted routeCommitHint">選ぶと、その道へ進みます。</div></div>`}
 function renderEncounterIntroHTML(){const enc=state.run.encounter,count=enc?.enemies?.length||0;return `<div class="card summary singleAdvanceCard tapAdvance" data-run-advance="encounterIntro" role="button" tabindex="0" aria-label="強敵戦を始める"><div class="resultIcon">💀</div><h2>強敵戦！</h2><p><b>敵は${count}体です。</b><br>${count}体との連戦になります。1体倒してもHPは回復しません。</p><div class="notice">相手は1体ずつ登場します。各戦闘の前に、出すポケモンを選べます。</div><button id="encounterIntroNext" style="margin-top:12px">強敵戦を始める</button></div>`}
 function encounterCutinData(){const enc=state.run?.encounter||{},kind=enc.kind||"battle",en=currentEnemy();if(enc.forcedAlert)return {kind:"elite",omen:"⚠️ 敵に見つかった！",title:"ALERT ENCOUNTER",reveal:`${en?.name_ja||"ポケモン"}が 追いかけてきた！`};if(kind==="boss")return {kind:"boss",omen:"この先から強い気配がする……",title:"BOSS BATTLE",reveal:`${en?.name_ja||"ボス"}が 待ち構えている！`};if(kind==="elite")return {kind:"elite",omen:"強い気配がする……",title:"STRONG ENCOUNTER",reveal:`${en?.name_ja||"強敵"}が 立ちはだかった！`};return {kind:"normal",omen:"……何かが動いた！",title:"WILD ENCOUNTER",reveal:`${en?.name_ja||"ポケモン"}が とびだしてきた！`}}
-function renderEncounterCutinHTML(){const en=currentEnemy(),d=encounterCutinData(),first=currentEnemyWasFirstSeen();return `<div class="card encounterCutinCard ${d.kind} phase-omen" id="encounterCutinCard"><div class="encounterCutinInner">${first?`<div class="encounterNewBadge">NEW! はじめての発見</div>`:""}<div class="encounterCutinOmen" id="encounterCutinOmen">${esc(d.omen)}</div><div class="encounterCutinTitle">${esc(d.title)}</div><div class="encounterCutinSpriteWrap"><img class="encounterCutinSprite" id="encounterCutinSprite" src="${esc(imageOf(en))}" alt=""></div><div class="encounterCutinName" id="encounterCutinName">${esc(en?.name_ja||"ポケモン")}</div><div class="encounterCutinHint">画面をタップすると演出を早送りします</div><button type="button" class="encounterCutinContinue" id="encounterCutinContinue">戦闘準備へ</button></div></div>`}
+function renderEncounterCutinHTML(){const en=currentEnemy(),d=encounterCutinData(),first=currentEnemyWasFirstSeen();return `<div class="card encounterCutinCard ${d.kind} phase-omen" id="encounterCutinCard"><div class="encounterCutinInner">${first?`<div class="encounterNewBadge">NEW! はじめての発見</div>`:""}<div class="encounterCutinOmen" id="encounterCutinOmen">${esc(d.omen)}</div><div class="encounterCutinTitle">${esc(d.title)}</div><div class="encounterCutinSpriteWrap"><img class="encounterCutinSprite" id="encounterCutinSprite" src="${esc(imageOf(en))}" alt=""></div><div class="encounterCutinName" id="encounterCutinName">${esc(en?.name_ja||"ポケモン")}</div><div class="encounterOwnershipWrap">${pickOwnershipBadgeHTML(en?.master_id,first,"encounterOwnership")}</div><div class="encounterCutinHint">画面をタップすると演出を早送りします</div><button type="button" class="encounterCutinContinue" id="encounterCutinContinue">戦闘準備へ</button></div></div>`}
 let encounterCutinSeq=0;
 function startEncounterCutin(){
  const run=state.run,en=currentEnemy(),card=document.getElementById("encounterCutinCard"),omen=document.getElementById("encounterCutinOmen"),d=encounterCutinData();
@@ -6022,7 +6039,7 @@ function startEncounterCutin(){
  apply(0);schedule()
 }
 function continueEncounterCutin(){if(!state.run||state.run.scene!=="encounterCutin")return;encounterCutinSeq++;state.run.scene="chooseFighter";save();render()}
-function renderLegendaryIntroHTML(){const en=currentEnemy(),first=currentEnemyWasFirstSeen();return `<div class="card legendaryIntroCard phase-dark" id="legendaryIntroCard"><div class="legendaryIntroInner">${first?`<div class="encounterNewBadge legendaryNewBadge">NEW! LEGENDARY DISCOVERY</div>`:""}<div class="legendaryOmen" id="legendaryOmen">……ものすごい気配を感じる</div><div class="legendaryTitle">LEGENDARY<br>ENCOUNTER</div><div class="legendarySpriteWrap"><img class="legendarySprite" id="legendarySprite" src="${esc(imageOf(en))}" alt=""></div><div class="legendaryName" id="legendaryName">${esc(en?.name_ja||"伝説のポケモン")}</div><div class="legendaryTapHint">画面をタップすると演出を早送りします</div><button type="button" class="legendaryContinue" id="legendaryContinue">戦闘準備へ</button></div></div>`}
+function renderLegendaryIntroHTML(){const en=currentEnemy(),first=currentEnemyWasFirstSeen();return `<div class="card legendaryIntroCard phase-dark" id="legendaryIntroCard"><div class="legendaryIntroInner">${first?`<div class="encounterNewBadge legendaryNewBadge">NEW! LEGENDARY DISCOVERY</div>`:""}<div class="legendaryOmen" id="legendaryOmen">……ものすごい気配を感じる</div><div class="legendaryTitle">LEGENDARY<br>ENCOUNTER</div><div class="legendarySpriteWrap"><img class="legendarySprite" id="legendarySprite" src="${esc(imageOf(en))}" alt=""></div><div class="legendaryName" id="legendaryName">${esc(en?.name_ja||"伝説のポケモン")}</div><div class="legendaryOwnershipWrap">${pickOwnershipBadgeHTML(en?.master_id,first,"legendaryOwnership")}</div><div class="legendaryTapHint">画面をタップすると演出を早送りします</div><button type="button" class="legendaryContinue" id="legendaryContinue">戦闘準備へ</button></div></div>`}
 let legendaryIntroSeq=0;
 function startLegendaryIntro(){
  const run=state.run,en=currentEnemy(),card=document.getElementById("legendaryIntroCard"),omen=document.getElementById("legendaryOmen");
@@ -6066,7 +6083,7 @@ function renderChooseFighterHTML(){
  ensureCurrentEnemyMoods();
  const en=currentEnemy(),total=state.run.encounter.enemies.length,left=total-state.run.encounter.index,
        kind=state.run.encounter.kind,first=currentEnemyWasFirstSeen(),tm=teamTargetMode();
- return `<div class="card combatStageCard fighterSelectStage"><div class="fighterSelectLayout"><div class="fighterSelectEnemyPanel"><div class="enemyPreview fighterSelectEnemy"><div class="kicker"><span>${kind==="elite"?`強敵戦・全${total}体　`:kind==="boss"?"BOSS　":""}ENEMY ${state.run.encounter.index+1}/${total}</span>${first?`<span class="fighterNewInline">NEW!</span>`:""}</div><div class="fighterSelectEnemyImage"><img src="${esc(imageOf(en))}" alt=""></div><h2>${esc(en.name_ja)}</h2><div>${typesHTML(en)}</div><div class="fighterSelectEnemyBadges"><span class="badge gold">${gradeText(en)}</span><span class="badge">残り${left}匹</span></div></div></div><div class="fighterSelectTeamPanel"><div class="fighterSelectPrompt"><b>🎯 ${esc(tm?.title||"出すポケモンを選択")}</b><span>${esc(tm?.hint||"戦うポケモンを選んでください。")}</span></div><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div></div>`
+ return `<div class="card combatStageCard fighterSelectStage"><div class="fighterSelectLayout"><div class="fighterSelectEnemyPanel"><div class="enemyPreview fighterSelectEnemy"><div class="kicker"><span>${kind==="elite"?`強敵戦・全${total}体　`:kind==="boss"?"BOSS　":""}ENEMY ${state.run.encounter.index+1}/${total}</span>${first?`<span class="fighterNewInline">NEW!</span>`:""}</div><div class="fighterSelectEnemyImage"><img src="${esc(imageOf(en))}" alt=""></div><h2>${esc(en.name_ja)}</h2><div>${typesHTML(en)}</div><div class="fighterSelectEnemyBadges"><span class="badge gold">${gradeText(en)}</span><span class="badge">残り${left}匹</span>${pickOwnershipBadgeHTML(en?.master_id,first,"fighterOwnership")}</div></div></div><div class="fighterSelectTeamPanel"><div class="fighterSelectPrompt"><b>🎯 ${esc(tm?.title||"出すポケモンを選択")}</b><span>${esc(tm?.hint||"戦うポケモンを選んでください。")}</span></div><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div></div>`
 }
 function renderBattleHTML(){
  const b=state.run.battle,t=runTeam()[b.teamIndex],me=teamRec(t),en=currentEnemy(),
@@ -8927,6 +8944,7 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 .autoResultRecap{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px}.autoResultRecap>b{color:#dffaff}.autoResultRecap span{padding:2px 6px;border-radius:999px;background:#ffffff22;border:1px solid #ffffff36;font-size:7px;font-weight:900}.autoUnlockBanner{margin:8px 0;padding:9px 12px;border:2px solid #70c9df;border-radius:13px;background:linear-gradient(135deg,#effcff,#dff8ff);color:#15566d;display:flex;align-items:center;gap:10px;box-shadow:0 5px 14px #2c94b122}.autoUnlockBanner strong{font-size:15px;color:#057a9f}.autoUnlockBanner span{font-size:10px;font-weight:900}
 @media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunStop,.autoRunStart{font-size:7px!important;padding:4px 6px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
 </style>
+<!-- Ver2.44: ゲットチャンスの対象選択と、遭遇演出・出撃選択の相手表示に「所持済み / 未所持」を表示。初遭遇は「NEW・未所持」。 -->
 <!-- Ver2.43: スマホ戦闘画面を約5〜8%縦圧縮してSafari下部バーによる見切れを改善。クリア済みランクは冒険途中から「AUTO開始」で自動冒険へ切替可能。 -->
 <!-- Ver2.42: 卵孵化画面を戦闘画面と同様の固定1画面ステージ化。visualViewportの実表示高に追従し、孵化前・孵化後とも枠を画面いっぱいに安定表示。 -->
 <!-- Ver2.41: クリア画面上部の3ボタンをコンパクト化し、常に1行3列表示へ調整。 -->
