@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.31">
+<html lang="ja" data-app-version="2.32">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4359,7 +4359,7 @@ let message="";
 let autoBattleRunning=false;
 let autoAdventureTimer=null;
 let autoAdventureStepBusy=false;
-const AUTO_ADVENTURE_SPEED=.55;
+const AUTO_ADVENTURE_SPEED=1/1.2; // Ver2.32: AUTO演出は通常の約1.2倍速（待ち時間約83.3%）
 function autoAdventureUnlocked(did,diff){return Number(getStat(did,diff)?.clears||0)>0}
 function autoAdventureRuntimeActive(){return !!state.run?.autoAdventure||!!state.postRun?.autoAdventure}
 function clearAutoAdventureTimer(){if(autoAdventureTimer){clearTimeout(autoAdventureTimer);autoAdventureTimer=null}}
@@ -5248,7 +5248,7 @@ async function startInitiativeRoulette(afterAction=""){
  ov.innerHTML=`<div class="initiativeRoulettePanel"><div class="initiativeKicker">⚡ SPEED TIE!</div><h2>すばやさ互角！</h2><div class="initiativeMatch"><div><img src="${esc(imageOf(me))}" alt=""><b>${esc(me.name_ja)}</b><span>すばやさ Lv${ini.meLevel||"?"}</span></div><em>VS</em><div><img src="${esc(imageOf(en))}" alt=""><b>${esc(en.name_ja)}</b><span>すばやさ Lv${ini.enemyLevel||"?"}</span></div></div><div class="initiativeOdds"><span>味方 <b>${chance}%</b></span><strong>${`🍀 パーティ運 ${Number(ini.luck||0).toFixed(1)}/${LUCK_MAX}`}</strong><span>相手 <b>${100-chance}%</b></span></div><div class="initiativeRouletteBar"><div class="initiativeZone ally" style="width:${chance}%">味方</div><div class="initiativeZone enemy" style="width:${100-chance}%">相手</div><i id="initiativeMarker"></i></div><div class="initiativeRouletteText" id="initiativeRouletteText">先攻を決める！</div></div>`;
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const markerEl=ov.querySelector("#initiativeMarker"),textEl=ov.querySelector("#initiativeRouletteText");
- const start=performance.now(),duration=state.run?.autoAdventure?850:1550;
+ const start=performance.now(),duration=state.run?.autoAdventure?Math.round(1550*AUTO_ADVENTURE_SPEED):1550;
  await new Promise(resolve=>{const tick=now=>{const p=Math.min(1,(now-start)/duration);const sweep=50+48*Math.sin((now-start)/(46+42*p));markerEl.style.left=`${Math.max(1,Math.min(99,sweep))}%`;if(p<1)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
  markerEl.style.transition="left .28s cubic-bezier(.2,.8,.2,1)";markerEl.style.left=`${roll}%`;await fxSleep(330);
  ov.classList.add(ini.meFirst?"allyWin":"enemyWin");textEl.textContent=ini.meFirst?`${me.name_ja}が先攻！`:`${en.name_ja}が先攻！`;
@@ -8709,7 +8709,7 @@ main.dungeonRunScreen .runUnifiedMetric.road.ready em{
 </style>
 
 <style id="v231-auto-adventure">
-/* Ver2.31: cleared-rank AUTO adventure. */
+/* Ver2.32: AUTO adventure speed adjusted to about 1.2x normal. */
 body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82fr .82fr 1.08fr 1.08fr!important;gap:5px!important}
 .teamAutoAdventureBtn{background:linear-gradient(180deg,#35b8d8,#157ba8)!important;color:#fff!important;border:1px solid #12698f!important;box-shadow:0 3px 0 #0b5677,0 4px 12px #147eaa3d!important;text-shadow:0 1px 0 #07506f!important;font-weight:1000!important}
 .teamAutoAdventureBtn:not(:disabled){animation:autoAdventurePulse 1.9s ease-in-out infinite}.teamAutoAdventureBtn:disabled{background:#d7dde1!important;color:#84929a!important;border-color:#c8d0d5!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;opacity:.76!important}
@@ -8719,9 +8719,9 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 .autoResultRecap{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px}.autoResultRecap>b{color:#dffaff}.autoResultRecap span{padding:2px 6px;border-radius:999px;background:#ffffff22;border:1px solid #ffffff36;font-size:7px;font-weight:900}.autoUnlockBanner{margin:8px 0;padding:9px 12px;border:2px solid #70c9df;border-radius:13px;background:linear-gradient(135deg,#effcff,#dff8ff);color:#15566d;display:flex;align-items:center;gap:10px;box-shadow:0 5px 14px #2c94b122}.autoUnlockBanner strong{font-size:15px;color:#057a9f}.autoUnlockBanner span{font-size:10px;font-weight:900}
 @media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunStop{font-size:7px!important;padding:4px 6px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
 </style>
-<!-- FRENDA_DUNGEON_VERSION: 2.31 / Updated: 2026-10-02 20:00 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 2.32 / Updated: 2026-10-02 20:20 JST -->
 <!-- Ver2.30: ラッキークローバーを確認ダイアログなしで連続適用できるよう変更。同じピックを続けてタップすると、所持数がある限り幸運MAXまで+1ずつ適用。所持数・幸運値をその場で更新し、一覧の並びとスクロール位置を維持。 / Updated: 2026-10-02 JST -->
-<!-- Ver2.31: 同一ダンジョン・ランクの手動初回クリア後に自動冒険を解放。バランス方針で道・出撃・戦闘・報酬・回復・イベント・ゲット・卵まで自動進行し、AUTO解除、速度短縮、クリア時のAUTO結果表示・解放演出を追加。特別遭遇でも停止しない。 / Updated: 2026-10-02 JST -->
+<!-- Ver2.32: AUTO冒険の演出速度を通常比約1.2倍へ調整（待ち時間を約83.3%）。先制ルーレットも同じ速度基準へ統一。 / Updated: 2026-10-02 JST -->
 </body>
 </html>
 
