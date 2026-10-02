@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.50">
+<html lang="ja" data-app-version="2.51">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -44,6 +44,13 @@ main{max-width:920px;margin:auto;padding:14px}.card{background:var(--card);borde
 .matchupAppeal.good{background:#ffd942;color:#553600;border:1px solid #e6aa00}
 .matchupAppeal.bad{background:#e9edf0;color:#5b6670;border:1px solid #c6d0d6}
 .matchupAppeal.veryBad{background:#f47b43;color:#fff;border:1px solid #c94c1d;box-shadow:0 2px 6px #8d2f1638}
+.matchupAppeal.partialGood{background:#dff7d9;color:#25602d;border:1px solid #8fca88}
+.matchupAppeal.partialBad{background:#fff0d8;color:#7b511e;border:1px solid #e4bc7d}
+.enemyKnowledgeBadge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:1000;line-height:1;border:1px solid transparent}
+.enemyKnowledgeBadge.unknown{background:#edf1f4;color:#65737c;border-color:#cbd4da}
+.enemyKnowledgeBadge.partial{background:#fff3c8;color:#7a5700;border-color:#e7c768}
+.enemyKnowledgeBadge.full{background:#dbf7e6;color:#17603b;border-color:#8ed0a9}
+.enemyTypeUnknown{background:#edf1f4!important;color:#66737c!important;border-color:#cbd4da!important}
 .matchupReason{display:block;margin-top:3px;padding:3px 4px;border-radius:6px;font-size:6.5px!important;font-weight:900;line-height:1.15!important;text-align:center;white-space:normal!important;overflow:visible!important}
 .matchupReason.good{background:#fff2a8;color:#6b5100}
 .matchupReason.bad{background:#eef1f3;color:#68737b}.matchupReason.veryBad{background:#fff0e5;color:#9a3f1c;border:1px solid #ffc39f}
@@ -4519,7 +4526,7 @@ const STARTER_SET_DEFS=[
  {key:"galar",label:"ガラル",names:["サルノリ","ヒバニー","メッソン"]},
  {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
 ];
-const stateDefault=()=>({saveVersion:12,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
+const stateDefault=()=>({saveVersion:13,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
 let state=loadState();
 migrateState();
 let screen="home";
@@ -4591,7 +4598,7 @@ function readRunEndGuard(){try{const x=JSON.parse(STORE.getItem(RUN_END_GUARD_KE
 function clearRunEndGuard(){try{STORE.removeItem(RUN_END_GUARD_KEY)}catch{}}
 function writeRunEndGuard(run,summary){try{STORE.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
 function enforceRunEndGuard(target){const g=readRunEndGuard();if(!g||!target?.run)return false;const started=String(target.run.startedAt||"");if(g.startedAt&&started&&g.startedAt!==started)return false;target.run=null;target.postRun=null;if(g.summary)target.lastSummary=g.summary;return true}
-function save(){try{state.appVersion=APP_VERSION;state.saveVersion=12;DATA.dungeon.write(state)}catch(e){console.error(e)}}
+function save(){try{state.appVersion=APP_VERSION;state.saveVersion=13;DATA.dungeon.write(state)}catch(e){console.error(e)}}
 function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();return ids}
 function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
@@ -4603,6 +4610,7 @@ function migrateState(){
  if(!state.dex||typeof state.dex!=="object")state.dex={};
  if(!state.seenSpecies||typeof state.seenSpecies!=="object")state.seenSpecies={};
  if(!state.seenPicks||typeof state.seenPicks!=="object")state.seenPicks={};
+ if(!state.defeatedPicks||typeof state.defeatedPicks!=="object")state.defeatedPicks={};
  if(!state.experience||typeof state.experience!=="object")state.experience={};
  if(!state.drillPoints||typeof state.drillPoints!=="object")state.drillPoints={};
  if(!state.trainingPoints||typeof state.trainingPoints!=="object")state.trainingPoints={};
@@ -4646,7 +4654,7 @@ function migrateState(){
    }
  }
  rebuildProgressionFromStats();
- state.saveVersion=12;
+ state.saveVersion=13;
  save();
 }
 function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
@@ -4657,9 +4665,65 @@ function clone(o){return JSON.parse(JSON.stringify(o))}
 function validBattle(r){return RULES.validBattle(r)}
 function speciesKey(r){return String(r?.name_ja||r?.master_id||"").trim()}
 function speciesGroups(records){const m=new Map();for(const r of records||[]){const k=speciesKey(r);if(!k)continue;if(!m.has(k))m.set(k,[]);m.get(k).push(r)}return [...m.entries()].map(([name,records])=>({name,records}))}
+function speciesTypeKnowledgeKey(r){
+ const name=speciesKey(r),types=[r?.type1,r?.type2].map(x=>String(x||"").trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ja"));
+ return `${name}||${types.join("/")}`
+}
+let battleKnowledgeTypeCache=null;
+function invalidateBattleKnowledgeCache(){battleKnowledgeTypeCache=null}
+function pickBattleMastered(r){
+ const id=r?.master_id;if(!id)return false;
+ return !!state.defeatedPicks?.[id]||pickRegistered(r)||!!ownedEntry(id)
+}
+function knownSpeciesTypePickMap(){
+ if(battleKnowledgeTypeCache)return battleKnowledgeTypeCache;
+ const out=new Map(),ids=new Set();
+ for(const id of Object.keys(state.seenPicks||{}))if(state.seenPicks[id])ids.add(id);
+ for(const o of state.owned||[])if(o?.id)ids.add(o.id);
+ for(const [id,d] of Object.entries(state.dex||{}))if(d?.obtained||d?.current)ids.add(id);
+ for(const [id,v] of Object.entries(state.defeatedPicks||{}))if(v)ids.add(id);
+ for(const id of ids){
+   const r=rec(id);if(!r)continue;
+   const key=speciesTypeKnowledgeKey(r);if(!out.has(key))out.set(key,new Set());out.get(key).add(String(id))
+ }
+ battleKnowledgeTypeCache=out;return out
+}
+function speciesTypeKnowledgeKnown(r,{excludeId=""}={}){
+ if(!r)return false;const ids=knownSpeciesTypePickMap().get(speciesTypeKnowledgeKey(r));if(!ids?.size)return false;
+ if(!excludeId)return true;for(const id of ids)if(String(id)!==String(excludeId))return true;return false
+}
+function markPickDefeated(r){
+ const id=r?.master_id;if(!id)return false;
+ state.defeatedPicks=state.defeatedPicks&&typeof state.defeatedPicks==="object"?state.defeatedPicks:{};
+ const first=!state.defeatedPicks[id];state.defeatedPicks[id]=true;invalidateBattleKnowledgeCache();return first
+}
+function enemyBattleKnowledge(r=currentEnemy()){
+ if(!r)return {level:"unknown",typeKnown:false,moveKnown:false,source:"none"};
+ if(pickBattleMastered(r))return {level:"full",typeKnown:true,moveKnown:true,source:"exact"};
+ const isCurrent=String(currentEnemy()?.master_id||"")===String(r.master_id||""),
+       firstNow=isCurrent&&currentEnemyWasFirstSeen();
+ if(pickSeen(r)&&!firstNow)return {level:"partial",typeKnown:true,moveKnown:false,source:"encounter"};
+ if(speciesTypeKnowledgeKnown(r,{excludeId:firstNow?r.master_id:""}))return {level:"partial",typeKnown:true,moveKnown:false,source:"species"};
+ return {level:"unknown",typeKnown:false,moveKnown:false,source:"none"}
+}
+function enemyKnowledgeBadgeHTML(r){
+ const k=enemyBattleKnowledge(r);
+ if(k.level==="full")return '<span class="enemyKnowledgeBadge full">相性判明</span>';
+ if(k.level==="partial")return `<span class="enemyKnowledgeBadge partial">${k.source==="species"?"タイプ既知":"調査中"}</span>`;
+ return '<span class="enemyKnowledgeBadge unknown">相性不明</span>'
+}
+function enemyKnownTypesHTML(r){const k=enemyBattleKnowledge(r);return k.typeKnown?typesHTML(r):'<span class="badge enemyTypeUnknown">タイプ ？？？</span>'}
+function enemyKnownTypeText(r){return enemyBattleKnowledge(r).typeKnown?compareTypeText(r):"タイプ？？？"}
+function fighterKnowledgeHint(){
+ const k=enemyBattleKnowledge();
+ if(k.level==="full")return "相性判明済み。こちらの攻撃と、相手のわざを受けた時の相性まで表示します。";
+ if(k.level==="partial"&&k.source==="species")return "同じポケモンからタイプは分かっています。こちらの攻撃相性だけ表示します。このピックのわざはまだ不明です。";
+ if(k.level==="partial")return "遭遇経験あり。こちらの攻撃相性だけ表示します。勝利すると、このピックのわざまで判明します。";
+ return "はじめて知る相手です。相性はまだ不明。戦って情報を集めましょう。"
+}
 function pickRegistered(r){const id=r?.master_id;return !!id&&!!state.dex?.[id]?.obtained}
 function pickSeen(r){const id=r?.master_id;if(!id)return false;return !!state.seenPicks?.[id]||pickRegistered(r)||!!ownedEntry(id)}
-function markPickSeen(r){const id=r?.master_id;if(!id)return false;state.seenPicks=state.seenPicks&&typeof state.seenPicks==="object"?state.seenPicks:{};const first=!pickSeen(r);state.seenPicks[id]=true;return first}
+function markPickSeen(r){const id=r?.master_id;if(!id)return false;state.seenPicks=state.seenPicks&&typeof state.seenPicks==="object"?state.seenPicks:{};const first=!pickSeen(r);state.seenPicks[id]=true;invalidateBattleKnowledgeCache();return first}
 function currentEnemyWasFirstSeen(){const enc=state.run?.encounter;return !!enc?.newSeenIndices?.[enc.index]}
 function markCurrentEnemySeen(){const enc=state.run?.encounter,en=currentEnemy();if(!enc||!en)return false;enc.newSeenIndices=enc.newSeenIndices&&typeof enc.newSeenIndices==="object"?enc.newSeenIndices:{};if(Object.prototype.hasOwnProperty.call(enc.newSeenIndices,enc.index)){markPickSeen(en);return !!enc.newSeenIndices[enc.index]}const first=markPickSeen(en);enc.newSeenIndices[enc.index]=first;if(first)addLog(`NEW! ${en.name_ja}を はじめて見つけた！`);return first}
 function pickRecordBySpecies(records,{boss=false}={}){let groups=speciesGroups(records);if(!groups.length)return null;if(boss){groups=groups.map(g=>({...g,pokeEne:Math.max(0,...g.records.map(r=>Number(r.poke_ene)||0))})).sort((a,b)=>b.pokeEne-a.pokeEne);groups=groups.slice(0,Math.max(8,Math.ceil(groups.length*.35)))}const g=groups[Math.floor(Math.random()*groups.length)];return g?.records?.[Math.floor(Math.random()*g.records.length)]||null}
@@ -4707,6 +4771,7 @@ function reconcileDexState(){
   state.dex[id]=Object.assign({},state.dex[id]||{},{obtained:true,current:true});
   state.seenPicks[id]=true
  }
+ invalidateBattleKnowledgeCache()
 }
 function splitRegionalName(name){return DATA.records.splitRegionalName(name)}
 function applyEvolutionIndex(index){EVO_INDEX=index;EVO_BY_NAME=index.byName;EVO_BY_NO=index.byNo;EVO_PARENTS=index.parents;evoReady=true;evoLoadError=false;migrateGrowthPointsToFamilies();migrateBondPointsToFamilies()}
@@ -4985,7 +5050,7 @@ function ensureStarterSetOptions(){
  }).filter(Boolean);
  save();
 }
-function ownNew(id){if(!id||ownedEntry(id))return false;const r=rec(id);state.owned.push({id});state.dex[id]={obtained:true,current:true};if(r)markPickSeen(r);save();return true}
+function ownNew(id){if(!id||ownedEntry(id))return false;const r=rec(id);state.owned.push({id});state.dex[id]={obtained:true,current:true};if(r)markPickSeen(r);invalidateBattleKnowledgeCache();save();return true}
 function pickStarterSet(key){
  if(state.initialized)return;
  const set=state.starterSetOptions?.find(x=>x.key===key);
@@ -5507,6 +5572,7 @@ function enemyDefeated(){
  enc.totalTurns=Math.max(0,Number(enc.totalTurns||0))+defeatedTurns;
  if(Array.isArray(enc.enemyHps))enc.enemyHps[enc.index]=0;
  addLog(`${en.name_ja}を倒した！`);
+ markPickDefeated(en);
  const participants=Array.isArray(enc.currentParticipants)?enc.currentParticipants.slice():[];
  const xpAmount=enc.kind==="battle"?15:enc.kind==="elite"?(defeatedIndex===0?15:20):30;
  addBattleXp(participants,xpAmount,enc.kind==="boss"?"ボス撃破":enc.kind==="elite"?"強敵撃破":"通常戦勝利");
@@ -5767,12 +5833,19 @@ function fighterMatchupAppeal(t){
  if(!t||t.ko||state.run?.scene!=="chooseFighter")return null;
  const mine=rec(t.id),enemy=currentEnemy();
  if(!mine||!enemy)return null;
- const myMove=String(mine.move_type||"").trim(),enemyMove=String(enemy.move_type||"").trim();
- if(!myMove)return null;
- const offense=matchupRawEff(myMove,enemy),incoming=enemyMove?matchupRawEff(enemyMove,mine):1;
- const atkGood=offense>1,atkBad=offense<1,defGood=incoming<1,defBad=incoming>1;
+ const knowledge=enemyBattleKnowledge(enemy),myMove=String(mine.move_type||"").trim();
+ if(!myMove||knowledge.level==="unknown")return null;
+ const offense=matchupRawEff(myMove,enemy),atkGood=offense>1,atkBad=offense<1;
+ if(knowledge.level==="partial"){
+   const shared=knowledge.source==="species";
+   if(atkGood)return {kind:"good",tone:"partialGood",text:"👀 いけそう！",reason:shared?"同じポケモンのタイプは分かっている。こちらのわざはばつぐん！ このピックのわざは未判明":"前に戦った経験から、こちらのわざはばつぐん！ 相手のわざはまだ未判明",offense,incoming:null};
+   if(atkBad)return {kind:"bad",tone:"partialBad",text:"🤔 攻めにくそう",reason:shared?"同じポケモンのタイプから、こちらのわざは効きにくいと分かる。このピックのわざは未判明":"前に戦った経験から、こちらのわざは効きにくそう。相手のわざはまだ未判明",offense,incoming:null};
+   return null
+ }
+ const enemyMove=String(enemy.move_type||"").trim(),incoming=enemyMove?matchupRawEff(enemyMove,mine):1,
+       defGood=incoming<1,defBad=incoming>1;
  let kind="neutral",tone="neutral",text="",reason="";
- // 攻撃側と被攻撃側を別々に評価する。単純な比率だけで相殺しない。
+ // 勝利済み・入手済みのピックだけ、相手のわざタイプまで含めた完全相性を表示する。
  if(atkGood&&defGood){
    kind="good";tone="dominant";text="🙋 わたしが！";
    reason="こちらはばつぐん・相手のわざは効きにくい！";
@@ -5801,7 +5874,7 @@ function fighterMatchupAppeal(t){
  if(kind==="neutral")return null;
  return {kind,tone,text,reason,offense,incoming}
 }
-function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:"チームから、出すポケモンをタップしてください。相性表示を参考に選べます。",can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;const can=(t)=>{if(k==="healSingleSelect")return true;if(t.ko)return false;if(k==="heal30"||k==="heal20"||k==="lucky")return t.hp<maxHpFor(t.id);if(k==="atk2")return Number(t.tempAtk||0)<TEMP_BOOST_MAX;if(k==="def2")return Number(t.tempDef||0)<TEMP_BOOST_MAX;return true};return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"チームから対象をタップしてください。ひんし状態も選べます。":"効果を受けられる仲間を選んでください。",can}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
+function teamTargetMode(){const r=state.run;if(!r)return null;if(r.scene==="chooseFighter")return {action:"fighter",title:"出すポケモンを選択",hint:fighterKnowledgeHint(),can:(t)=>!t.ko};if(r.scene==="eventTarget"){const k=r.event?.kind;const can=(t)=>{if(k==="healSingleSelect")return true;if(t.ko)return false;if(k==="heal30"||k==="heal20"||k==="lucky")return t.hp<maxHpFor(t.id);if(k==="atk2")return Number(t.tempAtk||0)<TEMP_BOOST_MAX;if(k==="def2")return Number(t.tempDef||0)<TEMP_BOOST_MAX;return true};return {action:"event",title:eventLabel(k),hint:k==="healSingleSelect"?"チームから対象をタップしてください。ひんし状態も選べます。":"効果を受けられる仲間を選んでください。",can}}if(r.scene==="battle"&&r.switchSelecting){const active=r.battle?.teamIndex;return {action:"switch",title:"交代先を選択",hint:"交代したいポケモンのカードを直接タップしてください。交代するとそのターンに相手の攻撃を受けます。",can:(t,i)=>!t.ko&&i!==active}}return null}
 function teamMiniHTML(t,i){
  const r=rec(t.id),max=maxHpFor(t.id),p=pct(t.hp,max),xp=xpFor(t.id),m=teamTargetMode(),b=state.run?.battle,
        inBattle=state.run?.scene==="battle",active=inBattle?b?.teamIndex:null,directSwitch=!m&&inBattle&&!t.ko&&i!==active,can=m?!!m.can(t,i):directSwitch,
@@ -5913,9 +5986,20 @@ function autoRouteScore(type){
 }
 function chooseAutoRoute(){const opts=state.run?.routeOptions||[];return opts.slice().sort((a,b)=>autoRouteScore(b.type)-autoRouteScore(a.type))[0]||null}
 function autoFighterScore(t,en){
- if(!t||t.ko)return-Infinity;const r=teamRec(t),base=rec(t.id)||r,max=Math.max(1,maxHpFor(t.id)),hp=Math.max(0,Number(t.hp||0))/max,off=matchupRawEff(r.move_type,en),incoming=matchupRawEff(en?.move_type,r),power=(Number(base.poke_ene)||0)*.18+Math.max(Number(r.atk)||0,Number(r.sp_atk)||0)*.42+(Number(r.def)||0+Number(r.sp_def)||0)*.15+(Number(r.speed_level)||0)*5;
- let score=power+off*95-incoming*46+hp*58;
- if(off>1)score+=55;else if(off<1)score-=34;if(incoming<1)score+=24;else if(incoming>1)score-=30;
+ if(!t||t.ko)return-Infinity;
+ const r=teamRec(t),base=rec(t.id)||r,max=Math.max(1,maxHpFor(t.id)),hp=Math.max(0,Number(t.hp||0))/max,
+       knowledge=enemyBattleKnowledge(en),off=knowledge.typeKnown?matchupRawEff(r.move_type,en):1,
+       incoming=knowledge.moveKnown?matchupRawEff(en?.move_type,r):1,
+       power=(Number(base.poke_ene)||0)*.18+Math.max(Number(r.atk)||0,Number(r.sp_atk)||0)*.42+(Number(r.def)||0+Number(r.sp_def)||0)*.15+(Number(r.speed_level)||0)*5;
+ let score=power+hp*58;
+ if(knowledge.typeKnown){
+   score+=off*95;
+   if(off>1)score+=55;else if(off<1)score-=34
+ }
+ if(knowledge.moveKnown){
+   score-=incoming*46;
+   if(incoming<1)score+=24;else if(incoming>1)score-=30
+ }
  if(hp<=.25)score-=105;if(hp<=.12)score-=90;
  return score
 }
@@ -5963,7 +6047,7 @@ function runAutoAdventureStep(){
   if(scene==="legendaryIntro"){continueLegendaryIntro();return}
   if(scene==="nextEnemy"){proceedNextEnemy();return}
   if(scene==="faintedNotice"){proceedFaintedNotice();return}
-  if(scene==="chooseFighter"){const idx=chooseAutoFighterIndex();if(idx>=0){stats.fighterSelections++;const nm=rec(runTeam()[idx]?.id)?.name_ja||"仲間";addLog(`🤖 AUTO：相性・戦力・HPから${nm}を選択。`);startFighter(idx);return}}
+  if(scene==="chooseFighter"){const idx=chooseAutoFighterIndex();if(idx>=0){stats.fighterSelections++;const nm=rec(runTeam()[idx]?.id)?.name_ja||"仲間";addLog(`🤖 AUTO：判明済みの相性・戦力・HPから${nm}を選択。`);startFighter(idx);return}}
   if(scene==="battle"){if(r.battle?.busy||autoBattleRunning||initiativeRouletteRunning){scheduleAutoAdventure(180);return}if(r.battle?.initiative?.pending){startInitiativeRoulette("adventureAuto");return}autoBattleToEnd();return}
   if(scene==="victory"){proceedVictory();return}
   if(scene==="reward"){stats.rewardChoices++;applyReward(chooseAutoRewardIndex());return}
@@ -6107,7 +6191,7 @@ function renderChooseFighterHTML(){
  ensureCurrentEnemyMoods();
  const en=currentEnemy(),total=state.run.encounter.enemies.length,left=total-state.run.encounter.index,
        kind=state.run.encounter.kind,first=currentEnemyWasFirstSeen(),tm=teamTargetMode();
- return `<div class="card combatStageCard fighterSelectStage"><div class="fighterSelectLayout"><div class="fighterSelectEnemyPanel"><div class="enemyPreview fighterSelectEnemy"><div class="kicker"><span>${kind==="elite"?`強敵戦・全${total}体　`:kind==="boss"?"BOSS　":""}ENEMY ${state.run.encounter.index+1}/${total}</span>${first?`<span class="fighterNewInline">NEW!</span>`:""}</div><div class="fighterSelectEnemyImage"><img src="${esc(imageOf(en))}" alt=""></div><h2>${esc(en.name_ja)}</h2><div>${typesHTML(en)}</div><div class="fighterSelectEnemyBadges"><span class="badge gold">${gradeText(en)}</span><span class="badge">残り${left}匹</span>${pickOwnershipBadgeHTML(en?.master_id,first,"fighterOwnership")}</div></div></div><div class="fighterSelectTeamPanel"><div class="fighterSelectPrompt"><b>🎯 ${esc(tm?.title||"出すポケモンを選択")}</b><span>${esc(tm?.hint||"戦うポケモンを選んでください。")}</span></div><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div></div>`
+ return `<div class="card combatStageCard fighterSelectStage"><div class="fighterSelectLayout"><div class="fighterSelectEnemyPanel"><div class="enemyPreview fighterSelectEnemy"><div class="kicker"><span>${kind==="elite"?`強敵戦・全${total}体　`:kind==="boss"?"BOSS　":""}ENEMY ${state.run.encounter.index+1}/${total}</span>${first?`<span class="fighterNewInline">NEW!</span>`:""}</div><div class="fighterSelectEnemyImage"><img src="${esc(imageOf(en))}" alt=""></div><h2>${esc(en.name_ja)}</h2><div>${enemyKnownTypesHTML(en)}</div><div class="fighterSelectEnemyBadges"><span class="badge gold">${gradeText(en)}</span><span class="badge">残り${left}匹</span>${enemyKnowledgeBadgeHTML(en)}${pickOwnershipBadgeHTML(en?.master_id,first,"fighterOwnership")}</div></div></div><div class="fighterSelectTeamPanel"><div class="fighterSelectPrompt"><b>🎯 ${esc(tm?.title||"出すポケモンを選択")}</b><span>${esc(tm?.hint||"戦うポケモンを選んでください。")}</span></div><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div></div></div>`
 }
 function renderBattleHTML(){
  const b=state.run.battle,t=runTeam()[b.teamIndex],me=teamRec(t),en=currentEnemy(),
@@ -6117,7 +6201,7 @@ function renderBattleHTML(){
  return `<div class="card battleMainCard combatStageCard activeCombatStage"><div class="battleStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="battleArena" id="battleStage"><div class="battleEnemyCounter">⚔️ ENEMY <b>${state.run.encounter.index+1}/${state.run.encounter.enemies.length}</b></div>${legendary?`<div class="legendaryBattleTag">👑 LEGENDARY</div>`:""}<div class="battleFxLayer" id="battleFxLayer"></div><div class="battleImpact" id="battleImpact"></div><div class="battleSpecialBanner" id="battleSpecialBanner"><b>SPECIAL ATTACK</b><span></span></div><div class="battleTurnSplash" id="battleTurnSplash"><b>TURN ${b.turn}</b><span></span></div><div class="battleGrid">
   <div class="fighterBox" id="myFighter"><img id="switchImageBtn" class="switchImageBtn${state.run.switchSelecting?" switchReady":""}" src="${esc(imageOf(me))}" alt="${esc(me.name_ja)}" ${canSwitch?'role="button" tabindex="0" aria-label="交代先を選択"':""}><h3>${esc(me.name_ja)}</h3><small>${gradeText(me)} / ${esc(compareTypeText(me))} / 速Lv${battleSpeedLevel(me)||"-"}</small><div class="hpbar"><div id="myHpFill" class="hpfill${hpClass(mp)}" style="width:${mp}%"></div></div><b id="myHpText">HP ${t.hp}/${maxHpFor(t.id)}</b></div>
   <div class="battleVsColumn"><div class="vs battleVsAttack${b.busy||autoBattleRunning?" busy":""}" id="battleVsAttack" role="button" tabindex="0" aria-label="1ターン攻撃する">VS<small>${initiativePending?"先攻抽選→1ターン":"1ターン"}</small></div><div class="vs battleVsAttack battleVsAuto${(b.busy&&!autoBattleRunning)?" busy":""}${autoBattleRunning?" autoRunning":""}" id="battleVsAuto" role="button" tabindex="0" aria-label="${autoBattleRunning?"自動戦闘を停止":"最後まで自動で戦う"}">VS<small>${initiativePending?"先攻抽選→最後":autoBattleRunning?"停止":"最後まで"}</small></div></div>
-  <div class="fighterBox" id="enemyFighter"><img src="${esc(imageOf(en))}" alt=""><h3>${esc(en.name_ja)}</h3><small>${gradeText(en)} / ${esc(compareTypeText(en))} / 速Lv${battleSpeedLevel(en)||"-"}</small><div class="hpbar"><div id="enemyHpFill" class="hpfill${hpClass(ep)}" style="width:${ep}%"></div></div><b id="enemyHpText">HP ${b.enemyHp}/${en.hp}</b></div>
+  <div class="fighterBox" id="enemyFighter"><img src="${esc(imageOf(en))}" alt=""><h3>${esc(en.name_ja)}</h3><small>${gradeText(en)} / ${esc(enemyKnownTypeText(en))} / 速Lv${battleSpeedLevel(en)||"-"}</small><div class="hpbar"><div id="enemyHpFill" class="hpfill${hpClass(ep)}" style="width:${ep}%"></div></div><b id="enemyHpText">HP ${b.enemyHp}/${en.hp}</b></div>
  </div></div></div>`
 }
 function runBuffRange(key,add=0){const vals=runTeam().map(t=>Math.min(TEMP_BOOST_MAX,Math.max(0,Number(t?.[key]||0)+Number(add||0))));if(!vals.length)return {min:0,max:0,text:"+0"};const min=Math.min(...vals),max=Math.max(...vals);return {min,max,text:min===max?`+${min}`:`+${min}〜+${max}`}}
@@ -8983,6 +9067,7 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 @media(max-width:700px){body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:repeat(2,minmax(0,1fr))!important}.autoAdventureUnlockHint{font-size:8px}.autoRunToggle{font-size:7px!important;padding:4px 7px!important}.autoRunBadge{font-size:7px;padding:3px 5px}.autoUnlockBanner{align-items:flex-start;flex-direction:column;gap:3px}.autoResultRecap span{font-size:6px}}
 </style>
 <!-- Ver2.49: 図鑑・所持ピック詳細の進化前/進化後候補をタップ可能にし、候補ピックの詳細へ直接展開できるように変更。 -->
+<!-- Ver2.51: 戦闘相性の知識をピック単位＋同名同タイプ共有に変更。未遭遇は相性不明、遭遇済み未勝利は攻撃相性のみ、勝利済みまたは入手済みは相手のわざまで含む完全相性。別ピックでも同名・同タイプならタイプ知識のみ共有し、わざ情報は共有しない。AUTOも判明済み情報だけで選出。 -->
 <!-- Ver2.50: 生息地一覧からピック詳細を開いた際、詳細を生息地一覧の前面に表示し、閉じると一覧へ戻るよう重なり順とスクロール状態を修正。 -->
 <!-- Ver2.48: 生息地一覧を★数→ピック番号昇順でグループ表示。「主なすみか」表記を「生息地」に統一し、図鑑・所持ピック詳細にも生息地を表示。未遭遇は「不明」。 -->
 <!-- Ver2.47: 全ピックに「生息地（ダンジョン＋ランク）」を自動割当。生息地85%＋迷い込み15%の遭遇抽選、ランク別生息地コレクション、所持/遭遇/未遭遇表示を追加。 -->
@@ -8997,7 +9082,7 @@ body[data-dungeon-page="team"] .teamCompareActionsTop{grid-template-columns:.82f
 <!-- Ver2.38: スマホの冒険中画面で下部がSafariツールバーに隠れにくいよう、下端余白を拡大。 -->
 <!-- Ver2.37: ショップ下部の「特訓キャンディを使う」「進化のアメを使う」「クローバーを使う」常設3枠を廃止。各商品カード内の「使う」ボタンから対象選択ダイアログを開く方式へ変更。 -->
 <!-- Ver2.36: ショップにスーパーボール・ハイパーボール・マスターボールを追加。ゲットチャンスチケット使用時に確認を追加。 -->
-<!-- FRENDA_DUNGEON_VERSION: 2.40 / Updated: 2026-10-02 JST -->
+<!-- FRENDA_DUNGEON_VERSION: 2.51 / Updated: 2026-10-03 JST -->
 <!-- Ver2.30: ラッキークローバーを確認ダイアログなしで連続適用できるよう変更。同じピックを続けてタップすると、所持数がある限り幸運MAXまで+1ずつ適用。所持数・幸運値をその場で更新し、一覧の並びとスクロール位置を維持。 / Updated: 2026-10-02 JST -->
 <!-- Ver2.32: AUTO冒険の演出速度を通常比約1.2倍へ調整（待ち時間を約83.3%）。先制ルーレットも同じ速度基準へ統一。 / Updated: 2026-10-02 JST -->
 
