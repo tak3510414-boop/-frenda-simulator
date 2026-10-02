@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.68">
+<html lang="ja" data-app-version="0.69">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -163,9 +163,13 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 <style id="v068-auto-loot-fast-destination-collection-nav">
 .lootAutoBar{display:flex;align-items:center;gap:9px;margin:0 0 10px;padding:8px 9px;border:1px solid #c9dde7;border-radius:12px;background:#f4fbff}.lootAutoBar button{flex:0 0 auto;min-width:150px;padding:8px 11px}.lootAutoBar button.running{background:linear-gradient(180deg,#2aa66f,#187b50);box-shadow:0 3px 0 #105b3b}.lootAutoBar small{font-size:9px;color:#58727f;font-weight:800;line-height:1.35}.destinationCompact.destinationSelecting{animation:v068DestPulse .65s ease-in-out infinite alternate}.destinationCompact.destinationSelecting .destMeta:after{content:"編成中…";display:block;font-size:7px;font-weight:1000;color:#087fae}@keyframes v068DestPulse{from{filter:brightness(1)}to{filter:brightness(1.05);box-shadow:0 0 0 4px #25b8e62b inset,0 5px 16px #08799d20}}.collectionExploreBtn{width:100%;margin-top:8px;padding:8px 9px!important;font-size:10px!important;background:linear-gradient(180deg,#27a8d9,#147fa9)!important;box-shadow:0 2px 0 #0d6285!important}.collectionExploreBtn:disabled{background:#d8e1e6!important;color:#73838b!important;box-shadow:none!important}.collectionCard{display:flex;flex-direction:column}.collectionCard .collectionExploreBtn{margin-top:auto}@media(max-width:600px){.lootAutoBar{align-items:stretch;flex-direction:column;gap:5px}.lootAutoBar button{width:100%;min-width:0}.collectionExploreBtn{font-size:9px!important}}
 </style>
+
+<style id="v069-header-egg-count">
+.headerEggBadge{display:inline-flex;align-items:center;gap:3px;margin-left:5px;padding:3px 7px;border-radius:999px;background:#fff6dc;color:#6c4b00;border:1px solid #e6c56d;font-size:10px;font-weight:1000;line-height:1;box-shadow:0 2px 7px #0001;white-space:nowrap;vertical-align:middle}.headerEggBadge b{font-size:10px;font-variant-numeric:tabular-nums}.headerEggBadge.full{background:#ffe7e7;color:#8c2e2e;border-color:#e7a2a2}@media(max-width:700px){.headerEggBadge{margin-left:2px;padding:3px 6px;font-size:9px}.headerEggBadge b{font-size:9px}}
+</style>
 </head>
 <body>
-<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span></b></div><div class="headerBtns"><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
+<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
 <main id="app"></main>
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
@@ -356,6 +360,7 @@ function gradeText(r){return RULES.gradeText(r)}
 function specialBase(r){return RULES.specialBaseName(r)}
 function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){return DATA.dungeon.read()}
+function updateHeaderEggCount(){const d=readDungeon()||{},count=Array.isArray(d.eggs)?d.eggs.length:0,cap=Math.max(0,Math.floor(Number(d.eggCap)||0)),el=document.getElementById("headerEggCount"),badge=document.getElementById("headerEggBadge");if(el)el.textContent=`${count}/${cap}`;if(badge){badge.classList.toggle("full",cap>0&&count>=cap);badge.title=`所持卵数 ${count}/${cap}`}}
 function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[]}}}
 function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],adminUnlockedGroups:[],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
 function migrateMissionToFreeReturn(g){
@@ -1007,7 +1012,7 @@ function renderSummary(){const m=groupMission(),f=m.findings||generateMissionFin
 function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
 function openCollection(){if(screen!=="collection")collectionReturnScreen=screen||"home";screen="collection";render()}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
-function render(){document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker()}
+function render(){document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();updateHeaderEggCount();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker();updateHeaderEggCount()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
 function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
 window.addEventListener("resize",updateHeaderNavLayout);updateHeaderNavLayout();
@@ -2213,6 +2218,7 @@ header .head{
   交換対象がない場合は一括交換ボタンを無効化。
 -->
 
+<!-- Ver0.69: ヘッダーに所持卵数を常時表示（例 2/5）。卵数または所持上限が変わるたび最新値へ更新。 / Updated: 2026-10-03 JST -->
 <!-- Ver0.68: 成果箱に「1から自動オープン」を追加。演出付きで番号順に連続開封。派遣先タップ時は先に選択反応を描画し、重いおまかせ編成処理を次フレームへ遅延して体感速度を改善。探索コレクション各ダンジョンから、その場所を選択して空きグループの派遣準備画面へ直接移動可能。 / Updated: 2026-10-02 JST -->
 <!-- Ver0.67:
   ・「探索レポート」と「探索中の出来事ログ」の二重表示を廃止し、「探索ログ」へ一本化。
