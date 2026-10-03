@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.64">
+<html lang="ja" data-app-version="2.68">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4270,7 +4270,7 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -4591,6 +4591,8 @@ let audioCtx=null;
 function soundMode(){const v=STORE.getItem(SOUND_KEY);return ["100","50","off"].includes(v)?v:"100"}
 function soundVolume(){const m=soundMode();return m==="100"?1:m==="50"?.5:0}
 function soundModeLabel(){const m=soundMode();return m==="100"?"🔊 100%":m==="50"?"🔉 50%":"🔇 OFF"}
+function soundModeIcon(){const m=soundMode();return m==="100"?"🔊":m==="50"?"🔉":"🔇"}
+function updateHeaderSoundButton(){const b=document.getElementById("headerSoundStatus");if(!b)return;const m=soundMode(),label=m==="100"?"音量 100%":m==="50"?"音量 50%":"音量 OFF";b.textContent=soundModeIcon();b.title=`${label}（タップで変更）`;b.setAttribute("aria-label",`${label}（タップで変更）`)}
 function ensureAudio(){
  if(soundVolume()<=0)return null;
  try{
@@ -4754,8 +4756,11 @@ function cycleSoundMode(){
  const m=soundMode(),next=m==="100"?"50":m==="50"?"off":"100";
  STORE.setItem(SOUND_KEY,next);
  if(next!=="off"){ensureAudio();dungeonAudioUnlocked=true;sfx("battleStart");syncDungeonBgm(true)}else stopDungeonBgm();
- const b=document.getElementById("soundModeBtn");if(b)b.textContent=soundModeLabel()
+ const b=document.getElementById("soundModeBtn");if(b)b.textContent=soundModeLabel();
+ updateHeaderSoundButton()
 }
+updateHeaderSoundButton();
+const headerSoundStatus=document.getElementById("headerSoundStatus");if(headerSoundStatus)headerSoundStatus.onclick=cycleSoundMode;
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
 const MASTER=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
@@ -4833,6 +4838,12 @@ let battleKnowledgeTypeCache=null;
 let state=loadState();
 migrateState();
 let screen="home";
+const headerSaveStatus=document.getElementById("headerCloudStatus");
+function openSaveManagerFromHeader(){if(state?.run||state?.postRun){save()}screen="save";render()}
+if(headerSaveStatus){
+ headerSaveStatus.onclick=openSaveManagerFromHeader;
+ headerSaveStatus.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSaveManagerFromHeader()}};
+}
 let starterSetCompareSelection=[];
 let teamSelection=[];
 let currentDungeon={id:"forest",difficulty:1};
@@ -5513,12 +5524,10 @@ function renderHome(){
    <button class="homeMenuBtn items" data-menu="items"><b>🎒</b><span>もちもの</span><strong class="homeManageValue homeInventoryCounts"><span>🥚 ${state.eggs.length}/${state.eggCap}</span><span>🍀 ${invClover}</span><span>🎫 ${invTicket}</span></strong><small>卵・育成・バトル用品</small><small class="homeManageSub">${esc(egg.title)}</small></button>
    <button class="homeMenuBtn shop" id="homeShopBtn"><b>🛍️</b><span>ショップ</span><strong class="homeManageValue">🪙 ${coins.toLocaleString("ja-JP")}</strong><small>運アップアイテム</small><small>商品は今後追加予定</small></button>
   </div>
- </div><div class="homeUtilityBar"><span class="homeVersion">Ver${APP_VERSION}</span><button type="button" class="homeSoundBtn" id="soundModeBtn">${soundModeLabel()}</button><button type="button" class="homeSaveBtn" id="saveMenuBtn">💾 バックアップ</button></div></div>`;
+ </div></div>`;
  app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
- document.getElementById("saveMenuBtn").onclick=()=>{screen="save";render()};
  const eb=document.getElementById("expeditionMenuBtn");if(eb)eb.onclick=()=>{location.href="expedition.html"};
  const shop=document.getElementById("homeShopBtn");if(shop)shop.onclick=()=>showLuckShop("home");
- const sb=document.getElementById("soundModeBtn");if(sb)sb.onclick=cycleSoundMode
 }
 
 const MAIN_HABITAT_RATE=.85;
@@ -7550,7 +7559,7 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  const el=document.getElementById("headerCloudStatus");if(!el)return;
  function refresh(){
   const hidden=document.querySelector(".frendaCloudBtn"),failed=hidden?.dataset?.kind==="error",logged=!!window.FrendaCloud?.isLoggedIn?.();
-  const state=failed?"error":logged?"cloud":"local",icon=failed?"🌧️":logged?"☁️":"💾",label=failed?"クラウドログイン・接続に失敗中":logged?"クラウドログイン中":"ローカル保存（クラウドなし）";
+  const state=failed?"error":logged?"cloud":"local",icon=failed?"🌧️":logged?"☁️":"💾",base=failed?"クラウドログイン・接続に失敗中":logged?"クラウドログイン中":"ローカル保存（クラウドなし）",label=`${base}・タップでバックアップ管理`;
   if(el.dataset.state!==state)el.dataset.state=state;
   if(el.textContent!==icon)el.textContent=icon;
   if(el.title!==label)el.title=label;
@@ -11571,6 +11580,13 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   拾い物は効果が自動適用されるためパーティ表示・警戒度等を省き、
   発見文・アイコン・アイテム名・効果・次へボタンだけを残して縦幅を再配分。
 -->
+
+
+<style id="v268-header-utility">
+.headerSoundStatus{display:inline-grid;place-items:center;flex:0 0 auto;width:26px;height:24px;min-width:26px;padding:0!important;margin:0;border-radius:8px;background:#ffffff14;border:1px solid #ffffff20;color:#fff;font-size:14px;line-height:1;box-shadow:none;cursor:pointer}.headerSoundStatus:hover{background:#ffffff24}.headerCloudStatus{cursor:pointer;user-select:none}.headerCloudStatus:focus-visible,.headerSoundStatus:focus-visible{outline:2px solid #7de7ff;outline-offset:2px}.homeUtilityBar{display:none!important}.homeScreen{padding-bottom:0!important}
+@media(max-width:700px){.headerSoundStatus{width:22px;height:21px;min-width:22px;font-size:12px;border-radius:7px}.headerTop .brand b{gap:3px!important}.versionBadge{margin-left:2px!important}.homeScreen{padding-bottom:0!important}}
+</style>
+<!-- Ver2.68: ホーム最下部の音量・バックアップバーを廃止。音量はバージョン横に常設し、保存/クラウド状態アイコンをタップしてバックアップ管理を開く。 -->
 
 </body>
 <!-- Ver2.57:
