@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.88">
+<html lang="ja" data-app-version="2.90">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4271,7 +4271,7 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
 <main id="app"></main>
 
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
@@ -4322,20 +4322,10 @@ function expeditionGroupCounts(x){
 }
 function updateExpeditionTimerBadge(){
  const el=document.getElementById("expeditionTimerBadge");if(!el)return;
- const x=expeditionTimerState(),c=expeditionGroupCounts(x);
- if(c.active>0){
-  el.className="expeditionTimerBadge";
-  el.textContent=`🧭 探索中 ${c.active}/${Math.max(c.active,c.available)}`;
-  el.title=`おでかけ探索中：${c.active}グループ / 利用可能${Math.max(c.active,c.available)}グループ`
- }else if(c.returned>0){
-  el.className="expeditionTimerBadge done";
-  el.textContent=`✨ 帰還済み ${c.returned}`;
-  el.title=`おでかけ探索の成果を受け取れるグループが${c.returned}あります`
- }else{
-  el.className="expeditionTimerBadge";
-  el.textContent="🧭 探索なし";
-  el.title=c.available>0?`利用可能グループ ${c.available}`:"現在、おでかけ探索には出ていません"
- }
+ const c=expeditionGroupCounts(expeditionTimerState());
+ el.className="expeditionTimerBadge"+(c.returned?" done":"");
+ el.textContent=`🧭 探索中 ${c.active}/${c.available}`;
+ el.title=`利用可能 ${c.available}グループ${c.returned?` / 帰還済み ${c.returned}グループ`:""}`;
 }
 
 function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
@@ -5416,7 +5406,7 @@ function homeNextGoal(){
 function homeHero(){
  return `<div class="homeHeroPanel homeHeroSimple"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンを攻略！</p></div></div>`
 }
-function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;syncBlackHeader();if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey)||(isBlackPcOptimization()&&["team","grass"].includes(pageKey));document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
+function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;syncBlackHeader();if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey)||(isBlackPcOptimization()&&["team","grass"].includes(pageKey));document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=false;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
 dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();scheduleAutoAdventure();return}if(state.run){renderRun();scheduleAutoAdventure();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="items"||screen==="eggs")return renderItems();if(screen==="grass")return renderGrass();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_level)>0?`Lv${r.speed_level}`:"-";const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
@@ -5497,14 +5487,15 @@ function homeExpeditionGroups(now=Date.now()){
  const raw=expeditionSnapshot()||expeditionTimerState()||null;
  const blank=i=>({id:i+1,status:"idle",mission:null});
  let groups=[];
- if(Array.isArray(raw?.groups))groups=[raw.groups[0]||blank(0),raw.groups[1]||blank(1)];
- else if(raw&&raw.mission)groups=[{id:1,status:raw.status||"exploring",mission:raw.mission},blank(1)];
- else groups=[blank(0),blank(1)];
+ if(Array.isArray(raw?.groups))groups=Array.from({length:Math.max(5,raw.groups.length)},(_,i)=>raw.groups[i]||blank(i));
+ else if(raw&&raw.mission)groups=Array.from({length:5},(_,i)=>i===0?{id:1,status:raw.status||"exploring",mission:raw.mission}:blank(i));
+ else groups=Array.from({length:5},(_,i)=>blank(i));
  return groups.map((g,i)=>{
   const m=g?.mission||null,ret=Number(m?.returnAt||0),done=g?.status==="returned"||(g?.status==="exploring"&&ret>0&&ret<=now);
   if(done)return {index:i,state:"returned",text:`G${i+1} 🎁 帰還済み`};
   if(g?.status==="exploring"&&m){const th=THEMES[m.dungeonId],place=th?`${th.icon} ${th.name}`:"探索中",rank=Number.isFinite(Number(m.difficulty))?` R${Number(m.difficulty)}`:"",remain=ret?` ${homeExpeditionRemain(ret-now)}`:"";return {index:i,state:"exploring",text:`G${i+1} ${place}${rank}${remain}`}}
-  return {index:i,state:"idle",text:`G${i+1} 待機`};
+  const open=(raw?.adminUnlockedGroups||[]).map(Number).includes(i+1)||THEME_ORDER.every(did=>Number(state.stats?.[statKey(did,i+1)]?.clears||0)>0);
+  return {index:i,state:open?"idle":"locked",text:`G${i+1} ${open?"待機":"🔒 未解放"}`};
  })
 }
 function homeExpeditionStatusHTML(){
@@ -5523,7 +5514,7 @@ function renderHome(){
  const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary(),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0)),invClover=inventoryItemQty("luckyClover"),invTicket=inventoryItemQty("captureTicket"),invGrass=inventoryItemQty("grassTicket");
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
-   <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardStats"><strong>最深 B${deepest}</strong><strong>クリア ${clears}</strong></div><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
+   <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
    <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">解放したグループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
@@ -5912,15 +5903,9 @@ function updateHeaderStatus(){
  if(el){el.style.display="none";el.textContent=""}
  if(withdrawBtn)withdrawBtn.style.display="none";
  const egg=document.getElementById("headerEggBadge");
- if(egg){
-  const active=!!state.run;
-  egg.hidden=!active;
-  egg.style.display=active?"inline-flex":"none";
-  if(active){
-   egg.textContent=`🥚 ${state.eggs.length}/${state.eggCap}`;
-   egg.title=`タマゴ ${state.eggs.length}/${state.eggCap}（タップで詳細）`
-  }
- }
+ if(egg){egg.hidden=false;egg.style.display="inline-flex";egg.textContent=`🥚 ${state.eggs.length}/${state.eggCap}`;egg.title=`卵 ${state.eggs.length}/${state.eggCap}`;egg.onclick=()=>{if(state.run)openRunEggDetails();else{screen="items";render()}}}
+ const coin=document.getElementById("headerCoinBadge");if(coin)coin.textContent=`🪙 ${Math.max(0,Math.floor(Number(state.frendaCoins)||0)).toLocaleString("ja-JP")}`;
+ updateExpeditionTimerBadge();
 }
 function floorRate(){return state.run.floor>=8?ROUTE_RATES_LATE:ROUTE_RATES_EARLY}
 function generateRoutes(){if(!state.run||state.run.floor>=10)return;const count=Math.random()<.55?3:2,rates=floorRate(),types=Object.keys(rates);let out=[];let attempts=0;while(out.length<count&&attempts++<30){const k=chooseWeighted(rates);if(!out.includes(k)||out.length>=types.length)out.push(k)}while(out.length<count)out.push(chooseWeighted(rates));state.run.routeOptions=out.map((type,i)=>({id:`${state.run.floor}-${i}-${Math.random().toString(36).slice(2,7)}`,type}));state.run.scene="route";save()}
@@ -6782,7 +6767,7 @@ function bindRunHandlers(){
  const entryNext=document.getElementById("dungeonEntryNext");if(entryNext)entryNext.onclick=e=>{e.stopPropagation();continueDungeonEntry()};const entryAdvance=document.getElementById("dungeonEntryAdvance");if(entryAdvance){entryAdvance.onclick=continueDungeonEntry;entryAdvance.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();continueDungeonEntry()}}}
  app.querySelectorAll("[data-run-advance]").forEach(el=>{const go=()=>activateRunAdvance(el.dataset.runAdvance);el.onclick=go;el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}}});
  app.querySelectorAll("[data-route]").forEach(b=>b.onclick=()=>{const x=state.run.routeOptions.find(r=>r.id===b.dataset.route);if(x)selectRoute(x)});
- document.querySelectorAll("[data-run-egg-open]").forEach(el=>el.onclick=openRunEggDetails);
+ document.querySelectorAll("[data-run-egg-open]").forEach(el=>el.onclick=()=>{if(state.run)openRunEggDetails();else{screen="items";render()}});
  document.querySelectorAll("[data-run-withdraw]").forEach(el=>el.onclick=e=>{e.stopPropagation();withdraw()});
  const autoToggle=document.getElementById("autoAdventureToggle");if(autoToggle)autoToggle.onclick=e=>{e.stopPropagation();if(state.run?.autoAdventure)stopAutoAdventure();else startAutoAdventureMidRun()};
  app.querySelectorAll("[data-fighter]").forEach(b=>b.onclick=()=>startFighter(Number(b.dataset.fighter)));
@@ -6822,23 +6807,23 @@ function inventoryItemCardHTML({cls="",icon="",name="",qty="0",desc="",note="",u
 }
 function renderItems(){
  const qLucky=inventoryItemQty("luckyClover"),qTraining=inventoryItemQty("trainingCandy"),qEvo=inventoryItemQty("evolutionCandy"),qTicket=inventoryItemQty("captureTicket"),qGrass=inventoryItemQty("grassTicket"),qSuper=inventoryItemQty("superBall"),qHyper=inventoryItemQty("hyperBall"),qMaster=inventoryItemQty("masterBall");
- app.innerHTML=`<div class="card inventoryScreen"><div class="inventoryScreenHead"><div><div class="sectionTitle">🎒 もちもの</div><small>卵・育成アイテム・バトル用品をまとめて確認</small></div><span class="inventoryEggBadge">🥚 ${state.eggs.length}/${state.eggCap}</span></div>
+ app.innerHTML=`<div class="card inventoryScreen"><div class="inventoryScreenHead"><div><div class="sectionTitle">🎒 もちもの</div><small>卵・育成アイテム・バトル用品をまとめて確認</small></div></div>
  ${inventoryEggSectionHTML()}
- <section class="inventorySection grassInventorySection"><div class="inventorySectionHead"><div><span>🌿</span><div><b>草むらゲット</b><small>チケット1枚で草むらを1回調査</small></div></div><strong>${qGrass}/${GRASS_TICKET_MAX}</strong></div><div class="inventoryItemList">
- ${inventoryItemCardHTML({cls:"grass",icon:"🌿",name:"草むらチケット",qty:`×${qGrass}/${GRASS_TICKET_MAX}`,desc:"生息地を選び、おかしを投げて草むらの反応から1か所を選びます。",note:state.grassSession?"草むらイベント進行中。タップして再開できます。":"「おかしを投げる」を押した時点で1枚消費",useKind:(qGrass>0||state.grassSession)?"grass":""})}
+ <section class="inventorySection grassInventorySection"><div class="inventorySectionHead"><div><span>🌿</span><div><b>草むらゲット</b><small>チケット1枚で草むらを1回調査</small></div></div></div><div class="inventoryItemList">
+ ${inventoryItemCardHTML({cls:"grass",icon:"🌿",name:"草むらチケット",qty:`${qGrass}/${GRASS_TICKET_MAX}`,desc:"生息地を選び、おかしを投げて草むらの反応から1か所を選びます。",note:state.grassSession?"草むらイベント進行中。タップして再開できます。":"「おかしを投げる」を押した時点で1枚消費",useKind:(qGrass>0||state.grassSession)?"grass":""})}
  </div></section>
  <section class="inventorySection"><div class="inventorySectionHead"><div><span>🍀</span><div><b>育成アイテム</b><small>ここから所持ピックへ使用できます</small></div></div></div><div class="inventoryItemList">
- ${inventoryItemCardHTML({cls:"clover",icon:"🍀",name:"ラッキークローバー",qty:`×${qLucky}`,desc:"所持ピック1体の幸運を+1。幸運は最大5。",note:"対象ピックを選んで使用",useKind:qLucky>0?"clover":""})}
- ${inventoryItemCardHTML({cls:"training",icon:"🏋️",name:"特訓キャンディ",qty:`×${qTraining}/${TRAINING_CANDY_MAX}`,desc:"選んだ所持ピックの特訓ポイントを+1。",note:"能力がすべてMAXのピックは対象外",useKind:qTraining>0?"training":""})}
- ${inventoryItemCardHTML({cls:"evolution",icon:"🌱",name:"進化のアメ",qty:`×${qEvo}/${EVOLUTION_CANDY_MAX}`,desc:"選んだ進化可能な系統の進化ポイントを+1。",note:"進化に必要なポイントまで使用可能",useKind:qEvo>0?"evolution":""})}
+ ${inventoryItemCardHTML({cls:"clover",icon:"🍀",name:"ラッキークローバー",qty:`${qLucky}`,desc:"所持ピック1体の幸運を+1。幸運は最大5。",note:"対象ピックを選んで使用",useKind:qLucky>0?"clover":""})}
+ ${inventoryItemCardHTML({cls:"training",icon:"🏋️",name:"特訓キャンディ",qty:`${qTraining}/${TRAINING_CANDY_MAX}`,desc:"選んだ所持ピックの特訓ポイントを+1。",note:"能力がすべてMAXのピックは対象外",useKind:qTraining>0?"training":""})}
+ ${inventoryItemCardHTML({cls:"evolution",icon:"🌱",name:"進化のアメ",qty:`${qEvo}/${EVOLUTION_CANDY_MAX}`,desc:"選んだ進化可能な系統の進化ポイントを+1。",note:"進化に必要なポイントまで使用可能",useKind:qEvo>0?"evolution":""})}
  </div></section>
  <section class="inventorySection"><div class="inventorySectionHead"><div><span>🎫</span><div><b>バトルアイテム</b><small>使える場面でのみ使用します</small></div></div></div><div class="inventoryItemList">
- ${inventoryItemCardHTML({cls:"ticket",icon:"🎟️",name:"ゲットチャンスチケット",qty:`×${qTicket}/${CAPTURE_TICKET_MAX}`,desc:"通常戦・強敵戦で自然にゲットチャンスが発生しなかった時に使用。",note:"この画面からは使用しません。AUTO冒険でも自動使用しません。"})}
+ ${inventoryItemCardHTML({cls:"ticket",icon:"🎟️",name:"ゲットチャンスチケット",qty:`${qTicket}/${CAPTURE_TICKET_MAX}`,desc:"通常戦・強敵戦で自然にゲットチャンスが発生しなかった時に使用。",note:"この画面からは使用しません。AUTO冒険でも自動使用しません。"})}
  </div></section>
  <section class="inventorySection"><div class="inventorySectionHead"><div><span>⚾</span><div><b>ボール</b><small>ゲットチャンス時に使用できます</small></div></div></div><div class="inventoryItemList inventoryBallList">
- ${inventoryItemCardHTML({cls:"ball super",name:"スーパーボール",qty:`×${qSuper}/${SUPER_BALL_MAX}`,desc:"捕獲率はモンスターボールの×3。",note:"捕獲時に確認して使用",img:BALL_DEF.super.img})}
- ${inventoryItemCardHTML({cls:"ball hyper",name:"ハイパーボール",qty:`×${qHyper}/${HYPER_BALL_MAX}`,desc:"捕獲率はモンスターボールの×10。",note:"★4・★5にも強力",img:BALL_DEF.hyper.img})}
- ${inventoryItemCardHTML({cls:"ball master",name:"マスターボール",qty:`×${qMaster}/${MASTER_BALL_MAX}`,desc:"使用すると相手を必ずゲットできます。",note:"最上位ボール・所持上限1個",img:BALL_DEF.master.img})}
+ ${inventoryItemCardHTML({cls:"ball super",name:"スーパーボール",qty:`${qSuper}/${SUPER_BALL_MAX}`,desc:"捕獲率はモンスターボールの×3。",note:"捕獲時に確認して使用",img:BALL_DEF.super.img})}
+ ${inventoryItemCardHTML({cls:"ball hyper",name:"ハイパーボール",qty:`${qHyper}/${HYPER_BALL_MAX}`,desc:"捕獲率はモンスターボールの×10。",note:"★4・★5にも強力",img:BALL_DEF.hyper.img})}
+ ${inventoryItemCardHTML({cls:"ball master",name:"マスターボール",qty:`${qMaster}/${MASTER_BALL_MAX}`,desc:"使用すると相手を必ずゲットできます。",note:"最上位ボール・所持上限1個",img:BALL_DEF.master.img})}
  </div></section></div>`;
  app.querySelectorAll("[data-inventory-use]").forEach(b=>b.onclick=()=>{if(b.dataset.inventoryUse==="grass"){screen="grass";render()}else showInventoryItemUse(b.dataset.inventoryUse)})
 }
@@ -6897,12 +6882,12 @@ function showQuickTraining(id){
  ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{spendDrill(b.dataset.trainId,b.dataset.stat);ov.remove();document.body.style.overflow="";if(trainingAvailable(id))showQuickTraining(id);else renderOwned()})
 }
 function showLuckShop(returnTo="home"){
- document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";
+ document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";document.documentElement.style.setProperty("--shop-header-height",`${document.querySelector("body>header").getBoundingClientRect().height}px`);
  const shopFilter={search:"",type:"all",grade:"all",luck:"all",sort:"luckAsc"};
  const returnScreen=()=>{ov.remove();document.body.style.overflow="";if(returnTo==="owned")renderOwned();else renderHome()};
  const itemQty=key=>Math.max(0,Math.floor(Number(state.shopItems?.[key])||0));
  const buyItem=(key,price,max=Infinity)=>{const q=itemQty(key),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));if(coins<price||q>=max)return false;state.frendaCoins=coins-price;state.shopItems[key]=q+1;save();return true};
- const renderShop=(focusId="")=>{
+ const renderShop=(focusId="")=>{updateHeaderStatus();
   const qty=itemQty("luckyClover"),trainingQty=itemQty("trainingCandy"),evoQty=itemQty("evolutionCandy"),ticketQty=itemQty("captureTicket"),superBallQty=itemQty("superBall"),hyperBallQty=itemQty("hyperBall"),masterBallQty=itemQty("masterBall"),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
   const baseTargets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX),records=baseTargets.map(id=>rec(id)).filter(Boolean),types=commonFilterTypes(records),grades=commonFilterGrades(records);
   let targets=baseTargets.filter(id=>{const r=rec(id);if(!r)return false;if(!pickSearchMatch(r,shopFilter.search))return false;if(shopFilter.type!=="all"&&r.type1!==shopFilter.type&&r.type2!==shopFilter.type)return false;if(shopFilter.grade!=="all"&&Number(r.grade)!==Number(shopFilter.grade))return false;if(shopFilter.luck!=="all"&&luckFor(id)!==Number(shopFilter.luck))return false;return true});
@@ -7228,7 +7213,7 @@ function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"
 function importSave(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||typeof x!=="object")throw new Error("形式不正");state=Object.assign(stateDefault(),x);migrateState();UI.dialog.alert("セーブデータを読み込みました。");screen="home";render()}catch(e){UI.dialog.alert("読み込みに失敗しました。\n"+e.message)}};rd.readAsText(file)}
 function renderSaveMenu(){app.innerHTML=`<div class="card"><div class="sectionTitle">セーブ管理</div><div class="row"><button id="exportBtn">セーブを書き出す</button><button class="secondary" id="importBtn">セーブを読み込む</button><button class="danger" id="resetBtn">初期化</button></div><input type="file" id="importFile" accept="application/json,.json" class="hidden"><div class="notice" style="margin-top:12px">通常は自動保存されます。書き出しファイルは端末移行・バックアップ用です。</div></div>`;document.getElementById("exportBtn").onclick=exportSave;document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("importFile").onchange=e=>{if(e.target.files[0])importSave(e.target.files[0])};document.getElementById("resetBtn").onclick=resetSave}
 
-homeBtn.onclick=async()=>{const oldText=homeBtn.textContent;homeBtn.disabled=true;homeBtn.textContent="⌛";const updating=await checkForAppUpdate(true);if(updating)return;homeBtn.disabled=false;homeBtn.textContent=oldText;if(state.postRun){renderPostRun();return}if(state.run){screen="home";renderRun()}else{screen="home";render()}};
+homeBtn.onclick=async()=>{if(document.getElementById("luckShopOverlay")){document.getElementById("shopUseOverlay")?.remove();document.getElementById("luckShopOverlay")?.remove();document.body.style.overflow="";screen="home";render();return}const oldText=homeBtn.textContent;homeBtn.disabled=true;homeBtn.textContent="⌛";const updating=await checkForAppUpdate(true);if(updating)return;homeBtn.disabled=false;homeBtn.textContent=oldText;if(state.postRun){renderPostRun();return}if(state.run){screen="home";renderRun()}else{screen="home";render()}};
 withdrawBtn.onclick=withdraw;
 let lastAppUpdateCheck=0;
 function compareAppVersions(a,b){const aa=String(a||"").split(".").map(Number),bb=String(b||"").split(".").map(Number),n=Math.max(aa.length,bb.length);for(let i=0;i<n;i++){const x=aa[i]||0,y=bb[i]||0;if(x!==y)return x-y}return 0}
@@ -13933,7 +13918,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .
 
 <!-- Ver2.85: 黒PC共通ヘッダー／冒険固定パーティ・帯／編成サイズ切替／所持文字のはみ出し／選択画面整理／報酬・結果・裏面・ショップ最適化。更新日時: 2026-10-03 17:50 JST -->
 
-<!-- Ver2.88: 黒PCの裏面を1画面・能力1列へ再配置。タイプ数による所持カードずれとIME変換を修正。戦闘準備・勝利・卵発見／孵化を拡大・中央配置。草むら選択表、ボタン順、生息地復帰、レア度別の葉の揺れ、共通捕獲演出と結果表示を実装。更新日時: 2026-10-03 18:30 JST -->
+<!-- Ver2.90: 黒PCの裏面を1画面・能力1列へ再配置。タイプ数による所持カードずれとIME変換を修正。戦闘準備・勝利・卵発見／孵化を拡大・中央配置。草むら選択表、ボタン順、生息地復帰、レア度別の葉の揺れ、共通捕獲演出と結果表示を実装。更新日時: 2026-10-03 18:30 JST -->
 
 <style id="blackPc287">
 @media(min-width:1451px) and (min-height:701px) and (max-height:840px){
@@ -13997,7 +13982,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .r
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .result4Hp{grid-column:2!important;grid-row:2!important;margin:0!important;padding:3px!important;font-size:11px!important;}
 }
 </style>
-<!-- Ver2.88: 裏面の操作ボタン見切れ、所持ピック小表示とボタン位置、所持数の拡大を修正。クリア結果を仲間・卵・解放中心の配置へ再構成。更新日時: 2026-10-03 19:03 JST -->
+<!-- Ver2.90: 裏面の操作ボタン見切れ、所持ピック小表示とボタン位置、所持数の拡大を修正。クリア結果を仲間・卵・解放中心の配置へ再構成。更新日時: 2026-10-03 19:03 JST -->
 
 <style id="capture288">
 .ownedGrid .ownedV190Visual .ownedNearEvoBadge{position:absolute!important;left:2px!important;right:2px!important;bottom:3px!important;margin:0!important;z-index:2!important;box-sizing:border-box!important;white-space:normal!important;min-height:18px!important;box-shadow:0 2px 6px #30205066!important;font-size:9px!important;line-height:1.15!important;padding:3px!important;}
@@ -14016,4 +14001,24 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .captureCele
 }
 @media(prefers-reduced-motion:reduce){.getCelebrationTitle288,.grassResultScreen.success::after,.captureCelebration288::after,.captureCelebration288 .captureResultTitle{animation:none!important;}}
 </style>
-<!-- Ver2.88: あと1で進化をピック画像上へ固定しカード位置のずれを解消。捕獲成功の大型文字・金色放射背景・星演出を追加。更新日時: 2026-10-03 19:14 JST -->
+<!-- Ver2.90: あと1で進化をピック画像上へ固定しカード位置のずれを解消。捕獲成功の大型文字・金色放射背景・星演出を追加。更新日時: 2026-10-03 19:14 JST -->
+
+<style id="shopHeader289">
+body #homeBtn.homeCornerBtn{display:none!important;}
+body:has(#luckShopOverlay)>header{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:100000!important;}
+body:has(#luckShopOverlay) #luckShopOverlay.ownedDetailOverlay,body:has(#luckShopOverlay) #shopUseOverlay.ownedDetailOverlay{top:var(--shop-header-height,66px)!important;bottom:0!important;left:0!important;right:0!important;padding:8px!important;box-sizing:border-box!important;}
+body:has(#luckShopOverlay) #luckShopOverlay .luckShopPanel,body:has(#luckShopOverlay) #shopUseOverlay .shopUsePanel{max-height:calc(100dvh - var(--shop-header-height,66px) - 16px)!important;}
+body:has(#luckShopOverlay) .headerMainTitle{cursor:pointer;}
+</style>
+<!-- Ver2.90: フレンダショップで共通固定ヘッダを表示。右上ホームアイコンを非表示にしタイトルからのホーム操作を維持。更新日時: 2026-10-03 19:22 JST -->
+
+<style id="header290">
+body>header #headerEggBadge,body>header #headerCoinBadge{display:inline-flex!important;align-items:center;justify-content:center;white-space:nowrap;font-size:13px!important;font-weight:1000;padding:6px 9px!important;border-radius:999px;min-width:0!important;line-height:1.25!important;}
+body>header #headerCoinBadge{background:#fff0ae;color:#765700;border:1px solid #e4c45a;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized >header #headerEggBadge,html[data-view-profile="pc-compact"] body.blackPcOptimized >header #headerCoinBadge{font-size:16px!important;padding:6px 10px!important;}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeExpeditionStatus{display:grid!important;grid-template-columns:1fr 1fr!important;width:95%!important;gap:5px!important;margin:5px auto 0!important;}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeExpeditionStatus span{font-size:13px!important;padding:5px 6px!important;min-width:0!important;white-space:normal!important;line-height:1.15!important;}
+.homeExpeditionStatus span.locked{background:#e8ecf0;color:#667381;border-color:#c7d0d8;}
+@media(max-width:700px){body>header .careCluster{flex-wrap:wrap!important;gap:4px!important;}body>header #headerEggBadge,body>header #headerCoinBadge{font-size:10px!important;padding:4px 6px!important;}.homeExpeditionStatus{display:grid!important;grid-template-columns:1fr 1fr!important;}}
+</style>
+<!-- Ver2.90: もちもの重複数と数量の×を削除。ホーム探索に全5グループを表示。冒険の最深・クリア数を削除。ヘッダに卵・コイン・探索中数を常時表示。更新日時: 2026-10-03 19:30 JST -->
