@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.74">
+<html lang="ja" data-app-version="2.75">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -11980,6 +11980,288 @@ button.grassPatch{cursor:pointer}.grassPatch.grassActive:active{transform:scale(
   例：「ぴかちゅう」で「ピカチュウ」、「りざーどん」で「リザードン」を検索可能。
   所持ピック・図鑑・挑戦チーム選択・ラッキークローバー対象検索へ共通適用。
   全角/半角はNFKC正規化し、ひらがなをカタカナへ揃えて部分一致する。
+-->
+
+
+<style id="v275-white-pc-postrun-fit">
+/* Ver2.75: 白PC (ChromeOS Flex / 1366x688 / DPR1) post-run fit.
+   688px height is substantially shallower than 黒PC, so the stacked
+   team-over-loot dashboard can push NEW allies below the visible area.
+   For this viewport class, use the wide screen horizontally:
+   team on the left, loot/new allies on the right. */
+@media (min-width:701px) and (max-width:1450px) and (max-height:720px){
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] main#app.dungeonRunScreen{
+    width:calc(100vw - 8px)!important;
+    max-width:none!important;
+    height:100%!important;
+    min-height:0!important;
+    padding:3px 4px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .postRunSummary.resultV5.resultV6{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    padding:5px!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+
+  /* Header stays readable but gives the result body more height. */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Hero{
+    min-height:66px!important;
+    grid-template-columns:42px minmax(260px,1fr) minmax(390px,.9fr)!important;
+    gap:8px!important;
+    padding:6px 10px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5HeroIcon{
+    font-size:34px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Hero h2{
+    font-size:23px!important;
+    margin:0 0 4px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Meta{
+    gap:4px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5Meta span{
+    padding:2px 6px!important;
+    font-size:8px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions{
+    gap:5px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6HeroActions button{
+    min-height:38px!important;
+    padding:5px!important;
+    font-size:9px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .autoUnlockBanner{
+    margin:0!important;
+    padding:4px 8px!important;
+    font-size:8px!important;
+    line-height:1.2!important;
+  }
+
+  /* Main white-PC fix: use width, not vertical stacking. */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Main{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    display:grid!important;
+    grid-template-columns:minmax(430px,.43fr) minmax(0,.57fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    gap:6px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6TeamPanel,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel{
+    min-height:0!important;
+    height:100%!important;
+    padding:6px 7px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead{
+    min-height:25px!important;
+    height:25px!important;
+    margin-bottom:4px!important;
+    gap:6px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead>span{
+    width:24px!important;
+    height:24px!important;
+    font-size:14px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5SectionHead b{
+    font-size:11px!important;
+  }
+
+  /* Challenge team: three compact rows in the left column. */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6TeamGrid{
+    height:calc(100% - 29px)!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamCard{
+    display:grid!important;
+    grid-template-columns:78px minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr) auto!important;
+    gap:3px 6px!important;
+    min-height:0!important;
+    padding:4px 6px!important;
+    border-radius:10px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead{
+    grid-column:1!important;
+    grid-row:1/3!important;
+    justify-content:center!important;
+    gap:2px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead img{
+    width:54px!important;
+    height:75px!important;
+    max-height:75px!important;
+    margin:0 auto!important;
+    border-radius:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead b{
+    font-size:8px!important;
+    line-height:1.05!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamHead small{
+    font-size:5.5px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:3px!important;
+    align-content:center!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats span{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:3px!important;
+    min-height:0!important;
+    padding:3px 5px!important;
+    border-radius:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats small{
+    font-size:6px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4TeamStats b{
+    font-size:8px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4Hp{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-height:19px!important;
+    padding:2px 6px!important;
+    font-size:6px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6TeamGrid .result4Hp b{
+    font-size:7px!important;
+  }
+
+  /* Loot occupies the full right column, so NEW allies are always above the fold. */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootGrid{
+    height:calc(100% - 29px)!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:minmax(0,1.6fr) minmax(94px,.62fr)!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-allies .result6LootGrid{
+    grid-template-rows:1fr!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6Allies{
+    display:grid!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:5px 7px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel{
+    margin-bottom:3px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5LootLabel b{
+    font-size:10px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid{
+    height:auto!important;
+    min-height:0!important;
+    display:grid!important;
+    gap:5px!important;
+    overflow:auto!important;
+    align-content:stretch!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid.count-1{
+    grid-template-columns:minmax(180px,280px)!important;
+    justify-content:center!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid.count-2{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid.count-3{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyGrid.count-many{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard{
+    min-height:0!important;
+    padding:5px!important;
+    border-radius:10px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard img{
+    width:min(92px,52%)!important;
+    max-height:126px!important;
+    margin:1px auto 3px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard b{
+    font-size:10px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyCard small{
+    font-size:6px!important;
+    margin-top:2px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6AllyHint{
+    margin-top:2px!important;
+    padding:2px 5px!important;
+    font-size:6px!important;
+  }
+
+  /* Reward/unlock share the bottom line, rather than consuming another vertical row. */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootBottom{
+    height:100%!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:1fr!important;
+    gap:5px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-unlocks .result6LootBottom,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootPanel.no-reward .result6LootBottom{
+    grid-template-columns:1fr!important;
+    grid-template-rows:1fr!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6LootBottom .result5LootGroup{
+    padding:5px 7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody{
+    grid-template-columns:52px minmax(0,1fr)!important;
+    gap:5px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody .eggVisual{
+    transform:scale(.56)!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody b{
+    font-size:9px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4RewardBody small{
+    font-size:6px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow{
+    padding:3px 5px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .resultV6 .result6LootBottom .result4UnlockRow b{
+    font-size:7px!important;
+  }
+}
+</style>
+<!-- Ver2.75:
+  白PC（ChromeOS Flex / 1366×688 / DPR1 / pc-compact / タッチなし）専用の結果画面最適化。
+  高さ688pxでは「挑戦チーム結果→今回の戦利品」の上下配置で新しい仲間が画面外へ押し出されるため、
+  白PC相当の短い1366クラスでは「挑戦チーム結果を左／今回の戦利品を右」の横2分割へ変更。
+  新しい仲間を右側上段に常時確保し、クリア報酬・新しく解放は右側下段に横並びで表示。
 -->
 
 </body>
