@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.85">
+<html lang="ja" data-app-version="2.86">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5416,7 +5416,7 @@ function homeNextGoal(){
 function homeHero(){
  return `<div class="homeHeroPanel homeHeroSimple"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンを攻略！</p></div></div>`
 }
-function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;syncBlackHeader();if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey)||(isBlackPcOptimization()&&pageKey==="team");document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
+function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;syncBlackHeader();if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey)||(isBlackPcOptimization()&&["team","grass"].includes(pageKey));document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
 dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();scheduleAutoAdventure();return}if(state.run){renderRun();scheduleAutoAdventure();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="items"||screen==="eggs")return renderItems();if(screen==="grass")return renderGrass();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_level)>0?`Lv${r.speed_level}`:"-";const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
@@ -5637,7 +5637,7 @@ function throwGrassBall(ballKey){
   else ownNew(r.master_id)
  }
  g.result={ballKey,rate,success,duplicate,duplicateRewardKind,duplicateRewardLabel,newSpeciesRegistration};
- g.stage="result";save();sfx(success?"captureSuccess":"captureFail");render()
+ g.stage="throw";save();render()
 }
 function leaveGrassEvent(to="home"){
  state.grassSession=null;save();screen=to;render()
@@ -5648,24 +5648,22 @@ function grassLocationTitle(g){
 function renderGrass(){
  const g=state.grassSession,qty=grassTicketQty();
  if(!g){
-  const opts=grassHabitatOptions(),current=opts.find(o=>o.did===currentDungeon.id&&o.diff===Number(currentDungeon.difficulty))||opts[0];
-  app.innerHTML=`<div class="card grassScreen grassChooseScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS GET</div><div class="sectionTitle">🌿 草むらゲット</div><small>生息地を選んで、草むらにおかしを投げよう！</small></div><span class="grassTicketBadge">🌿 チケット ${qty}/${GRASS_TICKET_MAX}</span></div>
-   <div class="grassHowto"><span>① 生息地を選ぶ</span><span>② 草むらへ行く</span><span>③ おかしを投げると1枚消費</span><span>④ 反応を見て1か所を選ぶ</span></div>
-   <label class="grassHabitatSelectLabel">生息地<select id="grassHabitatSelect">${opts.map(o=>`<option value="${esc(o.did)}|${o.diff}" ${o.did===current.did&&o.diff===current.diff?"selected":""}>${o.th.icon} ${esc(o.th.name)}　ランク${o.diff}　🌿${habitatProgressFor(o.did,o.diff).owned}/${habitatProgressFor(o.did,o.diff).total}</option>`).join("")}</select></label>
-   <div class="grassPreview"><b>🌿 生息地のピックが中心</b><span>約85%は選んだ生息地、約15%は別の生息地から迷い込んできます。</span></div>
-   <button id="grassEnter" class="grassPrimaryBtn" ${qty>0?"":"disabled"}>🌿 草むらへ行く</button>
-   ${qty<=0?'<div class="notice">草むらチケットがありません。ダンジョンをクリアすると1枚獲得できます。</div>':""}
+  app.innerHTML=`<div class="card grassScreen grassChooseScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS GET</div><div class="sectionTitle">🌿 草むらゲット</div><small>ダンジョンとランクのマスを押すと、草むらへ進みます。</small></div><span class="grassTicketBadge">🌿 チケット ${qty}/${GRASS_TICKET_MAX}</span></div>
+   <div class="grassRankTableWrap"><table class="grassRankTable"><thead><tr><th scope="col">ダンジョン</th>${[1,2,3,4,5].map(n=>`<th scope="col">ランク${n}</th>`).join("")}</tr></thead><tbody>${THEME_ORDER.map(did=>{const th=THEMES[did];return `<tr><th scope="row">${th.icon} ${esc(th.name)}</th>${[1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),hp=habitatProgressFor(did,diff);return `<td><button type="button" data-grass-location="${did}" data-grass-rank="${diff}" ${ok?"":"disabled"} aria-label="${esc(th.name)} ランク${diff} ${ok?`所持 ${hp.owned}/${hp.total}`:"未解放"}">${ok?`${hp.owned}/${hp.total}`:"🔒 未解放"}</button></td>`}).join("")}</tr>`}).join("")}</tbody></table></div>
+   <div class="grassPreview"><b>🌿 生息地のピックが中心</b><span>約85%は選んだ生息地、約15%は別の生息地から迷い込みます。お菓子を投げるとチケット1枚を消費します。</span></div>
+   <button id="grassChooseBack" class="ghost">ホームへ</button>
+   ${qty<=0?'<div class="notice">チケットがありません。生息地は確認できます。ダンジョンをクリアすると1枚獲得できます。</div>':""}
   </div>`;
-  const sel=document.getElementById("grassHabitatSelect");
-  document.getElementById("grassEnter")?.addEventListener("click",()=>{const [did,diff]=String(sel?.value||"forest|1").split("|");prepareGrassArea(did,Number(diff)||1)});
-  return
+  app.querySelectorAll("[data-grass-location]").forEach(b=>b.onclick=()=>prepareGrassArea(b.dataset.grassLocation,Number(b.dataset.grassRank)));
+  document.getElementById("grassChooseBack").onclick=()=>leaveGrassEvent("home");return
  }
  if(g.stage==="ready"){
   app.innerHTML=`<div class="card grassScreen grassReadyScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS FIELD</div><div class="sectionTitle">${grassLocationTitle(g)}</div><small>まだチケットは消費していません。</small></div><span class="grassTicketBadge">🌿 ${qty}/${GRASS_TICKET_MAX}</span></div>
    <div class="grassField ready">${Array.from({length:6},(_,i)=>`<div class="grassPatch"><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></div>`).join("")}</div>
    <div class="grassSnackBox"><b>🍪 おかしを投げる</b><span>押した時点で草むらチケットを1枚消費します。</span></div>
-   <div class="grassActions"><button id="grassSnack" class="grassPrimaryBtn" ${qty>0?"":"disabled"}>🍪 おかしを投げる</button><button id="grassChange" class="ghost">生息地を選び直す</button></div>
+   <div class="grassActions"><button id="grassHabitat" class="ghost">生息地をみる</button><button id="grassSnack" class="grassPrimaryBtn" ${qty>0?"":"disabled"}>🍪 お菓子を投げる</button><button id="grassChange" class="ghost">ダンジョン選択にもどる</button></div>
   </div>`;
+  document.getElementById("grassHabitat")?.addEventListener("click",()=>{showHabitatOverlay(g.dungeonId,g.difficulty);document.querySelectorAll("#habitatOverlay .habitatClose,#habitatCloseBottom").forEach(b=>b.textContent="草むらにもどる")});
   document.getElementById("grassSnack")?.addEventListener("click",throwGrassSnack);
   document.getElementById("grassChange")?.addEventListener("click",()=>leaveGrassEvent("grass"));
   return
@@ -5673,7 +5671,7 @@ function renderGrass(){
  if(g.stage==="react"){
   app.innerHTML=`<div class="card grassScreen grassReactScreen"><div class="grassTitleRow"><div><div class="kicker">REACTION!</div><div class="sectionTitle">${grassLocationTitle(g)}</div><small>反応を見て、投げたい草むらを1つ選ぼう。</small></div><span class="grassTicketBadge">残り 🌿 ${qty}</span></div>
    <div class="grassReactionLegend"><span>…？ 気配</span><span>？ 反応あり</span><span>！ 強い気配</span><span>！？ レアな気配</span></div>
-   <div class="grassField reactions">${g.spots.map((s,i)=>`<button type="button" class="grassPatch grassActive ${s.reaction==="！？"?"ultra":s.reaction==="！"?"strong":""}" data-grass-patch="${i}"><div class="grassReaction">${esc(s.reaction)}</div><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></button>`).join("")}</div>
+   <div class="grassField reactions">${g.spots.map((s,i)=>`<button type="button" class="grassPatch grassActive ${s.reaction==="！？"?"ultra":s.reaction==="！"?"strong":""}" data-grass-patch="${i}" style="--grass-sway:${[0,0,5,12,22,34][Math.min(5,effectiveDungeonGrade(rec(s.id)))]||5}deg;--grass-shift:${Math.max(2,effectiveDungeonGrade(rec(s.id))*3)}px;--grass-speed:${Math.max(.35,1.2-effectiveDungeonGrade(rec(s.id))*.14)}s"><div class="grassReaction">${esc(s.reaction)}</div><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></button>`).join("")}</div>
    <div class="grassHint">選べるのは1か所だけです。</div>
   </div>`;
   app.querySelectorAll("[data-grass-patch]").forEach(b=>b.onclick=()=>chooseGrassPatch(b.dataset.grassPatch));
@@ -5693,6 +5691,11 @@ function renderGrass(){
   </div>`;
   app.querySelectorAll("[data-grass-ball]").forEach(b=>b.onclick=()=>throwGrassBall(b.dataset.grassBall));
   return
+ }
+ if(g.stage==="throw"){
+  const r=rec(g.targetId),ball=BALL_DEF[g.result?.ballKey]||BALL_DEF.poke;
+  app.innerHTML=`<div class="card grassScreen grassThrowScreen captureCombatCard"><div class="captureCombatBody captureCenter captureThrowBody"><div class="kicker captureFlashKicker">GET CHANCE</div><h2 id="captureDramaTitle" class="captureWishTitle">${esc(r?.name_ja||"ポケモン")} 仲間になって！</h2><div class="captureThrowLead">使用ボール：<b>${esc(ball.label)}</b></div><div class="captureStage captureStageLarge" id="captureStage"><img id="captureTargetSprite" class="captureTargetSprite captureTargetSpriteLarge" src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"")}"><img id="captureThrownBall" class="captureThrownBall captureThrownBallLarge" src="${esc(ball.img)}" alt="${esc(ball.label)}"></div><div id="captureDramaText" class="captureDramaText captureDramaTextBig">いけっ！ ${esc(ball.label)}！</div><div id="captureDots" class="captureDots"></div></div></div>`;
+  startGrassCaptureDrama();return
  }
  if(g.stage==="result"){
   const r=rec(g.targetId),res=g.result||{},ball=BALL_DEF[res.ballKey]||BALL_DEF.poke;
@@ -5838,7 +5841,17 @@ function applyCommonPickFilter(records,filter,statusPredicate){
 function commonPickFilterHTML(scope,filter,records,statusOptions,sortOptions,shownCount){
  return UI.pickFilter.html({scope,filter,records,statusOptions,sortOptions,shownCount,seriesCompare:compareSeriesRelease,typeOrder:Array.isArray(CORE?.TYPES)?CORE.TYPES:[],classes:{wrap:"commonPickFilter",grid:"commonPickFilterGrid",foot:"commonPickFilterFoot",count:"commonPickFilterCount",reset:"commonPickFilterReset",search:"search"}})
 }
-function bindCommonPickFilter(scope,filter,renderFn,defaults={}){UI.pickFilter.bind({root:app,scope,filter,render:renderFn,defaults})}
+function bindImeSearch(input,commit){
+ if(!input)return;let composing=false,timer=null;
+ const schedule=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(!composing&&input.isConnected)commit()},0)};
+ input.oncompositionstart=()=>{composing=true;clearTimeout(timer)};
+ input.oncompositionend=()=>{composing=false;schedule()};
+ input.oninput=e=>{if(composing||e.isComposing)return;schedule()};
+}
+function bindCommonPickFilter(scope,filter,renderFn,defaults={}){
+ UI.pickFilter.bind({root:app,scope,filter,render:renderFn,defaults});
+ app.querySelectorAll(`input[data-ui-pick-filter="${scope}"]`).forEach(input=>{const handler=input.oninput;bindImeSearch(input,()=>handler?.({target:input,isComposing:false}))})
+}
 
 function renderTeamSelect(){
  const availableCount=state.owned.filter(o=>!isExpeditionLocked(o.id)).length,max=Math.min(3,availableCount),need=max,theme=THEMES[currentDungeon.id]||THEMES.forest,
@@ -5877,7 +5890,7 @@ function renderTeamSelect(){
  const clearBtn=document.getElementById("teamClearBtn");if(clearBtn)clearBtn.onclick=()=>{teamSelection=[];teamAutoNotice="選択中のポケモンをすべて外しました。";renderTeamSelect()};
  const recToggle=document.getElementById("teamRecommendToggle");if(recToggle)recToggle.onclick=()=>{teamRecommendOnly=!teamRecommendOnly;if(!teamRecommendOnly&&teamPickFilter.sort==="recommended")teamPickFilter.sort="energy";renderTeamSelect()};
  const q=document.getElementById("teamSearchNew"),ty=document.getElementById("teamTypeNew"),gr=document.getElementById("teamGradeNew"),so=document.getElementById("teamSortNew");
- if(q)q.oninput=()=>{teamPickFilter.search=q.value;const pos=q.selectionStart??teamPickFilter.search.length;renderTeamSelect();requestAnimationFrame(()=>{const nq=document.getElementById("teamSearchNew");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})};
+ bindImeSearch(q,()=>{teamPickFilter.search=q.value;const pos=q.selectionStart??teamPickFilter.search.length;renderTeamSelect();requestAnimationFrame(()=>{const nq=document.getElementById("teamSearchNew");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})});
  if(ty)ty.onchange=()=>{teamPickFilter.type=ty.value;renderTeamSelect()};
  if(gr)gr.onchange=()=>{teamPickFilter.grade=gr.value;renderTeamSelect()};
  if(so)so.onchange=()=>{teamPickFilter.sort=so.value==="recommended"?"energy":so.value;renderTeamSelect()}
@@ -6193,7 +6206,7 @@ function startEggDiscovery(){
  const alive=()=>seq===eggDiscoverySeq&&state.postRun?.stage==="eggDiscovery"&&document.getElementById("eggDiscoveryCard")===card;
  const apply=n=>{
   phase=n;
-  card.className=`card eggDiscoveryCard ${["phase-dark","phase-glow","phase-reveal"][n]||"phase-reveal"}`;
+  card.className=`card eggDiscoveryCard eggCenterCard postRunBigCard ${["phase-dark","phase-glow","phase-reveal"][n]||"phase-reveal"}`;
   if(n===0)textEl.textContent="何かが落ちている……";
   else if(n===1){textEl.textContent="淡い光を放っている……";try{navigator.vibrate?.(20)}catch{}}
   else if(n===2){textEl.textContent="ふしぎな卵を見つけた！";try{navigator.vibrate?.([25,35,35])}catch{}}
@@ -6730,7 +6743,19 @@ function eventLabel(k){return {heal30:"1匹40%回復",heal20:"1匹25%回復",hea
 function renderEventTargetHTML(){const e=state.run.event,k=e?.kind||"",data={heal30:["💚","回復ボーナス","HP +40%"],heal20:["💚","回復","HP +25%"],atk2:["🔥","攻撃アップ！","攻撃 +3"],def2:["🛡️","防御アップ！","防御 +3"],danger:["⛲","危険な泉","HP -20% / 攻撃 +5"],guard:["🗿","守りの祭壇","HP -10% / 防御 +5"],lucky:["🍀","幸運の休息","HP +60%"],healSingleSelect:["💚","全回復","HP 全回復"]}[k]||["✨",eventLabel(k),eventLabel(k)];return `<div class="card eventChoiceCard"><div class="eventChoiceIcon">${data[0]}</div><div class="eventChoiceTitle">${esc(data[1])}</div><div class="eventChoiceValue">${esc(data[2])}</div><div class="eventChoiceInstruction"><strong>効果を受けるポケモンを選んでください</strong><span class="eventChoiceArrow">${window.matchMedia?.("(min-width:701px)").matches?"⬅️":"⬆️"}</span>${window.matchMedia?.("(min-width:701px)").matches?"左のパーティ":"上のチーム"}から対象をタップ</div></div>`}
 function renderEventNoticeHTML(){const e=state.run?.event||{},msg=e.message||"何も起こらなかった……。",title=e.title||"何も起こらなかった……",icon=e.icon||"🍃",result=e.kind==="result",cls=result?`eventResultCard ${esc(e.visual||"bonus")}`:"eventNothingCard";return `<div class="card summary ${cls} singleAdvanceCard tapAdvance" data-run-advance="event" role="button" tabindex="0" aria-label="次へ進む"><div class="${result?"eventResultIcon":"eventNothingIcon"}">${esc(icon)}</div><h2>${esc(title)}</h2>${result&&e.value?`<div class="eventResultValue">${esc(e.value)}</div>`:""}<p>${esc(msg)}</p><button id="eventNoticeNext" style="margin-top:8px">次へ進む</button></div>`}
 let captureDramaSeq=0;
-async function startCaptureDrama(){const run=state.run,c=run?.capture,o=c?.pendingOutcome;if(!run||run.scene!=="captureThrow"||!c||!o)return;const seq=++captureDramaSeq,ball=document.getElementById("captureThrownBall"),target=document.getElementById("captureTargetSprite"),msg=document.getElementById("captureDramaText"),title=document.getElementById("captureDramaTitle"),dots=document.getElementById("captureDots");if(!ball||!msg)return;const alive=()=>seq===captureDramaSeq&&state.run?.scene==="captureThrow"&&state.run?.capture?.pendingOutcome;const targetName=rec(c.targetId)?.name_ja||"ポケモン";if(title)title.textContent=`${targetName} 仲間になって！`;msg.textContent=`いけっ！ ${BALL_DEF[o.ballKey]?.label||"ボール"}！`;await fxSleep(1150);if(!alive())return;msg.textContent=`${targetName} を仲間にできるか…`;sfx("captureThrow");ball.classList.add("throw");await fxSleep(850);if(!alive())return;target?.classList.add("captured");ball.classList.add("settled");ball.classList.remove("throw");if(dots)dots.textContent="……";msg.textContent="ボールが閉じた……";await fxSleep(850);for(let i=1;i<=3;i++){if(!alive())return;ball.classList.remove("shake");void ball.offsetWidth;ball.classList.add("shake");sfx("captureShake");if(dots)dots.textContent="・".repeat(i*3);msg.textContent=i===1?"……1回！……":i===2?"……2回！！……":"……3回！！！……";await fxSleep(850)}if(!alive())return;ball.classList.remove("shake");ball.classList.add(o.success?"success":"fail");sfx(o.success?"captureSuccess":"captureFail");msg.textContent=o.success?`${targetName}、きてくれー！`:`${targetName}、まだあきらめない！`;if(dots)dots.textContent="";await fxSleep(o.success?950:800);if(!alive())return;commitCaptureOutcome()}
+async function playCaptureDrama({alive,targetName,ballKey,success,onComplete}){
+ const ball=document.getElementById("captureThrownBall"),target=document.getElementById("captureTargetSprite"),msg=document.getElementById("captureDramaText"),title=document.getElementById("captureDramaTitle"),dots=document.getElementById("captureDots");if(!ball||!msg||!alive())return;
+ title.textContent=`${targetName} 仲間になって！`;msg.textContent=`いけっ！ ${BALL_DEF[ballKey]?.label||"ボール"}！`;await fxSleep(1150);if(!alive())return;msg.textContent=`${targetName} を仲間にできるか…`;sfx("captureThrow");ball.classList.add("throw");await fxSleep(850);if(!alive())return;target?.classList.add("captured");ball.classList.add("settled");ball.classList.remove("throw");if(dots)dots.textContent="……";msg.textContent="ボールが閉じた……";await fxSleep(850);for(let i=1;i<=3;i++){if(!alive())return;ball.classList.remove("shake");void ball.offsetWidth;ball.classList.add("shake");sfx("captureShake");if(dots)dots.textContent="・".repeat(i*3);msg.textContent=i===1?"……1回！……":i===2?"……2回！！……":"……3回！！！……";await fxSleep(850)}if(!alive())return;ball.classList.remove("shake");ball.classList.add(success?"success":"fail");sfx(success?"captureSuccess":"captureFail");msg.textContent=success?`${targetName}、きてくれー！`:`${targetName}、まだあきらめない！`;if(dots)dots.textContent="";await fxSleep(success?950:800);if(!alive())return;onComplete()}
+async function startCaptureDrama(){
+ const run=state.run,c=run?.capture,o=c?.pendingOutcome;if(!run||run.scene!=="captureThrow"||!c||!o)return;
+ const seq=++captureDramaSeq;return playCaptureDrama({alive:()=>seq===captureDramaSeq&&state.run===run&&run.scene==="captureThrow"&&run.capture?.pendingOutcome,targetName:rec(c.targetId)?.name_ja||"ポケモン",ballKey:o.ballKey,success:o.success,onComplete:commitCaptureOutcome})
+}
+let grassDramaSeq=0;
+function startGrassCaptureDrama(){
+ const g=state.grassSession,res=g?.result;if(!g||g.stage!=="throw"||!res)return;
+ const seq=++grassDramaSeq;return playCaptureDrama({alive:()=>seq===grassDramaSeq&&state.grassSession===g&&g.stage==="throw",targetName:rec(g.targetId)?.name_ja||"ポケモン",ballKey:res.ballKey,success:res.success,onComplete:()=>{g.stage="result";save();render()}})
+}
+
 function activateRunAdvance(action){
  if(action==="encounterIntro"){if(currentEnemyNeedsLegendaryIntro())addLog("……ものすごい気配を感じる。");setCurrentEnemyReadyScene();return}
  if(action==="nextEnemy"){proceedNextEnemy();return}
@@ -6914,7 +6939,7 @@ function showLuckShop(returnTo="home"){
    if(kind==="evolution")useOv.querySelectorAll("[data-evolution-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.evolutionCandyTarget,q=itemQty("evolutionCandy"),ei=evolutionInfoForPick(id);if(q<=0||isExpeditionLocked(id)||!ei.hasEvolution||!ei.registered||ei.points>=ei.cost)return;state.shopItems.evolutionCandy=q-1;addGrowthPoint(id,1);save();rerenderUse("",useOv.scrollTop)});
    if(kind==="clover"){
     const refreshFilter=id=>rerenderUse(id,useOv.scrollTop);
-    const search=useOv.querySelector("#luckShopSearch");if(search)search.oninput=e=>{shopFilter.search=e.target.value;refreshFilter("luckShopSearch")};
+    const search=useOv.querySelector("#luckShopSearch");bindImeSearch(search,()=>{shopFilter.search=search.value;refreshFilter("luckShopSearch")});
     const type=useOv.querySelector("#luckShopType");if(type)type.onchange=e=>{shopFilter.type=e.target.value;refreshFilter("luckShopType")};
     const grade=useOv.querySelector("#luckShopGrade");if(grade)grade.onchange=e=>{shopFilter.grade=e.target.value;refreshFilter("luckShopGrade")};
     const luck=useOv.querySelector("#luckShopLuck");if(luck)luck.onchange=e=>{shopFilter.luck=e.target.value;refreshFilter("luckShopLuck")};
@@ -6964,7 +6989,7 @@ function renderOwned(){
  app.querySelectorAll("[data-quick-train]").forEach(b=>b.onclick=e=>{e.stopPropagation();showQuickTraining(b.dataset.quickTrain)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
  const q=document.getElementById("ownedSearch"),ty=document.getElementById("ownedType"),gr=document.getElementById("ownedGrade"),so=document.getElementById("ownedSort"),toggle=document.getElementById("ownedActionToggle");
- if(q)q.oninput=()=>{ownedSearch=q.value;if(!ownedActionOnly){const pos=q.selectionStart??ownedSearch.length;renderOwned();requestAnimationFrame(()=>{const nq=document.getElementById("ownedSearch");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})}};
+ bindImeSearch(q,()=>{ownedSearch=q.value;if(!ownedActionOnly){const pos=q.selectionStart??ownedSearch.length;renderOwned();requestAnimationFrame(()=>{const nq=document.getElementById("ownedSearch");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})}});
  if(ty)ty.onchange=()=>{ownedType=ty.value;if(!ownedActionOnly)renderOwned()};
  if(gr)gr.onchange=()=>{ownedGrade=gr.value;if(!ownedActionOnly)renderOwned()};
  if(so)so.onchange=()=>{ownedSort=so.value;renderOwned()};
@@ -7128,11 +7153,19 @@ ${evolutionCandidatesSectionHTML(id)}
  </div>`;
 
  if(isBlackPcOptimization()){
-  const panel=ov.querySelector(".ownedBackPanel");panel.classList.add("blackPickDetail");
-  const head=panel.querySelector(".ownedBackHead"),hero=panel.querySelector(".ownedBackHero"),cols=document.createElement("div"),left=document.createElement("div"),right=document.createElement("div");
-  cols.className="blackDetailColumns";left.className="blackDetailIdentity";right.className="blackDetailData";
-  left.appendChild(hero);[...panel.children].filter(x=>x!==head).forEach(x=>right.appendChild(x));cols.append(left,right);panel.appendChild(cols);
+  const panel=ov.querySelector(".ownedBackPanel");panel.classList.add("blackPickDetail","blackPickDetail286");
+  const head=panel.querySelector(".ownedBackHead"),cols=document.createElement("div"),identity=document.createElement("div"),abilities=document.createElement("div"),extras=document.createElement("div");
+  cols.className="blackDetailColumns";identity.className="blackDetailIdentity";abilities.className="blackDetailAbilities";extras.className="blackDetailExtras";
+  let area=identity;
+  [...panel.children].filter(x=>x!==head).forEach(x=>{
+   if(x.classList.contains("ownedBackSectionTitle"))area=x.textContent==="能力"?abilities:extras;
+   if(x.classList.contains("ownedBackActionRow")||x.classList.contains("evoCue")||x.classList.contains("ownedBackPointHint"))identity.appendChild(x);else area.appendChild(x);
+  });
+  cols.append(identity,abilities,extras);panel.appendChild(cols);
+  panel.querySelectorAll(".ownedBackPoint.growth small").forEach(e=>e.textContent="進化P");
+  panel.querySelectorAll(".evoCandidateCard").forEach(card=>{const r=rec(card.dataset.evoDetail),meta=card.querySelector(".evoCandidateMeta");if(r&&meta)meta.textContent=`${gradeText(r)} / ${r.pick_no||""}`});
  }
+
  document.body.appendChild(ov);
  const close=()=>{document.getElementById("ownedPointHelpOverlay")?.remove();ov.remove();document.body.style.overflow=prevOverflow};
  document.body.style.overflow="hidden";
@@ -13608,6 +13641,188 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunSta
 
 }
 </style>
+
+<style id="v286-black-pc-details-and-grass">
+.grassRankTable{width:100%;border-collapse:separate;border-spacing:4px}.grassRankTable th{text-align:left}.grassRankTable button{width:100%;padding:8px}.grassRankTableWrap{overflow:auto}.grassActions{grid-template-columns:repeat(3,minmax(0,1fr))}.grassActive .grassTuft{animation:grassRaritySway var(--grass-speed,1s) ease-in-out infinite;transform-origin:50% 90%}
+@keyframes grassRaritySway{0%,100%{transform:translateX(calc(-1 * var(--grass-shift,2px))) rotate(calc(-1 * var(--grass-sway,5deg)))}50%{transform:translateX(var(--grass-shift,2px)) rotate(var(--grass-sway,5deg))}}
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedFrontCardV190 .ownedV190Meta{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;grid-template-rows:30px 28px!important;gap:4px!important;align-items:center!important;min-height:62px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Meta .starStrong{grid-column:1!important;grid-row:1!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Meta .energyStrong{grid-column:2!important;grid-row:1!important;justify-self:start!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Meta .typeStrong{grid-column:1/-1!important;grid-row:2!important;display:flex!important;flex-wrap:nowrap!important;gap:4px!important;min-height:28px!important;align-items:center!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Identity{height:112px!important;min-height:112px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Identity>b{height:42px!important;min-height:42px!important;line-height:1.2!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinCard{height:100%!important;min-height:0!important;flex:1 1 0!important;overflow:hidden!important;padding:12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinInner{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:6px!important;height:100%!important;min-height:0!important;padding:0!important;width:100%!important;max-width:none!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinOmen{font-size:23px!important;line-height:1.15!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinTitle{font-size:28px!important;line-height:1.1!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinSpriteWrap{height:310px!important;min-height:0!important;width:280px!important;flex:0 1 310px!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinSprite{width:100%!important;height:100%!important;max-height:none!important;object-fit:contain!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinName{font-size:28px!important;line-height:1.15!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinContinue{min-height:42px!important;padding:8px 28px!important;font-size:20px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .encounterCutinHint{font-size:12px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .victoryCard{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:12px!important;padding:20px!important;flex:1 1 0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .victoryWord{font-size:88px!important;line-height:1.05!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .victoryCrown{font-size:64px!important;line-height:1!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .victorySub{font-size:24px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .victoryCard p{font-size:20px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app #victoryNext{font-size:22px!important;min-height:48px!important;min-width:280px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggDiscoveryCard,html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRewardResultCard,html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRouletteCard{display:flex!important;align-items:center!important;justify-content:center!important;height:100%!important;min-height:0!important;padding:14px!important;box-sizing:border-box!important;overflow:hidden!important;max-width:none!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggDiscoveryInner,html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRewardInner,html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRouletteCenter{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;width:100%!important;height:100%!important;min-height:0!important;gap:12px!important;padding:0!important;position:relative!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggDiscoveryText{font-size:40px!important;line-height:1.15!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggDiscoveryOrb{width:400px!important;height:290px!important;min-height:0!important;display:grid!important;place-items:center!important;margin:0!important;flex:0 1 290px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggDiscoveryOrb .eggVisual{transform:scale(4.5)!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggDiscoveryContinue{font-size:23px!important;min-height:52px!important;width:400px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRewardBig{height:260px!important;width:360px!important;display:grid!important;place-items:center!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRewardBig .eggVisual{transform:scale(4)!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRewardTitle{font-size:38px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .eggRewardSub{font-size:19px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchEpicCard{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;height:100%!important;min-height:0!important;max-width:none!important;padding:16px!important;gap:12px!important;overflow:hidden!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard:not(.hatchReady) .hatchStage{display:grid!important;place-items:center!important;width:min(1060px,100%)!important;height:430px!important;min-height:0!important;max-height:430px!important;flex:0 1 430px!important;grid-row:auto!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard .hatchEggWrap{transform:scale(4)!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard h2{font-size:42px!important;line-height:1.15!important;grid-row:auto!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard .hatchMessage{font-size:23px!important;min-height:28px!important;margin:0!important;grid-row:auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady{background:radial-gradient(ellipse at 50% 40%,#fff8be 0,#fff5e6 30%,#e2f7ff 65%,#c5e8ff 100%)!important;border:3px solid #e7b944!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .hatchMessage{display:none!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .hatchReveal{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:430px minmax(0,1fr)!important;grid-template-rows:auto auto auto auto!important;gap:12px 26px!important;align-content:center!important;align-items:center!important;width:min(1160px,100%)!important;height:470px!important;min-height:0!important;max-height:470px!important;opacity:1!important;transform:none!important;overflow:visible!important;grid-row:auto!important;text-align:left!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .hatchReveal img{grid-column:1!important;grid-row:1/-1!important;width:410px!important;height:450px!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;aspect-ratio:auto!important;padding:8px!important;box-sizing:border-box!important;box-shadow:0 0 40px #ffc34488,0 12px 26px #194c6333!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .hatchEggKind{grid-column:2!important;grid-row:1!important;justify-self:start!important;font-size:20px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .hatchResultName{grid-column:2!important;grid-row:2!important;font-size:48px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .badge.gold{grid-column:2!important;grid-row:3!important;justify-self:start!important;font-size:22px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady .hatchReveal p{grid-column:2!important;grid-row:4!important;font-size:22px!important;line-height:1.4!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard #hatchNext{grid-row:auto!important;min-height:48px!important;font-size:22px!important;width:350px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassScreen{width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;padding:12px!important;box-sizing:border-box!important;overflow:hidden!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassTitleRow{margin:0!important;flex:0 0 auto!important;align-items:center!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassTitleRow .sectionTitle{font-size:28px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassTitleRow small{font-size:15px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassTicketBadge{font-size:18px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassChooseScreen{display:flex!important;flex-direction:column!important;gap:8px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTableWrap{flex:1 1 0!important;min-height:0!important;overflow:auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable{width:100%!important;height:100%!important;table-layout:fixed!important;border-collapse:separate!important;border-spacing:5px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable th{font-size:18px!important;padding:3px!important;text-align:left!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable thead th{text-align:center!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable th:first-child{width:28%!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable td{padding:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable button{height:100%!important;min-height:37px!important;width:100%!important;padding:4px 10px!important;font-size:22px!important;background:#eaf8ed!important;color:#15532a!important;border:1px solid #a8d9b7!important;box-shadow:none!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassRankTable button:disabled{background:#eef1f4!important;color:#7a8790!important;opacity:1!important;font-size:16px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassPreview{margin:0!important;padding:8px 12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassPreview span{font-size:14px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassReadyScreen,html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassReactScreen{display:flex!important;flex-direction:column!important;gap:9px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassField{flex:1 1 0!important;min-height:0!important;margin:0!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassPatch{min-height:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassPatch .grassTuft{font-size:95px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassPatch small{font-size:16px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassReaction{font-size:38px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassReactionLegend span{font-size:16px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassSnackBox{margin:0!important;padding:8px 12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassSnackBox span{font-size:15px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassActions{grid-template-columns:1fr 1fr 1fr!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassActions button{min-height:50px!important;font-size:21px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallScreen{display:flex!important;flex-direction:column!important;gap:8px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassFoundHero{flex:1 1 0!important;min-height:0!important;grid-template-columns:350px minmax(0,1fr)!important;gap:24px!important;padding:12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassFoundHero img{width:330px!important;height:100%!important;max-height:400px!important;object-fit:contain!important;aspect-ratio:auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassFoundHero b{font-size:44px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassFoundHero span{font-size:26px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassFoundHero small{font-size:21px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallGuide{margin:0!important;font-size:20px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallGrid{flex:0 0 150px!important;height:150px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallGrid button{min-height:0!important;font-size:20px!important;gap:8px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallGrid img{width:64px!important;height:64px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallGrid b{font-size:20px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassBallGrid small{font-size:17px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen{display:flex!important;align-items:center!important;justify-content:center!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureThrowBody{height:100%!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureWishTitle{font-size:36px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureStage{width:min(1000px,100%)!important;height:470px!important;min-height:0!important;flex:0 1 470px!important;position:relative!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureTargetSprite{width:280px!important;height:410px!important;object-fit:contain!important;max-height:90%!important;left:50%!important;transform:translateX(-50%)!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureDramaText{font-size:25px!important;min-height:32px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureThrowLead{font-size:20px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen{display:grid!important;grid-template-columns:460px minmax(0,1fr)!important;grid-template-rows:32px 90px 85px minmax(0,1fr) 90px 56px!important;gap:10px 20px!important;align-items:center!important;background:radial-gradient(ellipse at 60% 40%,#fff8db,#f1fbff)!important;padding:16px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen>.kicker{grid-column:1/-1!important;grid-row:1!important;font-size:16px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultIcon{grid-column:2!important;grid-row:2!important;font-size:76px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultBall{grid-column:2!important;grid-row:3!important;justify-self:center!important;font-size:25px!important;padding:12px 22px!important;gap:12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultBall img{width:54px!important;height:54px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultPick{grid-column:1!important;grid-row:2/6!important;width:420px!important;height:100%!important;max-height:570px!important;object-fit:contain!important;margin:0!important;justify-self:center!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen h2{grid-column:2!important;grid-row:4!important;font-size:40px!important;line-height:1.25!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen p{grid-column:2!important;grid-row:5!important;font-size:22px!important;line-height:1.4!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultActions{grid-column:1/-1!important;grid-row:6!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultActions button{font-size:23px!important;min-height:52px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassNoTicket{grid-column:1/-1!important;font-size:14px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailColumns{grid-template-columns:280px 410px minmax(0,1fr)!important;gap:14px!important;padding:12px!important;height:calc(100% - 66px)!important;overflow:hidden!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailIdentity,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailAbilities,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailExtras{display:flex!important;flex-direction:column!important;gap:6px!important;height:100%!important;min-height:0!important;overflow:hidden!important;min-width:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailIdentity .ownedBackHero{padding:0!important;margin:0!important;display:flex!important;flex-direction:column!important;gap:7px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackHero>img{width:170px!important;height:240px!important;object-fit:contain!important;flex:0 0 240px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackName{font-size:24px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackMeta{font-size:13px!important;line-height:1.25!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackEnergy{padding:5px 10px!important;margin:5px 0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackEnergy b{font-size:27px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTypes{margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .pickHabitatDetail{font-size:12px!important;margin:0!important;padding:5px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackBond{padding:5px 10px!important;margin:3px 0!important;font-size:14px!important;min-height:28px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackFrontSummary{margin:0!important;padding:6px!important;display:flex!important;flex-wrap:wrap!important;gap:5px!important;min-height:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint{padding:4px!important;min-height:35px!important;flex:0 0 76px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint b,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingHead b{font-size:19px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint small,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingHead small{font-size:10px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingProgress{padding:0!important;min-height:0!important;flex:1!important;display:flex!important;flex-direction:column!important;gap:3px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingHead{min-height:30px!important;padding:4px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingExp{padding:5px!important;margin:0!important;min-height:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingExp small{font-size:10px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackBoostSummary,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackEvoState{margin:0!important;padding:6px!important;font-size:12px!important;min-height:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackSectionTitle{margin:0!important;padding:0!important;font-size:18px!important;flex:0 0 auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedStatLegend{margin:0!important;padding:0!important;font-size:12px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedStatGraphs{display:grid!important;grid-template-columns:1fr!important;grid-template-rows:repeat(6,minmax(0,1fr))!important;gap:8px!important;flex:1 1 0!important;min-height:0!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedStatGraph{display:grid!important;grid-template-columns:68px minmax(0,1fr) 44px!important;padding:10px 7px!important;min-height:0!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedStatGraph b{font-size:23px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedMoveBox{padding:8px!important;margin:0!important;font-size:15px!important;flex:0 0 auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedMoveRow{padding:6px 0!important;grid-template-columns:85px minmax(0,1fr)!important;font-size:14px!important;line-height:1.35!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedMoveRow b{font-size:19px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateSection{padding:7px!important;margin:0!important;min-height:0!important;flex:1 1 0!important;display:flex!important;flex-direction:column!important;gap:7px!important;overflow:auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateGroup{margin:0!important;min-height:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateGrid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))!important;gap:5px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard{padding:5px!important;display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;grid-template-rows:auto auto!important;gap:4px!important;text-align:left!important;min-height:68px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard img,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidatePlaceholder{width:36px!important;height:54px!important;aspect-ratio:auto!important;object-fit:contain!important;grid-column:1!important;grid-row:1/4!important;margin:0!important;font-size:7px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateName{grid-column:2!important;font-size:11px!important;min-height:0!important;line-height:1.2!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateMeta{grid-column:2!important;font-size:9px!important;line-height:1.15!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateTapHint{display:none!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateStatus{font-size:7px!important;left:3px!important;top:3px!important;padding:2px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateNote{font-size:10px!important;margin:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPointHint{font-size:10px!important;margin:0!important;padding:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackActionRow{margin:0!important;padding:0!important;display:flex!important;gap:5px!important;flex:0 0 auto!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackActionRow button{font-size:16px!important;padding:7px!important;min-height:36px!important;flex:1!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCue{font-size:11px!important;padding:4px!important;margin:0!important}
+}
+</style>
+<style id="v286-final-detail-adjustments">
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackHero>img{width:150px!important;height:190px!important;flex:0 0 190px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailIdentity>*{flex-shrink:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackFrontSummary{height:108px!important;box-sizing:border-box!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingProgress{height:94px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingHead{position:static!important;height:34px!important;flex:0 0 34px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackTrainingExp{position:static!important;height:56px!important;flex:0 0 56px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureThrownBall{width:100px!important;height:100px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowScreen .captureTargetSprite.captured{opacity:0!important;transform:translateX(-50%) scale(.25)!important;}
+}
+</style>
+<style id="v286-final-presentation-adjustments">
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard:not(.hatchReady) .hatchStage{align-self:center!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady:after{content:"✦　✧　✦　✧　✦";position:absolute;inset:8% 3% auto!important;font-size:52px;color:#eeb63b99;letter-spacing:1.5em;pointer-events:none;animation:hatchCelebrationGlow 2.2s ease-in-out infinite;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint{position:relative!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;height:94px!important;max-height:94px!important;min-height:0!important;flex:0 0 76px!important;padding:4px!important;box-sizing:border-box!important;gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint>span{display:none!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint>div{min-width:0!important;width:100%!important;text-align:center!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint small{white-space:nowrap!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint i{position:absolute!important;top:3px!important;right:3px!important;width:15px!important;height:15px!important;font-size:9px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateGrid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard{height:60px!important;min-height:60px!important;grid-template-rows:18px 20px!important;align-items:center!important;overflow:hidden!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateName{white-space:nowrap!important;font-size:11px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateMeta{font-size:10px!important;line-height:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateGroup{flex:0 0 auto!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateNote{flex:0 0 auto!important;}
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard img,html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidatePlaceholder{height:44px!important;width:30px!important;}
+@keyframes hatchCelebrationGlow{0%,100%{opacity:.45;transform:scale(.98)}50%{opacity:1;transform:scale(1.02)}}
+</style>
 </body>
 <!-- Ver2.57:
   黒PC（1520×794 / DPR1.25）などpc-compactの戦闘画面を横長最適化。
@@ -13717,3 +13932,5 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunSta
 <!-- Ver2.84: 黒PCの通常画面・冒険画面・一覧・ショップ詳細の幅制限と文字サイズを最適化。更新日時: 2026-10-03 17:00 JST -->
 
 <!-- Ver2.85: 黒PC共通ヘッダー／冒険固定パーティ・帯／編成サイズ切替／所持文字のはみ出し／選択画面整理／報酬・結果・裏面・ショップ最適化。更新日時: 2026-10-03 17:50 JST -->
+
+<!-- Ver2.86: 黒PCの裏面を1画面・能力1列へ再配置。タイプ数による所持カードずれとIME変換を修正。戦闘準備・勝利・卵発見／孵化を拡大・中央配置。草むら選択表、ボタン順、生息地復帰、レア度別の葉の揺れ、共通捕獲演出と結果表示を実装。更新日時: 2026-10-03 18:30 JST -->
