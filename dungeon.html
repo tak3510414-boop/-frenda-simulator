@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.68">
+<html lang="ja" data-app-version="2.69">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4832,7 +4832,7 @@ const STARTER_SET_DEFS=[
  {key:"galar",label:"ガラル",names:["サルノリ","ヒバニー","メッソン"]},
  {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
 ];
-const stateDefault=()=>({saveVersion:13,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,lastSummary:null});
+const stateDefault=()=>({saveVersion:13,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,grassTicket:3,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,grassSession:null,lastSummary:null});
 // Battle-knowledge cache must exist before migrateState(), because reconcileDexState() invalidates it during startup.
 let battleKnowledgeTypeCache=null;
 let state=loadState();
@@ -4937,6 +4937,9 @@ function migrateState(){
  state.shopItems.trainingCandy=Math.max(0,Math.floor(Number(state.shopItems.trainingCandy)||0));
  state.shopItems.evolutionCandy=Math.max(0,Math.floor(Number(state.shopItems.evolutionCandy)||0));
  state.shopItems.captureTicket=Math.max(0,Math.floor(Number(state.shopItems.captureTicket)||0));
+ if(state.shopItems.grassTicket==null)state.shopItems.grassTicket=3;
+ state.shopItems.grassTicket=Math.max(0,Math.min(10,Math.floor(Number(state.shopItems.grassTicket)||0)));
+ if(state.grassSession&&typeof state.grassSession!=="object")state.grassSession=null;
  state.shopItems.superBall=Math.max(0,Math.floor(Number(state.shopItems.superBall)||0));
  state.shopItems.hyperBall=Math.max(0,Math.floor(Number(state.shopItems.hyperBall)||0));
  state.shopItems.masterBall=Math.max(0,Math.floor(Number(state.shopItems.masterBall)||0));
@@ -5054,7 +5057,7 @@ const LUCK_MAX=5,COIN_PER_OVERFLOW_DRILL=100,LUCK_ITEM_PRICE=500;
 const TRAINING_CANDY_PRICE=300,EVOLUTION_CANDY_PRICE=1200,CAPTURE_TICKET_PRICE=700;
 const SUPER_BALL_PRICE=600,HYPER_BALL_PRICE=2500,MASTER_BALL_PRICE=10000;
 const SUPER_BALL_MAX=5,HYPER_BALL_MAX=3,MASTER_BALL_MAX=1;
-const TRAINING_CANDY_MAX=10,EVOLUTION_CANDY_MAX=3,CAPTURE_TICKET_MAX=3;
+const TRAINING_CANDY_MAX=10,EVOLUTION_CANDY_MAX=3,CAPTURE_TICKET_MAX=3,GRASS_TICKET_MAX=10;
 function luckFor(id){return Math.max(0,Math.min(LUCK_MAX,Math.floor(Number(state.luckLevels?.[id])||0)))}
 function setLuck(id,value){state.luckLevels=state.luckLevels&&typeof state.luckLevels==="object"?state.luckLevels:{};state.luckLevels[id]=Math.max(0,Math.min(LUCK_MAX,Math.floor(Number(value)||0)));return state.luckLevels[id]}
 function averageLuck(ids){const a=(ids||[]).map(x=>typeof x==="string"?x:x?.id).filter(Boolean);return a.length?a.reduce((n,id)=>n+luckFor(id),0)/a.length:0}
@@ -5410,7 +5413,7 @@ function homeHero(){
 }
 function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey);document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=!!state.initialized&&!isActualDungeonHome;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
-dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();scheduleAutoAdventure();return}if(state.run){renderRun();scheduleAutoAdventure();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="items"||screen==="eggs")return renderItems();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
+dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();scheduleAutoAdventure();return}if(state.run){renderRun();scheduleAutoAdventure();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="items"||screen==="eggs")return renderItems();if(screen==="grass")return renderGrass();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_level)>0?`Lv${r.speed_level}`:"-";const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
 function showStarterPickDetail(id){const x=starterDetailData(id);if(!x)return;const {r,speed,fin,power,acc,special}=x;document.getElementById("starterDetailOverlay")?.remove();const ov=document.createElement("div");ov.id="starterDetailOverlay";ov.className="ownedDetailOverlay";ov.innerHTML=`<div class="ownedBackPanel" role="dialog" aria-modal="true" aria-label="御三家候補・裏面データ"><div class="ownedBackHead"><div><small>STARTER PICK DATA</small><b>御三家候補・裏面データ</b></div><button type="button" class="ownedBackClose" id="starterBackClose">閉じる</button></div><div class="ownedBackHero"><img src="${esc(imageOf(r))}" alt=""><div><div class="ownedBackName">${esc(r.name_ja)}</div><div class="ownedBackMeta">${gradeText(r)} / ${esc(r.pick_no)}<br>${esc(r.series||"")}<br>ポケエネ ${esc(r.poke_ene??"-")}</div><div class="ownedBackTypes">${typesHTML(r)}</div><div class="ownedTapLabel">※御三家を決める前の比較用データです。</div></div></div><div class="ownedBackStats"><div class="ownedStat"><span>HP</span><b>${esc(r.hp??"-")}</b><small></small></div><div class="ownedStat"><span>ATK</span><b>${esc(r.atk??"-")}</b><small></small></div><div class="ownedStat"><span>DEF</span><b>${esc(r.def??"-")}</b><small></small></div><div class="ownedStat"><span>SP.ATK</span><b>${esc(r.sp_atk??"-")}</b><small></small></div><div class="ownedStat"><span>SP.DEF</span><b>${esc(r.sp_def??"-")}</b><small></small></div><div class="ownedStat"><span>すばやさ</span><b>${esc(speed)}</b><small></small></div></div><div class="ownedMoveBox"><div class="ownedMoveRow"><span>通常わざ</span><div><b>${esc(r.move||"未登録")}</b><br>${esc(r.move_type||"-")} / ${esc(r.move_class||"-")} / 威力参考 ${esc(power)} / 命中 ${esc(acc)}</div></div><div class="ownedMoveRow"><span>必殺技</span><div class="${fin==="なし"?"ownedNoSpecial":""}"><b>${esc(fin)}</b></div></div><div class="ownedMoveRow"><span>特殊要素</span><div>${esc(special)}</div></div></div></div>`;document.body.appendChild(ov);document.body.style.overflow="hidden";const close=()=>{ov.remove();document.body.style.overflow=""};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#starterBackClose").onclick=close}
 function starterGradeBadgeHTML(r){
@@ -5512,7 +5515,7 @@ function homeTrainingSummary(){
 }
 function renderHome(){
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
- const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary(),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0)),invClover=inventoryItemQty("luckyClover"),invTicket=inventoryItemQty("captureTicket");
+ const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary(),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0)),invClover=inventoryItemQty("luckyClover"),invTicket=inventoryItemQty("captureTicket"),invGrass=inventoryItemQty("grassTicket");
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardStats"><strong>最深 B${deepest}</strong><strong>クリア ${clears}</strong></div><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
@@ -5521,7 +5524,7 @@ function renderHome(){
   <div class="homeManageGrid">
    <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small class="homeTrainingReady">特訓可能 ${training.train||0}体${training.loading?" / 進化確認中…":training.error?" / 進化確認不可":` / 進化可能 ${training.evolve}体`}</small></button>
    <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
-   <button class="homeMenuBtn items" data-menu="items"><b>🎒</b><span>もちもの</span><strong class="homeManageValue homeInventoryCounts"><span>🥚 ${state.eggs.length}/${state.eggCap}</span><span>🍀 ${invClover}</span><span>🎫 ${invTicket}</span></strong><small>卵・育成・バトル用品</small><small class="homeManageSub">${esc(egg.title)}</small></button>
+   <button class="homeMenuBtn items" data-menu="items"><b>🎒</b><span>もちもの</span><strong class="homeManageValue homeInventoryCounts"><span>🥚 ${state.eggs.length}/${state.eggCap}</span><span>🌿 ${invGrass}</span><span>🍀 ${invClover}</span><span>🎫 ${invTicket}</span></strong><small>卵・草むら・育成・バトル用品</small><small class="homeManageSub">${esc(egg.title)}</small></button>
    <button class="homeMenuBtn shop" id="homeShopBtn"><b>🛍️</b><span>ショップ</span><strong class="homeManageValue">🪙 ${coins.toLocaleString("ja-JP")}</strong><small>運アップアイテム</small><small>商品は今後追加予定</small></button>
   </div>
  </div></div>`;
@@ -5552,6 +5555,154 @@ function dungeonPreviewPicks(did,count=4){
  return out
 }
 function dungeonMaxUnlockedText(did){const a=unlockedDifficulties(did);return a.length?`解放 ランク1〜ランク${Math.max(...a)}`:"未解放"}
+
+function grassTicketQty(){return inventoryItemQty("grassTicket")}
+function grassHabitatOptions(){
+ const out=[];
+ for(const did of THEME_ORDER){
+  const th=THEMES[did];if(!th)continue;
+  for(let diff=1;diff<=5;diff++)if(unlocked(did,diff))out.push({did,diff,th});
+ }
+ return out.length?out:[{did:"forest",diff:1,th:THEMES.forest}]
+}
+function grassEligiblePools(did,diff){
+ const main=habitatListFor(did,diff).filter(r=>validBattle(r)&&allowedByDungeonDifficulty(r,diff));
+ const all=RECORDS.filter(r=>r?.master_id&&validBattle(r)&&allowedByDungeonDifficulty(r,diff));
+ const wander=all.filter(r=>!isMainHabitatRecord(r,did,diff));
+ return {main,wander,all}
+}
+function grassRandomRecord(pool,used){
+ const list=(pool||[]).filter(r=>!used.has(String(r.master_id)));
+ if(!list.length)return null;
+ return list[Math.floor(Math.random()*list.length)]||null
+}
+function grassReactionForRecord(r){
+ const g=effectiveDungeonGrade(r);
+ if(g>=5)return "！？";
+ if(g===4)return "！";
+ if(g===3)return "？";
+ return "…？"
+}
+function buildGrassSpots(did,diff){
+ const {main,wander,all}=grassEligiblePools(did,diff),used=new Set(),spots=[];
+ for(let i=0;i<6;i++){
+  let pool=Math.random()<MAIN_HABITAT_RATE?main:wander;
+  if(!pool?.length)pool=main.length?main:all;
+  const r=grassRandomRecord(pool,used)||grassRandomRecord(all,used)||grassRandomRecord(all,new Set());
+  if(!r)continue;
+  used.add(String(r.master_id));
+  spots.push({id:String(r.master_id),reaction:grassReactionForRecord(r),main:isMainHabitatRecord(r,did,diff)})
+ }
+ return spots
+}
+function prepareGrassArea(did,diff){
+ if(!unlocked(did,diff))return;
+ state.grassSession={stage:"ready",dungeonId:did,difficulty:Number(diff)||1,spots:[],targetId:null,result:null};
+ save();screen="grass";render()
+}
+function throwGrassSnack(){
+ const g=state.grassSession;if(!g||g.stage!=="ready")return;
+ const qty=grassTicketQty();if(qty<=0){UI.dialog.alert("草むらチケットがありません。");return}
+ state.shopItems.grassTicket=qty-1;
+ g.spots=buildGrassSpots(g.dungeonId,g.difficulty);
+ if(!g.spots.length){state.shopItems.grassTicket=qty;UI.dialog.alert("この生息地で草むらイベントを準備できませんでした。");state.grassSession=null;save();render();return}
+ g.stage="react";save();sfx("pickup");render()
+}
+function chooseGrassPatch(index){
+ const g=state.grassSession,spot=g?.spots?.[Number(index)];if(!g||g.stage!=="react"||!spot)return;
+ const r=rec(spot.id);if(!r)return;
+ g.targetId=String(spot.id);g.selectedIndex=Number(index);g.stage="ball";markPickSeen(r);save();sfx("battleStart");render()
+}
+function grassBallRate(id,ballKey){
+ const r=rec(id);if(!r)return 0;
+ const base=RULES.captureRate(effectiveDungeonGrade(r),ballKey,0);
+ return Math.max(0,Math.min(1,Number(base)||0))
+}
+function throwGrassBall(ballKey){
+ const g=state.grassSession,r=rec(g?.targetId),def=BALL_DEF[ballKey];
+ if(!g||g.stage!=="ball"||!r||!def)return;
+ const itemKey=shopBallItemKey(ballKey),qty=itemKey?inventoryItemQty(itemKey):Infinity;
+ if(itemKey&&qty<=0)return;
+ if(itemKey&&!UI.dialog.confirm(`${def.label}を1個使いますか？\n所持 ${qty}個 → ${qty-1}個`))return;
+ if(itemKey)state.shopItems[itemKey]=qty-1;
+ const rate=grassBallRate(r.master_id,ballKey),success=Math.random()<rate,newSpeciesRegistration=success&&!pickRegistered(r);
+ let duplicate=false,duplicateRewardKind=null,duplicateRewardLabel="";
+ if(success){
+  if(ownedEntry(r.master_id)){duplicate=true;const award=awardGrowthOrDrill(r.master_id,1);duplicateRewardKind=award.kind;duplicateRewardLabel=award.label}
+  else ownNew(r.master_id)
+ }
+ g.result={ballKey,rate,success,duplicate,duplicateRewardKind,duplicateRewardLabel,newSpeciesRegistration};
+ g.stage="result";save();sfx(success?"captureSuccess":"captureFail");render()
+}
+function leaveGrassEvent(to="home"){
+ state.grassSession=null;save();screen=to;render()
+}
+function grassLocationTitle(g){
+ const th=THEMES[g?.dungeonId]||THEMES.forest;return `${th.icon} ${th.name} ランク${Number(g?.difficulty)||1}`
+}
+function renderGrass(){
+ const g=state.grassSession,qty=grassTicketQty();
+ if(!g){
+  const opts=grassHabitatOptions(),current=opts.find(o=>o.did===currentDungeon.id&&o.diff===Number(currentDungeon.difficulty))||opts[0];
+  app.innerHTML=`<div class="card grassScreen grassChooseScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS GET</div><div class="sectionTitle">🌿 草むらゲット</div><small>生息地を選んで、草むらにおかしを投げよう！</small></div><span class="grassTicketBadge">🌿 チケット ${qty}/${GRASS_TICKET_MAX}</span></div>
+   <div class="grassHowto"><span>① 生息地を選ぶ</span><span>② 草むらへ行く</span><span>③ おかしを投げると1枚消費</span><span>④ 反応を見て1か所を選ぶ</span></div>
+   <label class="grassHabitatSelectLabel">生息地<select id="grassHabitatSelect">${opts.map(o=>`<option value="${esc(o.did)}|${o.diff}" ${o.did===current.did&&o.diff===current.diff?"selected":""}>${o.th.icon} ${esc(o.th.name)}　ランク${o.diff}　🌿${habitatProgressFor(o.did,o.diff).owned}/${habitatProgressFor(o.did,o.diff).total}</option>`).join("")}</select></label>
+   <div class="grassPreview"><b>🌿 生息地のピックが中心</b><span>約85%は選んだ生息地、約15%は別の生息地から迷い込んできます。</span></div>
+   <button id="grassEnter" class="grassPrimaryBtn" ${qty>0?"":"disabled"}>🌿 草むらへ行く</button>
+   ${qty<=0?'<div class="notice">草むらチケットがありません。ダンジョンをクリアすると1枚獲得できます。</div>':""}
+  </div>`;
+  const sel=document.getElementById("grassHabitatSelect");
+  document.getElementById("grassEnter")?.addEventListener("click",()=>{const [did,diff]=String(sel?.value||"forest|1").split("|");prepareGrassArea(did,Number(diff)||1)});
+  return
+ }
+ if(g.stage==="ready"){
+  app.innerHTML=`<div class="card grassScreen grassReadyScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS FIELD</div><div class="sectionTitle">${grassLocationTitle(g)}</div><small>まだチケットは消費していません。</small></div><span class="grassTicketBadge">🌿 ${qty}/${GRASS_TICKET_MAX}</span></div>
+   <div class="grassField ready">${Array.from({length:6},(_,i)=>`<div class="grassPatch"><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></div>`).join("")}</div>
+   <div class="grassSnackBox"><b>🍪 おかしを投げる</b><span>押した時点で草むらチケットを1枚消費します。</span></div>
+   <div class="grassActions"><button id="grassSnack" class="grassPrimaryBtn" ${qty>0?"":"disabled"}>🍪 おかしを投げる</button><button id="grassChange" class="ghost">生息地を選び直す</button></div>
+  </div>`;
+  document.getElementById("grassSnack")?.addEventListener("click",throwGrassSnack);
+  document.getElementById("grassChange")?.addEventListener("click",()=>leaveGrassEvent("grass"));
+  return
+ }
+ if(g.stage==="react"){
+  app.innerHTML=`<div class="card grassScreen grassReactScreen"><div class="grassTitleRow"><div><div class="kicker">REACTION!</div><div class="sectionTitle">${grassLocationTitle(g)}</div><small>反応を見て、投げたい草むらを1つ選ぼう。</small></div><span class="grassTicketBadge">残り 🌿 ${qty}</span></div>
+   <div class="grassReactionLegend"><span>…？ 気配</span><span>？ 反応あり</span><span>！ 強い気配</span><span>！？ レアな気配</span></div>
+   <div class="grassField reactions">${g.spots.map((s,i)=>`<button type="button" class="grassPatch grassActive ${s.reaction==="！？"?"ultra":s.reaction==="！"?"strong":""}" data-grass-patch="${i}"><div class="grassReaction">${esc(s.reaction)}</div><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></button>`).join("")}</div>
+   <div class="grassHint">選べるのは1か所だけです。</div>
+  </div>`;
+  app.querySelectorAll("[data-grass-patch]").forEach(b=>b.onclick=()=>chooseGrassPatch(b.dataset.grassPatch));
+  return
+ }
+ if(g.stage==="ball"){
+  const r=rec(g.targetId);
+  app.innerHTML=`<div class="card grassScreen grassBallScreen"><div class="grassTitleRow"><div><div class="kicker">FOUND!</div><div class="sectionTitle">🌿 草むらから飛び出した！</div><small>${grassLocationTitle(g)}</small></div><span class="grassTicketBadge">残り 🌿 ${qty}</span></div>
+   <div class="grassFoundHero"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r?.name_ja||"ポケモン")}</b><span>${gradeText(r)}　⚡${esc(r?.poke_ene??"-")}</span><small>${ownedEntry(r?.master_id)?"所持済み":"ゲットして仲間にしよう！"}</small></div></div>
+   <div class="grassBallGuide">投げるボールを選んでください。</div>
+   <div class="grassBallGrid">
+    <button data-grass-ball="poke"><img src="${esc(BALL_DEF.poke.img)}" alt=""><b>モンスターボール</b><small>無料</small></button>
+    <button data-grass-ball="super" ${shopBallQty("super")>0?"":"disabled"}><img src="${esc(BALL_DEF.super.img)}" alt=""><b>スーパーボール</b><small>×${shopBallQty("super")}</small></button>
+    <button data-grass-ball="hyper" ${shopBallQty("hyper")>0?"":"disabled"}><img src="${esc(BALL_DEF.hyper.img)}" alt=""><b>ハイパーボール</b><small>×${shopBallQty("hyper")}</small></button>
+    <button data-grass-ball="master" ${shopBallQty("master")>0?"":"disabled"}><img src="${esc(BALL_DEF.master.img)}" alt=""><b>マスターボール</b><small>×${shopBallQty("master")}</small></button>
+   </div>
+  </div>`;
+  app.querySelectorAll("[data-grass-ball]").forEach(b=>b.onclick=()=>throwGrassBall(b.dataset.grassBall));
+  return
+ }
+ if(g.stage==="result"){
+  const r=rec(g.targetId),res=g.result||{},ball=BALL_DEF[res.ballKey]||BALL_DEF.poke;
+  const detail=res.success?(res.duplicate?`所持済みだったため、${esc(res.duplicateRewardLabel||"成長ボーナス")}。`:(res.newSpeciesRegistration?"📖 図鑑にも新しく登録されました！":"新しい仲間になりました！")):"今回は逃げられてしまいました。遭遇した情報は図鑑に残ります。";
+  app.innerHTML=`<div class="card grassScreen grassResultScreen ${res.success?"success":"fail"}"><div class="kicker">GRASS GET RESULT</div><div class="grassResultIcon">${res.success?"🎉":"💨"}</div><div class="grassResultBall"><img src="${esc(ball.img)}" alt=""><span>${esc(ball.label)}　捕獲率 ${Math.round(Number(res.rate||0)*100)}%</span></div><img class="grassResultPick" src="${esc(imageOf(r))}" alt=""><h2>${res.success?`${esc(r?.name_ja||"ポケモン")} ゲット！`:`${esc(r?.name_ja||"ポケモン")} は逃げた…`}</h2><p>${detail}</p>
+   <div class="grassResultActions"><button id="grassAgain" class="grassPrimaryBtn" ${qty>0?"":"disabled"}>🌿 もう一度</button><button id="grassHome" class="ghost">ホームへ</button></div>
+   ${qty<=0?'<small class="grassNoTicket">チケットを使い切りました。ダンジョンクリアで補充できます。</small>':""}
+  </div>`;
+  document.getElementById("grassAgain")?.addEventListener("click",()=>leaveGrassEvent("grass"));
+  document.getElementById("grassHome")?.addEventListener("click",()=>leaveGrassEvent("home"));
+  return
+ }
+ state.grassSession=null;save();render()
+}
+
 function dungeonOverviewRankHTML(did,diff){const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff),deep=Math.max(0,Number(st?.deepest||0)),clears=Math.max(0,Number(st?.clears||0));let cls="locked",txt="🔒";if(ok){if(isCurrent){cls="current";txt=deep?`B${deep}`:"攻略中"}else if(clears>0){cls="cleared";txt=`B${deep||10} ✓${clears}`}else if(deep>0){cls="progress";txt=`B${deep}`}else{cls="open";txt="挑戦可"}}return `<span class="dungeonOverviewRank ${cls}"><b>R${diff}</b><small>${txt}</small></span>`}
 function dungeonOverviewSummary(did){const unlockedList=unlockedDifficulties(did),stats=[1,2,3,4,5].map(d=>getStat(did,d));const cleared=stats.filter((s,i)=>unlocked(did,i+1)&&Number(s?.clears||0)>0).length;let bestDiff=0,bestFloor=0;for(let d=1;d<=5;d++){if(!unlocked(did,d))continue;const f=Math.max(0,Number(stats[d-1]?.deepest||0));if(d>bestDiff||(d===bestDiff&&f>bestFloor)){bestDiff=d;bestFloor=f}}const maxUnlocked=unlockedList.length?Math.max(...unlockedList):0;return {cleared,bestDiff,bestFloor,maxUnlocked}}
 function dungeonOverviewRankButtonHTML(did,diff){const ok=unlocked(did,diff),st=getStat(did,diff),deep=Math.max(0,Number(st?.deepest||0)),clears=Math.max(0,Number(st?.clears||0)),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff),selected=!state.run&&currentDungeon&&currentDungeon.id===did&&Number(currentDungeon.difficulty)===Number(diff),hp=habitatProgressFor(did,diff);let cls="locked",floorText="LOCK",stateText="未解放";if(ok){if(isCurrent){cls="currentRun";floorText=deep?`B${deep}`:"攻略中";stateText="攻略中"}else if(clears>0){cls="cleared";floorText=`B${deep||10}`;stateText=`クリア ${clears}回`}else if(deep>0){cls="progress";floorText=`B${deep}`;stateText="攻略中"}else{cls="open";floorText="B0";stateText="挑戦可"}}const selAttr=selected?` data-selected-rank="1"`:"",habitatText=ok?`🌿${hp.owned}/${hp.total}`:"🌿—";return `<button type="button" class="dungeonOverviewRankBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"}${selAttr}><b>R${diff}</b><span class="rankFloor">${floorText}</span><span class="rankState">${stateText}</span><span class="rankHabitat">${habitatText}</span></button>`}
@@ -5993,7 +6144,9 @@ function continueAfterFloorAdvance(){
 function continuePickup(){if(!state.run)return;state.run.pickup=null;continueAfterFloorAdvance()}
 function afterFloorResolved(){const r=state.run;if(!r)return;advanceEggs(1);r.floor++;if(r.floor>10)r.floor=10;runTeam().forEach(t=>{if(!t.ko)healPercent(t,.10)});addLog(`地下${r.floor}階へ。生存中の仲間が10%回復。`);updateDeepest(r.floor);if(maybeStartForcedAlertBattle())return;if(tryFloorPickup())return;continueAfterFloorAdvance()}
 function runSummaryData(type,floor){const r=state.run||{},team=(r.team||[]).map(t=>({id:t.id,hp:Number(t.hp||0),max:maxHpFor(t.id),ko:!!t.ko}));return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,luckAverage:averageLuck(r.team||[]),teamIds:team.map(t=>t.id),teamEnd:team,roadBattleWins:Math.max(0,Number(r.roadBattleWins||0)),battleWins:Math.max(0,Number(r.battleWins||0)),xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),coinGained:clone(r.coinGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[],autoAdventure:!!r.autoAdventureStarted,autoAdventureCompleted:!!r.autoAdventureStarted&&!r.autoAdventureStopped&&!!r.autoAdventure,autoAdventureStartedMidRun:!!r.autoAdventureStartedMidRun,autoAdventureStartedFloor:Number(r.autoAdventureStartedFloor)||null,autoMode:r.autoMode||null,autoStats:clone(r.autoStats||{})}}
-function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;summary.autoUnlocked=firstClear&&!r.autoAdventureStarted;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false,autoAdventure:!!r.autoAdventure};state.run=null;state.lastSummary=summary;save();screen="postRun";render()}
+function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;summary.autoUnlocked=firstClear&&!r.autoAdventureStarted;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear);
+ const grassBefore=inventoryItemQty("grassTicket"),grassAfter=Math.min(GRASS_TICKET_MAX,grassBefore+1);
+ state.shopItems.grassTicket=grassAfter;summary.grassTicketAward=Math.max(0,grassAfter-grassBefore)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false,autoAdventure:!!r.autoAdventure};state.run=null;state.lastSummary=summary;save();screen="postRun";render()}
 function runDefeat(){beginRunEnd("defeat",state.run.floor)}
 function runClear(){beginRunEnd("clear",10)}
 function withdraw(){if(!state.run)return;if(!UI.dialog.confirm("現在の冒険から撤退しますか？"))return;beginRunEnd("withdraw",state.run.floor)}
@@ -6119,7 +6272,7 @@ function renderSummary(){
        <div class="result6LootGrid">
          <div class="result5LootGroup allies result6Allies"><div class="result5LootLabel"><em>NEW</em><b>新しい仲間</b></div><div class="result6AllyGrid ${allyCountClass}">${allySlots}</div></div>
          <div class="result6LootBottom">
-           <div class="result5LootGroup reward"><div class="result5LootLabel"><em>REWARD</em><b>クリア報酬</b></div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加":"今回は報酬なし"}</small></div></div></div>
+           <div class="result5LootGroup reward"><div class="result5LootLabel"><em>REWARD</em><b>クリア報酬</b></div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加":"今回は卵なし"}${Number(x.grassTicketAward||0)>0?`<br>🌿 草むらチケット +${Number(x.grassTicketAward)}`:""}</small></div></div></div>
            <div class="result5LootGroup unlock"><div class="result5LootLabel"><em>UNLOCK</em><b>新しく解放</b></div><div class="result4UnlockList">${unlockRows}</div></div>
          </div>
        </div>
@@ -6598,9 +6751,12 @@ function inventoryItemCardHTML({cls="",icon="",name="",qty="0",desc="",note="",u
  return `<div class="inventoryItemCard ${cls}"><div class="inventoryItemIcon ${img?"image":""}">${visual}</div><div class="inventoryItemBody"><div class="inventoryItemTitle"><b>${esc(name)}</b><strong>${esc(qty)}</strong></div><p>${esc(desc)}</p>${note?`<small>${esc(note)}</small>`:""}</div>${useKind?`<button type="button" class="inventoryUseBtn" data-inventory-use="${esc(useKind)}">使う</button>`:""}</div>`
 }
 function renderItems(){
- const qLucky=inventoryItemQty("luckyClover"),qTraining=inventoryItemQty("trainingCandy"),qEvo=inventoryItemQty("evolutionCandy"),qTicket=inventoryItemQty("captureTicket"),qSuper=inventoryItemQty("superBall"),qHyper=inventoryItemQty("hyperBall"),qMaster=inventoryItemQty("masterBall");
+ const qLucky=inventoryItemQty("luckyClover"),qTraining=inventoryItemQty("trainingCandy"),qEvo=inventoryItemQty("evolutionCandy"),qTicket=inventoryItemQty("captureTicket"),qGrass=inventoryItemQty("grassTicket"),qSuper=inventoryItemQty("superBall"),qHyper=inventoryItemQty("hyperBall"),qMaster=inventoryItemQty("masterBall");
  app.innerHTML=`<div class="card inventoryScreen"><div class="inventoryScreenHead"><div><div class="sectionTitle">🎒 もちもの</div><small>卵・育成アイテム・バトル用品をまとめて確認</small></div><span class="inventoryEggBadge">🥚 ${state.eggs.length}/${state.eggCap}</span></div>
  ${inventoryEggSectionHTML()}
+ <section class="inventorySection grassInventorySection"><div class="inventorySectionHead"><div><span>🌿</span><div><b>草むらゲット</b><small>チケット1枚で草むらを1回調査</small></div></div><strong>${qGrass}/${GRASS_TICKET_MAX}</strong></div><div class="inventoryItemList">
+ ${inventoryItemCardHTML({cls:"grass",icon:"🌿",name:"草むらチケット",qty:`×${qGrass}/${GRASS_TICKET_MAX}`,desc:"生息地を選び、おかしを投げて草むらの反応から1か所を選びます。",note:state.grassSession?"草むらイベント進行中。タップして再開できます。":"「おかしを投げる」を押した時点で1枚消費",useKind:(qGrass>0||state.grassSession)?"grass":""})}
+ </div></section>
  <section class="inventorySection"><div class="inventorySectionHead"><div><span>🍀</span><div><b>育成アイテム</b><small>ここから所持ピックへ使用できます</small></div></div></div><div class="inventoryItemList">
  ${inventoryItemCardHTML({cls:"clover",icon:"🍀",name:"ラッキークローバー",qty:`×${qLucky}`,desc:"所持ピック1体の幸運を+1。幸運は最大5。",note:"対象ピックを選んで使用",useKind:qLucky>0?"clover":""})}
  ${inventoryItemCardHTML({cls:"training",icon:"🏋️",name:"特訓キャンディ",qty:`×${qTraining}/${TRAINING_CANDY_MAX}`,desc:"選んだ所持ピックの特訓ポイントを+1。",note:"能力がすべてMAXのピックは対象外",useKind:qTraining>0?"training":""})}
@@ -6614,7 +6770,7 @@ function renderItems(){
  ${inventoryItemCardHTML({cls:"ball hyper",name:"ハイパーボール",qty:`×${qHyper}/${HYPER_BALL_MAX}`,desc:"捕獲率はモンスターボールの×10。",note:"★4・★5にも強力",img:BALL_DEF.hyper.img})}
  ${inventoryItemCardHTML({cls:"ball master",name:"マスターボール",qty:`×${qMaster}/${MASTER_BALL_MAX}`,desc:"使用すると相手を必ずゲットできます。",note:"最上位ボール・所持上限1個",img:BALL_DEF.master.img})}
  </div></section></div>`;
- app.querySelectorAll("[data-inventory-use]").forEach(b=>b.onclick=()=>showInventoryItemUse(b.dataset.inventoryUse))
+ app.querySelectorAll("[data-inventory-use]").forEach(b=>b.onclick=()=>{if(b.dataset.inventoryUse==="grass"){screen="grass";render()}else showInventoryItemUse(b.dataset.inventoryUse)})
 }
 function showInventoryItemUse(kind){
  document.getElementById("inventoryUseOverlay")?.remove();
@@ -11587,6 +11743,57 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
 @media(max-width:700px){.headerSoundStatus{width:22px;height:21px;min-width:22px;font-size:12px;border-radius:7px}.headerTop .brand b{gap:3px!important}.versionBadge{margin-left:2px!important}.homeScreen{padding-bottom:0!important}}
 </style>
 <!-- Ver2.68: ホーム最下部の音量・バックアップバーを廃止。音量はバージョン横に常設し、保存/クラウド状態アイコンをタップしてバックアップ管理を開く。 -->
+
+
+<style id="v269-grass-get">
+.inventoryItemCard.grass{border-color:#7fc58e;background:linear-gradient(135deg,#f3fff1,#e1f5df)}
+.inventoryItemCard.grass .inventoryItemIcon{background:#dff3df}
+.grassScreen{max-width:920px;margin:0 auto;padding:16px}
+.grassTitleRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.grassTitleRow .sectionTitle{font-size:26px;margin:2px 0}.grassTitleRow small{color:#647985;font-weight:800}
+.grassTicketBadge{flex:0 0 auto;padding:8px 12px;border-radius:999px;background:#e8f7e8;border:1px solid #9ed0a3;color:#276636;font-weight:1000}
+.grassHowto{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0 14px}
+.grassHowto span{padding:8px 9px;border-radius:11px;background:#eef6f0;border:1px solid #d0e3d3;font-size:10px;font-weight:900;color:#496653}
+.grassHabitatSelectLabel{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:8px;margin:10px 0;font-weight:1000}
+.grassHabitatSelectLabel select{width:100%;min-height:46px;border-radius:12px;border:1px solid #aec7b5;background:#fff;padding:8px 10px;font-size:14px;font-weight:850;color:#244735}
+.grassPreview,.grassSnackBox{display:flex;flex-direction:column;gap:3px;margin:10px 0;padding:10px 12px;border-radius:13px;background:#f1f8f2;border:1px solid #cfdfd2;color:#486653}
+.grassPreview b,.grassSnackBox b{font-size:14px;color:#236538}.grassPreview span,.grassSnackBox span{font-size:10px;font-weight:800}
+.grassPrimaryBtn{background:linear-gradient(180deg,#43b864,#218b43)!important;color:#fff!important;border-color:#1d7d3b!important;font-weight:1000!important}
+.grassActions,.grassResultActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.grassField{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.grassPatch{min-height:138px;border-radius:18px;border:2px solid #86b88b;background:radial-gradient(circle at 50% 74%,#7aba65 0,#4f9a4a 32%,#286e3d 72%,#16482f 100%);color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #ffffff1f,0 6px 14px #245c3422}
+.grassPatch .grassTuft{font-size:58px;line-height:1;filter:drop-shadow(0 4px 4px #0003)}.grassPatch small{font-size:9px;font-weight:1000;color:#eaffeb}
+button.grassPatch{cursor:pointer}.grassPatch.grassActive:active{transform:scale(.98)}
+.grassReaction{font-size:30px;font-weight:1000;line-height:1;margin-bottom:4px;text-shadow:0 3px 6px #0008}
+.grassPatch.strong{border-color:#f2d65c;box-shadow:0 0 0 2px #f2d65c33,0 6px 18px #0002}
+.grassPatch.ultra{border-color:#ffb245;background:radial-gradient(circle at 50% 70%,#91c754 0,#477e37 35%,#69512b 70%,#3b2e1c 100%);box-shadow:0 0 22px #ffcb4e55}
+.grassReactionLegend{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.grassReactionLegend span{padding:5px 8px;border-radius:999px;background:#f5f8f6;border:1px solid #d4e1d6;font-size:9px;font-weight:900}
+.grassHint{text-align:center;font-size:10px;color:#687d6e;font-weight:850}
+.grassFoundHero{display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px;align-items:center;padding:14px;border-radius:18px;background:linear-gradient(135deg,#effaf1,#f9fcff);border:1px solid #c7decf}
+.grassFoundHero img{width:160px;height:220px;object-fit:cover;border-radius:14px;background:#fff;box-shadow:0 8px 20px #183d2922}
+.grassFoundHero b{display:block;font-size:30px;color:#193f2a}.grassFoundHero span{display:block;margin-top:7px;font-weight:950}.grassFoundHero small{display:block;margin-top:8px;color:#577161;font-weight:850}
+.grassBallGuide{text-align:center;margin:12px 0 7px;font-weight:1000;color:#425d4b}.grassBallGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.grassBallGrid button{min-height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:14px}.grassBallGrid img{width:52px;height:52px;object-fit:contain}.grassBallGrid b{font-size:11px}.grassBallGrid small{font-size:9px}
+.grassResultScreen{text-align:center}.grassResultIcon{font-size:58px;line-height:1;margin:8px 0}.grassResultBall{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid #d3e0d7;border-radius:999px;background:#f7faf8;font-size:10px;font-weight:900}.grassResultBall img{width:30px;height:30px}.grassResultPick{display:block;width:180px;height:250px;object-fit:cover;margin:10px auto 6px;border-radius:14px;background:#fff;box-shadow:0 10px 24px #183d2924}.grassResultScreen h2{font-size:30px;margin:4px 0}.grassResultScreen p{font-weight:850;color:#4a6453}.grassNoTicket{display:block;margin-top:8px;color:#7b6c43;font-weight:850}
+@media(max-width:700px){
+ .grassScreen{padding:9px 8px 14px}.grassTitleRow{gap:7px;margin-bottom:7px}.grassTitleRow .sectionTitle{font-size:19px}.grassTitleRow small{font-size:8px}.grassTicketBadge{padding:6px 8px;font-size:9px}
+ .grassHowto{grid-template-columns:1fr 1fr;gap:4px;margin:6px 0 9px}.grassHowto span{padding:6px;font-size:7.5px}
+ .grassHabitatSelectLabel{grid-template-columns:58px minmax(0,1fr);gap:5px;font-size:10px}.grassHabitatSelectLabel select{min-height:40px;padding:6px;font-size:10px}
+ .grassPreview,.grassSnackBox{margin:6px 0;padding:7px 8px}.grassPreview b,.grassSnackBox b{font-size:11px}.grassPreview span,.grassSnackBox span{font-size:8px}
+ .grassField{gap:6px;margin:8px 0}.grassPatch{min-height:104px;border-radius:13px}.grassPatch .grassTuft{font-size:42px}.grassPatch small{font-size:7px}.grassReaction{font-size:24px}
+ .grassReactionLegend{gap:3px;margin:5px 0}.grassReactionLegend span{padding:3px 5px;font-size:7px}.grassActions,.grassResultActions{gap:6px;margin-top:7px}.grassActions button,.grassResultActions button{padding:10px 7px;font-size:11px}
+ .grassFoundHero{grid-template-columns:105px minmax(0,1fr);gap:9px;padding:8px}.grassFoundHero img{width:96px;height:134px}.grassFoundHero b{font-size:20px}.grassFoundHero span{font-size:10px}.grassFoundHero small{font-size:8px}
+ .grassBallGuide{margin:7px 0 5px;font-size:10px}.grassBallGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.grassBallGrid button{min-height:82px;padding:5px}.grassBallGrid img{width:38px;height:38px}.grassBallGrid b{font-size:8px}.grassBallGrid small{font-size:7px}
+ .grassResultIcon{font-size:42px;margin:5px 0}.grassResultBall{padding:3px 7px;font-size:8px}.grassResultBall img{width:24px;height:24px}.grassResultPick{width:118px;height:165px;margin:6px auto 4px}.grassResultScreen h2{font-size:21px}.grassResultScreen p{font-size:10px;line-height:1.35;margin:5px 0}
+}
+</style>
+<!-- Ver2.69:
+  「🌿 草むらゲット」を搭載。もちものの草むらチケットから開始し、生息地選択→草むら→おかし→6か所の反応→1か所選択→ボール選択→捕獲結果まで実装。
+  おかしを投げた時点でチケット1枚を消費。草むら抽選は生息地約85%＋迷い込み約15%。
+  モンスターボールは無料、所持しているスーパー/ハイパー/マスターボールも使用可能。
+  チケットは初回3枚、上限10枚。ダンジョンクリアごとに1枚補充（上限まで）。
+  草むらイベント進行中はセーブされ、途中で離れてももちものから再開可能。
+-->
 
 </body>
 <!-- Ver2.57:
