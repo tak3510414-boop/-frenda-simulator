@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.69">
+<html lang="ja" data-app-version="2.72">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4899,7 +4899,7 @@ function loadGridSize(scope){return UI.viewSize.load(GRID_SIZE_KEY_PREFIX+scope)
 function saveGridSize(scope,size){return UI.viewSize.save(GRID_SIZE_KEY_PREFIX+scope,size)}
 function gridSizeControlHTML(scope,current){return UI.viewSize.html({scope,current,wrapperClass:"viewSizeControl"})}
 let dexViewSize=loadGridSize("dex"),ownedViewSize=loadGridSize("owned"),teamViewSize=loadGridSize("team");
-let ownedSearch="",ownedType="all",ownedGrade="all",ownedSort="standard",ownedActionOnly=false;
+let ownedSearch="",ownedType="all",ownedGrade="all",ownedSort="acquired",ownedActionOnly=false;
 let trainingFocusId=null;
 let trainingStickyIds=new Set();
 let teamAutoNotice="";
@@ -5206,6 +5206,8 @@ function performEvolution(sourceId,targetId,cost,targetSpeciesName){
  let duplicateBonusKind=null,duplicateBonusLabel="";
  if(targetAlready){
   state.owned.splice(oldIdx,1);
+  const targetIdx=state.owned.findIndex(x=>x.id===targetId);
+  if(targetIdx>=0){const [targetOwned]=state.owned.splice(targetIdx,1);state.owned.push(targetOwned)}
   const tp=state.permanentBoosts[targetId]||(state.permanentBoosts[targetId]={hp:0,atk:0,def:0});
   for(const k of ["hp","atk","def"])tp[k]=Math.min(PERMANENT_BOOST_MAX,Number(tp[k]||0)+Number(oldPb[k]||0));
   let xp=xpFor(targetId)+oldXp,extra=Math.floor(xp/100);
@@ -5213,7 +5215,8 @@ function performEvolution(sourceId,targetId,cost,targetSpeciesName){
   state.drillPoints[targetId]=drillFor(targetId)+oldDp+extra;
   {const award=awardGrowthOrDrill(targetId,1);duplicateBonusKind=award.kind;duplicateBonusLabel=award.label}
  }else{
-  state.owned[oldIdx]={id:targetId};
+  state.owned.splice(oldIdx,1);
+  state.owned.push({id:targetId});
   state.permanentBoosts[targetId]=oldPb;
   state.experience[targetId]=oldXp;
   state.drillPoints[targetId]=oldDp
@@ -5828,7 +5831,7 @@ function bindCommonPickFilter(scope,filter,renderFn,defaults={}){UI.pickFilter.b
 function renderTeamSelect(){
  const availableCount=state.owned.filter(o=>!isExpeditionLocked(o.id)).length,max=Math.min(3,availableCount),need=max,theme=THEMES[currentDungeon.id]||THEMES.forest,
        autoUnlocked=autoAdventureUnlocked(currentDungeon.id,currentDungeon.difficulty),teamReady=need>0&&teamSelection.length===need;
- const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
+ const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),acquiredOrder=new Map(state.owned.map((o,i)=>[String(o.id),i])),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
  if(!["standard","name","grade","energy","evolution","drill","luck","recommended"].includes(teamPickFilter.sort))teamPickFilter.sort="energy";
  let cards=allCards.filter(r=>{
   const q=String(teamPickFilter.search||"").trim().toLowerCase();if(q&&!`${r.name_ja||""} ${r.pick_no||""}`.toLowerCase().includes(q))return false;
@@ -6908,8 +6911,8 @@ function renderOwned(){
    return true
  });
  const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
- cards=cards.slice().sort((a,b)=>ownedSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):ownedSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):ownedSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):ownedSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):ownedSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):ownedSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
- const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>🍀 幸運高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。特訓可能・進化可能に加え、進化Pがあと1のピックは「👀 あと1で進化」と表示します。</div>':""}</div>`;
+ cards=cards.slice().sort((a,b)=>ownedSort==="acquired"?(acquiredOrder.get(String(b.master_id))??-1)-(acquiredOrder.get(String(a.master_id))??-1):ownedSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):ownedSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):ownedSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):ownedSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):ownedSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):ownedSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
+ const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="acquired" ${ownedSort==="acquired"?"selected":""}>入手順（新しい順）</option><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>🍀 幸運高い順</option></select></div><div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。特訓可能・進化可能に加え、進化Pがあと1のピックは「👀 あと1で進化」と表示します。</div>':""}</div>`;
  const cardsHtml=cards.length?cards.map(r=>{
    const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),evoOk=ei.canEvolve,nearEvo=ei.hasEvolution&&ei.registered&&!ei.fainted&&!ei.canEvolve&&ei.points===Math.max(0,ei.cost-1);
    return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${expLocked?"expLockedCard":""} ${nearEvo?"ownedNearEvoCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${nearEvo?'<div class="ownedNearEvoBadge">👀 あと1で進化</div>':""}${ownedRelationBoxHTML(id)}${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}<div class="ownedV190Actions"><button class="ownedActionBtn train" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"}><span>特訓</span><b>${dp}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"}><span>進化</span><b>${gp}</b></button></div>${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':nearEvo?'<div class="ownedDetailHint">次に進化Pを1獲得すると進化可能</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
@@ -11793,6 +11796,160 @@ button.grassPatch{cursor:pointer}.grassPatch.grassActive:active{transform:scale(
   モンスターボールは無料、所持しているスーパー/ハイパー/マスターボールも使用可能。
   チケットは初回3枚、上限10枚。ダンジョンクリアごとに1枚補充（上限まで）。
   草むらイベント進行中はセーブされ、途中で離れてももちものから再開可能。
+-->
+
+
+<style id="v270-mobile-home-fit">
+/* Ver2.70: iPhone 390x645 home fit. Reserve Safari toolbar space and compact only redundant home details. */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page="home"]>main#app:not(.dungeonRunScreen){
+    padding:4px 6px!important;
+    overflow:hidden!important;
+  }
+  body[data-dungeon-page="home"] .homeScreen{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:0 0 calc(82px + env(safe-area-inset-bottom))!important;
+    margin:0!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-rows:44px minmax(0,1fr)!important;
+    gap:5px!important;
+    box-sizing:border-box!important;
+  }
+  body[data-dungeon-page="home"] .homeHeroSimple{
+    height:44px!important;
+    min-height:44px!important;
+    padding:5px 8px!important;
+    border-radius:14px!important;
+    overflow:hidden!important;
+  }
+  body[data-dungeon-page="home"] .homeHeroSimple .homeHeroMain{
+    height:100%!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:7px!important;
+    flex-wrap:nowrap!important;
+  }
+  body[data-dungeon-page="home"] .homeHeroSimple .homeHeroBadge{
+    flex:0 0 auto!important;
+    font-size:7px!important;
+    padding:3px 6px!important;
+    letter-spacing:.06em!important;
+    white-space:nowrap!important;
+  }
+  body[data-dungeon-page="home"] .homeHeroSimple .homeHeroTitle{
+    min-width:0!important;
+    flex:0 1 auto!important;
+  }
+  body[data-dungeon-page="home"] .homeHeroSimple .homeHeroTitle h1{
+    font-size:18px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body[data-dungeon-page="home"] .homeHeroSimple .homeHeroLead{display:none!important}
+
+  body[data-dungeon-page="home"] .homeActionArea{
+    height:100%!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-rows:158px minmax(0,1fr)!important;
+    gap:6px!important;
+    overflow:hidden!important;
+  }
+  body[data-dungeon-page="home"] .homePlayGrid{
+    min-height:0!important;
+    height:158px!important;
+    gap:6px!important;
+  }
+  body[data-dungeon-page="home"] .homePlayBtn{
+    min-height:0!important;
+    height:100%!important;
+    padding:5px 5px!important;
+    border-radius:14px!important;
+    gap:1px!important;
+  }
+  body[data-dungeon-page="home"] .homePlayBtn>b{font-size:24px!important;line-height:1!important}
+  body[data-dungeon-page="home"] .homePlayBtn>span{font-size:12.5px!important;line-height:1.05!important}
+  body[data-dungeon-page="home"] .homePlayBtn>.homeCardLead{font-size:7.5px!important;line-height:1.12!important;margin-top:1px!important}
+  body[data-dungeon-page="home"] .homeCardStats{gap:3px!important;margin-top:3px!important}
+  body[data-dungeon-page="home"] .homeCardStats strong{font-size:8px!important;padding:3px 5px!important}
+  body[data-dungeon-page="home"] .homeGoalInline{
+    width:96%!important;
+    margin-top:3px!important;
+    padding:4px 5px!important;
+    border-radius:8px!important;
+  }
+  body[data-dungeon-page="home"] .homeGoalInline em{font-size:7px!important;margin:0!important}
+  body[data-dungeon-page="home"] .homeGoalInline strong{font-size:8px!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  body[data-dungeon-page="home"] .homeGoalInline small{display:none!important}
+  body[data-dungeon-page="home"] .homeExpeditionStatus{
+    width:96%!important;
+    margin-top:3px!important;
+    gap:3px!important;
+  }
+  body[data-dungeon-page="home"] .homeExpeditionStatus span{font-size:8px!important;padding:3px 4px!important;line-height:1.05!important}
+
+  body[data-dungeon-page="home"] .homeManageGrid{
+    min-height:0!important;
+    height:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    overflow:hidden!important;
+  }
+  body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn{
+    height:100%!important;
+    min-height:0!important;
+    padding:5px 4px!important;
+    border-radius:13px!important;
+    gap:1px!important;
+    justify-content:center!important;
+  }
+  body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>b{font-size:22px!important;line-height:1!important}
+  body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>span{font-size:12px!important;line-height:1.05!important}
+  body[data-dungeon-page="home"] .homeManageValue{font-size:10px!important;line-height:1.05!important;margin-top:1px!important}
+  body[data-dungeon-page="home"] .homeInventoryCounts{display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;flex-wrap:nowrap!important;white-space:nowrap!important}
+  body[data-dungeon-page="home"] .homeInventoryCounts span{font-size:8px!important}
+  body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>small{font-size:7.5px!important;line-height:1.08!important;margin:0!important}
+  body[data-dungeon-page="home"] .homeTrainingReady{font-size:7px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  body[data-dungeon-page="home"] .homeManageSub{display:none!important}
+  body[data-dungeon-page="home"] .homeMenuBtn.items>small:not(.homeManageSub){font-size:7px!important}
+  body[data-dungeon-page="home"] .homeMenuBtn.shop>small:last-child{display:none!important}
+
+  /* No fixed footer remains; the reserved bottom band is solely for Safari's floating toolbar. */
+  body[data-dungeon-page="home"] .homeUtilityBar{display:none!important}
+}
+
+/* If Safari exposes an even shorter viewport, allow a small internal scroll instead of clipping. */
+@media(max-width:700px) and (max-height:590px){
+  body.dungeonOneScreen[data-dungeon-page="home"]>main#app:not(.dungeonRunScreen){overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+  body[data-dungeon-page="home"] .homeScreen{height:auto!important;min-height:500px!important;overflow:visible!important;padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+}
+</style>
+<!-- Ver2.70:
+  iPhone 390x645 のダンジョンホームを再最適化。
+  下部Safariツールバー用の安全領域を確保しつつ、ヒーロー・冒険/探索・4管理カードの余白と重複説明を圧縮。
+  もちもの/ショップの下端まで見えるようにし、さらに短い画面では内部スクロールへ自動切替。
+-->
+
+
+<!-- Ver2.71:
+  所持ピックのソートに「入手順（新しい順）」を追加。
+  state.owned の取得順を利用し、新しく入手したピックほど先頭に表示する。
+  進化で別ピックになった場合も、その進化時点を新しい入手として扱い、進化後ピックを所持順の末尾（入手順表示では先頭）へ移動する。
+  進化先を既に所持していた場合も、進化イベント後はそのピックを最新扱いへ更新する。
+-->
+
+<!-- Ver2.72:
+  所持ピック画面の初期ソートを「入手順（新しい順）」に変更。
+  画面を開いた直後から、最後に入手・進化したピックが先頭に表示される。
 -->
 
 </body>
