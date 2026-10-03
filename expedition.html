@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.80">
+<html lang="ja" data-app-version="0.81">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -90,6 +90,31 @@ main{max-width:1280px;margin:auto;padding:12px}.card{background:var(--card);bord
 #dungeonBtn.dungeonTextBtn{width:auto!important;height:auto!important;min-width:0!important;max-width:min(48vw,210px)!important;padding:8px 11px!important;border-radius:11px!important;font-size:11px!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;flex:0 1 auto!important}
 body.homeNavVisible .headerTop{padding-right:44px}
 @media(max-width:700px){#homeBtn.homeCornerBtn{top:calc(env(safe-area-inset-top) + 7px)!important;right:7px!important;width:34px!important;height:34px!important;min-width:34px!important}#dungeonBtn.dungeonTextBtn{max-width:44vw!important;padding:7px 9px!important;font-size:10px!important}}@media(max-width:430px){.headerTop{gap:4px!important}.headerTop .brand b{gap:4px!important}.headerTop .headerBtns{gap:4px!important}#dungeonBtn.dungeonTextBtn{max-width:39vw!important;padding:6px 8px!important;font-size:9px!important}}
+
+/* Ver0.81: iPhone header icon overlap fix */
+@media(max-width:600px){
+header{padding:6px 7px!important;}
+.head{gap:5px!important;}
+.headerTop{flex-wrap:wrap!important;align-items:center!important;gap:5px!important;}
+.headerTop .brand{flex:1 1 100%!important;min-width:0!important;}
+.headerTop .brand b{display:flex!important;align-items:center!important;gap:4px!important;min-width:0!important;white-space:nowrap!important;}
+#expHomeTitle076{min-width:0!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:13px!important;line-height:1.1!important;}
+.ver{margin-left:0!important;font-size:9px!important;padding:2px 6px!important;}
+.headerEggBadge{margin-left:0!important;padding:2px 5px!important;font-size:8px!important;}
+.headerEggBadge b{font-size:8px!important;}
+.headerTop .headerBtns{width:100%!important;justify-content:flex-end!important;gap:4px!important;margin-left:0!important;}
+.headerIconBtn{width:30px!important;height:30px!important;min-width:30px!important;flex:0 0 30px!important;font-size:14px!important;}
+#dungeonBtn.dungeonTextBtn{max-width:112px!important;padding:6px 8px!important;font-size:9px!important;}
+}
+@media(max-width:430px){
+#expHomeTitle076{font-size:12px!important;}
+.ver{font-size:8px!important;padding:2px 5px!important;}
+.headerEggBadge{font-size:7px!important;padding:2px 4px!important;}
+.headerEggBadge b{font-size:7px!important;}
+.headerIconBtn{width:29px!important;height:29px!important;min-width:29px!important;flex-basis:29px!important;font-size:13px!important;}
+#dungeonBtn.dungeonTextBtn{max-width:100px!important;padding:6px 7px!important;font-size:8px!important;}
+}
+/* Updated: 2026-10-04 08:48 JST / Ver0.81 */
 
 /* Ver0.37: discovery progress / souvenir collection / enhanced return boxes */
 .discoveryMini{margin-top:6px;padding:6px 7px;border-radius:9px;background:#edf7fb;border:1px solid #c8e2ec}.discoveryMiniHead{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:8px;font-weight:1000;color:#356578}.discoveryMeter{height:6px;border-radius:999px;background:#d8e6ec;overflow:hidden;margin-top:4px}.discoveryMeter>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#35a8dc,#50d79b,#ffd152);transition:width .3s ease}.destinationBtn.active .discoveryMini{background:#fff7d5;border-color:#efd46a}.destinationBtn.active .discoveryMeter>span{background:linear-gradient(90deg,#f4a91e,#ffd74c)}
