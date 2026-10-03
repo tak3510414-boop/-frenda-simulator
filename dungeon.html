@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.56">
+<html lang="ja" data-app-version="2.57">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4023,6 +4023,251 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 .inventoryItemList{display:grid;grid-template-columns:1fr;gap:7px}.inventoryItemCard{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 10px;border:1px solid #d2dde4;border-radius:13px;background:#fff}.inventoryItemIcon{width:48px;height:48px;display:grid;place-items:center;font-size:34px}.inventoryItemIcon.image img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 3px 4px #0003)}.inventoryItemBody{min-width:0}.inventoryItemTitle{display:flex;align-items:center;justify-content:space-between;gap:8px}.inventoryItemTitle b{font-size:14px;color:#294857}.inventoryItemTitle strong{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:#edf4f8;color:#34586b;font-size:11px}.inventoryItemBody p{margin:3px 0 1px;font-size:9px;line-height:1.4;color:#516a77}.inventoryItemBody small{display:block;font-size:8px;line-height:1.35;color:#7a8a93}.inventoryUseBtn{min-width:72px;padding:9px 10px!important;background:linear-gradient(180deg,#49b86e,#2d944f)!important;color:#fff!important;border:1px solid #237c42!important}.inventoryItemCard.clover{border-color:#b9dd8c;background:linear-gradient(135deg,#fbfff4,#f3ffe5)}.inventoryItemCard.training{border-color:#a7d2ef;background:linear-gradient(135deg,#f7fcff,#eaf7ff)}.inventoryItemCard.evolution{border-color:#aadbaa;background:linear-gradient(135deg,#f7fff5,#eaf9e6)}.inventoryItemCard.ticket{border-color:#e2c779;background:linear-gradient(135deg,#fffdf1,#fff6cf)}.inventoryItemCard.ball.super{border-color:#9dcced;background:#f3fbff}.inventoryItemCard.ball.hyper{border-color:#e2c65f;background:#fffbe8}.inventoryItemCard.ball.master{border-color:#b99ae0;background:#fbf5ff}.inventoryUsePanel{max-width:760px}.inventoryUseTarget span{font-size:10px;font-weight:1000;color:#487b2f}
 @media(max-width:700px){.homeInventoryCounts{gap:3px}.homeInventoryCounts span{font-size:8px!important;padding:2px 4px}.inventoryScreen{padding:9px!important}.inventoryScreenHead{margin-bottom:6px}.inventoryScreenHead .sectionTitle{font-size:18px}.inventoryEggBadge{font-size:11px;padding:5px 8px}.inventorySection{margin:7px 0;padding:8px;border-radius:13px}.inventorySectionHead{margin-bottom:6px}.inventorySectionHead>div>span{font-size:22px}.inventorySectionHead b{font-size:14px}.inventorySectionHead small{font-size:7.5px}.inventoryEggGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.inventoryItemCard{grid-template-columns:42px minmax(0,1fr) auto;gap:6px;padding:7px}.inventoryItemIcon{width:38px;height:38px;font-size:27px}.inventoryItemIcon.image img{width:36px;height:36px}.inventoryItemTitle b{font-size:11px}.inventoryItemTitle strong{font-size:9px;padding:3px 5px}.inventoryItemBody p{font-size:7.5px}.inventoryItemBody small{font-size:6.8px}.inventoryUseBtn{min-width:54px;padding:7px 6px!important;font-size:10px!important}.inventoryBallList .inventoryItemCard{grid-template-columns:42px minmax(0,1fr)}.inventoryEmptyEgg p{font-size:8px}}
 </style>
+
+
+<style id="v257-blackpc-battle-dashboard">
+/* Ver2.57: 黒PC（1520x794 / DPR1.25）など pc-compact の戦闘画面を、
+   「縮小して収める」から「横幅を使い切って大きく見せる」レイアウトへ変更。 */
+@media(min-width:701px){
+  /* Browser viewport をほぼ全面使用。旧 pc-compact の 1120px 上限を解除する。 */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] .headrow{
+    width:calc(100vw - 18px)!important;
+    max-width:none!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] header{
+    padding:6px 10px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] .brand b{
+    font-size:17px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] .versionBadge{
+    font-size:10px!important;
+    padding:3px 7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] .headerBtns button{
+    font-size:10px!important;
+    padding:6px 9px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main#app.dungeonRunScreen.battleScreen{
+    width:calc(100vw - 14px)!important;
+    max-width:none!important;
+    margin:0 auto!important;
+    padding:5px 7px 6px!important;
+  }
+
+  /* 左は「戦闘中に必要なパーティ情報」だけ、右は戦場を大きく。 */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen>.dungeonRun{
+    grid-template-columns:clamp(350px,24vw,390px) minmax(0,1fr)!important;
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+    gap:7px 9px!important;
+  }
+
+  /* 戦闘中は警戒度・道中戦闘・運・階層マップを隠して、上段を一行の戦闘ヘッダーにする。 */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedMetrics,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedAlwaysPath{
+    display:none!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runStatusUnified{
+    padding:7px 10px!important;
+    border-radius:12px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedTop{
+    min-height:42px!important;
+    gap:10px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedTitle{
+    gap:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedTitle>strong{
+    max-width:none!important;
+    font-size:18px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runThemeIcon{
+    font-size:20px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedDifficulty,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedScene,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .autoRunBadge{
+    font-size:10px!important;
+    padding:4px 7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedRight{
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runWithdrawTop,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .autoRunToggle{
+    font-size:9px!important;
+    padding:5px 8px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedFloor strong{
+    font-size:18px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .runUnifiedFloor span{
+    font-size:9px!important;
+  }
+
+  /* 左パーティ：細かい能力グラフや育成進捗は戦闘中は非表示。
+     HP・名前・状態・画像を大きくし、交代判断に必要な情報へ集中する。 */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySidebar{
+    padding:8px!important;
+    border-radius:14px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySidebar .sectionTitle{
+    font-size:17px!important;
+    margin:0 0 6px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partyPcCards{
+    gap:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideCard{
+    grid-template-columns:112px minmax(0,1fr)!important;
+    gap:11px!important;
+    padding:9px 10px!important;
+    align-items:center!important;
+    overflow:visible!important;
+    background:linear-gradient(180deg,#fff,#f4fafc)!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideCard .partySideImg{
+    width:112px!important;
+    height:154px!important;
+    max-width:112px!important;
+    max-height:154px!important;
+    object-fit:contain!important;
+    align-self:center!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideNameRow{
+    display:block!important;
+    padding-right:0!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideName{
+    font-size:18px!important;
+    line-height:1.15!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideMeta{
+    display:block!important;
+    margin-top:4px!important;
+    font-size:10px!important;
+    line-height:1.2!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideTopLine{
+    margin-top:9px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partyEnergyChip{
+    display:none!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideHpText{
+    font-size:14px!important;
+    color:#263d4b!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideInfo>.hpbar{
+    height:12px!important;
+    margin-top:6px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideStatRows,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideStatLegend,
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideFooter{
+    display:none!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideCard.selectable::after{
+    content:"交代"!important;
+    font-size:10px!important;
+    padding:5px 8px!important;
+    right:7px!important;
+    top:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .partySideCard.activeBattle::after{
+    content:"バトル中"!important;
+    position:absolute!important;
+    right:7px!important;
+    top:7px!important;
+    padding:5px 8px!important;
+    border-radius:999px!important;
+    background:#1aa9d5!important;
+    color:#fff!important;
+    font-size:10px!important;
+    font-weight:1000!important;
+    line-height:1!important;
+  }
+
+  /* 右戦場：横幅と高さを使って、双方のピック・HP・VS操作を大きく表示。 */
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .battleMainCard.combatStageCard{
+    height:100%!important;
+    min-height:0!important;
+    padding:5px 7px!important;
+    border-radius:14px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .battleArena{
+    height:100%!important;
+    min-height:0!important;
+    padding:12px 20px!important;
+    border-radius:14px!important;
+    justify-content:center!important;
+    align-items:center!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .battleGrid{
+    width:100%!important;
+    grid-template-columns:minmax(300px,1fr) 104px minmax(300px,1fr)!important;
+    gap:24px!important;
+    align-items:center!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .fighterBox{
+    width:100%!important;
+    max-width:410px!important;
+    margin:auto!important;
+    padding:12px 14px 14px!important;
+    border-radius:16px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .fighterBox img{
+    width:auto!important;
+    height:min(315px,39vh)!important;
+    max-width:100%!important;
+    object-fit:contain!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .fighterBox h3{
+    margin:7px 0 3px!important;
+    font-size:23px!important;
+    line-height:1.08!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .fighterBox>small{
+    font-size:11px!important;
+    line-height:1.2!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .fighterBox .hpbar{
+    height:15px!important;
+    margin-top:7px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .fighterBox>b{
+    font-size:14px!important;
+    margin-top:4px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .battleVsColumn{
+    padding-top:0!important;
+    margin-top:0!important;
+    gap:15px!important;
+    align-self:center!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .vs{
+    width:78px!important;
+    height:78px!important;
+    font-size:22px!important;
+    box-shadow:0 5px 14px #09263642!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .vs small{
+    font-size:9px!important;
+    line-height:1.05!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="run-battle"] main.battleScreen .battleEnemyCounter{
+    font-size:11px!important;
+    padding:5px 8px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b>フレンダダンジョン <span class="versionBadge" id="versionBadge"></span><span class="headerCloudStatus" id="headerCloudStatus" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -9943,6 +10188,13 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   短いPCでは挑戦チームの4項目を2×2化し、画像・見出し・戦利品を高さに合わせて圧縮。
 -->
 </body>
+<!-- Ver2.57:
+  黒PC（1520×794 / DPR1.25）などpc-compactの戦闘画面を横長最適化。
+  画面横幅をほぼ全面使用し、戦闘中は警戒度・道中戦闘・運・階層マップを非表示。
+  左パーティは名前・状態・HP・画像を大きくし、細かな能力グラフ・育成進捗・ポケエネを戦闘中だけ省略。
+  右戦場は双方のピック画像・名前・HP・VS操作を拡大し、余白を戦闘表示へ振り替えた。
+  スマホおよびpc-standard/pc-wideには適用しない。
+-->
 </html>
 
 <!-- Ver2.18:
@@ -10033,3 +10285,4 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   各カードの「タップで詳しくみる」も全員分維持。
   更新日時: 2026-10-02 19:28 JST
 -->
+
