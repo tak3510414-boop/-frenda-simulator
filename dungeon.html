@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.58">
+<html lang="ja" data-app-version="2.60">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6245,7 +6245,7 @@ function runStatusPanelHTML(r,theme,battleKind=""){
  const enemyMetric=""; // 敵数は相手ポケモン側に表示するため、上部パネルでは重複表示しない
  return `<div class="runTop"><div class="runStatus runStatusUnified">
    <div class="runUnifiedTop">
-    <div class="runUnifiedTitle"><span class="runThemeIcon">${esc(theme.icon||"🗺️")}</span><strong>${esc(theme.name)}</strong><span class="runUnifiedDifficulty">ランク${r.difficulty}</span>${r.autoAdventure?`<span class="autoRunBadge">🤖 AUTO</span>`:""}${battleLabel?`<span class="runUnifiedScene">${esc(battleLabel)}</span>`:""}</div>
+    <div class="runUnifiedTitle"><span class="runThemeIcon">${esc(theme.icon||"🗺️")}</span><strong>${esc(theme.name)}</strong><span class="runUnifiedDifficulty">ランク${r.difficulty}</span>${battleLabel?`<span class="runUnifiedScene">${esc(battleLabel)}</span>`:""}</div>
     <div class="runUnifiedRight">${autoAdventureUnlocked(r.dungeonId,r.difficulty)?`<button type="button" class="autoRunToggle ${r.autoAdventure?"is-on":"is-off"}" id="autoAdventureToggle" aria-pressed="${r.autoAdventure?"true":"false"}" title="AUTO ${r.autoAdventure?"ON":"OFF"}">🤖 AUTO</button>`:""}<button type="button" class="runWithdrawInside runWithdrawTop" data-run-withdraw>冒険から撤退</button><div class="runUnifiedFloor"><strong>地下${r.floor}階</strong><span>/ 10</span></div></div>
    </div>
    <div class="runUnifiedMetrics">
@@ -6485,7 +6485,7 @@ function startLegendaryIntro(){
  apply(0);schedule()
 }
 function continueLegendaryIntro(){if(!state.run||state.run.scene!=="legendaryIntro")return;legendaryIntroSeq++;state.run.scene="chooseFighter";save();render()}
-function renderCaptureIntroHTML(){const c=state.run.capture,count=c?.candidateIds?.length||1;return `<div class="card battleMainCard combatStageCard captureCombatCard singleAdvanceCard tapAdvance" data-run-advance="captureIntro" role="button" tabindex="0" aria-label="ゲットチャンスへ"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="resultIcon">🎯</div><div class="captureCombatTitle">ゲットチャンス！</div><div class="captureCombatSub">${count>1?`倒した${count}体の中から、ゲットしたいポケモンを1体選べます。`:"倒したポケモンを仲間にできるチャンスです！"}<br>次にボールスロットへ進みます。止まったボールによってゲット率が変わります。</div><div class="notice">上位ボールほどゲット率が大幅に上がります。</div><div class="captureCombatButtons"><button id="captureIntroNext" class="captureActionBtn">ゲットチャンスへ</button></div></div></div>`}
+function renderCaptureIntroHTML(){const c=state.run.capture,count=c?.candidateIds?.length||1;return `<div class="card battleMainCard combatStageCard captureCombatCard captureIntroCompact singleAdvanceCard tapAdvance" data-run-advance="captureIntro" role="button" tabindex="0" aria-label="ゲットチャンスへ"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter"><div class="captureIntroHero"><div class="resultIcon">🎯</div><div><div class="captureCombatTitle">ゲットチャンス！</div><div class="captureIntroMobileLead">${count>1?`倒した${count}体から1体を選んでゲット！`:"倒したポケモンを仲間にできる！"}</div></div></div><div class="captureCombatSub captureIntroDesktopText">${count>1?`倒した${count}体の中から、ゲットしたいポケモンを1体選べます。`:"倒したポケモンを仲間にできるチャンスです！"}<br>次にボールスロットへ進みます。止まったボールによってゲット率が変わります。</div><div class="notice captureIntroNotice">上位ボールほどゲット率が大幅に上がります。</div><div class="captureCombatButtons"><button id="captureIntroNext" class="captureActionBtn">ゲットチャンスへ</button></div></div></div>`}
 function renderCaptureTicketHTML(){const c=state.run?.capture||{},qty=captureTicketQty(),ids=(c.candidateIds||[]).filter(id=>rec(id)),names=ids.map(id=>rec(id)?.name_ja).filter(Boolean);return `<div class="card battleMainCard combatStageCard captureCombatCard captureTicketCard"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter captureTicketBody"><div class="captureTicketIcon">🎟️</div><div class="captureCombatTitle">ゲットチャンスは発生しなかった……</div><div class="captureTicketLead">チケットを使えば、この戦闘を<br><b>ゲットチャンス</b>にできます！</div>${ids.length?`<div class="captureTicketTargets">${ids.slice(0,3).map(id=>{const rr=rec(id);return `<div><img src="${esc(imageOf(rr))}" alt=""><small>${esc(rr?.name_ja||"")}</small></div>`}).join("")}</div>`:""}<div class="notice">${names.length>1?`倒した${names.length}体の中から1体を選べます。`:"倒したポケモンをゲットできるチャンスになります。"}<br>チケットは<b>ゲット成功を保証するものではありません</b>。ボール抽選と捕獲判定は通常どおりです。</div><div class="captureTicketOwned">🎟️ 所持 <b>${qty}枚</b></div><div class="captureTicketActions"><button id="captureTicketUse" class="captureActionBtn">🎟️ チケットを使う</button><button id="captureTicketSkip" class="ghost">使わず進む</button></div></div></div>`}
 function proceedNextEnemy(){const r=state.run;if(!r||r.scene!=="nextEnemy")return;if(currentEnemyNeedsLegendaryIntro())addLog("……次の相手から、ものすごい気配を感じる。");markCurrentEnemySeen();r.nextEnemyNotice=null;r.scene=currentEnemyEntryScene();save();render()}
 function renderNextEnemyHTML(){const r=state.run,enc=r?.encounter||{},n=r?.nextEnemyNotice||{},total=enc.enemies?.length||1,idx=Math.max(1,Math.min(total,Number(enc.index||0)+1)),dots=Array.from({length:total},(_,i)=>`<span class="${i<idx-1?"done":i===idx-1?"current":""}"></span>`).join("");return `<div class="card nextEnemyCard singleAdvanceCard" data-run-advance="nextEnemy" role="button" tabindex="0" aria-label="次の相手へ"><div class="nextEnemyInner"><div class="nextEnemyKo">K.O.!</div><div class="nextEnemyDefeated">${esc(n.defeatedName||"相手")}を撃破！</div><div class="nextEnemyQuestion">次は誰だ！？</div><div class="nextEnemyMystery">?</div><div class="nextEnemyProgress"><span>NEXT ENEMY</span><b>${idx}/${total}</b></div><div class="nextEnemyDots">${dots}</div><div class="nextEnemyHint">画面をタップして次の相手へ</div></div></div>`}
@@ -6514,7 +6514,7 @@ function renderRewardHTML(){const rw=state.run.reward||{},summary=rw.battleSumma
 function renderCaptureSelectHTML(){const c=state.run.capture;return `<div class="card battleMainCard combatStageCard captureCombatCard"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody"><div class="sectionTitle">🎯 ゲットしたいポケモンを選ぼう</div><div class="notice" style="margin-bottom:8px">倒したポケモンの中から、ゲットしたい1匹を選んでください。未所持のピックは「未所持」と表示します。</div><div class="captureSelectLayout">${c.candidateIds.map(id=>{const r=rec(id),owned=!!ownedEntry(id);return `<button class="capturePick captureLarge ${owned?"captureOwned":"captureUnowned"}" data-capture-target="${esc(id)}"><span class="captureOwnershipBadge ${owned?"owned":"unowned"}">${owned?"所持済み":"NEW・未所持"}</span><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small></button>`}).join("")}</div></div></div>`}
 function renderCaptureSlotHTML(){const c=state.run.capture,r=rec(c.targetId),ownedBalls=["super","hyper","master"].map(k=>({key:k,qty:shopBallQty(k),def:BALL_DEF[k]})).filter(x=>x.qty>0),ownedBallHtml=!state.run?.autoAdventure&&ownedBalls.length?`<div class="captureOwnedBalls"><div class="captureOwnedBallsTitle">🎒 所持ボールを使う <small>スロットを使わず直接投げる</small></div><div class="captureOwnedBallGrid">${ownedBalls.map(x=>`<button type="button" class="captureOwnedBallBtn ${x.key}" data-shop-ball="${x.key}"><img src="${esc(x.def.img)}" alt="${esc(x.def.label)}"><span><b>${esc(x.def.label)}</b><small>所持 ${x.qty}個</small></span></button>`).join("")}</div></div>`:"";return `<div class="card battleMainCard combatStageCard captureCombatCard captureSlotCard" data-slot-stop="1"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter captureSlotBody"><div class="sectionTitle">🎯 ボールスロット</div><div class="captureTargetPanel captureTargetHero"><img src="${esc(imageOf(r))}" alt=""><h2>${esc(r.name_ja)}</h2><div class="captureHeroWish">仲間になって！</div><span class="badge gold">${gradeText(r)}</span></div><div class="notice captureSlotNotice">目押し可能ですが高速＋STOP後に少し滑ります。上位ボールほどゲット率が大幅に上がります。${state.run.captureBoost?`<br><b>🔴 拾い物ボーナス：次の捕獲率 +${Math.round(state.run.captureBoost*100)}%</b>`:""}</div>${ownedBallHtml}<div class="ballSlot captureBigBallSlot">${c.balls.map((k,i)=>`<div class="ballCell" data-ball-cell="${i}"><div><img src="${esc(BALL_DEF[k].img)}" alt="${esc(BALL_DEF[k].label)}"><div>${esc(BALL_DEF[k].short)}</div></div></div>`).join("")}</div><button id="ballStop" class="captureActionBtn captureBigAction" style="width:min(720px,100%);font-size:26px">STOP!</button><div class="captureSlotTapHint">💡 画面内のどこを押しても STOP できます</div></div></div>`}
 function renderCaptureThrowHTML(){const c=state.run.capture,o=c?.pendingOutcome,r=rec(c?.targetId),ball=BALL_DEF[o?.ballKey]||BALL_DEF.poke;return `<div class="card battleMainCard combatStageCard captureCombatCard captureThrowCompact"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter captureThrowBody"><div class="kicker captureFlashKicker">GET CHANCE</div><h2 id="captureDramaTitle" class="captureWishTitle">${esc(r?.name_ja||"ポケモン")} 仲間になって！</h2><div class="captureThrowLead">使用ボール：<b>${esc(ball.label)}</b></div><div class="captureStage captureStageLarge" id="captureStage"><img id="captureTargetSprite" class="captureTargetSprite captureTargetSpriteLarge" src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"")}"><img id="captureThrownBall" class="captureThrownBall captureThrownBallLarge" src="${esc(ball.img)}" alt="${esc(ball.label)}"></div><div id="captureDramaText" class="captureDramaText captureDramaTextBig">いけっ！ ${esc(ball.label)}！</div><div id="captureDots" class="captureDots"></div></div></div>`}
-function renderCaptureResultHTML(){const c=state.run.capture,r=rec(c.targetId),res=c.result,ball=BALL_DEF[res.ballKey];return `<div class="card battleMainCard combatStageCard captureCombatCard captureResultCompact singleAdvanceCard tapAdvance" data-run-advance="captureResult" role="button" tabindex="0" aria-label="次へ進む"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter captureResultBody"><div class="resultIcon captureResultIconBig">${res.success?"🎉":"💨"}</div><img class="captureBallImg captureResultBall captureResultBallBig" src="${esc(ball.img)}" alt="${esc(ball.label)}">${res.success?`<div class="captureResultPokemonHero"><img class="captureResultPokemonImg" src="${esc(imageOf(r))}" alt="${esc(r.name_ja)}"></div>`:""}<h2 class="captureResultTitle">${res.success?`${esc(r.name_ja)} ゲットだぜ！`:`${esc(r.name_ja)} は逃げてしまった…`}</h2><p class="captureResultSub">${esc(ball.label)}<br>${esc(r.name_ja)}：捕獲率 ${Math.round(res.rate*100)}%</p>${res.success?`<div class="notice captureResultNotice">${res.duplicate?`同一ピック所持済み。${esc(res.duplicateRewardLabel|| (res.duplicateRewardKind==="drill"?"特訓ポイント+2":"進化ポイント+1"))}。`:"新しい仲間として所持ピックに追加されました。次回の冒険から使用できます。"}</div>${res.newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}`:""}<div class="captureCombatButtons"><button id="captureNext" class="captureActionBtn captureBigAction">次へ進む</button></div></div></div>`}
+function renderCaptureResultHTML(){const c=state.run.capture,r=rec(c.targetId),res=c.result,ball=BALL_DEF[res.ballKey];return `<div class="card battleMainCard combatStageCard captureCombatCard captureResultCompact singleAdvanceCard tapAdvance" data-run-advance="captureResult" role="button" tabindex="0" aria-label="次へ進む"><div class="battleStageTeam captureCombatTop captureStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="captureCombatBody captureCenter captureResultBody"><div class="resultIcon captureResultIconBig">${res.success?"🎉":"💨"}</div><div class="captureResultBallMeta"><img class="captureBallImg captureResultBall captureResultBallBig" src="${esc(ball.img)}" alt="${esc(ball.label)}"><span>${esc(ball.label)} ・ 捕獲率 ${Math.round(res.rate*100)}%</span></div>${res.success?`<div class="captureResultPokemonHero"><img class="captureResultPokemonImg" src="${esc(imageOf(r))}" alt="${esc(r.name_ja)}"></div>`:""}<h2 class="captureResultTitle">${res.success?`${esc(r.name_ja)} ゲットだぜ！`:`${esc(r.name_ja)} は逃げてしまった…`}</h2>${res.success&&res.duplicate?`<div class="notice captureResultNotice captureResultDuplicate">同一ピック所持済み。${esc(res.duplicateRewardLabel|| (res.duplicateRewardKind==="drill"?"特訓ポイント+2":"進化ポイント+1"))}。</div>`:""}${res.success&&res.newSpeciesRegistration?`<div class="dexRegisterNotice">📖 図鑑に登録された！</div>`:""}<div class="captureCombatButtons"><button id="captureNext" class="captureActionBtn captureBigAction">次へ進む</button></div></div></div>`}
 
 function renderVictoryHTML(){const v=state.run?.victory||{},label=v.kind==="elite"?"強敵戦":v.kind==="boss"?"ボス戦":"通常戦",next=v.kind==="boss"?"落とし物を確認":"報酬へ";return `<div class="card summary victoryCard tapAdvance" data-run-advance="victory" role="button" tabindex="0" aria-label="${esc(next)}"><div class="victoryCrown">${v.kind==="boss"?"👑":"🏆"}</div><div class="victoryWord">勝利！</div><div class="victorySub">${esc(label)}を制した！</div>${v.bonus?`<div class="victoryBonus">🔥 闘志ボーナス <b>攻撃・防御 +${v.bonus}</b></div>`:""}<p>${v.enemyName?`${esc(v.enemyName)}を倒した！`:"戦闘に勝利した！"}</p><button type="button" id="victoryNext" style="margin-top:8px">${next}</button></div>`}
 function renderPickupHTML(){const p=state.run?.pickup||{icon:"🎁",name:"拾い物",effect:"何かを見つけた！"};return `<div class="card pickupCard singleAdvanceCard tapAdvance" data-run-advance="pickup" role="button" tabindex="0" aria-label="先へ進む"><div class="pickupInner"><div class="pickupFound">道ばたに何か落ちている……</div><div class="pickupIcon">${esc(p.icon)}</div><div class="pickupName">${esc(p.name)}を ひろった！</div><div class="pickupEffect">${esc(p.effect)}</div><div class="pickupRateNote">拾い物は階を進んだ時に低確率で見つかります。効果は自動で適用されます。</div><button id="pickupNext" style="margin-top:12px">先へ進む</button></div></div>`}
@@ -10341,6 +10341,110 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   各カードを画像左／数値右の2列にし、EXP・特訓・コイン・絆を2×2、HPを下段に大きく表示。
   数値のellipsis省略を廃止し、ピック名・★/ポケエネも読みやすく拡大。
 -->
+
+<!-- Ver2.59:
+  戦闘画面上部のAUTO状態表示を整理。AUTOトグルボタン自体でON/OFFを判別できるため、
+  ダンジョン名横に重複表示していた「🤖 AUTO」バッジを廃止。AUTO操作・状態・自動冒険機能は変更なし。
+-->
+
+<style id="v260-mobile-capture-onescreen">
+.captureIntroMobileLead{display:none}
+.captureIntroHero{display:flex;align-items:center;justify-content:center;gap:12px}
+.captureResultBallMeta{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px auto 5px;font-weight:900;color:#415b6b}
+.captureResultBallMeta span{font-size:12px}
+@media(max-width:700px){
+  main.dungeonRunScreen[data-run-scene^="capture"] .runStatus{padding:7px 9px!important;border-radius:12px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedMetrics,
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedAlwaysPath{display:none!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedTop{gap:4px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedTitle{gap:4px!important;flex-wrap:nowrap!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedTitle>strong{font-size:13px!important;max-width:42vw!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runThemeIcon{font-size:16px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedDifficulty{font-size:9px!important;padding:3px 6px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedScene{font-size:7px!important;padding:3px 5px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedFloor strong{font-size:15px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runUnifiedFloor span{font-size:8px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .runWithdrawTop{display:none!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .autoRunToggle{padding:5px 8px!important;font-size:9px!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .captureStageTeam{display:none!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .captureCombatCard{height:auto!important;min-height:0!important;max-height:none!important;padding:4px!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene^="capture"] .captureCombatBody{min-height:0!important;height:auto!important;overflow:hidden!important;padding:6px 7px!important}
+
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureCombatBody{justify-content:center!important;gap:7px!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureIntroHero{display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;margin:2px 0 3px!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureIntroHero .resultIcon{font-size:36px!important;line-height:1!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureCombatTitle{font-size:25px!important;line-height:1.05!important;margin:0!important;text-align:left!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureIntroMobileLead{display:block!important;font-size:11px!important;line-height:1.3!important;color:#496171!important;font-weight:850!important;margin-top:3px!important;text-align:left!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureIntroDesktopText,
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureIntroNotice{display:none!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureCombatButtons{margin-top:3px!important}
+  main.dungeonRunScreen[data-run-scene="captureIntro"] .captureActionBtn{font-size:18px!important;padding:12px 14px!important}
+
+  main.dungeonRunScreen[data-run-scene="captureSelect"] .captureSelectLayout{gap:5px!important;margin-top:4px!important}
+  main.dungeonRunScreen[data-run-scene="captureSelect"] .capturePick.captureLarge{padding:5px!important}
+  main.dungeonRunScreen[data-run-scene="captureSelect"] .capturePick.captureLarge img{width:72px!important;height:100px!important;margin-bottom:3px!important}
+  main.dungeonRunScreen[data-run-scene="captureSelect"] .capturePick.captureLarge b{font-size:12px!important;margin:2px 0!important}
+  main.dungeonRunScreen[data-run-scene="captureSelect"] .capturePick.captureLarge small{font-size:8px!important}
+
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel{grid-template-columns:50px minmax(0,1fr)!important;padding:4px 6px!important;column-gap:6px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel img{width:50px!important;height:70px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel h2{font-size:14px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureHeroWish{display:none!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureSlotNotice{display:none!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBalls{padding:4px 5px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallsTitle{font-size:9px!important;margin-bottom:3px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallsTitle small{display:none!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:3px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallBtn{padding:3px 2px!important;gap:3px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallBtn img{width:23px!important;height:23px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallBtn b{font-size:8px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureOwnedBallBtn small{font-size:7px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .ballSlot{gap:3px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .ballCell{padding:2px 1px!important;font-size:7px!important;border-radius:8px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .ballCell img{width:24px!important;height:24px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] #ballStop{font-size:18px!important;padding:8px 10px!important}
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureSlotTapHint{font-size:7px!important}
+
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureCombatBody{padding:4px 6px!important;gap:2px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureFlashKicker{font-size:7px!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureWishTitle{font-size:18px!important;line-height:1.05!important;margin:1px 0 3px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureThrowLead{font-size:9px!important;padding:4px 8px!important;margin:0 auto 3px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureStageLarge{height:170px!important;margin:3px auto 4px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureTargetSpriteLarge{width:96px!important;height:134px!important;top:7px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureThrownBallLarge{width:66px!important;height:66px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureDramaTextBig{font-size:14px!important;min-height:18px!important;margin-top:1px!important}
+  main.dungeonRunScreen[data-run-scene="captureThrow"] .captureDots{height:10px!important;font-size:10px!important}
+
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureCombatBody{justify-content:center!important;gap:4px!important;padding:5px 7px!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultIconBig{display:none!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultBallMeta{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;margin:0 auto 3px!important;padding:4px 8px!important;border-radius:999px!important;background:#f4f8fb!important;border:1px solid #d4e1e8!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultBallBig{width:28px!important;height:28px!important;margin:0!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultBallMeta span{font-size:9px!important;line-height:1!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultPokemonHero{margin:4px auto 3px!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultPokemonHero::before{font-size:9px!important;top:-7px!important;padding:3px 9px!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultPokemonImg{width:108px!important;height:150px!important;border-radius:11px!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultTitle{font-size:20px!important;line-height:1.08!important;margin:2px 0!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultNotice{font-size:9px!important;line-height:1.25!important;padding:5px 7px!important;margin:2px auto!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .dexRegisterNotice{font-size:9px!important;padding:4px 7px!important;margin:2px auto!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureCombatButtons{margin-top:2px!important}
+  main.dungeonRunScreen[data-run-scene="captureResult"] .captureActionBtn{font-size:17px!important;padding:10px 12px!important}
+
+  @media(max-height:670px){
+    main.dungeonRunScreen[data-run-scene="captureThrow"] .captureStageLarge{height:154px!important}
+    main.dungeonRunScreen[data-run-scene="captureThrow"] .captureTargetSpriteLarge{width:88px!important;height:123px!important}
+    main.dungeonRunScreen[data-run-scene="captureResult"] .captureResultPokemonImg{width:98px!important;height:136px!important}
+    main.dungeonRunScreen[data-run-scene="captureIntro"] .captureIntroHero .resultIcon{font-size:32px!important}
+    main.dungeonRunScreen[data-run-scene="captureIntro"] .captureCombatTitle{font-size:23px!important}
+  }
+}
+</style>
+<!-- Ver2.60:
+  iPhone基準（390×645 / DPR3）のゲットチャンス一連画面を1画面向けに再設計。
+  捕獲中は警戒度・道中戦闘・パーティ運・階層マップを畳み、必要なダンジョン名・ランク・階層・AUTOだけを残す。
+  ゲットチャンス入口は説明を一文へ集約、ボールスロットは所持ボールを横3列へ圧縮、
+  投球演出はステージ高さを適正化し、結果画面は重複した祝福アイコン/説明を削ってピック画像・結果・次へボタンを同一画面に収める。
+-->
+
 </body>
 <!-- Ver2.57:
   黒PC（1520×794 / DPR1.25）などpc-compactの戦闘画面を横長最適化。
