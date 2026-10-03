@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.75">
+<html lang="ja" data-app-version="0.76">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -198,7 +198,7 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 </style>
 </head>
 <body>
-<header><div class="head"><div class="headerTop"><div class="brand"><b>🧭 おでかけ探索 <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="探索ホーム" aria-label="探索ホーム">🏠</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
+<header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
 <main id="app"></main>
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
@@ -1118,7 +1118,7 @@ async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();ev
 function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
 window.addEventListener("resize",updateHeaderNavLayout);updateHeaderNavLayout();
 const expSoundBtn=document.getElementById("expeditionSoundBtn");if(expSoundBtn)expSoundBtn.onclick=e=>{e.stopPropagation();cycleExpSound()};updateExpSoundBtn();
-document.getElementById("homeBtn").onclick=()=>{screen="home";render()};document.getElementById("collectionHeaderBtn").onclick=()=>openCollection();document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
+document.getElementById("expHomeTitle076").onclick=()=>{screen="home";render()};document.getElementById("collectionHeaderBtn").onclick=()=>openCollection();document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
 window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();if(!setActiveGroup(Math.min(activeGroup,GROUP_COUNT-1))){const first=Array.from({length:GROUP_COUNT},(_,i)=>i).find(groupUnlocked);if(first!==undefined)setActiveGroup(first)}render()}});
 
 function expeditionDungeonCloudData(){const saved=readDungeon();return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}}}
@@ -2481,7 +2481,7 @@ body.blackExpPrep073 #headerEggBadge{margin:0!important;font-size:14px!important
 body.blackExpPrep073 #expHeaderSummary073 span:first-child{background:#f3e9ff!important;color:#63458b!important;}
 }
 </style>
-<!-- Ver0.75: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
+<!-- Ver0.76: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
 
 <style id="blackExplore075">
 @media(min-width:1451px) and (min-height:701px) and (max-height:840px){
@@ -2523,4 +2523,20 @@ body.blackExpExplore075 .exploreInfo>.notice{font-size:13px!important;line-heigh
 body.blackExpExplore075 .returnMissionBtn{flex:0 0 49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
 }
 </style>
-<!-- Updated: 2026-10-03 22:33 JST / Ver0.75 -->
+<!-- Updated: 2026-10-03 22:33 JST / Ver0.76 -->
+
+<style id="expFit076">
+#expHomeTitle076{font:inherit!important;color:inherit!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:0!important;cursor:pointer;white-space:nowrap;}
+#expHomeTitle076:focus-visible{outline:2px solid #8ce6ff!important;outline-offset:3px;}
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+body.blackExpPrep073 .groupDock{height:158px!important;flex-basis:158px!important;}
+body.blackExpPrep073 .groupCard{box-sizing:border-box!important;display:grid!important;grid-template-rows:24px 32px 20px 36px!important;gap:2px!important;padding:6px 8px!important;align-content:start!important;}
+body.blackExpPrep073 .groupCardHead,body.blackExpPrep073 .groupRankLine,body.blackExpPrep073 .groupDest,body.blackExpPrep073 .groupCardFoot{margin:0!important;min-height:0!important;line-height:20px!important;}
+body.blackExpPrep073 .groupCardFoot{height:36px!important;align-items:center!important;}
+body.blackExpPrep073 .groupAction{box-sizing:border-box!important;height:32px!important;min-height:32px!important;line-height:20px!important;padding:4px 10px!important;}
+body.blackExpPrep073 .groupLocked{display:flex!important;}
+body.blackExpPrep073:not(.blackExpExplore075) .freeReturnDockGuide{height:240px!important;flex:0 0 240px!important;overflow:visible!important;}
+body.blackExpPrep073:not(.blackExpExplore075) .freeGuideFoot{min-height:20px!important;padding-top:4px!important;margin-top:4px!important;line-height:18px!important;}
+}
+</style>
+<!-- Updated: 2026-10-03 22:42 JST / Ver0.76 -->
