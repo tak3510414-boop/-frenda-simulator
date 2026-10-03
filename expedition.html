@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.77">
+<html lang="ja" data-app-version="0.78">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -998,7 +998,7 @@ function renderPrep(){
  const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);
  const runSet=new Set(currentRunIds()),otherExp=expeditionBusyIds(activeGroup),busySet=new Set([...runSet,...otherExp]),eligible=new Set(eligiblePickIds(activeGroup)),all=(d.owned||[]).map(o=>rec(o.id)).filter(Boolean),filtered=filterExpeditionPicks(all,d,eligible,busySet),th=THEMES[p.dungeonId],spot=activeSecretSpot(p.dungeonId),score=scoreTeam(p.teamIds,p.dungeonId,p.difficulty);
  const slots=prepSelectedStripHTML(d,p);
- const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small>${gradeText(r)} / ${esc(r.pick_no)}<br>ポケエネ ${esc(r.poke_ene??"-")} / 絆Lv${bondLevel(d,id)} / 🍀運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>${recOk?`<small class="pickReason">${esc(r.move_type||"-")}わざが探索先に有利</small>`:""}`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
+ const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small class="pickSummary078">${gradeText(r)}/ﾎﾟｹｴﾈ${esc(r.poke_ene??"-")}/運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
  app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}"><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destBadges">${selected?'<span class="destSelectedBadge">✓ 選択中</span>':""}${secret?'<span class="destSecretBadge">🌟 ひみつ</span>':""}</span>${secret?`<small class="destSecretEffect">調査度↑・レア箱↑・仲間↑</small>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`}).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted destinationAutoHint" style="margin-top:7px">派遣先をタップすると、その探索先に適した3体を「おまかせ編成」で自動セットします。セット後は個別に入れ替えできます。<br>ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
  bindGroupDock();
@@ -2487,7 +2487,7 @@ body.blackExpPrep073 #headerEggBadge{margin:0!important;font-size:14px!important
 body.blackExpPrep073 #expHeaderSummary073 span:first-child{background:#f3e9ff!important;color:#63458b!important;}
 }
 </style>
-<!-- Ver0.77: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
+<!-- Ver0.78: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
 
 <style id="blackExplore075">
 @media(min-width:1451px) and (min-height:701px) and (max-height:840px){
@@ -2529,7 +2529,7 @@ body.blackExpExplore075 .exploreInfo>.notice{font-size:13px!important;line-heigh
 body.blackExpExplore075 .returnMissionBtn{flex:0 0 49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
 }
 </style>
-<!-- Updated: 2026-10-03 22:33 JST / Ver0.77 -->
+<!-- Updated: 2026-10-03 22:33 JST / Ver0.78 -->
 
 <style id="expFit076">
 #expHomeTitle076{font:inherit!important;color:inherit!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:0!important;cursor:pointer;white-space:nowrap;}
@@ -2545,7 +2545,7 @@ body.blackExpPrep073:not(.blackExpExplore075) .freeReturnDockGuide{height:240px!
 body.blackExpPrep073:not(.blackExpExplore075) .freeGuideFoot{min-height:20px!important;padding-top:4px!important;margin-top:4px!important;line-height:18px!important;}
 }
 </style>
-<!-- Updated: 2026-10-03 22:42 JST / Ver0.77 -->
+<!-- Updated: 2026-10-03 22:42 JST / Ver0.78 -->
 
 <style id="expParty077">
 .pickFilterGrid{grid-template-columns:minmax(150px,1.4fr) repeat(3,minmax(80px,1fr));}
@@ -2598,4 +2598,15 @@ body.blackExpPrep073 .candidateColumn077 .pickGrid.size-large .pickCard img{heig
 }
 @media(max-width:600px){.pickFilterGrid{grid-template-columns:1fr 1fr;}}
 </style>
-<!-- Updated: 2026-10-03 22:53 JST / Ver0.77 -->
+<!-- Updated: 2026-10-03 22:53 JST / Ver0.78 -->
+
+<style id="expPicks078">
+.pickSummary078{white-space:nowrap;font-variant-numeric:tabular-nums;}
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+body.blackExpPrep073 .candidateColumn077 .pickSummary078{font-size:12px!important;line-height:18px!important;margin-top:3px!important;}
+body.blackExpPrep073 .candidateColumn077 .pickGrid.size-small .pickSummary078{font-size:11px!important;}
+body.blackExpPrep073 .candidateColumn077 .pickTypeRow{margin-top:3px!important;}
+body.blackExpPrep073 .candidateColumn077 .pickTypeChip{font-size:13px!important;padding:1px 4px!important;line-height:18px!important;}
+}
+</style>
+<!-- Updated: 2026-10-03 23:02 JST / Ver0.78 -->
