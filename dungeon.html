@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.57">
+<html lang="ja" data-app-version="2.58">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -10121,6 +10121,154 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
 }
 </style>
 
+
+<style id="v258-mobile-team-result-readable">
+/* Ver2.58: iPhoneのクリア結果「挑戦チーム結果」を読みやすさ優先で再設計。
+   3体横並びをやめ、各ピックを1行ずつ縦に並べて数値の省略表示を防ぐ。 */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamPanel{
+    padding:10px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamPanel .result5SectionHead{
+    margin-bottom:8px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamPanel .result5SectionHead b{
+    font-size:16px!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:none!important;
+    gap:8px!important;
+    width:100%!important;
+    height:auto!important;
+    overflow:visible!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid>.result4TeamCard{
+    display:grid!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    column-gap:10px!important;
+    row-gap:6px!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:112px!important;
+    padding:9px 10px!important;
+    border-radius:14px!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamHead{
+    grid-column:1!important;
+    grid-row:1/3!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:4px!important;
+    min-width:0!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamHead img{
+    width:62px!important;
+    height:86px!important;
+    max-width:62px!important;
+    max-height:86px!important;
+    object-fit:cover!important;
+    border-radius:9px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamHead>div{
+    width:100%!important;
+    min-width:0!important;
+    text-align:center!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamHead b{
+    display:block!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamHead small{
+    display:block!important;
+    margin-top:2px!important;
+    font-size:8px!important;
+    line-height:1.15!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamStats{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    min-width:0!important;
+    align-content:center!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamStats span{
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:5px!important;
+    min-width:0!important;
+    min-height:34px!important;
+    padding:6px 7px!important;
+    border-radius:9px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamStats small{
+    font-size:9px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4TeamStats b{
+    min-width:0!important;
+    font-size:11.5px!important;
+    line-height:1.1!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4Hp{
+    grid-column:2!important;
+    grid-row:2!important;
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:8px!important;
+    min-width:0!important;
+    min-height:32px!important;
+    margin:0!important;
+    padding:6px 8px!important;
+    border-radius:9px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4Hp span{
+    font-size:9px!important;
+    white-space:nowrap!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid .result4Hp b{
+    min-width:0!important;
+    font-size:11px!important;
+    line-height:1.1!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  body.dungeonOneScreen[data-dungeon-page="postrun"] .result6TeamGrid>.result4TeamCard.empty{
+    min-height:88px!important;
+  }
+}
+</style>
+
 <script id="v240-adaptive-viewport-script">
 (()=>{
   const root=document.documentElement;
@@ -10186,6 +10334,12 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   黒PC（1520×794 / DPR1.25）を短いPC画面としてpc-compact判定へ変更。
   クリア結果の「新しい仲間」上端見切れと「挑戦チーム結果」の縦ズレを同時修正。
   短いPCでは挑戦チームの4項目を2×2化し、画像・見出し・戦利品を高さに合わせて圧縮。
+-->
+
+<!-- Ver2.58:
+  スマホのクリア結果「挑戦チーム結果」を3体横並びから1体1行の縦配置へ変更。
+  各カードを画像左／数値右の2列にし、EXP・特訓・コイン・絆を2×2、HPを下段に大きく表示。
+  数値のellipsis省略を廃止し、ピック名・★/ポケエネも読みやすく拡大。
 -->
 </body>
 <!-- Ver2.57:
