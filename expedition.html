@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.73">
+<html lang="ja" data-app-version="0.74">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -1083,17 +1083,27 @@ function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.grou
 function openCollection(){if(screen!=="collection")collectionReturnScreen=screen||"home";screen="collection";render()}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
 
+function alignExpHeader074(){
+ const title=document.querySelector('.brand>b'),top=document.querySelector('.headerTop'),buttons=document.querySelector('.headerBtns'),sound=document.getElementById('expeditionSoundBtn'),egg=document.getElementById('headerEggBadge');
+ if(sound&&!title.contains(sound))title.append(sound);
+ let save=document.getElementById('expSaveStatus074');if(!save){save=document.createElement('span');save.id='expSaveStatus074';title.append(save)}
+ const logged=!!window.FrendaCloud?.isLoggedIn?.();save.textContent=logged?'☁️':'💾';save.title=logged?'クラウドログイン中':'ローカル保存';
+ let own=document.getElementById('expOwnNav074');if(!own){own=document.createElement('div');own.id='expOwnNav074';top.insertBefore(own,buttons);for(const id of ['collectionHeaderBtn','dungeonBtn']){const b=document.getElementById(id);if(b)own.append(b)}}
+ let shared=document.getElementById('expSharedStatus074');if(!shared){shared=document.createElement('div');shared.id='expSharedStatus074';top.append(shared)}
+ const summary=document.getElementById('expHeaderSummary073');if(summary)shared.append(summary);if(egg)shared.append(egg);
+}
 function blackExp073(){return matchMedia('(min-width:1451px) and (min-height:701px) and (max-height:840px)').matches}
 function optimizeBlackPrep073(){
  document.body.classList.toggle('blackExpPrep073',blackExp073());
  if(!blackExp073())return;
+ alignExpHeader074();
  const d=readDungeon()||{},brand=document.querySelector('.brand'),buttons=document.querySelector('.headerBtns');
  let badges=document.getElementById('expHeaderSummary073');if(!badges){badges=document.createElement('div');badges.id='expHeaderSummary073';brand.after(badges)}
  badges.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span><span>🪙 ${Math.max(0,Number(d.frendaCoins)||0).toLocaleString('ja-JP')}</span>`;
  const col=document.getElementById('collectionHeaderBtn');if(col){col.textContent='🗺️ 探索コレクション';col.classList.add('blackCollection073')}
  const stack=app.querySelector('.setupStack'),dock=app.querySelector('.groupDock'),guide=app.querySelector('#freeReturnDockGuide');
  if(stack&&guide){const left=document.createElement('div');left.className='blackPrepLeft073';const dest=stack.querySelector('.card');dest.classList.add('blackDest073');stack.insertBefore(left,dest);left.append(dest,guide);stack.querySelector(':scope>.card')?.classList.add('blackParty073');}
- const hint=app.querySelector('.destinationAutoHint');if(hint)hint.textContent='派遣先を選ぶと、おまかせで3体を編成。ランクは攻略済みの最高ランクを使用します。';if(dock)dock.style.top='0px';
+ const hint=app.querySelector('.destinationAutoHint');if(hint)hint.textContent='派遣先を選ぶと、おまかせで3体を編成。ランクは攻略済みの最高ランクを使用します。';alignExpHeader074();if(dock)dock.style.top='0px';
  app.querySelector('.collectionShortcut')?.classList.add('blackShortcut073');
 }
 function render(){syncExpBgm();updateExpSoundBtn();document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();updateHeaderEggCount();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker();updateHeaderEggCount()}
@@ -2447,3 +2457,21 @@ body.blackExpPrep073 .destinationAutoHint{margin-top:5px!important;padding:0!imp
 }
 </style>
 <!-- Ver0.73: 黒PC1520×794の探索ホームを全面最適化。固定5グループ・左派遣先と時間報酬ガイド・右3体編成と候補一覧。更新日時: 2026-10-03 22:04 JST -->
+
+<style id="expHeader074">
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+body.blackExpPrep073 .headerTop{display:flex!important;gap:8px!important;}
+body.blackExpPrep073 .brand{flex:0 0 auto!important;}
+body.blackExpPrep073 .brand>b{display:flex!important;align-items:center!important;gap:5px!important;}
+body.blackExpPrep073 #expeditionSoundBtn,body.blackExpPrep073 #expSaveStatus074{display:inline-grid!important;place-items:center!important;width:26px!important;height:24px!important;min-width:26px!important;flex:0 0 26px!important;padding:0!important;border-radius:8px!important;background:#ffffff14!important;border:1px solid #ffffff20!important;color:#fff!important;font-size:15px!important;box-shadow:none!important;}
+body.blackExpPrep073 #expOwnNav074{flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;}
+body.blackExpPrep073 #expOwnNav074 button{font-size:14px!important;min-height:32px!important;border-radius:10px!important;padding:5px 9px!important;white-space:nowrap;}
+body.blackExpPrep073 #collectionHeaderBtn{width:auto!important;flex:0 0 auto!important;height:32px!important;}
+body.blackExpPrep073 #expSharedStatus074{display:flex;align-items:center;gap:6px;flex:0 0 auto;}
+body.blackExpPrep073 #expHeaderSummary073{display:flex!important;gap:6px!important;}
+body.blackExpPrep073 #expHeaderSummary073 span{font-size:14px!important;padding:7px 10px!important;}
+body.blackExpPrep073 #headerEggBadge{margin:0!important;font-size:14px!important;padding:7px 10px!important;background:#f3e9ff!important;border-color:#c5addf!important;color:#63458b!important;}
+body.blackExpPrep073 #expHeaderSummary073 span:first-child{background:#f3e9ff!important;color:#63458b!important;}
+}
+</style>
+<!-- Ver0.74: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
