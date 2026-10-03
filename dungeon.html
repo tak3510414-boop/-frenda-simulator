@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.72">
+<html lang="ja" data-app-version="2.73">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4288,7 +4288,7 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 "use strict";
 const APP_VERSION=document.documentElement.dataset.appVersion||"0.00";
 document.title=`フレンダダンジョン Ver${APP_VERSION}`;
-const versionBadge=document.getElementById("versionBadge");if(versionBadge)versionBadge.textContent=`Ver${APP_VERSION}`;
+const versionBadge=document.getElementById("versionBadge");if(versionBadge){versionBadge.textContent=`Ver${APP_VERSION}`;versionBadge.setAttribute("role","button");versionBadge.setAttribute("tabindex","0");versionBadge.setAttribute("title","画面情報を表示");versionBadge.setAttribute("aria-label",`Ver${APP_VERSION}・画面情報を表示`);versionBadge.onclick=()=>window.showFrendaViewportInfo?.();versionBadge.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();window.showFrendaViewportInfo?.()}}}
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
 const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
@@ -11950,6 +11950,18 @@ button.grassPatch{cursor:pointer}.grassPatch.grassActive:active{transform:scale(
 <!-- Ver2.72:
   所持ピック画面の初期ソートを「入手順（新しい順）」に変更。
   画面を開いた直後から、最後に入手・進化したピックが先頭に表示される。
+-->
+
+
+<style id="v273-version-screeninfo">
+/* Ver2.73: tap/click the version badge to show viewport diagnostics on every device. */
+.versionBadge[role="button"]{cursor:pointer;user-select:none;transition:transform .12s ease,filter .12s ease}
+.versionBadge[role="button"]:active{transform:scale(.96)}
+.versionBadge[role="button"]:focus-visible{outline:2px solid #fff;outline-offset:2px}
+</style>
+<!-- Ver2.73:
+  画面上部のバージョン表示をタップ／クリックすると、profile・layout・visible・DPR・タッチ有無を表示。
+  ?screeninfo=1 が効かないChromeOS Flex等でもURL変更なしで画面診断値を確認できる。
 -->
 
 </body>
