@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.90">
+<html lang="ja" data-app-version="2.91">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5172,9 +5172,9 @@ function openEvolutionDialog(id){if(isExpeditionLocked(id)){UI.dialog.alert("お
  document.getElementById("evoOverlay")?.remove();
  const ov=document.createElement("div");
  ov.id="evoOverlay";ov.className="evoOverlay";
- const candidateNames=targetsWithPicks.map(t=>t.name).filter(Boolean);
- ov.innerHTML=`<div class="evoPanel evoRandomPanel"><div class="evoHead"><div><small>${esc(src.name_ja)} ${gradeText(src)} / 進化P ${info.points}</small><br><b>進化に挑戦</b></div><button class="ghost" id="evoClose">閉じる</button></div><div class="evoRandomIntro"><img src="${esc(imageOf(src))}" alt=""><div><b>進化先はランダム！</b><p>登録済みの進化候補から抽選します。<strong>現在の${gradeText(src)}以上を優先</strong>します。</p></div></div><div class="evoCandidateBox"><small>進化候補</small><div>${candidateNames.map(n=>`<span>${esc(n)}</span>`).join("")}</div></div>${lowerApproved?'<div class="notice">現在と同じ★以上の登録ピックがないため、低い★も抽選対象になります。</div>':""}<div class="evoRandomActions"><button class="ghost" id="evoCancel">やめる</button><button class="evoBtn" id="evoGo">✨ 進化する（進化P ${info.cost}）</button></div></div>`;
- document.body.appendChild(ov);document.body.style.overflow="hidden";
+ const candidatePicks=[...new Map(targetsWithPicks.flatMap(t=>t.candidates).map(r=>[r.master_id,r])).values()];
+ ov.innerHTML=`<div class="evoPanel evoRandomPanel"><div class="evoHead"><div><small>${esc(src.name_ja)} ${gradeText(src)} / 進化P ${info.points}</small><br><b>進化に挑戦</b></div><button class="ghost" id="evoClose">閉じる</button></div><div class="evoRandomIntro"><img src="${esc(imageOf(src))}" alt=""><div><b>進化先はランダム！</b><p>登録済みの進化候補から抽選します。<strong>現在の${gradeText(src)}以上を優先</strong>します。</p></div></div><div class="evoCandidateBox evoPickBox291"><small>進化候補（所持・遭遇済みのピックは画像を表示）</small><div class="evoCandidateGrid">${candidatePicks.map(r=>evolutionCandidateCardHTML(r.master_id)).join("")}</div></div>${lowerApproved?'<div class="notice">現在と同じ★以上の登録ピックがないため、低い★も抽選対象になります。</div>':""}<div class="evoRandomActions"><button class="ghost" id="evoCancel">やめる</button><button class="evoBtn" id="evoGo">✨ 進化する（進化P ${info.cost}）</button></div></div>`;
+ document.body.appendChild(ov);document.body.style.overflow="hidden";bindEvolutionCandidateDetailLinks(ov);
  const close=()=>{ov.remove();document.body.style.overflow=""};
  ov.onclick=e=>{if(e.target===ov)close()};
  ov.querySelector("#evoClose").onclick=close;
@@ -13918,7 +13918,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .
 
 <!-- Ver2.85: 黒PC共通ヘッダー／冒険固定パーティ・帯／編成サイズ切替／所持文字のはみ出し／選択画面整理／報酬・結果・裏面・ショップ最適化。更新日時: 2026-10-03 17:50 JST -->
 
-<!-- Ver2.90: 黒PCの裏面を1画面・能力1列へ再配置。タイプ数による所持カードずれとIME変換を修正。戦闘準備・勝利・卵発見／孵化を拡大・中央配置。草むら選択表、ボタン順、生息地復帰、レア度別の葉の揺れ、共通捕獲演出と結果表示を実装。更新日時: 2026-10-03 18:30 JST -->
+<!-- Ver2.91: 黒PCの裏面を1画面・能力1列へ再配置。タイプ数による所持カードずれとIME変換を修正。戦闘準備・勝利・卵発見／孵化を拡大・中央配置。草むら選択表、ボタン順、生息地復帰、レア度別の葉の揺れ、共通捕獲演出と結果表示を実装。更新日時: 2026-10-03 18:30 JST -->
 
 <style id="blackPc287">
 @media(min-width:1451px) and (min-height:701px) and (max-height:840px){
@@ -13982,7 +13982,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .r
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .result4Hp{grid-column:2!important;grid-row:2!important;margin:0!important;padding:3px!important;font-size:11px!important;}
 }
 </style>
-<!-- Ver2.90: 裏面の操作ボタン見切れ、所持ピック小表示とボタン位置、所持数の拡大を修正。クリア結果を仲間・卵・解放中心の配置へ再構成。更新日時: 2026-10-03 19:03 JST -->
+<!-- Ver2.91: 裏面の操作ボタン見切れ、所持ピック小表示とボタン位置、所持数の拡大を修正。クリア結果を仲間・卵・解放中心の配置へ再構成。更新日時: 2026-10-03 19:03 JST -->
 
 <style id="capture288">
 .ownedGrid .ownedV190Visual .ownedNearEvoBadge{position:absolute!important;left:2px!important;right:2px!important;bottom:3px!important;margin:0!important;z-index:2!important;box-sizing:border-box!important;white-space:normal!important;min-height:18px!important;box-shadow:0 2px 6px #30205066!important;font-size:9px!important;line-height:1.15!important;padding:3px!important;}
@@ -14001,7 +14001,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .captureCele
 }
 @media(prefers-reduced-motion:reduce){.getCelebrationTitle288,.grassResultScreen.success::after,.captureCelebration288::after,.captureCelebration288 .captureResultTitle{animation:none!important;}}
 </style>
-<!-- Ver2.90: あと1で進化をピック画像上へ固定しカード位置のずれを解消。捕獲成功の大型文字・金色放射背景・星演出を追加。更新日時: 2026-10-03 19:14 JST -->
+<!-- Ver2.91: あと1で進化をピック画像上へ固定しカード位置のずれを解消。捕獲成功の大型文字・金色放射背景・星演出を追加。更新日時: 2026-10-03 19:14 JST -->
 
 <style id="shopHeader289">
 body #homeBtn.homeCornerBtn{display:none!important;}
@@ -14010,7 +14010,7 @@ body:has(#luckShopOverlay) #luckShopOverlay.ownedDetailOverlay,body:has(#luckSho
 body:has(#luckShopOverlay) #luckShopOverlay .luckShopPanel,body:has(#luckShopOverlay) #shopUseOverlay .shopUsePanel{max-height:calc(100dvh - var(--shop-header-height,66px) - 16px)!important;}
 body:has(#luckShopOverlay) .headerMainTitle{cursor:pointer;}
 </style>
-<!-- Ver2.90: フレンダショップで共通固定ヘッダを表示。右上ホームアイコンを非表示にしタイトルからのホーム操作を維持。更新日時: 2026-10-03 19:22 JST -->
+<!-- Ver2.91: フレンダショップで共通固定ヘッダを表示。右上ホームアイコンを非表示にしタイトルからのホーム操作を維持。更新日時: 2026-10-03 19:22 JST -->
 
 <style id="header290">
 body>header #headerEggBadge,body>header #headerCoinBadge{display:inline-flex!important;align-items:center;justify-content:center;white-space:nowrap;font-size:13px!important;font-weight:1000;padding:6px 9px!important;border-radius:999px;min-width:0!important;line-height:1.25!important;}
@@ -14021,4 +14021,21 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeExpedit
 .homeExpeditionStatus span.locked{background:#e8ecf0;color:#667381;border-color:#c7d0d8;}
 @media(max-width:700px){body>header .careCluster{flex-wrap:wrap!important;gap:4px!important;}body>header #headerEggBadge,body>header #headerCoinBadge{font-size:10px!important;padding:4px 6px!important;}.homeExpeditionStatus{display:grid!important;grid-template-columns:1fr 1fr!important;}}
 </style>
-<!-- Ver2.90: もちもの重複数と数量の×を削除。ホーム探索に全5グループを表示。冒険の最深・クリア数を削除。ヘッダに卵・コイン・探索中数を常時表示。更新日時: 2026-10-03 19:30 JST -->
+<!-- Ver2.91: もちもの重複数と数量の×を削除。ホーム探索に全5グループを表示。冒険の最深・クリア数を削除。ヘッダに卵・コイン・探索中数を常時表示。更新日時: 2026-10-03 19:30 JST -->
+
+<style id="evolution291">
+#evoOverlay .evoRandomPanel{width:min(1100px,100%)!important;max-height:calc(100dvh - 28px)!important;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;}
+#evoOverlay .evoHead,#evoOverlay .evoRandomIntro,#evoOverlay .evoRandomActions,#evoOverlay .notice{flex:0 0 auto;}
+#evoOverlay .evoPickBox291{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+#evoOverlay .evoPickBox291>.evoCandidateGrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;min-height:0;overflow:auto;}
+#evoOverlay .evoCandidateCard{position:relative;display:flex;flex-direction:column;align-items:center;padding:8px;min-width:0;}
+#evoOverlay .evoCandidateCard img,#evoOverlay .evoCandidatePlaceholder{width:100px;height:150px;aspect-ratio:auto;object-fit:contain;flex:0 0 150px;box-sizing:border-box;}
+#evoOverlay .evoCandidatePlaceholder{display:flex;align-items:center;justify-content:center;}
+#evoOverlay .evoCandidateName{font-size:16px;line-height:1.2;min-height:38px;}
+#evoOverlay .evoCandidateMeta{font-size:11px;line-height:1.3;}
+#evoOverlay .evoCandidateStatus{font-size:10px;padding:3px 6px;}
+#evoOverlay .evoCandidateTapHint{font-size:10px;}
+#evoOverlay .evoRandomActions{margin-top:10px;}
+@media(max-width:700px){#evoOverlay .evoPickBox291>.evoCandidateGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}#evoOverlay .evoCandidateCard{padding:4px;}#evoOverlay .evoCandidateCard img,#evoOverlay .evoCandidatePlaceholder{width:64px;height:96px;flex-basis:96px;}#evoOverlay .evoCandidateName{font-size:11px;min-height:28px;}#evoOverlay .evoCandidateMeta{font-size:8px;}#evoOverlay .evoCandidateTapHint{display:none;}}
+</style>
+<!-- Ver2.91: 所持から開く進化候補にピック画像・名前・レア度・番号を表示。未遭遇は画像を表示しない。更新日時: 2026-10-03 20:21 JST -->
