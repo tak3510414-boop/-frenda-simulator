@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.83">
+<html lang="ja" data-app-version="2.84">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -13233,6 +13233,127 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeManageG
 }
 </style>
 
+<style id="v284-black-pc-optimization">
+/* 黒PC専用: 白PC・スマホへの移植は別更新。 */
+@media (min-width:1451px) and (min-height:701px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .headrow{max-width:none!important;width:100%!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .headerTop{flex:1 1 auto!important;min-width:0!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .careCluster{width:auto!important;flex:0 0 auto!important;margin-left:auto!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .brand b{font-size:24px!important;line-height:1.1!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app{width:100%!important;max-width:none!important;margin:0!important;padding:8px 10px!important;box-sizing:border-box!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .sectionTitle{font-size:24px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app button:not(.vs):not(.headerIconBtn){font-size:16px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app input,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app select{font-size:15px!important;min-height:36px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .muted,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .notice{font-size:15px!important;line-height:1.4!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventoryScreen,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .trainingScreen,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .eggsScreen,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .teamSelectCard{max-width:none!important;width:100%!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonSelectScreen{height:100%!important;max-height:none!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;gap:8px!important;padding:10px!important;overflow:hidden!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewBody{height:100%!important;min-height:0!important;display:block!important;overflow:hidden!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewGrid{height:100%!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(0,1fr)!important;gap:8px!important;overflow:hidden!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewCard{padding:10px!important;gap:7px!important;align-content:center!important;min-height:0!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewTitle{font-size:22px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewLevel,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewSummary,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewUnlock{font-size:14px!important;line-height:1.3!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewType{font-size:14px!important;padding:4px 7px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewRanks button{padding:8px 2px!important;min-height:65px!important;font-size:17px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewRanks small,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewRanks .diffStat,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dungeonOverviewRanks .diffHint{font-size:11px!important;line-height:1.2!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .ownedGrid,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dexGrid{gap:10px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .ownedGrid .pickCard b,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dexName,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .compactTrainInfo>b{font-size:18px!important;line-height:1.2!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .ownedGrid .pickCard small,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .dexMeta,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .compactTrainInfo small{font-size:13px!important;line-height:1.3!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .teamSelectGrid .pickCard b{font-size:17px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .teamSelectGrid .pickCard small{font-size:12px!important;line-height:1.25!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .frendaSelectedSlot.filled{grid-template-columns:52px minmax(0,1fr)!important;min-height:78px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .frendaSelectedSlot img{width:52px!important;height:72px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .frendaSelectedInfo b{font-size:17px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .frendaSelectedInfo small,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .teamThemeHint span{font-size:12px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventoryScreen{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;align-content:start!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventoryScreenHead{grid-column:1/-1!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventorySection{margin:0!important;padding:10px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventoryItemTitle b,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventorySectionHead b{font-size:20px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventoryItemBody p,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventoryItemBody small,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .inventorySectionHead small{font-size:14px!important;line-height:1.3!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .trainingGridViewport{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:10px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .eggGridViewport{grid-template-columns:repeat(5,minmax(0,1fr))!important;height:100%!important;align-content:center!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .eggCard b{font-size:20px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .eggCard small{font-size:15px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen>.dungeonRun{max-width:none!important;width:100%!important;min-width:0!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .runUnifiedTitle>strong{font-size:22px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .runUnifiedFloor strong{font-size:26px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .runUnifiedMetric{font-size:14px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .partySideName{font-size:19px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .partySideHpText,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .partySideMeta{font-size:14px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeSelectionCard{width:100%!important;max-width:none!important;min-height:0!important;flex:1 1 auto!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeGrid{width:100%!important;max-width:none!important;gap:14px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeCard{min-height:220px!important;padding:16px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeCard b{font-size:27px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeCard small,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeAlertNote{font-size:15px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .routeCard .ico{font-size:62px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventChoiceCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventNothingCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventResultCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .pickupCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .runBossIntroCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .singleAdvanceCard{max-width:none!important;width:100%!important;min-width:0!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventChoiceTitle,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventResultCard h2,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventNothingCard h2,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .pickupCard h2,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .runBossIntroCard h2{font-size:36px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventChoiceValue,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventResultValue{font-size:32px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventChoiceInstruction,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventResultCard p,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .eventNothingCard p,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .pickupCard p{font-size:20px!important;line-height:1.35!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureCombatCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureSlotCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureTicketCard{width:100%!important;max-width:none!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureCombatTitle,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureResultTitle{font-size:36px!important;line-height:1.15!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureCombatSub,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureResultNotice,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureTicketLead{font-size:18px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureActionBtn,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen #ballStop{font-size:24px!important;min-height:48px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .capturePick.captureLarge b,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .captureTargetPanel h2{font-size:24px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .rewardBtn b{font-size:24px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app.dungeonRunScreen .rewardBtn small{font-size:15px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .postRunSummary,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .hatchDramaCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .eggDiscoveryCard,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .postRunBigCard{width:100%!important;max-width:none!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .resultHeroTitle4 h2,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >main#app .hatchResultName{font-size:32px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .ownedBackPanel,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .luckShopPanel,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .shopUsePanel{width:calc(100vw - 32px)!important;max-width:1488px!important;max-height:calc(100dvh - 32px)!important;box-sizing:border-box!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .shopCatalogGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .shopItemHead b,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .ownedBackHead b{font-size:23px!important}
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .shopItemMain p,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .shopItemNote,
+html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .coinHowTo p{font-size:15px!important;line-height:1.35!important}
+}
+</style>
 </body>
 <!-- Ver2.57:
   黒PC（1520×794 / DPR1.25）などpc-compactの戦闘画面を横長最適化。
@@ -13338,3 +13459,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeManageG
 <!-- Ver2.82: 主タイトルのCSS詳細度を旧18px指定と揃え、末尾の42px指定を確実に優先。更新日時: 2026-10-03 16:51 JST -->
 
 <!-- Ver2.83: 白PCホームへ黒PCと同じ横1段ヘッダー・全面幅・上段2カード／下段4カードを適用。更新日時: 2026-10-03 16:54 JST -->
+
+<!-- Ver2.84: 黒PCの通常画面・冒険画面・一覧・ショップ詳細の幅制限と文字サイズを最適化。更新日時: 2026-10-03 17:00 JST -->
