@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.78">
+<html lang="ja" data-app-version="0.79">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -357,6 +357,7 @@ function freeReturnDockGuideHTML(now=Date.now()){
    ?`G${activeGroup+1} 帰還 ${compactElapsedLabel(elapsed)}`
    :`G${activeGroup+1} 現在 ${compactElapsedLabel(elapsed)}`
  }
+ const currentAnchor=hasPosition?[...FREE_EXP_ANCHORS].reverse().find(a=>a.h<=elapsed+1e-9):null;
  const nextAnchor=hasPosition?(FREE_EXP_ANCHORS.find(a=>a.h>elapsed+1e-9)||null):null;
  const maxed=hasPosition&&elapsed>=FREE_EXP_MAX_HOURS-1e-9;
  let markerInserted=false;
@@ -365,7 +366,7 @@ function freeReturnDockGuideHTML(now=Date.now()){
   if(!hasPosition||markerInserted)return "";
   markerInserted=true;
   const nextText=maxed?"12時間 MAX":nextAnchor?`${nextAnchor.h===.5?"30分":`${nextAnchor.h}時間`}まで あと${compactElapsedLabel(Math.max(0,nextAnchor.h-elapsed))}`:"";
-  return `<div class="freeGuideNowMarker ${status==="returned"?"returned":""}"><b>▶ ${status==="returned"?"帰還":"現在"} ${maxed?"12時間 MAX":compactElapsedLabel(elapsed)}</b>${nextText&&!maxed?`<small>→ ${nextText}</small>`:""}</div>`
+  return `<div class="freeGuideNowMarker ${status==="returned"?"returned":""}"><b>▶ ${status==="returned"?"帰還":"現在"} ${maxed?"12時間 MAX":compactElapsedLabel(elapsed)}${hasPosition&&!currentAnchor?"・現在の成果 0箱":""}</b>${nextText&&!maxed?`<small>→ ${nextText}</small>`:""}</div>`
  };
  for(const a of FREE_EXP_ANCHORS){
   if(hasPosition&&!markerInserted&&elapsed<a.h-1e-9)rows.push(nowMarker());
@@ -374,7 +375,7 @@ function freeReturnDockGuideHTML(now=Date.now()){
   const symbols=`${"○".repeat(normal)}${"🪎".repeat(boost)}${"⭐️".repeat(guaranteed)}`;
   const time=a.h===.5?"30分":`${a.h}時間`;
   const reached=hasPosition&&elapsed>=a.h-1e-9;
-  rows.push(`<div class="freeGuideRow ${a.h===12?"max ":""}${reached?"reached ":""}"><b>${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`);
+  rows.push(`<div class="freeGuideRow ${a.h===12?"max ":""}${reached?"reached ":""}${currentAnchor===a?"currentReward079 ":""}"><b>${currentAnchor===a?"▶ ":""}${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`);
  }
  if(hasPosition&&!markerInserted)rows.push(nowMarker());
  return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuidePosition ${status==="exploring"?"running":status==="returned"?"returned":""}">${positionText}</div><div class="freeGuideRows">${rows.join("")}</div><div class="freeGuideFoot"><span>○ 通常</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
@@ -927,8 +928,8 @@ function expeditionFilterSeries(records){return UI.pickFilter.series(records)}
 function expeditionFilterTypes(records){return UI.pickFilter.types(records)}
 function expeditionFilterGrades(records){return UI.pickFilter.grades(records)}
 function expeditionPickScore(r,did,diff,d,eligible){const id=r?.master_id||"";if(!eligible.has(id))return-100000;const fit=recommended(r,did)?1:0,energy=Number(r?.poke_ene)||0,grade=Number(r?.grade)||0,bond=bondLevel(d,id),solo=scoreTeam([id],did,diff);return fit*100000+(solo.parts?.strength||0)*1000+grade*200+bond*80+energy}
-function filterExpeditionPicks(records,d,eligible,busySet){prepPickFilter.series="all";prepPickFilter.status="all";const statusPredicate=(r,status)=>status==="all"||status==="available"&&eligible.has(r.master_id)||status==="recommended"&&eligible.has(r.master_id)&&recommended(r,prep.dungeonId)||status==="selected"&&prep.teamIds.includes(r.master_id)||status==="busy"&&busySet.has(r.master_id);return UI.pickFilter.apply(records,prepPickFilter,{statusPredicate,sorters:{recommended:(a,b)=>expeditionPickScore(b.r,prep.dungeonId,prep.difficulty,d,eligible)-expeditionPickScore(a.r,prep.dungeonId,prep.difficulty,d,eligible)||a.i-b.i,bond:(a,b)=>bondLevel(d,b.r.master_id)-bondLevel(d,a.r.master_id)||(Number(b.r.poke_ene)||0)-(Number(a.r.poke_ene)||0)||a.i-b.i}})}
-function expeditionPickFilterHTML(all,shown){const statusOptions=[["all","すべて"],["available","使用可能"],["recommended","🔥 適性のみ"],["selected","選択中"],["busy","使用中"]],sortOptions=[["recommended","オススメ順"],["number","番号順"],["name","名前順"],["grade","★高い順"],["energy","ポケエネ高い順"],["bond","絆Lv高い順"]];UI.pickFilter.normalize(prepPickFilter,all,{statusOptions,sortOptions,defaultSort:"recommended"});const view=UI.viewSize.html({scope:"expedition",current:prepPickView,wrapperClass:"pickViewControl"});return UI.pickFilter.html({scope:"expedition",filter:prepPickFilter,records:all,statusOptions,sortOptions,shownCount:shown,classes:{wrap:"pickFilterPanel",grid:"pickFilterGrid",foot:"pickFilterFoot",count:"pickFilterCount",reset:"pickFilterReset",search:"search"},footerExtra:view}).replace(/<label><span>(?:弾|状態)<\/span>[\s\S]*?<\/label>/g,"")}
+function filterExpeditionPicks(records,d,eligible,busySet){prepPickFilter.series="all";prepPickFilter.status="all";const statusPredicate=(r,status)=>status==="all"||status==="available"&&eligible.has(r.master_id)||status==="recommended"&&eligible.has(r.master_id)&&recommended(r,prep.dungeonId)||status==="selected"&&prep.teamIds.includes(r.master_id)||status==="busy"&&busySet.has(r.master_id);return UI.pickFilter.apply(records,prepPickFilter,{statusPredicate,sorters:{recommended:(a,b)=>expeditionPickScore(b.r,prep.dungeonId,prep.difficulty,d,eligible)-expeditionPickScore(a.r,prep.dungeonId,prep.difficulty,d,eligible)||a.i-b.i,luck:(a,b)=>luckFor(d,b.r.master_id)-luckFor(d,a.r.master_id)||(Number(b.r.poke_ene)||0)-(Number(a.r.poke_ene)||0)||a.i-b.i}})}
+function expeditionPickFilterHTML(all,shown){const statusOptions=[["all","すべて"],["available","使用可能"],["recommended","🔥 適性のみ"],["selected","選択中"],["busy","使用中"]],sortOptions=[["recommended","オススメ順"],["number","番号順"],["name","名前順"],["grade","★高い順"],["energy","ポケエネ高い順"],["luck","運の高い順"]];UI.pickFilter.normalize(prepPickFilter,all,{statusOptions,sortOptions,defaultSort:"recommended"});const view=UI.viewSize.html({scope:"expedition",current:prepPickView,wrapperClass:"pickViewControl"});return UI.pickFilter.html({scope:"expedition",filter:prepPickFilter,records:all,statusOptions,sortOptions,shownCount:shown,classes:{wrap:"pickFilterPanel",grid:"pickFilterGrid",foot:"pickFilterFoot",count:"pickFilterCount",reset:"pickFilterReset",search:"search"},footerExtra:view}).replace(/<label><span>(?:弾|状態)<\/span>[\s\S]*?<\/label>/g,"")}
 function bindExpeditionPickFilters(){UI.pickFilter.bind({root:app,scope:"expedition",filter:prepPickFilter,render:renderPrep,defaults:{sort:"recommended"}});UI.viewSize.bind({root:app,scope:"expedition",key:EXP_PICK_VIEW_KEY,onChange:size=>{prepPickView=size;renderPrep()}})}
 
 function prepSelectedStripHTML(d,p){
@@ -2487,7 +2488,7 @@ body.blackExpPrep073 #headerEggBadge{margin:0!important;font-size:14px!important
 body.blackExpPrep073 #expHeaderSummary073 span:first-child{background:#f3e9ff!important;color:#63458b!important;}
 }
 </style>
-<!-- Ver0.78: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
+<!-- Ver0.79: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
 
 <style id="blackExplore075">
 @media(min-width:1451px) and (min-height:701px) and (max-height:840px){
@@ -2529,7 +2530,7 @@ body.blackExpExplore075 .exploreInfo>.notice{font-size:13px!important;line-heigh
 body.blackExpExplore075 .returnMissionBtn{flex:0 0 49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
 }
 </style>
-<!-- Updated: 2026-10-03 22:33 JST / Ver0.78 -->
+<!-- Updated: 2026-10-03 22:33 JST / Ver0.79 -->
 
 <style id="expFit076">
 #expHomeTitle076{font:inherit!important;color:inherit!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:0!important;cursor:pointer;white-space:nowrap;}
@@ -2545,7 +2546,7 @@ body.blackExpPrep073:not(.blackExpExplore075) .freeReturnDockGuide{height:240px!
 body.blackExpPrep073:not(.blackExpExplore075) .freeGuideFoot{min-height:20px!important;padding-top:4px!important;margin-top:4px!important;line-height:18px!important;}
 }
 </style>
-<!-- Updated: 2026-10-03 22:42 JST / Ver0.78 -->
+<!-- Updated: 2026-10-03 22:42 JST / Ver0.79 -->
 
 <style id="expParty077">
 .pickFilterGrid{grid-template-columns:minmax(150px,1.4fr) repeat(3,minmax(80px,1fr));}
@@ -2598,7 +2599,7 @@ body.blackExpPrep073 .candidateColumn077 .pickGrid.size-large .pickCard img{heig
 }
 @media(max-width:600px){.pickFilterGrid{grid-template-columns:1fr 1fr;}}
 </style>
-<!-- Updated: 2026-10-03 22:53 JST / Ver0.78 -->
+<!-- Updated: 2026-10-03 22:53 JST / Ver0.79 -->
 
 <style id="expPicks078">
 .pickSummary078{white-space:nowrap;font-variant-numeric:tabular-nums;}
@@ -2609,4 +2610,17 @@ body.blackExpPrep073 .candidateColumn077 .pickTypeRow{margin-top:3px!important;}
 body.blackExpPrep073 .candidateColumn077 .pickTypeChip{font-size:13px!important;padding:1px 4px!important;line-height:18px!important;}
 }
 </style>
-<!-- Updated: 2026-10-03 23:02 JST / Ver0.78 -->
+<!-- Updated: 2026-10-03 23:02 JST / Ver0.79 -->
+
+<style id="expCurrent079">
+.freeGuideRow.currentReward079{background:#ffe28b!important;border:2px solid #ffb52b!important;border-radius:8px!important;box-shadow:0 0 0 2px #ffd46a55!important;box-sizing:border-box!important;}
+.freeGuideRow.currentReward079 b,.freeGuideRow.currentReward079 span{color:#523800!important;font-weight:1000!important;}
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+body.blackExpPrep073 .chosenColumn077{padding:8px!important;border:2px solid #49a9ca!important;border-radius:14px!important;background:#eaf8ff!important;box-sizing:border-box!important;box-shadow:0 2px 8px #164b6315!important;}
+body.blackExpPrep073 .candidateColumn077{border-left:2px solid #cfdee6!important;padding-left:8px!important;}
+body.blackExpPrep073 .chosenColumn077 .frendaSelectedSlot{grid-template-columns:54px minmax(0,1fr) 24px!important;padding:4px!important;}
+body.blackExpPrep073 .chosenColumn077 .frendaSelectedSlot img{height:66px!important;width:46px!important;}
+body.blackExpExplore075 .exploreGuide075 .freeGuideRow.currentReward079{padding:1px 0!important;}
+}
+</style>
+<!-- Updated: 2026-10-04 06:00 JST / Ver0.79 -->
