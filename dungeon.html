@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.63">
+<html lang="ja" data-app-version="2.64">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -11212,6 +11212,57 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   ランクボタンを広げて「クリア ○回」・到達階・生息地数を省略せず表示。
   重複していた「解放 R1〜」行をスマホでは非表示にし、タイプ・最高到達・クリア済ランク数・次の解放条件へ整理。
   カード内の余白を詰めつつ文字を大きくして、情報量ではなく可読性を優先。
+-->
+
+
+<style id="v264-mobile-dungeon-scroll-fix">
+/* Ver2.64: dungeon chooser is intentionally scrollable on mobile. */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page="dungeons"]{
+    height:100svh!important;
+    min-height:100svh!important;
+    max-height:100svh!important;
+    overflow:hidden!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="dungeons"]>main#app{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    display:block!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-y:contain!important;
+    touch-action:pan-y!important;
+    padding:7px 8px calc(120px + env(safe-area-inset-bottom))!important;
+    scroll-padding-bottom:calc(120px + env(safe-area-inset-bottom))!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="dungeons"] .dungeonSelectScreen{
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin:0!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="dungeons"] .dungeonOverviewBody,
+  body.dungeonOneScreen[data-dungeon-page="dungeons"] .dungeonOverviewGrid{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="dungeons"] .dungeonOverviewCard{
+    break-inside:avoid!important;
+  }
+}
+</style>
+<!-- Ver2.64:
+  iPhoneのダンジョン選択画面で縦スクロールできなかった問題を修正。
+  dungeons画面だけは固定1画面コンテナの中で main#app 自体を縦スクロール領域にし、
+  Safariでも慣性スクロール・下端余白・安全領域を確保する。
 -->
 
 </body>
