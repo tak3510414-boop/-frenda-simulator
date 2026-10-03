@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.94">
+<html lang="ja" data-app-version="2.95">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14160,7 +14160,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luc
 }
 </style>
 
-<!-- Ver2.94: 白PC 1366×688 DPR1に黒PC共通レイアウトを適用。固定ヘッダ・パーティ・冒険帯を維持し、各画面の高さ・画像・文字・操作領域を調整。ショップ全商品と草むら全10ダンジョンを1画面に配置。更新日時: 2026-10-03 20:26 JST -->
+<!-- Ver2.95: 白PC 1366×688 DPR1に黒PC共通レイアウトを適用。固定ヘッダ・パーティ・冒険帯を維持し、各画面の高さ・画像・文字・操作領域を調整。ショップ全商品と草むら全10ダンジョンを1画面に配置。更新日時: 2026-10-03 20:26 JST -->
 
 <style id="mobileFighter293">
 @media(max-width:767px){
@@ -14176,7 +14176,7 @@ html[data-view-profile="mobile"] main#app.chooseFighterScreen .combatTeamStrip .
 html[data-view-profile="mobile"] main#app.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniLegend{font-size:6px!important;gap:3px!important;margin-top:4px!important;}
 }
 </style>
-<!-- Ver2.94: iPhone戦闘ポケモン選択にATK・DEF・SPA・SPD・SPEのグラフと補正内訳を表示。更新日時: 2026-10-03 20:46 JST -->
+<!-- Ver2.95: iPhone戦闘ポケモン選択にATK・DEF・SPA・SPD・SPEのグラフと補正内訳を表示。更新日時: 2026-10-03 20:46 JST -->
 
 <style id="mobileHome294">
 @media(max-width:700px){
@@ -14196,4 +14196,32 @@ html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeInventoryCo
 html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeInventoryCounts span{font-size:10px!important;}
 }
 </style>
-<!-- Ver2.94: iPhoneホームのSafari用重複余白を撤去。表示領域に合わせて6枚のメニューカードと文字を拡大。更新日時: 2026-10-03 20:59 JST -->
+<!-- Ver2.95: iPhoneホームのSafari用重複余白を撤去。表示領域に合わせて6枚のメニューカードと文字を拡大。更新日時: 2026-10-03 20:59 JST -->
+
+<style id="mobileShop295">
+@media(max-width:700px){
+html[data-view-profile="mobile"] #luckShopOverlay .luckShopPanel{height:calc(100dvh - var(--shop-header-height,70px) - 16px)!important;min-height:0!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:8px!important;gap:6px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .luckShopPanel>.ownedBackHead{flex:0 0 auto!important;padding:6px!important;margin:0!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .ownedBackHead b{font-size:18px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .ownedBackHead small{font-size:9px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .ownedBackClose{font-size:13px!important;padding:8px 12px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .coinBalance{flex:0 0 auto!important;margin:0!important;padding:7px 10px!important;font-size:15px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .coinBalance b{font-size:20px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .coinHowTo{flex:0 0 auto!important;margin:0!important;padding:7px 9px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .coinHowTo>b{font-size:11px!important;margin:0 0 3px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .coinHowTo p,html[data-view-profile="mobile"] #luckShopOverlay .coinHowTo span{font-size:10px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopCatalogGrid{display:grid!important;grid-template-columns:1fr!important;grid-auto-rows:max-content!important;align-content:start!important;flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important;touch-action:pan-y!important;padding:0 2px 8px!important;gap:8px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemCard{display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;grid-template-rows:auto auto!important;padding:9px!important;gap:5px 8px!important;min-height:0!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemIcon{grid-column:1!important;grid-row:1!important;font-size:30px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemIcon img{width:32px!important;height:32px!important;object-fit:contain!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemMain{grid-column:2!important;grid-row:1!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemHead{gap:4px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemHead b{font-size:17px!important;flex:1 1 150px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemHead small{font-size:11px!important;padding:3px 6px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemMain p,html[data-view-profile="mobile"] #luckShopOverlay .shopItemNote{font-size:12px!important;line-height:1.4!important;margin:4px 0!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemActions{grid-column:1/-1!important;grid-row:2!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemCard>button{grid-column:1/-1!important;grid-row:2!important;}
+html[data-view-profile="mobile"] #luckShopOverlay .shopItemCard button{font-size:14px!important;min-height:38px!important;padding:7px!important;}
+}
+</style>
+<!-- Ver2.95: iPhoneショップの商品一覧を独立スクロール領域へ変更し、マスターボールを含む全商品と購入ボタンにアクセス可能に修正。更新日時: 2026-10-03 21:52 JST -->
