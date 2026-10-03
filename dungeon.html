@@ -11417,6 +11417,161 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   上部説明／タイトル／画像／名前／ボタンの専用行を固定し、画像を必ず中央の可変領域内だけに収める。
 -->
 
+
+<style id="v267-mobile-pickup-onescreen">
+/* Ver2.67: iPhone 390x645 pickup result uses one visible screen. */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page="run-pickupNotice"]{
+    height:100svh!important;
+    min-height:100svh!important;
+    max-height:100svh!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-pickupNotice"]>main#app.dungeonRunScreen{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:3px 5px 5px!important;
+    overflow:hidden!important;
+    display:flex!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-pickupNotice"] main.dungeonRunScreen>.dungeonRun{
+    flex:1 1 auto!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-pickupNotice"] main.dungeonRunScreen>.dungeonRun::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  /* Pickup is an automatic result: party details and route counters are not needed here. */
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .partySidebar,
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .adventureLog,
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedMetrics,
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedBottom{
+    display:none!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runOverview{
+    flex:0 0 auto!important;
+    margin:0 0 4px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runStatusUnified{
+    padding:5px 7px!important;
+    border-radius:12px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedTop{
+    gap:4px!important;
+    align-items:center!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedTitle{
+    gap:4px!important;
+    flex-wrap:nowrap!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedTitle>strong{
+    font-size:13px!important;
+    max-width:44vw!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runThemeIcon{font-size:16px!important}
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedDifficulty{font-size:9px!important;padding:3px 6px!important}
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedScene{display:none!important}
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedFloor strong{font-size:15px!important}
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runUnifiedFloor span{font-size:8px!important}
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .runWithdrawTop{display:none!important}
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .autoRunToggle{padding:5px 8px!important;font-size:9px!important}
+
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupCard{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:5px 7px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+    border-radius:18px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupInner{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:6px 8px!important;
+    display:grid!important;
+    grid-template-rows:auto minmax(64px,1fr) auto auto auto!important;
+    align-items:center!important;
+    justify-items:center!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupFound{
+    margin:0!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupIcon{
+    align-self:center!important;
+    margin:0!important;
+    font-size:clamp(50px,16svh,88px)!important;
+    line-height:1!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupName{
+    margin:0!important;
+    max-width:96%!important;
+    font-size:clamp(24px,8vw,34px)!important;
+    line-height:1.04!important;
+    text-wrap:balance!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupEffect{
+    width:min(100%,520px)!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:8px 10px!important;
+    font-size:12px!important;
+    line-height:1.3!important;
+    border-radius:12px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupRateNote{
+    display:none!important;
+  }
+  main.dungeonRunScreen[data-run-scene="pickupNotice"] #pickupNext{
+    width:min(100%,520px)!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:10px 14px!important;
+    font-size:17px!important;
+    line-height:1.1!important;
+    border-radius:14px!important;
+  }
+
+  @media(max-height:670px){
+    main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupInner{
+      padding:4px 7px!important;
+      grid-template-rows:auto minmax(50px,1fr) auto auto auto!important;
+      gap:3px!important;
+    }
+    main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupFound{font-size:10px!important}
+    main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupIcon{font-size:clamp(42px,13svh,72px)!important}
+    main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupName{font-size:clamp(21px,7vw,29px)!important}
+    main.dungeonRunScreen[data-run-scene="pickupNotice"] .pickupEffect{font-size:11px!important;padding:7px 9px!important}
+    main.dungeonRunScreen[data-run-scene="pickupNotice"] #pickupNext{font-size:16px!important;padding:9px 12px!important}
+  }
+}
+</style>
+<!-- Ver2.67:
+  iPhone 390×645 の拾い物結果を1画面化。
+  拾い物は効果が自動適用されるためパーティ表示・警戒度等を省き、
+  発見文・アイコン・アイテム名・効果・次へボタンだけを残して縦幅を再配分。
+-->
+
 </body>
 <!-- Ver2.57:
   黒PC（1520×794 / DPR1.25）などpc-compactの戦闘画面を横長最適化。
