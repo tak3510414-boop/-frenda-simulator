@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.64">
+<html lang="ja" data-app-version="2.65">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -11263,6 +11263,200 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   iPhoneのダンジョン選択画面で縦スクロールできなかった問題を修正。
   dungeons画面だけは固定1画面コンテナの中で main#app 自体を縦スクロール領域にし、
   Safariでも慣性スクロール・下端余白・安全領域を確保する。
+-->
+
+
+<style id="v265-mobile-event-one-screen">
+/* Ver2.65: iPhone 390x645 event target/result fit inside one visible viewport. */
+@media(max-width:700px){
+  body.dungeonOneScreen[data-dungeon-page="run-eventTarget"],
+  body.dungeonOneScreen[data-dungeon-page="run-eventNotice"]{
+    height:100svh!important;
+    min-height:100svh!important;
+    max-height:100svh!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-eventTarget"]>main#app.dungeonRunScreen,
+  body.dungeonOneScreen[data-dungeon-page="run-eventNotice"]>main#app.dungeonRunScreen{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    padding:3px 5px 4px!important;
+    display:flex!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-eventTarget"] main.dungeonRunScreen>.dungeonRun,
+  body.dungeonOneScreen[data-dungeon-page="run-eventNotice"] main.dungeonRunScreen>.dungeonRun{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-eventTarget"] main.dungeonRunScreen>.dungeonRun::after,
+  body.dungeonOneScreen[data-dungeon-page="run-eventNotice"] main.dungeonRunScreen>.dungeonRun::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  /* The route counters/path are not needed while applying or confirming a bonus. */
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedMetrics,
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedBottom,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedMetrics,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedBottom{
+    display:none!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runOverview{
+    flex:0 0 auto!important;
+    margin:0 0 4px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runStatusUnified,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runStatusUnified{
+    padding:5px 7px!important;
+    border-radius:12px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedTop,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedTop{
+    gap:4px!important;
+    align-items:center!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedTitle,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedTitle{
+    gap:4px!important;
+    flex-wrap:nowrap!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedTitle>strong,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedTitle>strong{
+    font-size:13px!important;
+    max-width:42vw!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runThemeIcon,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runThemeIcon{font-size:16px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedDifficulty,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedDifficulty{
+    font-size:9px!important;
+    padding:3px 6px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedScene,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedScene{display:none!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedFloor strong,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedFloor strong{font-size:15px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runUnifiedFloor span,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runUnifiedFloor span{font-size:8px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runWithdrawTop,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .runWithdrawTop{display:none!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .autoRunToggle,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .autoRunToggle{padding:5px 8px!important;font-size:9px!important}
+
+  /* Target selection already explains the bonus inside the party selector.
+     Remove the large duplicated yellow panel below it. */
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview>.card{
+    padding:6px 7px!important;
+    border-radius:12px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview>.card .sectionTitle{
+    font-size:14px!important;
+    margin:0 0 4px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamChoiceHint{
+    margin:0 0 5px!important;
+    padding:5px 7px!important;
+    font-size:9px!important;
+    line-height:1.2!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamStrip{
+    gap:4px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamMini{
+    min-height:0!important;
+    padding:4px 3px!important;
+    border-radius:10px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamMiniHead{
+    display:flex!important;
+    flex-direction:column!important;
+    text-align:center!important;
+    gap:0!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamMini img{
+    width:auto!important;
+    height:72px!important;
+    max-width:78%!important;
+    margin:0 auto 2px!important;
+    object-fit:cover!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamMini b{font-size:10px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamMini small{font-size:7px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamEnergyBadge{
+    margin:2px auto!important;
+    padding:2px 5px!important;
+    font-size:6px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamEnergyBadge b{font-size:8px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .teamMini .hpbar{height:6px!important;margin-top:2px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .runOverview .buffs{font-size:6px!important;margin-top:2px!important}
+  main.dungeonRunScreen[data-run-scene="eventTarget"] .eventChoiceCard{
+    display:none!important;
+  }
+
+  /* Result screen: the party is no longer actionable, so devote the space to the result. */
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .partySidebar{
+    display:none!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .eventResultCard,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .eventNothingCard{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0!important;
+    padding:10px 12px!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .eventResultIcon,
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .eventNothingIcon{
+    font-size:42px!important;
+    line-height:1!important;
+    margin:0!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .summary h2{
+    font-size:clamp(25px,8vw,32px)!important;
+    line-height:1.05!important;
+    margin:1px 0!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .eventResultValue{
+    font-size:clamp(30px,10vw,42px)!important;
+    line-height:1!important;
+    margin:2px 0!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventNotice"] .summary p{
+    font-size:12px!important;
+    line-height:1.3!important;
+    margin:3px 0!important;
+    text-align:center!important;
+  }
+  main.dungeonRunScreen[data-run-scene="eventNotice"] #eventNoticeNext{
+    width:min(300px,100%)!important;
+    margin:5px 0 0!important;
+    padding:11px 14px!important;
+    font-size:17px!important;
+    border-radius:14px!important;
+  }
+}
+</style>
+<!-- Ver2.65:
+  iPhone 390×645でイベント効果選択／効果結果の下端がSafariバーに隠れる問題を修正。
+  効果選択は上の対象ピック3体に情報を集約して重複する黄色パネルを非表示。
+  効果結果は操作不要なパーティ表示を外し、結果・数値・次へを1画面内に収める。
 -->
 
 </body>
