@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.72">
+<html lang="ja" data-app-version="0.73">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -426,7 +426,7 @@ function gradeText(r){return RULES.gradeText(r)}
 function specialBase(r){return RULES.specialBaseName(r)}
 function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){return DATA.dungeon.read()}
-function updateHeaderEggCount(){const d=readDungeon()||{},count=Array.isArray(d.eggs)?d.eggs.length:0,cap=Math.max(0,Math.floor(Number(d.eggCap)||0)),el=document.getElementById("headerEggCount"),badge=document.getElementById("headerEggBadge");if(el)el.textContent=`${count}/${cap}`;if(badge){badge.classList.toggle("full",cap>0&&count>=cap);badge.title=`所持卵数 ${count}/${cap}`}}
+function updateHeaderEggCount(){const summary=document.getElementById("expHeaderSummary073");if(summary&&blackExp073()){const d=readDungeon()||{};summary.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span><span>🪙 ${Math.max(0,Number(d.frendaCoins)||0).toLocaleString('ja-JP')}</span>`;}const d=readDungeon()||{},count=Array.isArray(d.eggs)?d.eggs.length:0,cap=Math.max(0,Math.floor(Number(d.eggCap)||0)),el=document.getElementById("headerEggCount"),badge=document.getElementById("headerEggBadge");if(el)el.textContent=`${count}/${cap}`;if(badge){badge.classList.toggle("full",cap>0&&count>=cap);badge.title=`所持卵数 ${count}/${cap}`}}
 function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[]}}}
 function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],adminUnlockedGroups:[],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
 function migrateMissionToFreeReturn(g){
@@ -1019,11 +1019,11 @@ function renderPrep(){
  document.getElementById("autoBtn").onclick=()=>{flushPrepWrite();p.teamIds=autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
  document.getElementById("lastBtn").onclick=()=>{flushPrepWrite();const ok=(g.lastTeamIds||[]).filter(id=>eligible.has(id)).slice(0,3);p.teamIds=ok.length?ok:autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
  document.getElementById("collectionBtn").onclick=()=>openCollection();
- bindExpeditionPickFilters();startTicker()
+ bindExpeditionPickFilters();optimizeBlackPrep073();startTicker()
 }
 
-function renderExplore(){const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone ${profile.noReward?"noRewardYet":""}" id="nextMilestone">${profile.noReward?`⚠️ 30分到達まで成果なし・${freeNextMilestoneText(m)}`:freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満で帰還すると成果はありません。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}ほかのグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);startTicker()}
-function renderReturn(){prepareReturnAll();const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="exploring"){screen="explore";return renderExplore()}if(m.stage==="welcome")return renderWelcome();if(m.stage==="report")return renderReport();if(m.stage==="findings")return renderFindings();if(m.stage==="growth")return renderGrowth();if(m.stage==="boxes")return renderBoxes();if(m.stage==="summary")return renderSummary();m.stage="welcome";writeExp();renderWelcome()}
+function renderExplore(){document.body.classList.remove("blackExpPrep073");const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone ${profile.noReward?"noRewardYet":""}" id="nextMilestone">${profile.noReward?`⚠️ 30分到達まで成果なし・${freeNextMilestoneText(m)}`:freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b>${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満で帰還すると成果はありません。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}ほかのグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);startTicker()}
+function renderReturn(){document.body.classList.remove("blackExpPrep073");prepareReturnAll();const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="exploring"){screen="explore";return renderExplore()}if(m.stage==="welcome")return renderWelcome();if(m.stage==="report")return renderReport();if(m.stage==="findings")return renderFindings();if(m.stage==="growth")return renderGrowth();if(m.stage==="boxes")return renderBoxes();if(m.stage==="summary")return renderSummary();m.stage="welcome";writeExp();renderWelcome()}
 function renderWelcome(){const m=groupMission(),th=THEMES[m.dungeonId];app.innerHTML=`<div class="returnHero"><div class="kicker" style="color:#8de5ff">WELCOME BACK! / GROUP ${activeGroup+1}</div><h1>🧭 おかえり！</h1><p>${th.icon} ${esc(th.name)} ランク${m.difficulty}から帰ってきました</p><div class="returnTeam">${m.teamIds.map(id=>`<img src="${esc(imageOf(rec(id)))}" alt="">`).join("")}</div><div class="statusBig">探索ランク ${m.rank}</div><button class="goldBtn" id="nextBtn" style="margin-top:12px;font-size:16px">📖 冒険の記録を見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="report";writeExp();render()}}
 function renderReport(){const m=groupMission(),rows=(m.report||reportFor(m)).map(x=>({...x,text:normalizeAdventureText(x.text)}));app.innerHTML=`<div class="reportGroup"><div class="card returnLogCard">${adventureLogHTML(rows,{returnMode:true})}</div><div class="card"><button id="nextBtn" style="width:100%">🗺️ 調査結果とおみやげを見る</button></div></div>`;document.getElementById("nextBtn").onclick=()=>{m.stage="findings";writeExp();render()}}
 function renderFindings(){const m=groupMission(),f=applyMissionFindings(m),th=THEMES[m.dungeonId],spot=m.secretSpotDiscovered,beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card findingsCard"><div class="findingHero"><div class="big">🗺️</div><div class="kicker">EXPEDITION SURVEY</div><h2>探索先の調査が進んだ！</h2></div><div class="discoveryResult"><div class="discoveryResultHead"><b>${th.icon} ${esc(th.name)} の調査</b><strong>Lv ${afterStep}/5</strong></div><div class="discoveryMeter"><span style="width:${f.after}%"></span></div><div class="discoveryDelta">調査Lv ${beforeStep}/5 → ${afterStep}/5　／　調査度 ${f.after}%${m.secretSpotUsed?` <span class="badge gold">ひみつの場所ボーナス</span>`:""}</div>${f.completedNow?'<div class="discoveryCompleteBurst">🎉 調査コンプリート！ レアなおみやげを獲得！</div>':""}</div><div class="sectionTitle" style="margin-top:12px">🎒 持ち帰ったおみやげ</div><div class="foundSouvenirs">${f.souvenirs.map(s=>`<div class="foundSouvenir ${s.isNew?"new":""} ${s.rare?"rare":""}">${s.isNew?'<span class="newTag">NEW!</span>':""}<div class="ico">${s.icon}</div><b>${esc(s.name)}</b><small>${s.rare?"レアおみやげ":"コレクション"} / 所持 ${s.afterCount}</small></div>`).join("")}</div>${m.secretSpotUsed?`<div class="findingsSecret"><b>🌟 ひみつの場所を調査した！</b><div class="spotName">${esc(m.secretSpotUsed.name)}</div><small>いつもより深い調査に成功し、調査度とレア成果のチャンスが強化されました。</small></div>`:""}${spot?`<div class="findingsSecret"><b>🌟 新しいひみつの場所を発見！</b><div class="spotName">${esc(spot.name)}</div><small>${esc(secretSpotBonusText(spot))}</small></div>`:""}<button class="goldBtn" id="nextBtn" style="width:100%;margin-top:12px">⭐ 3体の成長を見る</button></div>`;document.getElementById("nextBtn").onclick=()=>{applyBaseGrowth();m.stage="growth";writeExp();render()}}
@@ -1059,7 +1059,7 @@ function goExploreFromCollection(did){
  setActiveGroup(gi);const p=ensurePrepValid(gi);p.dungeonId=did;p.difficulty=diff;p.teamIds=[];writeExp();screen="prep";collectionReturnScreen="prep";renderPrep();
  const token=++destinationSelectToken;requestAnimationFrame(()=>setTimeout(()=>{if(token!==destinationSelectToken||screen!=="prep")return;const pp=ensurePrepValid(gi);if(pp.dungeonId!==did)return;pp.teamIds=autoTeam(did,diff,gi);writeExp();renderPrep()},30))
 }
-function renderCollection(){
+function renderCollection(){document.body.classList.remove("blackExpPrep073");
  const total=souvenirDistinctTotal(),dids=THEME_ORDER.filter(did=>SOUVENIR_DEF[did]),stepTotal=dids.reduce((n,did)=>n+discoveryStep(did),0),stepMax=dids.length*5,dungeon=readDungeon()||{},coins=Math.max(0,Math.floor(Number(dungeon.frendaCoins)||0)),collectionDests=clearedDestinations();
  app.innerHTML=`<div class="card collectionPage"><div class="row spread collectionTop"><div><div class="kicker">EXPEDITION COLLECTION</div><div class="sectionTitle">🗺️ 探索コレクション</div></div><span class="badge gold">調査Lv 合計 ${stepTotal}/${stepMax}</span></div>
  <div class="discoveryBenefitGuide"><div class="discoveryBenefitIcon">🗺️</div><div><b>「調査Lv」は、その探索先をどこまで調べたかを表します。</b><p><strong>調査度</strong>が20％進むごとに調査Lvが 1/5 → 5/5 と上がります。<strong>調査Lv 5/5（100％）到達時はレアおみやげを1つ確定で獲得</strong>します。おみやげの収集状況とは別の進行度です。</p></div></div>
@@ -1082,6 +1082,20 @@ function renderSummary(){const m=groupMission();if(m?.id&&lastSummarySfxId!==m.i
 function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
 function openCollection(){if(screen!=="collection")collectionReturnScreen=screen||"home";screen="collection";render()}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
+
+function blackExp073(){return matchMedia('(min-width:1451px) and (min-height:701px) and (max-height:840px)').matches}
+function optimizeBlackPrep073(){
+ document.body.classList.toggle('blackExpPrep073',blackExp073());
+ if(!blackExp073())return;
+ const d=readDungeon()||{},brand=document.querySelector('.brand'),buttons=document.querySelector('.headerBtns');
+ let badges=document.getElementById('expHeaderSummary073');if(!badges){badges=document.createElement('div');badges.id='expHeaderSummary073';brand.after(badges)}
+ badges.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span><span>🪙 ${Math.max(0,Number(d.frendaCoins)||0).toLocaleString('ja-JP')}</span>`;
+ const col=document.getElementById('collectionHeaderBtn');if(col){col.textContent='🗺️ 探索コレクション';col.classList.add('blackCollection073')}
+ const stack=app.querySelector('.setupStack'),dock=app.querySelector('.groupDock'),guide=app.querySelector('#freeReturnDockGuide');
+ if(stack&&guide){const left=document.createElement('div');left.className='blackPrepLeft073';const dest=stack.querySelector('.card');dest.classList.add('blackDest073');stack.insertBefore(left,dest);left.append(dest,guide);stack.querySelector(':scope>.card')?.classList.add('blackParty073');}
+ const hint=app.querySelector('.destinationAutoHint');if(hint)hint.textContent='派遣先を選ぶと、おまかせで3体を編成。ランクは攻略済みの最高ランクを使用します。';if(dock)dock.style.top='0px';
+ app.querySelector('.collectionShortcut')?.classList.add('blackShortcut073');
+}
 function render(){syncExpBgm();updateExpSoundBtn();document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();updateHeaderEggCount();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker();updateHeaderEggCount()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
 function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
@@ -2303,3 +2317,133 @@ header .head{
   ・帰還画面のボタンを「冒険の記録を見る」へ変更。
 -->
 <!-- Updated: 2026-10-02 06:17 JST -->
+
+<style id="blackExp073">
+#expHeaderSummary073{display:none}
+@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+body.blackExpPrep073{height:100dvh;overflow:hidden;}
+body.blackExpPrep073 header{height:58px!important;box-sizing:border-box!important;padding:8px!important;}
+body.blackExpPrep073 .head{max-width:none!important;width:100%!important;}
+body.blackExpPrep073 .headerTop{gap:12px!important;}
+body.blackExpPrep073 .brand b{font-size:29px!important;}
+body.blackExpPrep073 .ver{font-size:14px!important;}
+body.blackExpPrep073 .headerEggBadge,body.blackExpPrep073 .headerEggBadge b{font-size:15px!important;}
+body.blackExpPrep073 #expHeaderSummary073{display:flex;gap:8px;font-size:16px;font-weight:900;}
+body.blackExpPrep073 #expHeaderSummary073 span{background:#fff3cf;color:#634800;padding:8px 12px;border-radius:22px;}
+body.blackExpPrep073 .headerBtns button{font-size:16px!important;}
+body.blackExpPrep073 .headerBtns .blackCollection073{width:auto!important;flex:0 0 auto!important;padding:7px 12px!important;}
+body.blackExpPrep073 #app{max-width:none!important;width:100%!important;height:calc(100dvh - 58px)!important;box-sizing:border-box!important;margin:0!important;padding:8px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:7px!important;}
+body.blackExpPrep073 .groupDock{position:static!important;margin:0!important;padding:5px!important;flex:0 0 146px!important;height:146px!important;box-sizing:border-box!important;}
+body.blackExpPrep073 .groupDockLayout{height:100%!important;grid-template-columns:1fr!important;}
+body.blackExpPrep073 .groupCards{height:100%!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;overflow:hidden!important;}
+body.blackExpPrep073 .groupCard{padding:8px!important;min-height:0!important;display:flex!important;flex-direction:column!important;}
+body.blackExpPrep073 .groupCardHead b{font-size:20px!important;}
+body.blackExpPrep073 .groupStatus{font-size:13px!important;}
+body.blackExpPrep073 .groupRankLine strong{font-size:35px!important;}
+body.blackExpPrep073 .groupRankLine b{font-size:22px!important;}
+body.blackExpPrep073 .groupLuck{font-size:14px!important;}
+body.blackExpPrep073 .groupDest{font-size:16px!important;}
+body.blackExpPrep073 .groupCardFoot{margin-top:auto!important;min-height:35px!important;}
+body.blackExpPrep073 .groupCardFoot>span{font-size:14px!important;}
+body.blackExpPrep073 .groupAction,body.blackExpPrep073 .adminUnlockGroupBtn{font-size:16px!important;min-height:34px!important;padding:5px 12px!important;}
+body.blackExpPrep073 .groupLockedMessage{display:none!important;}
+body.blackExpPrep073 .groupUnlockCondition{font-size:14px!important;}
+body.blackExpPrep073 .activeGroupLabel{flex:0 0 auto!important;font-size:18px!important;margin:0!important;padding:6px 10px!important;}
+body.blackExpPrep073 .setupStack{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-template-columns:30% minmax(0,1fr)!important;gap:8px!important;}
+body.blackExpPrep073 .blackPrepLeft073{display:flex;flex-direction:column;min-height:0;gap:8px;}
+body.blackExpPrep073 .blackDest073{margin:0!important;padding:10px!important;min-height:0!important;flex:1 1 0!important;display:flex;flex-direction:column;}
+body.blackExpPrep073 .sectionTitle{font-size:22px!important;margin:0 0 6px!important;}
+body.blackExpPrep073 .compactDestList{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;min-height:0!important;}
+body.blackExpPrep073 .destinationCompact{padding:6px!important;min-height:55px!important;gap:4px!important;}
+body.blackExpPrep073 .destName{font-size:15px!important;}
+body.blackExpPrep073 .destMeta b,body.blackExpPrep073 .destMeta em{font-size:12px!important;}
+body.blackExpPrep073 .destSelectedBadge,body.blackExpPrep073 .destSecretBadge{font-size:10px!important;}
+body.blackExpPrep073 .destinationAutoHint{font-size:13px!important;line-height:1.35!important;margin-top:auto!important;}
+body.blackExpPrep073 .freeReturnDockGuide{flex:0 0 auto!important;padding:8px 12px!important;}
+body.blackExpPrep073 .blackParty073{height:100%!important;min-height:0!important;margin:0!important;padding:8px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;gap:5px!important;overflow:hidden!important;}
+body.blackExpPrep073 #expSelectedStrip{flex:0 0 124px!important;height:124px!important;}
+body.blackExpPrep073 .frendaSelectedStrip{height:100%!important;}
+body.blackExpPrep073 .frendaSelectedSlot{height:100%!important;box-sizing:border-box!important;padding:6px!important;grid-template-columns:76px minmax(0,1fr) 28px!important;}
+body.blackExpPrep073 .frendaSelectedSlot img{width:72px!important;height:108px!important;object-fit:contain!important;}
+body.blackExpPrep073 .frendaSelectedInfo b{font-size:20px!important;}
+body.blackExpPrep073 .frendaSelectedInfo small{font-size:14px!important;}
+body.blackExpPrep073 .pickTools{flex:0 0 auto!important;margin:0!important;}
+body.blackExpPrep073 .pickTools button{font-size:17px!important;min-height:36px!important;padding:6px!important;}
+body.blackExpPrep073 .teamSelectHint{flex:0 0 auto!important;font-size:13px!important;line-height:1.2!important;padding:4px 8px!important;margin:0!important;}
+body.blackExpPrep073 .pickFilterPanel{flex:0 0 auto!important;padding:6px!important;margin:0!important;}
+body.blackExpPrep073 .pickFilterGrid{grid-template-columns:1.6fr repeat(5,minmax(0,1fr))!important;gap:5px!important;}
+body.blackExpPrep073 .pickFilterGrid label{font-size:12px!important;}
+body.blackExpPrep073 .pickFilterGrid input,body.blackExpPrep073 .pickFilterGrid select{font-size:15px!important;padding:5px!important;min-height:32px!important;}
+body.blackExpPrep073 .pickFilterFoot{margin-top:3px!important;font-size:13px!important;}
+body.blackExpPrep073 .pickViewControl button,body.blackExpPrep073 .pickFilterReset{font-size:14px!important;padding:4px 9px!important;}
+body.blackExpPrep073 .pickGrid{flex:1 1 0!important;min-height:0!important;max-height:none!important;height:auto!important;overflow-y:auto!important;align-content:start!important;margin:0!important;gap:6px!important;}
+body.blackExpPrep073 .pickGrid.size-small{grid-template-columns:repeat(7,minmax(0,1fr))!important;}
+body.blackExpPrep073 .pickGrid.size-medium{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+body.blackExpPrep073 .pickGrid.size-large{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+body.blackExpPrep073 .pickCard b{font-size:16px!important;}
+body.blackExpPrep073 .pickCard small{font-size:12px!important;}
+body.blackExpPrep073 .pickCard img{width:auto!important;max-width:100%!important;height:150px!important;object-fit:contain!important;}
+body.blackExpPrep073 .pickGrid.size-small .pickCard img{height:115px!important;}
+body.blackExpPrep073 .pickGrid.size-large .pickCard img{height:190px!important;}
+body.blackExpPrep073 .blackShortcut073{display:none!important;}
+
+body.blackExpPrep073 .setupStack{grid-template-rows:minmax(0,1fr)!important;}
+body.blackExpPrep073 .blackParty073{grid-row:1!important;grid-column:2!important;}
+body.blackExpPrep073 .blackPrepLeft073{height:100%!important;}
+body.blackExpPrep073 .destinationCompact{min-height:40px!important;padding:4px!important;}
+body.blackExpPrep073 .destinationAutoHint{font-size:12px!important;}
+body.blackExpPrep073 .freeGuideHead b{font-size:18px!important;}
+body.blackExpPrep073 .freeGuideHead small{font-size:12px!important;}
+body.blackExpPrep073 .freeGuidePosition{font-size:14px!important;}
+body.blackExpPrep073 .freeGuideRows{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3px 12px!important;}
+body.blackExpPrep073 .freeGuideRow{min-height:25px!important;padding:3px!important;grid-template-columns:58px minmax(0,1fr)!important;}
+body.blackExpPrep073 .freeGuideRow b,body.blackExpPrep073 .freeGuideRow span{font-size:14px!important;}
+body.blackExpPrep073 .freeGuideFoot span{font-size:11px!important;}
+body.blackExpPrep073 .freeGuideNowMarker{grid-column:1/-1!important;font-size:13px!important;}
+body.blackExpPrep073 .groupLockedRank{font-size:15px!important;}
+body.blackExpPrep073 .frendaSelectedSlot{margin:0!important;}
+
+body.blackExpPrep073 .groupRankLine{margin:2px 0!important;}
+body.blackExpPrep073 .groupRankLine strong{font-size:28px!important;}
+body.blackExpPrep073 .groupDest{line-height:18px!important;flex:0 0 18px!important;}
+body.blackExpPrep073 .groupCardFoot{margin-top:3px!important;}
+body.blackExpPrep073 .groupCard.groupLocked button{font-size:15px!important;min-height:34px!important;}
+body.blackExpPrep073 .activeGroupLabel{padding:4px 10px!important;font-size:17px!important;}
+body.blackExpPrep073 .freeReturnDockGuide{flex:0 0 180px!important;box-sizing:border-box!important;}
+body.blackExpPrep073 .freeGuideRow{min-height:18px!important;padding:1px!important;}
+body.blackExpPrep073 .freeGuideHead{margin-bottom:3px!important;padding-bottom:3px!important;}
+body.blackExpPrep073 .destinationList{overflow:visible!important;}
+body.blackExpPrep073 .destinationCompact{display:flex!important;flex-direction:column!important;align-items:stretch!important;min-height:42px!important;gap:0!important;}
+body.blackExpPrep073 .destNameWrap{width:100%!important;min-width:0!important;}
+body.blackExpPrep073 .destName{font-size:14px!important;white-space:nowrap!important;max-width:none!important;}
+body.blackExpPrep073 .destMeta{justify-content:space-between!important;gap:2px!important;}
+body.blackExpPrep073 .destMeta b,body.blackExpPrep073 .destMeta em{font-size:10px!important;}
+body.blackExpPrep073 .destinationAutoHint{font-size:11px!important;line-height:1.25!important;}
+body.blackExpPrep073 .blackParty073>.sectionTitle{font-size:20px!important;margin-bottom:0!important;line-height:26px!important;}
+body.blackExpPrep073 #expSelectedStrip{height:110px!important;flex-basis:110px!important;}
+body.blackExpPrep073 .frendaSelectedStrip{margin:0!important;min-height:0!important;}
+body.blackExpPrep073 .frendaSelectedSlot img{height:94px!important;width:65px!important;}
+body.blackExpPrep073 .pickTools button{min-height:32px!important;padding:4px!important;}
+body.blackExpPrep073 .teamSelectHint{font-size:11px!important;line-height:1.1!important;}
+body.blackExpPrep073 .pickFilterGrid input,body.blackExpPrep073 .pickFilterGrid select{min-height:28px!important;}
+body.blackExpPrep073 .pickFilterFoot{margin-top:0!important;}
+body.blackExpPrep073 .pickGrid.size-medium .pickCard img{height:120px!important;}
+
+body.blackExpPrep073 .freeReturnDockGuide{height:190px!important;min-height:0!important;flex-basis:190px!important;}
+body.blackExpPrep073 .destinationCompact .destNameWrap{flex:0 0 auto!important;height:auto!important;min-height:0!important;line-height:18px!important;}
+body.blackExpPrep073 .destinationCompact .destMeta{display:flex!important;flex:0 0 auto!important;min-height:0!important;line-height:13px!important;}
+body.blackExpPrep073 .destinationCompact .destBadges{display:none!important;}
+body.blackExpPrep073 .destinationCompact{height:42px!important;}
+body.blackExpPrep073 .destinationAutoHint{padding:4px!important;}
+body.blackExpPrep073 .pickGrid.size-medium .pickCard img{height:90px!important;}
+
+body.blackExpPrep073 .destinationCompact .destMeta{flex-direction:row!important;}
+body.blackExpPrep073 .destinationCompact{height:40px!important;min-height:40px!important;padding:2px 4px!important;}
+body.blackExpPrep073 .freeReturnDockGuide{height:205px!important;flex-basis:205px!important;}
+
+body.blackExpPrep073 .blackDest073>.sectionTitle{font-size:20px!important;line-height:1.1!important;margin:0 0 4px!important;}
+body.blackExpPrep073 .compactDestList{flex:0 0 auto!important;}
+body.blackExpPrep073 .destinationAutoHint{margin-top:5px!important;padding:0!important;}
+}
+</style>
+<!-- Ver0.73: 黒PC1520×794の探索ホームを全面最適化。固定5グループ・左派遣先と時間報酬ガイド・右3体編成と候補一覧。更新日時: 2026-10-03 22:04 JST -->
