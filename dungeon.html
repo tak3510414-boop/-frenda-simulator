@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.91">
+<html lang="ja" data-app-version="2.92">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6544,9 +6544,9 @@ function runAutoAdventureStep(){
 }
 
 
-function isBlackPcOptimization(){return window.matchMedia("(min-width:1451px) and (min-height:701px) and (max-height:840px)").matches}
+function isBlackPcOptimization(){return window.matchMedia("(min-width:1280px) and (min-height:600px) and (max-height:840px)").matches}
 function syncBlackHeader(){
- const black=isBlackPcOptimization();document.body.classList.toggle("blackPcOptimized",black);
+ const black=isBlackPcOptimization();document.body.classList.toggle("blackPcOptimized",black);document.body.classList.toggle("whitePcOptimized",black&&window.innerWidth<=1450);
  const title=document.getElementById("headerMainTitle");
  if(title){title.onclick=()=>homeBtn.click();title.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();homeBtn.click()}}}
  const cluster=document.querySelector("header .careCluster"),original=document.querySelector("header .headerBtns");
@@ -13291,7 +13291,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeManageG
 
 <style id="v284-black-pc-optimization">
 /* 黒PC専用: 白PC・スマホへの移植は別更新。 */
-@media (min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media (min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .headrow{max-width:none!important;width:100%!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
 html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .headerTop{flex:1 1 auto!important;min-width:0!important}
 html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) >header .careCluster{width:auto!important;flex:0 0 auto!important;margin-left:auto!important}
@@ -13412,7 +13412,7 @@ html[data-view-profile="pc-compact"] body:not([data-dungeon-page="home"]) .coinH
 </style>
 <style id="v285-black-pc-fixed-layout">
 /* 黒PC: 固定パーティ、薄い帯、共通ヘッダー、結果と詳細の再配置 */
-@media (min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media (min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized >header{height:58px!important;min-height:58px!important;padding:5px 10px!important;box-sizing:border-box!important;flex:0 0 58px!important;position:sticky!important;top:0!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized >header .headrow{display:flex!important;max-width:none!important;height:100%!important;padding:0!important;gap:12px!important;align-items:center!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized >header .headerTop{flex:1 1 auto!important;min-width:0!important}
@@ -13630,7 +13630,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunSta
 <style id="v286-black-pc-details-and-grass">
 .grassRankTable{width:100%;border-collapse:separate;border-spacing:4px}.grassRankTable th{text-align:left}.grassRankTable button{width:100%;padding:8px}.grassRankTableWrap{overflow:auto}.grassActions{grid-template-columns:repeat(3,minmax(0,1fr))}.grassActive .grassTuft{animation:grassRaritySway var(--grass-speed,1s) ease-in-out infinite;transform-origin:50% 90%}
 @keyframes grassRaritySway{0%,100%{transform:translateX(calc(-1 * var(--grass-shift,2px))) rotate(calc(-1 * var(--grass-sway,5deg)))}50%{transform:translateX(var(--grass-shift,2px)) rotate(var(--grass-sway,5deg))}}
-@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media(min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedFrontCardV190 .ownedV190Meta{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;grid-template-rows:30px 28px!important;gap:4px!important;align-items:center!important;min-height:62px!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Meta .starStrong{grid-column:1!important;grid-row:1!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Meta .energyStrong{grid-column:2!important;grid-row:1!important;justify-self:start!important}
@@ -13778,7 +13778,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .
 }
 </style>
 <style id="v286-final-detail-adjustments">
-@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media(min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackHero>img{width:150px!important;height:190px!important;flex:0 0 190px!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailIdentity>*{flex-shrink:0!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackFrontSummary{height:108px!important;box-sizing:border-box!important;}
@@ -13790,7 +13790,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassThrowS
 }
 </style>
 <style id="v286-final-presentation-adjustments">
-@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media(min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard:not(.hatchReady) .hatchStage{align-self:center!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .hatchDramaCard.hatchReady:after{content:"✦　✧　✦　✧　✦";position:absolute;inset:8% 3% auto!important;font-size:52px;color:#eeb63b99;letter-spacing:1.5em;pointer-events:none;animation:hatchCelebrationGlow 2.2s ease-in-out infinite;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackPoint{position:relative!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;height:94px!important;max-height:94px!important;min-height:0!important;flex:0 0 76px!important;padding:4px!important;box-sizing:border-box!important;gap:5px!important;}
@@ -13918,10 +13918,8 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .
 
 <!-- Ver2.85: 黒PC共通ヘッダー／冒険固定パーティ・帯／編成サイズ切替／所持文字のはみ出し／選択画面整理／報酬・結果・裏面・ショップ最適化。更新日時: 2026-10-03 17:50 JST -->
 
-<!-- Ver2.91: 黒PCの裏面を1画面・能力1列へ再配置。タイプ数による所持カードずれとIME変換を修正。戦闘準備・勝利・卵発見／孵化を拡大・中央配置。草むら選択表、ボタン順、生息地復帰、レア度別の葉の揺れ、共通捕獲演出と結果表示を実装。更新日時: 2026-10-03 18:30 JST -->
-
 <style id="blackPc287">
-@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media(min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailColumns{box-sizing:border-box!important;flex:1 1 0!important;height:auto!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailIdentity .ownedBackHero{display:grid!important;grid-template-columns:105px minmax(0,1fr)!important;align-items:start!important;gap:8px!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedBackHero>img{width:105px!important;height:158px!important;flex:none!important;}
@@ -13982,8 +13980,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .r
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .result4Hp{grid-column:2!important;grid-row:2!important;margin:0!important;padding:3px!important;font-size:11px!important;}
 }
 </style>
-<!-- Ver2.91: 裏面の操作ボタン見切れ、所持ピック小表示とボタン位置、所持数の拡大を修正。クリア結果を仲間・卵・解放中心の配置へ再構成。更新日時: 2026-10-03 19:03 JST -->
-
 <style id="capture288">
 .ownedGrid .ownedV190Visual .ownedNearEvoBadge{position:absolute!important;left:2px!important;right:2px!important;bottom:3px!important;margin:0!important;z-index:2!important;box-sizing:border-box!important;white-space:normal!important;min-height:18px!important;box-shadow:0 2px 6px #30205066!important;font-size:9px!important;line-height:1.15!important;padding:3px!important;}
 .grassResultScreen.success,.captureCelebration288{position:relative;isolation:isolate;}
@@ -13993,7 +13989,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .resultV6 .r
 .getCelebrationTitle288{display:block;color:#f56b00;text-shadow:3px 3px 0 #fff,0 5px 0 #cc5200,0 0 24px #ffe33d;line-height:1.15;animation:getPop288 .6s ease-out both;}
 @keyframes getPop288{0%{transform:scale(.65);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes getSparkle288{from{opacity:.45;transform:translateY(-8px)}to{opacity:1;transform:translateY(8px)}}
-@media(min-width:1451px) and (min-height:701px) and (max-height:840px){
+@media(min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen.success{background:linear-gradient(135deg,#fff8d0,#ffdf8655,#ffeff1)!important;border:3px solid #f5b72b!important;box-shadow:inset 0 0 40px #ffc34366!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen.success h2{font-size:clamp(54px,5vw,80px)!important;}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen.success .grassResultPick{box-shadow:0 0 0 5px #ffd84f,0 0 32px #ffba36!important;}
@@ -14001,8 +13997,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .captureCele
 }
 @media(prefers-reduced-motion:reduce){.getCelebrationTitle288,.grassResultScreen.success::after,.captureCelebration288::after,.captureCelebration288 .captureResultTitle{animation:none!important;}}
 </style>
-<!-- Ver2.91: あと1で進化をピック画像上へ固定しカード位置のずれを解消。捕獲成功の大型文字・金色放射背景・星演出を追加。更新日時: 2026-10-03 19:14 JST -->
-
 <style id="shopHeader289">
 body #homeBtn.homeCornerBtn{display:none!important;}
 body:has(#luckShopOverlay)>header{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:100000!important;}
@@ -14010,8 +14004,6 @@ body:has(#luckShopOverlay) #luckShopOverlay.ownedDetailOverlay,body:has(#luckSho
 body:has(#luckShopOverlay) #luckShopOverlay .luckShopPanel,body:has(#luckShopOverlay) #shopUseOverlay .shopUsePanel{max-height:calc(100dvh - var(--shop-header-height,66px) - 16px)!important;}
 body:has(#luckShopOverlay) .headerMainTitle{cursor:pointer;}
 </style>
-<!-- Ver2.91: フレンダショップで共通固定ヘッダを表示。右上ホームアイコンを非表示にしタイトルからのホーム操作を維持。更新日時: 2026-10-03 19:22 JST -->
-
 <style id="header290">
 body>header #headerEggBadge,body>header #headerCoinBadge{display:inline-flex!important;align-items:center;justify-content:center;white-space:nowrap;font-size:13px!important;font-weight:1000;padding:6px 9px!important;border-radius:999px;min-width:0!important;line-height:1.25!important;}
 body>header #headerCoinBadge{background:#fff0ae;color:#765700;border:1px solid #e4c45a;}
@@ -14021,8 +14013,6 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeExpedit
 .homeExpeditionStatus span.locked{background:#e8ecf0;color:#667381;border-color:#c7d0d8;}
 @media(max-width:700px){body>header .careCluster{flex-wrap:wrap!important;gap:4px!important;}body>header #headerEggBadge,body>header #headerCoinBadge{font-size:10px!important;padding:4px 6px!important;}.homeExpeditionStatus{display:grid!important;grid-template-columns:1fr 1fr!important;}}
 </style>
-<!-- Ver2.91: もちもの重複数と数量の×を削除。ホーム探索に全5グループを表示。冒険の最深・クリア数を削除。ヘッダに卵・コイン・探索中数を常時表示。更新日時: 2026-10-03 19:30 JST -->
-
 <style id="evolution291">
 #evoOverlay .evoRandomPanel{width:min(1100px,100%)!important;max-height:calc(100dvh - 28px)!important;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;}
 #evoOverlay .evoHead,#evoOverlay .evoRandomIntro,#evoOverlay .evoRandomActions,#evoOverlay .notice{flex:0 0 auto;}
@@ -14038,4 +14028,136 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeExpedit
 #evoOverlay .evoRandomActions{margin-top:10px;}
 @media(max-width:700px){#evoOverlay .evoPickBox291>.evoCandidateGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}#evoOverlay .evoCandidateCard{padding:4px;}#evoOverlay .evoCandidateCard img,#evoOverlay .evoCandidatePlaceholder{width:64px;height:96px;flex-basis:96px;}#evoOverlay .evoCandidateName{font-size:11px;min-height:28px;}#evoOverlay .evoCandidateMeta{font-size:8px;}#evoOverlay .evoCandidateTapHint{display:none;}}
 </style>
-<!-- Ver2.91: 所持から開く進化候補にピック画像・名前・レア度・番号を表示。未遭遇は画像を表示しない。更新日時: 2026-10-03 20:21 JST -->
+<style id="whitePc292">
+@media(min-width:1280px) and (max-width:1450px) and (min-height:600px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized >header .brand b{font-size:29px!important;gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized >header .careCluster{gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized >header #headerEggBadge,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized >header #headerCoinBadge{font-size:14px!important;padding:5px 8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .dungeonOverviewCard{padding:7px!important;gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .dungeonOverviewTitle{font-size:19px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .dungeonOverviewType{font-size:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .dungeonOverviewRankBtn{min-height:88px!important;padding:5px 1px!important;gap:3px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamSelectCard{grid-template-rows:auto auto auto auto 118px auto auto auto minmax(0,1fr)!important;gap:4px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamSelectedRow{height:118px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .frendaSelectedSlot.filled{grid-template-columns:66px minmax(0,1fr)!important;padding:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .frendaSelectedSlot img{width:66px!important;height:102px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .frendaSelectedInfo b{font-size:20px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .frendaSelectedInfo small{font-size:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamSelectGrid{min-height:0!important;overflow:auto!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .dungeonRun.blackRunLayout{grid-template-columns:330px minmax(0,1fr)!important;gap:8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunWorkspace{grid-template-rows:82px minmax(0,1fr)!important;gap:6px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunBand,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunBand .runTop{height:82px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunBand .runStatus{grid-template-rows:26px 20px 17px!important;gap:2px!important;padding:6px 8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunBand .runUnifiedTitle>strong{font-size:19px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySidebar{padding:6px!important;gap:4px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partyPcCards{gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySideCard{grid-template-columns:65px minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) 28px!important;padding:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySideImg{width:65px!important;height:98px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySideInfo{gap:2px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySideName{font-size:15px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .blackPartyAppealSlot{min-height:28px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .matchupAppeal{font-size:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .encounterCutinInner{gap:5px!important;padding:10px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .encounterCutinSprite{height:230px!important;max-height:230px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .encounterCutinSpriteWrap{min-height:0!important;flex:1 1 0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .encounterCutinTitle{font-size:24px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .encounterCutinName{font-size:28px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .rewardResultPanel{grid-template-rows:76px 28px minmax(0,1fr) auto!important;gap:5px!important;padding:7px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .rewardVictoryHero{height:76px!important;padding:5px 8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .rewardEnemyPic{height:60px!important;width:40px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .rewardBtnRich b{font-size:22px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .rewardBtnRich small{font-size:13px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .runEffectPanel{padding:6px!important;font-size:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .blackDetailColumns{grid-template-columns:260px 345px minmax(0,1fr)!important;gap:10px!important;padding:10px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .ownedStatGraph{grid-template-columns:60px minmax(0,1fr) 40px!important;padding:7px 5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateGrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important;gap:4px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard{height:51px!important;min-height:51px!important;grid-template-columns:30px minmax(0,1fr)!important;padding:4px!important;gap:3px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard img,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidatePlaceholder{width:26px!important;height:38px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateNote{font-size:9px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6Main{grid-template-rows:minmax(0,1fr) 126px!important;gap:6px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6TeamPanel{height:126px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6LootGrid{grid-template-columns:minmax(0,1.7fr) minmax(330px,1fr)!important;gap:7px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6AllyCard{height:190px!important;min-height:190px!important;grid-template-columns:115px minmax(0,1fr)!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6AllyCard img{width:115px!important;height:170px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6AllyGrid{grid-auto-rows:190px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6AllyCard>b{font-size:26px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6AllyCard>small{font-size:17px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result4TeamCard{grid-template-columns:135px minmax(0,1fr)!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result4TeamHead{grid-template-columns:40px minmax(0,1fr)!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result4TeamHead img{width:40px!important;height:60px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result4TeamStats b{font-size:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result4RewardBody b{font-size:21px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result4RewardBody small{font-size:14px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchStage{height:330px!important;max-height:330px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchStage .hatchEggWrap{transform:scale(3.3)!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchReady .hatchReveal img{width:310px!important;height:340px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchReady .hatchResultName{font-size:40px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassResultScreen{grid-template-columns:380px minmax(0,1fr)!important;grid-template-rows:26px 64px 64px minmax(0,1fr) 70px 48px!important;gap:7px 15px!important;padding:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassResultPick{width:350px!important;max-height:460px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassResultScreen.success h2{font-size:62px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassResultScreen p{font-size:19px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassResultActions button,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassActions button{min-height:44px!important;font-size:19px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassFoundHero{grid-template-columns:280px minmax(0,1fr)!important;gap:15px!important;padding:8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassFoundHero img{width:260px!important;max-height:310px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassFoundHero b{font-size:36px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassBallGrid{height:120px!important;flex-basis:120px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassBallGrid img{width:46px!important;height:46px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassThrowScreen .captureStage{height:370px!important;flex-basis:370px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassRankTable td button{min-height:42px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemHead b{font-size:18px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemMain p,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemNote{font-size:12px!important;}
+}
+</style>
+<style id="whitePc292Fit">
+@media(min-width:1280px) and (max-width:1450px) and (min-height:600px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamSelectCard{grid-template-rows:auto auto auto 118px 44px auto auto minmax(0,1fr)!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamCompareActions{height:44px!important;min-height:0!important;padding:3px!important;align-items:center!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamCompareActions button{height:36px!important;min-height:36px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamHabitatBar{height:38px!important;padding:3px 8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamHabitatBar button{min-height:30px!important;padding:5px 10px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamSelectGrid .ownedV190Identity{height:85px!important;min-height:85px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .teamSelectGrid.size-small .ownedV190Visual img{height:105px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunBand .runUnifiedAlwaysPath{max-height:19px!important;overflow:hidden!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .dungeonEntryCard{box-sizing:border-box!important;flex:1 1 0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryIntroCard{height:100%!important;min-height:0!important;box-sizing:border-box!important;flex:1 1 0!important;padding:10px!important;overflow:hidden!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryIntroInner{height:100%!important;min-height:0!important;box-sizing:border-box!important;width:100%!important;max-width:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendarySpriteWrap{flex:1 1 0!important;height:auto!important;min-height:0!important;width:100%!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendarySprite{height:100%!important;max-height:240px!important;object-fit:contain!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryTitle{font-size:30px!important;line-height:1.1!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryName{font-size:28px!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryContinue{min-height:42px!important;flex:0 0 auto!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchDramaCard.hatchReady .hatchReveal{height:390px!important;max-height:390px!important;grid-template-columns:330px minmax(0,1fr)!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchDramaCard.hatchReady{padding:12px!important;gap:8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .hatchDramaCard.hatchReady #hatchTitle{font-size:38px!important;line-height:1.2!important;margin:0!important;flex:0 0 auto!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard{height:43px!important;min-height:43px!important;grid-template-rows:14px 15px!important;padding:3px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateName{font-size:10px!important;line-height:12px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateMeta{font-size:9px!important;line-height:11px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidateCard img,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #ownedDetailOverlay .blackPickDetail286 .evoCandidatePlaceholder{height:32px!important;width:23px!important;}
+}
+</style>
+
+<style id="whitePc292Final">
+@media(min-width:1280px) and (max-width:1450px) and (min-height:600px) and (max-height:840px){
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassRankTable{border-spacing:3px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassRankTable td button{min-height:29px!important;padding:2px 5px!important;font-size:18px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassRankTable th{font-size:16px!important;padding:1px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .resultV6 .result6LootBottom .result4UnlockRow b{font-size:16px!important;line-height:1.25!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel{height:calc(100dvh - var(--shop-header-height,66px) - 16px)!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:8px!important;gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel>.ownedBackHead{flex:0 0 auto!important;padding:5px!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel>.coinBalance{flex:0 0 auto!important;padding:5px 10px!important;margin:0!important;font-size:17px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel>.coinHowTo{flex:0 0 auto!important;display:grid!important;grid-template-columns:230px minmax(0,1fr) 125px!important;align-items:center!important;gap:8px!important;padding:6px 10px!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel>.coinHowTo>b,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel>.coinHowTo p,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel>.coinHowTo span{font-size:12px!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopCatalogGrid{flex:1 1 0!important;min-height:0!important;grid-template-rows:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)!important;gap:6px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemCard{min-height:0!important;grid-template-columns:38px minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto!important;padding:6px!important;gap:4px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemIcon{font-size:30px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemIcon img{width:32px!important;height:32px!important;object-fit:contain!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemHead{gap:3px!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemHead b{flex:1 1 150px!important;font-size:17px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemHead small{font-size:12px!important;padding:3px 6px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemMain p,html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemNote{font-size:12px!important;line-height:1.25!important;margin:3px 0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel .shopItemActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luckShopPanel button{min-height:30px!important;padding:4px 8px!important;font-size:14px!important;}
+}
+</style>
+
+<!-- Ver2.92: 白PC 1366×688 DPR1に黒PC共通レイアウトを適用。固定ヘッダ・パーティ・冒険帯を維持し、各画面の高さ・画像・文字・操作領域を調整。ショップ全商品と草むら全10ダンジョンを1画面に配置。更新日時: 2026-10-03 20:26 JST -->
