@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.93">
+<html lang="ja" data-app-version="2.94">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14160,7 +14160,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized .luc
 }
 </style>
 
-<!-- Ver2.93: 白PC 1366×688 DPR1に黒PC共通レイアウトを適用。固定ヘッダ・パーティ・冒険帯を維持し、各画面の高さ・画像・文字・操作領域を調整。ショップ全商品と草むら全10ダンジョンを1画面に配置。更新日時: 2026-10-03 20:26 JST -->
+<!-- Ver2.94: 白PC 1366×688 DPR1に黒PC共通レイアウトを適用。固定ヘッダ・パーティ・冒険帯を維持し、各画面の高さ・画像・文字・操作領域を調整。ショップ全商品と草むら全10ダンジョンを1画面に配置。更新日時: 2026-10-03 20:26 JST -->
 
 <style id="mobileFighter293">
 @media(max-width:767px){
@@ -14176,4 +14176,24 @@ html[data-view-profile="mobile"] main#app.chooseFighterScreen .combatTeamStrip .
 html[data-view-profile="mobile"] main#app.chooseFighterScreen .combatTeamStrip .fighterChoiceStats .battleMiniLegend{font-size:6px!important;gap:3px!important;margin-top:4px!important;}
 }
 </style>
-<!-- Ver2.93: iPhone戦闘ポケモン選択にATK・DEF・SPA・SPD・SPEのグラフと補正内訳を表示。更新日時: 2026-10-03 20:46 JST -->
+<!-- Ver2.94: iPhone戦闘ポケモン選択にATK・DEF・SPA・SPD・SPEのグラフと補正内訳を表示。更新日時: 2026-10-03 20:46 JST -->
+
+<style id="mobileHome294">
+@media(max-width:700px){
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeScreen::after{display:none!important;content:none!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeScreen{height:100%!important;min-height:0!important;padding:0!important;grid-template-rows:44px minmax(0,1fr)!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeActionArea{grid-template-rows:minmax(0,1.1fr) minmax(0,2fr)!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homePlayGrid{height:100%!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homePlayBtn{justify-content:center!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homePlayBtn>span,html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>span{font-size:16px!important;line-height:1.15!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homePlayBtn>b,html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>b{font-size:29px!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homePlayBtn>.homeCardLead,html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>small{font-size:9px!important;line-height:1.25!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeManageValue{font-size:13px!important;line-height:1.15!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeExpeditionStatus span{font-size:9px!important;padding:4px!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeGoalInline em{font-size:9px!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeGoalInline strong{font-size:10px!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeInventoryCounts{gap:3px!important;flex-wrap:wrap!important;}
+html[data-view-profile="mobile"] body[data-dungeon-page="home"] .homeInventoryCounts span{font-size:10px!important;}
+}
+</style>
+<!-- Ver2.94: iPhoneホームのSafari用重複余白を撤去。表示領域に合わせて6枚のメニューカードと文字を拡大。更新日時: 2026-10-03 20:59 JST -->
