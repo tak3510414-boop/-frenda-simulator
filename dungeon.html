@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.60">
+<html lang="ja" data-app-version="2.61">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -10443,6 +10443,285 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   捕獲中は警戒度・道中戦闘・パーティ運・階層マップを畳み、必要なダンジョン名・ランク・階層・AUTOだけを残す。
   ゲットチャンス入口は説明を一文へ集約、ボールスロットは所持ボールを横3列へ圧縮、
   投球演出はステージ高さを適正化し、結果画面は重複した祝福アイコン/説明を削ってピック画像・結果・次へボタンを同一画面に収める。
+-->
+
+
+<style id="v261-mobile-core-scene-one-screen">
+/* Ver2.61: iPhone 390x645 core battle scenes fit inside one visible viewport. */
+@media(max-width:700px){
+  /* Re-lock only these compact scenes after the generic mobile scroll fallback. */
+  body.dungeonOneScreen[data-dungeon-page="run-encounterCutin"],
+  body.dungeonOneScreen[data-dungeon-page="run-legendaryIntro"],
+  body.dungeonOneScreen[data-dungeon-page="run-chooseFighter"]{
+    height:100svh!important;
+    min-height:100svh!important;
+    max-height:100svh!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-encounterCutin"]>main#app.dungeonRunScreen,
+  body.dungeonOneScreen[data-dungeon-page="run-legendaryIntro"]>main#app.dungeonRunScreen,
+  body.dungeonOneScreen[data-dungeon-page="run-chooseFighter"]>main#app.dungeonRunScreen{
+    flex:1 1 auto!important;
+    display:flex!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:3px 5px 5px!important;
+    overflow:hidden!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-encounterCutin"] main.dungeonRunScreen>.dungeonRun,
+  body.dungeonOneScreen[data-dungeon-page="run-legendaryIntro"] main.dungeonRunScreen>.dungeonRun,
+  body.dungeonOneScreen[data-dungeon-page="run-chooseFighter"] main.dungeonRunScreen>.dungeonRun{
+    flex:1 1 auto!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="run-encounterCutin"] main.dungeonRunScreen>.dungeonRun::after,
+  body.dungeonOneScreen[data-dungeon-page="run-legendaryIntro"] main.dungeonRunScreen>.dungeonRun::after,
+  body.dungeonOneScreen[data-dungeon-page="run-chooseFighter"] main.dungeonRunScreen>.dungeonRun::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  /* During reveal / fighter choice the route counters are not decision-critical. */
+  main.encounterRevealScreen .runUnifiedMetrics,
+  main.encounterRevealScreen .runUnifiedBottom,
+  main.chooseFighterScreen .runUnifiedMetrics,
+  main.chooseFighterScreen .runUnifiedBottom{
+    display:none!important;
+  }
+  main.encounterRevealScreen .runStatusUnified,
+  main.chooseFighterScreen .runStatusUnified{
+    padding:5px 7px!important;
+    border-radius:12px!important;
+  }
+  main.encounterRevealScreen .runOverview,
+  main.chooseFighterScreen .runOverview{
+    flex:0 0 auto!important;
+    margin:0 0 3px!important;
+  }
+
+  /* Encounter reveal: use the whole remaining stage instead of leaving a blank lower half. */
+  main.encounterRevealScreen .encounterCutinCard,
+  main.encounterRevealScreen .legendaryIntroCard{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  main.encounterRevealScreen .encounterCutinInner,
+  main.encounterRevealScreen .legendaryIntroInner{
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    min-height:0!important;
+    padding:6px 8px!important;
+    display:grid!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+    align-items:center!important;
+    justify-items:center!important;
+    gap:2px!important;
+  }
+  main.encounterRevealScreen .encounterNewBadge{margin:0!important;font-size:7.5px!important;padding:2px 7px!important}
+  main.encounterRevealScreen .encounterCutinOmen,
+  main.encounterRevealScreen .legendaryOmen{min-height:0!important;margin:0!important;font-size:9px!important;line-height:1.05!important}
+  main.encounterRevealScreen .encounterCutinTitle,
+  main.encounterRevealScreen .legendaryTitle{margin:0!important;font-size:clamp(18px,5.8vw,24px)!important;line-height:1!important}
+  main.encounterRevealScreen .encounterCutinSpriteWrap,
+  main.encounterRevealScreen .legendarySpriteWrap{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  main.encounterRevealScreen .encounterCutinSprite,
+  main.encounterRevealScreen .legendarySprite{
+    width:auto!important;
+    height:100%!important;
+    max-height:100%!important;
+    max-width:min(64vw,240px)!important;
+    object-fit:contain!important;
+  }
+  main.encounterRevealScreen .encounterCutinName,
+  main.encounterRevealScreen .legendaryName{min-height:0!important;margin:0!important;font-size:17px!important;line-height:1.05!important}
+  main.encounterRevealScreen .encounterOwnershipWrap,
+  main.encounterRevealScreen .legendaryOwnershipWrap{min-height:0!important;margin:0!important}
+  main.encounterRevealScreen .encounterCutinHint,
+  main.encounterRevealScreen .legendaryTapHint{display:none!important}
+  main.encounterRevealScreen .encounterCutinContinue,
+  main.encounterRevealScreen .legendaryContinue{margin:2px 0 0!important;padding:7px 14px!important;font-size:12px!important;min-width:150px!important}
+
+  /* Fighter selection: enemy + three essential cards only. Detailed stat graphs belong in detail screens. */
+  main.chooseFighterScreen .fighterSelectStage{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:4px!important;
+    margin:0!important;
+    overflow:hidden!important;
+    border-radius:12px!important;
+  }
+  main.chooseFighterScreen .fighterSelectLayout{
+    height:100%!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-rows:104px minmax(0,1fr)!important;
+    gap:4px!important;
+  }
+  main.chooseFighterScreen .fighterSelectEnemyPanel{min-height:0!important;overflow:hidden!important}
+  main.chooseFighterScreen .fighterSelectEnemy{
+    height:100%!important;
+    min-height:0!important;
+    padding:3px 6px!important;
+    display:grid!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    grid-template-rows:15px 1fr auto!important;
+    column-gap:7px!important;
+    overflow:hidden!important;
+  }
+  main.chooseFighterScreen .fighterSelectEnemy .kicker{grid-column:1/-1!important;font-size:7px!important;line-height:1!important;margin:0!important}
+  main.chooseFighterScreen .fighterSelectEnemyImage{grid-column:1!important;grid-row:2/4!important;width:70px!important;height:86px!important;overflow:hidden!important;place-self:center!important}
+  main.chooseFighterScreen .fighterSelectEnemyImage img{width:62px!important;height:86px!important;max-height:none!important;object-fit:cover!important;margin:0!important;border-radius:7px!important}
+  main.chooseFighterScreen .fighterSelectEnemy h2{grid-column:2!important;grid-row:2!important;align-self:end!important;margin:0 0 1px!important;font-size:16px!important;line-height:1!important;text-align:left!important}
+  main.chooseFighterScreen .fighterSelectEnemy>div:not(.kicker):not(.fighterSelectEnemyImage):not(.fighterSelectEnemyBadges){grid-column:2!important;grid-row:3!important;align-self:start!important;margin:0!important;font-size:8px!important;line-height:1!important;text-align:left!important}
+  main.chooseFighterScreen .fighterSelectEnemyBadges{grid-column:2!important;grid-row:3!important;align-self:end!important;justify-content:flex-start!important;gap:2px!important;margin:0!important;min-height:0!important}
+  main.chooseFighterScreen .fighterSelectEnemyBadges .badge{font-size:6.5px!important;padding:1px 4px!important}
+
+  main.chooseFighterScreen .fighterSelectTeamPanel{min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+  main.chooseFighterScreen .fighterSelectPrompt{flex:0 0 auto!important;margin:0 0 3px!important;padding:4px 6px!important;border-radius:8px!important}
+  main.chooseFighterScreen .fighterSelectPrompt b{font-size:10px!important;line-height:1!important}
+  main.chooseFighterScreen .fighterSelectPrompt span{display:none!important}
+  main.chooseFighterScreen .combatTeamStrip{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+    margin:0!important;
+    align-items:stretch!important;
+  }
+  main.chooseFighterScreen .combatTeamStrip .teamMini{
+    position:relative!important;
+    height:100%!important;
+    min-height:0!important;
+    padding:5px 3px 4px!important;
+    border-radius:10px!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+  }
+  main.chooseFighterScreen .combatTeamStrip .teamMiniHead{
+    height:auto!important;
+    min-height:0!important;
+    flex:1 1 auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+  }
+  main.chooseFighterScreen .combatTeamStrip .teamMini img{
+    flex:0 0 auto!important;
+    width:auto!important;
+    height:min(82px,14svh)!important;
+    max-width:82%!important;
+    margin:3px auto 2px!important;
+    object-fit:cover!important;
+    border-radius:7px!important;
+  }
+  main.chooseFighterScreen .combatTeamStrip .teamMini b{font-size:9px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  main.chooseFighterScreen .combatTeamStrip .teamMini small{font-size:6.5px!important;line-height:1.05!important}
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge{margin:2px auto!important;padding:2px 4px!important;font-size:6px!important}
+  main.chooseFighterScreen .combatTeamStrip .teamEnergyBadge b{font-size:8px!important}
+  main.chooseFighterScreen .combatTeamStrip .hpbar{height:6px!important;margin-top:2px!important}
+  main.chooseFighterScreen .combatTeamStrip .matchupAppeal{font-size:7px!important;padding:3px 4px!important;line-height:1!important;max-width:calc(100% - 4px)!important}
+  main.chooseFighterScreen .combatTeamStrip .matchupReason{font-size:7px!important;line-height:1.15!important;margin-top:3px!important;padding:4px 3px!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceStats,
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceMove,
+  main.chooseFighterScreen .combatTeamStrip .fighterChoiceGrowth,
+  main.chooseFighterScreen .combatTeamStrip .buffs,
+  main.chooseFighterScreen .combatTeamStrip .battleMoodBadge{display:none!important}
+
+  /* Hatch: compact fixed stage, with no hidden button reserving height. */
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"]{
+    height:100svh!important;
+    min-height:100svh!important;
+    max-height:100svh!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"]>main#app.dungeonRunScreen{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:3px 5px 5px!important;
+    overflow:hidden!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] #app>.hatchDramaCard{
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:7px 8px!important;
+    gap:2px!important;
+    grid-template-rows:minmax(150px,1fr) auto auto auto!important;
+    overflow:hidden!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard .hatchStage{
+    min-height:0!important;
+    max-height:230px!important;
+    height:100%!important;
+    border-radius:13px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard .hatchEggWrap{transform:scale(1.45)!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard h2{margin:1px 0!important;font-size:clamp(22px,7vw,28px)!important;line-height:1!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchMessage{min-height:20px!important;margin:0!important;font-size:11px!important;line-height:1.15!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchTapHint{font-size:8px!important;margin:1px 0!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] #hatchNext{min-height:36px!important;margin:2px 0 0!important;padding:7px 10px!important;font-size:14px!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] #hatchNext.hatchNextHidden{display:none!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] #hatchNext.hatchNextVisible{display:block!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady{
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+    gap:3px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .hatchReveal{
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    gap:2px!important;
+    justify-content:center!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .hatchReveal img{
+    width:auto!important;
+    height:min(150px,24svh)!important;
+    max-width:46vw!important;
+    max-height:48%!important;
+    padding:3px!important;
+    border-radius:11px!important;
+  }
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .hatchEggKind{font-size:8px!important;padding:3px 6px!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .hatchResultName{font-size:clamp(20px,6.6vw,27px)!important;margin:1px 0!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .badge.gold{font-size:9px!important;padding:3px 6px!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .hatchReveal p{font-size:9px!important;line-height:1.2!important;margin:0!important}
+  body.dungeonOneScreen[data-dungeon-page="postrun"][data-postrun-stage="hatch"] .hatchDramaCard.hatchReady .hatchTapHint{display:none!important}
+}
+</style>
+<!-- Ver2.61:
+  iPhone基準（390×645 / DPR3）で、強敵/通常遭遇演出・出撃ポケモン選択・卵孵化を固定1画面へ再最適化。
+  遭遇演出は下側の空白を使ってピックを大きく表示。出撃選択は詳細6能力グラフ/育成値を省き、
+  画像・名前・HP・ポケエネ・相性に絞って3体を同時表示。孵化は卵ステージと孵化後結果を同一画面内に収める。
 -->
 
 </body>
