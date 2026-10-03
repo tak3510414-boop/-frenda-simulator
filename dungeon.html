@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.76">
+<html lang="ja" data-app-version="2.77">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6912,7 +6912,7 @@ function ownedRelationBoxHTML(id){
 function ownedMoveSummary(r){const normal=String(r?.move||"未登録"),fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<div class="ownedMoveCompact"><div><span>わざ</span><b>${esc(normal)}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small></div><div><span>必殺技</span><b>${esc(fin)}</b></div></div>`}
 function renderOwned(){
  reconcileDexState();normalizeMaxedDrillPoints();
- const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
+ const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),acquiredOrder=new Map(state.owned.map((o,i)=>[String(o.id),i])),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
  const actionTarget=r=>{const ei=evolutionInfoForPick(r.master_id);return trainingAvailable(r.master_id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))};
  let cards=ownedActionOnly?allCards.filter(actionTarget):allCards.filter(r=>{
    if(!pickSearchMatch(r,ownedSearch))return false;
@@ -12865,6 +12865,14 @@ button.grassPatch{cursor:pointer}.grassPatch.grassActive:active{transform:scale(
   白PC/黒PCのボールスロット・捕獲結果は、PCでは重複していたチーム帯を省略してSTOP/次へを画面内へ確保。
   iPhoneはゲットチャンスチケット画面を専用1画面化。
   Ver2.65のイベント対象選択・イベント結果のiPhone専用1画面CSSも復元し、現行の階層パスclassにも対応。
+-->
+
+
+<!-- Ver2.77:
+  所持ピックを開くと反応しない不具合を修正。
+  Ver2.71で「入手順（新しい順）」を追加した際、入手順Map(acquiredOrder)が
+  renderOwned内で初期化されておらず、初期ソート実行時にReferenceErrorとなっていた。
+  renderOwned内でstate.ownedから入手順Mapを毎回生成するよう修正。
 -->
 
 </body>
