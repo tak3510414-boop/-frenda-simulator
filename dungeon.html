@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.62">
+<html lang="ja" data-app-version="2.63">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5545,7 +5545,7 @@ function dungeonPreviewPicks(did,count=4){
 function dungeonMaxUnlockedText(did){const a=unlockedDifficulties(did);return a.length?`解放 ランク1〜ランク${Math.max(...a)}`:"未解放"}
 function dungeonOverviewRankHTML(did,diff){const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff),deep=Math.max(0,Number(st?.deepest||0)),clears=Math.max(0,Number(st?.clears||0));let cls="locked",txt="🔒";if(ok){if(isCurrent){cls="current";txt=deep?`B${deep}`:"攻略中"}else if(clears>0){cls="cleared";txt=`B${deep||10} ✓${clears}`}else if(deep>0){cls="progress";txt=`B${deep}`}else{cls="open";txt="挑戦可"}}return `<span class="dungeonOverviewRank ${cls}"><b>R${diff}</b><small>${txt}</small></span>`}
 function dungeonOverviewSummary(did){const unlockedList=unlockedDifficulties(did),stats=[1,2,3,4,5].map(d=>getStat(did,d));const cleared=stats.filter((s,i)=>unlocked(did,i+1)&&Number(s?.clears||0)>0).length;let bestDiff=0,bestFloor=0;for(let d=1;d<=5;d++){if(!unlocked(did,d))continue;const f=Math.max(0,Number(stats[d-1]?.deepest||0));if(d>bestDiff||(d===bestDiff&&f>bestFloor)){bestDiff=d;bestFloor=f}}const maxUnlocked=unlockedList.length?Math.max(...unlockedList):0;return {cleared,bestDiff,bestFloor,maxUnlocked}}
-function dungeonOverviewRankButtonHTML(did,diff){const ok=unlocked(did,diff),st=getStat(did,diff),deep=Math.max(0,Number(st?.deepest||0)),clears=Math.max(0,Number(st?.clears||0)),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff),selected=!state.run&&currentDungeon&&currentDungeon.id===did&&Number(currentDungeon.difficulty)===Number(diff),hp=habitatProgressFor(did,diff);let cls="locked",floorText="LOCK",stateText="未解放";if(ok){if(isCurrent){cls="currentRun";floorText=deep?`B${deep}`:"攻略中";stateText="攻略中"}else if(clears>0){cls="cleared";floorText=`B${deep||10}`;stateText=`クリア${clears}回`}else if(deep>0){cls="progress";floorText=`B${deep}`;stateText="攻略中"}else{cls="open";floorText="B0";stateText="挑戦可"}}const selAttr=selected?` data-selected-rank="1"`:"",habitatText=ok?`🌿${hp.owned}/${hp.total}`:"🌿—";return `<button type="button" class="dungeonOverviewRankBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"}${selAttr}><b>R${diff}</b><span class="rankFloor">${floorText}</span><span class="rankState">${stateText}</span><span class="rankHabitat">${habitatText}</span></button>`}
+function dungeonOverviewRankButtonHTML(did,diff){const ok=unlocked(did,diff),st=getStat(did,diff),deep=Math.max(0,Number(st?.deepest||0)),clears=Math.max(0,Number(st?.clears||0)),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff),selected=!state.run&&currentDungeon&&currentDungeon.id===did&&Number(currentDungeon.difficulty)===Number(diff),hp=habitatProgressFor(did,diff);let cls="locked",floorText="LOCK",stateText="未解放";if(ok){if(isCurrent){cls="currentRun";floorText=deep?`B${deep}`:"攻略中";stateText="攻略中"}else if(clears>0){cls="cleared";floorText=`B${deep||10}`;stateText=`クリア ${clears}回`}else if(deep>0){cls="progress";floorText=`B${deep}`;stateText="攻略中"}else{cls="open";floorText="B0";stateText="挑戦可"}}const selAttr=selected?` data-selected-rank="1"`:"",habitatText=ok?`🌿${hp.owned}/${hp.total}`:"🌿—";return `<button type="button" class="dungeonOverviewRankBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"}${selAttr}><b>R${diff}</b><span class="rankFloor">${floorText}</span><span class="rankState">${stateText}</span><span class="rankHabitat">${habitatText}</span></button>`}
 function dungeonDiffButtons(did){return [1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),st=getStat(did,diff),isCurrent=!!state.run&&state.run.dungeonId===did&&Number(state.run.difficulty)===Number(diff);let cls="locked",hint="🔒";if(ok){if(isCurrent){cls="currentRun";hint="攻略中"}else if(Number(st.clears||0)>0){cls="cleared";hint="クリア"}else if(Number(st.deepest||0)>0){cls="inprogress";hint="攻略中"}else{cls="open";hint="挑戦可"}}return `<button class="diffBtn ${cls}" data-dungeon-id="${did}" data-diff="${diff}" ${ok?"":"disabled"} >ランク${diff}${ok?`<span class="diffStat">B${st.deepest} / ${st.clears}回</span><span class="diffHint">${hint}</span>`:`<span class="diffStat">🔒</span><span class="diffHint">LOCK</span>`}</button>`}).join("")}
 function renderDungeonList(){
  const overview=THEME_ORDER.map(id=>{
@@ -11048,6 +11048,170 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result5A
   ゲットチャンス入口はタイトルを1行化し、下余白を抑えてボタンまで同画面化。
   「次は誰だ！？」演出はKO・?・進行表示・ヒントまで同一画面内へ再圧縮。
   強敵/通常遭遇演出は所有表示や補助文を整理し、ピック・名前・戦闘準備ボタンを1画面内に収める。
+-->
+
+
+<style id="v263-mobile-dungeon-list-readability">
+/* Ver2.63: mobile dungeon selection prioritizes readable rank/clear counts; scrolling is allowed. */
+@media(max-width:700px){
+  body[data-dungeon-page="dungeons"] main#app{
+    padding:7px 8px 96px!important;
+    overflow:visible!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonSelectScreen{
+    padding:8px!important;
+    border-radius:16px!important;
+    overflow:visible!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewHead{
+    margin:0 0 7px!important;
+    display:block!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewHead .sectionTitle{
+    font-size:19px!important;
+    line-height:1.1!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewHint{
+    display:none!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewBody{
+    display:block!important;
+    overflow:visible!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewGrid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+    overflow:visible!important;
+    grid-auto-rows:auto!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewCard{
+    width:100%!important;
+    min-width:0!important;
+    padding:9px 10px!important;
+    border-radius:15px!important;
+    gap:5px 7px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto auto auto!important;
+    align-items:start!important;
+    box-sizing:border-box!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewTop{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:auto!important;
+    min-width:0!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewTitleWrap{
+    gap:0!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewTitle{
+    font-size:16px!important;
+    line-height:1.1!important;
+    gap:5px!important;
+    min-width:0!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewTitleText{
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  /* Rank buttons already show unlock state, so this duplicate line is omitted on mobile. */
+  body[data-dungeon-page="dungeons"] .dungeonOverviewLevel{
+    display:none!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewTypes{
+    grid-column:2!important;
+    grid-row:1!important;
+    width:auto!important;
+    min-width:0!important;
+    justify-content:flex-end!important;
+    align-self:center!important;
+    gap:3px!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewType{
+    padding:3px 7px!important;
+    font-size:8px!important;
+    line-height:1!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewSummary{
+    grid-column:1/-1!important;
+    grid-row:2!important;
+    width:100%!important;
+    min-width:0!important;
+    padding:5px 7px!important;
+    border-radius:9px!important;
+    font-size:9px!important;
+    line-height:1.15!important;
+    gap:6px!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewSummary span{
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:nowrap!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewRanks{
+    grid-column:1/-1!important;
+    grid-row:3!important;
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn{
+    width:100%!important;
+    min-width:0!important;
+    min-height:62px!important;
+    padding:5px 2px!important;
+    border-radius:10px!important;
+    gap:2px!important;
+    grid-template-rows:auto auto auto auto!important;
+    overflow:visible!important;
+    white-space:normal!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn b{
+    font-size:13px!important;
+    line-height:1!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankFloor{
+    font-size:9px!important;
+    line-height:1.05!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
+    font-size:8px!important;
+    line-height:1.05!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:nowrap!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankHabitat{
+    font-size:7px!important;
+    line-height:1!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  body[data-dungeon-page="dungeons"] .dungeonOverviewUnlock{
+    grid-column:1/-1!important;
+    grid-row:4!important;
+    width:100%!important;
+    min-width:0!important;
+    margin-top:0!important;
+    font-size:8px!important;
+    line-height:1.25!important;
+    white-space:normal!important;
+  }
+}
+</style>
+<!-- Ver2.63:
+  iPhoneのダンジョン選択はスクロール前提に切り替え、2列カードを1列へ変更。
+  ランクボタンを広げて「クリア ○回」・到達階・生息地数を省略せず表示。
+  重複していた「解放 R1〜」行をスマホでは非表示にし、タイプ・最高到達・クリア済ランク数・次の解放条件へ整理。
+  カード内の余白を詰めつつ文字を大きくして、情報量ではなく可読性を優先。
 -->
 
 </body>
