@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.79">
+<html lang="ja" data-app-version="2.80">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -13193,6 +13193,31 @@ button.grassPatch{cursor:pointer}.grassPatch.grassActive:active{transform:scale(
   2段になっていたヘッダーを横1段に寄せ、中央の空白を縮小。
   ヒーローバナーは高さを44pxへ圧縮し、右上の星装飾と左下の装飾を非表示。
   バナー文言は1行で整理し、ホーム全体の縦スペースを下段カードへ回す。
+-->
+
+
+<style id="v280-black-pc-main-title">
+/* Ver2.80: 黒PCホームの主タイトルを画面内で最も大きくする */
+@media (min-width:1451px) and (max-height:840px){
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .brand b{
+    font-size:34px!important;
+    line-height:1!important;
+    letter-spacing:.01em!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeHeroSimple .homeHeroTitle h1{
+    font-size:27px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayBtn>span{
+    font-size:26px!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeManageGrid .homeMenuBtn>span{
+    font-size:21px!important;
+  }
+}
+</style>
+<!-- Ver2.80:
+  黒PCホームの「フレンダダンジョン」を34pxへ拡大し、画面内で最も大きなタイトルに変更。
+  バージョン表示・音量・保存アイコンは従来サイズを維持。
 -->
 
 </body>
