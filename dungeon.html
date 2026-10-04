@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.16">
+<html lang="ja" data-app-version="3.17">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -7023,6 +7023,11 @@ function showLuckShop(returnTo="home"){
    <div class="shopItemCard shopBall hyperBall"><div class="shopItemIcon"><img src="${esc(BALL_DEF.hyper.img)}" alt="ハイパーボール"></div><div class="shopItemMain"><div class="shopItemHead"><b>ハイパーボール</b><small>所持 ${hyperBallQty}/${HYPER_BALL_MAX}個</small></div><p>ゲットチャンスで直接使用できます。捕獲率はモンスターボールの×10。</p><div class="shopItemNote">★4・★5のレアな相手にも強力。使用時に確認します。</div></div><button id="buyHyperBall" ${coins>=HYPER_BALL_PRICE&&hyperBallQty<HYPER_BALL_MAX?"":"disabled"}>🪙${HYPER_BALL_PRICE}で購入</button></div>
    <div class="shopItemCard shopBall masterBall"><div class="shopItemIcon"><img src="${esc(BALL_DEF.master.img)}" alt="マスターボール"></div><div class="shopItemMain"><div class="shopItemHead"><b>マスターボール</b><small>所持 ${masterBallQty}/${MASTER_BALL_MAX}個</small></div><p>ゲットチャンスで直接使用すると、相手を必ずゲットできます。</p><div class="shopItemNote">最上位アイテム。所持上限1個。使用時は必ず確認します。</div></div><button id="buyMasterBall" ${coins>=MASTER_BALL_PRICE&&masterBallQty<MASTER_BALL_MAX?"":"disabled"}>🪙${MASTER_BALL_PRICE}で購入</button></div>
   </div></div>`;
+  const blackShopCompact=document.documentElement.dataset.viewProfile==="pc-compact"&&document.body.classList.contains("blackPcOptimized")&&!document.body.classList.contains("whitePcOptimized");
+  if(blackShopCompact){
+   const panel=ov.querySelector(".luckShopPanel"),balance=ov.querySelector(".coinBalance"),how=ov.querySelector(".coinHowTo");
+   if(panel&&balance&&how){const row=document.createElement("div");row.className="shopCoinBlackRow";panel.insertBefore(row,balance);row.append(balance,how)}
+  }
   ov.querySelector("#luckShopClose").onclick=returnScreen;
   const openUseDialog=kind=>{
    document.getElementById("shopUseOverlay")?.remove();
@@ -14667,3 +14672,21 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 </style>
 
 <!-- Ver3.16: quick training respects renderAfter=false and preserves both background and modal scroll positions during training. -->
+
+<style id="v317-black-shop-coin-row">
+/* Ver3.17: on the black PC, merge coin balance and coin acquisition help into one horizontal row. */
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCoinBlackRow{
+  display:grid!important;grid-template-columns:minmax(250px,320px) minmax(0,1fr)!important;gap:10px!important;align-items:stretch!important;margin:0 0 0!important;flex:0 0 auto!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinBalance{
+  margin:0!important;display:flex!important;align-items:center!important;padding:8px 12px!important;min-height:50px!important;font-size:20px!important;white-space:nowrap!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinBalance b{font-size:26px!important;margin-left:8px!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo{
+  margin:0!important;padding:6px 10px!important;display:grid!important;grid-template-columns:max-content minmax(0,1fr) max-content!important;align-items:center!important;column-gap:10px!important;min-height:50px!important;box-sizing:border-box!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo>b{font-size:12px!important;margin:0!important;white-space:nowrap!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo p{font-size:11px!important;line-height:1.3!important;margin:0!important;min-width:0!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo span{font-size:11px!important;margin:0!important;white-space:nowrap!important;padding:4px 7px!important}
+</style>
+<!-- Ver3.17: black PC shop coin help moved to the right of the coin balance row. -->
