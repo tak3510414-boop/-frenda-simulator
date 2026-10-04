@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.15">
+<html lang="ja" data-app-version="3.16">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5201,7 +5201,7 @@ function spendDrill(id,stat,renderAfter=true){
  trainingStickyIds.add(id);save();
  if(coins)UI.dialog.alert(`全能力MAX！
 余った特訓ポイントを 🪙${coins} フレンダコインへ自動変換しました。`);
- render()
+ if(renderAfter)render()
 }
 
 const BULK_TRAIN_STATS=["hp","atk","def"];
@@ -6967,7 +6967,7 @@ function showInventoryItemUse(kind){
 function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card eggsScreen"><div class="eggsScreenHead"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="eggInfoCompact"><span>階を進むと <b>全卵 +1pt</b></span><span>クリア累計 <b>${clears}回</b></span><span>${next?`上限UPまで <b>あと${Math.max(0,next-clears)}回</b>`:"所持上限は最大"}</span></div>${state.eggs.length?`<div class="eggGrid eggGridViewport">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard compactEggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary eggEmptyState">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ボスを倒すと卵ルーレットで獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
 function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
-function showQuickTraining(id,returnScroll=window.scrollY||document.documentElement.scrollTop||0){
+function showQuickTraining(id,returnScroll=window.scrollY||document.documentElement.scrollTop||0,overlayScroll=0){
  if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("探索中のため特訓できません。");return}
  const r=rec(id),pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0}),dp=drillFor(id),bond=bondLevelFor(id),xp=xpFor(id);
  document.getElementById("quickTrainingOverlay")?.remove();
@@ -6991,10 +6991,11 @@ function showQuickTraining(id,returnScroll=window.scrollY||document.documentElem
    <div class="notice quickTrainingNote">HP・ATK・DEFはそれぞれ最大＋${PERMANENT_BOOST_MAX}まで強化できます。3能力MAX後に残った特訓Pは、自動でフレンダコインへ変換されます。</div>
  </div>`;
  document.body.appendChild(ov);
- ov.scrollTop=0;requestAnimationFrame(()=>{ov.scrollTop=0;requestAnimationFrame(()=>{ov.scrollTop=0})});
+ const keepOverlayScroll=Math.max(0,Number(overlayScroll)||0);
+ ov.scrollTop=keepOverlayScroll;requestAnimationFrame(()=>{ov.scrollTop=keepOverlayScroll;requestAnimationFrame(()=>{ov.scrollTop=keepOverlayScroll})});
  const restoreOwned=()=>{ov.remove();renderOwned();requestAnimationFrame(()=>window.scrollTo(0,returnScroll))};
  const close=()=>restoreOwned();ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#quickTrainingClose").onclick=close;
- ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{spendDrill(b.dataset.trainId,b.dataset.stat,false);ov.remove();if(trainingAvailable(id))showQuickTraining(id,returnScroll);else{renderOwned();requestAnimationFrame(()=>window.scrollTo(0,returnScroll))}})
+ ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{const keep=ov.scrollTop;spendDrill(b.dataset.trainId,b.dataset.stat,false);ov.remove();if(trainingAvailable(id))showQuickTraining(id,returnScroll,keep);else{renderOwned();requestAnimationFrame(()=>window.scrollTo(0,returnScroll))}})
 }
 function showLuckShop(returnTo="home"){
  document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";document.documentElement.style.setProperty("--shop-header-height",`${document.querySelector("body>header").getBoundingClientRect().height}px`);
@@ -7273,7 +7274,7 @@ ${evolutionCandidatesSectionHTML(id)}
  ov.querySelector("#ownedBackClose").onclick=close;
  bindEvolutionCandidateDetailLinks(ov);
  ov.querySelectorAll("[data-point-help]").forEach(el=>el.onclick=e=>{e.stopPropagation();showOwnedPointHelp(el.dataset.pointHelp,id)});
- const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{close();showQuickTraining(id)};
+ const tb=ov.querySelector("#ownedDetailTraining");if(tb)tb.onclick=()=>{const keepScroll=window.scrollY||document.documentElement.scrollTop||0;close();showQuickTraining(id,keepScroll)};
  const eb=ov.querySelector("#ownedDetailEvo");if(eb)eb.onclick=()=>{close();openEvolutionDialog(id)}
 }
 function trainingGraphStatHTML(label,base,bonus=0,scale=200){
@@ -14664,3 +14665,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
   }
 }
 </style>
+
+<!-- Ver3.16: quick training respects renderAfter=false and preserves both background and modal scroll positions during training. -->
