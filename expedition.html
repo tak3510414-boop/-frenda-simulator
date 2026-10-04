@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.88">
+<html lang="ja" data-app-version="0.89">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -944,7 +944,29 @@ function groupCardHTML(groupIndex){
 }
 function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2,3,4].map(groupCardHTML).join("")}</div></div></div>`}
 function openGroupFromDock(i,cards){if(cards)groupCardsScrollLeft=cards.scrollLeft;const idx=Number(i);if(setActiveGroup(idx)===false)return;const g=groupState(idx);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()}
-function bindGroupDock(){bindAdminUnlockButtons();const cards=app.querySelector(".groupCards");if(!cards)return;cards.scrollLeft=groupCardsScrollLeft;cards.addEventListener("scroll",()=>{groupCardsScrollLeft=cards.scrollLeft},{passive:true});requestAnimationFrame(()=>{if(cards.isConnected)cards.scrollLeft=groupCardsScrollLeft});cards.onclick=e=>{const depart=e.target.closest("[data-depart-group]");if(depart&&cards.contains(depart)){e.preventDefault();e.stopPropagation();groupCardsScrollLeft=cards.scrollLeft;confirmAndStartMission(Number(depart.dataset.departGroup));return}const returned=e.target.closest("[data-return-group]");if(returned&&cards.contains(returned)){e.preventDefault();e.stopPropagation();openGroupFromDock(Number(returned.dataset.returnGroup),cards);return}const returnNow=e.target.closest("[data-return-now-group]");if(returnNow&&cards.contains(returnNow)){e.preventDefault();e.stopPropagation();groupCardsScrollLeft=cards.scrollLeft;requestMissionReturn(Number(returnNow.dataset.returnNowGroup));return}const card=e.target.closest("[data-group]");if(card&&cards.contains(card)){e.preventDefault();openGroupFromDock(Number(card.dataset.group),cards)}};cards.onkeydown=e=>{if(e.key!=="Enter"&&e.key!==" ")return;const card=e.target.closest("[data-group]");if(!card||!cards.contains(card)||e.target.closest("button"))return;e.preventDefault();openGroupFromDock(Number(card.dataset.group),cards)}}
+function handleGroupDockTap(target,cards){
+ const depart=target.closest?.("[data-depart-group]");
+ if(depart&&cards.contains(depart)){groupCardsScrollLeft=cards.scrollLeft;confirmAndStartMission(Number(depart.dataset.departGroup));return true}
+ const returned=target.closest?.("[data-return-group]");
+ if(returned&&cards.contains(returned)){openGroupFromDock(Number(returned.dataset.returnGroup),cards);return true}
+ const returnNow=target.closest?.("[data-return-now-group]");
+ if(returnNow&&cards.contains(returnNow)){groupCardsScrollLeft=cards.scrollLeft;requestMissionReturn(Number(returnNow.dataset.returnNowGroup));return true}
+ const card=target.closest?.("[data-group]");
+ if(card&&cards.contains(card)){openGroupFromDock(Number(card.dataset.group),cards);return true}
+ return false
+}
+function bindGroupDock(){
+ bindAdminUnlockButtons();
+ const cards=app.querySelector(".groupCards");if(!cards)return;
+ cards.scrollLeft=groupCardsScrollLeft;
+ cards.addEventListener("scroll",()=>{groupCardsScrollLeft=cards.scrollLeft},{passive:true});
+ requestAnimationFrame(()=>{if(cards.isConnected)cards.scrollLeft=groupCardsScrollLeft});
+ let touchStart=null,suppressClickUntil=0;
+ cards.addEventListener("touchstart",e=>{const t=e.touches?.[0];if(!t)return;touchStart={x:t.clientX,y:t.clientY,target:e.target}}, {passive:true});
+ cards.addEventListener("touchend",e=>{if(!touchStart)return;const t=e.changedTouches?.[0];const start=touchStart;touchStart=null;if(!t)return;const moved=Math.hypot(t.clientX-start.x,t.clientY-start.y);if(moved>12)return;const target=document.elementFromPoint(t.clientX,t.clientY)||start.target;if(!target||!cards.contains(target))return;if(handleGroupDockTap(target,cards)){e.preventDefault();e.stopPropagation();suppressClickUntil=Date.now()+700}}, {passive:false});
+ cards.onclick=e=>{if(Date.now()<suppressClickUntil){e.preventDefault();e.stopPropagation();return}if(handleGroupDockTap(e.target,cards)){e.preventDefault();e.stopPropagation()}};
+ cards.onkeydown=e=>{if(e.key!=="Enter"&&e.key!==" ")return;const card=e.target.closest("[data-group]");if(!card||!cards.contains(card)||e.target.closest("button"))return;e.preventDefault();openGroupFromDock(Number(card.dataset.group),cards)}
+}
 
 const EXP_PICK_VIEW_KEY="frenda:expedition:pickView:v1";
 let prepPickFilter=UI.pickFilter.create({sort:"recommended"});
@@ -2811,7 +2833,13 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 }
 .frendaInfoOverlay083{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
 .frendaInfoPanel083{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}.frendaInfoHead083{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead083 b{font-size:20px}.frendaInfoClose083{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}.frendaInfoSection083{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection083 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid083{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid083 span{color:#647986}.frendaDeviceGrid083 b{word-break:break-all}.frendaInfoActions083{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions083 button{flex:1 1 150px}.frendaInfoNote083{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
+
+/* Ver0.89: iPhone group dock touch reliability */
+@media(max-width:700px){
+.groupCard{position:relative;z-index:1;touch-action:pan-x!important;-webkit-tap-highlight-color:transparent}
+.groupCard .groupAction{position:relative;z-index:3;pointer-events:auto!important;touch-action:manipulation!important}
+}
 </style>
 <!-- Ver0.85: common header event logic moved inside the main application scope. -->
-<!-- Ver0.88: group dock taps use delegated events so returned/exploring groups reliably open on iPhone while preserving horizontal scroll. -->
-<!-- Updated: 2026-10-04 09:40 JST / Ver0.88 -->
+<!-- Ver0.89: iPhone group dock now handles short touch taps directly while preserving horizontal swipe scrolling. -->
+<!-- Updated: 2026-10-04 09:46 JST / Ver0.89 -->
