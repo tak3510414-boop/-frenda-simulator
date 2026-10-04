@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.97">
+<html lang="ja" data-app-version="0.98">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -954,9 +954,24 @@ function groupCardHTML(groupIndex){
 }
 /* ===== GROUP DOCK / GROUP SWITCHING ===== */
 function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2,3,4].map(groupCardHTML).join("")}</div></div></div>`}
+function clearPrepTeamsOnGroupSwitch098(fromIndex,toIndex){
+ if(fromIndex===toIndex)return false;
+ flushPrepWrite();
+ let changed=false;
+ for(const idx of [fromIndex,toIndex]){
+  const g=groupState(idx);
+  if(!g||g.status!=="idle"||!g.prep)continue;
+  if(Array.isArray(g.prep.teamIds)&&g.prep.teamIds.length){g.prep.teamIds=[];changed=true}
+ }
+ if(changed)writeExp();
+ return changed
+}
 function openGroupFromDock(i,cards){
  if(cards)groupCardsScrollLeft=cards.scrollLeft;
- const idx=Number(i);if(setActiveGroup(idx)===false)return;
+ const idx=Number(i),from=activeGroup;
+ if(!groupUnlocked(idx))return;
+ if(idx!==from)clearPrepTeamsOnGroupSwitch098(from,idx);
+ if(setActiveGroup(idx)===false)return;
  const g=groupState(idx);
  screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";
  render()
@@ -1101,7 +1116,7 @@ function renderPrep(){
  const slots=prepSelectedStripHTML(d,p);
  const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small class="pickSummary078">${gradeText(r)}/ﾎﾟｹｴﾈ${esc(r.poke_ene??"-")}/運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body})}).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}"><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destBadges">${selected?'<span class="destSelectedBadge">✓ 選択中</span>':""}${secret?'<span class="destSecretBadge">🌟 ひみつ</span>':""}</span>${secret?`<small class="destSecretEffect">調査度↑・レア箱↑・仲間↑</small>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`}).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted destinationAutoHint" style="margin-top:7px">派遣先をタップすると、その探索先に適した3体を「おまかせ編成」で自動セットします。セット後は個別に入れ替えできます。<br>ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}"><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destBadges">${selected?'<span class="destSelectedBadge">✓ 選択中</span>':""}${secret?'<span class="destSecretBadge">🌟 ひみつ</span>':""}</span>${secret?`<small class="destSecretEffect">調査度↑・レア箱↑・仲間↑</small>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`}).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted destinationAutoHint" style="margin-top:7px">派遣先をタップすると、その探索先に適した3体を「おまかせ編成」で自動セットします。セット後は個別に入れ替えできます。<br>ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループを切り替えると、未出発のパーティ選択はクリアされます。ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
@@ -2987,3 +3002,4 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 </html>
 
 <!-- Expedition Ver0.97: when a Pokémon follows the team and newly joins in expedition rewards, show its image on the final expedition results screen. -->
+<!-- Expedition Ver0.98: clear idle/pre-departure party selections whenever the user switches expedition groups; active mission teams remain reserved. -->
