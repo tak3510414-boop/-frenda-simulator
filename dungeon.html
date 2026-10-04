@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.17">
+<html lang="ja" data-app-version="3.18">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14690,3 +14690,23 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo span{font-size:11px!important;margin:0!important;white-space:nowrap!important;padding:4px 7px!important}
 </style>
 <!-- Ver3.17: black PC shop coin help moved to the right of the coin balance row. -->
+
+<style id="v318-black-shop-section-gap">
+/* Ver3.18: visually separate the coin information row from the product catalog on black PC. */
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCoinBlackRow{
+  position:relative!important;
+  margin:0 0 16px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCoinBlackRow::after{
+  content:"";
+  position:absolute;
+  left:2px;right:2px;bottom:-9px;
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,#6aa6bd99 12%,#6aa6bd99 88%,transparent);
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCatalogGrid{
+  margin-top:2px!important;
+}
+</style>
+<!-- Ver3.18: black PC shop coin information is separated from products by spacing and a divider. -->
