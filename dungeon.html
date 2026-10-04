@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<!-- SOURCE ORGANIZATION (Ver3.02)
+<!-- SOURCE ORGANIZATION (Ver3.03)
   1. Base CSS / shared header / core layout
   2. External Frenda dependencies
   3. Application state, persistence and compatibility migrations
@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.02">
+<html lang="ja" data-app-version="3.03">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6249,8 +6249,13 @@ function renderSummary(){
  const addAlly=id=>{id=String(id||"");if(id&&!allySeen.has(id)){allySeen.add(id);newAllyIds.push(id)}};
  (x.captured||[]).forEach(addAlly);
  (x.hatchResults||[]).filter(v=>v&&!v.duplicate).forEach(v=>addAlly(v.pickId));
- const allySlots=newAllyIds.length?newAllyIds.map(id=>{const r=rec(id),detailOk=!!ownedEntry(id);return r?`<div class="result6AllyCard summaryAllyDetail ${detailOk?"clickable":""}" ${detailOk?`data-summary-ally="${esc(id)}" role="button" tabindex="0"`:""}><div class="result6NewBadge">NEW</div><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small>${detailOk?`<div class="result6AllyHint">タップで詳しくみる</div>`:""}</div>`:""}).join(""):`<div class="result6AllyEmpty"><span>🤝</span><b>今回は新しい仲間なし</b><small>次の冒険で出会えるかも</small></div>`;
- const allyCountClass=newAllyIds.length<=3?`count-${Math.max(1,newAllyIds.length)}`:"count-many";
+ const resultPokemonMap=new Map();
+ const ensureResultPokemon=id=>{id=String(id||"");if(!id)return null;if(!resultPokemonMap.has(id))resultPokemonMap.set(id,{id,captured:false,hatched:false,newAlly:false,hatchDuplicate:false,hatchRewardLabel:""});return resultPokemonMap.get(id)};
+ (x.captured||[]).forEach(id=>{const z=ensureResultPokemon(id);if(z){z.captured=true;z.newAlly=true}});
+ (x.hatchResults||[]).forEach(v=>{if(!v?.pickId)return;const z=ensureResultPokemon(v.pickId);if(!z)return;z.hatched=true;if(!v.duplicate)z.newAlly=true;else z.hatchDuplicate=true;if(v.duplicateRewardLabel)z.hatchRewardLabel=String(v.duplicateRewardLabel)});
+ const resultPokemonItems=[...resultPokemonMap.values()];
+ const allySlots=resultPokemonItems.length?resultPokemonItems.map(item=>{const id=item.id,r=rec(id),detailOk=!!ownedEntry(id),badge=item.hatched?"🥚 孵化":"NEW",status=item.hatched?(item.newAlly?"孵化して新しい仲間に！":`孵化（所持済み）${item.hatchRewardLabel?`・${esc(item.hatchRewardLabel)}`:""}`):"新しく仲間になった！";return r?`<div class="result6AllyCard summaryAllyDetail ${item.hatched?"hatched ":""}${detailOk?"clickable":""}" ${detailOk?`data-summary-ally="${esc(id)}" role="button" tabindex="0"`:""}><div class="result6NewBadge ${item.hatched?"hatch":""}">${badge}</div><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><div class="result6HatchStatus">${status}</div>${detailOk?`<div class="result6AllyHint">タップで詳しくみる</div>`:""}</div>`:""}).join(""):`<div class="result6AllyEmpty"><span>🤝</span><b>今回は仲間・孵化なし</b><small>次の冒険で出会えるかも</small></div>`;
+ const allyCountClass=resultPokemonItems.length<=3?`count-${Math.max(1,resultPokemonItems.length)}`:"count-many";
 
  const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"なし";
  const eggVisual=x.eggAward?eggVisualHTML(x.eggAward):'<div class="result4NoReward">—</div>';
@@ -6301,10 +6306,10 @@ function renderSummary(){
        <div class="result4TeamGrid result5TeamGrid result6TeamGrid">${teamCards}</div>
      </section>
 
-     <section class="result5LootPanel result6LootPanel ${newAllyIds.length?"has-allies":"no-allies"} ${x.eggAward?"has-reward":"no-reward"} ${unlocks.length?"has-unlocks":"no-unlocks"}">
-       <div class="result5SectionHead"><span>🎁</span><div><b>今回の戦利品</b><small>新しい仲間を最優先で表示</small></div></div>
+     <section class="result5LootPanel result6LootPanel ${resultPokemonItems.length?"has-allies":"no-allies"} ${x.eggAward?"has-reward":"no-reward"} ${unlocks.length?"has-unlocks":"no-unlocks"}">
+       <div class="result5SectionHead"><span>🎁</span><div><b>今回の戦利品</b><small>新しい仲間と孵化結果を画像で表示</small></div></div>
        <div class="result6LootGrid">
-         <div class="result5LootGroup allies result6Allies"><div class="result5LootLabel"><em>NEW</em><b>新しい仲間</b></div><div class="result6AllyGrid ${allyCountClass}">${allySlots}</div></div>
+         <div class="result5LootGroup allies result6Allies"><div class="result5LootLabel"><em>RESULT</em><b>仲間・孵化</b></div><div class="result6AllyGrid ${allyCountClass}">${allySlots}</div></div>
          <div class="result6LootBottom">
            <div class="result5LootGroup reward"><div class="result5LootLabel"><em>REWARD</em><b>卵・クリア報酬</b></div><div class="result4RewardBody">${eggVisual}<div><b>${eggName}</b><small>${x.eggAward?"卵ボックスに追加":"今回は卵なし"}${Number(x.grassTicketAward||0)>0?`<br>🌿 草むらチケット +${Number(x.grassTicketAward)}`:""}</small></div></div></div>
            <div class="result5LootGroup unlock"><div class="result5LootLabel"><em>UNLOCK</em><b>新しく解放</b></div><div class="result4UnlockList">${unlockRows}</div></div>
@@ -8187,7 +8192,7 @@ body[data-dungeon-page="postrun"] .postRunSummary.resultV6{
 .result6AllyGrid.count-1{grid-template-columns:minmax(210px,330px)}.result6AllyGrid.count-2{grid-template-columns:repeat(2,minmax(180px,1fr))}.result6AllyGrid.count-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .result6AllyCard{position:relative;min-height:0;border:2px solid #83c9a0;border-radius:15px;background:linear-gradient(180deg,#fff,#f5fff9);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 7px;box-shadow:0 5px 15px #236a3b18;overflow:hidden}
 .result6AllyCard:after{content:"";position:absolute;inset:auto -35px -55px auto;width:120px;height:120px;border-radius:50%;background:#61d89212}
-.result6NewBadge{position:absolute;left:7px;top:7px;padding:3px 7px;border-radius:999px;background:linear-gradient(135deg,#129b55,#55cb7b);color:#fff;font-size:6px;font-weight:1000;letter-spacing:.08em;box-shadow:0 2px 5px #145a2d32}
+.result6NewBadge{position:absolute;left:7px;top:7px;padding:3px 7px;border-radius:999px;background:linear-gradient(135deg,#129b55,#55cb7b);color:#fff;font-size:6px;font-weight:1000;letter-spacing:.08em;box-shadow:0 2px 5px #145a2d32}.result6NewBadge.hatch{background:linear-gradient(135deg,#8d64d6,#b88af0);box-shadow:0 2px 5px #56318b32}.result6AllyCard.hatched{border-color:#bda5e6;background:linear-gradient(180deg,#fff,#faf7ff)}.result6AllyCard.hatched:after{background:#a879dc12}.result6HatchStatus{position:relative;z-index:1;margin-top:3px;font-size:7px;font-weight:950;color:#75579a;text-align:center;line-height:1.2}
 .result6AllyCard img{display:block;width:min(118px,54%);aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:#e7eef0;box-shadow:0 6px 15px #183e2a2e;margin:2px auto 6px}
 .result6AllyCard b{position:relative;z-index:1;font-size:14px;color:#214c33;line-height:1.1;text-align:center}.result6AllyCard small{position:relative;z-index:1;margin-top:4px;font-size:8px;color:#527263;font-weight:850}
 .result6AllyEmpty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#71847a;border:2px dashed #b9d9c5;border-radius:14px;background:#ffffffa8}.result6AllyEmpty span{font-size:36px}.result6AllyEmpty b{font-size:12px}.result6AllyEmpty small{font-size:7px;margin-top:3px}
@@ -14316,3 +14321,5 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
      Updated: 2026-10-04 11:35 JST -->
 </body>
 </html>
+
+<!-- Ver3.03: post-run results now show images for Pokémon hatched during the adventure, including duplicate hatches. -->
