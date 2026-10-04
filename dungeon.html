@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.97">
+<html lang="ja" data-app-version="2.98">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5406,7 +5406,7 @@ function homeNextGoal(){
 function homeHero(){
  return `<div class="homeHeroPanel homeHeroSimple"><div class="homeHeroMain"><div class="homeHeroBadge">🚀 ADVENTURE GATE OPEN!</div><div class="homeHeroTitle"><h1>つぎの冒険へ出発！</h1></div><p class="homeHeroLead">ピックを集めて、育てて、ダンジョンを攻略！</p></div></div>`
 }
-function render(){syncDungeonBgm();updateHeaderStatus();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;syncBlackHeader();if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey)||(isBlackPcOptimization()&&["team","grass"].includes(pageKey));document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=false;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
+function render(){syncDungeonBgm();updateHeaderStatus();bindCommonHeader298();const runScene=state.run?.scene||"",isBattleScreen=runScene==="battle",isChooseFighterScreen=runScene==="chooseFighter",isEncounterRevealScreen=["encounterCutin","legendaryIntro"].includes(runScene),isCaptureStageScreen=["captureIntro","captureSelect","captureSlot","captureThrow","captureResult"].includes(runScene),isCombatStageScreen=isBattleScreen||isChooseFighterScreen||isEncounterRevealScreen||isCaptureStageScreen,isDungeonRunScreen=!!state.run||!!state.postRun;app.classList.toggle("battleScreen",isBattleScreen);app.classList.toggle("chooseFighterScreen",isChooseFighterScreen);app.classList.toggle("encounterRevealScreen",isEncounterRevealScreen);app.classList.toggle("combatStageScreen",isCombatStageScreen);app.classList.toggle("dungeonRunScreen",isDungeonRunScreen);app.dataset.runScene=runScene;const pageKey=state.postRun?"postrun":state.run?`run-${runScene||"active"}`:(!state.initialized?"starter":screen||"home");document.body.dataset.dungeonPage=pageKey;syncBlackHeader();if(state.postRun?.stage)document.body.dataset.postrunStage=state.postRun.stage;else delete document.body.dataset.postrunStage;const oneScreen=!!state.run||!!state.postRun||["home","dungeons","eggs","training"].includes(pageKey)||(isBlackPcOptimization()&&["team","grass"].includes(pageKey));document.body.classList.toggle("dungeonOneScreen",oneScreen);if(oneScreen)requestAnimationFrame(()=>{const se=document.scrollingElement||document.documentElement;if(se)se.scrollTop=0;window.scrollTo(0,0)});withdrawBtn.style.display="none";const isActualDungeonHome=!!state.initialized&&!state.run&&!state.postRun&&screen==="home";const showHomeNav=false;homeBtn.hidden=!showHomeNav;homeBtn.style.setProperty("display",showHomeNav?"inline-grid":"none","important");document.body.classList.toggle("homeNavVisible",showHomeNav);document.body.classList.toggle("dungeonHomeScreen",isActualDungeonHome);if(!MASTER||!CORE||!RECORDS.length){app.innerHTML=`<div class="errorBox">共通ファイルを読み込めませんでした。
 
 dungeon.html と frenda-master.js / frenda-core.js などの共通JSを同じ階層に配置してください。</div>`;return}if(!state.initialized){renderStarter();return}if(state.postRun){renderPostRun();scheduleAutoAdventure();return}if(state.run){renderRun();scheduleAutoAdventure();return}if(screen==="dungeons")return renderDungeonList();if(screen==="team")return renderTeamSelect();if(screen==="owned")return renderOwned();if(screen==="dex")return renderDex();if(screen==="items"||screen==="eggs")return renderItems();if(screen==="grass")return renderGrass();if(screen==="training")return renderTraining();if(screen==="save")return renderSaveMenu();renderHome()}
 function starterDetailData(id){const r=rec(id);if(!r)return null;const speed=Number(r.speed_level)>0?`Lv${r.speed_level}`:"-";const fin=(r.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";const power=Number(r.move_power_ref)>0?r.move_power_ref:"-",acc=r.move_accuracy_always?"必中":(Number(r.move_accuracy_ref)>0?`${r.move_accuracy_ref}%`:"-");const special=Array.isArray(r.special)&&r.special.length?r.special.join(" / "):(r.special?String(r.special):"なし");return {r,speed,fin,power,acc,special}}
@@ -6543,6 +6543,32 @@ function runAutoAdventureStep(){
  }catch(err){console.error("AUTO adventure",err);scheduleAutoAdventure(650)}finally{autoAdventureStepBusy=false}
 }
 
+
+
+/* Ver2.98: common header info/settings is implemented inside the main app scope. */
+function commonHeaderBackupPayload298(){return {format:"frenda-common-backup-v1",createdAt:new Date().toISOString(),app:"dungeon",dungeon:STORE.getItem(SAVE_KEY),expedition:STORE.getItem(EXPEDITION_KEY),sound:STORE.getItem(SOUND_KEY)}}
+function commonHeaderBackupOut298(){const blob=new Blob([JSON.stringify(commonHeaderBackupPayload298(),null,2)],{type:"application/json"}),a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=`frenda-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function commonHeaderBackupIn298(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||x.format!=="frenda-common-backup-v1")throw new Error("バックアップ形式が違います");if(typeof x.dungeon==="string")STORE.setItem(SAVE_KEY,x.dungeon);if(typeof x.expedition==="string")STORE.setItem(EXPEDITION_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXPEDITION_KEY);if(typeof x.sound==="string")STORE.setItem(SOUND_KEY,x.sound);UI.dialog.alert("バックアップを読み込みました。ページを再読み込みします。");location.reload()}catch(err){UI.dialog.alert("読み込みに失敗しました。\n"+(err?.message||String(err)))}};rd.readAsText(file)}
+function commonHeaderClose298(){document.querySelector(".frendaInfoOverlay296")?.remove()}
+function commonHeaderOpen298(){
+ commonHeaderClose298();
+ const ov=document.createElement("div"),touch=("ontouchstart" in window)||navigator.maxTouchPoints>0;
+ ov.className="frendaInfoOverlay296";
+ ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div></div>`;
+ document.body.appendChild(ov);
+ ov.querySelector(".frendaInfoClose296").onclick=commonHeaderClose298;
+ ov.onclick=e=>{if(e.target===ov)commonHeaderClose298()};
+ document.getElementById("infoSound296").onclick=()=>{cycleSoundMode();document.getElementById("infoSound296").textContent=soundModeLabel()};
+ document.getElementById("infoBackupOut296").onclick=commonHeaderBackupOut298;
+ document.getElementById("infoBackupIn296").onclick=()=>document.getElementById("infoBackupFile296").click();
+ document.getElementById("infoBackupFile296").onchange=e=>{if(e.target.files?.[0])commonHeaderBackupIn298(e.target.files[0])};
+}
+function bindCommonHeader298(){
+ const title=document.getElementById("headerMainTitle"),ver=document.getElementById("versionBadge"),cluster=document.querySelector("header .careCluster"),egg=document.getElementById("headerEggBadge"),coin=document.getElementById("headerCoinBadge");
+ if(title){title.onclick=e=>{e.preventDefault();homeBtn.click()};title.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();homeBtn.click()}}}
+ if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
+ if(cluster&&egg&&coin){if(egg.parentElement!==cluster)cluster.appendChild(egg);if(coin.parentElement!==cluster)cluster.appendChild(coin);cluster.append(egg,coin)}
+}
 
 function isBlackPcOptimization(){return window.matchMedia("(min-width:1280px) and (min-height:600px) and (max-height:840px)").matches}
 function syncBlackHeader(){
@@ -14249,36 +14275,5 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 .frendaInfoHead296{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead296 b{font-size:20px}.frendaInfoClose296{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}
 .frendaInfoSection296{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection296 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid296{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid296 span{color:#647986}.frendaDeviceGrid296 b{word-break:break-all}.frendaInfoActions296{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions296 button{flex:1 1 150px}.frendaInfoNote296{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
 </style>
-<script id="v296-common-header-settings-script">
-(()=>{
- const $=id=>document.getElementById(id);
- function profileLabel(){return document.documentElement.dataset.viewProfile||((innerWidth<=767)?'mobile':'desktop')}
- function backupPayload296(){return {format:'frenda-common-backup-v1',createdAt:new Date().toISOString(),app:'dungeon',dungeon:STORE.getItem(SAVE_KEY),expedition:STORE.getItem(EXPEDITION_KEY),sound:STORE.getItem(SOUND_KEY)}}
- function exportBackup296(){const blob=new Blob([JSON.stringify(backupPayload296(),null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=`frenda-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
- function importBackup296(file){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||x.format!=='frenda-common-backup-v1')throw new Error('バックアップ形式が違います');if(typeof x.dungeon==='string')STORE.setItem(SAVE_KEY,x.dungeon);if(typeof x.expedition==='string')STORE.setItem(EXPEDITION_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXPEDITION_KEY);if(typeof x.sound==='string')STORE.setItem(SOUND_KEY,x.sound);UI.dialog.alert('バックアップを読み込みました。ページを再読み込みします。');location.reload()}catch(e){UI.dialog.alert('読み込みに失敗しました。\n'+e.message)}};r.readAsText(file)}
- function close296(){document.querySelector('.frendaInfoOverlay296')?.remove()}
- function open296(){
-  close296();
-  const ov=document.createElement('div');ov.className='frendaInfoOverlay296';
-  const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div>
-  <div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${profileLabel()}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?'あり':'なし'}</b><span>User Agent</span><b>${navigator.userAgent}</b></div></div>
-  <div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div>
-  <div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div></div>`;
-  document.body.appendChild(ov);ov.querySelector('.frendaInfoClose296').onclick=close296;ov.onclick=e=>{if(e.target===ov)close296()};
-  $('infoSound296').onclick=()=>{cycleSoundMode();$('infoSound296').textContent=soundModeLabel()};
-  $('infoBackupOut296').onclick=exportBackup296;$('infoBackupIn296').onclick=()=>$('infoBackupFile296').click();$('infoBackupFile296').onchange=e=>{if(e.target.files?.[0])importBackup296(e.target.files[0])};
- }
- function bind296(){
-  const title=$('headerMainTitle'),ver=$('versionBadge');
-  if(title){title.onclick=()=>{screen='home';render()};title.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();screen='home';render()}}}
-  if(ver&&!ver.dataset.info296){ver.dataset.info296='1';ver.setAttribute('role','button');ver.setAttribute('tabindex','0');ver.title='端末情報・音量・バックアップ';ver.onclick=e=>{e.stopPropagation();open296()};ver.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open296()}}}
-  const egg=$('headerEggBadge'),coin=$('headerCoinBadge'),cluster=document.querySelector('header .careCluster');if(cluster&&egg&&coin){cluster.append(egg,coin)}
- }
- const oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){const v=oldRender.apply(this,arguments);bind296();return v}}
- bind296();
- document.addEventListener('click',e=>{const ver=e.target.closest?.('#versionBadge');if(ver){e.preventDefault();e.stopPropagation();open296();return}const title=e.target.closest?.('#headerMainTitle');if(title){e.preventDefault();screen='home';render()}},true);
- document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target?.id==='versionBadge'){e.preventDefault();open296()}},true);
-})();
-</script>
-<!-- Updated: 2026-10-04 09:17 JST / Ver2.97 -->
+<!-- Ver2.98: common header event logic moved inside the main application scope. -->
+<!-- Updated: 2026-10-04 09:34 JST / Ver2.98 -->
