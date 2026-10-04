@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.96">
+<html lang="ja" data-app-version="2.97">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14228,7 +14228,7 @@ html[data-view-profile="mobile"] #luckShopOverlay .shopItemCard button{font-size
 
 
 <style id="v296-common-header-settings">
-/* Ver2.96: common header settings / title home / version panel / egg+coin alignment */
+/* Ver2.97: common header settings fix / reliable version panel / mobile coin fit */
 .headerSoundStatus,.headerCloudStatus{display:none!important}
 .versionBadge{cursor:pointer!important;user-select:none;outline:none}
 .versionBadge:focus-visible{box-shadow:0 0 0 3px #8ce6ff88}
@@ -14242,7 +14242,7 @@ header .headerEggBadge,header .headerCoinBadge{
 header .headerEggBadge{order:90!important;margin-left:auto!important}
 header .headerCoinBadge{order:91!important;margin-left:0!important;background:#fff1bd!important;color:#6b4d00!important;border:1px solid #e3c361!important}
 @media(max-width:700px){
- header .headerEggBadge,header .headerCoinBadge{height:28px!important;min-height:28px!important;padding:0 7px!important;font-size:10px!important}
+ header .headerEggBadge,header .headerCoinBadge{height:28px!important;min-height:28px!important;padding:0 6px!important;font-size:9px!important;flex:0 0 auto!important}header .headerCoinBadge{min-width:52px!important}
 }
 .frendaInfoOverlay296{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
 .frendaInfoPanel296{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}
@@ -14277,6 +14277,8 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
  }
  const oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){const v=oldRender.apply(this,arguments);bind296();return v}}
  bind296();
+ document.addEventListener('click',e=>{const ver=e.target.closest?.('#versionBadge');if(ver){e.preventDefault();e.stopPropagation();open296();return}const title=e.target.closest?.('#headerMainTitle');if(title){e.preventDefault();screen='home';render()}},true);
+ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target?.id==='versionBadge'){e.preventDefault();open296()}},true);
 })();
 </script>
-<!-- Updated: 2026-10-04 09:08 JST / Ver2.96 -->
+<!-- Updated: 2026-10-04 09:17 JST / Ver2.97 -->
