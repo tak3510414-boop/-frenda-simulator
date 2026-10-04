@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.08">
+<html lang="ja" data-app-version="3.09">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6810,7 +6810,7 @@ function renderBattleHTML(){
        canSwitch=runTeam().filter(x=>!x.ko).length>=2,freeSwitch=!b.hasAttacked,
        legendary=isLegendaryRecord(en);
  return `<div class="card battleMainCard combatStageCard activeCombatStage"><div class="battleStageTeam"><div class="teamStrip combatTeamStrip">${runTeam().map(teamMiniHTML).join("")}</div></div><div class="battleArena" id="battleStage"><div class="battleEnemyCounter">⚔️ ENEMY <b>${state.run.encounter.index+1}/${state.run.encounter.enemies.length}</b></div>${legendary?`<div class="legendaryBattleTag">👑 LEGENDARY</div>`:""}<div class="battleFxLayer" id="battleFxLayer"></div><div class="battleImpact" id="battleImpact"></div><div class="battleSpecialBanner" id="battleSpecialBanner"><b>SPECIAL ATTACK</b><span></span></div><div class="battleTurnSplash" id="battleTurnSplash"><b>TURN ${b.turn}</b><span></span></div><div class="battleGrid">
-  <div class="fighterBox" id="myFighter"><div class="ownershipImageWrap"><img id="switchImageBtn" class="switchImageBtn${state.run.switchSelecting?" switchReady":""}" src="${esc(imageOf(me))}" alt="${esc(me.name_ja)}" ${canSwitch?'role="button" tabindex="0" aria-label="交代先を選択"':""}><div class="pokemonOwnershipInline">${pickOwnershipResultBadgeHTML(me?.master_id,"owned","battleOwnership")}</div></div><h3>${esc(me.name_ja)}</h3><small>${gradeText(me)} / ${esc(compareTypeText(me))} / 速Lv${battleSpeedLevel(me)||"-"}</small><div class="hpbar"><div id="myHpFill" class="hpfill${hpClass(mp)}" style="width:${mp}%"></div></div><b id="myHpText">HP ${t.hp}/${maxHpFor(t.id)}</b></div>
+  <div class="fighterBox" id="myFighter"><img id="switchImageBtn" class="switchImageBtn${state.run.switchSelecting?" switchReady":""}" src="${esc(imageOf(me))}" alt="${esc(me.name_ja)}" ${canSwitch?'role="button" tabindex="0" aria-label="交代先を選択"':""}><h3>${esc(me.name_ja)}</h3><small>${gradeText(me)} / ${esc(compareTypeText(me))} / 速Lv${battleSpeedLevel(me)||"-"}</small><div class="hpbar"><div id="myHpFill" class="hpfill${hpClass(mp)}" style="width:${mp}%"></div></div><b id="myHpText">HP ${t.hp}/${maxHpFor(t.id)}</b></div>
   <div class="battleVsColumn"><div class="vs battleVsAttack${b.busy||autoBattleRunning?" busy":""}" id="battleVsAttack" role="button" tabindex="0" aria-label="1ターン攻撃する">VS<small>${initiativePending?"先攻抽選→1ターン":"1ターン"}</small></div><div class="vs battleVsAttack battleVsAuto${(b.busy&&!autoBattleRunning)?" busy":""}${autoBattleRunning?" autoRunning":""}" id="battleVsAuto" role="button" tabindex="0" aria-label="${autoBattleRunning?"自動戦闘を停止":"最後まで自動で戦う"}">VS<small>${initiativePending?"先攻抽選→最後":autoBattleRunning?"停止":"最後まで"}</small></div></div>
   <div class="fighterBox" id="enemyFighter"><div class="ownershipImageWrap"><img src="${esc(imageOf(en))}" alt=""><div class="pokemonOwnershipInline">${pickOwnershipResultBadgeHTML(en?.master_id,"auto","battleOwnership")}</div></div><h3>${esc(en.name_ja)}</h3><small>${gradeText(en)} / ${esc(enemyKnownTypeText(en))} / 速Lv${battleSpeedLevel(en)||"-"}</small><div class="hpbar"><div id="enemyHpFill" class="hpfill${hpClass(ep)}" style="width:${ep}%"></div></div><b id="enemyHpText">HP ${b.enemyHp}/${en.hp}</b></div>
  </div></div></div>`
@@ -7348,7 +7348,7 @@ async function checkForAppUpdate(force=false){
 
 document.addEventListener("pointerdown",()=>{if(soundVolume()>0)ensureAudio()},{passive:true});
 eyeCare.start();
-installOwnershipOverlayV308();
+/* Ver3.09: global ownership image observer removed for performance. */
 normalizeMaxedDrillPoints();render();loadEvolutionData();
 setTimeout(()=>checkForAppUpdate(),900);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkForAppUpdate()});
@@ -14452,3 +14452,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 <!-- Ver3.07: post-run ally/hatch cards simplified; redundant status sentence removed and PC NEW/孵化 badge enlarged. -->
 
 <!-- Ver3.08: ownership badges are automatically overlaid at the top-left of every Pokémon image; NEW/孵化 event badges use the top-right. Dungeon and post-run duplicate ownership prose reduced. -->
+
+<!-- Ver3.09: removed full-page ownership MutationObserver. Ownership badges are limited to encounters/enemies, capture/grass, hatch, and newly obtained result cards; owned-only screens are excluded. -->
