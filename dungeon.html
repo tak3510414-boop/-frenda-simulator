@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.99">
+<html lang="ja" data-app-version="3.00">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5515,7 +5515,7 @@ function renderHome(){
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
-   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>探索</span><small class="homeCardLead">解放したグループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
+   <button class="homeMenuBtn homePlayBtn expedition" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small class="homeCardLead">解放したグループでおでかけ探索</small>${homeExpeditionStatusHTML()}</button>
   </div>
   <div class="homeManageGrid">
    <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・特訓・進化</small><small class="homeTrainingReady">特訓可能 ${training.train||0}体${training.loading?" / 進化確認中…":training.error?" / 進化確認不可":` / 進化可能 ${training.evolve}体`}</small></button>
@@ -14286,3 +14286,5 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 <!-- Ver2.98: common header event logic moved inside the main application scope. -->
 <!-- Updated: 2026-10-04 09:34 JST / Ver2.98 -->
 <!-- Updated: 2026-10-04 10:43 JST / Ver2.99 -->
+
+<!-- Ver3.00: ダンジョンホームの「探索」を「おでかけ探索」に変更。更新日時: 2026-10-04 11:05 JST -->
