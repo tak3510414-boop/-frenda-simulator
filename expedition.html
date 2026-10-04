@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.94">
+<html lang="ja" data-app-version="0.95">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -87,9 +87,9 @@ main{max-width:1280px;margin:auto;padding:12px}.card{background:var(--card);bord
 
 /* Ver0.36: navigation cleanup retained */
 #homeBtn.homeCornerBtn{position:fixed!important;top:calc(env(safe-area-inset-top) + 8px)!important;right:10px!important;z-index:1200!important;width:36px!important;height:36px!important;min-width:36px!important;padding:0!important;border-radius:50%!important;display:grid;place-items:center;font-size:17px!important;line-height:1!important;box-shadow:0 4px 14px #0004}
-#dungeonBtn.dungeonTextBtn{width:auto!important;height:auto!important;min-width:0!important;max-width:min(48vw,210px)!important;padding:8px 11px!important;border-radius:11px!important;font-size:11px!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;flex:0 1 auto!important}
+#expCloseBtn.expCloseBtn{width:auto!important;height:auto!important;min-width:0!important;max-width:min(48vw,210px)!important;padding:8px 11px!important;border-radius:11px!important;font-size:11px!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;flex:0 1 auto!important}
 body.homeNavVisible .headerTop{padding-right:44px}
-@media(max-width:700px){#homeBtn.homeCornerBtn{top:calc(env(safe-area-inset-top) + 7px)!important;right:7px!important;width:34px!important;height:34px!important;min-width:34px!important}#dungeonBtn.dungeonTextBtn{max-width:44vw!important;padding:7px 9px!important;font-size:10px!important}}@media(max-width:430px){.headerTop{gap:4px!important}.headerTop .brand b{gap:4px!important}.headerTop .headerBtns{gap:4px!important}#dungeonBtn.dungeonTextBtn{max-width:39vw!important;padding:6px 8px!important;font-size:9px!important}}
+@media(max-width:700px){#homeBtn.homeCornerBtn{top:calc(env(safe-area-inset-top) + 7px)!important;right:7px!important;width:34px!important;height:34px!important;min-width:34px!important}#expCloseBtn.expCloseBtn{max-width:44vw!important;padding:7px 9px!important;font-size:10px!important}}@media(max-width:430px){.headerTop{gap:4px!important}.headerTop .brand b{gap:4px!important}.headerTop .headerBtns{gap:4px!important}#expCloseBtn.expCloseBtn{max-width:39vw!important;padding:6px 8px!important;font-size:9px!important}}
 
 /* Ver0.82: iPhone header fixed to one row in every screen state */
 @media(max-width:600px){
@@ -104,14 +104,14 @@ header{padding:6px 7px!important;}
 .headerEggBadge b{font-size:7px!important;}
 .headerTop .headerBtns{display:flex!important;align-items:center!important;justify-content:flex-end!important;width:auto!important;min-width:0!important;gap:3px!important;margin:0!important;flex:none!important;}
 .headerIconBtn{width:28px!important;height:28px!important;min-width:28px!important;flex:0 0 28px!important;font-size:13px!important;}
-#dungeonBtn.dungeonTextBtn{width:86px!important;max-width:86px!important;min-width:86px!important;height:28px!important;padding:4px 6px!important;font-size:8px!important;line-height:1!important;border-radius:10px!important;}
+#expCloseBtn.expCloseBtn{width:86px!important;max-width:86px!important;min-width:86px!important;height:28px!important;padding:4px 6px!important;font-size:8px!important;line-height:1!important;border-radius:10px!important;}
 }
 @media(max-width:430px){
 #expHomeTitle076{max-width:118px!important;font-size:11.5px!important;}
 .ver{font-size:7.5px!important;padding:2px 4px!important;}
 .headerEggBadge,.headerEggBadge b{font-size:6.5px!important;}
 .headerIconBtn{width:27px!important;height:27px!important;min-width:27px!important;flex-basis:27px!important;font-size:12px!important;}
-#dungeonBtn.dungeonTextBtn{width:82px!important;max-width:82px!important;min-width:82px!important;height:27px!important;font-size:7.5px!important;padding:4px 5px!important;}
+#expCloseBtn.expCloseBtn{width:82px!important;max-width:82px!important;min-width:82px!important;height:27px!important;font-size:7.5px!important;padding:4px 5px!important;}
 }
 /* Updated: 2026-10-04 08:53 JST / Ver0.82 */
 
@@ -222,7 +222,7 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 </style>
 </head>
 <body>
-<header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="dungeonTextBtn ghost" id="dungeonBtn" title="フレンダダンジョンへ" aria-label="フレンダダンジョンへ">フレンダダンジョンへ</button></div></div></div></header>
+<header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="expCloseBtn ghost" id="expCloseBtn" title="おでかけ探索を閉じる" aria-label="おでかけ探索を閉じる">閉じる</button></div></div></div></header>
 <main id="app"></main>
 <script src="frenda-master.js?b=20260927_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
@@ -1226,7 +1226,7 @@ function alignExpHeader074(){
  if(sound&&!title.contains(sound))title.append(sound);
  let save=document.getElementById('expSaveStatus074');if(!save){save=document.createElement('span');save.id='expSaveStatus074';title.append(save)}
  const logged=!!window.FrendaCloud?.isLoggedIn?.();save.textContent=logged?'☁️':'💾';save.title=logged?'クラウドログイン中':'ローカル保存';
- let own=document.getElementById('expOwnNav074');if(!own){own=document.createElement('div');own.id='expOwnNav074';top.insertBefore(own,buttons);for(const id of ['collectionHeaderBtn','dungeonBtn']){const b=document.getElementById(id);if(b)own.append(b)}}
+ let own=document.getElementById('expOwnNav074');if(!own){own=document.createElement('div');own.id='expOwnNav074';top.insertBefore(own,buttons);for(const id of ['collectionHeaderBtn']){const b=document.getElementById(id);if(b)own.append(b)}}
  let shared=document.getElementById('expSharedStatus074');if(!shared){shared=document.createElement('div');shared.id='expSharedStatus074';top.append(shared)}
  const summary=document.getElementById('expHeaderSummary073');if(summary)shared.append(summary);if(egg)shared.append(egg);
 }
@@ -1294,10 +1294,10 @@ function ensureCommonHeader085(){
 
 function render(){ensureReturnFlow092();document.body.classList.remove("blackExpExplore075");syncExpBgm();updateExpSoundBtn();document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();updateHeaderEggCount();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker();updateHeaderEggCount();optimizeBlackHeader077();ensureCommonHeader085()}
 async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true;try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e)}}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false;try{render()}catch(err){console.error("EXPEDITION_RENDER_ERROR",err)}}}
-function updateHeaderNavLayout(){const dungeonBtn=document.getElementById("dungeonBtn");if(!dungeonBtn)return;dungeonBtn.textContent=window.innerWidth<=430?"ダンジョンへ":"フレンダダンジョンへ"}
+function updateHeaderNavLayout(){const closeBtn=document.getElementById("expCloseBtn");if(closeBtn)closeBtn.textContent="閉じる"}
 window.addEventListener("resize",updateHeaderNavLayout);updateHeaderNavLayout();
 const expSoundBtn=document.getElementById("expeditionSoundBtn");if(expSoundBtn)expSoundBtn.onclick=e=>{e.stopPropagation();cycleExpSound()};updateExpSoundBtn();
-document.getElementById("expHomeTitle076").onclick=()=>{screen="home";render()};document.getElementById("collectionHeaderBtn").onclick=()=>openCollection();document.getElementById("dungeonBtn").onclick=()=>{location.href="dungeon.html"};
+document.getElementById("expHomeTitle076").onclick=()=>{screen="home";render()};document.getElementById("collectionHeaderBtn").onclick=()=>openCollection();document.getElementById("expCloseBtn").onclick=()=>{location.href="dungeon.html"};
 window.addEventListener("storage",e=>{if(e.key===DUNGEON_KEY||e.key===EXP_KEY){exp=readExp();if(!setActiveGroup(Math.min(activeGroup,GROUP_COUNT-1))){const first=Array.from({length:GROUP_COUNT},(_,i)=>i).find(groupUnlocked);if(first!==undefined)setActiveGroup(first)}render()}});
 
 function expeditionDungeonCloudData(){const saved=readDungeon();return {format_version:1,dungeon_version:String(saved?.appVersion||""),state:saved||{}}}
@@ -2920,7 +2920,7 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 .headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;height:32px!important;min-height:32px!important;padding:0 9px!important;border-radius:999px!important;font-size:11px!important;font-weight:1000!important;line-height:1!important;white-space:nowrap!important;margin:0!important}
 .headerStatus083 .headerCoinBadge083{background:#fff1bd;color:#6b4d00;border:1px solid #e3c361;min-width:58px!important}
 @media(max-width:600px){
- header{padding:6px 5px!important}.headerTop{display:flex!important;flex-wrap:nowrap!important;gap:2px!important;width:100%!important}.headerTop .brand{flex:0 1 auto!important;min-width:0!important}.headerTop .brand b{display:flex!important;min-width:0!important;gap:2px!important}.headerTop .headerBtns{flex:1 1 auto!important;width:auto!important;min-width:0!important;margin:0!important;justify-content:flex-end!important;gap:2px!important}.headerTop #expHomeTitle076{max-width:104px!important;font-size:10.5px!important}.headerTop .ver{font-size:7.5px!important;padding:2px 4px!important}.headerIconBtn{width:26px!important;height:26px!important;min-width:26px!important;flex-basis:26px!important;font-size:12px!important}#dungeonBtn.dungeonTextBtn{max-width:64px!important;padding:5px 5px!important;font-size:7px!important}.headerStatus083{gap:2px!important;flex-shrink:0!important}.headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{height:27px!important;min-height:27px!important;padding:0 5px!important;font-size:8px!important}.headerStatus083 .headerCoinBadge083{min-width:48px!important}
+ header{padding:6px 5px!important}.headerTop{display:flex!important;flex-wrap:nowrap!important;gap:2px!important;width:100%!important}.headerTop .brand{flex:0 1 auto!important;min-width:0!important}.headerTop .brand b{display:flex!important;min-width:0!important;gap:2px!important}.headerTop .headerBtns{flex:1 1 auto!important;width:auto!important;min-width:0!important;margin:0!important;justify-content:flex-end!important;gap:2px!important}.headerTop #expHomeTitle076{max-width:104px!important;font-size:10.5px!important}.headerTop .ver{font-size:7.5px!important;padding:2px 4px!important}.headerIconBtn{width:26px!important;height:26px!important;min-width:26px!important;flex-basis:26px!important;font-size:12px!important}#expCloseBtn.expCloseBtn{max-width:64px!important;padding:5px 5px!important;font-size:7px!important}.headerStatus083{gap:2px!important;flex-shrink:0!important}.headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{height:27px!important;min-height:27px!important;padding:0 5px!important;font-size:8px!important}.headerStatus083 .headerCoinBadge083{min-width:48px!important}
 }
 .frendaInfoOverlay083{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
 .frendaInfoPanel083{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}.frendaInfoHead083{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead083 b{font-size:20px}.frendaInfoClose083{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}.frendaInfoSection083{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection083 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid083{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid083 span{color:#647986}.frendaDeviceGrid083 b{word-break:break-all}.frendaInfoActions083{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions083 button{flex:1 1 150px}.frendaInfoNote083{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
@@ -2959,3 +2959,9 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 <!-- Ver0.93: restored summaryBaseGrowthHTML, which had been accidentally removed and caused the summary transition to throw at runtime. -->
 <!-- Ver0.94: final expedition summary compacted to one-screen layout; per-pick EXP/Drill/Evolution/Bond totals combine base growth and loot-box gains. -->
 <!-- Updated: 2026-10-04 10:35 JST / Ver0.94 -->
+
+<style id="expClose095">
+#expCloseBtn.expCloseBtn{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-width:58px!important;height:32px!important;padding:0 11px!important;border-radius:10px!important;font-size:11px!important;font-weight:1000!important;white-space:nowrap!important;flex:0 0 auto!important;}
+@media(max-width:700px){#expCloseBtn.expCloseBtn{min-width:48px!important;height:27px!important;padding:0 8px!important;font-size:9px!important;}}
+</style>
+<!-- Ver0.95: 「ダンジョンへ」を廃止し、右上に「閉じる」を配置。閉じるとフレンダダンジョンへ戻る。更新日時: 2026-10-04 11:05 JST -->
