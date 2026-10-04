@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.06">
+<html lang="ja" data-app-version="3.07">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6277,7 +6277,7 @@ function renderSummary(){
  (x.captured||[]).forEach(id=>{const z=ensureResultPokemon(id);if(z){z.captured=true;z.newAlly=true}});
  (x.hatchResults||[]).forEach(v=>{if(!v?.pickId)return;const z=ensureResultPokemon(v.pickId);if(!z)return;z.hatched=true;if(!v.duplicate)z.newAlly=true;else z.hatchDuplicate=true;if(v.duplicateRewardLabel)z.hatchRewardLabel=String(v.duplicateRewardLabel)});
  const resultPokemonItems=[...resultPokemonMap.values()];
- const allySlots=resultPokemonItems.length?resultPokemonItems.map(item=>{const id=item.id,r=rec(id),detailOk=!!ownedEntry(id),badge=item.hatched?"🥚 孵化":"NEW",status=item.hatched?(item.newAlly?"孵化して新しい仲間に！":`孵化（所持済み）${item.hatchRewardLabel?`・${esc(item.hatchRewardLabel)}`:""}`):"新しく仲間になった！";return r?`<div class="result6AllyCard summaryAllyDetail ${item.hatched?"hatched ":""}${detailOk?"clickable":""}" ${detailOk?`data-summary-ally="${esc(id)}" role="button" tabindex="0"`:""}><div class="result6NewBadge ${item.hatched?"hatch":""}">${badge}</div><img src="${esc(imageOf(r))}" alt=""><div class="pokemonOwnershipInline summaryOwnershipLine">${pickOwnershipResultBadgeHTML(id,(item.newAlly||item.hatched&&!item.hatchDuplicate)?"new":"owned","summaryOwnership")}</div><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><div class="result6HatchStatus">${status}</div>${detailOk?`<div class="result6AllyHint">タップで詳しくみる</div>`:""}</div>`:""}).join(""):`<div class="result6AllyEmpty"><span>🤝</span><b>今回は仲間・孵化なし</b><small>次の冒険で出会えるかも</small></div>`;
+ const allySlots=resultPokemonItems.length?resultPokemonItems.map(item=>{const id=item.id,r=rec(id),detailOk=!!ownedEntry(id),badge=item.hatched?"🥚 孵化":"NEW";return r?`<div class="result6AllyCard summaryAllyDetail ${item.hatched?"hatched ":""}${detailOk?"clickable":""}" ${detailOk?`data-summary-ally="${esc(id)}" role="button" tabindex="0"`:""}><div class="result6NewBadge ${item.hatched?"hatch":""}">${badge}</div><img src="${esc(imageOf(r))}" alt=""><div class="pokemonOwnershipInline summaryOwnershipLine">${pickOwnershipResultBadgeHTML(id,(item.newAlly||item.hatched&&!item.hatchDuplicate)?"new":"owned","summaryOwnership")}</div><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small>${detailOk?`<div class="result6AllyHint">タップで詳しくみる</div>`:""}</div>`:""}).join(""):`<div class="result6AllyEmpty"><span>🤝</span><b>今回は仲間・孵化なし</b><small>次の冒険で出会えるかも</small></div>`;
  const allyCountClass=resultPokemonItems.length<=3?`count-${Math.max(1,resultPokemonItems.length)}`:"count-many";
 
  const eggName=x.eggAward?(x.eggAward.kind==="type"?`${esc(x.eggAward.type)}タイプの卵`:esc(EGG_DEF[x.eggAward.kind]?.label||"卵")):"なし";
@@ -13606,6 +13606,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6Ally
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6AllyCard img{width:96px!important;height:144px!important;max-width:none!important;max-height:none!important;object-fit:contain!important;grid-column:1!important;grid-row:1/-1!important;margin:0!important;aspect-ratio:auto!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6AllyCard>b{font-size:22px!important;grid-column:2!important;grid-row:2!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6AllyCard>small{font-size:15px!important;grid-column:2!important;grid-row:3!important}
+html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6NewBadge{font-size:13px!important;line-height:1.15!important;padding:5px 10px!important;left:10px!important;top:10px!important;letter-spacing:.04em!important;z-index:4!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6AllyHint{font-size:12px!important;grid-column:2!important;grid-row:4!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result6LootBottom{display:grid!important;grid-template-columns:1fr 1fr!important;height:124px!important;min-height:0!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .result4RewardBody,
@@ -14412,3 +14413,10 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 <!-- Ver3.03: post-run results now show images for Pokémon hatched during the adventure, including duplicate hatches. -->
 
 <!-- Dungeon Ver3.06: unified owned/unowned badges for Pokémon images in battle, capture, hatch, grass, and habitat/result flows. -->
+
+<style id="v307-ally-summary-cleanup">
+/* Ver3.07: remove redundant ally/hatch description line; make NEW/孵化 badge readable on PC. */
+.result6HatchStatus{display:none!important}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6NewBadge{font-size:13px!important;line-height:1.15!important;padding:5px 10px!important;left:10px!important;top:10px!important;letter-spacing:.04em!important;z-index:5!important}
+</style>
+<!-- Ver3.07: post-run ally/hatch cards simplified; redundant status sentence removed and PC NEW/孵化 badge enlarged. -->
