@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.95">
+<html lang="ja" data-app-version="2.96">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14225,3 +14225,58 @@ html[data-view-profile="mobile"] #luckShopOverlay .shopItemCard button{font-size
 }
 </style>
 <!-- Ver2.95: iPhoneショップの商品一覧を独立スクロール領域へ変更し、マスターボールを含む全商品と購入ボタンにアクセス可能に修正。更新日時: 2026-10-03 21:52 JST -->
+
+
+<style id="v296-common-header-settings">
+/* Ver2.96: common header settings / title home / version panel / egg+coin alignment */
+.headerSoundStatus,.headerCloudStatus{display:none!important}
+.versionBadge{cursor:pointer!important;user-select:none;outline:none}
+.versionBadge:focus-visible{box-shadow:0 0 0 3px #8ce6ff88}
+header .careCluster{align-items:center!important}
+header .headerEggBadge,header .headerCoinBadge{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;height:32px!important;min-height:32px!important;
+  padding:0 10px!important;border-radius:999px!important;font-size:12px!important;font-weight:1000!important;
+  line-height:1!important;white-space:nowrap!important
+}
+header .headerEggBadge{order:90!important;margin-left:auto!important}
+header .headerCoinBadge{order:91!important;margin-left:0!important;background:#fff1bd!important;color:#6b4d00!important;border:1px solid #e3c361!important}
+@media(max-width:700px){
+ header .headerEggBadge,header .headerCoinBadge{height:28px!important;min-height:28px!important;padding:0 7px!important;font-size:10px!important}
+}
+.frendaInfoOverlay296{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
+.frendaInfoPanel296{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}
+.frendaInfoHead296{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead296 b{font-size:20px}.frendaInfoClose296{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}
+.frendaInfoSection296{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection296 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid296{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid296 span{color:#647986}.frendaDeviceGrid296 b{word-break:break-all}.frendaInfoActions296{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions296 button{flex:1 1 150px}.frendaInfoNote296{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
+</style>
+<script id="v296-common-header-settings-script">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function profileLabel(){return document.documentElement.dataset.viewProfile||((innerWidth<=767)?'mobile':'desktop')}
+ function backupPayload296(){return {format:'frenda-common-backup-v1',createdAt:new Date().toISOString(),app:'dungeon',dungeon:STORE.getItem(SAVE_KEY),expedition:STORE.getItem(EXPEDITION_KEY),sound:STORE.getItem(SOUND_KEY)}}
+ function exportBackup296(){const blob=new Blob([JSON.stringify(backupPayload296(),null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=`frenda-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+ function importBackup296(file){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||x.format!=='frenda-common-backup-v1')throw new Error('バックアップ形式が違います');if(typeof x.dungeon==='string')STORE.setItem(SAVE_KEY,x.dungeon);if(typeof x.expedition==='string')STORE.setItem(EXPEDITION_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXPEDITION_KEY);if(typeof x.sound==='string')STORE.setItem(SOUND_KEY,x.sound);UI.dialog.alert('バックアップを読み込みました。ページを再読み込みします。');location.reload()}catch(e){UI.dialog.alert('読み込みに失敗しました。\n'+e.message)}};r.readAsText(file)}
+ function close296(){document.querySelector('.frendaInfoOverlay296')?.remove()}
+ function open296(){
+  close296();
+  const ov=document.createElement('div');ov.className='frendaInfoOverlay296';
+  const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div>
+  <div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${profileLabel()}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?'あり':'なし'}</b><span>User Agent</span><b>${navigator.userAgent}</b></div></div>
+  <div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div>
+  <div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div></div>`;
+  document.body.appendChild(ov);ov.querySelector('.frendaInfoClose296').onclick=close296;ov.onclick=e=>{if(e.target===ov)close296()};
+  $('infoSound296').onclick=()=>{cycleSoundMode();$('infoSound296').textContent=soundModeLabel()};
+  $('infoBackupOut296').onclick=exportBackup296;$('infoBackupIn296').onclick=()=>$('infoBackupFile296').click();$('infoBackupFile296').onchange=e=>{if(e.target.files?.[0])importBackup296(e.target.files[0])};
+ }
+ function bind296(){
+  const title=$('headerMainTitle'),ver=$('versionBadge');
+  if(title){title.onclick=()=>{screen='home';render()};title.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();screen='home';render()}}}
+  if(ver&&!ver.dataset.info296){ver.dataset.info296='1';ver.setAttribute('role','button');ver.setAttribute('tabindex','0');ver.title='端末情報・音量・バックアップ';ver.onclick=e=>{e.stopPropagation();open296()};ver.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open296()}}}
+  const egg=$('headerEggBadge'),coin=$('headerCoinBadge'),cluster=document.querySelector('header .careCluster');if(cluster&&egg&&coin){cluster.append(egg,coin)}
+ }
+ const oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){const v=oldRender.apply(this,arguments);bind296();return v}}
+ bind296();
+})();
+</script>
+<!-- Updated: 2026-10-04 09:08 JST / Ver2.96 -->
