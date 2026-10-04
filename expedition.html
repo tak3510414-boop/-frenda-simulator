@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.90">
+<html lang="ja" data-app-version="0.91">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -938,9 +938,14 @@ function groupCardHTML(groupIndex){
   const groupNo=groupIndex+1,rank=groupRequiredRank(groupIndex);
   return `<div class="groupCard groupLocked" data-locked-group="${groupIndex}" aria-disabled="true"><div class="groupCardHead"><b>グループ${groupNo}</b><span class="groupStatus">🔒 未解放</span></div><div class="groupLockedRank">解放条件：全ダンジョン R${rank} クリア</div><div class="groupLockedMessage">${esc(groupUnlockMessage(groupIndex))}</div><button type="button" class="adminUnlockBtn" data-admin-unlock-group="${groupIndex}">🔑 管理者解放</button></div>`
  }
- const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),m=g.mission,did=m?.dungeonId||p.dungeonId,diff=m?.difficulty||p.difficulty,th=did?THEMES[did]:null,score=m?{rank:m.rank,total:m.score}:scoreTeam(p.teamIds,did,diff),selected=groupIndex===activeGroup,status=g.status,d=readDungeon()||{},luckAvg=m?missionLuckAverage(m):averageLuckForIds(d,p.teamIds),luckMul=luckMultiplierFromAverage(luckAvg);let action="",sub="";
- if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button>`}else if(status==="returned"&&m){sub='<span class="groupReturned">🎉 帰還</span>';action=`<button class="groupAction goldBtn" data-return-group="${groupIndex}">成果</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
- return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0"><div class="groupCardHead"><b>グループ${groupIndex+1}</b><span class="groupStatus">${status==="exploring"?"探索中":status==="returned"?"帰還済":"待機"}</span></div><div class="groupRankLine"><strong class="rank-${score.rank}">${score.rank}</strong><b>${score.total}点</b><em class="groupLuck">🍀${luckAvg.toFixed(1)} ×${luckMul.toFixed(2)}</em></div><div class="groupDest">${th?`${th.icon} ${esc(th.name)} <span>R${diff}</span>`:"派遣先未設定"}</div><div class="groupCardFoot">${sub}${action}</div></div>`
+ const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),m=g.mission,did=m?.dungeonId||p.dungeonId,diff=m?.difficulty||p.difficulty,th=did?THEMES[did]:null,score=m?{rank:m.rank,total:m.score}:scoreTeam(p.teamIds,did,diff),selected=groupIndex===activeGroup,status=g.status,d=readDungeon()||{},luckAvg=m?missionLuckAverage(m):averageLuckForIds(d,p.teamIds),luckMul=luckMultiplierFromAverage(luckAvg);
+ const head=`<div class="groupCardHead"><b>グループ${groupIndex+1}</b><span class="groupStatus">${status==="exploring"?"探索中":status==="returned"?"帰還済":"待機"}</span></div><div class="groupRankLine"><strong class="rank-${score.rank}">${score.rank}</strong><b>${score.total}点</b><em class="groupLuck">🍀${luckAvg.toFixed(1)} ×${luckMul.toFixed(2)}</em></div><div class="groupDest">${th?`${th.icon} ${esc(th.name)} <span>R${diff}</span>`:"派遣先未設定"}</div>`;
+ if(status==="returned"&&m){
+  return `<button type="button" class="groupCard returned returnedResultCard091 ${selected?"active":""}" data-group="${groupIndex}" data-return-card="${groupIndex}" aria-label="グループ${groupIndex+1}の成果を見る">${head}<div class="groupCardFoot"><span class="groupReturned">🎉 帰還済み</span><span class="groupAction goldBtn groupResultAction091">🎁 成果を見る</span></div></button>`
+ }
+ let action="",sub="";
+ if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
+ return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0">${head}<div class="groupCardFoot">${sub}${action}</div></div>`
 }
 function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2,3,4].map(groupCardHTML).join("")}</div></div></div>`}
 function openGroupFromDock(i,cards){
@@ -950,20 +955,34 @@ function openGroupFromDock(i,cards){
  screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";
  render()
 }
+function openReturnedGroup091(i,cards){
+ if(cards)groupCardsScrollLeft=cards.scrollLeft;
+ const idx=Math.max(0,Math.min(GROUP_COUNT-1,Number(i)||0));
+ if(setActiveGroup(idx)===false)return false;
+ const g=groupState(idx),m=g?.mission;
+ if(!g||g.status!=="returned"||!m){screen=g?.status==="exploring"?"explore":"home";render();return false}
+ const validStages=new Set(["welcome","report","findings","growth","boxes","summary"]);
+ if(!validStages.has(m.stage)){m.stage="welcome";writeExp()}
+ screen="return";
+ render();
+ return true
+}
 function groupDockHitAtPoint(cards,x,y){
  const stack=document.elementsFromPoint?document.elementsFromPoint(x,y):[document.elementFromPoint(x,y)].filter(Boolean);
  for(const el of stack){
   if(!el)continue;
-  const action=el.closest?.("[data-depart-group],[data-return-group],[data-return-now-group],[data-group]");
+  const action=el.closest?.("[data-return-card],[data-depart-group],[data-return-group],[data-return-now-group],[data-group]");
   if(action&&cards.contains(action))return action
  }
  return null
 }
 function handleGroupDockTap(target,cards){
+ const returnedCard=target.closest?.("[data-return-card]");
+ if(returnedCard&&cards.contains(returnedCard)){openReturnedGroup091(Number(returnedCard.dataset.returnCard),cards);return true}
  const depart=target.closest?.("[data-depart-group]");
  if(depart&&cards.contains(depart)){groupCardsScrollLeft=cards.scrollLeft;confirmAndStartMission(Number(depart.dataset.departGroup));return true}
  const returned=target.closest?.("[data-return-group]");
- if(returned&&cards.contains(returned)){openGroupFromDock(Number(returned.dataset.returnGroup),cards);return true}
+ if(returned&&cards.contains(returned)){openReturnedGroup091(Number(returned.dataset.returnGroup),cards);return true}
  const returnNow=target.closest?.("[data-return-now-group]");
  if(returnNow&&cards.contains(returnNow)){groupCardsScrollLeft=cards.scrollLeft;requestMissionReturn(Number(returnNow.dataset.returnNowGroup));return true}
  const card=target.closest?.("[data-group]");
@@ -977,6 +996,7 @@ function bindGroupDock(){
  cards.scrollLeft=groupCardsScrollLeft;
  cards.addEventListener("scroll",()=>{groupCardsScrollLeft=cards.scrollLeft},{passive:true});
  requestAnimationFrame(()=>{if(cards.isConnected)cards.scrollLeft=groupCardsScrollLeft});
+ cards.querySelectorAll("[data-return-card]").forEach(card=>card.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openReturnedGroup091(Number(card.dataset.returnCard),cards)},{capture:true}));
  let suppressClickUntil=0,docStart=null;
  const inside=(x,y)=>{const r=cards.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom};
  const onTouchStart=e=>{const t=e.touches?.[0];if(!t||!inside(t.clientX,t.clientY))return;docStart={x:t.clientX,y:t.clientY}};
@@ -2860,6 +2880,13 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 .frendaInfoOverlay083{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
 .frendaInfoPanel083{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}.frendaInfoHead083{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead083 b{font-size:20px}.frendaInfoClose083{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}.frendaInfoSection083{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection083 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid083{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid083 span{color:#647986}.frendaDeviceGrid083 b{word-break:break-all}.frendaInfoActions083{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions083 button{flex:1 1 150px}.frendaInfoNote083{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
 
+
+/* Ver0.91: returned group is a single native button; no nested result button */
+.groupCard.returnedResultCard091{appearance:none;-webkit-appearance:none;width:100%;text-align:left;font:inherit;margin:0;box-shadow:inset 0 0 0 1px #ffffff0d;cursor:pointer;touch-action:manipulation!important}
+.groupCard.returnedResultCard091 .groupResultAction091{display:inline-flex;align-items:center;justify-content:center;pointer-events:none!important;white-space:nowrap}
+.groupCard.returnedResultCard091:active{filter:brightness(1.12);transform:scale(.995)}
+@media(max-width:700px){.groupCard.returnedResultCard091{touch-action:manipulation!important}.groupCard.returnedResultCard091 .groupResultAction091{font-size:8px!important;padding:5px 7px!important;min-height:24px!important}}
+
 /* Ver0.90: iPhone group dock touch reliability / returned-group transition fix */
 @media(max-width:700px){
 .groupCard{position:relative;z-index:1;touch-action:pan-x!important;-webkit-tap-highlight-color:transparent}
@@ -2867,5 +2894,5 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 }
 </style>
 <!-- Ver0.85: common header event logic moved inside the main application scope. -->
-<!-- Ver0.90: iPhone group dock uses document-capture touch hit testing so returned cards/buttons remain tappable even when another element overlaps them. Yellow returned state remains visual only. -->
-<!-- Updated: 2026-10-04 09:56 JST / Ver0.90 -->
+<!-- Ver0.91: returned groups are native whole-card buttons; result transition also repairs invalid returned stages before opening. -->
+<!-- Updated: 2026-10-04 10:02 JST / Ver0.91 -->
