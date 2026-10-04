@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.99">
+<html lang="ja" data-app-version="1.00">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -1253,13 +1253,15 @@ function openCollection(){if(screen!=="collection")collectionReturnScreen=screen
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
 
 function alignExpHeader074(){
- const title=document.querySelector('.brand>b'),top=document.querySelector('.headerTop'),buttons=document.querySelector('.headerBtns'),sound=document.getElementById('expeditionSoundBtn'),egg=document.getElementById('headerEggBadge');
+ const title=document.querySelector('.brand>b'),top=document.querySelector('.headerTop'),buttons=document.querySelector('.headerBtns'),sound=document.getElementById('expeditionSoundBtn'),egg=document.getElementById('headerEggBadge'),close=document.getElementById('expCloseBtn');
  if(sound&&!title.contains(sound))title.append(sound);
  let save=document.getElementById('expSaveStatus074');if(!save){save=document.createElement('span');save.id='expSaveStatus074';title.append(save)}
  const logged=!!window.FrendaCloud?.isLoggedIn?.();save.textContent=logged?'☁️':'💾';save.title=logged?'クラウドログイン中':'ローカル保存';
  let own=document.getElementById('expOwnNav074');if(!own){own=document.createElement('div');own.id='expOwnNav074';top.insertBefore(own,buttons);for(const id of ['collectionHeaderBtn']){const b=document.getElementById(id);if(b)own.append(b)}}
  let shared=document.getElementById('expSharedStatus074');if(!shared){shared=document.createElement('div');shared.id='expSharedStatus074';top.append(shared)}
  const summary=document.getElementById('expHeaderSummary073');if(summary)shared.append(summary);if(egg)shared.append(egg);
+ // Ver1.00: PC compact header keeps Close at the far right instead of leaving it in the squeezed button area.
+ if(blackExp073()){if(close&&close.parentElement!==shared)shared.append(close)}else if(close&&buttons&&close.parentElement!==buttons){buttons.append(close)}
 }
 function blackExp073(){return matchMedia('(min-width:1200px) and (min-height:650px) and (max-height:840px)').matches}
 function optimizeBlackHeader077(){
@@ -2689,6 +2691,7 @@ body.blackExpPrep073 #expHeaderSummary073{display:flex!important;gap:6px!importa
 body.blackExpPrep073 #expHeaderSummary073 span{font-size:14px!important;padding:7px 10px!important;}
 body.blackExpPrep073 #headerEggBadge{margin:0!important;font-size:14px!important;padding:7px 10px!important;background:#f3e9ff!important;border-color:#c5addf!important;color:#63458b!important;}
 body.blackExpPrep073 #expHeaderSummary073 span:first-child{background:#f3e9ff!important;color:#63458b!important;}
+body.blackExpPrep073 #expSharedStatus074 #expCloseBtn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:68px!important;height:32px!important;padding:0 12px!important;font-size:12px!important;flex:0 0 auto!important;}
 }
 </style>
 <!-- Ver0.79: 黒PC探索ヘッダの音量・保存・探索中・コイン・卵の並びをダンジョンと統一。独自ナビゲーションは中央余白へ配置。更新日時: 2026-10-03 22:15 JST -->
@@ -3001,6 +3004,14 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
      Added source map/section boundaries, removed the shadowed duplicate discoveryMiniHTML declaration,
      normalized final document closing tags, and preserved reward/save-data/CSS behavior.
      Updated: 2026-10-04 11:35 JST -->
+
+<style id="expClose100PcFix">
+@media(min-width:1200px) and (min-height:650px) and (max-height:840px){
+#expSharedStatus074{display:flex!important;align-items:center!important;gap:6px!important;flex:0 0 auto!important;}
+#expSharedStatus074 #expCloseBtn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:5!important;}
+}
+</style>
+<!-- Expedition Ver1.00: PC header Close button moved into the far-right shared status area so it remains visible on compact PC layouts. -->
 </body>
 <!-- Expedition Ver0.99: bond Lv5 MAX overflow auto-converts at 1 bond P = 50 Frenda Coins; legacy overflow is also normalized. -->
 </html>
