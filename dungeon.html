@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="2.98">
+<html lang="ja" data-app-version="2.99">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6833,7 +6833,7 @@ function inventoryItemCardHTML({cls="",icon="",name="",qty="0",desc="",note="",u
 }
 function renderItems(){
  const qLucky=inventoryItemQty("luckyClover"),qTraining=inventoryItemQty("trainingCandy"),qEvo=inventoryItemQty("evolutionCandy"),qTicket=inventoryItemQty("captureTicket"),qGrass=inventoryItemQty("grassTicket"),qSuper=inventoryItemQty("superBall"),qHyper=inventoryItemQty("hyperBall"),qMaster=inventoryItemQty("masterBall");
- app.innerHTML=`<div class="card inventoryScreen"><div class="inventoryScreenHead"><div><div class="sectionTitle">🎒 もちもの</div><small>卵・育成アイテム・バトル用品をまとめて確認</small></div></div>
+ app.innerHTML=`<div class="card inventoryScreen"><div class="inventoryScreenHead"><div><div class="sectionTitle">🎒 もちもの</div><small>卵・育成アイテム・バトル用品をまとめて確認</small></div><button type="button" class="managerCloseBtn" id="itemsCloseBtn">閉じる</button></div>
  ${inventoryEggSectionHTML()}
  <section class="inventorySection grassInventorySection"><div class="inventorySectionHead"><div><span>🌿</span><div><b>草むらゲット</b><small>チケット1枚で草むらを1回調査</small></div></div></div><div class="inventoryItemList">
  ${inventoryItemCardHTML({cls:"grass",icon:"🌿",name:"草むらチケット",qty:`${qGrass}/${GRASS_TICKET_MAX}`,desc:"生息地を選び、おかしを投げて草むらの反応から1か所を選びます。",note:state.grassSession?"草むらイベント進行中。タップして再開できます。":"「おかしを投げる」を押した時点で1枚消費",useKind:(qGrass>0||state.grassSession)?"grass":""})}
@@ -6851,7 +6851,7 @@ function renderItems(){
  ${inventoryItemCardHTML({cls:"ball hyper",name:"ハイパーボール",qty:`${qHyper}/${HYPER_BALL_MAX}`,desc:"捕獲率はモンスターボールの×10。",note:"★4・★5にも強力",img:BALL_DEF.hyper.img})}
  ${inventoryItemCardHTML({cls:"ball master",name:"マスターボール",qty:`${qMaster}/${MASTER_BALL_MAX}`,desc:"使用すると相手を必ずゲットできます。",note:"最上位ボール・所持上限1個",img:BALL_DEF.master.img})}
  </div></section></div>`;
- app.querySelectorAll("[data-inventory-use]").forEach(b=>b.onclick=()=>{if(b.dataset.inventoryUse==="grass"){screen="grass";render()}else showInventoryItemUse(b.dataset.inventoryUse)})
+ app.querySelectorAll("[data-inventory-use]").forEach(b=>b.onclick=()=>{if(b.dataset.inventoryUse==="grass"){screen="grass";render()}else showInventoryItemUse(b.dataset.inventoryUse)});const closeBtn=document.getElementById("itemsCloseBtn");if(closeBtn)closeBtn.onclick=()=>{screen="home";render()}
 }
 function showInventoryItemUse(kind){
  document.getElementById("inventoryUseOverlay")?.remove();
@@ -6995,7 +6995,7 @@ function renderOwned(){
    const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainOk=trainingAvailable(id),evoOk=ei.canEvolve,nearEvo=ei.hasEvolution&&ei.registered&&!ei.fainted&&!ei.canEvolve&&ei.points===Math.max(0,ei.cost-1);
    return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${expLocked?"expLockedCard":""} ${nearEvo?"ownedNearEvoCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt="">${nearEvo?'<div class="ownedNearEvoBadge">👀 あと1で進化</div>':""}</div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${ownedRelationBoxHTML(id)}<div class="ownedV190Actions"><button class="ownedActionBtn train" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"}><span>特訓</span><b>${dp}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"}><span>進化</span><b>${gp}</b></button></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':nearEvo?'<div class="ownedDetailHint">次に進化Pを1獲得すると進化可能</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
  }).join(""):'<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>';
- app.innerHTML=`<div class="card ownedManager"><div class="ownedManagerHead"><div><div class="sectionTitle">🎴 所持ピック</div><small>確認・特訓・進化をここで管理</small></div><div class="ownedEconomy">${gridSizeControlHTML("owned",ownedViewSize)}</div></div><div class="ownedRuleLine">進化P＝進化専用　／　特訓P＝能力強化　／　3能力MAX後の余剰特訓Pは1P→🪙${COIN_PER_OVERFLOW_DRILL}</div>${evoLoadNote()}${filterHtml}<div class="ownedGrid size-${ownedViewSize}">${cardsHtml}</div></div>`;
+ app.innerHTML=`<div class="card ownedManager"><div class="ownedManagerHead"><div><div class="sectionTitle">🎴 所持ピック</div><small>確認・特訓・進化をここで管理</small></div><div class="ownedEconomy">${gridSizeControlHTML("owned",ownedViewSize)}<button type="button" class="managerCloseBtn" id="ownedCloseBtn">閉じる</button></div></div><div class="ownedRuleLine">進化P＝進化専用　／　特訓P＝能力強化　／　3能力MAX後の余剰特訓Pは1P→🪙${COIN_PER_OVERFLOW_DRILL}</div>${evoLoadNote()}${filterHtml}<div class="ownedGrid size-${ownedViewSize}">${cardsHtml}</div></div>`;
  app.querySelectorAll("[data-owned-detail]").forEach(c=>{const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);c.onclick=e=>{if(e.target.closest("button"))return;open()};c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}});
  app.querySelectorAll("[data-quick-train]").forEach(b=>b.onclick=e=>{e.stopPropagation();showQuickTraining(b.dataset.quickTrain)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
@@ -7005,7 +7005,7 @@ function renderOwned(){
  if(gr)gr.onchange=()=>{ownedGrade=gr.value;if(!ownedActionOnly)renderOwned()};
  if(so)so.onchange=()=>{ownedSort=so.value;renderOwned()};
  if(toggle)toggle.onclick=()=>{ownedActionOnly=!ownedActionOnly;renderOwned()};
- UI.viewSize.bind({root:app,scope:"owned",key:GRID_SIZE_KEY_PREFIX+"owned",onChange:size=>{ownedViewSize=size;renderOwned()}})
+ UI.viewSize.bind({root:app,scope:"owned",key:GRID_SIZE_KEY_PREFIX+"owned",onChange:size=>{ownedViewSize=size;renderOwned()}});const closeBtn=document.getElementById("ownedCloseBtn");if(closeBtn)closeBtn.onclick=()=>{screen="home";render()}
 }
 function ownedPointHelpData(kind,id){
  const r=rec(id),gp=growthPointsFor(id),dp=drillFor(id),xp=xpFor(id),bp=bondPointsFor(id),bl=bondLevelFor(id),ei=evolutionInfoForPick(id);
@@ -7228,10 +7228,10 @@ function renderDex(){
  normalizeCommonPickFilter(dexPickFilter,all,statusOptions,sortOptions);
  const list=applyCommonPickFilter(all,dexPickFilter,statusPredicate),shown=list.slice(0,dexLimit);
  const filterHtml=commonPickFilterHTML("dex",dexPickFilter,all,statusOptions,sortOptions,list.length);
- app.innerHTML=`<div class="card"><div class="row spread"><div class="sectionTitle">📖 ポケモン図鑑</div>${gridSizeControlHTML("dex",dexViewSize)}</div><div class="muted">判定はピック単位です。未遭遇ピックは「？？？」、遭遇済みで未所持のピックは姿を薄く表示し、現在所持しているピックだけ通常表示します。</div>${filterHtml}<div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=pickSeen(r),cls=d.current?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}" ${(seen||d.current)?`data-dex-detail="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen?'<span class="dexSeenTag">遭遇済み</span>':""}<img src="${esc(imageOf(r))}" alt=""><div class="dexName">${seen?esc(r.name_ja):"？？？"}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}<br><span class="dexHabitatMini">🌿 生息地：${esc(habitatLabelForRecord(r,seen||d.current))}</span></div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
+ app.innerHTML=`<div class="card"><div class="row spread managerScreenHead"><div class="sectionTitle">📖 ポケモン図鑑</div><div class="managerHeadActions">${gridSizeControlHTML("dex",dexViewSize)}<button type="button" class="managerCloseBtn" id="dexCloseBtn">閉じる</button></div></div><div class="muted">判定はピック単位です。未遭遇ピックは「？？？」、遭遇済みで未所持のピックは姿を薄く表示し、現在所持しているピックだけ通常表示します。</div>${filterHtml}<div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=pickSeen(r),cls=d.current?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}" ${(seen||d.current)?`data-dex-detail="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen?'<span class="dexSeenTag">遭遇済み</span>':""}<img src="${esc(imageOf(r))}" alt=""><div class="dexName">${seen?esc(r.name_ja):"？？？"}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}<br><span class="dexHabitatMini">🌿 生息地：${esc(habitatLabelForRecord(r,seen||d.current))}</span></div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
  bindCommonPickFilter("dex",dexPickFilter,()=>{dexLimit=120;renderDex()});
  UI.viewSize.bind({root:app,scope:"dex",key:GRID_SIZE_KEY_PREFIX+"dex",onChange:size=>{dexViewSize=size;renderDex()}});
- const more=document.getElementById("dexMore");if(more)more.onclick=()=>{dexLimit+=120;renderDex()};
+ const more=document.getElementById("dexMore");if(more)more.onclick=()=>{dexLimit+=120;renderDex()};const closeBtn=document.getElementById("dexCloseBtn");if(closeBtn)closeBtn.onclick=()=>{screen="home";render()};
  app.querySelectorAll("[data-dex-detail]").forEach(c=>c.onclick=()=>showDexPickDetail(c.dataset.dexDetail))
 }
 
@@ -14253,6 +14253,14 @@ html[data-view-profile="mobile"] #luckShopOverlay .shopItemCard button{font-size
 <!-- Ver2.95: iPhoneショップの商品一覧を独立スクロール領域へ変更し、マスターボールを含む全商品と購入ボタンにアクセス可能に修正。更新日時: 2026-10-03 21:52 JST -->
 
 
+<style id="v299-manager-close-buttons">
+.managerCloseBtn{flex:0 0 auto!important;padding:8px 13px!important;border-radius:10px!important;background:#e8eef3!important;color:#233743!important;border:1px solid #c8d5dd!important;box-shadow:none!important;font-size:12px!important;font-weight:950!important;white-space:nowrap!important}
+.managerCloseBtn:active{transform:translateY(1px)}
+.managerHeadActions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+@media(max-width:700px){.managerCloseBtn{padding:7px 10px!important;font-size:11px!important;min-height:32px!important}.managerHeadActions{gap:5px}.inventoryScreenHead{align-items:flex-start!important}.ownedEconomy{justify-content:flex-end!important}}
+</style>
+<!-- Ver2.99: 所持ピック・もちもの・ポケモン図鑑に「閉じる」ボタンを追加し、ダンジョンホームへ戻れるよう統一。更新日時: 2026-10-04 10:43 JST -->
+
 <style id="v296-common-header-settings">
 /* Ver2.97: common header settings fix / reliable version panel / mobile coin fit */
 .headerSoundStatus,.headerCloudStatus{display:none!important}
@@ -14277,3 +14285,4 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 </style>
 <!-- Ver2.98: common header event logic moved inside the main application scope. -->
 <!-- Updated: 2026-10-04 09:34 JST / Ver2.98 -->
+<!-- Updated: 2026-10-04 10:43 JST / Ver2.99 -->
