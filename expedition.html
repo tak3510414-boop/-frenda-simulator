@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.01">
+<html lang="ja" data-app-version="1.02">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -968,7 +968,7 @@ function expOwnershipLabel101(mode){return mode==="new"?"未所持 → 仲間入
 function applyExpOwnershipOverlay101(root=document){const map=expOwnershipMap101();for(const img of root.querySelectorAll?.("img")||[]){if(img.classList.contains("silhouette"))continue;const id=map.get(expOwnershipUrl101(img.currentSrc||img.src));if(!id)continue;const parent=img.parentElement;if(!parent)continue;const mode=expOwnershipMode101(img,id),cls=mode==="new"?"newowned":mode==="owned"?"owned":"unowned",label=expOwnershipLabel101(mode);const manual=parent.querySelector(":scope > .expOwnershipBadge");if(manual){if(!manual.classList.contains("newowned")){manual.classList.remove("owned","unowned","newowned");manual.classList.add(cls);manual.textContent=label}continue}let badge=[...parent.children].find(x=>x.classList?.contains("expAutoOwnershipBadge")&&x.dataset.ownerId===id)||null;if(!badge){badge=document.createElement("span");badge.className=`expAutoOwnershipBadge ${cls}`;badge.dataset.ownerId=id;parent.appendChild(badge)}else{badge.classList.remove("owned","unowned","newowned");badge.classList.add(cls)}badge.textContent=label;parent.classList.add("expOwnershipAutoHost");const pr=parent.getBoundingClientRect(),ir=img.getBoundingClientRect();if(ir.width>0&&ir.height>0){badge.style.left=`${Math.max(3,ir.left-pr.left+5)}px`;badge.style.top=`${Math.max(3,ir.top-pr.top+5)}px`}}}
 function scheduleExpOwnershipOverlay101(){if(expOwnershipRaf101)return;expOwnershipRaf101=requestAnimationFrame(()=>{expOwnershipRaf101=0;requestAnimationFrame(()=>applyExpOwnershipOverlay101(document))})}
 function installExpOwnershipOverlay101(){if(expOwnershipObserver101)return;expOwnershipObserver101=new MutationObserver(()=>scheduleExpOwnershipOverlay101());expOwnershipObserver101.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["src"]});window.addEventListener("resize",scheduleExpOwnershipOverlay101,{passive:true});scheduleExpOwnershipOverlay101()}
-function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick">${expeditionImageWithOwnershipHTML(r,"owned")}<div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
+function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
 
 function groupCardHTML(groupIndex){
  if(!groupUnlocked(groupIndex)){
@@ -1370,7 +1370,7 @@ function expeditionCloudSummary(data){const s=data?.state||{},owned=Array.isArra
 
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン＋おでかけ探索",compactButton:true,hideButton:true,column:"dungeon_data",getData:expeditionDungeonCloudData,applyData:applyExpeditionDungeonCloudData,watchStorage:k=>k===DUNGEON_KEY,hasLocalData:expeditionHasLocalData,describeData:expeditionCloudSummary});
 
-installExpOwnershipOverlay101();
+/* Ver1.02: global ownership image observer removed for performance. */
 try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e);app.innerHTML=`<div class="card error"><b>おでかけ探索の表示に失敗しました。</b><br>${esc(e?.message||String(e))}<br><small>セーブデータは削除していません。ページを再読み込みしてください。</small></div>`}
 loadEvolution();
 })();
@@ -3050,3 +3050,5 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 <!-- Expedition Ver0.98: clear idle/pre-departure party selections whenever the user switches expedition groups; active mission teams remain reserved. -->
 
 <!-- Expedition Ver1.01: ownership status is automatically overlaid on the top-left of every Pokémon image; newly joined companions also show NEW at the top-right. -->
+
+<!-- Expedition Ver1.02: removed full-page ownership MutationObserver; party/owned-only screens no longer show ownership badges. Companion acquisition keeps explicit ownership display only where needed. -->
