@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.14">
+<html lang="ja" data-app-version="3.15">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14630,3 +14630,37 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 </style>
 <!-- Ver3.12: iPhone bulk-training flow condensed to one-screen 2x2 policy layout. -->
 
+<style id="v315-capture-slot-mobile-larger">
+/* Ver3.15: mobile ball-slot screen shows the target Pokémon much larger. */
+@media(max-width:700px){
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel{
+    grid-template-columns:86px minmax(0,1fr)!important;
+    column-gap:10px!important;
+    padding:7px 9px!important;
+    min-height:128px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel .ownershipImageWrap{
+    grid-row:1 / 3!important;
+    align-self:center!important;
+  }
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel img{
+    width:86px!important;
+    height:120px!important;
+    max-width:none!important;
+    margin:0!important;
+    border-radius:10px!important;
+  }
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel h2{
+    font-size:20px!important;
+    line-height:1.08!important;
+    margin:0!important;
+    align-self:end!important;
+  }
+  main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel .badge{
+    font-size:10px!important;
+    padding:4px 7px!important;
+    align-self:start!important;
+    justify-self:start!important;
+  }
+}
+</style>
