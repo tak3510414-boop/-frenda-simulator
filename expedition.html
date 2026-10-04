@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.82">
+<html lang="ja" data-app-version="0.83">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -451,7 +451,7 @@ function gradeText(r){return RULES.gradeText(r)}
 function specialBase(r){return RULES.specialBaseName(r)}
 function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){return DATA.dungeon.read()}
-function updateHeaderEggCount(){const summary=document.getElementById("expHeaderSummary073");if(summary&&blackExp073()){const d=readDungeon()||{};summary.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span><span>🪙 ${Math.max(0,Number(d.frendaCoins)||0).toLocaleString('ja-JP')}</span>`;}const d=readDungeon()||{},count=Array.isArray(d.eggs)?d.eggs.length:0,cap=Math.max(0,Math.floor(Number(d.eggCap)||0)),el=document.getElementById("headerEggCount"),badge=document.getElementById("headerEggBadge");if(el)el.textContent=`${count}/${cap}`;if(badge){badge.classList.toggle("full",cap>0&&count>=cap);badge.title=`所持卵数 ${count}/${cap}`}}
+function updateHeaderEggCount(){const summary=document.getElementById("expHeaderSummary073");if(summary&&blackExp073()){const d=readDungeon()||{};summary.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span>`;}const d=readDungeon()||{},count=Array.isArray(d.eggs)?d.eggs.length:0,cap=Math.max(0,Math.floor(Number(d.eggCap)||0)),el=document.getElementById("headerEggCount"),badge=document.getElementById("headerEggBadge");if(el)el.textContent=`${count}/${cap}`;if(badge){badge.classList.toggle("full",cap>0&&count>=cap);badge.title=`所持卵数 ${count}/${cap}`}}
 function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[]}}}
 function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],adminUnlockedGroups:[],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
 function migrateMissionToFreeReturn(g){
@@ -1123,7 +1123,7 @@ function optimizeBlackHeader077(){
  alignExpHeader074();
  const d=readDungeon()||{},brand=document.querySelector('.brand'),buttons=document.querySelector('.headerBtns');
  let badges=document.getElementById('expHeaderSummary073');if(!badges){badges=document.createElement('div');badges.id='expHeaderSummary073';brand.after(badges)}
- badges.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span><span>🪙 ${Math.max(0,Number(d.frendaCoins)||0).toLocaleString('ja-JP')}</span>`;
+ badges.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span>`;
  const col=document.getElementById('collectionHeaderBtn');if(col){col.textContent='🗺️ 探索コレクション';col.classList.add('blackCollection073')}
  alignExpHeader074();
 }
@@ -2761,3 +2761,40 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 </style>
 <!-- Ver0.80: 黒PCで確定した探索ホーム・探索中レイアウトを白PC1366x688へ適用。高さ688px向けに各領域を圧縮し、主要操作を1画面に維持。 -->
 <!-- Updated: 2026-10-04 08:29 JST -->
+
+
+<style id="v083-common-header-settings">
+/* Ver0.83: common header settings / title home / version panel / egg+coin alignment */
+#expeditionSoundBtn,#expSaveStatus074{display:none!important}
+#versionBadge{cursor:pointer!important;user-select:none;outline:none}
+#versionBadge:focus-visible{box-shadow:0 0 0 3px #8ce6ff88}
+.headerStatus083{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:auto}
+.headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;height:32px!important;min-height:32px!important;padding:0 9px!important;border-radius:999px!important;font-size:11px!important;font-weight:1000!important;line-height:1!important;white-space:nowrap!important;margin:0!important}
+.headerStatus083 .headerCoinBadge083{background:#fff1bd;color:#6b4d00;border:1px solid #e3c361}
+@media(max-width:600px){
+ header{padding:6px 7px!important}.headerTop{display:flex!important;flex-wrap:nowrap!important;gap:3px!important;width:100%!important}.headerTop .brand{flex:0 1 auto!important;min-width:0!important}.headerTop .brand b{display:flex!important;min-width:0!important;gap:3px!important}.headerTop .headerBtns{flex:1 1 auto!important;width:auto!important;min-width:0!important;margin:0!important;justify-content:flex-end!important;gap:3px!important}.headerTop #expHomeTitle076{max-width:112px!important;font-size:11px!important}.headerTop .ver{font-size:8px!important;padding:2px 5px!important}.headerIconBtn{width:27px!important;height:27px!important;min-width:27px!important;flex-basis:27px!important;font-size:12px!important}#dungeonBtn.dungeonTextBtn{max-width:72px!important;padding:5px 6px!important;font-size:7.5px!important}.headerStatus083{gap:3px!important}.headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{height:27px!important;min-height:27px!important;padding:0 5px!important;font-size:8px!important}
+}
+.frendaInfoOverlay083{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
+.frendaInfoPanel083{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}.frendaInfoHead083{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead083 b{font-size:20px}.frendaInfoClose083{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}.frendaInfoSection083{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection083 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid083{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid083 span{color:#647986}.frendaDeviceGrid083 b{word-break:break-all}.frendaInfoActions083{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions083 button{flex:1 1 150px}.frendaInfoNote083{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
+</style>
+<script id="v083-common-header-settings-script">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function profile083(){return document.documentElement.dataset.viewProfile||((innerWidth<=767)?'mobile':'desktop')}
+ function ensureHeader083(){
+  const top=document.querySelector('.headerTop'),buttons=document.querySelector('.headerBtns'),egg=$('headerEggBadge');if(!top||!buttons||!egg)return;
+  let status=$('headerStatus083');if(!status){status=document.createElement('div');status.id='headerStatus083';status.className='headerStatus083';let coin=document.createElement('span');coin.id='headerCoinBadge083';coin.className='headerCoinBadge083';status.append(egg,coin);buttons.append(status)}else{const coin=$('headerCoinBadge083');if(egg.parentElement!==status)status.prepend(egg);if(status.parentElement!==buttons)buttons.append(status);if(coin&&coin!==status.lastElementChild)status.append(coin)}
+  const d=readDungeon()||{},coin=$('headerCoinBadge083');if(coin)coin.textContent=`🪙 ${Math.max(0,Number(d.frendaCoins)||0).toLocaleString('ja-JP')}`;
+ }
+ function backup083(){return {format:'frenda-common-backup-v1',createdAt:new Date().toISOString(),app:'expedition',dungeon:STORE.getItem(DUNGEON_KEY),expedition:STORE.getItem(EXP_KEY),sound:STORE.getItem(SOUND_KEY)}}
+ function export083(){const blob=new Blob([JSON.stringify(backup083(),null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=`frenda-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+ function import083(file){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||x.format!=='frenda-common-backup-v1')throw new Error('バックアップ形式が違います');if(typeof x.dungeon==='string')STORE.setItem(DUNGEON_KEY,x.dungeon);if(typeof x.expedition==='string')STORE.setItem(EXP_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXP_KEY);if(typeof x.sound==='string')STORE.setItem(SOUND_KEY,x.sound);UI.dialog.alert('バックアップを読み込みました。ページを再読み込みします。');location.reload()}catch(err){UI.dialog.alert('読み込みに失敗しました。\n'+err.message)}};r.readAsText(file)}
+ function close083(){document.querySelector('.frendaInfoOverlay083')?.remove()}
+ function soundLabel083(){const m=expSoundMode();return m==='100'?'🔊 100%':m==='50'?'🔉 50%':'🔇 OFF'}
+ function open083(){close083();const ov=document.createElement('div');ov.className='frendaInfoOverlay083';const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;ov.innerHTML=`<div class="frendaInfoPanel083" role="dialog" aria-modal="true"><div class="frendaInfoHead083"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose083" type="button">×</button></div><div class="frendaInfoSection083"><h3>端末情報</h3><div class="frendaDeviceGrid083"><span>表示プロファイル</span><b>${profile083()}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?'あり':'なし'}</b><span>User Agent</span><b>${navigator.userAgent}</b></div></div><div class="frendaInfoSection083"><h3>音量</h3><div class="frendaInfoActions083"><button type="button" id="infoSound083">${soundLabel083()}</button></div></div><div class="frendaInfoSection083"><h3>バックアップ</h3><div class="frendaInfoActions083"><button type="button" id="infoBackupOut083">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn083">バックアップを読み込む</button></div><input type="file" id="infoBackupFile083" accept="application/json,.json" class="hidden"><div class="frendaInfoNote083">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div></div>`;document.body.appendChild(ov);ov.querySelector('.frendaInfoClose083').onclick=close083;ov.onclick=e=>{if(e.target===ov)close083()};$('infoSound083').onclick=()=>{cycleExpSound();$('infoSound083').textContent=soundLabel083()};$('infoBackupOut083').onclick=export083;$('infoBackupIn083').onclick=()=>$('infoBackupFile083').click();$('infoBackupFile083').onchange=e=>{if(e.target.files?.[0])import083(e.target.files[0])}}
+ function bind083(){ensureHeader083();const title=$('expHomeTitle076'),ver=$('versionBadge');if(title)title.onclick=()=>{screen='home';render()};if(ver&&!ver.dataset.info083){ver.dataset.info083='1';ver.setAttribute('role','button');ver.setAttribute('tabindex','0');ver.title='端末情報・音量・バックアップ';ver.onclick=e=>{e.stopPropagation();open083()};ver.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open083()}}}}
+ const oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){const r=oldRender.apply(this,arguments);bind083();return r}}
+ bind083();
+})();
+</script>
+<!-- Updated: 2026-10-04 09:08 JST / Ver0.83 -->
