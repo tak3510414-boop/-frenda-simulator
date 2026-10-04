@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.09">
+<html lang="ja" data-app-version="3.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5939,7 +5939,7 @@ function renderTeamSelect(){
    const id=r.master_id,locked=isExpeditionLocked(id),sel=teamSelection.includes(id),pb=state.permanentBoosts[id]||{},ri=teamRecommendationInfo(r);
    return `<div class="pickCard ownedFrontCardV190 teamManagedCard ${sel?"selected":""} ${ri.recommended?"recommended":""} ${locked?"expLockedCard":""}" ${locked?"":`data-team-pick="${esc(id)}"`} role="button" tabindex="${locked?"-1":"0"}">${ri.recommended?'<span class="recommendMark">🔥 オススメ</span>':""}${sel?'<span class="selectMark">選択中</span>':""}<div class="ownedV190Visual"><img src="${esc(imageOf(r))}" alt=""></div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${ownedRelationBoxHTML(id)}${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${ri.recommended?`<div class="recommendReason">${esc(ri.reason)}（わざ：${esc(r.move_type||"-")}）</div>`:""}${locked?'<div class="ownedDetailHint">🧭 探索中：編成不可</div>':""}</div>`
  }).join(""):`<div class="teamSelectEmpty">条件に合う所持ピックがありません。</div>`;
- app.innerHTML=`<div class="card teamSelectCard"><div class="row spread teamSelectHead"><div class="sectionTitle">挑戦チーム編成</div><div class="teamHeadRight">${gridSizeControlHTML("team",teamViewSize)}<button class="ghost teamBackMini" id="teamBack">ダンジョン選択へ戻る</button></div></div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ランク${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div>${(()=>{const hp=habitatProgressFor(currentDungeon.id,currentDungeon.difficulty);return `<div class="teamHabitatBar"><button type="button" id="teamHabitatBtn">🌿 生息地 ${hp.owned}/${hp.total}</button><span>このランクで出会いやすいピックを確認できます。<b>生息地約85%＋迷い込み約15%</b></span></div>`})()}<div class="teamPcLayout305"><aside class="teamPartyPane305"><div class="teamPartyHead305"><div><b>挑戦パーティ</b><span>${need}体を選択　現在 ${teamSelection.length}/${need}</span></div><button type="button" class="ghost teamClearBtn teamClearBeside" id="teamClearBtn" ${teamSelection.length?"":"disabled"}>選択全クリア</button></div><div class="teamSelectedRow">${selectedSlots}</div><div class="teamCompareActions teamCompareActionsTop"><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button><button class="teamStartDanger" id="startRunBtn" ${teamReady?"":"disabled"}>このチームで挑戦</button><button type="button" class="teamAutoAdventureBtn ${autoUnlocked?"unlocked":"locked"}" id="startAutoRunBtn" ${teamReady&&autoUnlocked?"":"disabled"}>${autoUnlocked?"🤖 自動冒険":"🔒 自動冒険"}</button></div><div class="autoAdventureUnlockHint ${autoUnlocked?"unlocked":"locked"}">${autoUnlocked?"🤖 このランクは自動冒険できます。AUTOはバランス方針で最後まで進みます。":"🔒 このダンジョン・ランクを手動で1回クリアすると自動冒険が解放されます。"}</div></aside><section class="teamPickPane305"><div class="teamTools teamFilterDock305">${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid size-${teamViewSize}">${cardsHtml}</div></section></div></div>`;
+ app.innerHTML=`<div class="card teamSelectCard"><div class="row spread teamSelectHead"><div class="sectionTitle">挑戦チーム編成</div><div class="teamHeadRight">${gridSizeControlHTML("team",teamViewSize)}<button class="ghost teamBackMini" id="teamBack">ダンジョン選択へ戻る</button></div></div><div class="teamThemeHint"><div><b>${theme.icon} ${esc(theme.name)} ランク${currentDungeon.difficulty}</b><span>出現しやすいタイプ：${theme.types.map(esc).join(" / ")}</span></div><small>「オススメ」は、通常わざのタイプが出現しやすいタイプの少なくとも1つに効果抜群のピックです。</small></div>${(()=>{const hp=habitatProgressFor(currentDungeon.id,currentDungeon.difficulty);return `<div class="teamHabitatBar"><button type="button" id="teamHabitatBtn">🌿 生息地 ${hp.owned}/${hp.total}</button><span>このランクで出会いやすいピックを確認できます。<b>生息地約85%＋迷い込み約15%</b></span></div>`})()}<div class="teamPcLayout305"><aside class="teamPartyPane305"><div class="teamPartyHead305"><div><b>挑戦パーティ</b><span>${need}体を選択　現在 ${teamSelection.length}/${need}</span></div><button type="button" class="ghost teamClearBtn teamClearBeside" id="teamClearBtn" ${teamSelection.length?"":"disabled"}>選択全クリア</button></div><div class="teamPartyQuick310"><button type="button" class="autoTeamBtn" id="autoTeamBtn" ${allCards.length?"":"disabled"}>✨ おまかせ編成</button><button class="teamCompareBtn" id="teamCompareBtn" ${teamSelection.length?"":"disabled"}>裏面比較（${teamSelection.length}/3）</button></div><div class="teamSelectedRow">${selectedSlots}</div><div class="teamPartyBottom310"><button class="teamStartDanger" id="startRunBtn" ${teamReady?"":"disabled"}>このチームで挑戦</button><button type="button" class="teamAutoAdventureBtn ${autoUnlocked?"unlocked":"locked"}" id="startAutoRunBtn" ${teamReady&&autoUnlocked?"":"disabled"}>${autoUnlocked?"🤖 自動冒険":"🔒 自動冒険"}</button></div><div class="autoAdventureUnlockHint ${autoUnlocked?"unlocked":"locked"}">${autoUnlocked?"🤖 このランクは自動冒険できます。AUTOはバランス方針で最後まで進みます。":"🔒 このダンジョン・ランクを手動で1回クリアすると自動冒険が解放されます。"}</div></aside><section class="teamPickPane305"><div class="teamTools teamFilterDock305">${teamAutoNotice?`<div class="autoTeamNotice">${esc(teamAutoNotice)}</div>`:""}${filterHtml}</div><div class="teamSelectGrid size-${teamViewSize}">${cardsHtml}</div></section></div></div>`;
  app.querySelectorAll("[data-team-pick]").forEach(c=>{const toggle=()=>{teamAutoNotice="";teamSelection=UI.selection.toggle(teamSelection,c.dataset.teamPick,need);renderTeamSelect()};c.onclick=toggle;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle()}}});
  UI.viewSize.bind({root:app,scope:"team",key:GRID_SIZE_KEY_PREFIX+"team",onChange:size=>{teamViewSize=size;renderTeamSelect()}});
  UI.selectedStrip.bind({root:app,scope:"dungeon-team",onRemove:id=>{teamAutoNotice="";teamSelection=UI.selection.remove(teamSelection,id);renderTeamSelect()}});
@@ -14436,6 +14436,102 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="team"] #app#app .teamRecommendFilter{height:31px!important;min-height:31px!important;font-size:8.5px!important;padding:4px 5px!important}
 }
 </style>
+
+<style id="v310-pc-refine">
+/* Ver3.10: PC common usability refinement. */
+.teamPartyQuick310,.teamPartyBottom310{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(min-width:701px){
+  /* Team select: quick tools above the three selected images; start actions stay below. */
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPartyPane305{
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPartyQuick310{
+    display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0!important;min-height:0!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPartyQuick310 button{
+    min-height:43px!important;padding:8px 7px!important;font-size:15px!important;line-height:1.1!important;font-weight:1000!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPartyBottom310{
+    display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin:0!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPartyBottom310 button{
+    min-height:38px!important;padding:7px 5px!important;font-size:11px!important;line-height:1.1!important;font-weight:1000!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPartyPane305>.autoAdventureUnlockHint{margin:0!important;padding:4px 6px!important;font-size:7.5px!important;line-height:1.2!important;min-height:0!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="team"] #app#app .teamPickPane305{grid-template-rows:auto minmax(0,1fr)!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="team"] #app#app .teamPartyQuick310 button{min-height:38px!important;font-size:13px!important;padding:7px 5px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="team"] #app#app .teamPartyBottom310 button{min-height:34px!important;font-size:10px!important;padding:5px 4px!important}
+
+  /* PC battle sidebar: make party artwork substantially larger while preserving 3 vertical cards. */
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunSidebar .partySideCard{
+    grid-template-columns:110px minmax(0,1fr)!important;gap:4px 9px!important;padding:7px!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunSidebar .partySideImg{
+    width:108px!important;height:152px!important;max-width:108px!important;max-height:152px!important;object-fit:contain!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySideCard{
+    grid-template-columns:92px minmax(0,1fr)!important;gap:3px 7px!important;padding:5px!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunSidebar .partySideImg{
+    width:90px!important;height:126px!important;max-width:90px!important;max-height:126px!important
+  }
+
+  /* Pickup: use the center of the scene and make the item the visual focus. */
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupCard{
+    height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupInner{
+    width:min(900px,94%)!important;margin:auto!important;padding:18px 24px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important;text-align:center!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupFound{font-size:18px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupIcon{font-size:clamp(110px,20vh,170px)!important;line-height:1!important;margin:0!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupName{font-size:clamp(38px,4vw,54px)!important;line-height:1.08!important;margin:0!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupEffect{width:min(720px,100%)!important;max-width:none!important;font-size:20px!important;line-height:1.5!important;padding:15px 20px!important;margin:0!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] .pickupRateNote{font-size:12px!important;line-height:1.4!important;margin:0!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app[data-run-scene="pickupNotice"] #pickupNext{min-width:300px!important;font-size:20px!important;padding:13px 24px!important;margin-top:2px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app[data-run-scene="pickupNotice"] .pickupIcon{font-size:clamp(90px,18vh,135px)!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app[data-run-scene="pickupNotice"] .pickupName{font-size:clamp(32px,3.4vw,44px)!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app[data-run-scene="pickupNotice"] .pickupEffect{font-size:16px!important;padding:12px 16px!important}
+
+  /* Post-run ally/hatch: override older fixed-height PC rules so name/meta always remain inside card. */
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6Allies{
+    overflow:hidden!important;min-height:0!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyGrid{
+    height:100%!important;min-height:0!important;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))!important;grid-auto-rows:minmax(150px,auto)!important;gap:8px!important;overflow-y:auto!important;overflow-x:hidden!important;align-content:start!important;padding:2px!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard{
+    height:auto!important;min-height:150px!important;max-height:none!important;display:grid!important;grid-template-columns:108px minmax(0,1fr)!important;grid-template-rows:auto auto 1fr!important;column-gap:12px!important;row-gap:5px!important;padding:9px 11px!important;box-sizing:border-box!important;overflow:hidden!important;align-items:center!important;text-align:left!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard .ownershipImageWrap{
+    grid-column:1!important;grid-row:1/4!important;width:102px!important;height:142px!important;align-self:center!important;justify-self:center!important;overflow:visible!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard .ownershipImageWrap>img{
+    width:102px!important;height:142px!important;max-width:none!important;max-height:none!important;object-fit:contain!important;margin:0!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard>b{
+    grid-column:2!important;grid-row:1!important;align-self:end!important;display:block!important;margin:0!important;font-size:24px!important;line-height:1.12!important;color:#173f54!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard>small{
+    grid-column:2!important;grid-row:2!important;display:block!important;margin:0!important;font-size:14px!important;line-height:1.3!important;color:#5b6f7a!important;white-space:normal!important;overflow:visible!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard .result6AllyHint{
+    grid-column:2!important;grid-row:3!important;align-self:start!important;margin:2px 0 0!important;font-size:10px!important;padding:5px 8px!important
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyGrid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important;grid-auto-rows:minmax(132px,auto)!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard{min-height:132px!important;grid-template-columns:88px minmax(0,1fr)!important;column-gap:9px!important;padding:7px 8px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard .ownershipImageWrap{width:82px!important;height:116px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard .ownershipImageWrap>img{width:82px!important;height:116px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard>b{font-size:19px!important}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard>small{font-size:11px!important}
+}
+@media(max-width:700px){
+  /* Keep the previous mobile order: selected images first, action buttons below them. */
+  .teamPartyPane305{display:flex!important;flex-direction:column!important}
+  .teamPartyHead305{order:1}.teamSelectedRow{order:2}.teamPartyQuick310{order:3}.teamPartyBottom310{order:4}.teamPartyPane305>.autoAdventureUnlockHint{order:5}
+}
+</style>
+<!-- Ver3.10: PC common UI tuned — action buttons moved above pick list, battle party art enlarged, pickup screen centered, and ally/hatch result cards now keep names visible. -->
 </body>
 <!-- Ver3.04: bond points are capped at Lv5 MAX; overflow bond rewards auto-convert at 1 bond P = 50 Frenda Coins, including legacy overflow. -->
 </html>
