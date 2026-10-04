@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.00">
+<html lang="ja" data-app-version="1.01">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -219,6 +219,23 @@ body[data-exp-screen="prep"] main{padding-top:8px}
  .freeGuideNowMarker b{font-size:4.9px}
  .freeGuideNowMarker small{font-size:4.3px}
 }
+</style>
+
+<style id="v073-ownership-overlay">
+.expOwnershipWrap{position:relative;display:inline-block;max-width:100%;line-height:0}
+.expOwnershipWrap>img{display:block}
+.expOwnershipBadge{position:absolute;left:8px;top:8px;z-index:6;display:inline-flex;align-items:center;gap:4px;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:1000;line-height:1;box-shadow:0 2px 7px #17394e2c;border:2px solid transparent}
+.expOwnershipBadge.owned{background:#e6edf1;color:#526772;border-color:#c4d0d7}
+.expOwnershipBadge.unowned{background:linear-gradient(180deg,#56d889,#20a85a);color:#fff;border-color:#168345}
+.expOwnershipBadge.newowned{background:linear-gradient(180deg,#ffd95a,#f6a51b);color:#563500;border-color:#dc9312}
+.expOwnershipAutoHost{position:relative!important}
+.expAutoOwnershipBadge{position:absolute;z-index:6;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:1000;line-height:1;white-space:nowrap;pointer-events:none;box-shadow:0 2px 7px #17394e2c;border:2px solid transparent}
+.expAutoOwnershipBadge.owned{background:#e6edf1;color:#526772;border-color:#c4d0d7}.expAutoOwnershipBadge.unowned{background:linear-gradient(180deg,#56d889,#20a85a);color:#fff;border-color:#168345}.expAutoOwnershipBadge.newowned{background:linear-gradient(180deg,#ffd95a,#f6a51b);color:#563500;border-color:#dc9312}
+.expEventBadge{position:absolute;right:8px;top:8px;z-index:7;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;background:linear-gradient(180deg,#66d9ff,#22a7dc);color:#083c55;border:2px solid #1688b6;font-size:9px;font-weight:1000;line-height:1;white-space:nowrap;box-shadow:0 2px 7px #17394e2c;pointer-events:none}
+.summaryCompanionCard097 .expOwnershipWrap{margin:0 auto 6px}
+.lootRewardReveal .expOwnershipWrap{margin:0 auto}
+.miniPick .expOwnershipWrap{flex:0 0 auto}
+@media(max-width:700px){.expOwnershipBadge,.expAutoOwnershipBadge{left:5px;top:5px;padding:3px 6px;font-size:8px}.expEventBadge{right:5px;top:5px;padding:3px 6px;font-size:7px}}
 </style>
 </head>
 <body>
@@ -939,7 +956,19 @@ function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if
 
 function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length)return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),d=readDungeon()||{},luckAverage=averageLuckForIds(d,ids),luckMultiplier=luckMultiplierFromAverage(luckAverage),now=Date.now();g.status="exploring";expSfx("depart");g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours:1,freeReturnVersion:1,rewardMode:"freeReturn",teamIds:ids,startAt:now,maxReturnAt:now+FREE_EXP_MAX_HOURS*3600000,returnAt:now+FREE_EXP_MAX_HOURS*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,luckAverage,luckMultiplier,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
 function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),diff=highestDifficultyForDungeon(p.dungeonId),s=scoreTeam(p.teamIds,p.dungeonId,diff);if(!p.teamIds.length)return;if(!diff)return;const names=p.teamIds.map(id=>rec(id)?.name_ja||id).join("・");if(UI.dialog.confirm(`グループ${groupIndex+1}\n${THEMES[p.dungeonId].name} ランク${diff}へ探索に出発します。\n\n${names}\n探索ランク ${s.rank}（${s.total}点）\n🍀 グループ運 ${averageLuckForIds(readDungeon()||{},p.teamIds).toFixed(1)} / 効果×${luckMultiplierFromAverage(averageLuckForIds(readDungeon()||{},p.teamIds)).toFixed(2)}\n\n帰還を押した時点まで探索します（最大12時間）。\n30分未満で帰還した場合は成果なしです。\n\n探索中はこのピックを他の探索グループ・本編・特訓・進化で使用できません。`)){if(startMission(groupIndex))render()}}
-function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
+function expeditionOwned(id){const d=readDungeon()||{};return !!(d.owned||[]).some(o=>String(o.id)===String(id||""))}
+function expeditionOwnershipBadgeHTML(id,mode="auto"){const owned=expeditionOwned(id);let cls=owned?"owned":"unowned",label=owned?"所持済":"未所持";if(mode==="owned"){cls="owned";label="所持済"}else if(mode==="unowned"){cls="unowned";label="未所持"}else if(mode==="new"){cls="newowned";label="未所持 → 仲間入り"}return `<span class="expOwnershipBadge ${cls}">${label}</span>`}
+function expeditionEventBadgeHTML(label="NEW"){return `<span class="expEventBadge">${esc(label)}</span>`}
+function expeditionImageWithOwnershipHTML(r,mode="auto",extraClass="",event=""){return `<div class="expOwnershipWrap ${esc(extraClass)}"><img src="${esc(imageOf(r))}" alt="" data-ownership-mode="${esc(mode)}">${expeditionOwnershipBadgeHTML(r?.master_id,mode)}${event?expeditionEventBadgeHTML(event):""}</div>`}
+let expOwnershipImageIndex101=null,expOwnershipRaf101=0,expOwnershipObserver101=null;
+function expOwnershipUrl101(src){try{return new URL(src,location.href).href}catch{return String(src||"")}}
+function expOwnershipMap101(){if(expOwnershipImageIndex101)return expOwnershipImageIndex101;expOwnershipImageIndex101=new Map();for(const r of RECORDS||[]){if(r?.master_id&&imageOf(r))expOwnershipImageIndex101.set(expOwnershipUrl101(imageOf(r)),String(r.master_id))}return expOwnershipImageIndex101}
+function expOwnershipMode101(img,id){const forced=img?.dataset?.ownershipMode||img?.closest?.("[data-ownership-mode]")?.dataset?.ownershipMode;if(["owned","unowned","new"].includes(forced))return forced;return expeditionOwned(id)?"owned":"unowned"}
+function expOwnershipLabel101(mode){return mode==="new"?"未所持 → 仲間入り":mode==="owned"?"所持済":"未所持"}
+function applyExpOwnershipOverlay101(root=document){const map=expOwnershipMap101();for(const img of root.querySelectorAll?.("img")||[]){if(img.classList.contains("silhouette"))continue;const id=map.get(expOwnershipUrl101(img.currentSrc||img.src));if(!id)continue;const parent=img.parentElement;if(!parent)continue;const mode=expOwnershipMode101(img,id),cls=mode==="new"?"newowned":mode==="owned"?"owned":"unowned",label=expOwnershipLabel101(mode);const manual=parent.querySelector(":scope > .expOwnershipBadge");if(manual){if(!manual.classList.contains("newowned")){manual.classList.remove("owned","unowned","newowned");manual.classList.add(cls);manual.textContent=label}continue}let badge=[...parent.children].find(x=>x.classList?.contains("expAutoOwnershipBadge")&&x.dataset.ownerId===id)||null;if(!badge){badge=document.createElement("span");badge.className=`expAutoOwnershipBadge ${cls}`;badge.dataset.ownerId=id;parent.appendChild(badge)}else{badge.classList.remove("owned","unowned","newowned");badge.classList.add(cls)}badge.textContent=label;parent.classList.add("expOwnershipAutoHost");const pr=parent.getBoundingClientRect(),ir=img.getBoundingClientRect();if(ir.width>0&&ir.height>0){badge.style.left=`${Math.max(3,ir.left-pr.left+5)}px`;badge.style.top=`${Math.max(3,ir.top-pr.top+5)}px`}}}
+function scheduleExpOwnershipOverlay101(){if(expOwnershipRaf101)return;expOwnershipRaf101=requestAnimationFrame(()=>{expOwnershipRaf101=0;requestAnimationFrame(()=>applyExpOwnershipOverlay101(document))})}
+function installExpOwnershipOverlay101(){if(expOwnershipObserver101)return;expOwnershipObserver101=new MutationObserver(()=>scheduleExpOwnershipOverlay101());expOwnershipObserver101.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["src"]});window.addEventListener("resize",scheduleExpOwnershipOverlay101,{passive:true});scheduleExpOwnershipOverlay101()}
+function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick">${expeditionImageWithOwnershipHTML(r,"owned")}<div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
 
 function groupCardHTML(groupIndex){
  if(!groupUnlocked(groupIndex)){
@@ -1174,9 +1203,9 @@ function renderFindings(){const m=groupMission(),f=applyMissionFindings(m),th=TH
 function renderGrowth(){applyBaseGrowth();const m=groupMission();app.innerHTML=`<div class="card"><div class="sectionTitle">⭐ 探索メンバーの成長</div><div class="growthGrid">${(m.baseResults||[]).map(x=>{const r=rec(x.id);return `<div class="growthCard"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r?.name_ja||x.id)}</b><div class="growthResult">⭐ EXP +${x.xp}${x.drill?`<br>🏋️ 特訓P +${x.drill}`:""}${x.coins?`<br>🪙 フレンダコイン +${x.coins}`:""}${x.bond?`<br>♥ 絆 +${x.bondAmount||1}`:x.bondCoins?`<br>♥ 絆MAX → 🪙 +${x.bondCoins}`:""}</div></div>`}).join("")}</div><div class="notice" style="margin-top:10px">この成長は成果箱とは別の確定報酬です。次に、持ち帰った成果箱を1個ずつ開けます。</div><button class="goldBtn returnFlowBtn092" data-return-action="boxes" style="width:100%;margin-top:10px">🎁 成果箱を開ける</button></div>`}
 function rewardIcon(rw){return rw.type==="xp"||rw.type==="allxp"?"⭐":rw.type==="bond"?"♥":rw.type==="growth"?"🌱":rw.type==="egg"?"🥚":rw.type==="companion"?"👣":rw.type==="combo"?"🌟":"🎁"}
 function lootRarityLabel(box){return box.rarity==="jackpot"?"🌟 大当たり！":box.rarity==="rare"?"✨ RARE!":"RESULT"}
-function rewardVisualHTML(rw,final=true){if(rw?.type==="companion"&&rw.target){const r=rec(rw.target);return `<img class="lootRewardImage${final?"":" silhouette"}" src="${esc(imageOf(r))}" alt="">`}if(rw?.type==="egg"){const e=rw.egg||{},icon=e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚";return `<div class="lootRewardIcon">${icon}</div>`}return `<div class="lootRewardIcon">${rewardIcon(rw)}</div>`}
+function rewardVisualHTML(rw,final=true,mode="auto",event=""){if(rw?.type==="companion"&&rw.target){const r=rec(rw.target);if(!final)return `<img class="lootRewardImage silhouette" src="${esc(imageOf(r))}" alt="">`;return `<div class="expOwnershipWrap"><img class="lootRewardImage" src="${esc(imageOf(r))}" alt="" data-ownership-mode="${esc(mode)}">${expeditionOwnershipBadgeHTML(r?.master_id,mode)}${event?expeditionEventBadgeHTML(event):""}</div>`}if(rw?.type==="egg"){const e=rw.egg||{},icon=e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚";return `<div class="lootRewardIcon">${icon}</div>`}return `<div class="lootRewardIcon">${rewardIcon(rw)}</div>`}
 function rewardRevealTitle(rw){if(rw?.type==="companion")return rw.target?"誰かがついてきた！":"気配が消えた……";if(rw?.type==="egg")return"タマゴを発見！";if(rw?.type==="growth")return rw.amount>=2?"大きく成長した！":"成長のきざし！";if(rw?.type==="bond")return"絆が深まった！";if(rw?.type==="xp"||rw?.type==="allxp")return"たくさん経験した！";if(rw?.type==="combo")return"すごい成果！";return"探索成果！"}
-function lootRevealFinalHTML(box){return `${rewardVisualHTML(box.reward,true)}<div class="lootRewardTitle">${esc(rewardRevealTitle(box.reward))}</div><div class="lootRewardText">${esc(box.resultText||"")}</div>`}
+function lootRevealFinalHTML(box){const joined=box?.reward?.type==="companion"&&/新しく仲間になった/.test(String(box.resultText||""));return `${rewardVisualHTML(box.reward,true,joined?"new":"auto",joined?"NEW":"")}<div class="lootRewardTitle">${esc(rewardRevealTitle(box.reward))}</div><div class="lootRewardText">${esc(box.resultText||"")}</div>`}
 const lootSleep=UI.sleep;
 function stopLootAuto(){lootAutoMode=false;if(lootAutoTimer){clearTimeout(lootAutoTimer);lootAutoTimer=null}}
 function openLootBoxAt(index){
@@ -1240,7 +1269,7 @@ function summaryGrowthTableHTML094(m){
 function summaryCompanionHTML097(m){
  const joined=(m.boxes||[]).filter(box=>box?.applied&&box?.reward?.type==="companion"&&box.reward.target&&/新しく仲間になった/.test(String(box.resultText||""))).map(box=>box.reward.target).filter((id,i,a)=>a.indexOf(id)===i);
  if(!joined.length)return "";
- return `<div class="summaryCompanionBox097"><div class="summaryCompanionHead097"><b>👣 ついてきたポケモン</b><small>${joined.length}体が仲間になった！</small></div><div class="summaryCompanionGrid097">${joined.map(id=>{const r=rec(id);return `<div class="summaryCompanionCard097"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r?.name_ja||id)}</b><span>新しく仲間になった！</span></div>`}).join("")}</div></div>`
+ return `<div class="summaryCompanionBox097"><div class="summaryCompanionHead097"><b>👣 ついてきたポケモン</b><small>${joined.length}体が仲間になった！</small></div><div class="summaryCompanionGrid097">${joined.map(id=>{const r=rec(id);return `<div class="summaryCompanionCard097">${expeditionImageWithOwnershipHTML(r,"new","","NEW")}<b>${esc(r?.name_ja||id)}</b></div>`}).join("")}</div></div>`
 }
 /* ===== FINAL EXPEDITION SUMMARY ===== */
 function renderSummary(){applyBaseGrowth();const m=groupMission();if(m?.id&&lastSummarySfxId!==m.id){lastSummarySfxId=m.id;expSfx("summary")}const f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20)),souvenirs=f.souvenirs||[],boxCount=m.boxes?.length||0,th=THEMES[m.dungeonId],elapsed=formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now())),newSouvenirs=souvenirs.filter(x=>x.isNew).length,secret=m.secretSpotDiscovered;
@@ -1341,6 +1370,7 @@ function expeditionCloudSummary(data){const s=data?.state||{},owned=Array.isArra
 
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン＋おでかけ探索",compactButton:true,hideButton:true,column:"dungeon_data",getData:expeditionDungeonCloudData,applyData:applyExpeditionDungeonCloudData,watchStorage:k=>k===DUNGEON_KEY,hasLocalData:expeditionHasLocalData,describeData:expeditionCloudSummary});
 
+installExpOwnershipOverlay101();
 try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e);app.innerHTML=`<div class="card error"><b>おでかけ探索の表示に失敗しました。</b><br>${esc(e?.message||String(e))}<br><small>セーブデータは削除していません。ページを再読み込みしてください。</small></div>`}
 loadEvolution();
 })();
@@ -3018,3 +3048,5 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 
 <!-- Expedition Ver0.97: when a Pokémon follows the team and newly joins in expedition rewards, show its image on the final expedition results screen. -->
 <!-- Expedition Ver0.98: clear idle/pre-departure party selections whenever the user switches expedition groups; active mission teams remain reserved. -->
+
+<!-- Expedition Ver1.01: ownership status is automatically overlaid on the top-left of every Pokémon image; newly joined companions also show NEW at the top-right. -->
