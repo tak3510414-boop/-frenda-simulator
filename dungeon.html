@@ -14599,6 +14599,12 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
  .bulkTrainingExecute311{margin-top:6px!important;padding:9px 8px!important;font-size:15px!important;line-height:1.15!important;border-radius:11px!important}
  .bulkTrainingNote311{margin-top:4px!important;font-size:6.5px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 }
+
+/* Ver3.14: avoid overlap between enemy counter and ownership badge on mobile battle screen */
+@media(max-width:700px){
+  body[data-dungeon-page="run-battle"] .battleArena{padding-top:42px!important;}
+  body[data-dungeon-page="run-battle"] .battleGrid{align-items:start;}
+}
 </style>
 <!-- Ver3.12: iPhone bulk-training flow condensed to one-screen 2x2 policy layout. -->
 
