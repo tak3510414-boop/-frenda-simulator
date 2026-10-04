@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.85">
+<html lang="ja" data-app-version="0.86">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -440,7 +440,7 @@ const SOUVENIR_DEF={
 
 let EVO_INDEX=null,evoReady=false;
 let screen="home",collectionReturnScreen="home",prep={dungeonId:null,difficulty:null,hours:8,teamIds:[]};
-let activeGroup=0;
+let activeGroup=0,groupCardsScrollLeft=0;
 let ticker=null,lootRevealSeq=0,lootAnimating=false,lootAutoMode=false,lootAutoTimer=null,destinationSelectToken=0;
 const esc=UI.escapeHtml;
 const RECORD_BY_ID=new Map(RECORDS.filter(Boolean).map(r=>[String(r.master_id||""),r]));
@@ -943,7 +943,7 @@ function groupCardHTML(groupIndex){
  return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0"><div class="groupCardHead"><b>グループ${groupIndex+1}</b><span class="groupStatus">${status==="exploring"?"探索中":status==="returned"?"帰還済":"待機"}</span></div><div class="groupRankLine"><strong class="rank-${score.rank}">${score.rank}</strong><b>${score.total}点</b><em class="groupLuck">🍀${luckAvg.toFixed(1)} ×${luckMul.toFixed(2)}</em></div><div class="groupDest">${th?`${th.icon} ${esc(th.name)} <span>R${diff}</span>`:"派遣先未設定"}</div><div class="groupCardFoot">${sub}${action}</div></div>`
 }
 function groupDockHTML(){return `<div class="groupDock" id="groupDock"><div class="groupDockLayout"><div class="freeReturnDockGuide" id="freeReturnDockGuide">${freeReturnDockGuideHTML()}</div><div class="groupCards">${[0,1,2,3,4].map(groupCardHTML).join("")}</div></div></div>`}
-function bindGroupDock(){bindAdminUnlockButtons();app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;const i=Number(el.dataset.group);if(setActiveGroup(i)===false)return;const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();requestMissionReturn(Number(b.dataset.returnNowGroup))})}
+function bindGroupDock(){bindAdminUnlockButtons();const cards=app.querySelector(".groupCards");if(cards){cards.scrollLeft=groupCardsScrollLeft;cards.addEventListener("scroll",()=>{groupCardsScrollLeft=cards.scrollLeft},{passive:true});requestAnimationFrame(()=>{if(cards.isConnected)cards.scrollLeft=groupCardsScrollLeft})}app.querySelectorAll("[data-group]").forEach(el=>{el.onclick=e=>{if(e.target.closest("button"))return;if(cards)groupCardsScrollLeft=cards.scrollLeft;const i=Number(el.dataset.group);if(setActiveGroup(i)===false)return;const g=groupState(i);screen=g.status==="returned"?"return":g.status==="exploring"?"explore":"home";render()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}}});app.querySelectorAll("[data-depart-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(cards)groupCardsScrollLeft=cards.scrollLeft;confirmAndStartMission(Number(b.dataset.departGroup))});app.querySelectorAll("[data-return-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(cards)groupCardsScrollLeft=cards.scrollLeft;setActiveGroup(Number(b.dataset.returnGroup));screen="return";render()});app.querySelectorAll("[data-return-now-group]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(cards)groupCardsScrollLeft=cards.scrollLeft;requestMissionReturn(Number(b.dataset.returnNowGroup))})}
 
 const EXP_PICK_VIEW_KEY="frenda:expedition:pickView:v1";
 let prepPickFilter=UI.pickFilter.create({sort:"recommended"});
@@ -2813,4 +2813,5 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 .frendaInfoPanel083{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}.frendaInfoHead083{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead083 b{font-size:20px}.frendaInfoClose083{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}.frendaInfoSection083{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection083 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid083{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid083 span{color:#647986}.frendaDeviceGrid083 b{word-break:break-all}.frendaInfoActions083{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions083 button{flex:1 1 150px}.frendaInfoNote083{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
 </style>
 <!-- Ver0.85: common header event logic moved inside the main application scope. -->
-<!-- Updated: 2026-10-04 09:34 JST / Ver0.85 -->
+<!-- Ver0.86: preserve horizontal group-card scroll position when switching groups. -->
+<!-- Updated: 2026-10-04 09:17 JST / Ver0.86 -->
