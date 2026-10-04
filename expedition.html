@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.83">
+<html lang="ja" data-app-version="0.84">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -2764,15 +2764,15 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 
 
 <style id="v083-common-header-settings">
-/* Ver0.83: common header settings / title home / version panel / egg+coin alignment */
+/* Ver0.84: common header settings fix / reliable version panel / mobile coin fit */
 #expeditionSoundBtn,#expSaveStatus074{display:none!important}
 #versionBadge{cursor:pointer!important;user-select:none;outline:none}
 #versionBadge:focus-visible{box-shadow:0 0 0 3px #8ce6ff88}
-.headerStatus083{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:auto}
+.headerStatus083{display:flex;align-items:center;gap:4px;flex:0 0 auto!important;min-width:max-content!important;margin-left:auto}.headerStatus083>*{flex:0 0 auto!important}
 .headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;height:32px!important;min-height:32px!important;padding:0 9px!important;border-radius:999px!important;font-size:11px!important;font-weight:1000!important;line-height:1!important;white-space:nowrap!important;margin:0!important}
-.headerStatus083 .headerCoinBadge083{background:#fff1bd;color:#6b4d00;border:1px solid #e3c361}
+.headerStatus083 .headerCoinBadge083{background:#fff1bd;color:#6b4d00;border:1px solid #e3c361;min-width:58px!important}
 @media(max-width:600px){
- header{padding:6px 7px!important}.headerTop{display:flex!important;flex-wrap:nowrap!important;gap:3px!important;width:100%!important}.headerTop .brand{flex:0 1 auto!important;min-width:0!important}.headerTop .brand b{display:flex!important;min-width:0!important;gap:3px!important}.headerTop .headerBtns{flex:1 1 auto!important;width:auto!important;min-width:0!important;margin:0!important;justify-content:flex-end!important;gap:3px!important}.headerTop #expHomeTitle076{max-width:112px!important;font-size:11px!important}.headerTop .ver{font-size:8px!important;padding:2px 5px!important}.headerIconBtn{width:27px!important;height:27px!important;min-width:27px!important;flex-basis:27px!important;font-size:12px!important}#dungeonBtn.dungeonTextBtn{max-width:72px!important;padding:5px 6px!important;font-size:7.5px!important}.headerStatus083{gap:3px!important}.headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{height:27px!important;min-height:27px!important;padding:0 5px!important;font-size:8px!important}
+ header{padding:6px 5px!important}.headerTop{display:flex!important;flex-wrap:nowrap!important;gap:2px!important;width:100%!important}.headerTop .brand{flex:0 1 auto!important;min-width:0!important}.headerTop .brand b{display:flex!important;min-width:0!important;gap:2px!important}.headerTop .headerBtns{flex:1 1 auto!important;width:auto!important;min-width:0!important;margin:0!important;justify-content:flex-end!important;gap:2px!important}.headerTop #expHomeTitle076{max-width:104px!important;font-size:10.5px!important}.headerTop .ver{font-size:7.5px!important;padding:2px 4px!important}.headerIconBtn{width:26px!important;height:26px!important;min-width:26px!important;flex-basis:26px!important;font-size:12px!important}#dungeonBtn.dungeonTextBtn{max-width:64px!important;padding:5px 5px!important;font-size:7px!important}.headerStatus083{gap:2px!important;flex-shrink:0!important}.headerStatus083 .headerEggBadge,.headerStatus083 .headerCoinBadge083{height:27px!important;min-height:27px!important;padding:0 5px!important;font-size:8px!important}.headerStatus083 .headerCoinBadge083{min-width:48px!important}
 }
 .frendaInfoOverlay083{position:fixed;inset:0;z-index:200000;background:#06141dcc;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px)}
 .frendaInfoPanel083{width:min(560px,96vw);max-height:min(760px,92dvh);overflow:auto;background:#fff;color:#173243;border-radius:20px;padding:16px;box-shadow:0 22px 70px #0008}.frendaInfoHead083{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaInfoHead083 b{font-size:20px}.frendaInfoClose083{width:36px;height:36px;padding:0;border-radius:50%;font-size:20px;background:#eaf1f5;color:#24495d;box-shadow:none}.frendaInfoSection083{border:1px solid #d2e0e7;border-radius:14px;padding:12px;margin-top:10px;background:#f8fbfc}.frendaInfoSection083 h3{margin:0 0 8px;font-size:15px}.frendaDeviceGrid083{display:grid;grid-template-columns:140px 1fr;gap:5px 10px;font-size:12px}.frendaDeviceGrid083 span{color:#647986}.frendaDeviceGrid083 b{word-break:break-all}.frendaInfoActions083{display:flex;gap:7px;flex-wrap:wrap}.frendaInfoActions083 button{flex:1 1 150px}.frendaInfoNote083{margin-top:7px;font-size:10px;line-height:1.5;color:#687985}
@@ -2795,6 +2795,8 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
  function bind083(){ensureHeader083();const title=$('expHomeTitle076'),ver=$('versionBadge');if(title)title.onclick=()=>{screen='home';render()};if(ver&&!ver.dataset.info083){ver.dataset.info083='1';ver.setAttribute('role','button');ver.setAttribute('tabindex','0');ver.title='端末情報・音量・バックアップ';ver.onclick=e=>{e.stopPropagation();open083()};ver.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open083()}}}}
  const oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){const r=oldRender.apply(this,arguments);bind083();return r}}
  bind083();
+ document.addEventListener('click',e=>{const ver=e.target.closest?.('#versionBadge');if(ver){e.preventDefault();e.stopPropagation();open083();return}const title=e.target.closest?.('#expHomeTitle076');if(title){e.preventDefault();screen='home';render()}},true);
+ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target?.id==='versionBadge'){e.preventDefault();open083()}},true);
 })();
 </script>
-<!-- Updated: 2026-10-04 09:08 JST / Ver0.83 -->
+<!-- Updated: 2026-10-04 09:17 JST / Ver0.84 -->
