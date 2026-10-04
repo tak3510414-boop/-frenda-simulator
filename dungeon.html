@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.13">
+<html lang="ja" data-app-version="3.14">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5191,7 +5191,7 @@ function applyBondPostBattleHeal(){for(const t of runTeam()){if(t.ko||t.hp>=maxH
 function migrateGrowthPointsToFamilies(){if(!evoReady||!state.trainingPoints)return;let changed=false;for(const [k,v] of Object.entries({...state.trainingPoints})){if(k.startsWith("evo:")||!Number(v))continue;const rr=RECORDS.find(r=>r.name_ja===k||r.master_id===k);if(!rr)continue;const nk=growthKeyFor(rr.master_id);if(nk&&nk!==k){state.trainingPoints[nk]=Number(state.trainingPoints[nk]||0)+Number(v);delete state.trainingPoints[k];changed=true}}if(changed)save()}
 function trainingAvailable(id){if(!ownedEntry(id)||isExpeditionLocked(id))return false;const pb=state.permanentBoosts[id]||{};const hasRoom=["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX);return hasRoom&&drillFor(id)>0}
 function addBattleXp(ids,amount,label="戦闘"){const uniq=[...new Set((ids||[]).filter(Boolean))];if(!uniq.length||amount<=0)return;for(const id of uniq){const {drillGained:gained,coinGained:coins}=applyXpWithCoinConversion(id,amount);if(state.run){state.run.xpGained=state.run.xpGained||{};state.run.xpGained[id]=Number(state.run.xpGained[id]||0)+amount;if(coins){state.run.coinGained=state.run.coinGained||{};state.run.coinGained[id]=Number(state.run.coinGained[id]||0)+coins}if(gained){state.run.drillGained=state.run.drillGained||{};state.run.drillGained[id]=Number(state.run.drillGained[id]||0)+gained}}const nm=rec(id)?.name_ja||"仲間";addLog(`${nm}が${label}でEXP ${amount}を獲得${coins?`、余剰特訓Pを🪙${coins}コインへ自動変換`:gained?`、特訓ポイント+${gained}`:""}。`)}save()}
-function spendDrill(id,stat){
+function spendDrill(id,stat,renderAfter=true){
  if(!ownedEntry(id)||isExpeditionLocked(id)||drillFor(id)<=0)return;
  const pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0});
  if(!["hp","atk","def"].includes(stat)||Number(pb[stat]||0)>=PERMANENT_BOOST_MAX)return;
@@ -6967,7 +6967,7 @@ function showInventoryItemUse(kind){
 function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card eggsScreen"><div class="eggsScreenHead"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="eggInfoCompact"><span>階を進むと <b>全卵 +1pt</b></span><span>クリア累計 <b>${clears}回</b></span><span>${next?`上限UPまで <b>あと${Math.max(0,next-clears)}回</b>`:"所持上限は最大"}</span></div>${state.eggs.length?`<div class="eggGrid eggGridViewport">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard compactEggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary eggEmptyState">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ボスを倒すと卵ルーレットで獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
 function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
-function showQuickTraining(id){
+function showQuickTraining(id,returnScroll=window.scrollY||document.documentElement.scrollTop||0){
  if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("探索中のため特訓できません。");return}
  const r=rec(id),pb=state.permanentBoosts[id]||(state.permanentBoosts[id]={hp:0,atk:0,def:0}),dp=drillFor(id),bond=bondLevelFor(id),xp=xpFor(id);
  document.getElementById("quickTrainingOverlay")?.remove();
@@ -6990,9 +6990,11 @@ function showQuickTraining(id){
    ${trainingSpendButtonsHTML(id,r,pb,dp)}
    <div class="notice quickTrainingNote">HP・ATK・DEFはそれぞれ最大＋${PERMANENT_BOOST_MAX}まで強化できます。3能力MAX後に残った特訓Pは、自動でフレンダコインへ変換されます。</div>
  </div>`;
- document.body.appendChild(ov);document.body.style.overflow="hidden";
- const close=()=>{ov.remove();document.body.style.overflow="";renderOwned()};ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#quickTrainingClose").onclick=close;
- ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{spendDrill(b.dataset.trainId,b.dataset.stat);ov.remove();document.body.style.overflow="";if(trainingAvailable(id))showQuickTraining(id);else renderOwned()})
+ document.body.appendChild(ov);
+ ov.scrollTop=0;requestAnimationFrame(()=>{ov.scrollTop=0;requestAnimationFrame(()=>{ov.scrollTop=0})});
+ const restoreOwned=()=>{ov.remove();renderOwned();requestAnimationFrame(()=>window.scrollTo(0,returnScroll))};
+ const close=()=>restoreOwned();ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#quickTrainingClose").onclick=close;
+ ov.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{spendDrill(b.dataset.trainId,b.dataset.stat,false);ov.remove();if(trainingAvailable(id))showQuickTraining(id,returnScroll);else{renderOwned();requestAnimationFrame(()=>window.scrollTo(0,returnScroll))}})
 }
 function showLuckShop(returnTo="home"){
  document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";document.documentElement.style.setProperty("--shop-header-height",`${document.querySelector("body>header").getBoundingClientRect().height}px`);
@@ -14604,6 +14606,26 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 @media(max-width:700px){
   body[data-dungeon-page="run-battle"] .battleArena{padding-top:42px!important;}
   body[data-dungeon-page="run-battle"] .battleGrid{align-items:start;}
+}
+
+/* Ver3.14: keep quick-training modal anchored at the top on iPhone and make the bottom note readable. */
+@media(max-width:700px){
+  #quickTrainingOverlay.ownedDetailOverlay{
+    padding:8px 6px calc(28px + env(safe-area-inset-bottom))!important;
+    overscroll-behavior:contain!important;
+    scroll-behavior:auto!important;
+  }
+  #quickTrainingOverlay .quickTrainingPanelV215 .quickTrainingHead{
+    position:sticky!important;top:0!important;z-index:20!important;
+  }
+  #quickTrainingOverlay .quickTrainingNote{
+    color:#5a4500!important;
+    background:#fff5c9!important;
+    border:1px solid #d9bd55!important;
+    font-weight:850!important;
+    opacity:1!important;
+    margin-bottom:18px!important;
+  }
 }
 </style>
 <!-- Ver3.12: iPhone bulk-training flow condensed to one-screen 2x2 policy layout. -->
