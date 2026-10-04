@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- VERSION_SOURCE: html[data-app-version] -->
-<html lang="ja" data-app-version="3.00">
+<html lang="ja" data-app-version="3.01">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5591,8 +5591,11 @@ function buildGrassSpots(did,diff){
  }
  return spots
 }
+function grassLocationCleared(did,diff){
+ return Number(getStat(did,diff)?.clears||0)>0
+}
 function prepareGrassArea(did,diff){
- if(!unlocked(did,diff))return;
+ if(!grassLocationCleared(did,diff)){UI.dialog.alert("草むらチケットは攻略済みのダンジョン・ランクでのみ使用できます。");return}
  state.grassSession={stage:"ready",dungeonId:did,difficulty:Number(diff)||1,spots:[],targetId:null,result:null};
  save();screen="grass";render()
 }
@@ -5639,11 +5642,11 @@ function grassLocationTitle(g){
 function renderGrass(){
  const g=state.grassSession,qty=grassTicketQty();
  if(!g){
-  app.innerHTML=`<div class="card grassScreen grassChooseScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS GET</div><div class="sectionTitle">🌿 草むらゲット</div><small>ダンジョンとランクのマスを押すと、草むらへ進みます。</small></div><span class="grassTicketBadge">🌿 チケット ${qty}/${GRASS_TICKET_MAX}</span></div>
-   <div class="grassRankTableWrap"><table class="grassRankTable"><thead><tr><th scope="col">ダンジョン</th>${[1,2,3,4,5].map(n=>`<th scope="col">ランク${n}</th>`).join("")}</tr></thead><tbody>${THEME_ORDER.map(did=>{const th=THEMES[did];return `<tr><th scope="row">${th.icon} ${esc(th.name)}</th>${[1,2,3,4,5].map(diff=>{const ok=unlocked(did,diff),hp=habitatProgressFor(did,diff);return `<td><button type="button" data-grass-location="${did}" data-grass-rank="${diff}" ${ok?"":"disabled"} aria-label="${esc(th.name)} ランク${diff} ${ok?`所持 ${hp.owned}/${hp.total}`:"未解放"}">${ok?`${hp.owned}/${hp.total}`:"🔒 未解放"}</button></td>`}).join("")}</tr>`}).join("")}</tbody></table></div>
-   <div class="grassPreview"><b>🌿 生息地のピックが中心</b><span>約85%は選んだ生息地、約15%は別の生息地から迷い込みます。お菓子を投げるとチケット1枚を消費します。</span></div>
+  app.innerHTML=`<div class="card grassScreen grassChooseScreen"><div class="grassTitleRow"><div><div class="kicker">GRASS GET</div><div class="sectionTitle">🌿 草むらゲット</div><small>攻略済みのダンジョンとランクから、草むらへ進めます。</small></div><span class="grassTicketBadge">🌿 チケット ${qty}/${GRASS_TICKET_MAX}</span></div>
+   <div class="grassRankTableWrap"><table class="grassRankTable"><thead><tr><th scope="col">ダンジョン</th>${[1,2,3,4,5].map(n=>`<th scope="col">ランク${n}</th>`).join("")}</tr></thead><tbody>${THEME_ORDER.map(did=>{const th=THEMES[did];return `<tr><th scope="row">${th.icon} ${esc(th.name)}</th>${[1,2,3,4,5].map(diff=>{const open=unlocked(did,diff),cleared=grassLocationCleared(did,diff),hp=habitatProgressFor(did,diff),status=cleared?`所持 ${hp.owned}/${hp.total}`:(open?"未攻略":"未解放"),label=cleared?`${hp.owned}/${hp.total}`:(open?"未攻略":"🔒 未解放");return `<td><button type="button" data-grass-location="${did}" data-grass-rank="${diff}" ${cleared?"":"disabled"} aria-label="${esc(th.name)} ランク${diff} ${status}">${label}</button></td>`}).join("")}</tr>`}).join("")}</tbody></table></div>
+   <div class="grassPreview"><b>🌿 攻略済みの生息地だけ選択できます</b><span>約85%は選んだ生息地、約15%は別の生息地から迷い込みます。お菓子を投げるとチケット1枚を消費します。</span></div>
    <button id="grassChooseBack" class="ghost">ホームへ</button>
-   ${qty<=0?'<div class="notice">チケットがありません。生息地は確認できます。ダンジョンをクリアすると1枚獲得できます。</div>':""}
+   ${qty<=0?'<div class="notice">チケットがありません。攻略済みの生息地は確認できます。ダンジョンをクリアすると1枚獲得できます。</div>':""}
   </div>`;
   app.querySelectorAll("[data-grass-location]").forEach(b=>b.onclick=()=>prepareGrassArea(b.dataset.grassLocation,Number(b.dataset.grassRank)));
   document.getElementById("grassChooseBack").onclick=()=>leaveGrassEvent("home");return
@@ -14288,3 +14291,5 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 <!-- Updated: 2026-10-04 10:43 JST / Ver2.99 -->
 
 <!-- Ver3.00: ダンジョンホームの「探索」を「おでかけ探索」に変更。更新日時: 2026-10-04 11:05 JST -->
+
+<!-- Ver3.01: 草むらチケットの使用先を攻略済み（クリア1回以上）のダンジョン・ランクのみに制限。解放済み未クリアは「未攻略」と表示して選択不可。更新日時: 2026-10-04 11:17 JST -->
