@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.12">
+<html lang="ja" data-app-version="3.13">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14535,12 +14535,13 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
   html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized[data-dungeon-page="postrun"] #app#app .result6AllyCard>small{font-size:11px!important}
 }
 @media(max-width:700px){
-  /* Keep the previous mobile order: selected images first, action buttons below them. */
+  /* Ver3.13: mobile team-select order = quick actions, 3 selected picks, then start actions. */
   .teamPartyPane305{display:flex!important;flex-direction:column!important}
-  .teamPartyHead305{order:1}.teamSelectedRow{order:2}.teamPartyQuick310{order:3}.teamPartyBottom310{order:4}.teamPartyPane305>.autoAdventureUnlockHint{order:5}
+  .teamPartyHead305{order:1}.teamPartyQuick310{order:2}.teamSelectedRow{order:3}.teamPartyBottom310{order:4}.teamPartyPane305>.autoAdventureUnlockHint{order:5}
 }
 </style>
 <!-- Ver3.10: PC common UI tuned — action buttons moved above pick list, battle party art enlarged, pickup screen centered, and ally/hatch result cards now keep names visible. -->
+<!-- Ver3.13: iPhone team select places おまかせ編成/裏面比較 above the three selected picks, and 挑戦/自動冒険 below. -->
 </body>
 <!-- Ver3.04: bond points are capped at Lv5 MAX; overflow bond rewards auto-convert at 1 bond P = 50 Frenda Coins, including legacy overflow. -->
 
