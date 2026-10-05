@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.27">
+<html lang="ja" data-app-version="3.28">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -7102,7 +7102,9 @@ function showLuckShop(returnTo="home"){
  const returnScreen=()=>{ov.remove();document.body.style.overflow="";if(returnTo==="owned")renderOwned();else renderHome()};
  const itemQty=key=>Math.max(0,Math.floor(Number(state.shopItems?.[key])||0));
  const buyItem=(key,price,max=Infinity)=>{const q=itemQty(key),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));if(coins<price||q>=max)return false;state.frendaCoins=coins-price;state.shopItems[key]=q+1;save();return true};
- const renderShop=(focusId="")=>{updateHeaderStatus();
+ const shopScrollState=()=>({overlay:Math.max(0,ov.scrollTop||0),panel:Math.max(0,ov.querySelector(".luckShopPanel")?.scrollTop||0),catalog:Math.max(0,ov.querySelector(".shopCatalogGrid")?.scrollTop||0)});
+ const restoreShopScroll=pos=>{if(!pos)return;const apply=()=>{ov.scrollTop=Number(pos.overlay)||0;const panel=ov.querySelector(".luckShopPanel");if(panel)panel.scrollTop=Number(pos.panel)||0;const catalog=ov.querySelector(".shopCatalogGrid");if(catalog)catalog.scrollTop=Number(pos.catalog)||0};requestAnimationFrame(()=>{apply();requestAnimationFrame(apply)})};
+ const renderShop=(focusId="",scrollPos=null)=>{updateHeaderStatus();
   const qty=itemQty("luckyClover"),trainingQty=itemQty("trainingCandy"),evoQty=itemQty("evolutionCandy"),ticketQty=itemQty("captureTicket"),superBallQty=itemQty("superBall"),hyperBallQty=itemQty("hyperBall"),masterBallQty=itemQty("masterBall"),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
   const baseTargets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX),records=baseTargets.map(id=>rec(id)).filter(Boolean),types=commonFilterTypes(records),grades=commonFilterGrades(records);
   let targets=baseTargets.filter(id=>{const r=rec(id);if(!r)return false;if(!pickSearchMatch(r,shopFilter.search))return false;if(shopFilter.type!=="all"&&r.type1!==shopFilter.type&&r.type2!==shopFilter.type)return false;if(shopFilter.grade!=="all"&&Number(r.grade)!==Number(shopFilter.grade))return false;if(shopFilter.luck!=="all"&&luckFor(id)!==Number(shopFilter.luck))return false;return true});
@@ -7128,7 +7130,7 @@ function showLuckShop(returnTo="home"){
    if(panel&&balance&&how){const row=document.createElement("div");row.className="shopCoinBlackRow";panel.insertBefore(row,balance);row.append(balance,how)}
   }
   ov.querySelector("#luckShopClose").onclick=returnScreen;
-  const openUseDialog=kind=>{
+  const openUseDialog=(kind,returnShopScroll=shopScrollState())=>{
    document.getElementById("shopUseOverlay")?.remove();
    const useOv=document.createElement("div");useOv.id="shopUseOverlay";useOv.className="ownedDetailOverlay shopUseOverlay";
    const qLucky=itemQty("luckyClover"),qTraining=itemQty("trainingCandy"),qEvo=itemQty("evolutionCandy");
@@ -7138,8 +7140,8 @@ function showLuckShop(returnTo="home"){
    else{title=`🍀 ラッキークローバーを使う`;hint=`所持 ${qLucky}個　対象をタップするたび1個使用します。同じピックへ連続適用できます。`;body=`${filterHtml}<div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qLucky>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><span class="luckValue">幸運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small class="luckTargetLocked">🧭 探索中</small>`:""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${baseTargets.length?"条件に合うピックがありません。":"全所持ピックが幸運MAXです。"}</div>`}</div><div class="notice">幸運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。戦闘では幸運が高いほど攻撃のミス率も下がります。</div>`}
    useOv.innerHTML=`<div class="ownedBackPanel shopUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="shopUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div>${kind==="clover"?body:`<div class="luckTargetGrid">${body}</div>`}</div>`;
    document.body.appendChild(useOv);
-   const closeUse=()=>{useOv.remove();renderShop()};useOv.onclick=e=>{if(e.target===useOv)closeUse()};useOv.querySelector("#shopUseClose").onclick=closeUse;
-   const rerenderUse=(focusId="",scroll=0)=>{useOv.remove();renderShop();requestAnimationFrame(()=>{openUseDialog(kind);const n=document.getElementById("shopUseOverlay");if(n){n.scrollTop=scroll;if(focusId){const el=n.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const l=el.value.length;el.setSelectionRange(l,l)}}}}})};
+   const closeUse=()=>{useOv.remove();renderShop("",returnShopScroll)};useOv.onclick=e=>{if(e.target===useOv)closeUse()};useOv.querySelector("#shopUseClose").onclick=closeUse;
+   const rerenderUse=(focusId="",scroll=0)=>{useOv.remove();renderShop("",returnShopScroll);requestAnimationFrame(()=>{openUseDialog(kind,returnShopScroll);const n=document.getElementById("shopUseOverlay");if(n){n.scrollTop=scroll;if(focusId){const el=n.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const l=el.value.length;el.setSelectionRange(l,l)}}}}})};
    if(kind==="training")useOv.querySelectorAll("[data-training-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.trainingCandyTarget,q=itemQty("trainingCandy");if(q<=0||isExpeditionLocked(id))return;const pb=state.permanentBoosts[id]||{};if(!["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX))return;state.shopItems.trainingCandy=q-1;state.drillPoints[id]=drillFor(id)+1;save();rerenderUse("",useOv.scrollTop)});
    if(kind==="evolution")useOv.querySelectorAll("[data-evolution-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.evolutionCandyTarget,q=itemQty("evolutionCandy"),ei=evolutionInfoForPick(id);if(q<=0||isExpeditionLocked(id)||!ei.hasEvolution||!ei.registered||ei.points>=ei.cost)return;state.shopItems.evolutionCandy=q-1;addGrowthPoint(id,1);save();rerenderUse("",useOv.scrollTop)});
    if(kind==="clover"){
@@ -7156,14 +7158,15 @@ function showLuckShop(returnTo="home"){
   const useLucky=ov.querySelector("#useLuckyClover");if(useLucky)useLucky.onclick=()=>openUseDialog("clover");
   const useTraining=ov.querySelector("#useTrainingCandy");if(useTraining)useTraining.onclick=()=>openUseDialog("training");
   const useEvo=ov.querySelector("#useEvolutionCandy");if(useEvo)useEvo.onclick=()=>openUseDialog("evolution");
-  const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{if(buyItem("luckyClover",LUCK_ITEM_PRICE))renderShop()};
-  const buyTraining=ov.querySelector("#buyTrainingCandy");if(buyTraining)buyTraining.onclick=()=>{if(buyItem("trainingCandy",TRAINING_CANDY_PRICE,TRAINING_CANDY_MAX))renderShop()};
-  const buyEvo=ov.querySelector("#buyEvolutionCandy");if(buyEvo)buyEvo.onclick=()=>{if(buyItem("evolutionCandy",EVOLUTION_CANDY_PRICE,EVOLUTION_CANDY_MAX))renderShop()};
-  const buyTicket=ov.querySelector("#buyCaptureTicket");if(buyTicket)buyTicket.onclick=()=>{if(buyItem("captureTicket",CAPTURE_TICKET_PRICE,CAPTURE_TICKET_MAX))renderShop()};
-  const buySuperBall=ov.querySelector("#buySuperBall");if(buySuperBall)buySuperBall.onclick=()=>{if(buyItem("superBall",SUPER_BALL_PRICE,SUPER_BALL_MAX))renderShop()};
-  const buyHyperBall=ov.querySelector("#buyHyperBall");if(buyHyperBall)buyHyperBall.onclick=()=>{if(buyItem("hyperBall",HYPER_BALL_PRICE,HYPER_BALL_MAX))renderShop()};
-  const buyMasterBall=ov.querySelector("#buyMasterBall");if(buyMasterBall)buyMasterBall.onclick=()=>{if(buyItem("masterBall",MASTER_BALL_PRICE,MASTER_BALL_MAX))renderShop()};
+  const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{const keep=shopScrollState();if(buyItem("luckyClover",LUCK_ITEM_PRICE))renderShop("",keep)};
+  const buyTraining=ov.querySelector("#buyTrainingCandy");if(buyTraining)buyTraining.onclick=()=>{const keep=shopScrollState();if(buyItem("trainingCandy",TRAINING_CANDY_PRICE,TRAINING_CANDY_MAX))renderShop("",keep)};
+  const buyEvo=ov.querySelector("#buyEvolutionCandy");if(buyEvo)buyEvo.onclick=()=>{const keep=shopScrollState();if(buyItem("evolutionCandy",EVOLUTION_CANDY_PRICE,EVOLUTION_CANDY_MAX))renderShop("",keep)};
+  const buyTicket=ov.querySelector("#buyCaptureTicket");if(buyTicket)buyTicket.onclick=()=>{const keep=shopScrollState();if(buyItem("captureTicket",CAPTURE_TICKET_PRICE,CAPTURE_TICKET_MAX))renderShop("",keep)};
+  const buySuperBall=ov.querySelector("#buySuperBall");if(buySuperBall)buySuperBall.onclick=()=>{const keep=shopScrollState();if(buyItem("superBall",SUPER_BALL_PRICE,SUPER_BALL_MAX))renderShop("",keep)};
+  const buyHyperBall=ov.querySelector("#buyHyperBall");if(buyHyperBall)buyHyperBall.onclick=()=>{const keep=shopScrollState();if(buyItem("hyperBall",HYPER_BALL_PRICE,HYPER_BALL_MAX))renderShop("",keep)};
+  const buyMasterBall=ov.querySelector("#buyMasterBall");if(buyMasterBall)buyMasterBall.onclick=()=>{const keep=shopScrollState();if(buyItem("masterBall",MASTER_BALL_PRICE,MASTER_BALL_MAX))renderShop("",keep)};
   if(focusId){requestAnimationFrame(()=>{const el=ov.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const n=el.value.length;el.setSelectionRange(n,n)}}})}
+  restoreShopScroll(scrollPos);
  };
  document.body.appendChild(ov);document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov)returnScreen()};renderShop()
 }
@@ -7392,17 +7395,20 @@ function trainingGraphHTML(r,pb={}){
 function trainingSpendButtonsHTML(id,r,pb,dp){
  return `<div class="trainingSpendGrid">${[["hp","HP"],["atk","ATK"],["def","DEF"]].map(([k,label])=>{const cur=(Number(r[k])||0)+(Number(pb[k])||0),can=dp>0&&Number(pb[k]||0)<PERMANENT_BOOST_MAX,next=cur+(can?TRAINING_STEP:0);return `<button class="drillSpend trainingSpendBtn" data-train-id="${esc(id)}" data-stat="${k}" ${can?"":"disabled"}><b>${label}</b><small>${can?`${cur} → ${next}`:`${cur}`}</small></button>`}).join("")}</div>`
 }
-function renderTraining(){
+function renderTraining(restoreScroll=null){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
  app.innerHTML=`<div class="card trainingScreen"><div class="trainingScreenHead"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="trainingQuickGuide"><span>🏋️ 特訓Pで <b>HP・ATK・DEF</b> を強化</span><span>青＝初期　紫＝育成分</span><span>1Pで <b>+${TRAINING_STEP}</b></span></div>${evoLoadNote()}<div class="ownedGrid trainingGridViewport">${actionable.length?actionable.map(o=>{
   const r=rec(o.id),pb=state.permanentBoosts[o.id]||(state.permanentBoosts[o.id]={hp:0,atk:0,def:0}),xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),kept=trainingStickyIds.has(o.id);
   return `<div class="trainCard compactTrainingCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop compactTrainTop"><img src="${esc(imageOf(r))}" alt=""><div class="compactTrainInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 ${gp}</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ Lv${bondLevelFor(o.id)}</span></div></div></div>${trainingGraphHTML(r,pb)}<div class="trainingPointBalance compactBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓P</span><strong>${dp}</strong></div>${trainingSpendButtonsHTML(o.id,r,pb,dp)}${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（進化P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし</div>'}</div>`
  }).join(""):'<div class="dexEmpty">現在、特訓または進化できるポケモンはいません。</div>'}</div></div>`;
  document.getElementById("trainingBackOwned").onclick=()=>{trainingStickyIds.clear();trainingFocusId=null;screen="owned";render()};
- app.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>spendDrill(b.dataset.trainId,b.dataset.stat));
+ const captureTrainingScroll=()=>({page:Math.max(0,window.scrollY||document.documentElement.scrollTop||0),app:Math.max(0,app.scrollTop||0),grid:Math.max(0,app.querySelector(".trainingGridViewport")?.scrollTop||0)});
+ const restoreTrainingScroll=pos=>{if(!pos)return;const apply=()=>{window.scrollTo(0,Number(pos.page)||0);app.scrollTop=Number(pos.app)||0;const grid=app.querySelector(".trainingGridViewport");if(grid)grid.scrollTop=Number(pos.grid)||0};requestAnimationFrame(()=>{apply();requestAnimationFrame(apply)})};
+ app.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{const keep=captureTrainingScroll();spendDrill(b.dataset.trainId,b.dataset.stat,false);renderTraining(keep)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=()=>openEvolutionDialog(b.dataset.evolveId));
  const focus=trainingFocusId;trainingFocusId=null;
  if(focus)requestAnimationFrame(()=>{const card=[...app.querySelectorAll("[data-training-card]")].find(x=>x.dataset.trainingCard===focus);if(card){card.classList.add("trainingFocus");card.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>card.classList.remove("trainingFocus"),2400)}})
+ else restoreTrainingScroll(restoreScroll);
 }
 function dexState(id){const d=state.dex?.[id]||{};return {obtained:!!d.obtained,current:!!d.current||!!ownedEntry(id)}}
 function renderDex(){
@@ -14963,5 +14969,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.25: /test/ regression routes use the isolated FRENDA_TEST sandbox directly; admin authentication is not required and production saves remain untouched. -->
 <!-- Ver3.26: regression capture-intro now has a valid candidateIds list; proceedCaptureIntro also tolerates legacy/test capture state. -->
 <!-- Ver3.27: regression fixtures now include 20,000 coins and actionable training points for shop/training tests. -->
+<!-- Ver3.28: shop purchases and training stat spends preserve the current scroll position after rerender. -->
 </body>
 </html>
