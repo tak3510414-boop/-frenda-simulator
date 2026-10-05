@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.13">
+<html lang="ja" data-app-version="1.14">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -246,11 +246,20 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 <main id="app"></main>
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
 <script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0"),inTest=/\/test(?:\/|$)/.test(location.pathname),base=inTest?"../":"";for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${base}${f}?app=${v}"><\/script>`);if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`)})();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0"),inTest=/\/test(?:\/|$)/.test(location.pathname),base=inTest?"../":"";document.write(`<script src="${base}frenda-cloud.js?app=${v}"><\/script>`)})();
+(()=>{
+ const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");
+ const inTest=/\/test(?:\/|$)/.test(location.pathname);
+ const base=inTest?"../":"";
+ /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
+ if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
+  document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
+ /* Cloud runtime is intentionally absent from /test/. */
+ if(!inTest){
+  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+  document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
+ }
+})();
 </script>
 <script>
 (()=>{
@@ -3176,5 +3185,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.11: /test/ regression routes no longer depend on admin.html; the isolated FRENDA_TEST sandbox is sufficient and production saves stay protected. -->
 <!-- Ver1.12: regression mode always unlocks test groups and never redirects to administrator authentication. -->
 <!-- Ver1.13: fixed regression test states to populate group[0] directly, so exploring / boxes / summary open their intended screens. -->
+<!-- Ver1.14: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
 </body>
 </html>

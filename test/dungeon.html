@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.29">
+<html lang="ja" data-app-version="3.30">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4318,13 +4318,21 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 <main id="app"></main>
 
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
-<!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
 <script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0"),inTest=/\/test(?:\/|$)/.test(location.pathname),base=inTest?"../":"";for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${base}${f}?app=${v}"><\/script>`);if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`)})();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0"),inTest=/\/test(?:\/|$)/.test(location.pathname),base=inTest?"../":"";document.write(`<script src="${base}frenda-cloud.js?app=${v}"><\/script>`)})();
+(()=>{
+ const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");
+ const inTest=/\/test(?:\/|$)/.test(location.pathname);
+ const base=inTest?"../":"";
+ /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
+ if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
+  document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
+ /* Cloud runtime is intentionally absent from /test/. */
+ if(!inTest){
+  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+  document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
+ }
+})();
 </script>
 <script>
 (()=>{
@@ -14996,6 +15004,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.26: regression capture-intro now has a valid candidateIds list; proceedCaptureIntro also tolerates legacy/test capture state. -->
 <!-- Ver3.27: regression fixtures now include 20,000 coins and actionable training points for shop/training tests. -->
 <!-- Ver3.28: shop purchases and training stat spends preserve the current scroll position after rerender. -->
-<!-- Ver3.29: shop purchases update balances and button states in place, preserving the exact shop scroll position. -->
+<!-- Ver3.29: shop purchases no longer rebuild the shop DOM; balances and button states update in place so Safari scroll position never resets. -->
+<!-- Ver3.30: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
 </body>
 </html>
