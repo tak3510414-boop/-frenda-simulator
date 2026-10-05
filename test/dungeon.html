@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.25">
+<html lang="ja" data-app-version="3.26">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5061,7 +5061,7 @@ function applyDungeonTestCase(){
   state.run.scene="chooseFighter";save();startFighter(0);banner();return true
  }
  if(["capture-intro","capture-slot"].includes(DUNGEON_TEST_CASE)){
-  state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master","poke","super","hyper","master"],pendingOutcome:null,result:null,special:false};
+  state.run.capture={eligible:true,candidateIds:[legendary?.master_id].filter(Boolean),targetId:legendary?.master_id,balls:["poke","super","hyper","master","poke","super","hyper","master"],pendingOutcome:null,result:null,special:false};
   state.run.scene=DUNGEON_TEST_CASE==="capture-slot"?"captureSlot":"captureIntro";save();render();banner();return true
  }
  screen="home";render();banner();return false
@@ -6252,7 +6252,7 @@ function shopBallQty(ballKey){const key=shopBallItemKey(ballKey);return key?Math
 function usePurchasedBall(ballKey){const r=state.run,c=r?.capture,key=shopBallItemKey(ballKey),def=BALL_DEF[ballKey];if(!r||r.scene!=="captureSlot"||!c?.targetId||!key||!def||r.autoAdventure)return;const qty=shopBallQty(ballKey);if(qty<=0)return;if(!UI.dialog.confirm(`${def.label}を1個使いますか？\nボールスロットは行わず、このボールを投げます。\n所持 ${qty}個 → ${qty-1}個`))return;stopBallTimer();state.shopItems[key]=qty-1;addLog(`🎒 所持していた${def.label}を使用（残り${qty-1}個）。`);save();resolveCapture(ballKey)}
 function skipCaptureTicket(){if(!state.run||state.run.scene!=="captureTicket")return;addLog("🎟️ ゲットチャンスチケットは使わずに先へ進んだ。");finishMissedCapture()}
 function proceedAfterBattleReward(){const c=state.run.capture;if(c?.eligible){state.run.scene="captureIntro";save();render()}else if(captureTicketOfferAvailable(c)){state.run.scene="captureTicket";save();render()}else finishMissedCapture()}
-function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;if(c.candidateIds.length>1){state.run.scene="captureSelect";save();render()}else{chooseCaptureTarget(c.candidateIds[0])}}
+function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;const ids=Array.isArray(c.candidateIds)?c.candidateIds.filter(Boolean):(c.targetId?[c.targetId]:[]);if(!ids.length)return;if(ids.length>1){c.candidateIds=ids;state.run.scene="captureSelect";save();render()}else{chooseCaptureTarget(ids[0])}}
 function chooseCaptureTarget(id){const c=state.run.capture;if(!c||!c.eligible)return; c.targetId=id;const special=Math.random()<.10;let balls=special?["poke","poke","poke","poke","super","super","hyper","master"]:["poke","poke","poke","poke","poke","super","super","hyper"];c.balls=shuffle(balls);c.special=special;c.pendingOutcome=null;c.result=null;state.run.scene="captureSlot";save();render()}
 function captureRate(targetId,ballKey){const base=RULES.captureRate(Number(rec(targetId)?.grade||2),ballKey,Number(state.run?.captureBoost||0));return Math.min(1,base*luckMultiplier(currentPartyLuck()))}
 function resolveCapture(ballKey){const c=state.run.capture;if(!c||!c.targetId||c.result)return;if(!c.pendingOutcome){const boost=Math.max(0,Number(state.run.captureBoost||0)),rate=captureRate(c.targetId,ballKey),success=Math.random()<rate;c.pendingOutcome={ballKey,rate,success,captureBoost:boost};state.run.captureBoost=0;if(boost)addLog(`拾ったモンスターボール効果を使用：捕獲率${Math.round(boost*100)}%アップ。`)}state.run.scene="captureThrow";save();render()}
@@ -14961,5 +14961,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.22: fixed repeatable regression test routes; test mode refuses to run without isolated FRENDA_TEST storage. -->
 <!-- Ver3.23: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
 <!-- Ver3.25: /test/ regression routes use the isolated FRENDA_TEST sandbox directly; admin authentication is not required and production saves remain untouched. -->
+<!-- Ver3.26: regression capture-intro now has a valid candidateIds list; proceedCaptureIntro also tolerates legacy/test capture state. -->
 </body>
 </html>
