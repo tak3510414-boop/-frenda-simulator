@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.22">
+<html lang="ja" data-app-version="3.23">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4320,11 +4320,11 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
 <script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-test.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${f}?app=${v}"><\/script>`)})();
+(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0"),inTest=/\/test(?:\/|$)/.test(location.pathname),base=inTest?"../":"";for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${base}${f}?app=${v}"><\/script>`);if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`)})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`)})();
+(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0"),inTest=/\/test(?:\/|$)/.test(location.pathname),base=inTest?"../":"";document.write(`<script src="${base}frenda-cloud.js?app=${v}"><\/script>`)})();
 </script>
 <script>
 (()=>{
@@ -14960,5 +14960,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 </style>
 <!-- Ver3.21: removed dormant full-page ownership observer code/CSS, consolidated recent hotfix CSS, and normalized closing-tag structure. -->
 <!-- Ver3.22: fixed repeatable regression test routes; test mode refuses to run without isolated FRENDA_TEST storage. -->
+<!-- Ver3.23: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
 </body>
 </html>
