@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.31">
+<html lang="ja" data-app-version="3.32">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5038,7 +5038,7 @@ function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).sl
 function applyDungeonTestCase(){
  if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return false;
  const ids=ensureDungeonTestOwned();
- const banner=()=>{if(!document.getElementById("frendaDungeonTestBanner"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaDungeonTestBanner" style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${esc(DUNGEON_TEST_CASE)} / 本番ローカル・クラウドは変更しません</div>`)};
+ const banner=()=>{if(!document.getElementById("frendaDungeonTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaDungeonTestBadge" title="テストモード：${esc(DUNGEON_TEST_CASE)} / 本番保存は変更しません" aria-label="テストモード" style="position:fixed;left:3px;top:calc(env(safe-area-inset-top,0px) + 3px);z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;line-height:1;font-weight:1000;opacity:.58;box-shadow:0 1px 3px #0002">🧪</div>`) };
  document.title=`🧪 ${document.title}`;
  const simpleScreen={home:"home",owned:"owned",training:"training",items:"items"};
  if(simpleScreen[DUNGEON_TEST_CASE]){
@@ -15008,5 +15008,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.29: shop purchases no longer rebuild the shop DOM; balances and button states update in place so Safari scroll position never resets. -->
 <!-- Ver3.30: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
 <!-- Ver3.31: restored the visible save-management entry in the version/settings panel; save export/import/reset remain available from the dedicated screen. -->
+<!-- Ver3.32: test-mode indicator no longer consumes layout height; replaced full-width banner with tiny fixed overlay badge. -->
 </body>
 </html>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.14">
+<html lang="ja" data-app-version="1.15">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -583,7 +583,7 @@ function applyExpeditionTestCase(){
  exp=normalizeExp(x);prep=exp.groups[0].prep;
  writeExp();
  document.title=`🧪 ${document.title}`;
- document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${EXPEDITION_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`)
+ if(!document.getElementById("frendaExpeditionTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaExpeditionTestBadge" title="テストモード：${EXPEDITION_TEST_CASE} / 本番保存は変更しません" aria-label="テストモード" style="position:fixed;left:3px;top:calc(env(safe-area-inset-top,0px) + 3px);z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;line-height:1;font-weight:1000;opacity:.58;box-shadow:0 1px 3px #0002">🧪</div>`)
 }
 function ensureDungeonEconomy(d){
  d.luckLevels=d.luckLevels&&typeof d.luckLevels==="object"?d.luckLevels:{};
@@ -3186,5 +3186,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.12: regression mode always unlocks test groups and never redirects to administrator authentication. -->
 <!-- Ver1.13: fixed regression test states to populate group[0] directly, so exploring / boxes / summary open their intended screens. -->
 <!-- Ver1.14: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
+<!-- Ver1.15: test-mode indicator no longer consumes layout height; replaced full-width banner with tiny fixed overlay badge. -->
 </body>
 </html>

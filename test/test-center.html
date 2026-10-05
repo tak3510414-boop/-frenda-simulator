@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.0">
+<html lang="ja" data-test-center-version="2.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -113,6 +113,7 @@ async function runAuto(){
   ["テスト中クラウド無効",/if\(!inTest\)/.test(d)&&/Cloud runtime is intentionally absent from \/test\//.test(d)&&/if\(!inTest\)/.test(e),"/test/ では Supabase / frenda-cloud.js を読み込まない"],
   ["本番保存監視",/productionStorageUnchanged/.test(t)&&/assertProductionStorageUnchanged/.test(t),"本番保存キーの変化を検出したらテスト停止"],
   ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
+  ["テスト表示はレイアウト非占有",/frendaDungeonTestBadge/.test(d)&&/position:fixed/.test(d)&&/frendaExpeditionTestBadge/.test(e)&&/position:fixed/.test(e),"全幅の黄色帯を廃止し、小さな固定オーバーレイのみ"],
   ["ダンジョン固定テスト経路",["team-star5","route-star5","battle","legendary-intro","capture-intro","capture-slot","quick-training","shop"].every(x=>d.includes(`\"${x}\"`)||d.includes(`===\"${x}\"`)),"主要画面へ直接移動可能"],
   ["探索固定テスト経路",["prep","exploring","boxes","summary"].every(x=>e.includes(`===\"${x}\"`)),"準備→探索中→箱→完了"],
   ["探索テスト初期適用",/EXPEDITION_TEST_MODE&&EXPEDITION_TEST_CASE\)applyExpeditionTestCase\(\)/.test(e),"初回render前にテスト状態を適用"],
