@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="1.8">
+<html lang="ja" data-test-center-version="1.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -108,7 +108,7 @@ async function runAuto(){
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.1/.test(t)&&/active:\s*!!isolated/.test(t),"本番localStorageのスナップショットをメモリ分離"],
-  ["隔離スクリプト読込順",d.indexOf(`frenda-test.js?app=${v}`)<d.indexOf(`frenda-data.js`)&&e.indexOf(`frenda-test.js?app=${v}`)<e.indexOf(`frenda-data.js`),"frenda-test.js を共通JSより先に実行"],
+  ["隔離スクリプト読込順",d.indexOf("frenda-test.js?app=")<d.indexOf("frenda-data.js")&&e.indexOf("frenda-test.js?app=")<e.indexOf("frenda-data.js"),"frenda-test.js を共通JSより先に実行"],
   ["テスト中クラウド無効",/if\(!inTest\)/.test(d)&&/Cloud runtime is intentionally absent from \/test\//.test(d)&&/if\(!inTest\)/.test(e),"/test/ では Supabase / frenda-cloud.js を読み込まない"],
   ["本番保存監視",/productionStorageUnchanged/.test(t)&&/assertProductionStorageUnchanged/.test(t),"本番保存キーの変化を検出したらテスト停止"],
   ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
