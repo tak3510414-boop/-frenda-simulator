@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.18">
+<html lang="ja" data-app-version="3.20">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4324,15 +4324,13 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
 <!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
-<script src="frenda-master.js?b=20260927_2148"></script>
-<script src="frenda-core.js?b=20260927_2148"></script>
-<script src="frenda-rules.js?b=20260927_2148"></script>
-<script src="frenda-test.js?b=20260928_2245"></script>
-<script src="frenda-data.js?b=20260928_2245"></script>
-<script src="frenda-ui.js?b=20260928_2245"></script>
-<script src="frenda-parental.js?b=20260929_0535"></script>
+<script>
+(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-test.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${f}?app=${v}"><\/script>`)})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="frenda-cloud.js?b=20260928_2245"></script>
+<script>
+(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`)})();
+</script>
 <script>
 (()=>{
 "use strict";
@@ -4876,7 +4874,9 @@ const STARTER_SET_DEFS=[
 const stateDefault=()=>({saveVersion:13,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,grassTicket:3,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},lastTeamIds:[],run:null,postRun:null,grassSession:null,lastSummary:null});
 // Battle-knowledge cache must exist before migrateState(), because reconcileDexState() invalidates it during startup.
 let battleKnowledgeTypeCache=null;
+let dungeonSaveBaseline=null;
 let state=loadState();
+dungeonSaveBaseline=JSON.parse(JSON.stringify(state));
 migrateState();
 let screen="home";
 const headerSaveStatus=document.getElementById("headerCloudStatus");
@@ -4954,7 +4954,79 @@ function readRunEndGuard(){try{const x=JSON.parse(STORE.getItem(RUN_END_GUARD_KE
 function clearRunEndGuard(){try{STORE.removeItem(RUN_END_GUARD_KEY)}catch{}}
 function writeRunEndGuard(run,summary){try{STORE.setItem(RUN_END_GUARD_KEY,JSON.stringify({startedAt:String(run?.startedAt||""),endedAt:Date.now(),type:summary?.type||"",summary:summary||null}))}catch{}}
 function enforceRunEndGuard(target){const g=readRunEndGuard();if(!g||!target?.run)return false;const started=String(target.run.startedAt||"");if(g.startedAt&&started&&g.startedAt!==started)return false;target.run=null;target.postRun=null;if(g.summary)target.lastSummary=g.summary;return true}
-function save(){try{state.appVersion=APP_VERSION;state.saveVersion=13;DATA.dungeon.write(state)}catch(e){console.error(e)}}
+function saveClone320(v){try{return structuredClone(v)}catch{return JSON.parse(JSON.stringify(v??null))}}
+function saveObj320(v){return v&&typeof v==="object"&&!Array.isArray(v)}
+function saveSame320(a,b){if(a===b)return true;try{return JSON.stringify(a)===JSON.stringify(b)}catch{return false}}
+function mergeOwned320(base,current,latest){
+ const out=[],seen=new Set();
+ for(const src of [latest,current])for(const raw of Array.isArray(src)?src:[]){const id=String(raw?.id||"");if(!id)continue;if(seen.has(id)){const i=out.findIndex(x=>String(x?.id||"")===id);if(i>=0)out[i]=Object.assign({},out[i],saveClone320(raw));continue}seen.add(id);out.push(saveClone320(raw))}
+ return out
+}
+function mergeRecordMap320(latest,current){
+ const out=saveObj320(latest)?saveClone320(latest):{};
+ for(const [k,v] of Object.entries(saveObj320(current)?current:{})){
+  out[k]=saveObj320(out[k])&&saveObj320(v)?Object.assign({},out[k],saveClone320(v)):saveClone320(v)
+ }
+ return out
+}
+function mergeNumericMap320(base,current,latest){
+ const b=saveObj320(base)?base:{},c=saveObj320(current)?current:{},l=saveObj320(latest)?latest:{},out={};
+ const keys=new Set([...Object.keys(b),...Object.keys(c),...Object.keys(l)]);
+ for(const k of keys){
+  const bh=Object.prototype.hasOwnProperty.call(b,k),ch=Object.prototype.hasOwnProperty.call(c,k),lh=Object.prototype.hasOwnProperty.call(l,k);
+  if(bh&&!ch)continue;
+  if(!ch&&lh){out[k]=saveClone320(l[k]);continue}
+  if(!ch)continue;
+  const cv=Number(c[k]),bv=bh?Number(b[k]):0,lv=lh?Number(l[k]):bv;
+  if(Number.isFinite(cv)&&Number.isFinite(bv)&&Number.isFinite(lv)){
+   if(cv===bv)out[k]=lv;else if(lv===bv)out[k]=cv;else out[k]=Math.max(0,lv+(cv-bv));
+  }else out[k]=saveClone320(c[k])
+ }
+ return out
+}
+function mergeEggs320(base,current,latest){
+ const b=Array.isArray(base)?base:[],c=Array.isArray(current)?current:[],l=Array.isArray(latest)?latest:[];
+ const bm=new Map(b.filter(x=>x?.id).map(x=>[String(x.id),x])),cm=new Map(c.filter(x=>x?.id).map(x=>[String(x.id),x])),lm=new Map(l.filter(x=>x?.id).map(x=>[String(x.id),x]));
+ const order=[];for(const src of [c,l,b])for(const x of src){const id=String(x?.id||"");if(id&&!order.includes(id))order.push(id)}
+ const out=[];
+ for(const id of order){const bv=bm.get(id),cv=cm.get(id),lv=lm.get(id);
+  if(bv){if(!cv)continue;if(!lv){if(saveSame320(cv,bv))continue;out.push(saveClone320(cv));continue}out.push(saveClone320(saveSame320(cv,bv)?lv:cv));continue}
+  if(cv)out.push(saveClone320(cv));else if(lv)out.push(saveClone320(lv))
+ }
+ return out
+}
+function mergeDungeonConcurrent320(base,current,latest){
+ const b=saveObj320(base)?base:{},c=saveObj320(current)?current:{},l=saveObj320(latest)?latest:{};
+ const out=Object.assign({},saveClone320(c));
+ // おでかけ探索が同時更新し得る領域だけ、3-way merge する。
+ out.expeditionShared=saveClone320(Object.prototype.hasOwnProperty.call(l,"expeditionShared")?l.expeditionShared:c.expeditionShared);
+ out.owned=mergeOwned320(b.owned,c.owned,l.owned);
+ for(const k of ["dex","seenSpecies","seenPicks"])out[k]=mergeRecordMap320(l[k],c[k]);
+ for(const k of ["experience","drillPoints","trainingPoints","bondPoints"])out[k]=mergeNumericMap320(b[k],c[k],l[k]);
+ const bn=Number(b.frendaCoins)||0,cn=Number(c.frendaCoins)||0,ln=Number(l.frendaCoins)||0;
+ out.frendaCoins=Math.max(0,Math.floor(cn===bn?ln:ln===bn?cn:ln+(cn-bn)));
+ out.eggs=mergeEggs320(b.eggs,c.eggs,l.eggs);
+ // 同時に絆MAXを超えた分は失わずコイン化する。
+ let bondOverflow=0;for(const [k,v] of Object.entries(out.bondPoints||{})){const n=Math.max(0,Math.floor(Number(v)||0));if(n>BOND_MAX_POINTS){bondOverflow+=n-BOND_MAX_POINTS;out.bondPoints[k]=BOND_MAX_POINTS}else out.bondPoints[k]=n}
+ if(bondOverflow)out.frendaCoins+=bondOverflow*COIN_PER_OVERFLOW_BOND;
+ out.appVersion=APP_VERSION;out.saveVersion=13;
+ return out
+}
+function syncConcurrentState320(merged){
+ for(const k of ["expeditionShared","owned","dex","seenSpecies","seenPicks","experience","drillPoints","trainingPoints","bondPoints","eggs"])state[k]=saveClone320(merged[k]);
+ state.frendaCoins=Math.max(0,Math.floor(Number(merged.frendaCoins)||0));state.appVersion=APP_VERSION;state.saveVersion=13
+}
+function save(){
+ try{
+  state.appVersion=APP_VERSION;state.saveVersion=13;
+  const current=saveClone320(state),base=saveClone320(dungeonSaveBaseline||current);let merged=null;
+  if(typeof DATA.dungeon.mutate==="function"){
+   DATA.dungeon.mutate(latest=>{merged=mergeDungeonConcurrent320(base,current,latest||{});for(const k of Object.keys(latest||{}))delete latest[k];Object.assign(latest,saveClone320(merged))})
+  }else{merged=mergeDungeonConcurrent320(base,current,DATA.dungeon.read()||{});DATA.dungeon.write(merged)}
+  if(!merged)merged=DATA.dungeon.read()||current;
+  syncConcurrentState320(merged);dungeonSaveBaseline=saveClone320(merged)
+ }catch(e){console.error("DUNGEON_SAFE_SAVE",e);try{DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}catch(e2){console.error(e2)}}
+}
 function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();return ids}
 function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
@@ -5019,7 +5091,7 @@ function migrateState(){
  state.saveVersion=13;
  save();
 }
-function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();screen="home";render()}
+function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();dungeonSaveBaseline=saveClone320(state);screen="home";render()}
 const esc=UI.escapeHtml;
 const RECORD_INDEX=DATA.records.index(RECORDS);
 function rec(id){return RECORD_INDEX.get(id)}
@@ -14710,3 +14782,149 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized
 }
 </style>
 <!-- Ver3.18: black PC shop coin information is separated from products by spacing and a divider. -->
+
+
+<style id="v319-blackpc-capture-slot-eggstyle">
+/* Ver3.19: black PC capture slot follows the egg-roulette composition. */
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureSlotCard{
+  height:100%!important;
+  min-height:0!important;
+  padding:10px 12px!important;
+  overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureStageTeam{
+  display:none!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureSlotBody{
+  height:100%!important;
+  min-height:0!important;
+  padding:10px 14px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  overflow:hidden!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureSlotBody>.sectionTitle{
+  flex:0 0 auto!important;
+  font-size:30px!important;
+  line-height:1.1!important;
+  margin:0!important;
+  text-align:center!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureTargetPanel{
+  flex:1 1 0!important;
+  min-height:0!important;
+  width:min(430px,48%)!important;
+  max-height:330px!important;
+  margin:0 auto!important;
+  padding:10px 16px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  text-align:center!important;
+  border:2px solid #b9d7e8!important;
+  border-radius:18px!important;
+  background:linear-gradient(180deg,#fbfdff,#edf7fc)!important;
+  box-shadow:0 8px 22px #17384c12,inset 0 1px 0 #fff!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureTargetPanel .ownershipImageWrap{
+  width:auto!important;
+  height:min(245px,34vh)!important;
+  max-height:245px!important;
+  display:inline-block!important;
+  position:relative!important;
+  line-height:0!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureTargetPanel .ownershipImageWrap>img{
+  width:auto!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:245px!important;
+  margin:0 auto!important;
+  object-fit:contain!important;
+  aspect-ratio:auto!important;
+  border-radius:12px!important;
+  box-shadow:0 8px 18px #17384c22!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureTargetPanel h2{
+  font-size:28px!important;
+  line-height:1.05!important;
+  margin:2px 0 0!important;
+  text-align:center!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureTargetPanel .captureHeroWish{
+  font-size:13px!important;
+  line-height:1.2!important;
+  margin:0!important;
+  text-align:center!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureTargetPanel>.badge{
+  font-size:12px!important;
+  padding:5px 9px!important;
+  margin:0!important;
+  align-self:center!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureSlotNotice{
+  display:none!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureOwnedBalls{
+  flex:0 0 auto!important;
+  width:min(960px,100%)!important;
+  margin:0 auto!important;
+  padding:4px 7px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureOwnedBallsTitle{
+  font-size:9px!important;
+  margin-bottom:3px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureOwnedBallBtn{
+  min-height:42px!important;
+  padding:3px 7px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureOwnedBallBtn img{
+  width:28px!important;height:28px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .ballSlot{
+  flex:0 0 auto!important;
+  width:min(1120px,100%)!important;
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin:0 auto!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .ballCell{
+  min-height:78px!important;
+  padding:7px 3px!important;
+  border-radius:13px!important;
+  font-size:10px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .ballCell img{
+  width:38px!important;
+  height:38px!important;
+  margin:0 auto 3px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .ballCell.active{
+  transform:translateY(-5px)!important;
+  box-shadow:0 7px 18px #9c720044!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app #ballStop{
+  flex:0 0 auto!important;
+  width:min(780px,72%)!important;
+  min-height:54px!important;
+  margin:0 auto!important;
+  padding:10px 18px!important;
+  font-size:27px!important;
+  border-radius:16px!important;
+}
+html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureSlotTapHint{
+  flex:0 0 auto!important;
+  font-size:10px!important;
+  margin:0!important;
+}
+</style>
+<!-- Ver3.19: black PC ball slot reorganized using the egg-roulette layout pattern. -->
+
+<!-- Ver3.20: three-way safe dungeon save preserves concurrent expedition changes; shared JS cache keys now follow app version. -->
