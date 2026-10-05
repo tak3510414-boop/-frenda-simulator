@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.26">
+<html lang="ja" data-app-version="3.27">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5026,7 +5026,7 @@ function save(){
  }catch(e){console.error("DUNGEON_SAFE_SAVE",e);try{DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}catch(e2){console.error(e2)}}
 }
 function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
-function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();if(DUNGEON_TEST_MODE){DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}return ids}
+function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.frendaCoins=20000;state.drillPoints={};state.experience={};state.permanentBoosts={};ids.forEach((id,i)=>{state.drillPoints[id]=8-i;state.experience[id]=50+(i*15);state.permanentBoosts[id]={hp:0,atk:0,def:0}});state.lastTeamIds=ids.slice();teamSelection=ids.slice();if(DUNGEON_TEST_MODE){DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}return ids}
 function applyDungeonTestCase(){
  if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return false;
  const ids=ensureDungeonTestOwned();
@@ -14962,5 +14962,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.23: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
 <!-- Ver3.25: /test/ regression routes use the isolated FRENDA_TEST sandbox directly; admin authentication is not required and production saves remain untouched. -->
 <!-- Ver3.26: regression capture-intro now has a valid candidateIds list; proceedCaptureIntro also tolerates legacy/test capture state. -->
+<!-- Ver3.27: regression fixtures now include 20,000 coins and actionable training points for shop/training tests. -->
 </body>
 </html>
