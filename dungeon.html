@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.20">
+<html lang="ja" data-app-version="3.21">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4301,17 +4301,12 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 .grassResultHero .grassResultOwnership .pickOwnershipBadge{font-size:10px;padding:5px 9px}
 .result6HatchStatus{display:none!important}
 .result6NewBadge{font-size:8px!important;padding:5px 8px!important;left:auto!important;right:8px!important;top:8px!important;letter-spacing:.04em!important;z-index:9!important}
-.ownershipAutoHost{position:relative!important}
-.autoOwnershipBadge{position:absolute;z-index:8;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:1000;line-height:1;white-space:nowrap;pointer-events:none;box-shadow:0 2px 7px #0b263429;border:2px solid transparent}
-.autoOwnershipBadge.owned{background:#e7edf1;color:#425763;border-color:#bdcad2}
-.autoOwnershipBadge.unowned{background:linear-gradient(180deg,#54da89,#1eaa5a);color:#fff;border-color:#148547;box-shadow:0 3px 10px #167b3d4d}
-.autoOwnershipBadge.newowned{background:linear-gradient(180deg,#ffd95a,#f6a51b);color:#563500;border-color:#dc9312}
 .pokemonEventBadge{position:absolute;right:8px;top:8px;z-index:9;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:9px;font-weight:1000;line-height:1;white-space:nowrap;pointer-events:none;box-shadow:0 2px 7px #0b263429}
 .pokemonEventBadge.new{background:linear-gradient(180deg,#66d9ff,#22a7dc);color:#083c55;border:2px solid #1688b6}
 .pokemonEventBadge.hatch{background:linear-gradient(180deg,#c69af7,#8b61d4);color:#fff;border:2px solid #6c45b5}
 .habitatOwnershipText,.dexCurrent,.dexSeenTag{display:none!important}.habitatPick.owned:before,.habitatPick.seen:before{content:none!important}
 .habitatOwnershipText{display:inline-flex!important;width:max-content;margin:5px auto 0!important;padding:3px 6px;border-radius:999px;background:#e8f5ec;color:#217043;font-size:7px!important;font-weight:1000}
-@media(max-width:700px){.ownershipImageWrap>.pokemonOwnershipInline,.ownershipImageWrap>.pickOwnershipBadge,.grassFoundImageWrap>.pickOwnershipBadge,.captureStage .captureStageOwnership,.rewardEnemyOwnershipWrap .pickOwnershipBadge,.grassResultHero .grassResultOwnership{left:5px;top:5px}.ownershipImageWrap>.pokemonOwnershipInline .pickOwnershipBadge,.ownershipImageWrap>.pickOwnershipBadge,.grassFoundImageWrap .pickOwnershipBadge,.captureStage .captureStageOwnership,.rewardEnemyOwnershipWrap .pickOwnershipBadge,.grassResultHero .grassResultOwnership .pickOwnershipBadge,.autoOwnershipBadge{font-size:8px;padding:3px 6px}.result6NewBadge{font-size:6px!important;padding:3px 5px!important;right:5px!important}.pokemonEventBadge{right:5px;top:5px;font-size:7px;padding:3px 6px}}
+@media(max-width:700px){.ownershipImageWrap>.pokemonOwnershipInline,.ownershipImageWrap>.pickOwnershipBadge,.grassFoundImageWrap>.pickOwnershipBadge,.captureStage .captureStageOwnership,.rewardEnemyOwnershipWrap .pickOwnershipBadge,.grassResultHero .grassResultOwnership{left:5px;top:5px}.ownershipImageWrap>.pokemonOwnershipInline .pickOwnershipBadge,.ownershipImageWrap>.pickOwnershipBadge,.grassFoundImageWrap .pickOwnershipBadge,.captureStage .captureStageOwnership,.rewardEnemyOwnershipWrap .pickOwnershipBadge,.grassResultHero .grassResultOwnership .pickOwnershipBadge{font-size:8px;padding:3px 6px}.result6NewBadge{font-size:6px!important;padding:3px 5px!important;right:5px!important}.pokemonEventBadge{right:5px;top:5px;font-size:7px;padding:3px 6px}}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassFoundImageWrap img{width:330px!important;height:100%!important;max-height:400px!important;object-fit:contain!important;aspect-ratio:auto!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .grassFoundImageWrap img{width:260px!important;max-height:310px!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultHero{grid-column:1!important;grid-row:4!important;align-self:center!important;justify-self:center!important;margin:0!important}
@@ -5167,15 +5162,6 @@ function ownedEntry(id){return state.owned.find(x=>x.id===id)||null}
 function pickOwnershipBadgeHTML(id,first=false,extraClass=""){const owned=!!ownedEntry(String(id||"")),label=owned?"所持済":"未所持";return `<span class="pickOwnershipBadge ${owned?"owned":"unowned"} ${esc(extraClass)}">${label}</span>`}
 function pickOwnershipResultBadgeHTML(id,mode="auto",extraClass=""){const owned=!!ownedEntry(String(id||""));let cls=owned?"owned":"unowned",label=owned?"所持済":"未所持";if(mode==="owned"){cls="owned";label="所持済"}else if(mode==="unowned"){cls="unowned";label="未所持"}else if(mode==="new"){cls="newowned";label="未所持 → 仲間入り"}return `<span class="pickOwnershipBadge ${cls} ${esc(extraClass)}">${label}</span>`}
 function pokemonEventBadgeHTML(label,kind="new"){return `<span class="pokemonEventBadge ${esc(kind)}">${esc(label)}</span>`}
-let ownershipImageIndexV308=null,ownershipOverlayRafV308=0,ownershipObserverV308=null;
-function ownershipImageUrlV308(src){try{return new URL(src,location.href).href}catch{return String(src||"")}}
-function ownershipImageIndexMapV308(){if(ownershipImageIndexV308)return ownershipImageIndexV308;ownershipImageIndexV308=new Map();for(const r of RECORDS||[]){if(!r?.master_id)continue;const src=imageOf(r);if(src)ownershipImageIndexV308.set(ownershipImageUrlV308(src),String(r.master_id))}return ownershipImageIndexV308}
-function ownershipModeForImageV308(img,id){const forced=img?.dataset?.ownershipMode||img?.closest?.("[data-ownership-mode]")?.dataset?.ownershipMode;if(["owned","unowned","new"].includes(forced))return forced;return ownedEntry(id)?"owned":"unowned"}
-function ownershipLabelForModeV308(mode){return mode==="new"?"未所持 → 仲間入り":mode==="owned"?"所持済":"未所持"}
-function ownershipClassForModeV308(mode){return mode==="new"?"newowned":mode==="owned"?"owned":"unowned"}
-function applyOwnershipOverlayV308(root=document){const map=ownershipImageIndexMapV308();for(const img of root.querySelectorAll?.("img")||[]){if(img.classList.contains("silhouette"))continue;const id=map.get(ownershipImageUrlV308(img.currentSrc||img.src));if(!id)continue;const parent=img.parentElement;if(!parent)continue;const mode=ownershipModeForImageV308(img,id),label=ownershipLabelForModeV308(mode),cls=ownershipClassForModeV308(mode);const manualWrap=parent.querySelector(":scope > .pokemonOwnershipInline, :scope > .grassResultOwnership");if(manualWrap){const b=manualWrap.querySelector(".pickOwnershipBadge");if(b&&!b.classList.contains("newowned")){b.textContent=label;b.classList.remove("owned","unowned","newowned");b.classList.add(cls)}continue}let badge=parent.querySelector(":scope > .pickOwnershipBadge, :scope > .captureOwnershipBadge");if(!badge){badge=[...parent.children].find(x=>x.classList?.contains("autoOwnershipBadge")&&x.dataset.ownerId===id)||null}if(!badge){badge=document.createElement("span");badge.className=`autoOwnershipBadge ${cls}`;badge.dataset.ownerId=id;parent.appendChild(badge)}else if(!badge.classList.contains("newowned")){badge.classList.remove("owned","unowned","newowned");badge.classList.add(cls)}if(!badge.classList.contains("newowned"))badge.textContent=label;parent.classList.add("ownershipAutoHost");const pr=parent.getBoundingClientRect(),ir=img.getBoundingClientRect();if(ir.width>0&&ir.height>0){badge.style.left=`${Math.max(3,ir.left-pr.left+5)}px`;badge.style.top=`${Math.max(3,ir.top-pr.top+5)}px`}}}
-function scheduleOwnershipOverlayV308(){if(ownershipOverlayRafV308)return;ownershipOverlayRafV308=requestAnimationFrame(()=>{ownershipOverlayRafV308=0;requestAnimationFrame(()=>applyOwnershipOverlayV308(document))})}
-function installOwnershipOverlayV308(){if(ownershipObserverV308)return;ownershipObserverV308=new MutationObserver(()=>scheduleOwnershipOverlayV308());ownershipObserverV308.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["src"]});window.addEventListener("resize",scheduleOwnershipOverlayV308,{passive:true});scheduleOwnershipOverlayV308()}
 function expeditionSnapshot(){return DATA.expedition.snapshot(state)||state.expeditionShared||null}
 function expeditionLockedIds(){const x=expeditionSnapshot();if(!x||!["exploring","returned"].includes(x.status)||!x.mission)return new Set();return new Set((x.mission.teamIds||[]).filter(Boolean))}
 function isExpeditionLocked(id){return expeditionLockedIds().has(id)}
@@ -14622,10 +14608,38 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 </style>
 <!-- Ver3.10: PC common UI tuned — action buttons moved above pick list, battle party art enlarged, pickup screen centered, and ally/hatch result cards now keep names visible. -->
 <!-- Ver3.13: iPhone team select places おまかせ編成/裏面比較 above the three selected picks, and 挑戦/自動冒険 below. -->
-</body>
 <!-- Ver3.04: bond points are capped at Lv5 MAX; overflow bond rewards auto-convert at 1 bond P = 50 Frenda Coins, including legacy overflow. -->
 
-<style id="v311-grass-bulk-training">
+<!-- Ver3.11: grass get result PC layout fixed; owned picks bulk training added with HP/ATK/DEF priority or balanced policy. -->
+
+
+<!-- Ver3.03: post-run results now show images for Pokémon hatched during the adventure, including duplicate hatches. -->
+
+<!-- Dungeon Ver3.06: unified owned/unowned badges for Pokémon images in battle, capture, hatch, grass, and habitat/result flows. -->
+
+<!-- Ver3.07: post-run ally/hatch cards simplified; redundant status sentence removed and PC NEW/孵化 badge enlarged. -->
+
+<!-- Ver3.08: ownership badges are automatically overlaid at the top-left of every Pokémon image; NEW/孵化 event badges use the top-right. Dungeon and post-run duplicate ownership prose reduced. -->
+
+<!-- Ver3.09: removed full-page ownership MutationObserver. Ownership badges are limited to encounters/enemies, capture/grass, hatch, and newly obtained result cards; owned-only screens are excluded. -->
+<!-- Ver3.12: iPhone bulk-training flow condensed to one-screen 2x2 policy layout. -->
+
+
+<!-- Ver3.16: quick training respects renderAfter=false and preserves both background and modal scroll positions during training. -->
+
+<!-- Ver3.17: black PC shop coin help moved to the right of the coin balance row. -->
+
+<!-- Ver3.18: black PC shop coin information is separated from products by spacing and a divider. -->
+
+
+<!-- Ver3.19: black PC ball slot reorganized using the egg-roulette layout pattern. -->
+
+<!-- Ver3.20: three-way safe dungeon save preserves concurrent expedition changes; shared JS cache keys now follow app version. -->
+
+<style id="v321-maintenance-layer">
+/* Ver3.21 housekeeping: consolidated recent hotfix CSS in original cascade order. */
+
+/* ---- preserved from v311-grass-bulk-training ---- */
 /* Ver3.11: PC grass result collision fix + bulk training from owned picks. */
 @media(min-width:701px){
  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultScreen .grassResultHero{grid-column:1!important;grid-row:2/6!important;align-self:stretch!important;justify-self:stretch!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;min-width:0!important;min-height:0!important;overflow:hidden!important;margin:0!important}
@@ -14635,25 +14649,13 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 .ownedBulkTrainBtn311{background:linear-gradient(180deg,#25ad80,#12805e)!important;color:#fff!important;border:1px solid #0f6a4e!important;font-weight:1000!important;white-space:nowrap}.ownedBulkTrainBtn311:disabled{opacity:.4!important;filter:grayscale(.3)}
 .bulkTrainingOverlay311{position:fixed;inset:0;z-index:18000;background:#071724d9;backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:16px}.bulkTrainingPanel311{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#f7fbfd;border:2px solid #55b99a;border-radius:22px;box-shadow:0 24px 70px #0007;padding:0 16px 16px}.bulkTrainingHead311{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 -16px 13px;padding:13px 16px;background:linear-gradient(135deg,#124d3e,#1c7f62);color:#fff;border-radius:19px 19px 0 0}.bulkTrainingHead311 small{display:block;font-size:8px;letter-spacing:.15em;color:#a9f4d7;font-weight:1000}.bulkTrainingHead311 b{display:block;font-size:22px}.bulkTrainingHead311 button{background:#fff;color:#245345;padding:8px 12px}.bulkTrainingStep311{display:flex;flex-direction:column;gap:3px;margin:8px 0 10px}.bulkTrainingStep311 b{font-size:16px;color:#244d40}.bulkTrainingStep311 span{font-size:10px;color:#62776f}.bulkTrainingPolicies311{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.bulkTrainingPolicy311{min-height:82px;padding:11px;text-align:left;background:#fff;color:#27463d;border:2px solid #c9ddd6;border-radius:14px;box-shadow:none}.bulkTrainingPolicy311 strong{display:block;font-size:15px}.bulkTrainingPolicy311 small{display:block;margin-top:5px;font-size:9px;line-height:1.45;color:#60776f}.bulkTrainingPolicy311.active{border-color:#15946c;background:linear-gradient(180deg,#ecfff8,#dcf7ee);box-shadow:0 0 0 3px #23b48722}.bulkTrainingPreview311{margin-top:12px;padding:12px;border-radius:14px;background:#eef6fa;border:1px solid #c7dbe5;color:#35515e}.bulkTrainingPreview311>b{display:block;font-size:14px;margin-bottom:7px}.bulkTrainingPreview311>span,.bulkTrainingPreview311>small{font-size:9px;line-height:1.45}.bulkTrainingTotals311{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:7px}.bulkTrainingTotals311 span{padding:7px;border-radius:9px;background:#fff;text-align:center;font-size:9px}.bulkTrainingTotals311 strong{display:block;font-size:17px;color:#126c51}.bulkTrainingExecute311{width:100%;margin-top:10px;padding:13px!important;font-size:17px!important;background:linear-gradient(180deg,#21aa78,#147957)!important;color:#fff!important}.bulkTrainingExecute311:disabled{opacity:.38}.bulkTrainingNote311{margin-top:8px;font-size:8.5px;line-height:1.45;color:#65776f;text-align:center}
 @media(max-width:700px){.ownedEconomy{flex-wrap:wrap}.ownedBulkTrainBtn311{order:10;width:100%}.bulkTrainingOverlay311{padding:7px}.bulkTrainingPanel311{width:100%;max-height:94dvh;padding:0 10px 10px;border-radius:16px}.bulkTrainingHead311{margin:0 -10px 9px;padding:10px;border-radius:14px 14px 0 0}.bulkTrainingHead311 b{font-size:17px}.bulkTrainingPolicies311{grid-template-columns:1fr;gap:6px}.bulkTrainingPolicy311{min-height:0;padding:9px}.bulkTrainingTotals311{grid-template-columns:repeat(2,minmax(0,1fr))}}
-</style>
-<!-- Ver3.11: grass get result PC layout fixed; owned picks bulk training added with HP/ATK/DEF priority or balanced policy. -->
-</html>
 
-<!-- Ver3.03: post-run results now show images for Pokémon hatched during the adventure, including duplicate hatches. -->
-
-<!-- Dungeon Ver3.06: unified owned/unowned badges for Pokémon images in battle, capture, hatch, grass, and habitat/result flows. -->
-
-<style id="v307-ally-summary-cleanup">
+/* ---- preserved from v307-ally-summary-cleanup ---- */
 /* Ver3.07: remove redundant ally/hatch description line; make NEW/孵化 badge readable on PC. */
 .result6HatchStatus{display:none!important}
 html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6NewBadge{font-size:13px!important;line-height:1.15!important;padding:5px 10px!important;left:auto!important;right:10px!important;top:10px!important;letter-spacing:.04em!important;z-index:9!important}
-</style>
-<!-- Ver3.07: post-run ally/hatch cards simplified; redundant status sentence removed and PC NEW/孵化 badge enlarged. -->
 
-<!-- Ver3.08: ownership badges are automatically overlaid at the top-left of every Pokémon image; NEW/孵化 event badges use the top-right. Dungeon and post-run duplicate ownership prose reduced. -->
-
-<!-- Ver3.09: removed full-page ownership MutationObserver. Ownership badges are limited to encounters/enemies, capture/grass, hatch, and newly obtained result cards; owned-only screens are excluded. -->
-<style id="v312-mobile-bulk-training-one-screen">
+/* ---- preserved from v312-mobile-bulk-training-one-screen ---- */
 /* Ver3.12: iPhone bulk-training dialog fits in one viewport without scrolling. */
 @media(max-width:700px){
  .bulkTrainingOverlay311{padding:5px!important;align-items:center!important;overflow:hidden!important}
@@ -14705,10 +14707,8 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
     margin-bottom:18px!important;
   }
 }
-</style>
-<!-- Ver3.12: iPhone bulk-training flow condensed to one-screen 2x2 policy layout. -->
 
-<style id="v315-capture-slot-mobile-larger">
+/* ---- preserved from v315-capture-slot-mobile-larger ---- */
 /* Ver3.15: mobile ball-slot screen shows the target Pokémon much larger. */
 @media(max-width:700px){
   main.dungeonRunScreen[data-run-scene="captureSlot"] .captureTargetPanel{
@@ -14741,11 +14741,8 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
     justify-self:start!important;
   }
 }
-</style>
 
-<!-- Ver3.16: quick training respects renderAfter=false and preserves both background and modal scroll positions during training. -->
-
-<style id="v317-black-shop-coin-row">
+/* ---- preserved from v317-black-shop-coin-row ---- */
 /* Ver3.17: on the black PC, merge coin balance and coin acquisition help into one horizontal row. */
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCoinBlackRow{
   display:grid!important;grid-template-columns:minmax(250px,320px) minmax(0,1fr)!important;gap:10px!important;align-items:stretch!important;margin:0 0 0!important;flex:0 0 auto!important;
@@ -14760,10 +14757,8 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo>b{font-size:12px!important;margin:0!important;white-space:nowrap!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo p{font-size:11px!important;line-height:1.3!important;margin:0!important;min-width:0!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .shopCoinBlackRow>.coinHowTo span{font-size:11px!important;margin:0!important;white-space:nowrap!important;padding:4px 7px!important}
-</style>
-<!-- Ver3.17: black PC shop coin help moved to the right of the coin balance row. -->
 
-<style id="v318-black-shop-section-gap">
+/* ---- preserved from v318-black-shop-section-gap ---- */
 /* Ver3.18: visually separate the coin information row from the product catalog on black PC. */
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCoinBlackRow{
   position:relative!important;
@@ -14780,11 +14775,8 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized
 html[data-view-profile="pc-compact"] body.blackPcOptimized:not(.whitePcOptimized) .luckShopPanel>.shopCatalogGrid{
   margin-top:2px!important;
 }
-</style>
-<!-- Ver3.18: black PC shop coin information is separated from products by spacing and a divider. -->
 
-
-<style id="v319-blackpc-capture-slot-eggstyle">
+/* ---- preserved from v319-blackpc-capture-slot-eggstyle ---- */
 /* Ver3.19: black PC capture slot follows the egg-roulette composition. */
 html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="run-captureSlot"] #app#app .captureSlotCard{
   height:100%!important;
@@ -14925,6 +14917,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
   margin:0!important;
 }
 </style>
-<!-- Ver3.19: black PC ball slot reorganized using the egg-roulette layout pattern. -->
-
-<!-- Ver3.20: three-way safe dungeon save preserves concurrent expedition changes; shared JS cache keys now follow app version. -->
+<!-- Ver3.21: removed dormant full-page ownership observer code/CSS, consolidated recent hotfix CSS, and normalized closing-tag structure. -->
+</body>
+</html>
