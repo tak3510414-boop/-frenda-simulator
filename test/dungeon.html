@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.28">
+<html lang="ja" data-app-version="3.29">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -7155,16 +7155,42 @@ function showLuckShop(returnTo="home"){
     useOv.querySelectorAll("[data-luck-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.luckTarget,before=luckFor(id),q=itemQty("luckyClover");if(isExpeditionLocked(id)||before>=LUCK_MAX||q<=0)return;state.shopItems.luckyClover=q-1;setLuck(id,before+1);save();rerenderUse("",useOv.scrollTop)});
    }
   };
+  const refreshShopPurchaseUI=()=>{
+   updateHeaderStatus();
+   const coinsNow=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
+   const qLucky=itemQty("luckyClover"),qTraining=itemQty("trainingCandy"),qEvo=itemQty("evolutionCandy"),qTicket=itemQty("captureTicket"),qSuper=itemQty("superBall"),qHyper=itemQty("hyperBall"),qMaster=itemQty("masterBall");
+   const balance=ov.querySelector(".coinBalance b");if(balance)balance.textContent=`🪙 ${coinsNow.toLocaleString("ja-JP")}`;
+   const setText=(sel,text)=>{const el=ov.querySelector(sel);if(el)el.textContent=text};
+   setText("#luckyCloverQty",`所持 ${qLucky}個`);
+   setText(".shopItemCard.training .shopItemHead small",`所持 ${qTraining}/${TRAINING_CANDY_MAX}個`);
+   setText(".shopItemCard.evolution .shopItemHead small",`所持 ${qEvo}/${EVOLUTION_CANDY_MAX}個`);
+   setText(".shopItemCard.ticket .shopItemHead small",`所持 ${qTicket}/${CAPTURE_TICKET_MAX}枚`);
+   setText(".shopItemCard.superBall .shopItemHead small",`所持 ${qSuper}/${SUPER_BALL_MAX}個`);
+   setText(".shopItemCard.hyperBall .shopItemHead small",`所持 ${qHyper}/${HYPER_BALL_MAX}個`);
+   setText(".shopItemCard.masterBall .shopItemHead small",`所持 ${qMaster}/${MASTER_BALL_MAX}個`);
+   const setDisabled=(sel,v)=>{const el=ov.querySelector(sel);if(el)el.disabled=!!v};
+   setDisabled("#buyLuckyClover",coinsNow<LUCK_ITEM_PRICE);
+   setDisabled("#buyTrainingCandy",coinsNow<TRAINING_CANDY_PRICE||qTraining>=TRAINING_CANDY_MAX);
+   setDisabled("#buyEvolutionCandy",coinsNow<EVOLUTION_CANDY_PRICE||qEvo>=EVOLUTION_CANDY_MAX);
+   setDisabled("#buyCaptureTicket",coinsNow<CAPTURE_TICKET_PRICE||qTicket>=CAPTURE_TICKET_MAX);
+   setDisabled("#buySuperBall",coinsNow<SUPER_BALL_PRICE||qSuper>=SUPER_BALL_MAX);
+   setDisabled("#buyHyperBall",coinsNow<HYPER_BALL_PRICE||qHyper>=HYPER_BALL_MAX);
+   setDisabled("#buyMasterBall",coinsNow<MASTER_BALL_PRICE||qMaster>=MASTER_BALL_MAX);
+   setDisabled("#useLuckyClover",qLucky<=0);
+   setDisabled("#useTrainingCandy",qTraining<=0);
+   setDisabled("#useEvolutionCandy",qEvo<=0);
+  };
   const useLucky=ov.querySelector("#useLuckyClover");if(useLucky)useLucky.onclick=()=>openUseDialog("clover");
   const useTraining=ov.querySelector("#useTrainingCandy");if(useTraining)useTraining.onclick=()=>openUseDialog("training");
   const useEvo=ov.querySelector("#useEvolutionCandy");if(useEvo)useEvo.onclick=()=>openUseDialog("evolution");
-  const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{const keep=shopScrollState();if(buyItem("luckyClover",LUCK_ITEM_PRICE))renderShop("",keep)};
-  const buyTraining=ov.querySelector("#buyTrainingCandy");if(buyTraining)buyTraining.onclick=()=>{const keep=shopScrollState();if(buyItem("trainingCandy",TRAINING_CANDY_PRICE,TRAINING_CANDY_MAX))renderShop("",keep)};
-  const buyEvo=ov.querySelector("#buyEvolutionCandy");if(buyEvo)buyEvo.onclick=()=>{const keep=shopScrollState();if(buyItem("evolutionCandy",EVOLUTION_CANDY_PRICE,EVOLUTION_CANDY_MAX))renderShop("",keep)};
-  const buyTicket=ov.querySelector("#buyCaptureTicket");if(buyTicket)buyTicket.onclick=()=>{const keep=shopScrollState();if(buyItem("captureTicket",CAPTURE_TICKET_PRICE,CAPTURE_TICKET_MAX))renderShop("",keep)};
-  const buySuperBall=ov.querySelector("#buySuperBall");if(buySuperBall)buySuperBall.onclick=()=>{const keep=shopScrollState();if(buyItem("superBall",SUPER_BALL_PRICE,SUPER_BALL_MAX))renderShop("",keep)};
-  const buyHyperBall=ov.querySelector("#buyHyperBall");if(buyHyperBall)buyHyperBall.onclick=()=>{const keep=shopScrollState();if(buyItem("hyperBall",HYPER_BALL_PRICE,HYPER_BALL_MAX))renderShop("",keep)};
-  const buyMasterBall=ov.querySelector("#buyMasterBall");if(buyMasterBall)buyMasterBall.onclick=()=>{const keep=shopScrollState();if(buyItem("masterBall",MASTER_BALL_PRICE,MASTER_BALL_MAX))renderShop("",keep)};
+  const bindBuy=(selector,key,price,max=Infinity)=>{const b=ov.querySelector(selector);if(b)b.onclick=()=>{if(buyItem(key,price,max))refreshShopPurchaseUI()}};
+  bindBuy("#buyLuckyClover","luckyClover",LUCK_ITEM_PRICE);
+  bindBuy("#buyTrainingCandy","trainingCandy",TRAINING_CANDY_PRICE,TRAINING_CANDY_MAX);
+  bindBuy("#buyEvolutionCandy","evolutionCandy",EVOLUTION_CANDY_PRICE,EVOLUTION_CANDY_MAX);
+  bindBuy("#buyCaptureTicket","captureTicket",CAPTURE_TICKET_PRICE,CAPTURE_TICKET_MAX);
+  bindBuy("#buySuperBall","superBall",SUPER_BALL_PRICE,SUPER_BALL_MAX);
+  bindBuy("#buyHyperBall","hyperBall",HYPER_BALL_PRICE,HYPER_BALL_MAX);
+  bindBuy("#buyMasterBall","masterBall",MASTER_BALL_PRICE,MASTER_BALL_MAX);
   if(focusId){requestAnimationFrame(()=>{const el=ov.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const n=el.value.length;el.setSelectionRange(n,n)}}})}
   restoreShopScroll(scrollPos);
  };
@@ -14970,5 +14996,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.26: regression capture-intro now has a valid candidateIds list; proceedCaptureIntro also tolerates legacy/test capture state. -->
 <!-- Ver3.27: regression fixtures now include 20,000 coins and actionable training points for shop/training tests. -->
 <!-- Ver3.28: shop purchases and training stat spends preserve the current scroll position after rerender. -->
+<!-- Ver3.29: shop purchases update balances and button states in place, preserving the exact shop scroll position. -->
 </body>
 </html>
