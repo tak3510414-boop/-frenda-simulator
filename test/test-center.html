@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="1.9">
+<html lang="ja" data-test-center-version="2.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -98,6 +98,7 @@ async function fetchText(name){const r=await fetch(`${name}?_reg=${Date.now()}`,
 function addResult(label,status,detail=""){const d=document.createElement("div");d.className=`testResult ${status}`;d.innerHTML=`<b>${status==="ok"?"✓":status==="ng"?"×":"!"} ${label}</b>${detail?`<br><small>${detail}</small>`:""}`;$("#autoResults").appendChild(d)}
 function htmlVersion(t){return t.match(/data-app-version=["']([0-9.]+)["']/i)?.[1]||"?"}
 function compileInlineScripts(text){const doc=new DOMParser().parseFromString(text,"text/html"),errs=[];[...doc.querySelectorAll("script:not([src])")].forEach((s,i)=>{try{new Function(s.textContent)}catch(e){errs.push(`#${i+1} ${e.message}`)}});return errs}
+function isolationLoadOrderOK(text){const testAt=text.indexOf('if(inTest)document.write(');if(testAt<0)return false;const sharedAt=text.indexOf('for(const f of ["frenda-master.js"',testAt);if(sharedAt<0)return false;return sharedAt>testAt&&text.slice(testAt,sharedAt).includes("frenda-test.js?app=")}
 async function runAuto(){
  $("#autoResults").innerHTML="";
  let d,e,t;
@@ -108,7 +109,7 @@ async function runAuto(){
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.1/.test(t)&&/active:\s*!!isolated/.test(t),"本番localStorageのスナップショットをメモリ分離"],
-  ["隔離スクリプト読込順",d.indexOf("frenda-test.js?app=")<d.indexOf("frenda-data.js")&&e.indexOf("frenda-test.js?app=")<e.indexOf("frenda-data.js"),"frenda-test.js を共通JSより先に実行"],
+  ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js を実際の共通JSローダーより先に実行"],
   ["テスト中クラウド無効",/if\(!inTest\)/.test(d)&&/Cloud runtime is intentionally absent from \/test\//.test(d)&&/if\(!inTest\)/.test(e),"/test/ では Supabase / frenda-cloud.js を読み込まない"],
   ["本番保存監視",/productionStorageUnchanged/.test(t)&&/assertProductionStorageUnchanged/.test(t),"本番保存キーの変化を検出したらテスト停止"],
   ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
