@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.12">
+<html lang="ja" data-app-version="1.13">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -546,7 +546,36 @@ function flushPrepWrite(){
 window.addEventListener("pagehide",flushPrepWrite);
 function seedExpeditionTestDungeon(team){const fake={initialized:true,owned:[...new Set(team)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drill:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};DATA.dungeon.write(fake)}
 function testMission(team){const now=Date.now();return {id:"test-mission",dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3),startAt:now-60000,returnAt:now+3540000,rank:"A",score:82,scoreParts:{number:30,strength:30,type:15,bond:7},baseline:100,avgEnergy:100,boxes:[{rarity:"normal",reward:{type:"xp",target:team[0],amount:10},opened:false,applied:false,resultText:"⭐ EXP +10"},{rarity:"rare",reward:{type:"growth",target:team[1],amount:1},opened:false,applied:false,resultText:"🌱 進化P +1"}],report:[{time:now-30000,text:"テスト探索中"},{time:now-20000,text:"成果箱を持ち帰った"}],liveReport:[{time:now-30000,text:"テスト探索中"}],stage:"exploring",baseApplied:true,baseResults:team.slice(0,3).map(id=>({id,xp:10,drill:0,bond:false})),summary:["⭐ EXP +10"]}}
-function applyExpeditionTestCase(){if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;activeGroup=0;const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);const team=ids.length>=3?ids:ids.concat(ids,ids).slice(0,3);seedExpeditionTestDungeon(team);const mission=testMission(team);if(EXPEDITION_TEST_CASE==="prep"){exp=defaultExp();prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};screen="prep"}else if(EXPEDITION_TEST_CASE==="exploring"){exp={...defaultExp(),status:"exploring",mission,lastTeamIds:team.slice(0,3)};screen="explore"}else if(EXPEDITION_TEST_CASE==="boxes"){exp={...defaultExp(),status:"returned",mission:{...mission,returnAt:Date.now()-1,stage:"boxes"},lastTeamIds:team.slice(0,3)};screen="return"}else if(EXPEDITION_TEST_CASE==="summary"){exp={...defaultExp(),status:"returned",mission:{...mission,returnAt:Date.now()-1,stage:"summary",boxes:mission.boxes.map(b=>({...b,opened:true,applied:true}))},lastTeamIds:team.slice(0,3)};screen="return"}else{return}exp.adminUnlockedGroups=[1,2,3,4,5];writeExp();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${EXPEDITION_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`)}
+function applyExpeditionTestCase(){
+ if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;
+ activeGroup=0;
+ const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);
+ const team=ids.length>=3?ids:ids.concat(ids,ids).slice(0,3);
+ seedExpeditionTestDungeon(team);
+ const mission=testMission(team),x=defaultExp(),g=x.groups[0];
+ g.lastTeamIds=team.slice(0,3);
+ g.prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};
+ if(EXPEDITION_TEST_CASE==="prep"){
+  g.status="idle";g.mission=null;screen="prep";
+ }else if(EXPEDITION_TEST_CASE==="exploring"){
+  mission.stage="exploring";mission.returnAt=Date.now()+3540000;mission.maxReturnAt=mission.startAt+FREE_EXP_MAX_HOURS*3600000;mission.freeReturnVersion=1;
+  g.status="exploring";g.mission=mission;screen="explore";
+ }else if(EXPEDITION_TEST_CASE==="boxes"){
+  mission.returnAt=Date.now()-1;mission.settledAt=Date.now();mission.settledHoursExact=1;mission.stage="boxes";
+  g.status="returned";g.mission=mission;screen="return";
+ }else if(EXPEDITION_TEST_CASE==="summary"){
+  mission.returnAt=Date.now()-1;mission.settledAt=Date.now();mission.settledHoursExact=1;mission.stage="summary";
+  mission.boxes=mission.boxes.map((b,i)=>({...b,opened:true,applied:true,resultText:b.resultText||["⭐ EXP +10","🌱 進化P +1"][i]||"成果"}));
+  mission.findings={before:20,after:40,souvenirs:[{id:"test_souvenir",icon:"🎁",name:"テストのおみやげ",isNew:true,rare:false}],completedNow:false};
+  mission.summary=["⭐ EXP +10","🌱 進化P +1"];
+  g.status="returned";g.mission=mission;screen="return";
+ }else return;
+ x.adminUnlockedGroups=[1,2,3,4,5];
+ exp=normalizeExp(x);prep=exp.groups[0].prep;
+ writeExp();
+ document.title=`🧪 ${document.title}`;
+ document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${EXPEDITION_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`)
+}
 function ensureDungeonEconomy(d){
  d.luckLevels=d.luckLevels&&typeof d.luckLevels==="object"?d.luckLevels:{};
  d.frendaCoins=Math.max(0,Math.floor(Number(d.frendaCoins)||0));
@@ -3146,5 +3175,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.09: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
 <!-- Ver1.11: /test/ regression routes no longer depend on admin.html; the isolated FRENDA_TEST sandbox is sufficient and production saves stay protected. -->
 <!-- Ver1.12: regression mode always unlocks test groups and never redirects to administrator authentication. -->
+<!-- Ver1.13: fixed regression test states to populate group[0] directly, so exploring / boxes / summary open their intended screens. -->
 </body>
 </html>
