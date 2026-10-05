@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.03">
+<html lang="ja" data-app-version="1.06">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -247,15 +247,13 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 <header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="expCloseBtn ghost" id="expCloseBtn" title="おでかけ探索を閉じる" aria-label="おでかけ探索を閉じる">閉じる</button></div></div></div></header>
 <main id="app"></main>
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
-<script src="frenda-master.js?b=20260927_2148"></script>
-<script src="frenda-core.js?b=20260927_2148"></script>
-<script src="frenda-rules.js?b=20260927_2148"></script>
-<script src="frenda-test.js?b=20260928_2245"></script>
-<script src="frenda-data.js?b=20260928_2245"></script>
-<script src="frenda-ui.js?b=20260928_2245"></script>
-<script src="frenda-parental.js?b=20260928_2258"></script>
+<script>
+(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-test.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${f}?app=${v}"><\/script>`)})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="frenda-cloud.js?b=20260928_2245"></script>
+<script>
+(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`)})();
+</script>
 <script>
 (()=>{
 "use strict";
@@ -406,26 +404,14 @@ function freeReturnDockGuideHTML(now=Date.now()){
    :`G${activeGroup+1} 現在 ${compactElapsedLabel(elapsed)}`
  }
  const currentAnchor=hasPosition?[...FREE_EXP_ANCHORS].reverse().find(a=>a.h<=elapsed+1e-9):null;
- const nextAnchor=hasPosition?(FREE_EXP_ANCHORS.find(a=>a.h>elapsed+1e-9)||null):null;
- const maxed=hasPosition&&elapsed>=FREE_EXP_MAX_HOURS-1e-9;
- let markerInserted=false;
- const rows=[];
- const nowMarker=()=>{
-  if(!hasPosition||markerInserted)return "";
-  markerInserted=true;
-  const nextText=maxed?"12時間 MAX":nextAnchor?`${nextAnchor.h===.5?"30分":`${nextAnchor.h}時間`}まで あと${compactElapsedLabel(Math.max(0,nextAnchor.h-elapsed))}`:"";
-  return `<div class="freeGuideNowMarker ${status==="returned"?"returned":""}"><b>▶ ${status==="returned"?"帰還":"現在"} ${maxed?"12時間 MAX":compactElapsedLabel(elapsed)}${hasPosition&&!currentAnchor?"・現在の成果 0箱":""}</b>${nextText&&!maxed?`<small>→ ${nextText}</small>`:""}</div>`
- };
- for(const a of FREE_EXP_ANCHORS){
-  if(hasPosition&&!markerInserted&&elapsed<a.h-1e-9)rows.push(nowMarker());
+ const rows=FREE_EXP_ANCHORS.map(a=>{
   const normal=a.h>=8?Math.max(0,a.boxes-2):a.h>=4?Math.max(0,a.boxes-1):a.boxes;
   const boost=a.h>=4?1:0,guaranteed=a.h>=8?1:0;
   const symbols=`${"○".repeat(normal)}${"🪎".repeat(boost)}${"⭐️".repeat(guaranteed)}`;
   const time=a.h===.5?"30分":`${a.h}時間`;
   const reached=hasPosition&&elapsed>=a.h-1e-9;
-  rows.push(`<div class="freeGuideRow ${a.h===12?"max ":""}${reached?"reached ":""}${currentAnchor===a?"currentReward079 ":""}"><b>${currentAnchor===a?"▶ ":""}${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`);
- }
- if(hasPosition&&!markerInserted)rows.push(nowMarker());
+  return `<div class="freeGuideRow ${a.h===12?"max ":""}${reached?"reached ":""}${currentAnchor===a?"currentReward079 ":""}"><b>${currentAnchor===a?"▶ ":""}${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`
+ });
  return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuidePosition ${status==="exploring"?"running":status==="returned"?"returned":""}">${positionText}</div><div class="freeGuideRows">${rows.join("")}</div><div class="freeGuideFoot"><span>○ 通常</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
 }
 
@@ -462,7 +448,7 @@ const SOUVENIR_DEF={
  phantom:[{id:"old_key",icon:"🗝️",name:"古びた鍵"},{id:"purple_stone",icon:"🟣",name:"紫の小石"},{id:"tablet_piece",icon:"📜",name:"石碑の欠片"},{id:"ghost_lantern",icon:"🏮",name:"幻の灯り",rare:true}]
 };
 
-let EVO_INDEX=null,evoReady=false;
+let EVO_INDEX=null,evoReady=false,evoLoadPromise=null;
 let screen="home",collectionReturnScreen="home",prep={dungeonId:null,difficulty:null,hours:8,teamIds:[]};
 let activeGroup=0,groupCardsScrollLeft=0,groupDockTouchCleanup=null;
 let ticker=null,lootRevealSeq=0,lootAnimating=false,lootAutoMode=false,lootAutoTimer=null,destinationSelectToken=0;
@@ -937,7 +923,7 @@ function applyBaseGrowth(groupIndex=activeGroup){
  m.baseResults=results;m.baseApplied=true;writeExp()
 }
 function applyReward(box,groupIndex=activeGroup){
- if(box.applied)return box.resultText||"受取済み";const g=groupState(groupIndex),m=g.mission;let result="",bondCoins099=0;
+ if(box.applied)return box.resultText||"受取済み";const g=groupState(groupIndex),m=g.mission;let result="",bondCoins099=0;const newCompanionIds104=[];
  const deltaMap=new Map();
  const addDelta=(id,key,n)=>{const v=Math.max(0,Number(n)||0);if(!id||!v)return;let row=deltaMap.get(id);if(!row){row={id,xp:0,drill:0,evo:0,bond:0};deltaMap.set(id,row)}row[key]=Number(row[key]||0)+v};
  const gainText=g=>g.coins?`／🪙 フレンダコイン +${g.coins}`:g.drill?`／特訓P +${g.drill}`:"";
@@ -949,10 +935,10 @@ function applyReward(box,groupIndex=activeGroup){
   if(rw.type==="bond"){const n=rw.amount||1,a=addBond(d,rw.target,n);if(a.bond)addDelta(rw.target,"bond",a.bond);bondCoins099+=a.coins;return a.bond&&a.coins?`♥ ${r?.name_ja||"仲間"} 絆 +${a.bond}（MAX）／🪙 フレンダコイン +${a.coins}`:a.coins?`♥ ${r?.name_ja||"仲間"} 絆MAX → 🪙 フレンダコイン +${a.coins}`:`♥ ${r?.name_ja||"仲間"} 絆 +${a.bond}`}
   if(rw.type==="growth"){const a=awardGrowth(d,rw.target,rw.amount||1);recordAward(rw.target,a);return awardText(a,r?.name_ja||"仲間")}
   if(rw.type==="egg"){d.eggs=d.eggs||[];d.eggs.push(rw.egg);return `🥚 ${rw.egg.kind==="type"?`${rw.egg.type}タイプの卵`:EGG_DEF[rw.egg.kind].label}を発見！`}
-  if(rw.type==="companion"){if(!rw.target)return"👣 気配はあったが、仲間は見つからなかった。";const rr=rec(rw.target),dup=(d.owned||[]).some(o=>o.id===rw.target);d.seenPicks=d.seenPicks||{};d.seenPicks[rw.target]=true;if(!dup){ownNew(d,rw.target);return `🎉 ${rr?.name_ja||"ポケモン"}が新しく仲間になった！`}const a=awardGrowth(d,rw.target,1);recordAward(rw.target,a);return `👣 ${rr?.name_ja||"ポケモン"}とまた会えた！ ${awardText(a,"")}`.replace(/  +/g," ")}
+  if(rw.type==="companion"){if(!rw.target)return"👣 気配はあったが、仲間は見つからなかった。";const rr=rec(rw.target),dup=(d.owned||[]).some(o=>o.id===rw.target);d.seenPicks=d.seenPicks||{};d.seenPicks[rw.target]=true;if(!dup){ownNew(d,rw.target);newCompanionIds104.push(rw.target);return `🎉 ${rr?.name_ja||"ポケモン"}が新しく仲間になった！`}const a=awardGrowth(d,rw.target,1);recordAward(rw.target,a);return `👣 ${rr?.name_ja||"ポケモン"}とまた会えた！ ${awardText(a,"")}`.replace(/  +/g," ")}
   if(rw.type==="combo")return rw.items.map(x=>applyItem(x,d)).join(" / ");return"成果を受け取った。"
  };
- mutateDungeon(d=>{result=applyItem(box.reward,d)});box.applied=true;box.resultText=result;box.appliedDelta094=[...deltaMap.values()];box.bondCoinGained099=bondCoins099;m.summary=m.summary||[];m.summary.push(result);writeExp();return result
+ mutateDungeon(d=>{result=applyItem(box.reward,d)});box.applied=true;box.resultText=result;box.appliedDelta094=[...deltaMap.values()];box.bondCoinGained099=bondCoins099;box.newCompanionIds104=[...new Set(newCompanionIds104)];m.summary=m.summary||[];m.summary.push(result);writeExp();return result
 }
 function maybeNeedEggDiscard(){const d=readDungeon();return (d?.eggs?.length||0)>Number(d?.eggCap||2)}
 function discardEgg(id){mutateDungeon(d=>{d.eggs=(d.eggs||[]).filter(e=>e.id!==id)});render()}
@@ -1115,8 +1101,7 @@ function refreshPrepPickCardStates(p){
   const selected=p.teamIds.includes(card.dataset.pick);
   card.classList.toggle("selected",selected);
   const native=card.querySelector(".selectMark"),fast=card.querySelector(".fastSelectMark");
-  if(!selected){native?.remove();fast?.remove()}
-  else if(!native&&!fast)card.insertAdjacentHTML("beforeend",'<span class="fastSelectMark">選択中</span>')
+  native?.remove();fast?.remove()
  })
 }
 function refreshPrepSelectionUI(d,p){
@@ -1160,9 +1145,9 @@ function renderPrep(){
  const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);
  const runSet=new Set(currentRunIds()),otherExp=expeditionBusyIds(activeGroup),busySet=new Set([...runSet,...otherExp]),eligible=new Set(eligiblePickIds(activeGroup)),all=(d.owned||[]).map(o=>rec(o.id)).filter(Boolean),filtered=filterExpeditionPicks(all,d,eligible,busySet),th=THEMES[p.dungeonId],spot=activeSecretSpot(p.dungeonId),score=scoreTeam(p.teamIds,p.dungeonId,p.difficulty);
  const slots=prepSelectedStripHTML(d,p);
- const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}${sel?UI.pickCard.badge("選択中","selectMark"):""}`,body=`<small class="pickSummary078">${gradeText(r)}/ﾎﾟｹｴﾈ${esc(r.poke_ene??"-")}/運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body}).replace('<img ','<img loading="lazy" decoding="async" ') }).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
+ const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}`,body=`<small class="pickSummary078">${gradeText(r)}/ﾎﾟｹｴﾈ${esc(r.poke_ene??"-")}/運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body}).replace('<img ','<img loading="lazy" decoding="async" ') }).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}"><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span><span class="destBadges">${selected?'<span class="destSelectedBadge">✓ 選択中</span>':""}${secret?'<span class="destSecretBadge">🌟 ひみつ</span>':""}</span>${secret?`<small class="destSecretEffect">調査度↑・レア箱↑・仲間↑</small>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em><em>${souvenirProgressText(x.did)}</em></span></button>`}).join("")}</div>${spot?`<div class="secretSpotMini"><b>🌟 ひみつの場所ボーナス</b>${esc(secretSpotBonusText(spot))}</div>`:""}<div class="muted destinationAutoHint" style="margin-top:7px">派遣先をタップすると、その探索先に適した3体を「おまかせ編成」で自動セットします。セット後は個別に入れ替えできます。<br>ランクは、その派遣先で攻略済みの最高ランクを自動使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="bestDestBtn103" id="bestDestBtn" ${p.teamIds.length===3?"":"disabled"}>🎯 おすすめ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループを切り替えると、未出発のパーティ選択はクリアされます。ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}" ${secret?'title="🌟 ひみつの場所ボーナス対象"':""}><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span>${secret?'<span class="destSecretBadge" aria-label="ひみつの場所ボーナス">🌟</span>':""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`}).join("")}</div><div class="muted destinationAutoHint" style="margin-top:7px">🌟枠はひみつの場所ボーナス対象。派遣先タップでおまかせ編成、ランクは攻略済み最高ランクを使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="bestDestBtn103" id="bestDestBtn" ${p.teamIds.length===3?"":"disabled"}>🎯 おすすめ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループを切り替えると、未出発のパーティ選択はクリアされます。ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
@@ -1213,9 +1198,18 @@ function ensureReturnFlow092(){
 }
 function renderReturn(){document.body.classList.remove("blackExpPrep073");prepareReturnAll();const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="exploring"){screen="explore";return renderExplore()}if(m.stage==="welcome")return renderWelcome();if(m.stage==="report")return renderReport();if(m.stage==="findings")return renderFindings();if(m.stage==="growth")return renderGrowth();if(m.stage==="boxes")return renderBoxes();if(m.stage==="summary")return renderSummary();m.stage="welcome";writeExp();renderWelcome()}
 function renderWelcome(){const m=groupMission(),th=THEMES[m.dungeonId];app.innerHTML=`<div class="returnHero"><div class="kicker" style="color:#8de5ff">WELCOME BACK! / GROUP ${activeGroup+1}</div><h1>🧭 おかえり！</h1><p>${th.icon} ${esc(th.name)} ランク${m.difficulty}から帰ってきました</p><div class="returnTeam">${m.teamIds.map(id=>`<img src="${esc(imageOf(rec(id)))}" alt="">`).join("")}</div><div class="statusBig">探索ランク ${m.rank}</div><button class="goldBtn returnFlowBtn092" data-return-action="report" style="margin-top:12px;font-size:16px">📖 冒険の記録を見る</button></div>`}
-function renderReport(){const m=groupMission(),rows=(m.report||reportFor(m)).map(x=>({...x,text:normalizeAdventureText(x.text)}));app.innerHTML=`<div class="reportGroup"><div class="card returnLogCard">${adventureLogHTML(rows,{returnMode:true})}</div><div class="card"><button class="returnFlowBtn092" data-return-action="findings" style="width:100%">🗺️ 調査結果とおみやげを見る</button></div></div>`}
-function renderFindings(){const m=groupMission(),f=applyMissionFindings(m),th=THEMES[m.dungeonId],spot=m.secretSpotDiscovered,beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));app.innerHTML=`<div class="card findingsCard"><div class="findingHero"><div class="big">🗺️</div><div class="kicker">EXPEDITION SURVEY</div><h2>探索先の調査が進んだ！</h2></div><div class="discoveryResult"><div class="discoveryResultHead"><b>${th.icon} ${esc(th.name)} の調査</b><strong>Lv ${afterStep}/5</strong></div><div class="discoveryMeter"><span style="width:${f.after}%"></span></div><div class="discoveryDelta">調査Lv ${beforeStep}/5 → ${afterStep}/5　／　調査度 ${f.after}%${m.secretSpotUsed?` <span class="badge gold">ひみつの場所ボーナス</span>`:""}</div>${f.completedNow?'<div class="discoveryCompleteBurst">🎉 調査コンプリート！ レアなおみやげを獲得！</div>':""}</div><div class="discoveryMeritNote"><b>🗺️ 調査度が上がるメリット</b><ul><li><strong>調査Lv</strong>が上がると、その探索先の調査が進みます。</li><li><strong>調査Lv 5/5（100％）</strong>で、レアおみやげを1つ確定で持ち帰れます。</li><li>調査状況は探索コレクションでも確認できます。</li></ul></div><div class="sectionTitle" style="margin-top:12px">🎒 持ち帰ったおみやげ</div><div class="foundSouvenirs">${f.souvenirs.map(s=>`<div class="foundSouvenir ${s.isNew?"new":""} ${s.rare?"rare":""}">${s.isNew?'<span class="newTag">NEW!</span>':""}<div class="ico">${s.icon}</div><b>${esc(s.name)}</b><small>${s.rare?"レアおみやげ":"コレクション"} / 所持 ${s.afterCount}</small></div>`).join("")}</div>${m.secretSpotUsed?`<div class="findingsSecret"><b>🌟 ひみつの場所を調査した！</b><div class="spotName">${esc(m.secretSpotUsed.name)}</div><small>いつもより深い調査に成功し、調査度とレア成果のチャンスが強化されました。</small></div>`:""}${spot?`<div class="findingsSecret nextOnly"><span class="nextOnlyBadge">⏭ 次回の同じ探索先だけ有効</span><b>🌟 新しいひみつの場所を発見！</b><div class="spotName">${esc(spot.name)}</div><span class="nextOnlyLead">次に ${esc(th.name)} を探索するときだけ、下のボーナスが発動します。</span><small>${esc(secretSpotBonusText(spot))}</small></div>`:""}<button class="goldBtn returnFlowBtn092" data-return-action="growth" style="width:100%;margin-top:12px">⭐ 3体の成長を見る</button></div>`}
-function renderGrowth(){applyBaseGrowth();const m=groupMission();app.innerHTML=`<div class="card"><div class="sectionTitle">⭐ 探索メンバーの成長</div><div class="growthGrid">${(m.baseResults||[]).map(x=>{const r=rec(x.id);return `<div class="growthCard"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r?.name_ja||x.id)}</b><div class="growthResult">⭐ EXP +${x.xp}${x.drill?`<br>🏋️ 特訓P +${x.drill}`:""}${x.coins?`<br>🪙 フレンダコイン +${x.coins}`:""}${x.bond?`<br>♥ 絆 +${x.bondAmount||1}`:x.bondCoins?`<br>♥ 絆MAX → 🪙 +${x.bondCoins}`:""}</div></div>`}).join("")}</div><div class="notice" style="margin-top:10px">この成長は成果箱とは別の確定報酬です。次に、持ち帰った成果箱を1個ずつ開けます。</div><button class="goldBtn returnFlowBtn092" data-return-action="boxes" style="width:100%;margin-top:10px">🎁 成果箱を開ける</button></div>`}
+function renderReport(){const m=groupMission(),rows=(m.report||reportFor(m)).map(x=>({...x,text:normalizeAdventureText(x.text)}));app.innerHTML=`<div class="reportGroup"><div class="card returnLogCard">${adventureLogHTML(rows,{returnMode:true})}</div><div class="card"><button class="returnFlowBtn092" data-return-action="findings" style="width:100%">🗺️ 調査・成長結果を見る</button></div></div>`}
+function renderFindings(){
+ applyBaseGrowth();
+ const m=groupMission(),f=applyMissionFindings(m),th=THEMES[m.dungeonId],spot=m.secretSpotDiscovered,beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20));
+ const growth=(m.baseResults||[]).map(x=>{const r=rec(x.id);return `<div class="growthCard combinedGrowthCard104"><img src="${esc(imageOf(r))}" alt=""><b>${esc(r?.name_ja||x.id)}</b><div class="growthResult">⭐ EXP +${x.xp}${x.drill?`<br>🏋️ 特訓P +${x.drill}`:""}${x.coins?`<br>🪙 +${x.coins}`:""}${x.bond?`<br>♥ 絆 +${x.bondAmount||1}`:x.bondCoins?`<br>♥MAX → 🪙 +${x.bondCoins}`:""}</div></div>`}).join("");
+ const souvenirs=(f.souvenirs||[]).map(s=>`<div class="foundSouvenir combinedSouvenir104 ${s.isNew?"new":""} ${s.rare?"rare":""}">${s.isNew?'<span class="newTag">NEW!</span>':""}<div class="ico">${s.icon}</div><b>${esc(s.name)}</b><small>所持 ${s.afterCount}</small></div>`).join("");
+ const secretUsed=m.secretSpotUsed?`<div class="combinedSecretUsed104"><b>🌟 今回ボーナス適用</b><span>${esc(th.name)} ランク${m.difficulty}</span><small>${esc(m.secretSpotUsed.name)}</small></div>`:"";
+ const secretNew=spot?`<div class="combinedSecretNew104"><span class="nextOnlyBadge">⏭ 次回のみ</span><b>${esc(th.name)} ランク${highestDifficultyForDungeon(m.dungeonId,clearedDestinations())||m.difficulty}</b><small>🌟 ${esc(spot.name)} ／ 調査度↑・レア箱↑・仲間↑</small></div>`:"";
+ app.innerHTML=`<div class="card findingsCard combinedReturn104"><div class="combinedReturnGrid104"><section class="combinedSurvey104"><div class="sectionTitle">🗺️ 探索先の調査</div><div class="discoveryResult"><div class="discoveryResultHead"><b>${th.icon} ${esc(th.name)}</b><strong>Lv ${afterStep}/5</strong></div><div class="discoveryMeter"><span style="width:${f.after}%"></span></div><div class="discoveryDelta">${beforeStep}/5 → ${afterStep}/5　／　${f.after}%</div>${f.completedNow?'<div class="discoveryCompleteBurst">🎉 調査コンプリート！</div>':""}</div><div class="sectionTitle combinedSouvenirTitle104">🎒 おみやげ</div><div class="foundSouvenirs combinedSouvenirs104">${souvenirs||'<div class="summaryEmpty">今回はありません。</div>'}</div>${secretUsed}${secretNew}</section><section class="combinedGrowth104"><div class="sectionTitle">⭐ 探索メンバーの成長</div><div class="growthGrid">${growth}</div><div class="combinedGrowthNote104">探索参加による確定成長。成果箱の追加分は、このあと開封して最終結果へ合算します。</div></section></div><button class="goldBtn returnFlowBtn092 combinedBoxesBtn104" data-return-action="boxes">🎁 成果箱を開ける</button></div>`
+}
+function renderGrowth(){return renderFindings()}
+
 function rewardIcon(rw){return rw.type==="xp"||rw.type==="allxp"?"⭐":rw.type==="bond"?"♥":rw.type==="growth"?"🌱":rw.type==="egg"?"🥚":rw.type==="companion"?"👣":rw.type==="combo"?"🌟":"🎁"}
 function lootRarityLabel(box){return box.rarity==="jackpot"?"🌟 大当たり！":box.rarity==="rare"?"✨ RARE!":"RESULT"}
 function rewardVisualHTML(rw,final=true,mode="auto",event=""){if(rw?.type==="companion"&&rw.target){const r=rec(rw.target);if(!final)return `<img class="lootRewardImage silhouette" src="${esc(imageOf(r))}" alt="">`;return `<div class="expOwnershipWrap"><img class="lootRewardImage" src="${esc(imageOf(r))}" alt="" data-ownership-mode="${esc(mode)}">${expeditionOwnershipBadgeHTML(r?.master_id,mode)}${event?expeditionEventBadgeHTML(event):""}</div>`}if(rw?.type==="egg"){const e=rw.egg||{},icon=e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚";return `<div class="lootRewardIcon">${icon}</div>`}return `<div class="lootRewardIcon">${rewardIcon(rw)}</div>`}
@@ -1223,8 +1217,10 @@ function rewardRevealTitle(rw){if(rw?.type==="companion")return rw.target?"誰�
 function lootRevealFinalHTML(box){const joined=box?.reward?.type==="companion"&&/新しく仲間になった/.test(String(box.resultText||""));return `${rewardVisualHTML(box.reward,true,joined?"new":"auto",joined?"NEW":"")}<div class="lootRewardTitle">${esc(rewardRevealTitle(box.reward))}</div><div class="lootRewardText">${esc(box.resultText||"")}</div>`}
 const lootSleep=UI.sleep;
 function stopLootAuto(){lootAutoMode=false;if(lootAutoTimer){clearTimeout(lootAutoTimer);lootAutoTimer=null}}
-function openLootBoxAt(index){
- const m=groupMission();if(!m||m.stage!=="boxes"||lootAnimating)return false;const i=Number(index),b=m.boxes?.[i];if(!b||b.opened)return false;b.opened=true;applyReward(b);writeExp();playLootReveal(b,i,m.boxes.length);return true
+async function openLootBoxAt(index){
+ const m=groupMission();if(!m||m.stage!=="boxes"||lootAnimating)return false;const i=Number(index),b=m.boxes?.[i];if(!b||b.opened)return false;
+ if(!await ensureEvolutionForReward106())return false;
+ b.opened=true;applyReward(b);writeExp();playLootReveal(b,i,m.boxes.length);return true
 }
 function scheduleNextAutoLoot(delay=280){
  if(!lootAutoMode||lootAnimating||lootAutoTimer)return;const m=groupMission();if(!m||m.stage!=="boxes"){stopLootAuto();return}if(maybeNeedEggDiscard())return;const i=m.boxes.findIndex(b=>!b.opened);if(i<0){stopLootAuto();return}lootAutoTimer=setTimeout(()=>{lootAutoTimer=null;if(lootAutoMode)openLootBoxAt(i)},delay)
@@ -1282,16 +1278,26 @@ function summaryGrowthTableHTML094(m){
  const shared=data.sharedDrill?`<tr class="sharedRow094"><th>全員共通</th><td>${cell(0)}</td><td>${cell(data.sharedDrill)}</td><td>${cell(0)}</td><td>${cell(0)}</td></tr>`:"";return `<div class="growthTableWrap094"><table class="growthTable094"><thead><tr><th>ピック</th><th>EXP</th><th>特訓P</th><th>進化P</th><th>絆</th></tr></thead><tbody>${body}${shared}</tbody><tfoot><tr><th>3体合計</th><td>${cell(data.total.xp)}</td><td>${cell(data.total.drill)}</td><td>${cell(data.total.evo)}</td><td>${cell(data.total.bond)}</td></tr></tfoot></table></div>`
 }
 function summaryCompanionHTML097(m){
- const joined=(m.boxes||[]).filter(box=>box?.applied&&box?.reward?.type==="companion"&&box.reward.target&&/新しく仲間になった/.test(String(box.resultText||""))).map(box=>box.reward.target).filter((id,i,a)=>a.indexOf(id)===i);
+ const joined=[];const add=id=>{if(id&&!joined.includes(id))joined.push(id)};
+ const rewardTargets=rw=>{if(!rw)return[];if(rw.type==="companion"&&rw.target)return[rw.target];if(rw.type==="combo")return (rw.items||[]).flatMap(rewardTargets);return[]};
+ for(const box of m.boxes||[]){if(!box?.applied)continue;if(Array.isArray(box.newCompanionIds104)&&box.newCompanionIds104.length){box.newCompanionIds104.forEach(add);continue}const txt=String(box.resultText||"");if(!/新しく仲間になった/.test(txt))continue;for(const id of rewardTargets(box.reward)){const r=rec(id);if(r?.name_ja&&txt.includes(r.name_ja))add(id)}}
  if(!joined.length)return "";
  return `<div class="summaryCompanionBox097"><div class="summaryCompanionHead097"><b>👣 ついてきたポケモン</b><small>${joined.length}体が仲間になった！</small></div><div class="summaryCompanionGrid097">${joined.map(id=>{const r=rec(id);return `<div class="summaryCompanionCard097">${expeditionImageWithOwnershipHTML(r,"new","","NEW")}<b>${esc(r?.name_ja||id)}</b></div>`}).join("")}</div></div>`
 }
 /* ===== FINAL EXPEDITION SUMMARY ===== */
-function renderSummary(){applyBaseGrowth();const m=groupMission();if(m?.id&&lastSummarySfxId!==m.id){lastSummarySfxId=m.id;expSfx("summary")}const f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20)),souvenirs=f.souvenirs||[],boxCount=m.boxes?.length||0,th=THEMES[m.dungeonId],elapsed=formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now())),newSouvenirs=souvenirs.filter(x=>x.isNew).length,secret=m.secretSpotDiscovered;
- const secretHtml=secret?`<div class="summaryNextSecret094"><b>⏭ 次回の同じ探索だけ有効</b><span>🌟 ${esc(secret.name)}</span><small>${esc(th.name)}：調査度↑・レア成果箱率↑・新しい仲間↑</small></div>`:"";
- const companionHtml=summaryCompanionHTML097(m),bondCoinTotal=(m.baseResults||[]).reduce((n,x)=>n+Math.max(0,Number(x.bondCoins)||0),0)+(m.boxes||[]).reduce((n,b)=>n+Math.max(0,Number(b.bondCoinGained099)||0),0),bondCoinHtml=bondCoinTotal?`<div class="summaryBondCoin099">♥ 絆MAX分を自動変換　<b>🪙 +${bondCoinTotal}</b><small>絆1P → 🪙${COIN_PER_OVERFLOW_BOND}</small></div>`:"";
- app.innerHTML=`<div class="card expeditionSummaryCard summaryCompact094"><div class="summaryTop094"><div><b>✨ 探索完了！</b><span>グループ${activeGroup+1}</span></div><small>${th.icon} ${esc(th.name)} R${m.difficulty} ／ ${elapsed} ／ ${m.rank}ランク ／ 🎁${boxCount}</small></div><div class="summaryFacts094"><div><span>🗺️ 調査</span><b>Lv ${beforeStep}/5 → ${afterStep}/5</b><small>${f.before||0}% → ${f.after||0}%${m.secretSpotUsed?" ／ 🌟今回ボーナス適用":""}</small></div><div><span>🎒 おみやげ</span><b>${souvenirs.length}個</b><small>${newSouvenirs?`NEW ${newSouvenirs}個`:`新規なし`}</small></div></div>${secretHtml}${companionHtml}<div class="summaryGrowthTitle094"><b>📈 今回の成長合計</b><small>探索参加＋成果箱を合算</small></div>${summaryGrowthTableHTML094(m)}${bondCoinHtml}<div class="summaryRelease094">探索終了でグループ${activeGroup+1}の3体が再び使用できます。</div><button class="goldBtn summaryCompleteBtn returnFlowBtn092 summaryComplete094" data-return-action="complete">探索終了</button></div>`
+function summarySouvenirsHTML104(souvenirs){
+ const map=new Map();for(const x of souvenirs||[]){const k=x.id||x.name||x.icon||"souvenir",old=map.get(k)||{...x,count:0};old.count++;map.set(k,old)}
+ const rows=[...map.values()];return `<div class="summarySouvenir104"><div class="summaryMiniHead104"><b>🎒 おみやげ</b><strong>${(souvenirs||[]).length}個</strong></div><div class="summarySouvenirItems104">${rows.length?rows.map(x=>`<div class="summarySouvenirItem104 ${x.rare?"rare":""}"><span>${x.icon}</span><b>×${x.count}</b><small>${esc(x.name)}</small></div>`).join(""):'<div class="summaryEmpty">なし</div>'}</div></div>`
 }
+function summarySecretHTML104(secret,m){if(!secret)return "";const th=THEMES[secret.dungeonId]||THEMES[m.dungeonId],diff=highestDifficultyForDungeon(secret.dungeonId,clearedDestinations())||m.difficulty;return `<div class="summarySecret104"><span>⏭ 次回の同じ探索だけ有効</span><b>${th?.icon||"🌟"} ${esc(th?.name||secret.dungeonId)}　ランク${diff}</b><small>🌟 ${esc(secret.name)}</small><em>調査度↑・レア成果箱率↑・新しい仲間↑</em></div>`}
+function renderSummary(){
+ applyBaseGrowth();const m=groupMission();if(m?.id&&lastSummarySfxId!==m.id){lastSummarySfxId=m.id;expSfx("summary")}
+ const f=m.findings||generateMissionFindings(m),beforeStep=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),afterStep=f.after<=0?0:Math.min(5,Math.ceil(f.after/20)),souvenirs=f.souvenirs||[],boxCount=m.boxes?.length||0,th=THEMES[m.dungeonId],elapsed=formatElapsedHours(m.settledHoursExact??missionElapsedHours(m,m.settledAt||Date.now())),secret=m.secretSpotDiscovered;
+ const companionHtml=summaryCompanionHTML097(m),bondCoinTotal=(m.baseResults||[]).reduce((n,x)=>n+Math.max(0,Number(x.bondCoins)||0),0)+(m.boxes||[]).reduce((n,b)=>n+Math.max(0,Number(b.bondCoinGained099)||0),0),bondCoinHtml=bondCoinTotal?`<div class="summaryBondCoin099">♥ 絆MAX分を自動変換　<b>🪙 +${bondCoinTotal}</b><small>絆1P → 🪙${COIN_PER_OVERFLOW_BOND}</small></div>`:"";
+ const surveyHtml=`<div class="summarySurvey104"><div class="summaryMiniHead104"><b>🗺️ 調査</b><strong>Lv ${beforeStep}/5 → ${afterStep}/5</strong></div><div class="discoveryMeter"><span style="width:${f.after||0}%"></span></div><small>${f.before||0}% → ${f.after||0}%${m.secretSpotUsed?" ／ 🌟今回ボーナス適用":""}</small></div>`;
+ app.innerHTML=`<div class="card expeditionSummaryCard summary104"><div class="summaryTop104"><div><b>✨ 探索完了！</b><span>グループ${activeGroup+1}</span></div><small>${th.icon} ${esc(th.name)} R${m.difficulty} ／ ${elapsed} ／ ${m.rank}ランク ／ 🎁${boxCount}</small></div><div class="summaryOverviewGrid104">${surveyHtml}${summarySouvenirsHTML104(souvenirs)}</div><div class="summaryHighlights104">${summarySecretHTML104(secret,m)}${companionHtml}</div><div class="summaryGrowthPanel104"><div class="summaryGrowthTitle094"><b>📈 今回の成長合計</b><small>探索参加＋成果箱を合算</small></div>${summaryGrowthTableHTML094(m)}</div>${bondCoinHtml}<div class="summaryFooter104"><span>探索終了でグループ${activeGroup+1}の3体が再び使用できます。</span><button class="goldBtn summaryCompleteBtn returnFlowBtn092 summaryComplete104" data-return-action="complete">探索終了</button></div></div>`
+}
+
 function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const boxes=document.getElementById("plannedBoxes075");if(boxes)boxes.textContent=profile.boxes;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
 function openCollection(){if(screen!=="collection")collectionReturnScreen=screen||"home";screen="collection";render()}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
@@ -1355,14 +1361,25 @@ function commonHeaderOpen085(){
  document.getElementById("infoBackupFile083").onchange=e=>{if(e.target.files?.[0])commonHeaderBackupIn085(e.target.files[0])};
 }
 function ensureCommonHeader085(){
- const buttons=document.querySelector(".headerTop .headerBtns"),egg=document.getElementById("headerEggBadge"),ver=document.getElementById("versionBadge"),title=document.getElementById("expHomeTitle076");
+ const buttons=document.querySelector(".headerTop .headerBtns"),egg=document.getElementById("headerEggBadge"),ver=document.getElementById("versionBadge"),title=document.getElementById("expHomeTitle076"),close=document.getElementById("expCloseBtn");
  if(buttons&&egg){
   let status=document.getElementById("headerStatus083");
   if(!status){status=document.createElement("div");status.id="headerStatus083";status.className="headerStatus083";buttons.appendChild(status)}
   let coin=document.getElementById("headerCoinBadge083");
   if(!coin){coin=document.createElement("span");coin.id="headerCoinBadge083";coin.className="headerCoinBadge083"}
-  if(egg.parentElement!==status)status.appendChild(egg);
-  if(coin.parentElement!==status)status.appendChild(coin);
+  if(blackExp073()){
+   let shared=document.getElementById("expSharedStatus074");
+   if(!shared){shared=document.createElement("div");shared.id="expSharedStatus074";document.querySelector(".headerTop")?.append(shared)}
+   const summary=document.getElementById("expHeaderSummary073");
+   if(summary&&summary.parentElement!==shared)shared.appendChild(summary);
+   if(egg.parentElement!==shared)shared.appendChild(egg);
+   if(coin.parentElement!==shared)shared.appendChild(coin);
+   if(close&&close.parentElement!==shared)shared.appendChild(close);
+   if(status&&!status.children.length)status.remove();
+  }else{
+   if(egg.parentElement!==status)status.appendChild(egg);
+   if(coin.parentElement!==status)status.appendChild(coin);
+  }
   const d=readDungeon()||{};coin.textContent=`🪙 ${Math.max(0,Math.floor(Number(d.frendaCoins)||0)).toLocaleString("ja-JP")}`;
  }
  if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen085()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen085()}}}
@@ -1371,7 +1388,18 @@ function ensureCommonHeader085(){
 
 /* ===== MAIN SCREEN ROUTER ===== */
 function render(){ensureReturnFlow092();document.body.classList.remove("blackExpExplore075");syncExpBgm();updateExpSoundBtn();document.body.dataset.expScreen=screen||"home";if(ticker){clearInterval(ticker);ticker=null}prepareReturnAll();syncPrep();updateHeaderNav();updateHeaderEggCount();if(screen==="explore")renderExplore();else if(screen==="return")renderReturn();else if(screen==="collection")renderCollection();else renderPrep();startTicker();updateHeaderEggCount();optimizeBlackHeader077();ensureCommonHeader085()}
-async function loadEvolution(){try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=true}catch(e){console.warn(e);EVO_INDEX=null;evoReady=false}}
+async function loadEvolution(){
+ if(evoReady&&EVO_INDEX)return true;
+ if(evoLoadPromise)return evoLoadPromise;
+ evoLoadPromise=(async()=>{try{EVO_INDEX=await DATA.evolution.loadIndex();evoReady=!!EVO_INDEX;return evoReady}catch(e){console.warn("EVOLUTION_LOAD",e);EVO_INDEX=null;evoReady=false;return false}finally{evoLoadPromise=null}})();
+ return evoLoadPromise
+}
+async function ensureEvolutionForReward106(){
+ if(evoReady&&EVO_INDEX)return true;
+ const ok=await loadEvolution();
+ if(!ok)UI.dialog.alert("進化データを読み込めなかったため、成果箱はまだ開けません。通信状態を確認して、もう一度お試しください。\n\n※成果箱の中身・セーブデータは失われていません。");
+ return ok
+}
 function updateHeaderNavLayout(){const closeBtn=document.getElementById("expCloseBtn");if(closeBtn)closeBtn.textContent="閉じる"}
 window.addEventListener("resize",updateHeaderNavLayout);updateHeaderNavLayout();
 const expSoundBtn=document.getElementById("expeditionSoundBtn");if(expSoundBtn)expSoundBtn.onclick=e=>{e.stopPropagation();cycleExpSound()};updateExpSoundBtn();
@@ -3054,11 +3082,61 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 @media(min-width:1200px) and (min-height:650px) and (max-height:840px){
 #expSharedStatus074{display:flex!important;align-items:center!important;gap:6px!important;flex:0 0 auto!important;}
 #expSharedStatus074 #expCloseBtn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:5!important;}
+#expSharedStatus074 .headerCoinBadge083{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:32px!important;min-height:32px!important;min-width:58px!important;padding:0 9px!important;border-radius:999px!important;background:#fff1bd!important;color:#6b4d00!important;border:1px solid #e3c361!important;font-size:11px!important;font-weight:1000!important;line-height:1!important;white-space:nowrap!important;margin:0!important;}
+body.blackExpHeader077 #expSharedStatus074 .headerEggBadge{display:inline-flex!important;visibility:visible!important;opacity:1!important;}
+body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerCoinBadge083{height:27px!important;min-height:27px!important;padding:0 6px!important;font-size:9px!important;}
 }
 </style>
 <!-- Expedition Ver1.00: PC header Close button moved into the far-right shared status area so it remains visible on compact PC layouts. -->
 </body>
 <!-- Expedition Ver0.99: bond Lv5 MAX overflow auto-converts at 1 bond P = 50 Frenda Coins; legacy overflow is also normalized. -->
+
+<style id="v104-pc-return-layout">
+/* Ver1.04: PC expedition cleanup / combined return screen / compact final summary. */
+@media(min-width:1200px) and (min-height:650px) and (max-height:840px){
+  body.blackExpPrep073 .chosenColumn077{overflow:hidden!important}
+  body.blackExpPrep073 .chosenColumn077 #expSelectedStrip{flex:1 1 0!important;min-height:0!important;overflow:hidden!important}
+  body.blackExpPrep073 .chosenColumn077 .frendaSelectedStrip{height:100%!important;min-height:0!important;overflow:hidden!important}
+  body.blackExpPrep073 .chosenColumn077 .frendaSelectedSlot{min-height:0!important;overflow:hidden!important;align-items:center!important}
+  body.blackExpPrep073 .chosenColumn077 .frendaSelectedSlot img{width:34px!important;height:48px!important;max-width:100%!important;max-height:48px!important;object-fit:contain!important}
+  body.blackExpPrep073 .fastSelectMark,body.blackExpPrep073 .selectMark{display:none!important}
+  body.blackExpPrep073 .destinationCompact{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;height:38px!important;min-height:38px!important;padding:3px 6px!important}
+  body.blackExpPrep073 .destNameWrap{display:flex!important;align-items:center!important;gap:5px!important;line-height:1!important}
+  body.blackExpPrep073 .destName{font-size:12px!important;line-height:1.1!important}
+  body.blackExpPrep073 .destSecretBadge{display:inline-grid!important;place-items:center!important;width:20px!important;height:20px!important;padding:0!important;font-size:13px!important;border-radius:50%!important}
+  body.blackExpPrep073 .destMeta{display:flex!important;flex-direction:column!important;align-items:flex-end!important;justify-content:center!important;gap:0!important;line-height:1.05!important}
+  body.blackExpPrep073 .destMeta b{font-size:10px!important}.blackExpPrep073 .destMeta em{font-size:8px!important}
+  body.blackExpPrep073 .destinationAutoHint{font-size:9px!important;line-height:1.15!important}
+  body.blackExpPrep073 .freeGuideRows{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;grid-auto-flow:column!important;gap:2px 10px!important}
+  body.blackExpPrep073 .freeGuideRow{min-height:0!important;height:22px!important;padding:1px 3px!important}
+  body.blackExpPrep073 .freeGuideRow b,body.blackExpPrep073 .freeGuideRow span{font-size:10px!important;line-height:20px!important}
+  .combinedReturn104{width:min(1240px,calc(100vw - 30px));height:calc(100dvh - 88px);margin:10px auto!important;padding:12px!important;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+  .combinedReturnGrid104{flex:1 1 0;min-height:0;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:12px}
+  .combinedSurvey104,.combinedGrowth104{min-height:0;border:1px solid #cbdde6;border-radius:15px;padding:11px;background:#f8fcfe;overflow:auto}
+  .combinedSurvey104 .sectionTitle,.combinedGrowth104 .sectionTitle{font-size:18px!important;margin:0 0 7px!important}
+  .combinedSurvey104 .discoveryResult{padding:9px!important;margin:0 0 8px!important}
+  .combinedSurvey104 .discoveryResultHead b{font-size:14px!important}.combinedSurvey104 .discoveryResultHead strong{font-size:18px!important}
+  .combinedSouvenirTitle104{margin-top:8px!important}
+  .combinedSouvenirs104{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;margin-top:5px!important}
+  .combinedSouvenir104{padding:7px 4px!important}.combinedSouvenir104 .ico{font-size:32px!important}.combinedSouvenir104 b{font-size:9px!important}.combinedSouvenir104 small{font-size:7px!important}
+  .combinedGrowth104 .growthGrid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+  .combinedGrowthCard104{padding:8px!important;min-height:0!important}.combinedGrowthCard104 img{width:auto!important;height:120px!important;max-width:100%!important;object-fit:contain!important}.combinedGrowthCard104 b{font-size:13px!important}.combinedGrowthCard104 .growthResult{font-size:11px!important;line-height:1.45!important}
+  .combinedGrowthNote104{margin-top:7px;padding:7px 9px;border-radius:9px;background:#fff7d9;color:#705a13;font-size:9px;font-weight:800}
+  .combinedSecretUsed104,.combinedSecretNew104{margin-top:7px;padding:7px 9px;border-radius:10px;background:#fff5c8;border:1px solid #e5c45a;display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center}
+  .combinedSecretUsed104 b,.combinedSecretNew104 .nextOnlyBadge{grid-row:1/3}.combinedSecretUsed104 span,.combinedSecretNew104 b{font-size:13px}.combinedSecretUsed104 small,.combinedSecretNew104 small{font-size:8px}
+  .combinedBoxesBtn104{flex:0 0 auto;width:100%;margin-top:9px!important;font-size:17px!important;min-height:44px!important}
+  .summary104{width:min(1180px,calc(100vw - 34px));height:calc(100dvh - 86px);margin:9px auto!important;padding:10px 12px!important;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  .summaryTop104{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 11px;border-radius:12px;background:linear-gradient(120deg,#0f4864,#17627b);color:#fff}.summaryTop104 b{font-size:22px}.summaryTop104 span{margin-left:8px;font-size:11px}.summaryTop104 small{font-size:10px;font-weight:900}
+  .summaryOverviewGrid104{flex:0 0 auto;display:grid;grid-template-columns:.8fr 1.2fr;gap:8px}.summarySurvey104,.summarySouvenir104{padding:8px 10px;border:1px solid #cddde4;border-radius:12px;background:#f8fcfd}.summaryMiniHead104{display:flex;align-items:center;justify-content:space-between;gap:8px}.summaryMiniHead104 b{font-size:13px}.summaryMiniHead104 strong{font-size:18px}.summarySurvey104 small{display:block;margin-top:4px;font-size:9px;color:#607986;font-weight:850}
+  .summarySouvenirItems104{display:flex;align-items:stretch;gap:7px;margin-top:5px;min-height:58px}.summarySouvenirItem104{min-width:72px;flex:1 1 0;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;justify-content:center;gap:0 6px;padding:5px 7px;border-radius:10px;background:#fff;border:1px solid #d9e3e8;text-align:center}.summarySouvenirItem104>span{grid-row:1/3;font-size:34px;line-height:1}.summarySouvenirItem104>b{font-size:18px;color:#244d60}.summarySouvenirItem104>small{font-size:7px;color:#6a7f89;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.summarySouvenirItem104.rare{border-color:#e3bf4d;background:#fff9df}
+  .summaryHighlights104{flex:0 0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.summaryHighlights104:empty{display:none}.summarySecret104{padding:8px 10px;border-radius:12px;background:linear-gradient(135deg,#fff5c5,#ffe68d);border:1px solid #deb441;display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center}.summarySecret104>span{grid-row:1/4;align-self:stretch;display:grid;place-items:center;padding:4px 7px;border-radius:9px;background:#b84725;color:#fff;font-size:8px;font-weight:1000}.summarySecret104>b{font-size:18px;color:#6b4b00}.summarySecret104>small{font-size:9px;font-weight:900;color:#7b5a0b}.summarySecret104>em{font-style:normal;font-size:8px;color:#765f25;font-weight:800}
+  .summary104 .summaryCompanionBox097{margin:0!important;padding:7px 9px!important}.summary104 .summaryCompanionHead097{margin-bottom:5px!important}.summary104 .summaryCompanionGrid097{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}.summary104 .summaryCompanionCard097{display:grid!important;grid-template-columns:45px minmax(0,1fr)!important;align-items:center!important;justify-items:stretch!important;padding:5px!important;text-align:left!important}.summary104 .summaryCompanionCard097 img{width:42px!important;height:58px!important}.summary104 .summaryCompanionCard097 b{font-size:10px!important}.summary104 .expOwnershipBadge{font-size:6px!important;padding:2px 4px!important}
+  .summaryGrowthPanel104{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;overflow:hidden}.summaryGrowthPanel104 .summaryGrowthTitle094{width:min(820px,100%);margin:0 auto 4px}.summaryGrowthPanel104 .growthTableWrap094{width:min(820px,100%)!important;max-width:820px!important;margin:0 auto!important;overflow:auto!important}.summaryGrowthPanel104 .growthTable094{width:100%!important;table-layout:fixed!important}.summaryGrowthPanel104 .growthTable094 th,.summaryGrowthPanel104 .growthTable094 td{padding:6px 7px!important;font-size:10px!important}.summaryGrowthPanel104 .pickCell094 img{width:30px!important;height:42px!important}.summaryGrowthPanel104 .pickCell094 span{font-size:9px!important}
+  .summary104 .summaryBondCoin099{flex:0 0 auto;margin:0!important}.summaryFooter104{flex:0 0 auto;display:grid;grid-template-columns:1fr 260px;align-items:center;gap:10px}.summaryFooter104>span{font-size:9px;text-align:center;color:#607883}.summaryFooter104 .summaryCompleteBtn{position:static!important;margin:0!important;min-height:42px!important;font-size:16px!important}
+}
+@media(max-width:700px){.combinedReturnGrid104{display:block}.combinedGrowth104{margin-top:10px}.summaryHighlights104{grid-template-columns:1fr}.summaryFooter104{display:block}.summaryFooter104 .summaryCompleteBtn{width:100%;margin-top:8px!important}.summarySouvenirItems104{flex-wrap:wrap}.summarySouvenirItem104{min-width:88px}}
+</style>
+<!-- Expedition Ver1.04: PC prep cleanup, fixed free-exploration column order, combined survey/growth return screen, compact final summary with large souvenir counts and target dungeon/rank emphasis. -->
 </html>
 
 <!-- Expedition Ver0.97: when a Pokémon follows the team and newly joins in expedition rewards, show its image on the final expedition results screen. -->
@@ -3067,3 +3145,7 @@ body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:3
 <!-- Expedition Ver1.01: ownership status is automatically overlaid on the top-left of every Pokémon image; newly joined companions also show NEW at the top-right. -->
 
 <!-- Expedition Ver1.02: removed full-page ownership MutationObserver; party/owned-only screens no longer show ownership badges. Companion acquisition keeps explicit ownership display only where needed. -->
+
+<!-- Expedition Ver1.05: PC compact header keeps egg count and coin count visible in the shared right-side status area; white/black PC order = exploration status, egg, coin, close. -->
+
+<!-- Ver1.06: reward opening now waits for evolution data; shared JS cache keys follow app version. -->
