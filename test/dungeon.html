@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.30">
+<html lang="ja" data-app-version="3.31">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6748,7 +6748,7 @@ function commonHeaderOpen298(){
  commonHeaderClose298();
  const ov=document.createElement("div"),touch=("ontouchstart" in window)||navigator.maxTouchPoints>0;
  ov.className="frendaInfoOverlay296";
- ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div></div>`;
+ ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div><div class="frendaInfoSection296"><h3>セーブ管理</h3><div class="frendaInfoActions296"><button type="button" class="secondary" id="infoSaveManager296">セーブ管理を開く</button></div><div class="frendaInfoNote296">セーブの書き出し・読み込み・初期化を行えます。</div></div></div>`;
  document.body.appendChild(ov);
  ov.querySelector(".frendaInfoClose296").onclick=commonHeaderClose298;
  ov.onclick=e=>{if(e.target===ov)commonHeaderClose298()};
@@ -6756,11 +6756,12 @@ function commonHeaderOpen298(){
  document.getElementById("infoBackupOut296").onclick=commonHeaderBackupOut298;
  document.getElementById("infoBackupIn296").onclick=()=>document.getElementById("infoBackupFile296").click();
  document.getElementById("infoBackupFile296").onchange=e=>{if(e.target.files?.[0])commonHeaderBackupIn298(e.target.files[0])};
+ const saveMgr=document.getElementById("infoSaveManager296");if(saveMgr)saveMgr.onclick=()=>{commonHeaderClose298();openSaveManagerFromHeader()};
 }
 function bindCommonHeader298(){
  const title=document.getElementById("headerMainTitle"),ver=document.getElementById("versionBadge"),cluster=document.querySelector("header .careCluster"),egg=document.getElementById("headerEggBadge"),coin=document.getElementById("headerCoinBadge");
  if(title){title.onclick=e=>{e.preventDefault();homeBtn.click()};title.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();homeBtn.click()}}}
- if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
+ if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ・セーブ管理";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
  if(cluster&&egg&&coin){if(egg.parentElement!==cluster)cluster.appendChild(egg);if(coin.parentElement!==cluster)cluster.appendChild(coin);cluster.append(egg,coin)}
 }
 
@@ -15006,5 +15007,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.28: shop purchases and training stat spends preserve the current scroll position after rerender. -->
 <!-- Ver3.29: shop purchases no longer rebuild the shop DOM; balances and button states update in place so Safari scroll position never resets. -->
 <!-- Ver3.30: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
+<!-- Ver3.31: restored the visible save-management entry in the version/settings panel; save export/import/reset remain available from the dedicated screen. -->
 </body>
 </html>
