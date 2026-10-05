@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja" data-test-center-version="1.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>フレンダ 回帰テストセンター</title>
+<style>
+:root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:20;background:#0d2a3d;color:#fff;padding:10px 14px;box-shadow:0 2px 9px #0003}header b{font-size:18px}header small{display:block;opacity:.75;margin-top:2px}
+main{max-width:1180px;margin:auto;padding:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 5px 16px #17384c12}
+.topgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{padding:10px;border-radius:12px;background:#f4f8fb}.metric b{display:block;font-size:17px}.metric small{color:var(--sub)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.profiles button,.actions button,.openBtn{border:0;border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer;background:#dbe9f4;color:#20435a}.profiles button.active{background:#246fa8;color:#fff}.actions button{background:#236faf;color:#fff}.actions button.secondary{background:#e8eef2;color:#294757}
+#autoResults{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}.testResult{padding:8px 10px;border-radius:10px;border:1px solid var(--line);font-size:12px}.testResult.ok{background:#eaf8ef;border-color:#a8d9b9;color:#17683b}.testResult.ng{background:#fff0f0;border-color:#e2aaaa;color:#8d2c2c}.testResult.warn{background:#fff8e6;border-color:#e6cc83;color:#785600}
+.sectionTitle{font-size:18px;font-weight:900;margin-bottom:8px}.checkRow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 5px;border-top:1px solid #e3ebef}.checkRow:first-of-type{border-top:0}.checkRow input{width:20px;height:20px}.checkRow b{font-size:13px}.checkRow small{display:block;color:var(--sub);font-size:11px;margin-top:2px}.openBtn{text-decoration:none;white-space:nowrap;background:#e4f0fa}.deviceHint{padding:9px 10px;border-radius:10px;background:#fff7d9;border:1px solid #dfc777;color:#6c5600;font-size:12px;margin-top:8px}.progress{font-size:12px;color:var(--sub);margin-left:auto}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+@media(max-width:700px){main{padding:8px}.topgrid,#autoResults{grid-template-columns:1fr}.checkRow{grid-template-columns:26px minmax(0,1fr)}.checkRow .openBtn{grid-column:2;justify-self:start}.profiles button{padding:8px 9px;font-size:11px}}
+</style>
+</head>
+<body>
+<header><b>🧪 フレンダ 回帰テストセンター</b><small>自動チェック＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<main>
+<section class="card">
+ <div class="topgrid">
+  <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
+  <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>同じフォルダの dungeon.html / expedition.html を確認</small></div>
+ </div>
+ <div class="row profiles" style="margin-top:10px">
+  <button data-profile="white">白PC 1366×688 / DPR1</button>
+  <button data-profile="black">黒PC 1520×794 / DPR1.25</button>
+  <button data-profile="iphone">iPhone 390×645 / DPR3</button>
+  <span class="progress" id="progressText"></span>
+ </div>
+ <div class="deviceHint" id="deviceHint"></div>
+</section>
+
+<section class="card">
+ <div class="row"><div class="sectionTitle" style="margin:0">自動チェック</div><div class="actions"><button id="runAuto">再チェック</button><button class="secondary" id="resetChecks">選択端末のチェックをリセット</button></div></div>
+ <div id="autoResults"></div>
+</section>
+
+<section class="card">
+ <div class="sectionTitle">ダンジョン</div>
+ <div id="dungeonChecks"></div>
+</section>
+
+<section class="card">
+ <div class="sectionTitle">おでかけ探索</div>
+ <div id="expeditionChecks"></div>
+</section>
+</main>
+<script>
+(()=>{
+"use strict";
+const PROFILES={
+ white:{label:"白PC",w:1366,h:688,dpr:1},
+ black:{label:"黒PC",w:1520,h:794,dpr:1.25},
+ iphone:{label:"iPhone",w:390,h:645,dpr:3}
+};
+const dungeonCases=[
+ ["d-team","挑戦チーム編成","上部操作→選択3体→挑戦/自動冒険。画像・文字のはみ出しなし。","team-star5"],
+ ["d-route","進む道","道カード、10階表示、撤退位置、固定パーティ欄を確認。","route-star5"],
+ ["d-battle","戦闘","敵所持バッジと ENEMY 表示が重ならない。味方3体・HP・AUTOを確認。","battle"],
+ ["d-legend","伝説登場","登場演出が中央で切れず、1画面に収まる。","legendary-intro"],
+ ["d-cap-intro","ゲットチャンス開始","ゲット導入画面の中央配置とボタンを確認。","capture-intro"],
+ ["d-cap-slot","ボールスロット","対象ポケモン、8ボール、STOPの配置を確認。黒PCは卵スロット系レイアウト。","capture-slot"],
+ ["d-owned","所持ピック","一覧の初期ソート、画像、スクロール、ボタンを確認。","owned"],
+ ["d-quick","個別特訓","特訓ボタン操作で背景・モーダルの位置が上へ飛ばない。下端説明まで読める。","quick-training"],
+ ["d-training","育成","育成一覧、進化/特訓情報、操作領域を確認。","training"],
+ ["d-shop","ショップ","コイン情報と商品を区別。黒PCはコイン説明が右側、商品との間に余白。","shop"]
+];
+const expCases=[
+ ["e-prep","探索準備","ヘッダーの探索中→卵→コイン→閉じるを確認。白PCで卵数が消えない。","prep"],
+ ["e-explore","探索中","グループカード、経過、派遣メンバー、ヘッダーを確認。","exploring"],
+ ["e-box","成果箱","箱・おみやげ・秘密の場所表示、縦位置を確認。","boxes"],
+ ["e-summary","探索完了","成長表・おみやげ・仲間画像が1画面内で読みやすいか確認。","summary"]
+];
+let currentProfile=localStorage.getItem("frenda:regression:profile")||"white";
+let versions={dungeon:"?",expedition:"?"};
+const $=s=>document.querySelector(s);
+function updateViewport(){
+ const p=PROFILES[currentProfile],text=`${innerWidth}×${innerHeight} / DPR ${devicePixelRatio||1}`;$("#viewportNow").textContent=text;
+ const dw=Math.abs(innerWidth-p.w),dh=Math.abs(innerHeight-p.h),dd=Math.abs((devicePixelRatio||1)-p.dpr);
+ $("#profileGuess").textContent=`選択中：${p.label}（基準 ${p.w}×${p.h} / DPR ${p.dpr}）`;
+ $("#deviceHint").textContent=(dw<=40&&dh<=80&&dd<=.3)?"現在の表示は選択した基準に近いです。":"現在の表示は選択した基準と異なります。チェック結果は端末別に保存されるので、対象端末で開いて確認してください。";
+}
+function checkKey(id){return `frenda:regression:${versions.dungeon}:${versions.expedition}:${currentProfile}:${id}`}
+function rowHTML(x,app){const [id,title,note,c]=x,url=`${app}.html?test=1&case=${encodeURIComponent(c)}`;return `<label class="checkRow"><input type="checkbox" data-check="${id}"><span><b>${title}</b><small>${note}</small></span><a class="openBtn" href="${url}" target="_blank" rel="noopener">開く</a></label>`}
+function renderChecks(){
+ $("#dungeonChecks").innerHTML=dungeonCases.map(x=>rowHTML(x,"dungeon")).join("");
+ $("#expeditionChecks").innerHTML=expCases.map(x=>rowHTML(x,"expedition")).join("");
+ document.querySelectorAll("[data-check]").forEach(el=>{el.checked=localStorage.getItem(checkKey(el.dataset.check))==="1";el.onchange=()=>{localStorage.setItem(checkKey(el.dataset.check),el.checked?"1":"0");updateProgress()}});updateProgress()
+}
+function updateProgress(){const all=[...document.querySelectorAll("[data-check]")],done=all.filter(x=>x.checked).length;$("#progressText").textContent=`${PROFILES[currentProfile].label}: ${done}/${all.length} 完了`}
+function setProfile(id){currentProfile=id;localStorage.setItem("frenda:regression:profile",id);document.querySelectorAll("[data-profile]").forEach(b=>b.classList.toggle("active",b.dataset.profile===id));updateViewport();renderChecks()}
+async function fetchText(name){const r=await fetch(`${name}?_reg=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw new Error(`${name}: HTTP ${r.status}`);return r.text()}
+function addResult(label,status,detail=""){const d=document.createElement("div");d.className=`testResult ${status}`;d.innerHTML=`<b>${status==="ok"?"✓":status==="ng"?"×":"!"} ${label}</b>${detail?`<br><small>${detail}</small>`:""}`;$("#autoResults").appendChild(d)}
+function htmlVersion(t){return t.match(/data-app-version=["']([0-9.]+)["']/i)?.[1]||"?"}
+function compileInlineScripts(text){const doc=new DOMParser().parseFromString(text,"text/html"),errs=[];[...doc.querySelectorAll("script:not([src])")].forEach((s,i)=>{try{new Function(s.textContent)}catch(e){errs.push(`#${i+1} ${e.message}`)}});return errs}
+async function runAuto(){
+ $("#autoResults").innerHTML="";
+ let d,e,t;
+ try{[d,e,t]=await Promise.all([fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js")]);addResult("必要ファイル取得","ok","dungeon / expedition / frenda-test")}
+ catch(err){addResult("必要ファイル取得","ng",err.message);return}
+ versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
+ const checks=[
+  ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
+  ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
+  ["テスト保存領域",/FRENDA_TEST_VERSION/.test(t)&&/active:\s*!!isolated/.test(t),"本番localStorageのスナップショットをメモリ分離"],
+  ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
+  ["ダンジョン固定テスト経路",["team-star5","route-star5","battle","legendary-intro","capture-intro","capture-slot","quick-training","shop"].every(x=>d.includes(`\"${x}\"`)||d.includes(`===\"${x}\"`)),"主要画面へ直接移動可能"],
+  ["探索固定テスト経路",["prep","exploring","boxes","summary"].every(x=>e.includes(`===\"${x}\"`)),"準備→探索中→箱→完了"],
+  ["探索テスト初期適用",/EXPEDITION_TEST_MODE&&EXPEDITION_TEST_CASE\)applyExpeditionTestCase\(\)/.test(e),"初回render前にテスト状態を適用"],
+  ["同時保存マージ",/mergeDungeonConcurrent320/.test(d)&&/DATA\.dungeon\.mutate/.test(d),"ダンジョン/探索の同時保存対策"],
+  ["進化データ確実化",/ensureEvolutionForReward106/.test(e)&&/await ensureEvolutionForReward106\(\)/.test(e),"成果確定前に進化データを確認"],
+  ["共通JSキャッシュ更新",d.includes("?app=${v}")&&e.includes("?app=${v}"),"アプリVerをキャッシュキーに使用"],
+  ["旧全画像監視なし",!/new\s+MutationObserver\s*\(/.test(d)&&!/new\s+MutationObserver\s*\(/.test(e),"所持バッジの全画像監視を再導入していない"],
+  ["探索ヘッダー卵表示",/headerEggBadge/.test(e)&&/headerEggCount/.test(e)&&/expSharedStatus074/.test(e),"PC共通ステータス領域を確認"]
+ ];
+ for(const [label,ok,detail] of checks)addResult(label,ok?"ok":"ng",detail||"");
+}
+window.addEventListener("resize",updateViewport);
+document.querySelectorAll("[data-profile]").forEach(b=>b.onclick=()=>setProfile(b.dataset.profile));
+$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...expCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
+setProfile(currentProfile);runAuto();
+})();
+</script>
+</body></html>
