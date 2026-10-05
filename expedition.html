@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.06">
+<html lang="ja" data-app-version="1.07">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -228,14 +228,12 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 .expOwnershipBadge.owned{background:#e6edf1;color:#526772;border-color:#c4d0d7}
 .expOwnershipBadge.unowned{background:linear-gradient(180deg,#56d889,#20a85a);color:#fff;border-color:#168345}
 .expOwnershipBadge.newowned{background:linear-gradient(180deg,#ffd95a,#f6a51b);color:#563500;border-color:#dc9312}
-.expOwnershipAutoHost{position:relative!important}
-.expAutoOwnershipBadge{position:absolute;z-index:6;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:1000;line-height:1;white-space:nowrap;pointer-events:none;box-shadow:0 2px 7px #17394e2c;border:2px solid transparent}
-.expAutoOwnershipBadge.owned{background:#e6edf1;color:#526772;border-color:#c4d0d7}.expAutoOwnershipBadge.unowned{background:linear-gradient(180deg,#56d889,#20a85a);color:#fff;border-color:#168345}.expAutoOwnershipBadge.newowned{background:linear-gradient(180deg,#ffd95a,#f6a51b);color:#563500;border-color:#dc9312}
+
 .expEventBadge{position:absolute;right:8px;top:8px;z-index:7;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;background:linear-gradient(180deg,#66d9ff,#22a7dc);color:#083c55;border:2px solid #1688b6;font-size:9px;font-weight:1000;line-height:1;white-space:nowrap;box-shadow:0 2px 7px #17394e2c;pointer-events:none}
 .summaryCompanionCard097 .expOwnershipWrap{margin:0 auto 6px}
 .lootRewardReveal .expOwnershipWrap{margin:0 auto}
 .miniPick .expOwnershipWrap{flex:0 0 auto}
-@media(max-width:700px){.expOwnershipBadge,.expAutoOwnershipBadge{left:5px;top:5px;padding:3px 6px;font-size:8px}.expEventBadge{right:5px;top:5px;padding:3px 6px;font-size:7px}}
+@media(max-width:700px){.expOwnershipBadge{left:5px;top:5px;padding:3px 6px;font-size:8px}.expEventBadge{right:5px;top:5px;padding:3px 6px;font-size:7px}}
 </style>
 
 <style id="v103-performance-best-destination">
@@ -951,14 +949,6 @@ function expeditionOwned(id){const d=readDungeon()||{};return !!(d.owned||[]).so
 function expeditionOwnershipBadgeHTML(id,mode="auto"){const owned=expeditionOwned(id);let cls=owned?"owned":"unowned",label=owned?"所持済":"未所持";if(mode==="owned"){cls="owned";label="所持済"}else if(mode==="unowned"){cls="unowned";label="未所持"}else if(mode==="new"){cls="newowned";label="未所持 → 仲間入り"}return `<span class="expOwnershipBadge ${cls}">${label}</span>`}
 function expeditionEventBadgeHTML(label="NEW"){return `<span class="expEventBadge">${esc(label)}</span>`}
 function expeditionImageWithOwnershipHTML(r,mode="auto",extraClass="",event=""){return `<div class="expOwnershipWrap ${esc(extraClass)}"><img src="${esc(imageOf(r))}" alt="" data-ownership-mode="${esc(mode)}">${expeditionOwnershipBadgeHTML(r?.master_id,mode)}${event?expeditionEventBadgeHTML(event):""}</div>`}
-let expOwnershipImageIndex101=null,expOwnershipRaf101=0,expOwnershipObserver101=null;
-function expOwnershipUrl101(src){try{return new URL(src,location.href).href}catch{return String(src||"")}}
-function expOwnershipMap101(){if(expOwnershipImageIndex101)return expOwnershipImageIndex101;expOwnershipImageIndex101=new Map();for(const r of RECORDS||[]){if(r?.master_id&&imageOf(r))expOwnershipImageIndex101.set(expOwnershipUrl101(imageOf(r)),String(r.master_id))}return expOwnershipImageIndex101}
-function expOwnershipMode101(img,id){const forced=img?.dataset?.ownershipMode||img?.closest?.("[data-ownership-mode]")?.dataset?.ownershipMode;if(["owned","unowned","new"].includes(forced))return forced;return expeditionOwned(id)?"owned":"unowned"}
-function expOwnershipLabel101(mode){return mode==="new"?"未所持 → 仲間入り":mode==="owned"?"所持済":"未所持"}
-function applyExpOwnershipOverlay101(root=document){const map=expOwnershipMap101();for(const img of root.querySelectorAll?.("img")||[]){if(img.classList.contains("silhouette"))continue;const id=map.get(expOwnershipUrl101(img.currentSrc||img.src));if(!id)continue;const parent=img.parentElement;if(!parent)continue;const mode=expOwnershipMode101(img,id),cls=mode==="new"?"newowned":mode==="owned"?"owned":"unowned",label=expOwnershipLabel101(mode);const manual=parent.querySelector(":scope > .expOwnershipBadge");if(manual){if(!manual.classList.contains("newowned")){manual.classList.remove("owned","unowned","newowned");manual.classList.add(cls);manual.textContent=label}continue}let badge=[...parent.children].find(x=>x.classList?.contains("expAutoOwnershipBadge")&&x.dataset.ownerId===id)||null;if(!badge){badge=document.createElement("span");badge.className=`expAutoOwnershipBadge ${cls}`;badge.dataset.ownerId=id;parent.appendChild(badge)}else{badge.classList.remove("owned","unowned","newowned");badge.classList.add(cls)}badge.textContent=label;parent.classList.add("expOwnershipAutoHost");const pr=parent.getBoundingClientRect(),ir=img.getBoundingClientRect();if(ir.width>0&&ir.height>0){badge.style.left=`${Math.max(3,ir.left-pr.left+5)}px`;badge.style.top=`${Math.max(3,ir.top-pr.top+5)}px`}}}
-function scheduleExpOwnershipOverlay101(){if(expOwnershipRaf101)return;expOwnershipRaf101=requestAnimationFrame(()=>{expOwnershipRaf101=0;requestAnimationFrame(()=>applyExpOwnershipOverlay101(document))})}
-function installExpOwnershipOverlay101(){if(expOwnershipObserver101)return;expOwnershipObserver101=new MutationObserver(()=>scheduleExpOwnershipOverlay101());expOwnershipObserver101.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["src"]});window.addEventListener("resize",scheduleExpOwnershipOverlay101,{passive:true});scheduleExpOwnershipOverlay101()}
 function miniPickHTML(id){const r=rec(id),d=readDungeon()||{};return `<div class="miniPick"><img src="${esc(imageOf(r))}" alt=""><div><b>${esc(r?.name_ja||id)}</b><small>${gradeText(r)} / ポケエネ ${esc(r?.poke_ene??"-")} / 🍀運${luckFor(d,id)}</small></div></div>`}
 
 function groupCardHTML(groupIndex){
@@ -3088,7 +3078,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 }
 </style>
 <!-- Expedition Ver1.00: PC header Close button moved into the far-right shared status area so it remains visible on compact PC layouts. -->
-</body>
 <!-- Expedition Ver0.99: bond Lv5 MAX overflow auto-converts at 1 bond P = 50 Frenda Coins; legacy overflow is also normalized. -->
 
 <style id="v104-pc-return-layout">
@@ -3137,7 +3126,7 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 @media(max-width:700px){.combinedReturnGrid104{display:block}.combinedGrowth104{margin-top:10px}.summaryHighlights104{grid-template-columns:1fr}.summaryFooter104{display:block}.summaryFooter104 .summaryCompleteBtn{width:100%;margin-top:8px!important}.summarySouvenirItems104{flex-wrap:wrap}.summarySouvenirItem104{min-width:88px}}
 </style>
 <!-- Expedition Ver1.04: PC prep cleanup, fixed free-exploration column order, combined survey/growth return screen, compact final summary with large souvenir counts and target dungeon/rank emphasis. -->
-</html>
+
 
 <!-- Expedition Ver0.97: when a Pokémon follows the team and newly joins in expedition rewards, show its image on the final expedition results screen. -->
 <!-- Expedition Ver0.98: clear idle/pre-departure party selections whenever the user switches expedition groups; active mission teams remain reserved. -->
@@ -3149,3 +3138,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Expedition Ver1.05: PC compact header keeps egg count and coin count visible in the shared right-side status area; white/black PC order = exploration status, egg, coin, close. -->
 
 <!-- Ver1.06: reward opening now waits for evolution data; shared JS cache keys follow app version. -->
+<!-- Ver1.07: removed dormant full-page ownership observer code/CSS and normalized closing-tag structure; behavior unchanged. -->
+</body>
+</html>
