@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.15">
+<html lang="ja" data-app-version="1.16">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -240,6 +240,62 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 .bestDestBtn103{background:linear-gradient(180deg,#ffdb68,#f3ad25);color:#5b3b00;border:1px solid #df9c19;font-weight:1000}.bestDestBtn103:disabled{opacity:.4;filter:grayscale(.45)}
 @media(min-width:1200px) and (min-height:650px) and (max-height:840px){body.blackExpPrep073 .pickTools{grid-template-columns:repeat(3,minmax(0,1fr))!important}.bestDestBtn103{font-size:12px!important;min-height:28px!important;padding:3px 5px!important}}
 </style>
+
+<style id="v116-blackpc-hotfix">
+/* Ver1.16: black-PC layout hotfixes for explore + summary */
+body.blackExpExplore075 .exploreGuide075 .freeGuideRows{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  row-gap:4px!important;
+}
+body.blackExpExplore075 .exploreGuide075 .freeGuideRow{padding:4px 2px!important;}
+body.blackExpExplore075 .exploreGuide075 .freeGuideRow b{font-size:12px!important;line-height:1.1!important;}
+body.blackExpExplore075 .exploreGuide075 .freeGuideRow span{font-size:10px!important;line-height:1.15!important;white-space:normal!important;text-align:center!important;}
+body.blackExpExplore075 .exploreGuide075 .freeGuideNowMarker{gap:8px!important;justify-content:center!important;flex-wrap:wrap!important;}
+body.blackExpExplore075 .exploreStats>div{display:flex!important;flex-direction:column!important;justify-content:center!important;min-height:52px!important;}
+body.blackExpExplore075 .exploreStats small{line-height:1.15!important;}
+
+@media (min-width:1000px){
+  .summary104{
+    width:min(1320px,calc(100vw - 18px))!important;
+    height:calc(100dvh - 68px)!important;
+    margin:6px auto!important;
+    padding:14px 18px!important;
+    gap:12px!important;
+  }
+  .summaryTop104{padding:2px 8px 0!important;}
+  .summaryTop104 b{font-size:22px!important;line-height:1.2!important;}
+  .summaryTop104 span{font-size:14px!important;}
+  .summaryTop104 small{font-size:13px!important;line-height:1.45!important;}
+  .summaryOverviewGrid104{grid-template-columns:.95fr 1.05fr!important;gap:10px!important;}
+  .summarySurvey104,.summarySouvenir104{padding:12px 14px!important;border-radius:16px!important;}
+  .summaryMiniHead104 b{font-size:16px!important;}
+  .summaryMiniHead104 strong{font-size:24px!important;}
+  .summarySurvey104 small{font-size:11px!important;line-height:1.45!important;}
+  .summarySouvenirItems104{gap:10px!important;min-height:74px!important;}
+  .summarySouvenirItem104{min-width:96px!important;padding:8px 10px!important;border-radius:12px!important;}
+  .summarySouvenirItem104>span{font-size:40px!important;}
+  .summarySouvenirItem104>b{font-size:20px!important;}
+  .summarySouvenirItem104>small{font-size:9px!important;}
+  .summaryHighlights104{gap:10px!important;}
+  .summary104 .summaryCompanionBox097{padding:10px 12px!important;}
+  .summary104 .summaryCompanionHead097 b{font-size:15px!important;}
+  .summary104 .summaryCompanionGrid097{gap:8px!important;}
+  .summary104 .summaryCompanionCard097{grid-template-columns:56px minmax(0,1fr)!important;padding:8px!important;border-radius:13px!important;}
+  .summary104 .summaryCompanionCard097 img{width:56px!important;height:76px!important;}
+  .summary104 .summaryCompanionCard097 b{font-size:12px!important;line-height:1.25!important;}
+  .summaryGrowthPanel104{align-items:stretch!important;}
+  .summaryGrowthPanel104 .summaryGrowthTitle094{width:100%!important;max-width:none!important;margin:0 0 6px!important;}
+  .summaryGrowthPanel104 .growthTableWrap094{width:100%!important;max-width:none!important;}
+  .summaryGrowthPanel104 .growthTable094 th,
+  .summaryGrowthPanel104 .growthTable094 td{padding:9px 10px!important;font-size:12px!important;}
+  .summaryGrowthPanel104 .pickCell094 img{width:44px!important;height:60px!important;}
+  .summaryGrowthPanel104 .pickCell094 span{font-size:11px!important;line-height:1.3!important;}
+  .summaryFooter104{grid-template-columns:1fr 280px!important;gap:12px!important;padding-top:4px!important;}
+  .summaryFooter104>span{font-size:11px!important;}
+  .summaryFooter104 .summaryCompleteBtn{min-height:50px!important;font-size:18px!important;}
+}
+</style>
+
 </head>
 <body>
 <header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="expCloseBtn ghost" id="expCloseBtn" title="おでかけ探索を閉じる" aria-label="おでかけ探索を閉じる">閉じる</button></div></div></div></header>

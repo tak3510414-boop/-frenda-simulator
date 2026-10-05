@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.32">
+<html lang="ja" data-app-version="3.33">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4312,6 +4312,79 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultHero{grid-column:1!important;grid-row:4!important;align-self:center!important;justify-self:center!important;margin:0!important}
 html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6NewBadge{font-size:13px!important;line-height:1.15!important;padding:5px 10px!important;left:auto!important;right:10px!important;top:10px!important;letter-spacing:.04em!important;z-index:9!important}
 </style>
+
+<style id="v333-blackpc-hotfix">
+/* Ver3.33: test-mode stability + black-PC layout hotfixes */
+@media (min-width:1000px){
+  #quickTrainingOverlay.ownedDetailOverlay{
+    padding:18px 18px 22px!important;
+    align-items:flex-start!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+  }
+  #quickTrainingOverlay .quickTrainingPanelV215{
+    width:min(920px,88vw)!important;
+    max-width:920px!important;
+    max-height:calc(100dvh - 36px)!important;
+    overflow:auto!important;
+    border-radius:24px!important;
+  }
+  #quickTrainingOverlay .quickTrainingHead{
+    position:sticky!important;
+    top:0!important;
+    z-index:20!important;
+  }
+  #quickTrainingOverlay .quickTrainingHero{
+    grid-template-columns:140px minmax(0,1fr)!important;
+    gap:14px!important;
+    align-items:start!important;
+    padding:14px!important;
+  }
+  #quickTrainingOverlay .quickTrainingPick img{width:126px!important;border-radius:13px!important;}
+  #quickTrainingOverlay .quickTrainingIdentity{max-width:680px!important;gap:6px!important;}
+  #quickTrainingOverlay .quickTrainingName{font-size:22px!important;line-height:1.15!important;}
+  #quickTrainingOverlay .quickTrainingMeta span{font-size:11px!important;padding:4px 8px!important;}
+  #quickTrainingOverlay .quickTrainingTypes .badge{font-size:10px!important;padding:4px 7px!important;}
+  #quickTrainingOverlay .quickTrainingXp{padding:7px 10px!important;}
+  #quickTrainingOverlay .quickTrainingPointBox{padding:8px 10px!important;}
+  #quickTrainingOverlay .quickTrainingPointBox span{font-size:12px!important;}
+  #quickTrainingOverlay .quickTrainingPointBox strong{font-size:26px!important;}
+  #quickTrainingOverlay .quickTrainingPointBox small{font-size:9px!important;}
+  #quickTrainingOverlay .trainingAbilityGrid{margin:0 14px 4px!important;padding:10px!important;}
+  #quickTrainingOverlay .trainingAbilityLegend{margin:4px 14px 8px!important;font-size:10px!important;}
+  #quickTrainingOverlay .quickTrainingStatTitle,
+  #quickTrainingOverlay .quickTrainingChoose{margin:10px 14px 6px!important;}
+  #quickTrainingOverlay .quickTrainingStatTitle b,
+  #quickTrainingOverlay .quickTrainingChoose b{font-size:15px!important;}
+  #quickTrainingOverlay .quickTrainingStatTitle span,
+  #quickTrainingOverlay .quickTrainingChoose span{font-size:10px!important;}
+  #quickTrainingOverlay .quickTrainingPanelV215 .trainingSpendGrid{margin:0 14px 10px!important;gap:8px!important;}
+  #quickTrainingOverlay .quickTrainingPanelV215 .trainingSpendBtn{min-height:68px!important;padding:8px 6px!important;}
+  #quickTrainingOverlay .quickTrainingPanelV215 .trainingSpendBtn b{font-size:15px!important;}
+  #quickTrainingOverlay .quickTrainingPanelV215 .trainingSpendBtn small{font-size:11px!important;margin-top:5px!important;}
+  #quickTrainingOverlay .quickTrainingNote{
+    margin:0 14px 14px!important;
+    font-size:10px!important;
+    line-height:1.45!important;
+    color:#5a4500!important;
+    background:#fff5c9!important;
+    border:1px solid #d9bd55!important;
+    font-weight:850!important;
+    opacity:1!important;
+  }
+}
+
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryIntroCard{padding:8px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryIntroInner{gap:2px!important;padding:0 0 6px!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryOmen{font-size:16px!important;line-height:1.1!important;margin:0!important;min-height:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryTitle{font-size:24px!important;line-height:1.02!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendarySpriteWrap{margin:0!important;min-height:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendarySprite{height:100%!important;max-height:190px!important;object-fit:contain!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryOwnershipWrap{min-height:20px!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryName{font-size:22px!important;line-height:1.08!important;margin:0!important;}
+html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app#app .blackRunStage .legendaryContinue{min-height:36px!important;padding:8px 16px!important;font-size:14px!important;margin-top:2px!important;}
+</style>
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -7479,7 +7552,7 @@ withdrawBtn.onclick=withdraw;
 let lastAppUpdateCheck=0;
 function compareAppVersions(a,b){const aa=String(a||"").split(".").map(Number),bb=String(b||"").split(".").map(Number),n=Math.max(aa.length,bb.length);for(let i=0;i<n;i++){const x=aa[i]||0,y=bb[i]||0;if(x!==y)return x-y}return 0}
 async function checkForAppUpdate(force=false){
- if(location.protocol==="file:")return false;
+ if(location.protocol==="file:"||DUNGEON_TEST_MODE)return false;
  if(!force&&(state.run||state.postRun))return false;
  const now=Date.now();if(!force&&now-lastAppUpdateCheck<30000)return false;lastAppUpdateCheck=now;
  try{
