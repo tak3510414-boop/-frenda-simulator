@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.24">
+<html lang="ja" data-app-version="3.25">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4332,8 +4332,9 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 const APP_VERSION=document.documentElement.dataset.appVersion||"0.00";
 document.title=`フレンダダンジョン Ver${APP_VERSION}`;
 const versionBadge=document.getElementById("versionBadge");if(versionBadge){versionBadge.textContent=`Ver${APP_VERSION}`;versionBadge.setAttribute("role","button");versionBadge.setAttribute("tabindex","0");versionBadge.setAttribute("title","画面情報を表示");versionBadge.setAttribute("aria-label",`Ver${APP_VERSION}・画面情報を表示`);versionBadge.onclick=()=>window.showFrendaViewportInfo?.();versionBadge.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();window.showFrendaViewportInfo?.()}}}
+const TEST_SANDBOX=window.FRENDA_TEST;
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
-const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
+const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!TEST_SANDBOX?.active;
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
 const DUNGEON_TIMER_CASE=new URLSearchParams(location.search).get("timer")||"";
 const PARENTAL=window.FRENDA_PARENTAL;
@@ -4344,13 +4345,7 @@ if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 
 
-const TEST_SANDBOX=window.FRENDA_TEST;
 const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
-function dungeonAdminAuthUrl(nextPath=`${location.pathname}${location.search}${location.hash}`){
- const inTest=/\/test(?:\/|$)/.test(location.pathname),admin=inTest?"../admin.html":"admin.html";
- return `${admin}?next=${encodeURIComponent(nextPath)}`;
-}
-if(DUNGEON_TEST_REQUESTED&&!DUNGEON_TEST_MODE){location.replace(dungeonAdminAuthUrl());return;}
 
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
@@ -14965,6 +14960,6 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.21: removed dormant full-page ownership observer code/CSS, consolidated recent hotfix CSS, and normalized closing-tag structure. -->
 <!-- Ver3.22: fixed repeatable regression test routes; test mode refuses to run without isolated FRENDA_TEST storage. -->
 <!-- Ver3.23: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
-<!-- Ver3.24: /test/ regression routes now authenticate through ../admin.html and return to the exact requested test case. -->
+<!-- Ver3.25: /test/ regression routes use the isolated FRENDA_TEST sandbox directly; admin authentication is not required and production saves remain untouched. -->
 </body>
 </html>
