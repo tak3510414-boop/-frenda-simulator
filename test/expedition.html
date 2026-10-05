@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.09">
+<html lang="ja" data-app-version="1.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -271,7 +271,11 @@ const ADMIN_AUTH=!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
 const EXPEDITION_TEST_MODE=EXPEDITION_TEST_REQUESTED&&ADMIN_AUTH;
 const EXPEDITION_TEST_CASE=TEST_PARAMS.get("case")||"";
 const EXPEDITION_TIMER_CASE=TEST_PARAMS.get("timer")||"";
-if((EXPEDITION_TEST_REQUESTED||EXPEDITION_SELFTEST_REQUESTED)&&!ADMIN_AUTH){location.replace("admin.html?next=test-center.html");return;}
+function expeditionAdminAuthUrl(nextPath=`${location.pathname}${location.search}${location.hash}`){
+ const inTest=/\/test(?:\/|$)/.test(location.pathname),admin=inTest?"../admin.html":"admin.html";
+ return `${admin}?next=${encodeURIComponent(nextPath)}`;
+}
+if((EXPEDITION_TEST_REQUESTED||EXPEDITION_SELFTEST_REQUESTED)&&!ADMIN_AUTH){location.replace(expeditionAdminAuthUrl());return;}
 
 const DUNGEON_KEY=DATA.KEYS.dungeon;
 const EXP_KEY=DATA.KEYS.expedition;
@@ -772,7 +776,7 @@ function adminUnlockGroup(groupIndex){
   return
  }
  const next=`${location.pathname}?adminUnlockGroup=${groupNo}`;
- location.href=`admin.html?next=${encodeURIComponent(next)}`
+ location.href=expeditionAdminAuthUrl(next)
 }
 function bindAdminUnlockButtons(){
  app.querySelectorAll("[data-admin-unlock-group]").forEach(b=>b.onclick=e=>{
@@ -3146,5 +3150,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.07: removed dormant full-page ownership observer code/CSS and normalized closing-tag structure; behavior unchanged. -->
 <!-- Ver1.08: regression test cases now apply before initial render; unsafe test mode is blocked without FRENDA_TEST isolation. -->
 <!-- Ver1.09: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
+<!-- Ver1.10: /test/ regression routes use the root admin page for authentication and return to the requested test case. -->
 </body>
 </html>
