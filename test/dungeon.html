@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.36">
+<html lang="ja" data-app-version="3.37">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4629,6 +4629,53 @@ function compareSeriesRelease(a,b){
  return ra-rb||String(a||"").localeCompare(String(b||""),"ja",{numeric:true})
 }
 const SOUND_KEY="frenda:dungeon:sound:v1";
+
+/* ===== AUTO GENERATION BACKUP v1 =====
+   10世代・本番セーブとは別キー。壊れた/nullデータは世代化しない。
+   通常保存は10分間隔＋重複排除。アプリVer境界、初期化前、読込前後、復元前後は強制世代化。
+*/
+const AUTO_BACKUP_KEY="frenda:auto-backups:v1";
+const AUTO_BACKUP_FORMAT="frenda-auto-backups-v1";
+const AUTO_BACKUP_MAX=10;
+const AUTO_BACKUP_MIN_INTERVAL_MS=10*60*1000;
+const AUTO_BACKUP_SOURCE_APP="dungeon";
+function autoBackupParseObject(raw){if(typeof raw!=="string"||!raw.trim())return null;try{const x=JSON.parse(raw);return x&&typeof x==="object"&&!Array.isArray(x)?x:null}catch{return null}}
+function autoBackupValidDungeonRaw(raw){const x=autoBackupParseObject(raw);return !!(x&&x.initialized===true&&Array.isArray(x.owned)&&x.owned.length>0)}
+function autoBackupValidExpeditionRaw(raw){if(raw===null)return true;const x=autoBackupParseObject(raw);return !!x}
+function autoBackupHash(text){let h=2166136261;const s=String(text??"");for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,"0")}
+function autoBackupReadStore(){try{const raw=STORE.getItem(AUTO_BACKUP_KEY);if(!raw)return[];const x=JSON.parse(raw);const a=Array.isArray(x)?x:Array.isArray(x?.items)?x.items:[];return a.filter(v=>v&&typeof v==="object"&&typeof v.dungeon==="string").slice(0,AUTO_BACKUP_MAX)}catch(e){console.warn("AUTO_BACKUP_READ",e);return[]}}
+function autoBackupWriteStore(items){const src=(Array.isArray(items)?items:[]).slice(0,AUTO_BACKUP_MAX);for(let keep=src.length;keep>=1;keep--){try{const body={format:AUTO_BACKUP_FORMAT,version:1,max:AUTO_BACKUP_MAX,updatedAt:new Date().toISOString(),items:src.slice(0,keep)};STORE.setItem(AUTO_BACKUP_KEY,JSON.stringify(body));const verify=JSON.parse(STORE.getItem(AUTO_BACKUP_KEY)||"null");if(!verify||!Array.isArray(verify.items)||verify.items.length!==keep)throw new Error("AUTO_BACKUP_VERIFY_FAILED");return keep}catch(e){console.warn("AUTO_BACKUP_STORE_RETRY",keep,e)}}return 0}
+function autoBackupCurrentRaw(){return {dungeon:STORE.getItem(SAVE_KEY),expedition:STORE.getItem(EXPEDITION_KEY),sound:STORE.getItem(SOUND_KEY)}}
+function autoBackupDescribeRaw(raw){const d=autoBackupParseObject(raw.dungeon)||{},x=autoBackupParseObject(raw.expedition)||{};let clears=0;for(const v of Object.values(d.stats||{}))clears+=Math.max(0,Number(v?.clears)||0);return {dungeonVersion:String(d.appVersion||"?"),expeditionVersion:String(x.appVersion||"?"),owned:Array.isArray(d.owned)?d.owned.length:0,clears,expStatus:String(x.status||"idle")}}
+function autoBackupCapture(reason="自動保存",options={}){
+ try{
+  const raw=autoBackupCurrentRaw();
+  if(!autoBackupValidDungeonRaw(raw.dungeon))return {ok:false,skipped:"invalid-dungeon"};
+  if(!autoBackupValidExpeditionRaw(raw.expedition))return {ok:false,skipped:"invalid-expedition"};
+  const items=autoBackupReadStore(),latest=items[0]||null,meta=autoBackupDescribeRaw(raw),now=Date.now();
+  if(latest&&latest.dungeon===raw.dungeon&&latest.expedition===raw.expedition&&latest.sound===raw.sound)return {ok:true,skipped:"same",count:items.length};
+  const storedVer=AUTO_BACKUP_SOURCE_APP==="dungeon"?meta.dungeonVersion:meta.expeditionVersion;
+  const versionBoundary=storedVer&&storedVer!=="?"&&String(storedVer)!==String(APP_VERSION);
+  const force=options.force===true||versionBoundary||items.length===0;
+  const lastAt=Number(latest?.createdAtMs)||Date.parse(latest?.createdAt||"")||0;
+  if(!force&&lastAt&&now-lastAt<AUTO_BACKUP_MIN_INTERVAL_MS)return {ok:true,skipped:"interval",count:items.length};
+  const why=versionBoundary&&!options.force?`${reason}（Ver${storedVer}→${APP_VERSION}更新前）`:reason;
+  const fingerprint=autoBackupHash(`${raw.dungeon}\n${raw.expedition??""}\n${raw.sound??""}`);
+  const item={id:`${now}-${fingerprint}`,createdAt:new Date(now).toISOString(),createdAtMs:now,reason:String(why||"自動保存"),sourceApp:AUTO_BACKUP_SOURCE_APP,dungeonVersion:meta.dungeonVersion,expeditionVersion:meta.expeditionVersion,owned:meta.owned,clears:meta.clears,expStatus:meta.expStatus,fingerprint,dungeon:raw.dungeon,expedition:raw.expedition,sound:raw.sound};
+  const count=autoBackupWriteStore([item,...items]);
+  return count?{ok:true,count,item}:{ok:false,skipped:"quota"}
+ }catch(e){console.error("AUTO_BACKUP_CAPTURE",e);return {ok:false,error:e}}
+}
+function autoBackupEscape(s){return String(s??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[c]))}
+function autoBackupDate(iso){const d=new Date(iso);return Number.isNaN(d.getTime())?String(iso||""):d.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function autoBackupRestore(id){const target=autoBackupReadStore().find(x=>x.id===id);if(!target)return UI.dialog.alert("選択した世代が見つかりません。");if(!autoBackupValidDungeonRaw(target.dungeon)||!autoBackupValidExpeditionRaw(target.expedition))return UI.dialog.alert("この世代は安全条件を満たさないため復元できません。");if(!UI.dialog.confirm(`${autoBackupDate(target.createdAt)} の世代へ戻しますか？\n復元前の現在データも緊急退避してから実行します。`))return;try{autoBackupCapture("世代復元前の緊急退避",{force:true});STORE.setItem(SAVE_KEY,target.dungeon);if(typeof target.expedition==="string")STORE.setItem(EXPEDITION_KEY,target.expedition);else STORE.removeItem(EXPEDITION_KEY);if(typeof target.sound==="string")STORE.setItem(SOUND_KEY,target.sound);else STORE.removeItem(SOUND_KEY);if(STORE.getItem(SAVE_KEY)!==target.dungeon||STORE.getItem(EXPEDITION_KEY)!==(target.expedition??null))throw new Error("RESTORE_VERIFY_FAILED");autoBackupCapture("世代復元後",{force:true});UI.dialog.alert("世代バックアップを復元しました。ページを再読み込みします。");location.reload()}catch(e){console.error("AUTO_BACKUP_RESTORE",e);UI.dialog.alert("復元に失敗しました。\n"+(e?.message||String(e)))}}
+function autoBackupOpenManager(){
+ document.getElementById("frendaAutoBackupOverlay")?.remove();const items=autoBackupReadStore(),ov=document.createElement("div");ov.id="frendaAutoBackupOverlay";ov.style.cssText="position:fixed;inset:0;z-index:100500;background:#061725cc;display:flex;align-items:center;justify-content:center;padding:14px";
+ const rows=items.length?items.map((x,i)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #dce5ea"><div><b style="display:block;color:#16354a">${i+1}世代前${i===0?"（最新）":""}　${autoBackupEscape(autoBackupDate(x.createdAt))}</b><small style="display:block;color:#627785;line-height:1.5">Dungeon ${autoBackupEscape(x.dungeonVersion||"?")} / 探索 ${autoBackupEscape(x.expeditionVersion||"?")}　所持 ${Number(x.owned)||0}体 / クリア ${Number(x.clears)||0}<br>${autoBackupEscape(x.reason||"")}</small></div><button type="button" data-auto-backup-restore="${autoBackupEscape(x.id)}" style="border:0;border-radius:10px;padding:9px 11px;background:#236faf;color:white;font-weight:900;white-space:nowrap">この世代に戻す</button></div>`).join(""):`<div style="padding:18px 0;color:#627785">まだ有効な世代バックアップはありません。御三家決定後の正常保存から自動作成されます。</div>`;
+ ov.innerHTML=`<div style="width:min(760px,96vw);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0008"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><b style="font-size:20px;color:#183342">🛟 自動世代バックアップ</b><small style="display:block;color:#627785;margin-top:3px">最大10世代。初期化してもこの履歴は削除しません。</small></div><button type="button" id="autoBackupClose" style="border:0;border-radius:999px;width:38px;height:38px;background:#e7eef2;color:#183342;font-size:20px;font-weight:900">×</button></div><div style="margin-top:10px;padding:10px;border-radius:12px;background:#eef8f1;color:#27613f;font-size:12px;line-height:1.55">正常なダンジョンデータだけを保存します。<b>dungeon:null、JSON破損、御三家未選択などの異常状態は世代化しません。</b> 通常保存は10分間隔＋重複排除、アプリ更新・初期化・読込・復元時は緊急世代を作成します。</div><div>${rows}</div></div>`;
+ document.body.appendChild(ov);ov.querySelector("#autoBackupClose").onclick=()=>ov.remove();ov.onclick=e=>{if(e.target===ov)ov.remove()};ov.querySelectorAll("[data-auto-backup-restore]").forEach(b=>b.onclick=()=>autoBackupRestore(b.dataset.autoBackupRestore));
+}
+
 let audioCtx=null;
 function soundMode(){const v=STORE.getItem(SOUND_KEY);return ["100","50","off"].includes(v)?v:"100"}
 function soundVolume(){const m=soundMode();return m==="100"?1:m==="50"?.5:0}
@@ -5026,6 +5073,7 @@ function syncConcurrentState320(merged){
 }
 function save(){
  try{
+  autoBackupCapture("ダンジョン保存前");
   state.appVersion=APP_VERSION;state.saveVersion=13;
   const current=saveClone320(state),base=saveClone320(dungeonSaveBaseline||current);
   const latest=DATA.dungeon.read();
@@ -5034,7 +5082,7 @@ function save(){
   DATA.dungeon.write(merged);
   const persisted=DATA.dungeon.read();
   if(!saveObj320(persisted))throw new Error("DUNGEON_SAVE_VERIFY_FAILED");
-  syncConcurrentState320(persisted);dungeonSaveBaseline=saveClone320(persisted)
+  syncConcurrentState320(persisted);dungeonSaveBaseline=saveClone320(persisted);autoBackupCapture("ダンジョン自動保存")
  }catch(e){
   console.error("DUNGEON_SAFE_SAVE",e);
   try{
@@ -5042,7 +5090,7 @@ function save(){
    DATA.dungeon.write(state);
    const persisted=DATA.dungeon.read();
    if(!saveObj320(persisted))throw new Error("DUNGEON_SAVE_FALLBACK_VERIFY_FAILED");
-   dungeonSaveBaseline=saveClone320(persisted)
+   dungeonSaveBaseline=saveClone320(persisted);autoBackupCapture("ダンジョン自動保存（フォールバック）")
   }catch(e2){console.error("DUNGEON_SAVE_FATAL",e2)}
  }
 }
@@ -5164,7 +5212,7 @@ function migrateState(){
  state.saveVersion=13;
  save();
 }
-function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;DATA.remove(SAVE_KEY);state=stateDefault();dungeonSaveBaseline=saveClone320(state);screen="home";render()}
+function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;autoBackupCapture("初期化前の緊急退避",{force:true});DATA.remove(SAVE_KEY);state=stateDefault();dungeonSaveBaseline=saveClone320(state);screen="home";render()}
 const esc=UI.escapeHtml;
 const RECORD_INDEX=DATA.records.index(RECORDS);
 function rec(id){return RECORD_INDEX.get(id)}
@@ -5584,6 +5632,7 @@ function pickStarterSet(key){
  state.starterId=null;
  state.unlocks={forest:[1]};
  save();
+ autoBackupCapture("御三家決定",{force:true});
  screen="home";
  render();
 }
@@ -6376,7 +6425,7 @@ function afterFloorResolved(){const r=state.run;if(!r)return;advanceEggs(1);r.fl
 function runSummaryData(type,floor){const r=state.run||{},team=(r.team||[]).map(t=>({id:t.id,hp:Number(t.hp||0),max:maxHpFor(t.id),ko:!!t.ko}));return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,luckAverage:averageLuck(r.team||[]),teamIds:team.map(t=>t.id),teamEnd:team,roadBattleWins:Math.max(0,Number(r.roadBattleWins||0)),battleWins:Math.max(0,Number(r.battleWins||0)),xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),coinGained:clone(r.coinGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[],autoAdventure:!!r.autoAdventureStarted,autoAdventureCompleted:!!r.autoAdventureStarted&&!r.autoAdventureStopped&&!!r.autoAdventure,autoAdventureStartedMidRun:!!r.autoAdventureStartedMidRun,autoAdventureStartedFloor:Number(r.autoAdventureStartedFloor)||null,autoMode:r.autoMode||null,autoStats:clone(r.autoStats||{})}}
 function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);for(const b of summary.bondGained||[])if(Number(b.coinGained)>0)summary.coinGained[b.id]=Number(summary.coinGained[b.id]||0)+Number(b.coinGained);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;summary.autoUnlocked=firstClear&&!r.autoAdventureStarted;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear);
  const grassBefore=inventoryItemQty("grassTicket"),grassAfter=Math.min(GRASS_TICKET_MAX,grassBefore+1);
- state.shopItems.grassTicket=grassAfter;summary.grassTicketAward=Math.max(0,grassAfter-grassBefore)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false,autoAdventure:!!r.autoAdventure};state.run=null;state.lastSummary=summary;save();screen="postRun";render()}
+ state.shopItems.grassTicket=grassAfter;summary.grassTicketAward=Math.max(0,grassAfter-grassBefore)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false,autoAdventure:!!r.autoAdventure};state.run=null;state.lastSummary=summary;save();if(type==="clear")autoBackupCapture("ダンジョンクリア",{force:true});screen="postRun";render()}
 function runDefeat(){beginRunEnd("defeat",state.run.floor)}
 function runClear(){beginRunEnd("clear",10)}
 function withdraw(){if(!state.run)return;if(!UI.dialog.confirm("現在の冒険から撤退しますか？"))return;beginRunEnd("withdraw",state.run.floor)}
@@ -6771,13 +6820,13 @@ function runAutoAdventureStep(){
 /* Ver2.98: common header info/settings is implemented inside the main app scope. */
 function commonHeaderBackupPayload298(){return {format:"frenda-common-backup-v1",createdAt:new Date().toISOString(),app:"dungeon",dungeon:STORE.getItem(SAVE_KEY),expedition:STORE.getItem(EXPEDITION_KEY),sound:STORE.getItem(SOUND_KEY)}}
 function commonHeaderBackupOut298(){const blob=new Blob([JSON.stringify(commonHeaderBackupPayload298(),null,2)],{type:"application/json"}),a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=`frenda-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-function commonHeaderBackupIn298(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||x.format!=="frenda-common-backup-v1")throw new Error("バックアップ形式が違います");if(typeof x.dungeon==="string")STORE.setItem(SAVE_KEY,x.dungeon);if(typeof x.expedition==="string")STORE.setItem(EXPEDITION_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXPEDITION_KEY);if(typeof x.sound==="string")STORE.setItem(SOUND_KEY,x.sound);UI.dialog.alert("バックアップを読み込みました。ページを再読み込みします。");location.reload()}catch(err){UI.dialog.alert("読み込みに失敗しました。\n"+(err?.message||String(err)))}};rd.readAsText(file)}
+function commonHeaderBackupIn298(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||x.format!=="frenda-common-backup-v1")throw new Error("バックアップ形式が違います");autoBackupCapture("手動バックアップ読込前",{force:true});if(typeof x.dungeon==="string")STORE.setItem(SAVE_KEY,x.dungeon);if(typeof x.expedition==="string")STORE.setItem(EXPEDITION_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXPEDITION_KEY);if(typeof x.sound==="string")STORE.setItem(SOUND_KEY,x.sound);autoBackupCapture("手動バックアップ読込後",{force:true});UI.dialog.alert("バックアップを読み込みました。ページを再読み込みします。");location.reload()}catch(err){UI.dialog.alert("読み込みに失敗しました。\n"+(err?.message||String(err)))}};rd.readAsText(file)}
 function commonHeaderClose298(){document.querySelector(".frendaInfoOverlay296")?.remove()}
 function commonHeaderOpen298(){
  commonHeaderClose298();
  const ov=document.createElement("div"),touch=("ontouchstart" in window)||navigator.maxTouchPoints>0;
  ov.className="frendaInfoOverlay296";
- ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div><div class="frendaInfoSection296"><h3>セーブ管理</h3><div class="frendaInfoActions296"><button type="button" class="secondary" id="infoSaveManager296">セーブ管理を開く</button></div><div class="frendaInfoNote296">セーブの書き出し・読み込み・初期化を行えます。</div></div></div>`;
+ ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button><button type="button" class="secondary" id="infoAutoBackup296">自動バックアップ（10世代）</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div><div class="frendaInfoSection296"><h3>セーブ管理</h3><div class="frendaInfoActions296"><button type="button" class="secondary" id="infoSaveManager296">セーブ管理を開く</button></div><div class="frendaInfoNote296">セーブの書き出し・読み込み・初期化を行えます。</div></div></div>`;
  document.body.appendChild(ov);
  ov.querySelector(".frendaInfoClose296").onclick=commonHeaderClose298;
  ov.onclick=e=>{if(e.target===ov)commonHeaderClose298()};
@@ -6785,6 +6834,7 @@ function commonHeaderOpen298(){
  document.getElementById("infoBackupOut296").onclick=commonHeaderBackupOut298;
  document.getElementById("infoBackupIn296").onclick=()=>document.getElementById("infoBackupFile296").click();
  document.getElementById("infoBackupFile296").onchange=e=>{if(e.target.files?.[0])commonHeaderBackupIn298(e.target.files[0])};
+ const autoMgr=document.getElementById("infoAutoBackup296");if(autoMgr)autoMgr.onclick=()=>{commonHeaderClose298();autoBackupOpenManager()};
  const saveMgr=document.getElementById("infoSaveManager296");if(saveMgr)saveMgr.onclick=()=>{commonHeaderClose298();openSaveManagerFromHeader()};
 }
 function bindCommonHeader298(){
@@ -7501,7 +7551,7 @@ function renderDex(){
 }
 
 function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download=`frenda-dungeon-save-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-function importSave(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||typeof x!=="object")throw new Error("形式不正");state=Object.assign(stateDefault(),x);migrateState();UI.dialog.alert("セーブデータを読み込みました。");screen="home";render()}catch(e){UI.dialog.alert("読み込みに失敗しました。\n"+e.message)}};rd.readAsText(file)}
+function importSave(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||typeof x!=="object")throw new Error("形式不正");autoBackupCapture("ダンジョンセーブ読込前",{force:true});state=Object.assign(stateDefault(),x);migrateState();autoBackupCapture("ダンジョンセーブ読込後",{force:true});UI.dialog.alert("セーブデータを読み込みました。");screen="home";render()}catch(e){UI.dialog.alert("読み込みに失敗しました。\n"+e.message)}};rd.readAsText(file)}
 function renderSaveMenu(){app.innerHTML=`<div class="card"><div class="sectionTitle">セーブ管理</div><div class="row"><button id="exportBtn">セーブを書き出す</button><button class="secondary" id="importBtn">セーブを読み込む</button><button class="danger" id="resetBtn">初期化</button></div><input type="file" id="importFile" accept="application/json,.json" class="hidden"><div class="notice" style="margin-top:12px">通常は自動保存されます。書き出しファイルは端末移行・バックアップ用です。</div></div>`;document.getElementById("exportBtn").onclick=exportSave;document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("importFile").onchange=e=>{if(e.target.files[0])importSave(e.target.files[0])};document.getElementById("resetBtn").onclick=resetSave}
 
 homeBtn.onclick=async()=>{if(document.getElementById("luckShopOverlay")){document.getElementById("shopUseOverlay")?.remove();document.getElementById("luckShopOverlay")?.remove();document.body.style.overflow="";screen="home";render();return}const oldText=homeBtn.textContent;homeBtn.disabled=true;homeBtn.textContent="⌛";const updating=await checkForAppUpdate(true);if(updating)return;homeBtn.disabled=false;homeBtn.textContent=oldText;if(state.postRun){renderPostRun();return}if(state.run){screen="home";renderRun()}else{screen="home";render()}};
@@ -7528,6 +7578,7 @@ async function checkForAppUpdate(force=false){
   if(!remote||compareAppVersions(remote,APP_VERSION)<=0)return false;
   const key=`frenda:dungeon:reloaded:${remote}`;if(sessionStorage.getItem(key)==="1"&&!force)return false;
   sessionStorage.setItem(key,"1");
+  autoBackupCapture(`アプリ更新前 Ver${APP_VERSION}→${remote}`,{force:true});
   save();
   const next=new URL(location.href);next.searchParams.set("appv",remote);next.searchParams.set("_reload",String(now));location.replace(next.toString());return true;
  }catch(e){console.debug("update check skipped",e);return false}
@@ -7547,6 +7598,7 @@ function dungeonCloudData(){
 }
 function applyDungeonCloudData(data){
  if(!data||typeof data!=="object"||!data.state||typeof data.state!=="object")throw new Error("クラウドデータ形式が不正です");
+ autoBackupCapture("クラウドデータ適用前");
  const incoming=clone(data.state);
  enforceRunEndGuard(incoming);
  DATA.dungeon.write(incoming);
@@ -15164,5 +15216,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.36: emergency persistence fix. Dungeon save now performs explicit read-merge-write and verifies the persisted object; fixes backup dungeon:null / starter progress loss. -->
 <!-- Updated: 2026-10-06 16:22 JST -->
 
+<!-- Ver3.37: 10-generation automatic local backups with corruption guard, update/reset/import checkpoints, and selectable restore UI. -->
+<!-- Updated: 2026-10-06 16:52 JST -->
 </body>
 </html>

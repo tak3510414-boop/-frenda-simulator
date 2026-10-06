@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.4">
+<html lang="ja" data-test-center-version="2.5">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -125,6 +125,10 @@ async function runAuto(){
   ["探索テスト管理者認証なし",/function groupAdminUnlocked\(groupIndex\)\{return EXPEDITION_TEST_MODE/.test(e)&&/EXPEDITION_TEST_MODE\|\|window\.FRENDA_PARENTAL/.test(e),"テストグループは管理者認証を要求しない"],
   ["テスト所持ピック50体",/DUNGEON_TEST_PICK_COUNT=50/.test(d)&&/EXPEDITION_TEST_PICK_COUNT=50/.test(e),"ダンジョン/探索とも所持50体でスクロール確認"],
   ["ダンジョン保存の明示永続化",/mergeDungeonConcurrent320/.test(d)&&/DATA\.dungeon\.write\(merged\)/.test(d)&&/DUNGEON_SAVE_VERIFY_FAILED/.test(d),"同時更新マージ後に必ずwriteし、read-back検証する"],
+  ["自動世代バックアップ10世代",/AUTO_BACKUP_MAX=10/.test(d)&&/AUTO_BACKUP_MAX=10/.test(e)&&/frenda:auto-backups:v1/.test(d)&&/frenda:auto-backups:v1/.test(e),"ダンジョン/探索で同じ10世代領域を使用"],
+  ["異常セーブを世代化しない",/autoBackupValidDungeonRaw/.test(d)&&/initialized===true/.test(d)&&/owned\.length>0/.test(d)&&/invalid-dungeon/.test(d),"dungeon:null・御三家未選択・JSON破損を自動バックアップ対象外"],
+  ["初期化前の緊急退避",/初期化前の緊急退避/.test(d)&&/DATA\.remove\(SAVE_KEY\)/.test(d),"初期化しても10世代履歴は削除しない"],
+  ["世代選択復元UI",/autoBackupOpenManager/.test(d)&&/autoBackupRestore/.test(d)&&/infoAutoBackup296/.test(d)&&/infoAutoBackup083/.test(e),"日時・Ver・所持数を確認して任意世代へ復元"],
   ["進化データ確実化",/ensureEvolutionForReward106/.test(e)&&/await ensureEvolutionForReward106\(\)/.test(e),"成果確定前に進化データを確認"],
   ["共通JSキャッシュ更新",d.includes("?app=${v}")&&e.includes("?app=${v}"),"アプリVerをキャッシュキーに使用"],
   ["旧全画像監視なし",!/new\s+MutationObserver\s*\(/.test(d)&&!/new\s+MutationObserver\s*\(/.test(e),"所持バッジの全画像監視を再導入していない"],
@@ -138,5 +142,5 @@ $("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...
 setProfile(currentProfile);runAuto();
 })();
 </script>
-<!-- Ver2.4: dungeon persistence regression check added. Updated: 2026-10-06 16:22 JST -->
+<!-- Ver2.5: 10-generation auto-backup regression checks added. Updated: 2026-10-06 16:52 JST -->
 </body></html>
