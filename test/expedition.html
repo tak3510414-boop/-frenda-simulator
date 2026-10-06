@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.16">
+<html lang="ja" data-app-version="1.18">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -241,60 +241,6 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 @media(min-width:1200px) and (min-height:650px) and (max-height:840px){body.blackExpPrep073 .pickTools{grid-template-columns:repeat(3,minmax(0,1fr))!important}.bestDestBtn103{font-size:12px!important;min-height:28px!important;padding:3px 5px!important}}
 </style>
 
-<style id="v116-blackpc-hotfix">
-/* Ver1.16: black-PC layout hotfixes for explore + summary */
-body.blackExpExplore075 .exploreGuide075 .freeGuideRows{
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  row-gap:4px!important;
-}
-body.blackExpExplore075 .exploreGuide075 .freeGuideRow{padding:4px 2px!important;}
-body.blackExpExplore075 .exploreGuide075 .freeGuideRow b{font-size:12px!important;line-height:1.1!important;}
-body.blackExpExplore075 .exploreGuide075 .freeGuideRow span{font-size:10px!important;line-height:1.15!important;white-space:normal!important;text-align:center!important;}
-body.blackExpExplore075 .exploreGuide075 .freeGuideNowMarker{gap:8px!important;justify-content:center!important;flex-wrap:wrap!important;}
-body.blackExpExplore075 .exploreStats>div{display:flex!important;flex-direction:column!important;justify-content:center!important;min-height:52px!important;}
-body.blackExpExplore075 .exploreStats small{line-height:1.15!important;}
-
-@media (min-width:1000px){
-  .summary104{
-    width:min(1320px,calc(100vw - 18px))!important;
-    height:calc(100dvh - 68px)!important;
-    margin:6px auto!important;
-    padding:14px 18px!important;
-    gap:12px!important;
-  }
-  .summaryTop104{padding:2px 8px 0!important;}
-  .summaryTop104 b{font-size:22px!important;line-height:1.2!important;}
-  .summaryTop104 span{font-size:14px!important;}
-  .summaryTop104 small{font-size:13px!important;line-height:1.45!important;}
-  .summaryOverviewGrid104{grid-template-columns:.95fr 1.05fr!important;gap:10px!important;}
-  .summarySurvey104,.summarySouvenir104{padding:12px 14px!important;border-radius:16px!important;}
-  .summaryMiniHead104 b{font-size:16px!important;}
-  .summaryMiniHead104 strong{font-size:24px!important;}
-  .summarySurvey104 small{font-size:11px!important;line-height:1.45!important;}
-  .summarySouvenirItems104{gap:10px!important;min-height:74px!important;}
-  .summarySouvenirItem104{min-width:96px!important;padding:8px 10px!important;border-radius:12px!important;}
-  .summarySouvenirItem104>span{font-size:40px!important;}
-  .summarySouvenirItem104>b{font-size:20px!important;}
-  .summarySouvenirItem104>small{font-size:9px!important;}
-  .summaryHighlights104{gap:10px!important;}
-  .summary104 .summaryCompanionBox097{padding:10px 12px!important;}
-  .summary104 .summaryCompanionHead097 b{font-size:15px!important;}
-  .summary104 .summaryCompanionGrid097{gap:8px!important;}
-  .summary104 .summaryCompanionCard097{grid-template-columns:56px minmax(0,1fr)!important;padding:8px!important;border-radius:13px!important;}
-  .summary104 .summaryCompanionCard097 img{width:56px!important;height:76px!important;}
-  .summary104 .summaryCompanionCard097 b{font-size:12px!important;line-height:1.25!important;}
-  .summaryGrowthPanel104{align-items:stretch!important;}
-  .summaryGrowthPanel104 .summaryGrowthTitle094{width:100%!important;max-width:none!important;margin:0 0 6px!important;}
-  .summaryGrowthPanel104 .growthTableWrap094{width:100%!important;max-width:none!important;}
-  .summaryGrowthPanel104 .growthTable094 th,
-  .summaryGrowthPanel104 .growthTable094 td{padding:9px 10px!important;font-size:12px!important;}
-  .summaryGrowthPanel104 .pickCell094 img{width:44px!important;height:60px!important;}
-  .summaryGrowthPanel104 .pickCell094 span{font-size:11px!important;line-height:1.3!important;}
-  .summaryFooter104{grid-template-columns:1fr 280px!important;gap:12px!important;padding-top:4px!important;}
-  .summaryFooter104>span{font-size:11px!important;}
-  .summaryFooter104 .summaryCompleteBtn{min-height:50px!important;font-size:18px!important;}
-}
-</style>
 
 </head>
 <body>
@@ -609,14 +555,16 @@ function flushPrepWrite(){
  clearTimeout(prepWriteTimer);prepWriteTimer=null;writeExp()
 }
 window.addEventListener("pagehide",flushPrepWrite);
-function seedExpeditionTestDungeon(team){const fake={initialized:true,owned:[...new Set(team)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drill:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};DATA.dungeon.write(fake)}
+const EXPEDITION_TEST_PICK_COUNT=50;
+function seedExpeditionTestDungeon(ownedIds,team){const fake={initialized:true,owned:[...new Set(ownedIds)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drillPoints:{},permanentBoosts:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};ownedIds.forEach((id,i)=>{fake.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;fake.permanentBoosts[id]={hp:0,atk:0,def:0}});fake.lastTeamIds=(team||[]).slice(0,3);DATA.dungeon.write(fake)}
 function testMission(team){const now=Date.now();return {id:"test-mission",dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3),startAt:now-60000,returnAt:now+3540000,rank:"A",score:82,scoreParts:{number:30,strength:30,type:15,bond:7},baseline:100,avgEnergy:100,boxes:[{rarity:"normal",reward:{type:"xp",target:team[0],amount:10},opened:false,applied:false,resultText:"⭐ EXP +10"},{rarity:"rare",reward:{type:"growth",target:team[1],amount:1},opened:false,applied:false,resultText:"🌱 進化P +1"}],report:[{time:now-30000,text:"テスト探索中"},{time:now-20000,text:"成果箱を持ち帰った"}],liveReport:[{time:now-30000,text:"テスト探索中"}],stage:"exploring",baseApplied:true,baseResults:team.slice(0,3).map(id=>({id,xp:10,drill:0,bond:false})),summary:["⭐ EXP +10"]}}
 function applyExpeditionTestCase(){
  if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;
  activeGroup=0;
- const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);
- const team=ids.length>=3?ids:ids.concat(ids,ids).slice(0,3);
- seedExpeditionTestDungeon(team);
+ const seen=new Set(),ids=[];
+ for(const r of RECORDS){const id=r?.master_id;if(!id||seen.has(id))continue;seen.add(id);ids.push(id);if(ids.length>=EXPEDITION_TEST_PICK_COUNT)break}
+ const team=ids.length>=3?ids.slice(0,3):ids.concat(ids,ids).slice(0,3);
+ seedExpeditionTestDungeon(ids,team);
  const mission=testMission(team),x=defaultExp(),g=x.groups[0];
  g.lastTeamIds=team.slice(0,3);
  g.prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};
@@ -632,6 +580,8 @@ function applyExpeditionTestCase(){
   mission.returnAt=Date.now()-1;mission.settledAt=Date.now();mission.settledHoursExact=1;mission.stage="summary";
   mission.boxes=mission.boxes.map((b,i)=>({...b,opened:true,applied:true,resultText:b.resultText||["⭐ EXP +10","🌱 進化P +1"][i]||"成果"}));
   mission.findings={before:20,after:40,souvenirs:[{id:"test_souvenir",icon:"🎁",name:"テストのおみやげ",isNew:true,rare:false}],completedNow:false};
+  const companion=RECORDS.find(r=>r?.master_id&&!team.includes(r.master_id));
+  if(companion){mission.boxes.push({rarity:"rare",reward:{type:"companion",target:companion.master_id},opened:true,applied:true,resultText:`${companion.name_ja}が新しく仲間になった！`,newCompanionIds104:[companion.master_id]})}
   mission.summary=["⭐ EXP +10","🌱 進化P +1"];
   g.status="returned";g.mission=mission;screen="return";
  }else return;
@@ -3243,5 +3193,113 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.13: fixed regression test states to populate group[0] directly, so exploring / boxes / summary open their intended screens. -->
 <!-- Ver1.14: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
 <!-- Ver1.15: test-mode indicator no longer consumes layout height; replaced full-width banner with tiny fixed overlay badge. -->
+
+<style id="v117-final-blackpc-audit">
+/* Ver1.17 final override: exact two-column free-exploration guide and compact black-PC summary.
+   Intentionally last so legacy PC rules cannot override it. */
+@media(min-width:1200px) and (min-height:650px) and (max-height:840px){
+  body.blackExpExplore075 .exploreGuide075{
+    flex:0 0 auto!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:6px 10px 7px!important;
+    overflow:hidden!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideHead{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;
+    padding:0 2px 4px!important;margin:0 0 3px!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideHead b{font-size:12px!important;}
+  body.blackExpExplore075 .exploreGuide075 .freeGuideHead small{font-size:9px!important;}
+  body.blackExpExplore075 .exploreGuide075 .freeGuidePosition{display:none!important;}
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRows{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(4,21px)!important;
+    grid-auto-flow:column!important;
+    gap:1px 24px!important;
+    width:min(760px,100%)!important;
+    margin:0 auto!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRow{
+    display:grid!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    align-items:center!important;
+    min-height:0!important;
+    height:21px!important;
+    padding:0 5px!important;
+    border-bottom:1px solid #ffffff18!important;
+    flex-direction:initial!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRow b{
+    font-size:12px!important;line-height:20px!important;white-space:nowrap!important;text-align:left!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRow span{
+    font-size:12px!important;line-height:20px!important;white-space:nowrap!important;text-align:left!important;letter-spacing:.02em!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideFoot{
+    display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;
+    margin:4px 0 0!important;padding:3px 0 0!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideFoot span{font-size:8px!important;line-height:1.1!important;}
+
+  .summary104{
+    width:min(1280px,calc(100vw - 24px))!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 78px)!important;
+    margin:7px auto!important;
+    padding:12px 15px!important;
+    gap:9px!important;
+    overflow:auto!important;
+  }
+  .summary104 .summaryTop104{padding:10px 14px!important;border-radius:14px!important;}
+  .summary104 .summaryTop104 b{font-size:26px!important;line-height:1.15!important;}
+  .summary104 .summaryTop104 span{font-size:13px!important;}
+  .summary104 .summaryTop104 small{font-size:12px!important;line-height:1.35!important;}
+  .summary104 .summaryOverviewGrid104{grid-template-columns:.9fr 1.1fr!important;gap:9px!important;}
+  .summary104 .summarySurvey104,.summary104 .summarySouvenir104{padding:10px 12px!important;}
+  .summary104 .summaryMiniHead104 b{font-size:15px!important;}
+  .summary104 .summaryMiniHead104 strong{font-size:22px!important;}
+  .summary104 .summarySurvey104 small{font-size:10px!important;}
+  .summary104 .summarySouvenirItems104{min-height:66px!important;gap:8px!important;}
+  .summary104 .summarySouvenirItem104{min-width:86px!important;padding:7px 9px!important;}
+  .summary104 .summarySouvenirItem104>span{font-size:38px!important;}
+  .summary104 .summarySouvenirItem104>b{font-size:19px!important;}
+  .summary104 .summarySouvenirItem104>small{font-size:8px!important;}
+  .summary104 .summaryHighlights104{gap:8px!important;}
+  .summary104 .summaryCompanionBox097{margin:0!important;padding:8px 10px!important;}
+  .summary104 .summaryCompanionHead097{margin-bottom:5px!important;}
+  .summary104 .summaryCompanionHead097 b{font-size:14px!important;}
+  .summary104 .summaryCompanionGrid097{gap:7px!important;}
+  .summary104 .summaryCompanionCard097{
+    display:grid!important;grid-template-columns:62px minmax(0,1fr)!important;align-items:center!important;justify-items:stretch!important;
+    padding:7px!important;text-align:left!important;
+  }
+  .summary104 .summaryCompanionCard097 img{width:58px!important;height:78px!important;object-fit:contain!important;}
+  .summary104 .summaryCompanionCard097 b{font-size:12px!important;}
+  .summary104 .summaryGrowthPanel104{
+    flex:0 0 auto!important;min-height:0!important;align-items:center!important;overflow:visible!important;
+  }
+  .summary104 .summaryGrowthPanel104 .summaryGrowthTitle094{width:min(800px,100%)!important;margin:0 auto 5px!important;}
+  .summary104 .summaryGrowthPanel104 .summaryGrowthTitle094 b{font-size:17px!important;}
+  .summary104 .summaryGrowthPanel104 .summaryGrowthTitle094 small{font-size:9px!important;}
+  .summary104 .summaryGrowthPanel104 .growthTableWrap094{
+    width:min(800px,100%)!important;max-width:800px!important;margin:0 auto!important;overflow:hidden!important;
+  }
+  .summary104 .summaryGrowthPanel104 .growthTable094{width:100%!important;table-layout:auto!important;}
+  .summary104 .summaryGrowthPanel104 .growthTable094 thead th:first-child{width:42%!important;}
+  .summary104 .summaryGrowthPanel104 .growthTable094 th,
+  .summary104 .summaryGrowthPanel104 .growthTable094 td{padding:7px 8px!important;font-size:11px!important;}
+  .summary104 .summaryGrowthPanel104 .pickCell094 img{width:48px!important;height:65px!important;object-fit:contain!important;}
+  .summary104 .summaryGrowthPanel104 .pickCell094 span{font-size:11px!important;}
+  .summary104 .summaryFooter104{grid-template-columns:1fr 260px!important;gap:10px!important;padding-top:2px!important;}
+  .summary104 .summaryFooter104>span{font-size:10px!important;}
+  .summary104 .summaryFooter104 .summaryCompleteBtn{min-height:44px!important;font-size:17px!important;}
+}
+</style>
+<!-- Ver1.17: final black-PC rules restore the requested 30m/1h/2h/4h left + 6h/8h/10h/12h right guide, remove summary dead space, enlarge Pokémon images, and keep the growth table compact. -->
+
 </body>
 </html>

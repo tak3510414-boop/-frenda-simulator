@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.1">
+<html lang="ja" data-test-center-version="2.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -33,6 +33,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
  </div>
  <div class="deviceHint"><b>🧪 回帰テストは管理者認証不要</b><br>「開く」を押すと本番セーブから分離されたテスト画面へ直接移動します。本番のローカル保存・クラウド保存・管理者設定は変更しません。</div>
 <div class="deviceHint" id="deviceHint"></div>
+ <div class="deviceHint"><b>育成の本番導線</b><br>ホーム → 所持ピック → 個別「特訓」／「特訓 一括実行」。旧「特訓・進化」一覧画面は通常導線がないため回帰対象から外しています。</div>
 </section>
 
 <section class="card">
@@ -59,22 +60,22 @@ const PROFILES={
  iphone:{label:"iPhone",w:390,h:645,dpr:3}
 };
 const dungeonCases=[
- ["d-team","挑戦チーム編成","上部操作→選択3体→挑戦/自動冒険。画像・文字のはみ出しなし。","team-star5"],
+ ["d-team","挑戦チーム編成","所持50体で縦スクロール・検索・絞込を確認。上部操作→選択3体→挑戦/自動冒険。","team-star5"],
  ["d-route","進む道","道カード、10階表示、撤退位置、固定パーティ欄を確認。","route-star5"],
  ["d-battle","戦闘","敵所持バッジと ENEMY 表示が重ならない。味方3体・HP・AUTOを確認。","battle"],
- ["d-legend","伝説登場","登場演出が中央で切れず、1画面に収まる。","legendary-intro"],
+ ["d-legend","伝説登場","黒PCを含め、名前・画像・戦闘準備ボタンまで1画面内に完全表示。","legendary-intro"],
  ["d-cap-intro","ゲットチャンス開始","ゲット導入画面の中央配置とボタンを確認。","capture-intro"],
  ["d-cap-slot","ボールスロット","対象ポケモン、8ボール、STOPの配置を確認。黒PCは卵スロット系レイアウト。","capture-slot"],
- ["d-owned","所持ピック","一覧の初期ソート、画像、スクロール、ボタンを確認。","owned"],
+ ["d-owned","所持ピック","所持50体で一覧の縦スクロール、初期ソート、画像、ボタンを確認。","owned"],
  ["d-quick","個別特訓","テスト用特訓Pあり。HP/ATK/DEFを実際に強化し、背景・モーダル位置が上へ飛ばないか確認。","quick-training"],
- ["d-training","育成","テスト対象3体・特訓Pあり。下へスクロールして育成操作後も位置が戻らないこと、進化/特訓情報を確認。","training"],
+ ["d-bulk","一括特訓","所持ピックから一括特訓を開き、方針選択→確認→実行まで確認。","bulk-training"],
  ["d-shop","ショップ","テスト用🪙20,000あり。下へスクロールして購入後も位置が戻らないこと、コイン情報と商品が区別されることを確認。","shop"]
 ];
 const expCases=[
- ["e-prep","探索準備","ヘッダーの探索中→卵→コイン→閉じるを確認。白PCで卵数が消えない。","prep"],
- ["e-explore","探索中","グループカード、経過、派遣メンバー、ヘッダーを確認。","exploring"],
+ ["e-prep","探索準備","所持50体で派遣メンバー選択の縦スクロールも確認。ヘッダーの探索中→卵→コイン→閉じる。白PCで卵数が消えない。","prep"],
+ ["e-explore","探索中","自由探索の成果目安が左30分/1/2/4h、右6/8/10/12hで崩れない。派遣メンバー・ログ・帰還も確認。","exploring"],
  ["e-box","成果箱","箱・おみやげ・秘密の場所表示、縦位置を確認。","boxes"],
- ["e-summary","探索完了","成長表・おみやげ・仲間画像が1画面内で読みやすいか確認。","summary"]
+ ["e-summary","探索完了","上部情報を大きく、ポケモン画像を大きく、成長表は間延びせず、余白過多がないことを確認。","summary"]
 ];
 let currentProfile=localStorage.getItem("frenda:regression:profile")||"white";
 let versions={dungeon:"?",expedition:"?"};
@@ -114,11 +115,15 @@ async function runAuto(){
   ["本番保存監視",/productionStorageUnchanged/.test(t)&&/assertProductionStorageUnchanged/.test(t),"本番保存キーの変化を検出したらテスト停止"],
   ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
   ["テスト表示はレイアウト非占有",/frendaDungeonTestBadge/.test(d)&&/position:fixed/.test(d)&&/frendaExpeditionTestBadge/.test(e)&&/position:fixed/.test(e),"全幅の黄色帯を廃止し、小さな固定オーバーレイのみ"],
-  ["ダンジョン固定テスト経路",["team-star5","route-star5","battle","legendary-intro","capture-intro","capture-slot","quick-training","shop"].every(x=>d.includes(`\"${x}\"`)||d.includes(`===\"${x}\"`)),"主要画面へ直接移動可能"],
+  ["ダンジョン固定テスト経路",["team-star5","route-star5","battle","legendary-intro","capture-intro","capture-slot","quick-training","bulk-training","shop"].every(x=>d.includes(`\"${x}\"`)||d.includes(`===\"${x}\"`)),"主要画面へ直接移動可能"],
   ["探索固定テスト経路",["prep","exploring","boxes","summary"].every(x=>e.includes(`===\"${x}\"`)),"準備→探索中→箱→完了"],
+  ["テスト中の自動再読込停止",/location\.protocol===\"file:\"\|\|DUNGEON_TEST_MODE/.test(d),"回帰テスト中はアプリ更新確認で再読込しない"],
+  ["黒PCレジェンド最終上書き",/v334-final-blackpc-audit/.test(d)&&d.includes('body.blackPcOptimized #app#app .blackRunStage .legendaryIntroCard'),"古いCSSより後ろで1画面化を固定"],
+  ["探索成果目安2列",/v117-final-blackpc-audit/.test(e)&&/grid-auto-flow:column!important/.test(e)&&/grid-template-rows:repeat\(4,21px\)/.test(e),"左30分/1/2/4h・右6/8/10/12h"],
   ["探索テスト初期適用",/EXPEDITION_TEST_MODE&&EXPEDITION_TEST_CASE\)applyExpeditionTestCase\(\)/.test(e),"初回render前にテスト状態を適用"],
   ["ゲット導入テスト遷移",/candidateIds:\[legendary\?\.master_id\]/.test(d)&&/Array\.isArray\(c\.candidateIds\)/.test(d),"ゲットチャンスへからボールスロットへ進める"],
   ["探索テスト管理者認証なし",/function groupAdminUnlocked\(groupIndex\)\{return EXPEDITION_TEST_MODE/.test(e)&&/EXPEDITION_TEST_MODE\|\|window\.FRENDA_PARENTAL/.test(e),"テストグループは管理者認証を要求しない"],
+  ["テスト所持ピック50体",/DUNGEON_TEST_PICK_COUNT=50/.test(d)&&/EXPEDITION_TEST_PICK_COUNT=50/.test(e),"ダンジョン/探索とも所持50体でスクロール確認"],
   ["同時保存マージ",/mergeDungeonConcurrent320/.test(d)&&/DATA\.dungeon\.mutate/.test(d),"ダンジョン/探索の同時保存対策"],
   ["進化データ確実化",/ensureEvolutionForReward106/.test(e)&&/await ensureEvolutionForReward106\(\)/.test(e),"成果確定前に進化データを確認"],
   ["共通JSキャッシュ更新",d.includes("?app=${v}")&&e.includes("?app=${v}"),"アプリVerをキャッシュキーに使用"],
