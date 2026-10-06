@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.22">
+<html lang="ja" data-app-version="1.23">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -605,7 +605,7 @@ function flushPrepWrite(){
 }
 window.addEventListener("pagehide",flushPrepWrite);
 const EXPEDITION_TEST_PICK_COUNT=50;
-function seedExpeditionTestDungeon(ownedIds,team){const fake={initialized:true,owned:[...new Set(ownedIds)].map(id=>({id})),stats:{},missions:{version:1,stats:{adventuresStarted:1,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0},claimed:{}},eggs:[],eggCap:2,bondPoints:{},growth:{},drillPoints:{},permanentBoosts:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};ownedIds.forEach((id,i)=>{fake.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;fake.permanentBoosts[id]={hp:0,atk:0,def:0}});fake.lastTeamIds=(team||[]).slice(0,3);DATA.dungeon.write(fake)}
+function seedExpeditionTestDungeon(ownedIds,team,throughRank=1){const fake={initialized:true,owned:[...new Set(ownedIds)].map(id=>({id})),stats:{},missions:{version:1,stats:{adventuresStarted:1,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0},claimed:{}},eggs:[],eggCap:2,bondPoints:{},growth:{},drillPoints:{},permanentBoosts:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))for(let rank=1;rank<=Math.max(0,Math.min(5,Number(throughRank)||0));rank++)fake.stats[statKey(did,rank)]={clears:1,deepest:10};ownedIds.forEach((id,i)=>{fake.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;fake.permanentBoosts[id]={hp:0,atk:0,def:0}});fake.lastTeamIds=(team||[]).slice(0,3);DATA.dungeon.write(fake)}
 function testMission(team){const now=Date.now();return {id:"test-mission",dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3),startAt:now-60000,returnAt:now+3540000,rank:"A",score:82,scoreParts:{number:30,strength:30,type:15,bond:7},baseline:100,avgEnergy:100,boxes:[{rarity:"normal",reward:{type:"xp",target:team[0],amount:10},opened:false,applied:false,resultText:"⭐ EXP +10"},{rarity:"rare",reward:{type:"growth",target:team[1],amount:1},opened:false,applied:false,resultText:"🌱 進化P +1"}],report:[{time:now-30000,text:"テスト探索中"},{time:now-20000,text:"成果箱を持ち帰った"}],liveReport:[{time:now-30000,text:"テスト探索中"}],stage:"exploring",baseApplied:true,baseResults:team.slice(0,3).map(id=>({id,xp:10,drill:0,bond:false})),summary:["⭐ EXP +10"]}}
 function applyExpeditionTestCase(){
  if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;
@@ -613,11 +613,14 @@ function applyExpeditionTestCase(){
  const seen=new Set(),ids=[];
  for(const r of RECORDS){const id=r?.master_id;if(!id||seen.has(id))continue;seen.add(id);ids.push(id);if(ids.length>=EXPEDITION_TEST_PICK_COUNT)break}
  const team=ids.length>=3?ids.slice(0,3):ids.concat(ids,ids).slice(0,3);
- seedExpeditionTestDungeon(ids,team);
+ const groupRank=EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE)?Number(EXPEDITION_TEST_CASE.slice(-1)):1;
+ seedExpeditionTestDungeon(ids,team,groupRank);
  const mission=testMission(team),x=defaultExp(),g=x.groups[0];
  g.lastTeamIds=team.slice(0,3);
  g.prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};
- if(EXPEDITION_TEST_CASE==="prep"){
+ if(EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE)){
+  g.status="idle";g.mission=null;x.adminUnlockedGroups=[];screen="prep";
+ }else if(EXPEDITION_TEST_CASE==="prep"){
   g.status="idle";g.mission=null;screen="prep";
  }else if(EXPEDITION_TEST_CASE==="exploring"){
   mission.stage="exploring";mission.returnAt=Date.now()+3540000;mission.maxReturnAt=mission.startAt+FREE_EXP_MAX_HOURS*3600000;mission.freeReturnVersion=1;
@@ -634,7 +637,7 @@ function applyExpeditionTestCase(){
   mission.summary=["⭐ EXP +10","🌱 進化P +1"];
   g.status="returned";g.mission=mission;screen="return";
  }else return;
- x.adminUnlockedGroups=[1,2,3,4,5];
+ if(!EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE))x.adminUnlockedGroups=[1,2,3,4,5];
  exp=normalizeExp(x);prep=exp.groups[0].prep;
  writeExp();
  document.title=`🧪 ${document.title}`;
@@ -838,13 +841,14 @@ function scoreTeam(ids,did,diff){const d=readDungeon(),team=(Array.isArray(ids)?
    Ver0.40: 2グループ同時派遣 / 上部操作カード / UI再編
    ========================================================= */
 const GROUP_COUNT=5;
+const EXPEDITION_PROGRESS_GROUP_TESTS_123=new Set(["groups-r1","groups-r2","groups-r3","groups-r4"]);
 function groupRequiredRank(groupIndex){return [1,1,2,3,4][Math.max(0,Math.min(GROUP_COUNT-1,Number(groupIndex)||0))]}
 function groupProgressUnlocked(groupIndex){
  const d=readDungeon();if(!d)return false;
  const rank=groupRequiredRank(groupIndex);
  return THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,rank)]?.clears||0)>0)
 }
-function groupAdminUnlocked(groupIndex){return EXPEDITION_TEST_MODE||(exp?.adminUnlockedGroups||[]).includes(Number(groupIndex)+1)}
+function groupAdminUnlocked(groupIndex){return (EXPEDITION_TEST_MODE&&!EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE))||(exp?.adminUnlockedGroups||[]).includes(Number(groupIndex)+1)}
 function groupUnlocked(groupIndex){
  const g=exp?.groups?.[groupIndex];
  /* A mission already in progress/returned before this rule change is never broken. */
@@ -854,6 +858,13 @@ function groupUnlocked(groupIndex){
 function groupUnlockMessage(groupIndex){
  const rank=groupRequiredRank(groupIndex);
  return `このグループは、全てのダンジョンのR${rank}をクリアしたら解放します`
+}
+function expeditionFeatureUnlocked123(d=readDungeon()){
+ if(EXPEDITION_TEST_MODE&&!EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE))return true;
+ if((exp?.adminUnlockedGroups||[]).length)return true;
+ if(exp?.groups?.some(g=>g?.mission&&g.status!=="idle"))return true;
+ if(Number(d?.missions?.stats?.expeditionsCompleted||0)>0)return true;
+ return !!d&&THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,1)]?.clears||0)>0)
 }
 function groupState(i=activeGroup){return exp.groups[Math.max(0,Math.min(GROUP_COUNT-1,Number(i)||0))]}
 function syncPrep(){prep=groupState().prep;return prep}
@@ -1223,6 +1234,7 @@ function togglePrepPickFast(card,d,p){
 function renderHome(){return renderPrep()}
 function renderPrep(){
  const d=readDungeon();if(!d||!d.initialized){app.innerHTML=`<div class="card error">フレンダダンジョンのセーブデータが見つかりません。\n先にダンジョンを開始して御三家を取得してください。</div>`;return}
+ if(!expeditionFeatureUnlocked123(d)){app.innerHTML=`<div class="card groupLockedPanel"><div class="sectionTitle">🔒 おでかけ探索は未解放です</div><div class="notice">全10ダンジョンのR1をクリアすると、おでかけ探索とグループ1・2が解放されます。</div><button class="adminUnlockPanelBtn" data-admin-unlock-group="0">🔑 管理者パスワードで解放</button></div>`;bindAdminUnlockButtons();return}
  prepareReturnAll();const dests=clearedDestinations();if(!dests.length){app.innerHTML=`${groupDockHTML()}<div class="card notice">本編ダンジョンを1回クリアすると、おでかけ探索の派遣先が解放されます。</div>`;bindGroupDock();return}
  if(!groupUnlocked(activeGroup)){
   app.innerHTML=`${groupDockHTML()}<div class="card groupLockedPanel"><div class="sectionTitle">🔒 グループ${activeGroup+1}は未解放です</div><div class="notice">${esc(groupUnlockMessage(activeGroup))}</div><button class="adminUnlockPanelBtn" data-admin-unlock-group="${activeGroup}">🔑 管理者パスワードで解放</button></div>`;
@@ -3366,5 +3378,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Updated: 2026-10-06 16:52 JST -->
 <!-- Ver1.22: expedition completion now increments the shared mission counter in dungeon save data. -->
 <!-- Updated: 2026-10-06 17:20 JST -->
+<!-- Ver1.23: expedition feature unlock at all-R1 plus group-progression regression presets (R1=G1/G2, R2=G3, R3=G4, R4=G5). Updated: 2026-10-06 19:31 JST -->
 </body>
 </html>
