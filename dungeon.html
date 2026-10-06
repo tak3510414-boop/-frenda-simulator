@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.21">
+<html lang="ja" data-app-version="3.35">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4312,19 +4312,29 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized.whitePcOptimized #app
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .grassResultHero{grid-column:1!important;grid-row:4!important;align-self:center!important;justify-self:center!important;margin:0!important}
 html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6NewBadge{font-size:13px!important;line-height:1.15!important;padding:5px 10px!important;left:auto!important;right:10px!important;top:10px!important;letter-spacing:.04em!important;z-index:9!important}
 </style>
+
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
 <main id="app"></main>
 
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
-<!-- フラット配置: dungeon.html と共通JSを同じ階層に置く -->
 <script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-test.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${f}?app=${v}"><\/script>`)})();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`)})();
+(()=>{
+ const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");
+ const inTest=/\/test(?:\/|$)/.test(location.pathname);
+ const base=inTest?"../":"";
+ /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
+ if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
+  document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
+ /* Cloud runtime is intentionally absent from /test/. */
+ if(!inTest){
+  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+  document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
+ }
+})();
 </script>
 <script>
 (()=>{
@@ -4332,8 +4342,9 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 const APP_VERSION=document.documentElement.dataset.appVersion||"0.00";
 document.title=`フレンダダンジョン Ver${APP_VERSION}`;
 const versionBadge=document.getElementById("versionBadge");if(versionBadge){versionBadge.textContent=`Ver${APP_VERSION}`;versionBadge.setAttribute("role","button");versionBadge.setAttribute("tabindex","0");versionBadge.setAttribute("title","画面情報を表示");versionBadge.setAttribute("aria-label",`Ver${APP_VERSION}・画面情報を表示`);versionBadge.onclick=()=>window.showFrendaViewportInfo?.();versionBadge.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();window.showFrendaViewportInfo?.()}}}
+const TEST_SANDBOX=window.FRENDA_TEST;
 const DUNGEON_TEST_REQUESTED=new URLSearchParams(location.search).get("test")==="1";
-const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
+const DUNGEON_TEST_MODE=DUNGEON_TEST_REQUESTED&&!!TEST_SANDBOX?.active;
 const DUNGEON_TEST_CASE=new URLSearchParams(location.search).get("case")||"";
 const DUNGEON_TIMER_CASE=new URLSearchParams(location.search).get("timer")||"";
 const PARENTAL=window.FRENDA_PARENTAL;
@@ -4344,9 +4355,7 @@ if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 
 
-const TEST_SANDBOX=window.FRENDA_TEST;
 const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
-if(DUNGEON_TEST_REQUESTED&&!DUNGEON_TEST_MODE){location.replace("admin.html?next=test-center.html");return;}
 
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
@@ -4795,6 +4804,10 @@ function cycleSoundMode(){
 updateHeaderSoundButton();
 const headerSoundStatus=document.getElementById("headerSoundStatus");if(headerSoundStatus)headerSoundStatus.onclick=cycleSoundMode;
 const app=document.getElementById("app"),homeBtn=document.getElementById("homeBtn"),withdrawBtn=document.getElementById("withdrawBtn");
+if(DUNGEON_TEST_REQUESTED&&!TEST_SANDBOX?.active){
+ app.innerHTML=`<div class="errorBox"><b>テスト用保存領域を開始できませんでした。</b><br>frenda-test.js を dungeon.html と同じ階層に配置してください。<br><small>本番セーブ保護のため、テストモードは開始していません。</small></div>`;
+ throw new Error("FRENDA_TEST_SANDBOX_REQUIRED");
+}
 const MASTER=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
 const RULES=window.FRENDA_RULES;
@@ -5023,8 +5036,62 @@ function save(){
  }catch(e){console.error("DUNGEON_SAFE_SAVE",e);try{DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}catch(e2){console.error(e2)}}
 }
 function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
-function ensureDungeonTestOwned(){const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);state=stateDefault();state.initialized=true;state.owned=[...new Set(ids)].map(id=>({id}));state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};state.eggs=[];state.lastTeamIds=ids.slice();teamSelection=ids.slice();return ids}
-function applyDungeonTestCase(){if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return;ensureDungeonTestOwned();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${DUNGEON_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`); if(DUNGEON_TEST_CASE==="team-star5"){currentDungeon={id:"dragon",difficulty:5};screen="team";save();return} if(DUNGEON_TEST_CASE==="route-star5"){currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=5;generateRoutes();screen="home";save();return} const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0]; currentDungeon={id:"dragon",difficulty:5};startRun();state.run.floor=7; state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false}; if(DUNGEON_TEST_CASE==="legendary-intro"){state.run.scene="legendaryIntro";save();return} if(DUNGEON_TEST_CASE==="capture-intro"){state.run.capture={eligible:true,targetId:legendary?.master_id,balls:["poke","super","hyper","master"],pendingOutcome:null};state.run.scene="captureIntro";save();return} }
+const DUNGEON_TEST_PICK_COUNT=50;
+function ensureDungeonTestOwned(){
+ const seen=new Set(),ids=[];
+ for(const r of RECORDS){const id=r?.master_id;if(!id||seen.has(id))continue;seen.add(id);ids.push(id);if(ids.length>=DUNGEON_TEST_PICK_COUNT)break}
+ const teamIds=ids.slice(0,3);
+ state=stateDefault();state.initialized=true;state.owned=ids.map(id=>({id}));
+ state.unlocks=Object.fromEntries(THEME_ORDER.map(id=>[id,[1,2,3,4,5]]));
+ state.stats={};for(const did of THEME_ORDER)for(let diff=1;diff<=5;diff++)state.stats[statKey(did,diff)]={clears:diff===1?1:0,deepest:diff===1?10:0};
+ state.eggs=[];state.frendaCoins=20000;state.drillPoints={};state.experience={};state.permanentBoosts={};
+ ids.forEach((id,i)=>{state.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;state.experience[id]=(35+i*11)%100;state.permanentBoosts[id]={hp:0,atk:0,def:0}});
+ state.lastTeamIds=teamIds.slice();teamSelection=teamIds.slice();
+ if(DUNGEON_TEST_MODE){DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}
+ return ids
+}
+function applyDungeonTestCase(){
+ if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return false;
+ const ids=ensureDungeonTestOwned();
+ const banner=()=>{if(!document.getElementById("frendaDungeonTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaDungeonTestBadge" title="テストモード：${esc(DUNGEON_TEST_CASE)} / 本番保存は変更しません" aria-label="テストモード" style="position:fixed;left:3px;top:calc(env(safe-area-inset-top,0px) + 3px);z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;line-height:1;font-weight:1000;opacity:.58;box-shadow:0 1px 3px #0002">🧪</div>`) };
+ document.title=`🧪 ${document.title}`;
+ const simpleScreen={home:"home",owned:"owned",training:"training",items:"items"};
+ if(simpleScreen[DUNGEON_TEST_CASE]){
+  state.run=null;state.postRun=null;screen=simpleScreen[DUNGEON_TEST_CASE];save();render();banner();return true
+ }
+ if(DUNGEON_TEST_CASE==="shop"){
+  state.run=null;state.postRun=null;screen="home";save();render();renderShop();banner();return true
+ }
+ if(DUNGEON_TEST_CASE==="quick-training"){
+  state.run=null;state.postRun=null;screen="owned";save();render();banner();requestAnimationFrame(()=>showQuickTraining(ids[0],0));return true
+ }
+ if(DUNGEON_TEST_CASE==="bulk-training"){
+  state.run=null;state.postRun=null;screen="owned";save();render();banner();requestAnimationFrame(()=>showBulkTrainingDialog());return true
+ }
+ if(DUNGEON_TEST_CASE==="team-star5"){
+  state.run=null;state.postRun=null;currentDungeon={id:"dragon",difficulty:5};screen="team";save();render();banner();return true
+ }
+ currentDungeon={id:"dragon",difficulty:5};
+ startRun();
+ if(DUNGEON_TEST_CASE==="route-star5"){
+  state.run.floor=5;generateRoutes();render();banner();return true
+ }
+ const legendary=RECORDS.find(r=>RULES.isLegendary(r)&&RULES.allowedByDungeonDifficulty(r,5))||RECORDS.find(r=>RULES.isLegendary(r))||RECORDS[0];
+ state.run.floor=7;
+ state.run.encounter={kind:"battle",enemies:[legendary],index:0,enemyHps:[Number(legendary?.hp)||100],currentParticipants:[],newSeenIndices:{},moods:{},specialReward:false,forcedAlert:false};
+ state.run.battle=null;
+ if(DUNGEON_TEST_CASE==="legendary-intro"){
+  state.run.scene="legendaryIntro";save();render();banner();return true
+ }
+ if(DUNGEON_TEST_CASE==="battle"){
+  state.run.scene="chooseFighter";save();startFighter(0);banner();return true
+ }
+ if(["capture-intro","capture-slot"].includes(DUNGEON_TEST_CASE)){
+  state.run.capture={eligible:true,candidateIds:[legendary?.master_id].filter(Boolean),targetId:legendary?.master_id,balls:["poke","super","hyper","master","poke","super","hyper","master"],pendingOutcome:null,result:null,special:false};
+  state.run.scene=DUNGEON_TEST_CASE==="capture-slot"?"captureSlot":"captureIntro";save();render();banner();return true
+ }
+ screen="home";render();banner();return false
+}
 /* ===== STATE & PERSISTENCE ===== */
 function loadState(){try{const x=DATA.dungeon.read(),s=x&&typeof x==="object"?Object.assign(stateDefault(),x):stateDefault();enforceRunEndGuard(s);return s}catch{const s=stateDefault();enforceRunEndGuard(s);return s}}
 /* ===== SAVE-DATA COMPATIBILITY / MIGRATIONS ===== */
@@ -6211,7 +6278,7 @@ function shopBallQty(ballKey){const key=shopBallItemKey(ballKey);return key?Math
 function usePurchasedBall(ballKey){const r=state.run,c=r?.capture,key=shopBallItemKey(ballKey),def=BALL_DEF[ballKey];if(!r||r.scene!=="captureSlot"||!c?.targetId||!key||!def||r.autoAdventure)return;const qty=shopBallQty(ballKey);if(qty<=0)return;if(!UI.dialog.confirm(`${def.label}を1個使いますか？\nボールスロットは行わず、このボールを投げます。\n所持 ${qty}個 → ${qty-1}個`))return;stopBallTimer();state.shopItems[key]=qty-1;addLog(`🎒 所持していた${def.label}を使用（残り${qty-1}個）。`);save();resolveCapture(ballKey)}
 function skipCaptureTicket(){if(!state.run||state.run.scene!=="captureTicket")return;addLog("🎟️ ゲットチャンスチケットは使わずに先へ進んだ。");finishMissedCapture()}
 function proceedAfterBattleReward(){const c=state.run.capture;if(c?.eligible){state.run.scene="captureIntro";save();render()}else if(captureTicketOfferAvailable(c)){state.run.scene="captureTicket";save();render()}else finishMissedCapture()}
-function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;if(c.candidateIds.length>1){state.run.scene="captureSelect";save();render()}else{chooseCaptureTarget(c.candidateIds[0])}}
+function proceedCaptureIntro(){const c=state.run.capture;if(!c?.eligible)return;const ids=Array.isArray(c.candidateIds)?c.candidateIds.filter(Boolean):(c.targetId?[c.targetId]:[]);if(!ids.length)return;if(ids.length>1){c.candidateIds=ids;state.run.scene="captureSelect";save();render()}else{chooseCaptureTarget(ids[0])}}
 function chooseCaptureTarget(id){const c=state.run.capture;if(!c||!c.eligible)return; c.targetId=id;const special=Math.random()<.10;let balls=special?["poke","poke","poke","poke","super","super","hyper","master"]:["poke","poke","poke","poke","poke","super","super","hyper"];c.balls=shuffle(balls);c.special=special;c.pendingOutcome=null;c.result=null;state.run.scene="captureSlot";save();render()}
 function captureRate(targetId,ballKey){const base=RULES.captureRate(Number(rec(targetId)?.grade||2),ballKey,Number(state.run?.captureBoost||0));return Math.min(1,base*luckMultiplier(currentPartyLuck()))}
 function resolveCapture(ballKey){const c=state.run.capture;if(!c||!c.targetId||c.result)return;if(!c.pendingOutcome){const boost=Math.max(0,Number(state.run.captureBoost||0)),rate=captureRate(c.targetId,ballKey),success=Math.random()<rate;c.pendingOutcome={ballKey,rate,success,captureBoost:boost};state.run.captureBoost=0;if(boost)addLog(`拾ったモンスターボール効果を使用：捕獲率${Math.round(boost*100)}%アップ。`)}state.run.scene="captureThrow";save();render()}
@@ -6699,7 +6766,7 @@ function commonHeaderOpen298(){
  commonHeaderClose298();
  const ov=document.createElement("div"),touch=("ontouchstart" in window)||navigator.maxTouchPoints>0;
  ov.className="frendaInfoOverlay296";
- ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div></div>`;
+ ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div><div class="frendaInfoSection296"><h3>セーブ管理</h3><div class="frendaInfoActions296"><button type="button" class="secondary" id="infoSaveManager296">セーブ管理を開く</button></div><div class="frendaInfoNote296">セーブの書き出し・読み込み・初期化を行えます。</div></div></div>`;
  document.body.appendChild(ov);
  ov.querySelector(".frendaInfoClose296").onclick=commonHeaderClose298;
  ov.onclick=e=>{if(e.target===ov)commonHeaderClose298()};
@@ -6707,11 +6774,12 @@ function commonHeaderOpen298(){
  document.getElementById("infoBackupOut296").onclick=commonHeaderBackupOut298;
  document.getElementById("infoBackupIn296").onclick=()=>document.getElementById("infoBackupFile296").click();
  document.getElementById("infoBackupFile296").onchange=e=>{if(e.target.files?.[0])commonHeaderBackupIn298(e.target.files[0])};
+ const saveMgr=document.getElementById("infoSaveManager296");if(saveMgr)saveMgr.onclick=()=>{commonHeaderClose298();openSaveManagerFromHeader()};
 }
 function bindCommonHeader298(){
  const title=document.getElementById("headerMainTitle"),ver=document.getElementById("versionBadge"),cluster=document.querySelector("header .careCluster"),egg=document.getElementById("headerEggBadge"),coin=document.getElementById("headerCoinBadge");
  if(title){title.onclick=e=>{e.preventDefault();homeBtn.click()};title.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();homeBtn.click()}}}
- if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
+ if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ・セーブ管理";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
  if(cluster&&egg&&coin){if(egg.parentElement!==cluster)cluster.appendChild(egg);if(coin.parentElement!==cluster)cluster.appendChild(coin);cluster.append(egg,coin)}
 }
 
@@ -7024,6 +7092,7 @@ function showInventoryItemUse(kind){
 }
 function renderEggs(){const clears=totalDungeonClears(),next=state.eggCap>=10?null:(Math.floor(clears/10)+1)*10;app.innerHTML=`<div class="card eggsScreen"><div class="eggsScreenHead"><div class="sectionTitle">🥚 卵</div><span class="badge purple">${state.eggs.length}/${state.eggCap}</span></div><div class="eggInfoCompact"><span>階を進むと <b>全卵 +1pt</b></span><span>クリア累計 <b>${clears}回</b></span><span>${next?`上限UPまで <b>あと${Math.max(0,next-clears)}回</b>`:"所持上限は最大"}</span></div>${state.eggs.length?`<div class="eggGrid eggGridViewport">${state.eggs.map(e=>{const req=eggReq(e),p=Math.min(100,Math.round((e.points||0)/req*100));return `<div class="eggCard compactEggCard">${eggVisualHTML(e)}<b>${esc(eggLabel(e))}</b><div class="eggProgress"><div style="width:${p}%"></div></div><small>${e.points}/${req}pt　${eggReady(e)?"孵化待ち":`あと${Math.max(0,req-e.points)}階`}</small></div>`}).join("")}</div>`:`<div class="summary eggEmptyState">${eggVisualHTML("normal")}<p>まだ卵を持っていません。<br>ボスを倒すと卵ルーレットで獲得できます。</p></div>`}</div>`}
 function evoLoadNote(){return evoReady?'<div class="evoLoadNote">進化情報：読み込み済み</div>':evoLoadError?'<div class="evoLoadNote bad">進化情報を読み込めませんでした。通信を確認して再読み込みしてください。</div>':'<div class="evoLoadNote">進化情報を読み込み中…</div>'}
+/* Legacy full-page training route: no normal UI currently calls this. Current product flow is Owned Picks -> individual/bulk training. */
 function openTrainingFor(id){if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("おでかけ探索中のため特訓できません。");return}trainingStickyIds.clear();trainingFocusId=id;screen="training";render()}
 function showQuickTraining(id,returnScroll=window.scrollY||document.documentElement.scrollTop||0,overlayScroll=0){
  if(!ownedEntry(id)||isExpeditionLocked(id)){UI.dialog.alert("探索中のため特訓できません。");return}
@@ -7061,7 +7130,9 @@ function showLuckShop(returnTo="home"){
  const returnScreen=()=>{ov.remove();document.body.style.overflow="";if(returnTo==="owned")renderOwned();else renderHome()};
  const itemQty=key=>Math.max(0,Math.floor(Number(state.shopItems?.[key])||0));
  const buyItem=(key,price,max=Infinity)=>{const q=itemQty(key),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));if(coins<price||q>=max)return false;state.frendaCoins=coins-price;state.shopItems[key]=q+1;save();return true};
- const renderShop=(focusId="")=>{updateHeaderStatus();
+ const shopScrollState=()=>({overlay:Math.max(0,ov.scrollTop||0),panel:Math.max(0,ov.querySelector(".luckShopPanel")?.scrollTop||0),catalog:Math.max(0,ov.querySelector(".shopCatalogGrid")?.scrollTop||0)});
+ const restoreShopScroll=pos=>{if(!pos)return;const apply=()=>{ov.scrollTop=Number(pos.overlay)||0;const panel=ov.querySelector(".luckShopPanel");if(panel)panel.scrollTop=Number(pos.panel)||0;const catalog=ov.querySelector(".shopCatalogGrid");if(catalog)catalog.scrollTop=Number(pos.catalog)||0};requestAnimationFrame(()=>{apply();requestAnimationFrame(apply)})};
+ const renderShop=(focusId="",scrollPos=null)=>{updateHeaderStatus();
   const qty=itemQty("luckyClover"),trainingQty=itemQty("trainingCandy"),evoQty=itemQty("evolutionCandy"),ticketQty=itemQty("captureTicket"),superBallQty=itemQty("superBall"),hyperBallQty=itemQty("hyperBall"),masterBallQty=itemQty("masterBall"),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
   const baseTargets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX),records=baseTargets.map(id=>rec(id)).filter(Boolean),types=commonFilterTypes(records),grades=commonFilterGrades(records);
   let targets=baseTargets.filter(id=>{const r=rec(id);if(!r)return false;if(!pickSearchMatch(r,shopFilter.search))return false;if(shopFilter.type!=="all"&&r.type1!==shopFilter.type&&r.type2!==shopFilter.type)return false;if(shopFilter.grade!=="all"&&Number(r.grade)!==Number(shopFilter.grade))return false;if(shopFilter.luck!=="all"&&luckFor(id)!==Number(shopFilter.luck))return false;return true});
@@ -7087,7 +7158,7 @@ function showLuckShop(returnTo="home"){
    if(panel&&balance&&how){const row=document.createElement("div");row.className="shopCoinBlackRow";panel.insertBefore(row,balance);row.append(balance,how)}
   }
   ov.querySelector("#luckShopClose").onclick=returnScreen;
-  const openUseDialog=kind=>{
+  const openUseDialog=(kind,returnShopScroll=shopScrollState())=>{
    document.getElementById("shopUseOverlay")?.remove();
    const useOv=document.createElement("div");useOv.id="shopUseOverlay";useOv.className="ownedDetailOverlay shopUseOverlay";
    const qLucky=itemQty("luckyClover"),qTraining=itemQty("trainingCandy"),qEvo=itemQty("evolutionCandy");
@@ -7097,8 +7168,8 @@ function showLuckShop(returnTo="home"){
    else{title=`🍀 ラッキークローバーを使う`;hint=`所持 ${qLucky}個　対象をタップするたび1個使用します。同じピックへ連続適用できます。`;body=`${filterHtml}<div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qLucky>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><span class="luckValue">幸運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small class="luckTargetLocked">🧭 探索中</small>`:""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${baseTargets.length?"条件に合うピックがありません。":"全所持ピックが幸運MAXです。"}</div>`}</div><div class="notice">幸運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。戦闘では幸運が高いほど攻撃のミス率も下がります。</div>`}
    useOv.innerHTML=`<div class="ownedBackPanel shopUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="shopUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div>${kind==="clover"?body:`<div class="luckTargetGrid">${body}</div>`}</div>`;
    document.body.appendChild(useOv);
-   const closeUse=()=>{useOv.remove();renderShop()};useOv.onclick=e=>{if(e.target===useOv)closeUse()};useOv.querySelector("#shopUseClose").onclick=closeUse;
-   const rerenderUse=(focusId="",scroll=0)=>{useOv.remove();renderShop();requestAnimationFrame(()=>{openUseDialog(kind);const n=document.getElementById("shopUseOverlay");if(n){n.scrollTop=scroll;if(focusId){const el=n.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const l=el.value.length;el.setSelectionRange(l,l)}}}}})};
+   const closeUse=()=>{useOv.remove();renderShop("",returnShopScroll)};useOv.onclick=e=>{if(e.target===useOv)closeUse()};useOv.querySelector("#shopUseClose").onclick=closeUse;
+   const rerenderUse=(focusId="",scroll=0)=>{useOv.remove();renderShop("",returnShopScroll);requestAnimationFrame(()=>{openUseDialog(kind,returnShopScroll);const n=document.getElementById("shopUseOverlay");if(n){n.scrollTop=scroll;if(focusId){const el=n.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const l=el.value.length;el.setSelectionRange(l,l)}}}}})};
    if(kind==="training")useOv.querySelectorAll("[data-training-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.trainingCandyTarget,q=itemQty("trainingCandy");if(q<=0||isExpeditionLocked(id))return;const pb=state.permanentBoosts[id]||{};if(!["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX))return;state.shopItems.trainingCandy=q-1;state.drillPoints[id]=drillFor(id)+1;save();rerenderUse("",useOv.scrollTop)});
    if(kind==="evolution")useOv.querySelectorAll("[data-evolution-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.evolutionCandyTarget,q=itemQty("evolutionCandy"),ei=evolutionInfoForPick(id);if(q<=0||isExpeditionLocked(id)||!ei.hasEvolution||!ei.registered||ei.points>=ei.cost)return;state.shopItems.evolutionCandy=q-1;addGrowthPoint(id,1);save();rerenderUse("",useOv.scrollTop)});
    if(kind==="clover"){
@@ -7112,17 +7183,44 @@ function showLuckShop(returnTo="home"){
     useOv.querySelectorAll("[data-luck-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.luckTarget,before=luckFor(id),q=itemQty("luckyClover");if(isExpeditionLocked(id)||before>=LUCK_MAX||q<=0)return;state.shopItems.luckyClover=q-1;setLuck(id,before+1);save();rerenderUse("",useOv.scrollTop)});
    }
   };
+  const refreshShopPurchaseUI=()=>{
+   updateHeaderStatus();
+   const coinsNow=Math.max(0,Math.floor(Number(state.frendaCoins)||0));
+   const qLucky=itemQty("luckyClover"),qTraining=itemQty("trainingCandy"),qEvo=itemQty("evolutionCandy"),qTicket=itemQty("captureTicket"),qSuper=itemQty("superBall"),qHyper=itemQty("hyperBall"),qMaster=itemQty("masterBall");
+   const balance=ov.querySelector(".coinBalance b");if(balance)balance.textContent=`🪙 ${coinsNow.toLocaleString("ja-JP")}`;
+   const setText=(sel,text)=>{const el=ov.querySelector(sel);if(el)el.textContent=text};
+   setText("#luckyCloverQty",`所持 ${qLucky}個`);
+   setText(".shopItemCard.training .shopItemHead small",`所持 ${qTraining}/${TRAINING_CANDY_MAX}個`);
+   setText(".shopItemCard.evolution .shopItemHead small",`所持 ${qEvo}/${EVOLUTION_CANDY_MAX}個`);
+   setText(".shopItemCard.ticket .shopItemHead small",`所持 ${qTicket}/${CAPTURE_TICKET_MAX}枚`);
+   setText(".shopItemCard.superBall .shopItemHead small",`所持 ${qSuper}/${SUPER_BALL_MAX}個`);
+   setText(".shopItemCard.hyperBall .shopItemHead small",`所持 ${qHyper}/${HYPER_BALL_MAX}個`);
+   setText(".shopItemCard.masterBall .shopItemHead small",`所持 ${qMaster}/${MASTER_BALL_MAX}個`);
+   const setDisabled=(sel,v)=>{const el=ov.querySelector(sel);if(el)el.disabled=!!v};
+   setDisabled("#buyLuckyClover",coinsNow<LUCK_ITEM_PRICE);
+   setDisabled("#buyTrainingCandy",coinsNow<TRAINING_CANDY_PRICE||qTraining>=TRAINING_CANDY_MAX);
+   setDisabled("#buyEvolutionCandy",coinsNow<EVOLUTION_CANDY_PRICE||qEvo>=EVOLUTION_CANDY_MAX);
+   setDisabled("#buyCaptureTicket",coinsNow<CAPTURE_TICKET_PRICE||qTicket>=CAPTURE_TICKET_MAX);
+   setDisabled("#buySuperBall",coinsNow<SUPER_BALL_PRICE||qSuper>=SUPER_BALL_MAX);
+   setDisabled("#buyHyperBall",coinsNow<HYPER_BALL_PRICE||qHyper>=HYPER_BALL_MAX);
+   setDisabled("#buyMasterBall",coinsNow<MASTER_BALL_PRICE||qMaster>=MASTER_BALL_MAX);
+   setDisabled("#useLuckyClover",qLucky<=0);
+   setDisabled("#useTrainingCandy",qTraining<=0);
+   setDisabled("#useEvolutionCandy",qEvo<=0);
+  };
   const useLucky=ov.querySelector("#useLuckyClover");if(useLucky)useLucky.onclick=()=>openUseDialog("clover");
   const useTraining=ov.querySelector("#useTrainingCandy");if(useTraining)useTraining.onclick=()=>openUseDialog("training");
   const useEvo=ov.querySelector("#useEvolutionCandy");if(useEvo)useEvo.onclick=()=>openUseDialog("evolution");
-  const buy=ov.querySelector("#buyLuckyClover");if(buy)buy.onclick=()=>{if(buyItem("luckyClover",LUCK_ITEM_PRICE))renderShop()};
-  const buyTraining=ov.querySelector("#buyTrainingCandy");if(buyTraining)buyTraining.onclick=()=>{if(buyItem("trainingCandy",TRAINING_CANDY_PRICE,TRAINING_CANDY_MAX))renderShop()};
-  const buyEvo=ov.querySelector("#buyEvolutionCandy");if(buyEvo)buyEvo.onclick=()=>{if(buyItem("evolutionCandy",EVOLUTION_CANDY_PRICE,EVOLUTION_CANDY_MAX))renderShop()};
-  const buyTicket=ov.querySelector("#buyCaptureTicket");if(buyTicket)buyTicket.onclick=()=>{if(buyItem("captureTicket",CAPTURE_TICKET_PRICE,CAPTURE_TICKET_MAX))renderShop()};
-  const buySuperBall=ov.querySelector("#buySuperBall");if(buySuperBall)buySuperBall.onclick=()=>{if(buyItem("superBall",SUPER_BALL_PRICE,SUPER_BALL_MAX))renderShop()};
-  const buyHyperBall=ov.querySelector("#buyHyperBall");if(buyHyperBall)buyHyperBall.onclick=()=>{if(buyItem("hyperBall",HYPER_BALL_PRICE,HYPER_BALL_MAX))renderShop()};
-  const buyMasterBall=ov.querySelector("#buyMasterBall");if(buyMasterBall)buyMasterBall.onclick=()=>{if(buyItem("masterBall",MASTER_BALL_PRICE,MASTER_BALL_MAX))renderShop()};
+  const bindBuy=(selector,key,price,max=Infinity)=>{const b=ov.querySelector(selector);if(b)b.onclick=()=>{if(buyItem(key,price,max))refreshShopPurchaseUI()}};
+  bindBuy("#buyLuckyClover","luckyClover",LUCK_ITEM_PRICE);
+  bindBuy("#buyTrainingCandy","trainingCandy",TRAINING_CANDY_PRICE,TRAINING_CANDY_MAX);
+  bindBuy("#buyEvolutionCandy","evolutionCandy",EVOLUTION_CANDY_PRICE,EVOLUTION_CANDY_MAX);
+  bindBuy("#buyCaptureTicket","captureTicket",CAPTURE_TICKET_PRICE,CAPTURE_TICKET_MAX);
+  bindBuy("#buySuperBall","superBall",SUPER_BALL_PRICE,SUPER_BALL_MAX);
+  bindBuy("#buyHyperBall","hyperBall",HYPER_BALL_PRICE,HYPER_BALL_MAX);
+  bindBuy("#buyMasterBall","masterBall",MASTER_BALL_PRICE,MASTER_BALL_MAX);
   if(focusId){requestAnimationFrame(()=>{const el=ov.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const n=el.value.length;el.setSelectionRange(n,n)}}})}
+  restoreShopScroll(scrollPos);
  };
  document.body.appendChild(ov);document.body.style.overflow="hidden";ov.onclick=e=>{if(e.target===ov)returnScreen()};renderShop()
 }
@@ -7351,17 +7449,20 @@ function trainingGraphHTML(r,pb={}){
 function trainingSpendButtonsHTML(id,r,pb,dp){
  return `<div class="trainingSpendGrid">${[["hp","HP"],["atk","ATK"],["def","DEF"]].map(([k,label])=>{const cur=(Number(r[k])||0)+(Number(pb[k])||0),can=dp>0&&Number(pb[k]||0)<PERMANENT_BOOST_MAX,next=cur+(can?TRAINING_STEP:0);return `<button class="drillSpend trainingSpendBtn" data-train-id="${esc(id)}" data-stat="${k}" ${can?"":"disabled"}><b>${label}</b><small>${can?`${cur} → ${next}`:`${cur}`}</small></button>`}).join("")}</div>`
 }
-function renderTraining(){
+function renderTraining(restoreScroll=null){
  const actionable=(state.owned||[]).filter(o=>{const ei=evolutionInfoForPick(o.id);return trainingStickyIds.has(o.id)||trainingAvailable(o.id)||ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))});
  app.innerHTML=`<div class="card trainingScreen"><div class="trainingScreenHead"><div class="sectionTitle">✨ 特訓・進化</div><button class="ghost" id="trainingBackOwned">← 所持ピック</button></div><div class="trainingQuickGuide"><span>🏋️ 特訓Pで <b>HP・ATK・DEF</b> を強化</span><span>青＝初期　紫＝育成分</span><span>1Pで <b>+${TRAINING_STEP}</b></span></div>${evoLoadNote()}<div class="ownedGrid trainingGridViewport">${actionable.length?actionable.map(o=>{
   const r=rec(o.id),pb=state.permanentBoosts[o.id]||(state.permanentBoosts[o.id]={hp:0,atk:0,def:0}),xp=xpFor(o.id),dp=drillFor(o.id),gp=growthPointsFor(o.id),ei=evolutionInfoForPick(o.id),cue=evolutionCueState(o.id),kept=trainingStickyIds.has(o.id);
   return `<div class="trainCard compactTrainingCard ${cue.kind==="ready"?"evoReadyCard":cue.kind==="near"?"evoNearCard":""}${kept?" recentlyTrained":""}" data-training-card="${esc(o.id)}">${kept?'<div class="trainingKeptTag">今回特訓</div>':""}<div class="trainTop compactTrainTop"><img src="${esc(imageOf(r))}" alt=""><div class="compactTrainInfo"><b>${esc(r.name_ja)}</b><small>${gradeText(r)} / ${esc(r.pick_no)}</small><div class="trainingCombinedMini"><div><b>⭐ EXP</b><small>${xp}/${EXP_TO_DRILL}</small></div><div class="expbar"><div class="expfill" style="width:${Math.min(100,Math.round(xp/EXP_TO_DRILL*100))}%"></div></div></div><div class="pointChips">${ei.hasEvolution?`<span class="pointChip growth">🌱 ${gp}</span>`:""}<span class="bondChip${bondLevelFor(o.id)>=4?" high":""}">♥ Lv${bondLevelFor(o.id)}</span></div></div></div>${trainingGraphHTML(r,pb)}<div class="trainingPointBalance compactBalance ${dp>0?"hasPoints":"empty"}"><span>🏋️ 特訓P</span><strong>${dp}</strong></div>${trainingSpendButtonsHTML(o.id,r,pb,dp)}${ei.hasEvolution?`${cue.html}<button class="evoBtn trainEvo${ei.canEvolve?" evoPulse":""}" data-evolve-id="${esc(o.id)}" ${ei.canEvolve?"":"disabled"}>進化（進化P ${ei.cost}）</button>`:'<div class="noEvolutionTrainingNote">進化先なし</div>'}</div>`
  }).join(""):'<div class="dexEmpty">現在、特訓または進化できるポケモンはいません。</div>'}</div></div>`;
  document.getElementById("trainingBackOwned").onclick=()=>{trainingStickyIds.clear();trainingFocusId=null;screen="owned";render()};
- app.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>spendDrill(b.dataset.trainId,b.dataset.stat));
+ const captureTrainingScroll=()=>({page:Math.max(0,window.scrollY||document.documentElement.scrollTop||0),app:Math.max(0,app.scrollTop||0),grid:Math.max(0,app.querySelector(".trainingGridViewport")?.scrollTop||0)});
+ const restoreTrainingScroll=pos=>{if(!pos)return;const apply=()=>{window.scrollTo(0,Number(pos.page)||0);app.scrollTop=Number(pos.app)||0;const grid=app.querySelector(".trainingGridViewport");if(grid)grid.scrollTop=Number(pos.grid)||0};requestAnimationFrame(()=>{apply();requestAnimationFrame(apply)})};
+ app.querySelectorAll("[data-train-id]").forEach(b=>b.onclick=()=>{const keep=captureTrainingScroll();spendDrill(b.dataset.trainId,b.dataset.stat,false);renderTraining(keep)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=()=>openEvolutionDialog(b.dataset.evolveId));
  const focus=trainingFocusId;trainingFocusId=null;
  if(focus)requestAnimationFrame(()=>{const card=[...app.querySelectorAll("[data-training-card]")].find(x=>x.dataset.trainingCard===focus);if(card){card.classList.add("trainingFocus");card.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>card.classList.remove("trainingFocus"),2400)}})
+ else restoreTrainingScroll(restoreScroll);
 }
 function dexState(id){const d=state.dex?.[id]||{};return {obtained:!!d.obtained,current:!!d.current||!!ownedEntry(id)}}
 function renderDex(){
@@ -7397,7 +7498,7 @@ withdrawBtn.onclick=withdraw;
 let lastAppUpdateCheck=0;
 function compareAppVersions(a,b){const aa=String(a||"").split(".").map(Number),bb=String(b||"").split(".").map(Number),n=Math.max(aa.length,bb.length);for(let i=0;i<n;i++){const x=aa[i]||0,y=bb[i]||0;if(x!==y)return x-y}return 0}
 async function checkForAppUpdate(force=false){
- if(location.protocol==="file:")return false;
+ if(location.protocol==="file:"||DUNGEON_TEST_MODE)return false;
  if(!force&&(state.run||state.postRun))return false;
  const now=Date.now();if(!force&&now-lastAppUpdateCheck<30000)return false;lastAppUpdateCheck=now;
  try{
@@ -7424,7 +7525,7 @@ async function checkForAppUpdate(force=false){
 document.addEventListener("pointerdown",()=>{if(soundVolume()>0)ensureAudio()},{passive:true});
 eyeCare.start();
 /* Ver3.09: global ownership image observer removed for performance. */
-normalizeMaxedDrillPoints();render();loadEvolutionData();
+normalizeMaxedDrillPoints();if(DUNGEON_TEST_MODE&&DUNGEON_TEST_CASE)applyDungeonTestCase();else render();loadEvolutionData();
 setTimeout(()=>checkForAppUpdate(),900);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkForAppUpdate()});
 
@@ -7442,7 +7543,6 @@ function applyDungeonCloudData(data){
 function dungeonHasLocalData(){const s=DATA.dungeon.read();return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}
 function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s.owned)?s.owned.length:0,eggs=Array.isArray(s.eggs)?s.eggs.length:0,exp=s.expeditionShared?.status==="running"?"探索中":"探索なし";return `所持 ${owned}体 / 卵 ${eggs}個 / ${exp}`}
 applyDungeonTimerPreset();
-applyDungeonTestCase();
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
@@ -14918,5 +15018,138 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 }
 </style>
 <!-- Ver3.21: removed dormant full-page ownership observer code/CSS, consolidated recent hotfix CSS, and normalized closing-tag structure. -->
+<!-- Ver3.22: fixed repeatable regression test routes; test mode refuses to run without isolated FRENDA_TEST storage. -->
+<!-- Ver3.23: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
+<!-- Ver3.25: /test/ regression routes use the isolated FRENDA_TEST sandbox directly; admin authentication is not required and production saves remain untouched. -->
+<!-- Ver3.26: regression capture-intro now has a valid candidateIds list; proceedCaptureIntro also tolerates legacy/test capture state. -->
+<!-- Ver3.27: regression fixtures now include 20,000 coins and actionable training points for shop/training tests. -->
+<!-- Ver3.28: shop purchases and training stat spends preserve the current scroll position after rerender. -->
+<!-- Ver3.29: shop purchases no longer rebuild the shop DOM; balances and button states update in place so Safari scroll position never resets. -->
+<!-- Ver3.30: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
+<!-- Ver3.31: restored the visible save-management entry in the version/settings panel; save export/import/reset remain available from the dedicated screen. -->
+<!-- Ver3.32: test-mode indicator no longer consumes layout height; replaced full-width banner with tiny fixed overlay badge. -->
+
+<style id="v334-final-blackpc-audit">
+/* Ver3.34 final override: black-PC one-screen encounter and compact quick-training modal.
+   This block is intentionally last so older compatibility CSS cannot override it. */
+@media(min-width:1280px) and (min-height:600px) and (max-height:840px){
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage{
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryIntroCard{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    box-sizing:border-box!important;
+    padding:7px 10px!important;
+    overflow:hidden!important;
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryIntroInner{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+    padding:2px 8px 6px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:2px!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryOmen{
+    flex:0 0 auto!important;min-height:0!important;margin:0!important;
+    font-size:15px!important;line-height:1.05!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryTitle{
+    flex:0 0 auto!important;margin:0!important;
+    font-size:24px!important;line-height:1!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendarySpriteWrap{
+    flex:1 1 0!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendarySprite{
+    width:auto!important;
+    height:100%!important;
+    max-width:min(520px,72%)!important;
+    max-height:215px!important;
+    object-fit:contain!important;
+    margin:0!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryOwnershipWrap{
+    flex:0 0 auto!important;min-height:18px!important;margin:0!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryName{
+    flex:0 0 auto!important;min-height:0!important;margin:0!important;
+    font-size:21px!important;line-height:1.05!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryTapHint{display:none!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunStage .legendaryContinue{
+    flex:0 0 38px!important;
+    min-height:38px!important;
+    height:38px!important;
+    margin:2px 0 0!important;
+    padding:6px 22px!important;
+    font-size:14px!important;
+    line-height:1!important;
+  }
+
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay.ownedDetailOverlay{
+    inset:0!important;
+    padding:10px 14px!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingPanelV215{
+    width:min(880px,88vw)!important;
+    max-width:880px!important;
+    max-height:calc(100dvh - 20px)!important;
+    margin:0 auto!important;
+    overflow:auto!important;
+    border-radius:20px!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingHead{
+    position:sticky!important;top:0!important;z-index:30!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingHero{
+    grid-template-columns:126px minmax(0,1fr)!important;gap:12px!important;padding:11px 14px!important;
+  }
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingPick img{width:112px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingName{font-size:21px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingIdentity{gap:5px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingPointBox{padding:7px 10px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingPointBox strong{font-size:25px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .trainingAbilityGrid{margin:0 12px 3px!important;padding:8px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .trainingAbilityLegend{margin:3px 12px 6px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingStatTitle,
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingChoose{margin:7px 12px 4px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .trainingSpendGrid{margin:0 12px 7px!important;gap:7px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .trainingSpendBtn{min-height:58px!important;padding:6px 5px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .trainingSpendBtn b{font-size:14px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .trainingSpendBtn small{font-size:10px!important;margin-top:4px!important;}
+  html[data-view-profile="pc-compact"] body.blackPcOptimized #quickTrainingOverlay .quickTrainingNote{
+    margin:0 12px 12px!important;padding:7px 9px!important;font-size:10px!important;line-height:1.35!important;
+    color:#5a4500!important;background:#fff5c9!important;border:1px solid #d9bd55!important;font-weight:850!important;opacity:1!important;
+  }
+}
+</style>
+<!-- Ver3.34: final black-PC override is last in the source; legendary encounter fits one screen, test update reload stays disabled, quick training is compact, and regression now tests bulk training instead of the orphan legacy training page. -->
+
 </body>
 </html>
