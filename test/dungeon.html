@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.44">
+<html lang="ja" data-app-version="3.45">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4362,6 +4362,24 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 </style>
 
 
+
+<style id="progressionUnlockNoticeStyles345">
+/* Ver3.45 unlock celebration + persistent NEW markers */
+.progressionNewHost345{position:relative!important}
+.progressionNewBadge345{position:absolute;right:8px;top:7px;z-index:6;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:22px;padding:0 9px;border-radius:999px;background:linear-gradient(180deg,#ff5f5f,#e32626);color:#fff;font-size:10px;font-weight:1000;letter-spacing:.05em;border:2px solid #fff;box-shadow:0 3px 8px #8b000055;pointer-events:none}
+.progressionUnlockOverlay345{position:fixed;inset:0;z-index:4000;display:grid;place-items:center;padding:18px;background:#061827d9;backdrop-filter:blur(5px)}
+.progressionUnlockPanel345{width:min(560px,100%);max-height:min(720px,92vh);overflow:auto;text-align:center;border:3px solid #ffd75e;border-radius:28px;padding:22px 20px 20px;background:radial-gradient(circle at 50% 0,#fff7c8 0,#fff 35%,#effaff 100%);box-shadow:0 22px 70px #0009,0 0 32px #ffe27866;color:#17384c}
+.progressionUnlockSpark345{font-size:46px;line-height:1;filter:drop-shadow(0 5px 12px #ffbf3d88)}
+.progressionUnlockKicker345{margin-top:6px;color:#9b6b00;font-size:10px;font-weight:1000;letter-spacing:.18em}
+.progressionUnlockPanel345 h2{margin:5px 0 14px;font-size:24px;color:#15374d}
+.progressionUnlockList345{display:grid;gap:8px;text-align:left;margin:0 auto 16px}
+.progressionUnlockItem345{display:grid;grid-template-columns:50px minmax(0,1fr);gap:10px;align-items:center;padding:11px 12px;border:1px solid #c7dbe7;border-radius:16px;background:#fff;box-shadow:0 4px 12px #17384c12}
+.progressionUnlockItem345>span{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#eef8ff;font-size:28px}
+.progressionUnlockItem345 b{display:block;font-size:16px;color:#163b52}
+.progressionUnlockItem345 small{display:block;margin-top:3px;color:#5c7483;font-size:11px;line-height:1.45}
+#progressionUnlockClose345{width:100%;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,#2f9ee7,#1974ba);box-shadow:0 3px 0 #125b91;font-size:15px}
+@media(max-width:700px){.progressionNewBadge345{right:5px;top:5px;min-width:36px;height:19px;padding:0 7px;font-size:8px}.progressionUnlockPanel345{padding:18px 14px 16px;border-radius:22px}.progressionUnlockPanel345 h2{font-size:20px}.progressionUnlockItem345{grid-template-columns:43px minmax(0,1fr);padding:9px}.progressionUnlockItem345>span{width:41px;height:41px;font-size:24px}}
+</style>
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -4977,13 +4995,17 @@ const STARTER_SET_DEFS=[
 ];
 // Ver3.39: migrateState() runs during startup, so mission keys must be initialized before that call.
 const MISSION_STAT_KEYS=["adventuresStarted","enemyDefeats","captures","eggsHatched","trainings","evolutions","grassAttempts","expeditionsCompleted"];
-const stateDefault=()=>({saveVersion:14,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,grassTicket:3,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},missions:{version:1,stats:{adventuresStarted:0,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0},claimed:{}},lastTeamIds:[],run:null,postRun:null,grassSession:null,lastSummary:null});
+// Ver3.45: progression unlock notification state is persisted with the dungeon save.
+const PROGRESSION_UNLOCK_KEYS_345=["training","evolution","egg","grass","bulkTraining","expeditionR1","shop1","expeditionG3","shop2","expeditionG4","expeditionG5","shop3"];
+const stateDefault=()=>({saveVersion:15,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,grassTicket:3,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},missions:{version:1,stats:{adventuresStarted:0,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0},claimed:{}},progressionUi:{version:1,recorded:{},newFlags:{},pending:[]},lastTeamIds:[],run:null,postRun:null,grassSession:null,lastSummary:null});
 // Battle-knowledge cache must exist before migrateState(), because reconcileDexState() invalidates it during startup.
 let battleKnowledgeTypeCache=null;
 let dungeonSaveBaseline=null;
+let progressionUnlockRuntimeReady345=false;
 let state=loadState();
 dungeonSaveBaseline=JSON.parse(JSON.stringify(state));
 migrateState();
+progressionUnlockRuntimeReady345=true;
 let screen="home";
 const headerSaveStatus=document.getElementById("headerCloudStatus");
 function openSaveManagerFromHeader(){if(state?.run||state?.postRun){save()}screen="save";render()}
@@ -5080,7 +5102,7 @@ function missionHatchUnlocked(){return totalDungeonClears()>0||(state.eggs||[]).
 function missionGrassUnlocked(){return totalDungeonClears()>=3||missionStat("grassAttempts")>0}
 function missionExpeditionUnlocked(){return missionAllRankCleared(1)}
 /* ===== PROGRESSION UNLOCKS Ver3.41 ===== */
-const PROGRESSION_TEST_CASES_341=new Set(["progress-start","progress-early","progress-clear3","progress-clear5","progress-r1","progress-r2","progress-r3","progress-r4","progress-r5","shop-lv1","shop-lv2","shop-lv3"]);
+const PROGRESSION_TEST_CASES_341=new Set(["progress-start","progress-early","progress-clear3","progress-clear5","progress-r1","progress-r2","progress-r3","progress-r4","progress-r5","shop-lv1","shop-lv2","shop-lv3","progress-unlock-notice"]);
 function progressionRegressionBypass341(){return DUNGEON_TEST_MODE&&!!DUNGEON_TEST_CASE&&!PROGRESSION_TEST_CASES_341.has(DUNGEON_TEST_CASE)}
 function featureTrainingUnlocked341(){return progressionRegressionBypass341()||missionTrainingUnlocked()}
 function featureEvolutionUnlocked341(){return progressionRegressionBypass341()||missionEvolutionUnlocked()}
@@ -5095,6 +5117,57 @@ function shopItemPurchasable341(key){return featureShopLevel341()>=shopRequiredL
 function featureLockText341(kind){return ({training:"特訓Pを初めて獲得すると解放",evolution:"進化Pを初めて獲得すると解放",egg:"ダンジョンを初クリアすると解放",grass:"ダンジョンを累計3回クリアすると解放",bulk:"ダンジョンを累計5回クリアすると解放",expedition:"全ダンジョンR1制覇で解放",shop:"全ダンジョンR1制覇でSHOP Lv1解放"})[kind]||"進行すると解放"}
 function lockedFeaturePanel341(icon,title,kind){return `<div class="card progressLockedPanel341"><b>🔒 ${icon} ${esc(title)}</b><small>${esc(featureLockText341(kind))}</small><div style="margin-top:14px"><button type="button" id="progressLockedHome341" class="ghost">ホームへ戻る</button></div></div>`}
 function renderLockedFeature341(icon,title,kind){app.innerHTML=lockedFeaturePanel341(icon,title,kind);const b=document.getElementById("progressLockedHome341");if(b)b.onclick=()=>{screen="home";render()}}
+
+/* ===== PROGRESSION UNLOCK NOTICE Ver3.45 ===== */
+function progressionTotalClears345(target){let n=0;for(const v of Object.values(target?.stats||{}))n+=Math.max(0,Number(v?.clears)||0);return n}
+function progressionAllRankCleared345(target,rank){return THEME_ORDER.every(did=>Number(target?.stats?.[statKey(did,rank)]?.clears||0)>0)}
+function progressionUnlockStatus345(target){
+ const t=target&&typeof target==="object"?target:{},m=t.missions&&typeof t.missions==="object"?t.missions:{},ms=m.stats&&typeof m.stats==="object"?m.stats:{},clears=progressionTotalClears345(t);
+ const training=Object.values(t.drillPoints||{}).some(v=>Number(v)>0)||Number(ms.trainings||0)>0||Object.values(t.permanentBoosts||{}).some(pb=>["hp","atk","def"].some(k=>Number(pb?.[k])>0));
+ const evolution=Object.values(t.trainingPoints||{}).some(v=>Number(v)>0)||Number(ms.evolutions||0)>0||Object.values(t.dex||{}).some(x=>x?.obtained&&!x?.current);
+ const r1=progressionAllRankCleared345(t,1),r2=progressionAllRankCleared345(t,2),r3=progressionAllRankCleared345(t,3),r4=progressionAllRankCleared345(t,4);
+ return {training,evolution,egg:clears>0||(Array.isArray(t.eggs)&&t.eggs.length>0)||Number(ms.eggsHatched||0)>0,grass:clears>=3||Number(ms.grassAttempts||0)>0,bulkTraining:clears>=5,expeditionR1:r1,shop1:r1,expeditionG3:r2,shop2:r2,expeditionG4:r3,expeditionG5:r4,shop3:r4}
+}
+function ensureProgressionUi345(target=state,{seedCurrent=false}={}){
+ if(!target||typeof target!=="object")return null;
+ const ui=target.progressionUi&&typeof target.progressionUi==="object"?target.progressionUi:{version:1,recorded:{},newFlags:{},pending:[]};
+ ui.version=1;ui.recorded=ui.recorded&&typeof ui.recorded==="object"?ui.recorded:{};ui.newFlags=ui.newFlags&&typeof ui.newFlags==="object"?ui.newFlags:{};ui.pending=Array.isArray(ui.pending)?ui.pending.filter(id=>PROGRESSION_UNLOCK_KEYS_345.includes(id)):[];
+ if(seedCurrent){const st=progressionUnlockStatus345(target);for(const id of PROGRESSION_UNLOCK_KEYS_345)if(st[id])ui.recorded[id]=true;ui.pending=[];ui.newFlags={}}
+ target.progressionUi=ui;return ui
+}
+function progressionUnlockDetectionEnabled345(){return progressionUnlockRuntimeReady345&&(!DUNGEON_TEST_MODE||DUNGEON_TEST_CASE==="progress-unlock-notice")}
+function progressionRecordNewUnlocks345(base,current){
+ if(!progressionUnlockDetectionEnabled345())return [];
+ const ui=ensureProgressionUi345(current),before=progressionUnlockStatus345(base||{}),after=progressionUnlockStatus345(current||{}),added=[];
+ for(const id of PROGRESSION_UNLOCK_KEYS_345){if(!after[id]||before[id]||ui.recorded[id])continue;ui.recorded[id]=true;ui.newFlags[id]=true;if(!ui.pending.includes(id))ui.pending.push(id);added.push(id)}
+ return added
+}
+const PROGRESSION_UNLOCK_META_345={
+ training:{icon:"🏋️",title:"特訓",detail:"所持ピックを育成できるようになりました。",target:"owned"},
+ evolution:{icon:"✨",title:"進化",detail:"進化ポイントを使って進化できるようになりました。",target:"owned"},
+ egg:{icon:"🥚",title:"卵",detail:"ダンジョンで手に入れた卵を育てられます。",target:"items"},
+ grass:{icon:"🌿",title:"草むらゲット",detail:"草むらチケットで新しい出会いを探せます。",target:"items"},
+ bulkTraining:{icon:"💪",title:"特訓 一括実行",detail:"複数の所持ピックをまとめて特訓できます。",target:"owned"},
+ expeditionR1:{icon:"🧭",title:"おでかけ探索",detail:"探索グループ1・2が使えるようになりました。",target:"expedition"},
+ shop1:{icon:"🛍️",title:"SHOP Lv1",detail:"クローバー・特訓キャンディ・スーパーボールを購入できます。",target:"shop"},
+ expeditionG3:{icon:"🧭",title:"探索グループ3",detail:"3つ目の探索グループが使えるようになりました。",target:"expedition"},
+ shop2:{icon:"🛍️",title:"SHOP Lv2",detail:"進化のアメ・ゲットチャンスチケット・ハイパーボールが追加されました。",target:"shop"},
+ expeditionG4:{icon:"🧭",title:"探索グループ4",detail:"4つ目の探索グループが使えるようになりました。",target:"expedition"},
+ expeditionG5:{icon:"🧭",title:"探索グループ5",detail:"5つ目の探索グループが使えるようになりました。",target:"expedition"},
+ shop3:{icon:"🛍️",title:"SHOP Lv3",detail:"マスターボールを購入できるようになりました。",target:"shop"}
+};
+function progressionTargetHasNew345(target){const ui=ensureProgressionUi345();return PROGRESSION_UNLOCK_KEYS_345.some(id=>ui?.newFlags?.[id]&&PROGRESSION_UNLOCK_META_345[id]?.target===target)}
+function progressionNewBadge345(target){return progressionTargetHasNew345(target)?'<span class="progressionNewBadge345">NEW</span>':""}
+function progressionClearTargetNew345(target){const ui=ensureProgressionUi345();if(!ui)return false;let changed=false;for(const id of PROGRESSION_UNLOCK_KEYS_345){if(ui.newFlags?.[id]&&PROGRESSION_UNLOCK_META_345[id]?.target===target){delete ui.newFlags[id];changed=true}}if(changed)save();return changed}
+function showProgressionUnlockNotice345(){
+ if(document.getElementById("progressionUnlockOverlay345"))return;
+ const ui=ensureProgressionUi345(),ids=(ui?.pending||[]).filter(id=>PROGRESSION_UNLOCK_META_345[id]);if(!ids.length)return;
+ const ov=document.createElement("div");ov.id="progressionUnlockOverlay345";ov.className="progressionUnlockOverlay345";
+ ov.innerHTML=`<div class="progressionUnlockPanel345" role="dialog" aria-modal="true" aria-label="新機能解放"><div class="progressionUnlockSpark345">✨</div><div class="progressionUnlockKicker345">NEW FEATURE</div><h2>新しい機能が解放されました！</h2><div class="progressionUnlockList345">${ids.map(id=>{const m=PROGRESSION_UNLOCK_META_345[id];return `<div class="progressionUnlockItem345"><span>${m.icon}</span><div><b>${esc(m.title)}</b><small>${esc(m.detail)}</small></div></div>`}).join("")}</div><button type="button" id="progressionUnlockClose345">ホームで確認する</button></div>`;
+ document.body.appendChild(ov);const prev=document.body.style.overflow;document.body.style.overflow="hidden";
+ const close=()=>{const cur=ensureProgressionUi345();if(cur)cur.pending=cur.pending.filter(id=>!ids.includes(id));ov.remove();document.body.style.overflow=prev;save();render()};
+ ov.querySelector("#progressionUnlockClose345").onclick=close
+}
 function missionRewardCoins(amount){return {type:"coins",amount,icon:"🪙",label:`フレンダコイン ${Number(amount).toLocaleString("ja-JP")}`}}
 function missionRewardItem(key,amount,label,icon,fallbackCoins=0){return {type:"item",key,amount,label,icon,fallbackCoins}}
 function firstMissionDefs(){return [
@@ -5197,17 +5270,18 @@ function mergeDungeonConcurrent320(base,current,latest){
  // 同時に絆MAXを超えた分は失わずコイン化する。
  let bondOverflow=0;for(const [k,v] of Object.entries(out.bondPoints||{})){const n=Math.max(0,Math.floor(Number(v)||0));if(n>BOND_MAX_POINTS){bondOverflow+=n-BOND_MAX_POINTS;out.bondPoints[k]=BOND_MAX_POINTS}else out.bondPoints[k]=n}
  if(bondOverflow)out.frendaCoins+=bondOverflow*COIN_PER_OVERFLOW_BOND;
- out.appVersion=APP_VERSION;out.saveVersion=14;
+ out.appVersion=APP_VERSION;out.saveVersion=15;
  return out
 }
 function syncConcurrentState320(merged){
- for(const k of ["expeditionShared","owned","dex","seenSpecies","seenPicks","experience","drillPoints","trainingPoints","bondPoints","eggs","missions"])state[k]=saveClone320(merged[k]);
- state.frendaCoins=Math.max(0,Math.floor(Number(merged.frendaCoins)||0));state.appVersion=APP_VERSION;state.saveVersion=14
+ for(const k of ["expeditionShared","owned","dex","seenSpecies","seenPicks","experience","drillPoints","trainingPoints","bondPoints","eggs","missions","progressionUi"])if(Object.prototype.hasOwnProperty.call(merged,k))state[k]=saveClone320(merged[k]);
+ state.frendaCoins=Math.max(0,Math.floor(Number(merged.frendaCoins)||0));state.appVersion=APP_VERSION;state.saveVersion=15
 }
 function save(){
  try{
+  progressionRecordNewUnlocks345(dungeonSaveBaseline,state);
   autoBackupCapture("ダンジョン保存前");
-  state.appVersion=APP_VERSION;state.saveVersion=14;
+  state.appVersion=APP_VERSION;state.saveVersion=15;
   const current=saveClone320(state),base=saveClone320(dungeonSaveBaseline||current);
   const latest=DATA.dungeon.read();
   const merged=mergeDungeonConcurrent320(base,current,saveObj320(latest)?latest:{});
@@ -5219,7 +5293,7 @@ function save(){
  }catch(e){
   console.error("DUNGEON_SAFE_SAVE",e);
   try{
-   state.appVersion=APP_VERSION;state.saveVersion=14;
+   state.appVersion=APP_VERSION;state.saveVersion=15;
    DATA.dungeon.write(state);
    const persisted=DATA.dungeon.read();
    if(!saveObj320(persisted))throw new Error("DUNGEON_SAVE_FALLBACK_VERIFY_FAILED");
@@ -5252,10 +5326,18 @@ function setProgressionPreset341(caseName,ids){
  rebuildProgressionFromStats();screen="home";save();
 }
 function setShopPreset341(level,ids){const rank=level===1?1:level===2?2:4;setProgressionPreset341(`progress-r${rank}`,ids);screen="home";save()}
+
+function setProgressionUnlockNoticePreset345(ids){
+ state=stateDefault();state.initialized=true;state.starterIds=ids.slice(0,3);state.owned=ids.map(id=>({id}));state.lastTeamIds=ids.slice(0,3);state.stats={};state.unlocks={forest:[1]};
+ state.stats[statKey("forest",1)]={clears:2,deepest:10};
+ ensureProgressionUi345(state,{seedCurrent:true});state.saveVersion=15;state.appVersion=APP_VERSION;
+ DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state);
+ state.stats[statKey("forest",1)]={clears:3,deepest:10};rebuildProgressionFromStats();screen="home";save()
+}
 function applyDungeonTestCase(){
  if(!DUNGEON_TEST_MODE||!DUNGEON_TEST_CASE)return false;
  const ids=ensureDungeonTestOwned();
- if(PROGRESSION_TEST_CASES_341.has(DUNGEON_TEST_CASE)){if(DUNGEON_TEST_CASE.startsWith("shop-lv")){setShopPreset341(Number(DUNGEON_TEST_CASE.slice(-1)),ids);render();requestAnimationFrame(()=>showLuckShop("home"))}else{setProgressionPreset341(DUNGEON_TEST_CASE,ids);render()}requestAnimationFrame(()=>{if(!document.getElementById("frendaDungeonTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaDungeonTestBadge" title="進行テスト：${esc(DUNGEON_TEST_CASE)}" style="position:fixed;left:3px;top:3px;z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;font-weight:1000">🧪</div>`) });return true}
+ if(PROGRESSION_TEST_CASES_341.has(DUNGEON_TEST_CASE)){if(DUNGEON_TEST_CASE==="progress-unlock-notice"){setProgressionUnlockNoticePreset345(ids);render()}else if(DUNGEON_TEST_CASE.startsWith("shop-lv")){setShopPreset341(Number(DUNGEON_TEST_CASE.slice(-1)),ids);render();requestAnimationFrame(()=>showLuckShop("home"))}else{setProgressionPreset341(DUNGEON_TEST_CASE,ids);render()}requestAnimationFrame(()=>{if(!document.getElementById("frendaDungeonTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaDungeonTestBadge" title="進行テスト：${esc(DUNGEON_TEST_CASE)}" style="position:fixed;left:3px;top:3px;z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;font-weight:1000">🧪</div>`) });return true}
  const banner=()=>{if(!document.getElementById("frendaDungeonTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaDungeonTestBadge" title="テストモード：${esc(DUNGEON_TEST_CASE)} / 本番保存は変更しません" aria-label="テストモード" style="position:fixed;left:3px;top:calc(env(safe-area-inset-top,0px) + 3px);z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;line-height:1;font-weight:1000;opacity:.58;box-shadow:0 1px 3px #0002">🧪</div>`) };
  document.title=`🧪 ${document.title}`;
  const simpleScreen={home:"home",owned:"owned",training:"training",items:"items"};
@@ -5331,6 +5413,7 @@ function migrateState(){
  if(!state.unlocks||typeof state.unlocks!=="object")state.unlocks={forest:[1]};
  if(!state.unlocks.forest)state.unlocks.forest=[1];
  if(!state.stats||typeof state.stats!=="object")state.stats={};
+ ensureProgressionUi345(state,{seedCurrent:v<15});
  if(!Array.isArray(state.lastTeamIds))state.lastTeamIds=[];
  if(state.postRun&&typeof state.postRun!=="object")state.postRun=null;
  if(state.run){
@@ -5354,7 +5437,7 @@ function migrateState(){
    }
  }
  rebuildProgressionFromStats();
- state.saveVersion=14;
+ state.saveVersion=15;
  save();
 }
 function resetSave(){if(!UI.dialog.confirm("フレンダダンジョンのセーブデータを初期化しますか？"))return;if(!UI.dialog.confirm("御三家選択を含む全進行状況が消えます。本当に初期化しますか？"))return;autoBackupCapture("初期化前の緊急退避",{force:true});DATA.remove(SAVE_KEY);state=stateDefault();dungeonSaveBaseline=saveClone320(state);screen="home";render()}
@@ -5925,19 +6008,20 @@ function renderHome(){
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
   <div class="homePlayGrid">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
-   <button class="homeMenuBtn homePlayBtn expedition ${expOpen?"":"progressLocked341"}" id="expeditionMenuBtn"><b>🧭</b><span>おでかけ探索</span><small class="homeCardLead">${expOpen?"解放したグループでおでかけ探索":featureLockText341("expedition")}</small>${expOpen?homeExpeditionStatusHTML():`<small class="progressLockText341">🔒 ${esc(featureLockText341("expedition"))}</small>`}</button>
+   <button class="homeMenuBtn homePlayBtn expedition progressionNewHost345 ${expOpen?"":"progressLocked341"}" id="expeditionMenuBtn">${progressionNewBadge345("expedition")}<b>🧭</b><span>おでかけ探索</span><small class="homeCardLead">${expOpen?"解放したグループでおでかけ探索":featureLockText341("expedition")}</small>${expOpen?homeExpeditionStatusHTML():`<small class="progressLockText341">🔒 ${esc(featureLockText341("expedition"))}</small>`}</button>
   </div>
   <div class="homeManageGrid">
-   <button class="homeMenuBtn owned" data-menu="owned"><b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・チーム編成${trainOpen?"・特訓":""}${evoOpen?"・進化":""}</small><small class="homeTrainingReady">${trainOpen?`特訓可能 ${training.train||0}体`:"🔒 特訓"}${evoOpen?(training.loading?" / 進化確認中…":training.error?" / 進化確認不可":` / 進化可能 ${training.evolve}体`):" / 🔒 進化"}</small></button>
+   <button class="homeMenuBtn owned progressionNewHost345" data-menu="owned">${progressionNewBadge345("owned")}<b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・チーム編成${trainOpen?"・特訓":""}${evoOpen?"・進化":""}</small><small class="homeTrainingReady">${trainOpen?`特訓可能 ${training.train||0}体`:"🔒 特訓"}${evoOpen?(training.loading?" / 進化確認中…":training.error?" / 進化確認不可":` / 進化可能 ${training.evolve}体`):" / 🔒 進化"}</small></button>
    <button class="homeMenuBtn dex" data-menu="dex"><b>📖</b><span>ポケモン図鑑</span><strong class="homeManageValue">${dex.obtained}/${dex.total}　${dex.pct}%</strong><small>遭遇済み ${dex.seen}種</small></button>
-   <button class="homeMenuBtn items" data-menu="items"><b>🎒</b><span>もちもの</span><strong class="homeManageValue homeInventoryCounts"><span>${eggOpen?"🥚":"🔒🥚"} ${state.eggs.length}/${state.eggCap}</span><span>${grassOpen?"🌿":"🔒🌿"} ${invGrass}</span><span>🍀 ${invClover}</span><span>🎫 ${invTicket}</span></strong><small>卵・草むら・育成・バトル用品</small><small class="homeManageSub">${eggOpen?esc(egg.title):esc(featureLockText341("egg"))}</small></button>
-   <button class="homeMenuBtn shop ${shopLv?"":"progressLocked341"}" id="homeShopBtn"><b>🛍️</b><span>ショップ</span><strong class="homeManageValue">${shopLv?`SHOP Lv${shopLv}`:"🔒 未解放"}</strong><small>🪙 ${coins.toLocaleString("ja-JP")}</small><small>${shopLv?`現在 SHOP Lv${shopLv}`:featureLockText341("shop")}</small></button>
+   <button class="homeMenuBtn items progressionNewHost345" data-menu="items">${progressionNewBadge345("items")}<b>🎒</b><span>もちもの</span><strong class="homeManageValue homeInventoryCounts"><span>${eggOpen?"🥚":"🔒🥚"} ${state.eggs.length}/${state.eggCap}</span><span>${grassOpen?"🌿":"🔒🌿"} ${invGrass}</span><span>🍀 ${invClover}</span><span>🎫 ${invTicket}</span></strong><small>卵・草むら・育成・バトル用品</small><small class="homeManageSub">${eggOpen?esc(egg.title):esc(featureLockText341("egg"))}</small></button>
+   <button class="homeMenuBtn shop progressionNewHost345 ${shopLv?"":"progressLocked341"}" id="homeShopBtn">${progressionNewBadge345("shop")}<b>🛍️</b><span>ショップ</span><strong class="homeManageValue">${shopLv?`SHOP Lv${shopLv}`:"🔒 未解放"}</strong><small>🪙 ${coins.toLocaleString("ja-JP")}</small><small>${shopLv?`現在 SHOP Lv${shopLv}`:featureLockText341("shop")}</small></button>
   </div>
  </div></div>`;
- app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
- const eb=document.getElementById("expeditionMenuBtn");if(eb)eb.onclick=()=>{if(!featureExpeditionUnlocked341()){UI.dialog.alert(featureLockText341("expedition"));return}location.href="expedition.html"};
- const shop=document.getElementById("homeShopBtn");if(shop)shop.onclick=()=>showLuckShop("home");
+ app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="owned")progressionClearTargetNew345("owned");if(screen==="items"||screen==="eggs")progressionClearTargetNew345("items");if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
+ const eb=document.getElementById("expeditionMenuBtn");if(eb)eb.onclick=()=>{if(!featureExpeditionUnlocked341()){UI.dialog.alert(featureLockText341("expedition"));return}progressionClearTargetNew345("expedition");location.href="expedition.html"};
+ const shop=document.getElementById("homeShopBtn");if(shop)shop.onclick=()=>{if(featureShopLevel341()>0)progressionClearTargetNew345("shop");showLuckShop("home")};
  const mb=document.getElementById("homeMissionBtn");if(mb)mb.onclick=()=>{screen="missions";render()};
+ requestAnimationFrame(()=>showProgressionUnlockNotice345());
 }
 
 const MAIN_HABITAT_RATE=.85;
@@ -15413,4 +15497,5 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
 <!-- Ver3.44: capture throw animation no longer reveals success/failure before the result screen; result SFX plays only after result render. Updated: 2026-10-06 21:50 JST -->
+<!-- Ver3.45: progression unlock celebration popup + persistent home NEW markers. Existing Ver3.44-or-earlier progress is seeded as acknowledged during migration. Updated: 2026-10-07 05:20 JST -->
 </html>
