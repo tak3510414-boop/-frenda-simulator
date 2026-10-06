@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.5">
+<html lang="ja" data-test-center-version="2.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -132,6 +132,11 @@ async function runAuto(){
   ["進化データ確実化",/ensureEvolutionForReward106/.test(e)&&/await ensureEvolutionForReward106\(\)/.test(e),"成果確定前に進化データを確認"],
   ["共通JSキャッシュ更新",d.includes("?app=${v}")&&e.includes("?app=${v}"),"アプリVerをキャッシュキーに使用"],
   ["旧全画像監視なし",!/new\s+MutationObserver\s*\(/.test(d)&&!/new\s+MutationObserver\s*\(/.test(e),"所持バッジの全画像監視を再導入していない"],
+  ["ミッション状態",/missions:\{version:1/.test(d)&&/ensureMissionState/.test(d)&&/claimed/.test(d),"ミッション統計・受取状態をダンジョンセーブへ保存"],
+  ["ミッション画面",/renderMissionScreen/.test(d)&&/homeMissionShortcut338/.test(d)&&/data-mission-claim/.test(d),"はじめて・チャレンジ・報酬受取UI"],
+  ["ミッション進捗連携",/missionInc\("enemyDefeats"/.test(d)&&/missionInc\("captures"/.test(d)&&/missionInc\("eggsHatched"/.test(d)&&/missionInc\("trainings"/.test(d)&&/missionInc\("evolutions"/.test(d)&&/missionInc\("grassAttempts"/.test(d),"主要プレイ実績を自動加算"],
+  ["探索ミッション連携",/addMissionExpeditionComplete122/.test(e)&&/expeditionsCompleted/.test(e),"探索完了を共有ミッションへ加算"],
+  ["ミッション同時保存",/out\.missions=\{version:1/.test(d)&&/"missions"\]\)state\[k\]/.test(d),"探索とダンジョンの同時更新でミッションを保護"],
   ["探索ヘッダー卵表示",/headerEggBadge/.test(e)&&/headerEggCount/.test(e)&&/expSharedStatus074/.test(e),"PC共通ステータス領域を確認"]
  ];
  for(const [label,ok,detail] of checks)addResult(label,ok?"ok":"ng",detail||"");
@@ -143,4 +148,5 @@ setProfile(currentProfile);runAuto();
 })();
 </script>
 <!-- Ver2.5: 10-generation auto-backup regression checks added. Updated: 2026-10-06 16:52 JST -->
+<!-- Ver2.6: mission-state, mission-UI, progress-counter, concurrent-save, and expedition-completion regression checks added. Updated: 2026-10-06 17:20 JST -->
 </body></html>
