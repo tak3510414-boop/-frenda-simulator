@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.10">
+<html lang="ja" data-test-center-version="2.11">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -84,7 +84,7 @@ const expCases=[
  ["e-summary","探索完了","上部情報を大きく、ポケモン画像を大きく、成長表は間延びせず、余白過多がないことを確認。","summary"]
 ];
 const progressionCases=[
- ["p-start","開始直後","基本機能のみ。特訓・進化・卵・草むら・探索・SHOPが🔒か確認。","progress-start","dungeon"],
+ ["p-start","開始直後","基本機能のみ。特訓・進化・卵・草むら・探索・SHOPが🔒。黒PCでは上段の「📋 ミッション」も見えること。","progress-start","dungeon"],
  ["p-early","序盤解放","初クリア＋特訓P/進化P獲得。特訓・進化・卵のみ解放。","progress-early","dungeon"],
  ["p-clear3","累計3回クリア","草むらゲットが解放される。","progress-clear3","dungeon"],
  ["p-clear5","累計5回クリア","特訓 一括実行が解放される。","progress-clear5","dungeon"],
@@ -100,7 +100,7 @@ const progressionCases=[
  ["p-groups2","探索 G1〜G3","全R2状態。G3まで解放。","groups-r2","expedition"],
  ["p-groups3","探索 G1〜G4","全R3状態。G4まで解放。","groups-r3","expedition"],
  ["p-groups4","探索 G1〜G5","全R4状態。G5まで解放。","groups-r4","expedition"],
- ["p-admin-temp","探索 管理者一時解放","未攻略状態でG5だけを管理者一時解放。永続保存しない設計を確認。","admin-temp","expedition"]
+ ["p-admin-temp","探索 管理者一時解放","未攻略状態でG5だけを管理者一時解放。再読み込みで解除され、ダンジョンホーム側にも解放が残らないこと。","admin-temp","expedition"]
 ];
 
 let currentProfile=localStorage.getItem("frenda:regression:profile")||"white";
@@ -157,6 +157,8 @@ async function runAuto(){
   ["ゲット導入テスト遷移",/candidateIds:\[legendary\?\.master_id\]/.test(d)&&/Array\.isArray\(c\.candidateIds\)/.test(d),"ゲットチャンスへからボールスロットへ進める"],
   ["探索テスト管理者認証なし",/function groupAdminUnlocked\(groupIndex\)/.test(e)&&/EXPEDITION_TEST_MODE/.test(e)&&/EXPEDITION_TEST_MODE\|\|window\.FRENDA_PARENTAL/.test(e),"通常の探索テストは管理者認証不要。進行プリセットだけ実条件を再現"],
   ["探索管理者解放は一時",adminUnlockTemporaryOK(e)&&e.includes('"admin-temp"'),"管理者解放はメモリだけ。旧永続値を無効化し、再読込で解除"],
+  ["旧管理者解放を永続清掃",/LEGACY_ADMIN_UNLOCK_FOUND_125/.test(e)&&/EXPEDITION_LEGACY_ADMIN_CLEANUP/.test(e)&&/DATA\.expedition\.write\(exp/.test(e),"Ver1.24以前のadminUnlockedGroupsを起動時に保存領域から除去"],
+  ["ダンジョン側は旧管理者値を無視",/legacy adminUnlockedGroups is intentionally ignored/.test(d)&&/administrator temporary unlock never leaks/.test(d),"ホームの利用可能数・G待機表示に旧adminUnlockedGroupsを使わない"],
   ["テスト所持ピック50体",/DUNGEON_TEST_PICK_COUNT=50/.test(d)&&/EXPEDITION_TEST_PICK_COUNT=50/.test(e),"ダンジョン/探索とも所持50体でスクロール確認"],
   ["ダンジョン保存の明示永続化",/mergeDungeonConcurrent320/.test(d)&&/DATA\.dungeon\.write\(merged\)/.test(d)&&/DUNGEON_SAVE_VERIFY_FAILED/.test(d),"同時更新マージ後に必ずwriteし、read-back検証する"],
   ["自動世代バックアップ10世代",/AUTO_BACKUP_MAX=10/.test(d)&&/AUTO_BACKUP_MAX=10/.test(e)&&/frenda:auto-backups:v1/.test(d)&&/frenda:auto-backups:v1/.test(e),"ダンジョン/探索で同じ10世代領域を使用"],
@@ -169,6 +171,7 @@ async function runAuto(){
   ["ミッション初期化順",d.indexOf('const MISSION_STAT_KEYS=')>=0&&d.indexOf('const MISSION_STAT_KEYS=')<d.indexOf('migrateState();'),"起動時migrateStateより先にミッションキーを初期化（TDZ停止を防止）"],
   ["ミッション状態",/missions:\{version:1/.test(d)&&/ensureMissionState/.test(d)&&/claimed/.test(d),"ミッション統計・受取状態をダンジョンセーブへ保存"],
   ["ミッション画面",/renderMissionScreen/.test(d)&&/homeMissionShortcut338/.test(d)&&/data-mission-claim/.test(d),"はじめて・チャレンジ・報酬受取UI"],
+  ["黒PCミッション導線",/v342-blackpc-mission-and-expedition-lock-fix/.test(d)&&/grid-template-columns:auto auto minmax\(110px,1fr\) auto!important/.test(d),"黒PCホーム上段を4列化し、ミッションボタンをoverflow外へ追い出さない"],
   ["ミッション状態3色区別",/missionVisualState340/.test(d)&&/missionStateBadge340/.test(d)&&/\.missionCard338\.inprogress/.test(d)&&/\.missionCard338\.claimable/.test(d)&&/\.missionCard338\.claimed/.test(d),"進行中=青・達成未受取=黄・受取済=緑を明示"],
   ["ミッション状態順ソート",/missionStateOrder340/.test(d)&&/missionStateOrder340\(a\.m\)-missionStateOrder340\(b\.m\)/.test(d),"未受取→進行中→受取済みの順に表示"],
   ["ミッション進捗連携",/missionInc\("enemyDefeats"/.test(d)&&/missionInc\("captures"/.test(d)&&/missionInc\("eggsHatched"/.test(d)&&/missionInc\("trainings"/.test(d)&&/missionInc\("evolutions"/.test(d)&&/missionInc\("grassAttempts"/.test(d),"主要プレイ実績を自動加算"],
@@ -177,7 +180,7 @@ async function runAuto(){
   ["段階解放ルール",/featureTrainingUnlocked341/.test(d)&&/featureEvolutionUnlocked341/.test(d)&&/featureEggUnlocked341/.test(d)&&/featureGrassUnlocked341/.test(d)&&/featureBulkTrainingUnlocked341/.test(d)&&/featureExpeditionUnlocked341/.test(d),"特訓・進化・卵・草むら・一括特訓・探索を進行条件で制御"],
   ["SHOP段階解放",/featureShopLevel341/.test(d)&&/luckyClover:1/.test(d)&&/trainingCandy:1/.test(d)&&/superBall:1/.test(d)&&/evolutionCandy:2/.test(d)&&/captureTicket:2/.test(d)&&/hyperBall:2/.test(d)&&/masterBall:3/.test(d),"R1=Lv1 / R2=Lv2 / R4=Lv3の商品制御"],
   ["進行プリセット",["progress-start","progress-early","progress-clear3","progress-clear5","progress-r1","progress-r2","progress-r3","progress-r4","progress-r5","shop-lv1","shop-lv2","shop-lv3"].every(x=>d.includes(`\"${x}\"`)),"開始直後からR5・SHOP Lvまで直接再現"],
-  ["探索全体R1解放",/expeditionFeatureUnlocked123/.test(e)&&/全10ダンジョンのR1をクリア/.test(e),"R1全制覇前は探索画面自体をロック"],
+  ["探索全体R1解放",/expeditionFeatureUnlocked123/.test(e)&&/全10ダンジョンのR1をクリア/.test(e)&&!/d\?\.missions\?\.stats\?\.expeditionsCompleted/.test(e),"通常解放は全R1制覇のみ。過去の探索完了実績だけでは再解放しない"],
   ["探索グループ進行プリセット",["groups-r1","groups-r2","groups-r3","groups-r4"].every(x=>e.includes(`\"${x}\"`))&&/\[1,1,2,3,4\]/.test(e),"R1=G1/G2、R2=G3、R3=G4、R4=G5を直接確認"],
   ["探索ヘッダー卵表示",/headerEggBadge/.test(e)&&/headerEggCount/.test(e)&&/expSharedStatus074/.test(e),"PC共通ステータス領域を確認"]
  ];
@@ -195,4 +198,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.8: mission status color distinction and status-priority ordering regression checks added. Updated: 2026-10-06 17:49 JST -->
 <!-- Ver2.9: progression/unlock state presets, SHOP tier presets, and expedition group progression regression routes added. Updated: 2026-10-06 19:31 JST -->
 <!-- Ver2.10: temporary administrator expedition unlock regression check and admin-temp manual preset added. Updated: 2026-10-06 20:58 JST -->
-</body></html>
+</body><!-- Ver2.11: black-PC mission shortcut regression check, strict all-R1 expedition unlock, and legacy admin unlock cleanup checks added. Updated: 2026-10-06 21:21 JST -->
+</html>
