@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.9">
+<html lang="ja" data-test-center-version="2.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -99,7 +99,8 @@ const progressionCases=[
  ["p-groups1","探索 G1/G2","全R1状態。G1/G2のみ解放。","groups-r1","expedition"],
  ["p-groups2","探索 G1〜G3","全R2状態。G3まで解放。","groups-r2","expedition"],
  ["p-groups3","探索 G1〜G4","全R3状態。G4まで解放。","groups-r3","expedition"],
- ["p-groups4","探索 G1〜G5","全R4状態。G5まで解放。","groups-r4","expedition"]
+ ["p-groups4","探索 G1〜G5","全R4状態。G5まで解放。","groups-r4","expedition"],
+ ["p-admin-temp","探索 管理者一時解放","未攻略状態でG5だけを管理者一時解放。永続保存しない設計を確認。","admin-temp","expedition"]
 ];
 
 let currentProfile=localStorage.getItem("frenda:regression:profile")||"white";
@@ -126,6 +127,12 @@ function addResult(label,status,detail=""){const d=document.createElement("div")
 function htmlVersion(t){return t.match(/data-app-version=["']([0-9.]+)["']/i)?.[1]||"?"}
 function compileInlineScripts(text){const doc=new DOMParser().parseFromString(text,"text/html"),errs=[];[...doc.querySelectorAll("script:not([src])")].forEach((s,i)=>{try{new Function(s.textContent)}catch(e){errs.push(`#${i+1} ${e.message}`)}});return errs}
 function isolationLoadOrderOK(text){const testAt=text.indexOf('if(inTest)document.write(');if(testAt<0)return false;const sharedAt=text.indexOf('for(const f of ["frenda-master.js"',testAt);if(sharedAt<0)return false;return sharedAt>testAt&&text.slice(testAt,sharedAt).includes("frenda-test.js?app=")}
+function adminUnlockTemporaryOK(text){
+ const a=text.indexOf("function adminUnlockGroup(groupIndex)"),b=text.indexOf("function bindAdminUnlockButtons",a);
+ if(a<0||b<0)return false;
+ const block=text.slice(a,b);
+ return /TEMP_ADMIN_UNLOCK_GROUPS_124/.test(text)&&/delete x\.adminUnlockedGroups/.test(text)&&!/exp\.adminUnlockedGroups/.test(text)&&!/adminUnlockedGroups\.push/.test(text)&&/TEMP_ADMIN_UNLOCK_GROUPS_124\.add\(groupNo\)/.test(block)&&!/writeExp\(\)/.test(block)
+}
 async function runAuto(){
  $("#autoResults").innerHTML="";
  let d,e,t;
@@ -149,6 +156,7 @@ async function runAuto(){
   ["探索テスト初期適用",/EXPEDITION_TEST_MODE&&EXPEDITION_TEST_CASE\)applyExpeditionTestCase\(\)/.test(e),"初回render前にテスト状態を適用"],
   ["ゲット導入テスト遷移",/candidateIds:\[legendary\?\.master_id\]/.test(d)&&/Array\.isArray\(c\.candidateIds\)/.test(d),"ゲットチャンスへからボールスロットへ進める"],
   ["探索テスト管理者認証なし",/function groupAdminUnlocked\(groupIndex\)/.test(e)&&/EXPEDITION_TEST_MODE/.test(e)&&/EXPEDITION_TEST_MODE\|\|window\.FRENDA_PARENTAL/.test(e),"通常の探索テストは管理者認証不要。進行プリセットだけ実条件を再現"],
+  ["探索管理者解放は一時",adminUnlockTemporaryOK(e)&&e.includes('"admin-temp"'),"管理者解放はメモリだけ。旧永続値を無効化し、再読込で解除"],
   ["テスト所持ピック50体",/DUNGEON_TEST_PICK_COUNT=50/.test(d)&&/EXPEDITION_TEST_PICK_COUNT=50/.test(e),"ダンジョン/探索とも所持50体でスクロール確認"],
   ["ダンジョン保存の明示永続化",/mergeDungeonConcurrent320/.test(d)&&/DATA\.dungeon\.write\(merged\)/.test(d)&&/DUNGEON_SAVE_VERIFY_FAILED/.test(d),"同時更新マージ後に必ずwriteし、read-back検証する"],
   ["自動世代バックアップ10世代",/AUTO_BACKUP_MAX=10/.test(d)&&/AUTO_BACKUP_MAX=10/.test(e)&&/frenda:auto-backups:v1/.test(d)&&/frenda:auto-backups:v1/.test(e),"ダンジョン/探索で同じ10世代領域を使用"],
@@ -186,4 +194,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.7: mission startup initialization-order regression check added after Ver3.38 TDZ blank-screen bug. Updated: 2026-10-06 17:34 JST -->
 <!-- Ver2.8: mission status color distinction and status-priority ordering regression checks added. Updated: 2026-10-06 17:49 JST -->
 <!-- Ver2.9: progression/unlock state presets, SHOP tier presets, and expedition group progression regression routes added. Updated: 2026-10-06 19:31 JST -->
+<!-- Ver2.10: temporary administrator expedition unlock regression check and admin-temp manual preset added. Updated: 2026-10-06 20:58 JST -->
 </body></html>
