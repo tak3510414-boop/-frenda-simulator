@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.12">
+<html lang="ja" data-test-center-version="2.13">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -134,6 +134,12 @@ function adminUnlockTemporaryOK(text){
  const block=text.slice(a,b);
  return /TEMP_ADMIN_UNLOCK_GROUPS_124/.test(text)&&/delete x\.adminUnlockedGroups/.test(text)&&!/exp\.adminUnlockedGroups/.test(text)&&!/adminUnlockedGroups\.push/.test(text)&&/TEMP_ADMIN_UNLOCK_GROUPS_124\.add\(groupNo\)/.test(block)&&!/writeExp\(\)/.test(block)
 }
+function captureResultHiddenUntilResultOK(text){
+ const a=text.indexOf("async function playCaptureDrama"),b=text.indexOf("async function startCaptureDrama",a);
+ if(a<0||b<0)return false;
+ const block=text.slice(a,b);
+ return !block.includes("captureSuccess")&&!block.includes("captureFail")&&!block.includes("きてくれー")&&!block.includes("あきらめない")&&!/\bsuccess\b/.test(block)&&block.includes('if(!alive())return;ball.classList.remove("shake");if(dots)dots.textContent="";onComplete()')&&/render\(\);sfx\(success\?"captureSuccess":"captureFail"\)/.test(text)
+}
 async function runAuto(){
  $("#autoResults").innerHTML="";
  let d,e,t;
@@ -186,6 +192,7 @@ async function runAuto(){
   ["ダンジョンダメージ±5%",/DUNGEON_DAMAGE_SPREAD_MIN_343=95/.test(d)&&/DUNGEON_DAMAGE_SPREAD_MAX_343=105/.test(d)&&/spreadPct=DUNGEON_DAMAGE_SPREAD_MIN_343\+Math\.floor\(Math\.random\(\)\*\(DUNGEON_DAMAGE_SPREAD_MAX_343-DUNGEON_DAMAGE_SPREAD_MIN_343\+1\)\)/.test(d),"ダンジョン内だけ95〜105%で自動変動"],
   ["ナイスアタック5%×1.2",/DUNGEON_NICE_ATTACK_RATE_343=0\.05/.test(d)&&/DUNGEON_NICE_ATTACK_MULT_343=1\.2/.test(d)&&/nice=Math\.random\(\)<DUNGEON_NICE_ATTACK_RATE_343/.test(d),"命中時5%で1.2倍"],
   ["ナイスアタック追加待ちなし",/x\.nice\?`✨ ナイスアタック！ \$\{actualDamage\}ダメージ！`/.test(d)&&!/await\s+showNiceAttack/.test(d),"既存のダメージ表示内で通知し、追加ルーレット・追加待ちを設けない"],
+  ["ゲット結果は結果画面だけ",captureResultHiddenUntilResultOK(d),"3回揺れるまでは成功/失敗共通。結果メッセージ・結果SE・成否アニメは結果画面へ遷移してから"],
   ["探索ヘッダー卵表示",/headerEggBadge/.test(e)&&/headerEggCount/.test(e)&&/expSharedStatus074/.test(e),"PC共通ステータス領域を確認"]
  ];
  for(const [label,ok,detail] of checks)addResult(label,ok?"ok":"ng",detail||"");
@@ -204,4 +211,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.10: temporary administrator expedition unlock regression check and admin-temp manual preset added. Updated: 2026-10-06 20:58 JST -->
 </body><!-- Ver2.11: black-PC mission shortcut regression check, strict all-R1 expedition unlock, and legacy admin unlock cleanup checks added. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver2.12: dungeon-only 95-105% damage variance and 5% Nice Attack regression checks/manual battle route added. Updated: 2026-10-06 21:35 JST -->
+<!-- Ver2.13: capture-result pre-disclosure regression check added; success/failure must first appear on result screen. Updated: 2026-10-06 21:50 JST -->
 </html>
