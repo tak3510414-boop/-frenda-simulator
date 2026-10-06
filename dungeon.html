@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.35">
+<html lang="ja" data-app-version="3.36">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5027,13 +5027,24 @@ function syncConcurrentState320(merged){
 function save(){
  try{
   state.appVersion=APP_VERSION;state.saveVersion=13;
-  const current=saveClone320(state),base=saveClone320(dungeonSaveBaseline||current);let merged=null;
-  if(typeof DATA.dungeon.mutate==="function"){
-   DATA.dungeon.mutate(latest=>{merged=mergeDungeonConcurrent320(base,current,latest||{});for(const k of Object.keys(latest||{}))delete latest[k];Object.assign(latest,saveClone320(merged))})
-  }else{merged=mergeDungeonConcurrent320(base,current,DATA.dungeon.read()||{});DATA.dungeon.write(merged)}
-  if(!merged)merged=DATA.dungeon.read()||current;
-  syncConcurrentState320(merged);dungeonSaveBaseline=saveClone320(merged)
- }catch(e){console.error("DUNGEON_SAFE_SAVE",e);try{DATA.dungeon.write(state);dungeonSaveBaseline=saveClone320(state)}catch(e2){console.error(e2)}}
+  const current=saveClone320(state),base=saveClone320(dungeonSaveBaseline||current);
+  const latest=DATA.dungeon.read();
+  const merged=mergeDungeonConcurrent320(base,current,saveObj320(latest)?latest:{});
+  // Ver3.36: mutate() 任せにせず、マージ結果を必ず明示的に永続化する。
+  DATA.dungeon.write(merged);
+  const persisted=DATA.dungeon.read();
+  if(!saveObj320(persisted))throw new Error("DUNGEON_SAVE_VERIFY_FAILED");
+  syncConcurrentState320(persisted);dungeonSaveBaseline=saveClone320(persisted)
+ }catch(e){
+  console.error("DUNGEON_SAFE_SAVE",e);
+  try{
+   state.appVersion=APP_VERSION;state.saveVersion=13;
+   DATA.dungeon.write(state);
+   const persisted=DATA.dungeon.read();
+   if(!saveObj320(persisted))throw new Error("DUNGEON_SAVE_FALLBACK_VERIFY_FAILED");
+   dungeonSaveBaseline=saveClone320(persisted)
+  }catch(e2){console.error("DUNGEON_SAVE_FATAL",e2)}
+ }
 }
 function applyDungeonTimerPreset(){if(!DUNGEON_TEST_MODE||!DUNGEON_TIMER_CASE)return;const now=Date.now();if(DUNGEON_TIMER_CASE==="play10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"play",playUntil:now+10000,updatedAt:now});else if(DUNGEON_TIMER_CASE==="rest10s")DATA.writeJSON(DATA.KEYS.eyeTimer,{phase:"rest",playUntil:now-1,restUntil:now+10000,reason:"manual",updatedAt:now})}
 const DUNGEON_TEST_PICK_COUNT=50;
@@ -15150,6 +15161,8 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 }
 </style>
 <!-- Ver3.34: final black-PC override is last in the source; legendary encounter fits one screen, test update reload stays disabled, quick training is compact, and regression now tests bulk training instead of the orphan legacy training page. -->
+<!-- Ver3.36: emergency persistence fix. Dungeon save now performs explicit read-merge-write and verifies the persisted object; fixes backup dungeon:null / starter progress loss. -->
+<!-- Updated: 2026-10-06 16:22 JST -->
 
 </body>
 </html>
