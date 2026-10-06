@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.21">
+<html lang="ja" data-app-version="1.22">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -605,7 +605,7 @@ function flushPrepWrite(){
 }
 window.addEventListener("pagehide",flushPrepWrite);
 const EXPEDITION_TEST_PICK_COUNT=50;
-function seedExpeditionTestDungeon(ownedIds,team){const fake={initialized:true,owned:[...new Set(ownedIds)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drillPoints:{},permanentBoosts:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};ownedIds.forEach((id,i)=>{fake.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;fake.permanentBoosts[id]={hp:0,atk:0,def:0}});fake.lastTeamIds=(team||[]).slice(0,3);DATA.dungeon.write(fake)}
+function seedExpeditionTestDungeon(ownedIds,team){const fake={initialized:true,owned:[...new Set(ownedIds)].map(id=>({id})),stats:{},missions:{version:1,stats:{adventuresStarted:1,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0},claimed:{}},eggs:[],eggCap:2,bondPoints:{},growth:{},drillPoints:{},permanentBoosts:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};ownedIds.forEach((id,i)=>{fake.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;fake.permanentBoosts[id]={hp:0,atk:0,def:0}});fake.lastTeamIds=(team||[]).slice(0,3);DATA.dungeon.write(fake)}
 function testMission(team){const now=Date.now();return {id:"test-mission",dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3),startAt:now-60000,returnAt:now+3540000,rank:"A",score:82,scoreParts:{number:30,strength:30,type:15,bond:7},baseline:100,avgEnergy:100,boxes:[{rarity:"normal",reward:{type:"xp",target:team[0],amount:10},opened:false,applied:false,resultText:"⭐ EXP +10"},{rarity:"rare",reward:{type:"growth",target:team[1],amount:1},opened:false,applied:false,resultText:"🌱 進化P +1"}],report:[{time:now-30000,text:"テスト探索中"},{time:now-20000,text:"成果箱を持ち帰った"}],liveReport:[{time:now-30000,text:"テスト探索中"}],stage:"exploring",baseApplied:true,baseResults:team.slice(0,3).map(id=>({id,xp:10,drill:0,bond:false})),summary:["⭐ EXP +10"]}}
 function applyExpeditionTestCase(){
  if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;
@@ -649,6 +649,13 @@ function ensureDungeonEconomy(d){
  d.bondPoints=d.bondPoints&&typeof d.bondPoints==="object"?d.bondPoints:{};
  return d
 }
+function ensureMissionStatsExp122(d){
+ d.missions=d.missions&&typeof d.missions==="object"?d.missions:{version:1,stats:{},claimed:{}};
+ d.missions.version=1;d.missions.stats=d.missions.stats&&typeof d.missions.stats==="object"?d.missions.stats:{};d.missions.claimed=d.missions.claimed&&typeof d.missions.claimed==="object"?d.missions.claimed:{};
+ for(const k of ["adventuresStarted","enemyDefeats","captures","eggsHatched","trainings","evolutions","grassAttempts","expeditionsCompleted"])d.missions.stats[k]=Math.max(0,Math.floor(Number(d.missions.stats[k])||0));
+ return d.missions
+}
+function addMissionExpeditionComplete122(){mutateDungeon(d=>{const m=ensureMissionStatsExp122(d);m.stats.expeditionsCompleted=Math.max(0,Math.floor(Number(m.stats.expeditionsCompleted)||0))+1})}
 function normalizeOverflowBondPoints(d){ensureDungeonEconomy(d);let overflow=0;for(const [k,v] of Object.entries(d.bondPoints||{})){const pts=Math.max(0,Math.floor(Number(v)||0));if(pts>BOND_MAX_POINTS){overflow+=pts-BOND_MAX_POINTS;d.bondPoints[k]=BOND_MAX_POINTS}else d.bondPoints[k]=pts}const coins=overflow*COIN_PER_OVERFLOW_BOND;if(coins)d.frendaCoins+=coins;return coins}
 function drillFor(d,id){return Math.max(0,Math.floor(Number(d?.drillPoints?.[id])||0))}
 function luckFor(d,id){return Math.max(0,Math.min(LUCK_MAX,Math.floor(Number(d?.luckLevels?.[id])||0)))}
@@ -1038,7 +1045,7 @@ function applyReward(box,groupIndex=activeGroup){
 }
 function maybeNeedEggDiscard(){const d=readDungeon();return (d?.eggs?.length||0)>Number(d?.eggCap||2)}
 function discardEgg(id){mutateDungeon(d=>{d.eggs=(d.eggs||[]).filter(e=>e.id!==id)});render()}
-function completeMission(groupIndex=activeGroup){stopLootAuto();const g=groupState(groupIndex),m=g.mission;if(!m)return;g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];exp.mission=null;writeExp();autoBackupCapture("探索完了",{force:true});setActiveGroup(groupIndex);screen="home";render()}
+function completeMission(groupIndex=activeGroup){stopLootAuto();const g=groupState(groupIndex),m=g.mission;if(!m)return;addMissionExpeditionComplete122();g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];exp.mission=null;writeExp();autoBackupCapture("探索完了",{force:true});setActiveGroup(groupIndex);screen="home";render()}
 function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return;if(!UI.dialog.confirm(`グループ${groupIndex+1}の探索を中止しますか？\nEXP・絆・成果は一切獲得できません。`))return;g.status="idle";g.mission=null;exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
 
 function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length)return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),d=readDungeon()||{},luckAverage=averageLuckForIds(d,ids),luckMultiplier=luckMultiplierFromAverage(luckAverage),now=Date.now();g.status="exploring";expSfx("depart");g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours:1,freeReturnVersion:1,rewardMode:"freeReturn",teamIds:ids,startAt:now,maxReturnAt:now+FREE_EXP_MAX_HOURS*3600000,returnAt:now+FREE_EXP_MAX_HOURS*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,luckAverage,luckMultiplier,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
@@ -3357,5 +3364,7 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Updated: 2026-10-06 16:00 JST / Ver1.20 -->
 <!-- Ver1.21: 10-generation automatic local backups shared with dungeon, corruption guard, and selectable restore UI. -->
 <!-- Updated: 2026-10-06 16:52 JST -->
+<!-- Ver1.22: expedition completion now increments the shared mission counter in dungeon save data. -->
+<!-- Updated: 2026-10-06 17:20 JST -->
 </body>
 </html>
