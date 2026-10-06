@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.23">
+<html lang="ja" data-app-version="1.24">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -522,7 +522,7 @@ function isSpecial(r){return RULES.isSpecial(r)}
 function readDungeon(){return DATA.dungeon.read()}
 function updateHeaderEggCount(){const summary=document.getElementById("expHeaderSummary073");if(summary&&blackExp073()){const d=readDungeon()||{};summary.innerHTML=`<span>🧭 探索中 ${exp.groups.filter(g=>g.status==='exploring').length}/${exp.groups.filter((g,i)=>groupUnlocked(i)).length}</span>`;}const d=readDungeon()||{},count=Array.isArray(d.eggs)?d.eggs.length:0,cap=Math.max(0,Math.floor(Number(d.eggCap)||0)),el=document.getElementById("headerEggCount"),badge=document.getElementById("headerEggBadge");if(el)el.textContent=`${count}/${cap}`;if(badge){badge.classList.toggle("full",cap>0&&count>=cap);badge.title=`所持卵数 ${count}/${cap}`}}
 function defaultGroup(id){return {id,status:"idle",mission:null,lastTeamIds:[],prep:{dungeonId:null,difficulty:null,hours:8,teamIds:[]}}}
-function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],adminUnlockedGroups:[],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
+function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)],discovery:{},souvenirs:{},secretSpots:{},updatedAt:Date.now()}}
 function migrateMissionToFreeReturn(g){
  const m=g?.mission;if(!m||g.status!=="exploring")return false;
  const start=Number(m.startAt)||Date.now();
@@ -565,7 +565,8 @@ function normalizeExp(x){
  if(!x.discovery||typeof x.discovery!=="object")x.discovery={};if(!x.souvenirs||typeof x.souvenirs!=="object")x.souvenirs={};if(!x.secretSpots||typeof x.secretSpots!=="object")x.secretSpots={};migrateSecretSpotsByDungeon(x);
  if(!Array.isArray(x.groups))x.groups=[defaultGroup(1),defaultGroup(2),defaultGroup(3),defaultGroup(4),defaultGroup(5)];
  x.groups=[normalizeGroup(x.groups[0],1),normalizeGroup(x.groups[1],2),normalizeGroup(x.groups[2],3),normalizeGroup(x.groups[3],4),normalizeGroup(x.groups[4],5)];
- x.adminUnlockedGroups=Array.isArray(x.adminUnlockedGroups)?[...new Set(x.adminUnlockedGroups.map(Number).filter(n=>n>=1&&n<=5))]:[];
+ /* Ver1.24: 管理者解放はセーブへ残さない。旧版で永続化された解放情報も読み込み時に無効化する。 */
+ if(Object.prototype.hasOwnProperty.call(x,"adminUnlockedGroups"))delete x.adminUnlockedGroups;
  /* Ver0.42: legacy import is allowed only for an actual pre-v3 save. In v3+, top-level mission is compatibility data and must never resurrect a completed group. */
  if(isLegacySchema&&legacyMission&&!x.groups.some(g=>g.mission)){const g1=x.groups[0];g1.status=legacyMissionStatus({status:legacyStatus},legacyMission);g1.mission=legacyMission;g1.lastTeamIds=legacyLast.length?legacyLast:legacyMission.teamIds.slice();if(!g1.prep.dungeonId)g1.prep.dungeonId=legacyMission.dungeonId||null;if(!g1.prep.difficulty)g1.prep.difficulty=Number.isFinite(Number(legacyMission.difficulty))?Number(legacyMission.difficulty):null;if(!g1.prep.teamIds.length)g1.prep.teamIds=legacyMission.teamIds.slice();if([1,4,8].includes(Number(legacyMission.hours)))g1.prep.hours=Number(legacyMission.hours);x.legacyMigratedToGroups=true}
  x.version=5;x.appVersion=APP_VERSION;
@@ -582,15 +583,12 @@ function readExp(){
  const usable=candidates.filter(Boolean);let best=usable[0]||defaultExp(),bestScore=expCandidateScore(best);for(const c of usable.slice(1)){const sc=expCandidateScore(c);if(sc>bestScore||(sc===bestScore&&(Number(c.updatedAt)||0)>(Number(best.updatedAt)||0))){best=c;bestScore=sc}}
  return normalizeExp(best)
 }
+const TEMP_ADMIN_UNLOCK_GROUPS_124=new Set();
 let exp=readExp();prep=exp.groups[0].prep;
 const ADMIN_UNLOCK_GROUP=Number(TEST_PARAMS.get("adminUnlockGroup")||0);
 if(ADMIN_AUTH&&ADMIN_UNLOCK_GROUP>=1&&ADMIN_UNLOCK_GROUP<=5){
- exp.adminUnlockedGroups=Array.isArray(exp.adminUnlockedGroups)?exp.adminUnlockedGroups:[];
- if(!exp.adminUnlockedGroups.includes(ADMIN_UNLOCK_GROUP))exp.adminUnlockedGroups.push(ADMIN_UNLOCK_GROUP);
- normalizeExp(exp);
- autoBackupCapture("探索管理者解放前");
- DATA.expedition.write(exp,{appVersion:APP_VERSION});
- autoBackupCapture("探索管理者解放後");
+ /* 管理者解放はこのページを開いている間だけ。一切セーブしない。 */
+ TEMP_ADMIN_UNLOCK_GROUPS_124.add(ADMIN_UNLOCK_GROUP);
  try{history.replaceState(null,"",location.pathname)}catch{}
 }
 function writeExp(){autoBackupCapture("探索保存前");normalizeExp(exp);DATA.expedition.write(exp,{appVersion:APP_VERSION});autoBackupCapture("探索自動保存")}
@@ -613,13 +611,16 @@ function applyExpeditionTestCase(){
  const seen=new Set(),ids=[];
  for(const r of RECORDS){const id=r?.master_id;if(!id||seen.has(id))continue;seen.add(id);ids.push(id);if(ids.length>=EXPEDITION_TEST_PICK_COUNT)break}
  const team=ids.length>=3?ids.slice(0,3):ids.concat(ids,ids).slice(0,3);
- const groupRank=EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE)?Number(EXPEDITION_TEST_CASE.slice(-1)):1;
+ const groupRank=EXPEDITION_STRICT_UNLOCK_TESTS_124.has(EXPEDITION_TEST_CASE)?(EXPEDITION_TEST_CASE==="admin-temp"?0:Number(EXPEDITION_TEST_CASE.slice(-1))):1;
  seedExpeditionTestDungeon(ids,team,groupRank);
  const mission=testMission(team),x=defaultExp(),g=x.groups[0];
  g.lastTeamIds=team.slice(0,3);
  g.prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};
- if(EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE)){
-  g.status="idle";g.mission=null;x.adminUnlockedGroups=[];screen="prep";
+ if(EXPEDITION_TEST_CASE==="admin-temp"){
+  const ag=x.groups[4];ag.lastTeamIds=team.slice(0,3);ag.prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};ag.status="idle";ag.mission=null;
+  TEMP_ADMIN_UNLOCK_GROUPS_124.clear();TEMP_ADMIN_UNLOCK_GROUPS_124.add(5);activeGroup=4;screen="prep";
+ }else if(EXPEDITION_PROGRESS_GROUP_TESTS_124.has(EXPEDITION_TEST_CASE)){
+  g.status="idle";g.mission=null;screen="prep";
  }else if(EXPEDITION_TEST_CASE==="prep"){
   g.status="idle";g.mission=null;screen="prep";
  }else if(EXPEDITION_TEST_CASE==="exploring"){
@@ -637,8 +638,7 @@ function applyExpeditionTestCase(){
   mission.summary=["⭐ EXP +10","🌱 進化P +1"];
   g.status="returned";g.mission=mission;screen="return";
  }else return;
- if(!EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE))x.adminUnlockedGroups=[1,2,3,4,5];
- exp=normalizeExp(x);prep=exp.groups[0].prep;
+ exp=normalizeExp(x);prep=exp.groups[Math.max(0,Math.min(GROUP_COUNT-1,activeGroup))].prep;
  writeExp();
  document.title=`🧪 ${document.title}`;
  if(!document.getElementById("frendaExpeditionTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaExpeditionTestBadge" title="テストモード：${EXPEDITION_TEST_CASE} / 本番保存は変更しません" aria-label="テストモード" style="position:fixed;left:3px;top:calc(env(safe-area-inset-top,0px) + 3px);z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;line-height:1;font-weight:1000;opacity:.58;box-shadow:0 1px 3px #0002">🧪</div>`)
@@ -835,20 +835,25 @@ function recommended(r,did){return RULES.recommendedForTheme(r,did,CORE?.rawEff)
 function scoreTeam(ids,did,diff){const d=readDungeon(),team=(Array.isArray(ids)?ids:[]).map(rec).filter(Boolean);if(!team.length)return {rank:"-",total:0,parts:{number:0,strength:0,type:0,bond:0},baseline:did&&diff?baselineEnergy(did,diff):0,avgEnergy:0};return RULES.explorationScore({team,dungeonId:did,difficulty:diff,records:RECORDS,rawEff:CORE?.rawEff,bondLevelForRecord:r=>bondLevel(d,r.master_id)})}
 
 /* =========================================================
+   Ver1.24: 管理者解放を一時解放へ変更。旧adminUnlockedGroups永続値も無効化。
    Ver1.20: HTML終端チェック修正（更新コメントを </html> より前へ移動）
    Ver1.19: 探索グループ解放条件を進行報酬型へ変更
             R1全制覇=グループ1・2 / R2=3 / R3=4 / R4=5
    Ver0.40: 2グループ同時派遣 / 上部操作カード / UI再編
    ========================================================= */
 const GROUP_COUNT=5;
-const EXPEDITION_PROGRESS_GROUP_TESTS_123=new Set(["groups-r1","groups-r2","groups-r3","groups-r4"]);
+const EXPEDITION_PROGRESS_GROUP_TESTS_124=new Set(["groups-r1","groups-r2","groups-r3","groups-r4"]);
+const EXPEDITION_STRICT_UNLOCK_TESTS_124=new Set([...EXPEDITION_PROGRESS_GROUP_TESTS_124,"admin-temp"]);
 function groupRequiredRank(groupIndex){return [1,1,2,3,4][Math.max(0,Math.min(GROUP_COUNT-1,Number(groupIndex)||0))]}
 function groupProgressUnlocked(groupIndex){
  const d=readDungeon();if(!d)return false;
  const rank=groupRequiredRank(groupIndex);
  return THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,rank)]?.clears||0)>0)
 }
-function groupAdminUnlocked(groupIndex){return (EXPEDITION_TEST_MODE&&!EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE))||(exp?.adminUnlockedGroups||[]).includes(Number(groupIndex)+1)}
+function groupAdminUnlocked(groupIndex){
+ const groupNo=Number(groupIndex)+1;
+ return (EXPEDITION_TEST_MODE&&!EXPEDITION_STRICT_UNLOCK_TESTS_124.has(EXPEDITION_TEST_CASE))||TEMP_ADMIN_UNLOCK_GROUPS_124.has(groupNo)
+}
 function groupUnlocked(groupIndex){
  const g=exp?.groups?.[groupIndex];
  /* A mission already in progress/returned before this rule change is never broken. */
@@ -860,8 +865,8 @@ function groupUnlockMessage(groupIndex){
  return `このグループは、全てのダンジョンのR${rank}をクリアしたら解放します`
 }
 function expeditionFeatureUnlocked123(d=readDungeon()){
- if(EXPEDITION_TEST_MODE&&!EXPEDITION_PROGRESS_GROUP_TESTS_123.has(EXPEDITION_TEST_CASE))return true;
- if((exp?.adminUnlockedGroups||[]).length)return true;
+ if(EXPEDITION_TEST_MODE&&!EXPEDITION_STRICT_UNLOCK_TESTS_124.has(EXPEDITION_TEST_CASE))return true;
+ if(TEMP_ADMIN_UNLOCK_GROUPS_124.size)return true;
  if(exp?.groups?.some(g=>g?.mission&&g.status!=="idle"))return true;
  if(Number(d?.missions?.stats?.expeditionsCompleted||0)>0)return true;
  return !!d&&THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,1)]?.clears||0)>0)
@@ -877,10 +882,9 @@ function setActiveGroup(i){
 function adminUnlockGroup(groupIndex){
  const idx=Math.max(0,Math.min(GROUP_COUNT-1,Number(groupIndex)||0)),groupNo=idx+1;
  if(EXPEDITION_TEST_MODE||window.FRENDA_PARENTAL?.isAdminAuthenticated()){
-  exp.adminUnlockedGroups=Array.isArray(exp.adminUnlockedGroups)?exp.adminUnlockedGroups:[];
-  if(!exp.adminUnlockedGroups.includes(groupNo))exp.adminUnlockedGroups.push(groupNo);
-  writeExp();render();
-  UI.dialog.alert(`管理者権限でグループ${groupNo}を解放しました。`);
+  TEMP_ADMIN_UNLOCK_GROUPS_124.add(groupNo);
+  render();
+  UI.dialog.alert(`管理者権限でグループ${groupNo}を一時解放しました。\nこの画面を閉じるか再読み込みすると解除されます。`);
   return
  }
  const next=`${location.pathname}?adminUnlockGroup=${groupNo}`;
@@ -3379,5 +3383,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.22: expedition completion now increments the shared mission counter in dungeon save data. -->
 <!-- Updated: 2026-10-06 17:20 JST -->
 <!-- Ver1.23: expedition feature unlock at all-R1 plus group-progression regression presets (R1=G1/G2, R2=G3, R3=G4, R4=G5). Updated: 2026-10-06 19:31 JST -->
+<!-- Ver1.24: administrator group unlock is temporary/in-memory only; legacy persisted adminUnlockedGroups is ignored and removed. Updated: 2026-10-06 20:58 JST -->
 </body>
 </html>
