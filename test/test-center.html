@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.11">
+<html lang="ja" data-test-center-version="2.12">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -69,6 +69,7 @@ const dungeonCases=[
  ["d-team","挑戦チーム編成","所持50体で縦スクロール・検索・絞込を確認。上部操作→選択3体→挑戦/自動冒険。","team-star5"],
  ["d-route","進む道","道カード、10階表示、撤退位置、固定パーティ欄を確認。","route-star5"],
  ["d-battle","戦闘","敵所持バッジと ENEMY 表示が重ならない。味方3体・HP・AUTOを確認。","battle"],
+ ["d-damage","ダメージ変動・ナイスアタック","同じ対戦で複数ターン攻撃し、通常ダメージが±5%で揺れること、まれに✨ナイスアタック！が出ること、追加操作や待ち時間がないことを確認。","battle"],
  ["d-legend","伝説登場","黒PCを含め、名前・画像・戦闘準備ボタンまで1画面内に完全表示。","legendary-intro"],
  ["d-cap-intro","ゲットチャンス開始","ゲット導入画面の中央配置とボタンを確認。","capture-intro"],
  ["d-cap-slot","ボールスロット","対象ポケモン、8ボール、STOPの配置を確認。黒PCは卵スロット系レイアウト。","capture-slot"],
@@ -182,6 +183,9 @@ async function runAuto(){
   ["進行プリセット",["progress-start","progress-early","progress-clear3","progress-clear5","progress-r1","progress-r2","progress-r3","progress-r4","progress-r5","shop-lv1","shop-lv2","shop-lv3"].every(x=>d.includes(`\"${x}\"`)),"開始直後からR5・SHOP Lvまで直接再現"],
   ["探索全体R1解放",/expeditionFeatureUnlocked123/.test(e)&&/全10ダンジョンのR1をクリア/.test(e)&&!/d\?\.missions\?\.stats\?\.expeditionsCompleted/.test(e),"通常解放は全R1制覇のみ。過去の探索完了実績だけでは再解放しない"],
   ["探索グループ進行プリセット",["groups-r1","groups-r2","groups-r3","groups-r4"].every(x=>e.includes(`\"${x}\"`))&&/\[1,1,2,3,4\]/.test(e),"R1=G1/G2、R2=G3、R3=G4、R4=G5を直接確認"],
+  ["ダンジョンダメージ±5%",/DUNGEON_DAMAGE_SPREAD_MIN_343=95/.test(d)&&/DUNGEON_DAMAGE_SPREAD_MAX_343=105/.test(d)&&/spreadPct=DUNGEON_DAMAGE_SPREAD_MIN_343\+Math\.floor\(Math\.random\(\)\*\(DUNGEON_DAMAGE_SPREAD_MAX_343-DUNGEON_DAMAGE_SPREAD_MIN_343\+1\)\)/.test(d),"ダンジョン内だけ95〜105%で自動変動"],
+  ["ナイスアタック5%×1.2",/DUNGEON_NICE_ATTACK_RATE_343=0\.05/.test(d)&&/DUNGEON_NICE_ATTACK_MULT_343=1\.2/.test(d)&&/nice=Math\.random\(\)<DUNGEON_NICE_ATTACK_RATE_343/.test(d),"命中時5%で1.2倍"],
+  ["ナイスアタック追加待ちなし",/x\.nice\?`✨ ナイスアタック！ \$\{actualDamage\}ダメージ！`/.test(d)&&!/await\s+showNiceAttack/.test(d),"既存のダメージ表示内で通知し、追加ルーレット・追加待ちを設けない"],
   ["探索ヘッダー卵表示",/headerEggBadge/.test(e)&&/headerEggCount/.test(e)&&/expSharedStatus074/.test(e),"PC共通ステータス領域を確認"]
  ];
  for(const [label,ok,detail] of checks)addResult(label,ok?"ok":"ng",detail||"");
@@ -199,4 +203,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.9: progression/unlock state presets, SHOP tier presets, and expedition group progression regression routes added. Updated: 2026-10-06 19:31 JST -->
 <!-- Ver2.10: temporary administrator expedition unlock regression check and admin-temp manual preset added. Updated: 2026-10-06 20:58 JST -->
 </body><!-- Ver2.11: black-PC mission shortcut regression check, strict all-R1 expedition unlock, and legacy admin unlock cleanup checks added. Updated: 2026-10-06 21:21 JST -->
+<!-- Ver2.12: dungeon-only 95-105% damage variance and 5% Nice Attack regression checks/manual battle route added. Updated: 2026-10-06 21:35 JST -->
 </html>
