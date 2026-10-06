@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.38">
+<html lang="ja" data-app-version="3.39">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4931,6 +4931,8 @@ const STARTER_SET_DEFS=[
  {key:"galar",label:"ガラル",names:["サルノリ","ヒバニー","メッソン"]},
  {key:"paldea",label:"パルデア",names:["ニャオハ","ホゲータ","クワッス"]}
 ];
+// Ver3.39: migrateState() runs during startup, so mission keys must be initialized before that call.
+const MISSION_STAT_KEYS=["adventuresStarted","enemyDefeats","captures","eggsHatched","trainings","evolutions","grassAttempts","expeditionsCompleted"];
 const stateDefault=()=>({saveVersion:14,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,grassTicket:3,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},missions:{version:1,stats:{adventuresStarted:0,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0},claimed:{}},lastTeamIds:[],run:null,postRun:null,grassSession:null,lastSummary:null});
 // Battle-knowledge cache must exist before migrateState(), because reconcileDexState() invalidates it during startup.
 let battleKnowledgeTypeCache=null;
@@ -5010,9 +5012,8 @@ let battleLogOpen=false;
 let postRunFinishBusy=false;
 
 
-/* ===== MISSIONS Ver3.38 ===== */
+/* ===== MISSIONS Ver3.39 ===== */
 let missionTab="first";
-const MISSION_STAT_KEYS=["adventuresStarted","enemyDefeats","captures","eggsHatched","trainings","evolutions","grassAttempts","expeditionsCompleted"];
 function ensureMissionState(target=state){
  if(!target||typeof target!=="object")return null;
  target.missions=target.missions&&typeof target.missions==="object"?target.missions:{version:1,stats:{},claimed:{}};
@@ -15295,5 +15296,7 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Updated: 2026-10-06 16:52 JST -->
 <!-- Ver3.38: first-time + challenge missions, claimable rewards, progress bars, home mission shortcut, and expedition mission counter integration. -->
 <!-- Updated: 2026-10-06 17:20 JST -->
+<!-- Ver3.39: fixed startup TDZ crash introduced in Ver3.38. MISSION_STAT_KEYS is initialized before migrateState(), restoring all screens including challenge team selection. -->
+<!-- Updated: 2026-10-06 17:34 JST -->
 </body>
 </html>

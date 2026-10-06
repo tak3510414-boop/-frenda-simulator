@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.6">
+<html lang="ja" data-test-center-version="2.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -132,6 +132,7 @@ async function runAuto(){
   ["進化データ確実化",/ensureEvolutionForReward106/.test(e)&&/await ensureEvolutionForReward106\(\)/.test(e),"成果確定前に進化データを確認"],
   ["共通JSキャッシュ更新",d.includes("?app=${v}")&&e.includes("?app=${v}"),"アプリVerをキャッシュキーに使用"],
   ["旧全画像監視なし",!/new\s+MutationObserver\s*\(/.test(d)&&!/new\s+MutationObserver\s*\(/.test(e),"所持バッジの全画像監視を再導入していない"],
+  ["ミッション初期化順",d.indexOf('const MISSION_STAT_KEYS=')>=0&&d.indexOf('const MISSION_STAT_KEYS=')<d.indexOf('migrateState();'),"起動時migrateStateより先にミッションキーを初期化（TDZ停止を防止）"],
   ["ミッション状態",/missions:\{version:1/.test(d)&&/ensureMissionState/.test(d)&&/claimed/.test(d),"ミッション統計・受取状態をダンジョンセーブへ保存"],
   ["ミッション画面",/renderMissionScreen/.test(d)&&/homeMissionShortcut338/.test(d)&&/data-mission-claim/.test(d),"はじめて・チャレンジ・報酬受取UI"],
   ["ミッション進捗連携",/missionInc\("enemyDefeats"/.test(d)&&/missionInc\("captures"/.test(d)&&/missionInc\("eggsHatched"/.test(d)&&/missionInc\("trainings"/.test(d)&&/missionInc\("evolutions"/.test(d)&&/missionInc\("grassAttempts"/.test(d),"主要プレイ実績を自動加算"],
@@ -149,4 +150,5 @@ setProfile(currentProfile);runAuto();
 </script>
 <!-- Ver2.5: 10-generation auto-backup regression checks added. Updated: 2026-10-06 16:52 JST -->
 <!-- Ver2.6: mission-state, mission-UI, progress-counter, concurrent-save, and expedition-completion regression checks added. Updated: 2026-10-06 17:20 JST -->
+<!-- Ver2.7: mission startup initialization-order regression check added after Ver3.38 TDZ blank-screen bug. Updated: 2026-10-06 17:34 JST -->
 </body></html>
