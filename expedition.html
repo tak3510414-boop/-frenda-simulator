@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.07">
+<html lang="ja" data-app-version="1.18">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -240,17 +240,28 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 .bestDestBtn103{background:linear-gradient(180deg,#ffdb68,#f3ad25);color:#5b3b00;border:1px solid #df9c19;font-weight:1000}.bestDestBtn103:disabled{opacity:.4;filter:grayscale(.45)}
 @media(min-width:1200px) and (min-height:650px) and (max-height:840px){body.blackExpPrep073 .pickTools{grid-template-columns:repeat(3,minmax(0,1fr))!important}.bestDestBtn103{font-size:12px!important;min-height:28px!important;padding:3px 5px!important}}
 </style>
+
+
 </head>
 <body>
 <header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="expCloseBtn ghost" id="expCloseBtn" title="おでかけ探索を閉じる" aria-label="おでかけ探索を閉じる">閉じる</button></div></div></div></header>
 <main id="app"></main>
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
 <script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-test.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])document.write(`<script src="${f}?app=${v}"><\/script>`)})();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(()=>{const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`)})();
+(()=>{
+ const v=encodeURIComponent(document.documentElement.dataset.appVersion||"0");
+ const inTest=/\/test(?:\/|$)/.test(location.pathname);
+ const base=inTest?"../":"";
+ /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
+ if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
+  document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
+ /* Cloud runtime is intentionally absent from /test/. */
+ if(!inTest){
+  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+  document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
+ }
+})();
 </script>
 <script>
 (()=>{
@@ -267,12 +278,10 @@ const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
 const TEST_PARAMS=new URLSearchParams(location.search);
 const EXPEDITION_TEST_REQUESTED=TEST_PARAMS.get("test")==="1";
 const EXPEDITION_SELFTEST_REQUESTED=TEST_PARAMS.get("selftest")==="1";
-const ADMIN_AUTH=!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
-const EXPEDITION_TEST_MODE=EXPEDITION_TEST_REQUESTED&&ADMIN_AUTH;
+const ADMIN_AUTH=EXPEDITION_TEST_REQUESTED||!!window.FRENDA_PARENTAL?.isAdminAuthenticated();
+const EXPEDITION_TEST_MODE=EXPEDITION_TEST_REQUESTED&&!!TEST_SANDBOX?.active;
 const EXPEDITION_TEST_CASE=TEST_PARAMS.get("case")||"";
 const EXPEDITION_TIMER_CASE=TEST_PARAMS.get("timer")||"";
-if((EXPEDITION_TEST_REQUESTED||EXPEDITION_SELFTEST_REQUESTED)&&!ADMIN_AUTH){location.replace("admin.html?next=test-center.html");return;}
-
 const DUNGEON_KEY=DATA.KEYS.dungeon;
 const EXP_KEY=DATA.KEYS.expedition;
 const REGION_PREFIXES=["アローラ","ガラル","ヒスイ","パルデア"];
@@ -284,6 +293,10 @@ const BOND_MAX_POINTS=Math.max(1,Number(BOND_LEVEL_THRESHOLDS?.[5])||15),COIN_PE
 const TRAINING_STEP=RULES.TRAINING_STEP,PERMANENT_BOOST_MAX=RULES.PERMANENT_BOOST_MAX;
 const LUCK_MAX=5,COIN_PER_OVERFLOW_DRILL=100,SOUVENIR_COIN_NORMAL=50,SOUVENIR_COIN_RARE=200;
 const app=document.getElementById("app");
+if((EXPEDITION_TEST_REQUESTED||EXPEDITION_SELFTEST_REQUESTED)&&!TEST_SANDBOX?.active){
+ app.innerHTML=`<div class="card error"><b>テスト用保存領域を開始できませんでした。</b><br>frenda-test.js を expedition.html と同じ階層に配置してください。<br><small>本番セーブ保護のため、テストモードは開始していません。</small></div>`;
+ throw new Error("FRENDA_TEST_SANDBOX_REQUIRED");
+}
 
 /* Ver0.71: shared procedural BGM / SFX. No external audio assets. */
 const SOUND_KEY="frenda:dungeon:sound:v1";
@@ -542,9 +555,42 @@ function flushPrepWrite(){
  clearTimeout(prepWriteTimer);prepWriteTimer=null;writeExp()
 }
 window.addEventListener("pagehide",flushPrepWrite);
-function seedExpeditionTestDungeon(team){const fake={initialized:true,owned:[...new Set(team)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drill:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};DATA.dungeon.write(fake)}
+const EXPEDITION_TEST_PICK_COUNT=50;
+function seedExpeditionTestDungeon(ownedIds,team){const fake={initialized:true,owned:[...new Set(ownedIds)].map(id=>({id})),stats:{},eggs:[],eggCap:2,bondPoints:{},growth:{},drillPoints:{},permanentBoosts:{},run:null,expeditionShared:null,unlocks:{}};for(const did of Object.keys(THEMES))fake.stats[statKey(did,1)]={clears:1,deepest:10};ownedIds.forEach((id,i)=>{fake.drillPoints[id]=i<12?Math.max(1,8-(i%8)):0;fake.permanentBoosts[id]={hp:0,atk:0,def:0}});fake.lastTeamIds=(team||[]).slice(0,3);DATA.dungeon.write(fake)}
 function testMission(team){const now=Date.now();return {id:"test-mission",dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3),startAt:now-60000,returnAt:now+3540000,rank:"A",score:82,scoreParts:{number:30,strength:30,type:15,bond:7},baseline:100,avgEnergy:100,boxes:[{rarity:"normal",reward:{type:"xp",target:team[0],amount:10},opened:false,applied:false,resultText:"⭐ EXP +10"},{rarity:"rare",reward:{type:"growth",target:team[1],amount:1},opened:false,applied:false,resultText:"🌱 進化P +1"}],report:[{time:now-30000,text:"テスト探索中"},{time:now-20000,text:"成果箱を持ち帰った"}],liveReport:[{time:now-30000,text:"テスト探索中"}],stage:"exploring",baseApplied:true,baseResults:team.slice(0,3).map(id=>({id,xp:10,drill:0,bond:false})),summary:["⭐ EXP +10"]}}
-function applyExpeditionTestCase(){if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;const ids=RECORDS.filter(r=>r&&r.master_id).slice(0,3).map(r=>r.master_id);const team=ids.length>=3?ids:ids.concat(ids,ids).slice(0,3);seedExpeditionTestDungeon(team);const mission=testMission(team);if(EXPEDITION_TEST_CASE==="prep"){exp=defaultExp();prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};screen="prep"}else if(EXPEDITION_TEST_CASE==="exploring"){exp={...defaultExp(),status:"exploring",mission,lastTeamIds:team.slice(0,3)};screen="explore"}else if(EXPEDITION_TEST_CASE==="boxes"){exp={...defaultExp(),status:"returned",mission:{...mission,returnAt:Date.now()-1,stage:"boxes"},lastTeamIds:team.slice(0,3)};screen="return"}else if(EXPEDITION_TEST_CASE==="summary"){exp={...defaultExp(),status:"returned",mission:{...mission,returnAt:Date.now()-1,stage:"summary",boxes:mission.boxes.map(b=>({...b,opened:true,applied:true}))},lastTeamIds:team.slice(0,3)};screen="return"}else{return}writeExp();document.title=`🧪 ${document.title}`;document.body.insertAdjacentHTML("afterbegin",`<div style="position:sticky;top:0;z-index:999;padding:8px 12px;background:#ffe39a;color:#553400;font-size:12px;font-weight:900;text-align:center;border-bottom:1px solid #e5b64a">🧪 テストモード：${EXPEDITION_TEST_CASE} / 本番ローカル・クラウドは変更しません</div>`)}
+function applyExpeditionTestCase(){
+ if(!EXPEDITION_TEST_MODE||!EXPEDITION_TEST_CASE)return;
+ activeGroup=0;
+ const seen=new Set(),ids=[];
+ for(const r of RECORDS){const id=r?.master_id;if(!id||seen.has(id))continue;seen.add(id);ids.push(id);if(ids.length>=EXPEDITION_TEST_PICK_COUNT)break}
+ const team=ids.length>=3?ids.slice(0,3):ids.concat(ids,ids).slice(0,3);
+ seedExpeditionTestDungeon(ids,team);
+ const mission=testMission(team),x=defaultExp(),g=x.groups[0];
+ g.lastTeamIds=team.slice(0,3);
+ g.prep={dungeonId:"forest",difficulty:1,hours:1,teamIds:team.slice(0,3)};
+ if(EXPEDITION_TEST_CASE==="prep"){
+  g.status="idle";g.mission=null;screen="prep";
+ }else if(EXPEDITION_TEST_CASE==="exploring"){
+  mission.stage="exploring";mission.returnAt=Date.now()+3540000;mission.maxReturnAt=mission.startAt+FREE_EXP_MAX_HOURS*3600000;mission.freeReturnVersion=1;
+  g.status="exploring";g.mission=mission;screen="explore";
+ }else if(EXPEDITION_TEST_CASE==="boxes"){
+  mission.returnAt=Date.now()-1;mission.settledAt=Date.now();mission.settledHoursExact=1;mission.stage="boxes";
+  g.status="returned";g.mission=mission;screen="return";
+ }else if(EXPEDITION_TEST_CASE==="summary"){
+  mission.returnAt=Date.now()-1;mission.settledAt=Date.now();mission.settledHoursExact=1;mission.stage="summary";
+  mission.boxes=mission.boxes.map((b,i)=>({...b,opened:true,applied:true,resultText:b.resultText||["⭐ EXP +10","🌱 進化P +1"][i]||"成果"}));
+  mission.findings={before:20,after:40,souvenirs:[{id:"test_souvenir",icon:"🎁",name:"テストのおみやげ",isNew:true,rare:false}],completedNow:false};
+  const companion=RECORDS.find(r=>r?.master_id&&!team.includes(r.master_id));
+  if(companion){mission.boxes.push({rarity:"rare",reward:{type:"companion",target:companion.master_id},opened:true,applied:true,resultText:`${companion.name_ja}が新しく仲間になった！`,newCompanionIds104:[companion.master_id]})}
+  mission.summary=["⭐ EXP +10","🌱 進化P +1"];
+  g.status="returned";g.mission=mission;screen="return";
+ }else return;
+ x.adminUnlockedGroups=[1,2,3,4,5];
+ exp=normalizeExp(x);prep=exp.groups[0].prep;
+ writeExp();
+ document.title=`🧪 ${document.title}`;
+ if(!document.getElementById("frendaExpeditionTestBadge"))document.body.insertAdjacentHTML("afterbegin",`<div id="frendaExpeditionTestBadge" title="テストモード：${EXPEDITION_TEST_CASE} / 本番保存は変更しません" aria-label="テストモード" style="position:fixed;left:3px;top:calc(env(safe-area-inset-top,0px) + 3px);z-index:99999;pointer-events:none;padding:2px 3px;border-radius:5px;background:#ffe39acc;color:#553400;font-size:8px;line-height:1;font-weight:1000;opacity:.58;box-shadow:0 1px 3px #0002">🧪</div>`)
+}
 function ensureDungeonEconomy(d){
  d.luckLevels=d.luckLevels&&typeof d.luckLevels==="object"?d.luckLevels:{};
  d.frendaCoins=Math.max(0,Math.floor(Number(d.frendaCoins)||0));
@@ -739,7 +785,7 @@ function groupProgressUnlocked(groupIndex){
  const rank=groupRequiredRank(groupIndex);
  return THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,rank)]?.clears||0)>0)
 }
-function groupAdminUnlocked(groupIndex){return (exp?.adminUnlockedGroups||[]).includes(Number(groupIndex)+1)}
+function groupAdminUnlocked(groupIndex){return EXPEDITION_TEST_MODE||(exp?.adminUnlockedGroups||[]).includes(Number(groupIndex)+1)}
 function groupUnlocked(groupIndex){
  const g=exp?.groups?.[groupIndex];
  /* A mission already in progress/returned before this rule change is never broken. */
@@ -760,7 +806,7 @@ function setActiveGroup(i){
 }
 function adminUnlockGroup(groupIndex){
  const idx=Math.max(0,Math.min(GROUP_COUNT-1,Number(groupIndex)||0)),groupNo=idx+1;
- if(window.FRENDA_PARENTAL?.isAdminAuthenticated()){
+ if(EXPEDITION_TEST_MODE||window.FRENDA_PARENTAL?.isAdminAuthenticated()){
   exp.adminUnlockedGroups=Array.isArray(exp.adminUnlockedGroups)?exp.adminUnlockedGroups:[];
   if(!exp.adminUnlockedGroups.includes(groupNo))exp.adminUnlockedGroups.push(groupNo);
   writeExp();render();
@@ -768,7 +814,7 @@ function adminUnlockGroup(groupIndex){
   return
  }
  const next=`${location.pathname}?adminUnlockGroup=${groupNo}`;
- location.href=`admin.html?next=${encodeURIComponent(next)}`
+ location.href=expeditionAdminAuthUrl(next)
 }
 function bindAdminUnlockButtons(){
  app.querySelectorAll("[data-admin-unlock-group]").forEach(b=>b.onclick=e=>{
@@ -1404,6 +1450,7 @@ function expeditionCloudSummary(data){const s=data?.state||{},owned=Array.isArra
 if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン＋おでかけ探索",compactButton:true,hideButton:true,column:"dungeon_data",getData:expeditionDungeonCloudData,applyData:applyExpeditionDungeonCloudData,watchStorage:k=>k===DUNGEON_KEY,hasLocalData:expeditionHasLocalData,describeData:expeditionCloudSummary});
 
 /* Ver1.02: global ownership image observer removed for performance. */
+if(EXPEDITION_TEST_MODE&&EXPEDITION_TEST_CASE)applyExpeditionTestCase();
 try{render()}catch(e){console.error("EXPEDITION_RENDER_ERROR",e);app.innerHTML=`<div class="card error"><b>おでかけ探索の表示に失敗しました。</b><br>${esc(e?.message||String(e))}<br><small>セーブデータは削除していません。ページを再読み込みしてください。</small></div>`}
 loadEvolution();
 })();
@@ -3139,5 +3186,120 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 
 <!-- Ver1.06: reward opening now waits for evolution data; shared JS cache keys follow app version. -->
 <!-- Ver1.07: removed dormant full-page ownership observer code/CSS and normalized closing-tag structure; behavior unchanged. -->
+<!-- Ver1.08: regression test cases now apply before initial render; unsafe test mode is blocked without FRENDA_TEST isolation. -->
+<!-- Ver1.09: /test/ 配置時は共通JSを親階層 ../ から読み込み、frenda-test.js だけテスト階層から読み込む。 -->
+<!-- Ver1.11: /test/ regression routes no longer depend on admin.html; the isolated FRENDA_TEST sandbox is sufficient and production saves stay protected. -->
+<!-- Ver1.12: regression mode always unlocks test groups and never redirects to administrator authentication. -->
+<!-- Ver1.13: fixed regression test states to populate group[0] directly, so exploring / boxes / summary open their intended screens. -->
+<!-- Ver1.14: regression sandbox now loads before all shared scripts; cloud runtime is not loaded in /test/. -->
+<!-- Ver1.15: test-mode indicator no longer consumes layout height; replaced full-width banner with tiny fixed overlay badge. -->
+
+<style id="v117-final-blackpc-audit">
+/* Ver1.17 final override: exact two-column free-exploration guide and compact black-PC summary.
+   Intentionally last so legacy PC rules cannot override it. */
+@media(min-width:1200px) and (min-height:650px) and (max-height:840px){
+  body.blackExpExplore075 .exploreGuide075{
+    flex:0 0 auto!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:6px 10px 7px!important;
+    overflow:hidden!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideHead{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;
+    padding:0 2px 4px!important;margin:0 0 3px!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideHead b{font-size:12px!important;}
+  body.blackExpExplore075 .exploreGuide075 .freeGuideHead small{font-size:9px!important;}
+  body.blackExpExplore075 .exploreGuide075 .freeGuidePosition{display:none!important;}
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRows{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(4,21px)!important;
+    grid-auto-flow:column!important;
+    gap:1px 24px!important;
+    width:min(760px,100%)!important;
+    margin:0 auto!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRow{
+    display:grid!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    align-items:center!important;
+    min-height:0!important;
+    height:21px!important;
+    padding:0 5px!important;
+    border-bottom:1px solid #ffffff18!important;
+    flex-direction:initial!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRow b{
+    font-size:12px!important;line-height:20px!important;white-space:nowrap!important;text-align:left!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideRow span{
+    font-size:12px!important;line-height:20px!important;white-space:nowrap!important;text-align:left!important;letter-spacing:.02em!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideFoot{
+    display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;
+    margin:4px 0 0!important;padding:3px 0 0!important;
+  }
+  body.blackExpExplore075 .exploreGuide075 .freeGuideFoot span{font-size:8px!important;line-height:1.1!important;}
+
+  .summary104{
+    width:min(1280px,calc(100vw - 24px))!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 78px)!important;
+    margin:7px auto!important;
+    padding:12px 15px!important;
+    gap:9px!important;
+    overflow:auto!important;
+  }
+  .summary104 .summaryTop104{padding:10px 14px!important;border-radius:14px!important;}
+  .summary104 .summaryTop104 b{font-size:26px!important;line-height:1.15!important;}
+  .summary104 .summaryTop104 span{font-size:13px!important;}
+  .summary104 .summaryTop104 small{font-size:12px!important;line-height:1.35!important;}
+  .summary104 .summaryOverviewGrid104{grid-template-columns:.9fr 1.1fr!important;gap:9px!important;}
+  .summary104 .summarySurvey104,.summary104 .summarySouvenir104{padding:10px 12px!important;}
+  .summary104 .summaryMiniHead104 b{font-size:15px!important;}
+  .summary104 .summaryMiniHead104 strong{font-size:22px!important;}
+  .summary104 .summarySurvey104 small{font-size:10px!important;}
+  .summary104 .summarySouvenirItems104{min-height:66px!important;gap:8px!important;}
+  .summary104 .summarySouvenirItem104{min-width:86px!important;padding:7px 9px!important;}
+  .summary104 .summarySouvenirItem104>span{font-size:38px!important;}
+  .summary104 .summarySouvenirItem104>b{font-size:19px!important;}
+  .summary104 .summarySouvenirItem104>small{font-size:8px!important;}
+  .summary104 .summaryHighlights104{gap:8px!important;}
+  .summary104 .summaryCompanionBox097{margin:0!important;padding:8px 10px!important;}
+  .summary104 .summaryCompanionHead097{margin-bottom:5px!important;}
+  .summary104 .summaryCompanionHead097 b{font-size:14px!important;}
+  .summary104 .summaryCompanionGrid097{gap:7px!important;}
+  .summary104 .summaryCompanionCard097{
+    display:grid!important;grid-template-columns:62px minmax(0,1fr)!important;align-items:center!important;justify-items:stretch!important;
+    padding:7px!important;text-align:left!important;
+  }
+  .summary104 .summaryCompanionCard097 img{width:58px!important;height:78px!important;object-fit:contain!important;}
+  .summary104 .summaryCompanionCard097 b{font-size:12px!important;}
+  .summary104 .summaryGrowthPanel104{
+    flex:0 0 auto!important;min-height:0!important;align-items:center!important;overflow:visible!important;
+  }
+  .summary104 .summaryGrowthPanel104 .summaryGrowthTitle094{width:min(800px,100%)!important;margin:0 auto 5px!important;}
+  .summary104 .summaryGrowthPanel104 .summaryGrowthTitle094 b{font-size:17px!important;}
+  .summary104 .summaryGrowthPanel104 .summaryGrowthTitle094 small{font-size:9px!important;}
+  .summary104 .summaryGrowthPanel104 .growthTableWrap094{
+    width:min(800px,100%)!important;max-width:800px!important;margin:0 auto!important;overflow:hidden!important;
+  }
+  .summary104 .summaryGrowthPanel104 .growthTable094{width:100%!important;table-layout:auto!important;}
+  .summary104 .summaryGrowthPanel104 .growthTable094 thead th:first-child{width:42%!important;}
+  .summary104 .summaryGrowthPanel104 .growthTable094 th,
+  .summary104 .summaryGrowthPanel104 .growthTable094 td{padding:7px 8px!important;font-size:11px!important;}
+  .summary104 .summaryGrowthPanel104 .pickCell094 img{width:48px!important;height:65px!important;object-fit:contain!important;}
+  .summary104 .summaryGrowthPanel104 .pickCell094 span{font-size:11px!important;}
+  .summary104 .summaryFooter104{grid-template-columns:1fr 260px!important;gap:10px!important;padding-top:2px!important;}
+  .summary104 .summaryFooter104>span{font-size:10px!important;}
+  .summary104 .summaryFooter104 .summaryCompleteBtn{min-height:44px!important;font-size:17px!important;}
+}
+</style>
+<!-- Ver1.17: final black-PC rules restore the requested 30m/1h/2h/4h left + 6h/8h/10h/12h right guide, remove summary dead space, enlarge Pokémon images, and keep the growth table compact. -->
+
 </body>
 </html>
