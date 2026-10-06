@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.41">
+<html lang="ja" data-app-version="3.42">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4360,6 +4360,8 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 .shopItemCard.tierLocked341{opacity:.58;filter:grayscale(.35);position:relative}.shopTierLock341{display:block;margin-top:5px;color:#7b5310;font-weight:1000;font-size:11px}.shopItemCard.tierLocked341 button{cursor:not-allowed}
 .ownedActionBtn.progressFeatureLocked341{opacity:.52}.ownedActionBtn.progressFeatureLocked341 span::before{content:"🔒 ";}
 </style>
+
+
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -4407,13 +4409,14 @@ const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
 function expeditionTimerState(){const x=DATA.readJSON(EXPEDITION_TIMER_KEY,null);return x&&typeof x==="object"?x:null}
 function expeditionGroupCounts(x){
- const groups=Array.isArray(x?.groups)?x.groups:[],admin=new Set((x?.adminUnlockedGroups||[]).map(Number)),maxGroups=Math.max(5,groups.length),active=groups.filter(g=>g?.status==="exploring"&&g?.mission).length,returned=groups.filter(g=>g?.status==="returned"&&g?.mission).length;
+ const groups=Array.isArray(x?.groups)?x.groups:[],maxGroups=Math.max(5,groups.length),active=groups.filter(g=>g?.status==="exploring"&&g?.mission).length,returned=groups.filter(g=>g?.status==="returned"&&g?.mission).length;
  let available=0;
  for(let i=0;i<maxGroups;i++){
-  const groupNo=i+1,g=groups[i],busy=!!(g&&g.status!=="idle"&&g.mission),adminOpen=admin.has(groupNo);
+  const g=groups[i],busy=!!(g&&g.status!=="idle"&&g.mission);
   let cleared=false;
   try{const req=[1,1,2,3,4][i]||4;cleared=THEME_ORDER.every(did=>Number(state?.stats?.[statKey(did,req)]?.clears||0)>0)}catch{}
-  if(busy||adminOpen||cleared)available++
+  /* Ver3.42: legacy adminUnlockedGroups is intentionally ignored on the dungeon home. */
+  if(busy||cleared)available++
  }
  return {active,returned,available:Math.max(available,active+returned)}
 }
@@ -5075,7 +5078,7 @@ function missionTrainingUnlocked(){return missionStat("trainings")>0||Object.val
 function missionEvolutionUnlocked(){return missionStat("evolutions")>0||Object.values(state.trainingPoints||{}).some(v=>Number(v)>0)}
 function missionHatchUnlocked(){return totalDungeonClears()>0||(state.eggs||[]).length>0||missionStat("eggsHatched")>0}
 function missionGrassUnlocked(){return totalDungeonClears()>=3||missionStat("grassAttempts")>0}
-function missionExpeditionUnlocked(){return missionAllRankCleared(1)||missionStat("expeditionsCompleted")>0}
+function missionExpeditionUnlocked(){return missionAllRankCleared(1)}
 /* ===== PROGRESSION UNLOCKS Ver3.41 ===== */
 const PROGRESSION_TEST_CASES_341=new Set(["progress-start","progress-early","progress-clear3","progress-clear5","progress-r1","progress-r2","progress-r3","progress-r4","progress-r5","shop-lv1","shop-lv2","shop-lv3"]);
 function progressionRegressionBypass341(){return DUNGEON_TEST_MODE&&!!DUNGEON_TEST_CASE&&!PROGRESSION_TEST_CASES_341.has(DUNGEON_TEST_CASE)}
@@ -5084,7 +5087,7 @@ function featureEvolutionUnlocked341(){return progressionRegressionBypass341()||
 function featureEggUnlocked341(){return progressionRegressionBypass341()||missionHatchUnlocked()}
 function featureGrassUnlocked341(){return progressionRegressionBypass341()||missionGrassUnlocked()}
 function featureBulkTrainingUnlocked341(){return progressionRegressionBypass341()||totalDungeonClears()>=5}
-function featureExpeditionUnlocked341(){if(progressionRegressionBypass341()||missionExpeditionUnlocked())return true;const x=expeditionSnapshot?.()||null;return !!x?.groups?.some(g=>g?.mission&&g.status!=="idle")}
+function featureExpeditionUnlocked341(){if(progressionRegressionBypass341()||missionAllRankCleared(1))return true;const x=expeditionSnapshot?.()||null;return !!x?.groups?.some(g=>g?.mission&&g.status!=="idle")}
 function featureShopLevel341(){if(progressionRegressionBypass341())return 3;if(missionAllRankCleared(4))return 3;if(missionAllRankCleared(2))return 2;if(missionAllRankCleared(1))return 1;return 0}
 function shopRequiredLevel341(key){return ({luckyClover:1,trainingCandy:1,superBall:1,evolutionCandy:2,captureTicket:2,hyperBall:2,masterBall:3})[key]||1}
 function shopLevelCondition341(level){return level<=1?"全ダンジョンR1制覇":level===2?"全ダンジョンR2制覇":"全ダンジョンR4制覇"}
@@ -5900,7 +5903,8 @@ function homeExpeditionGroups(now=Date.now()){
   const m=g?.mission||null,ret=Number(m?.returnAt||0),done=g?.status==="returned"||(g?.status==="exploring"&&ret>0&&ret<=now);
   if(done)return {index:i,state:"returned",text:`G${i+1} 🎁 帰還済み`};
   if(g?.status==="exploring"&&m){const th=THEMES[m.dungeonId],place=th?`${th.icon} ${th.name}`:"探索中",rank=Number.isFinite(Number(m.difficulty))?` R${Number(m.difficulty)}`:"",remain=ret?` ${homeExpeditionRemain(ret-now)}`:"";return {index:i,state:"exploring",text:`G${i+1} ${place}${rank}${remain}`}}
-  const req=[1,1,2,3,4][i]||4,open=(raw?.adminUnlockedGroups||[]).map(Number).includes(i+1)||THEME_ORDER.every(did=>Number(state.stats?.[statKey(did,req)]?.clears||0)>0);
+  const req=[1,1,2,3,4][i]||4,open=THEME_ORDER.every(did=>Number(state.stats?.[statKey(did,req)]?.clears||0)>0);
+  /* Ver3.42: administrator temporary unlock never leaks into the dungeon home status. */
   return {index:i,state:open?"idle":"locked",text:`G${i+1} ${open?"待機":"🔒 未解放"}`};
  })
 }
@@ -15377,5 +15381,22 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 <!-- Ver3.40: mission status clarity. In-progress=blue, claimable=yellow, claimed=green, with explicit status badges and status-priority ordering. Updated: 2026-10-06 17:49 JST -->
 <!-- Updated: 2026-10-06 17:34 JST -->
 <!-- Ver3.41: progression unlocks for training/evolution/eggs/grass/bulk/expedition/shop tiers plus progression regression presets. Updated: 2026-10-06 19:31 JST -->
+<style id="v342-blackpc-mission-and-expedition-lock-fix">
+/* Ver3.42: keep the mission shortcut visible in the compact PC one-line hero. */
+@media (min-width:701px){
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeHeroSimple .homeHeroMain{
+    grid-template-columns:auto auto minmax(110px,1fr) auto!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeMissionShortcut338{
+    min-width:132px!important;max-width:170px!important;height:32px!important;min-height:32px!important;
+    padding:4px 8px!important;border-radius:10px!important;gap:0 6px!important;box-shadow:none!important;
+    align-self:center!important;justify-self:end!important;overflow:hidden!important;
+  }
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeMissionShortcut338 span{font-size:11px!important;line-height:1.05!important;white-space:nowrap!important}
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeMissionShortcut338 small{font-size:7px!important;line-height:1!important;white-space:nowrap!important}
+  html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homeMissionShortcut338>b{min-width:20px!important;width:20px!important;height:20px!important;font-size:10px!important}
+}
+</style>
 </body>
+<!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 </html>
