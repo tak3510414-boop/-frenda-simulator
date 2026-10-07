@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.19">
+<html lang="ja" data-test-center-version="2.22">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -66,6 +66,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </section>
 
 <section class="card">
+ <div class="sectionTitle">色違い</div>
+ <div class="deviceHint">マスターで category=shiny と明示されたピックだけを色違いとして扱います。★付き番号だけでは判定しません。</div>
+ <div id="shinyChecks"></div>
+</section>
+
+<section class="card">
  <div class="sectionTitle">おでかけ探索</div>
  <div id="expeditionChecks"></div>
 </section>
@@ -84,6 +90,7 @@ const dungeonCases=[
  ["d-battle","戦闘","敵所持バッジと ENEMY 表示が重ならない。味方3体・HP・AUTOを確認。","battle"],
  ["d-damage","ダメージ変動・ナイスアタック","同じ対戦で複数ターン攻撃し、通常ダメージが±5%で揺れること、まれに✨ナイスアタック！が出ること、追加操作や待ち時間がないことを確認。","battle"],
  ["d-legend","伝説登場","黒PCを含め、名前・画像・戦闘準備ボタンまで1画面内に完全表示。","legendary-intro"],
+ ["d-legend-battle","レジェンド戦ロビー","全R5制覇後。相手・伝説/幻区分・捕獲率・相手変更あと1回・挑戦チーム導線を確認。","legend-battle-lobby"],
  ["d-cap-intro","ゲットチャンス開始","ゲット導入画面の中央配置とボタンを確認。","capture-intro"],
  ["d-cap-slot","ボールスロット","対象ポケモン、8ボール、STOPの配置を確認。黒PCは卵スロット系レイアウト。","capture-slot"],
  ["d-owned","所持ピック","所持50体で一覧の縦スクロール、初期ソート、画像、ボタンを確認。","owned"],
@@ -91,6 +98,12 @@ const dungeonCases=[
  ["d-bulk","一括特訓","所持ピックから一括特訓を開き、方針選択→確認→実行まで確認。","bulk-training"],
  ["d-shop","ショップ","テスト用🪙20,000あり。下へスクロールして購入後も位置が戻らないこと、コイン情報と商品が区別されることを確認。","shop"],
  ["d-mission-tabs","ミッション タブ未受取バッジ","デイリー／ウィークリー／はじめて／チャレンジの各タブに、未受取報酬があるタブだけ赤い件数バッジが表示されること。受取後は件数が減ること。","mission-tab-badges"]
+];
+const shinyCases=[
+ ["s-owned","所持ピック・色違いフィルタ","色違いのみを表示。カードに✨色違い表示と専用枠が出ること。","shiny-owned","dungeon"],
+ ["s-dex","図鑑・色違いフィルタ","図鑑を色違いだけに絞り込み。遭遇済みの色違いに✨表示が出ること。","shiny-dex","dungeon"],
+ ["s-battle","色違いバトル演出","色違いの敵が出現。登場カットイン→戦闘準備→バトルで✨色違いが明確に分かること。","shiny-battle","dungeon"],
+ ["s-hatch","色違い孵化演出","孵化の最後に『✨ 色違いが生まれた！』と専用キラキラ演出が出ること。","shiny-hatch","dungeon"]
 ];
 const dailyCases=[
  ["m-daily-empty","デイリー 未達成","今日の5件がすべて進行中。3個達成ボーナスは未解放。","daily-empty","dungeon"],
@@ -153,6 +166,7 @@ function renderChecks(){
  $("#progressionChecks").innerHTML=progressionCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#dailyChecks").innerHTML=dailyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#weeklyChecks").innerHTML=weeklyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
+ $("#shinyChecks").innerHTML=shinyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#expeditionChecks").innerHTML=expCases.map(x=>rowHTML(x,"expedition")).join("");
  document.querySelectorAll("[data-check]").forEach(el=>{el.checked=localStorage.getItem(checkKey(el.dataset.check))==="1";el.onchange=()=>{localStorage.setItem(checkKey(el.dataset.check),el.checked?"1":"0");updateProgress()}});updateProgress()
 }
@@ -229,6 +243,14 @@ async function runAuto(){
   ["デイリー回帰プリセット",["daily-empty","daily-partial","daily-three","daily-all","daily-rollover","daily-locked-filter"].every(x=>d.includes(`\"${x}\"`)),"未達成・一部・3件・全達成・日付変更・未解放除外を直接再現"],
   ["ウィークリーミッション7件",/WEEKLY_MISSION_COUNT_347=7/.test(d)&&/weeklyPool347/.test(d)&&/slice\(0,WEEKLY_MISSION_COUNT_347\)/.test(d),"月〜日単位で解放済み候補から7件を選択"],
   ["ウィークリー5件ボーナス段階連動",/WEEKLY_BONUS_REQUIRED_347=5/.test(d)&&/weeklyBonusReward347/.test(d)&&/featureShopLevel341\(\)>=2\?missionRewardItem\("hyperBall"/.test(d)&&/missionRewardItem\("superBall"/.test(d)&&/bonus=weeklyBonusReward347\(\)/.test(d)&&/claimWeeklyBonus347/.test(d),"SHOP Lv1以下=スーパーボール×1、SHOP Lv2以上=ハイパーボール×1を手動受取"],
+  ["R2ボス2体バランス",/function bossEnemyCount350\(diff\)/.test(d)&&/return d===1\?1:d===2\?2:3/.test(d)&&/bossEnemyCount350\(state\.run\.difficulty\)/.test(d),"ボス数はR1=1体、R2=2体、R3〜R5=3体"],
+  ["レジェンド戦解放・抽選",/function legendBattleUnlocked351\(\)/.test(d)&&/statKey\(did,5\)/.test(d)&&/LEGEND_MYTHICAL_RATE_351=\.10/.test(d)&&/LEGEND_UNOWNED_PRIORITY_351=\.80/.test(d)&&/rerollsRemaining/.test(d),"全R5制覇で解放。幻10%、未所持80%優先、挑戦前の相手変更1回"],
+  ["レジェンド戦強度・捕獲率",/LEGEND_POWER_MULT_351=1\.15/.test(d)&&/LEGEND_CAPTURE_RATE_351=\{poke:\.10,super:\.30,hyper:\.70,master:1\}/.test(d)&&/c\.legendBattle\?\["poke","poke","poke","poke","poke","super","super","hyper"\]/.test(d),"R5ボス比1.15倍。特別捕獲率10/30/70/100%、無料スロットにマスターボールを入れない"],
+  ["レジェンド戦専用フロー",/startLegendRun351/.test(d)&&/v\.kind==="legend"/.test(d)&&/finishLegendRun351/.test(d)&&/legend-battle-lobby/.test(d),"3対1→勝利→特別ゲット→成功/失敗/敗北から専用ロビーへ戻る。卵・草むら報酬なし"],
+  ["色違い判定",/function isShinyRecord352/.test(d)&&/category\|\|""/.test(d)&&/===\"shiny\"/.test(d)&&!/pick_no.*★.*isShinyRecord352/.test(d),"category=shiny（または将来の明示shinyフラグ）のみ。★付き番号だけでは判定しない"],
+  ["所持・図鑑 色違いフィルタ",/ownedShiny352/.test(d)&&/ownedShiny352\"/.test(d)&&/dexShiny352/.test(d)&&/shinyFilterMatch352/.test(d),"所持ピックと図鑑で すべて／色違いのみ／通常色のみ を切替"],
+  ["色違い演出",/shinyEncounter352/.test(d)&&/shinyBattle352/.test(d)&&/shinyHatch352/.test(d)&&/shinyResult352/.test(d)&&/色違いが生まれた/.test(d),"登場・バトル・孵化・ゲット結果で専用表示。追加待ち時間なし"],
+  ["色違い回帰プリセット",["shiny-owned","shiny-dex","shiny-battle","shiny-hatch"].every(x=>d.includes(`\"${x}\"`)),"所持・図鑑・バトル・孵化を直接再現"],
   ["ウィークリー週替わり",/weeklyWeekStart347/.test(d)&&/\(x\.getDay\(\)\+6\)%7/.test(d)&&/w\.week!==week/.test(d)&&/createWeeklyMissions347\(week\)/.test(d),"月曜始まり・日曜終わりで新しい7件へ更新"],
   ["ウィークリー未解放除外",/weeklyPool347\(\)\.filter\(x=>!x\.visible\|\|x\.visible\(\)\)/.test(d)&&/featureTrainingUnlocked341/.test(d)&&/featureExpeditionUnlocked341/.test(d),"週の生成時点で未解放機能を候補から除外"],
   ["ウィークリー同時保存",/mergeWeeklyMissions347/.test(d)&&/weekly:mergeWeeklyMissions347/.test(d),"探索との同時更新でも当週選択・受取状態を保護"],
@@ -269,4 +291,7 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.17: weekly mission manual presets and static regression checks added. Updated: 2026-10-07 07:25 JST -->
 <!-- Ver2.18: mission-tab unclaimed-count badge regression case and static check. Updated: 2026-10-07 13:20 JST -->
 <!-- Ver2.19: weekly reward tier regression added: SHOP Lv1 or lower = Super Ball x1; SHOP Lv2+ = Hyper Ball x1. Updated: 2026-10-07 13:58 JST -->
+<!-- Ver2.20: final-rank-balance regression check added for boss enemy count R1=1, R2=2, R3-R5=3. Updated: 2026-10-07 21:05 JST -->
+<!-- Ver2.21: post-R5 Legend Battle regression route/checks added: unlock, 10% mythical slot, 80% unowned priority, one reroll, +15% strength, and 10/30/70/100% capture rates. Updated: 2026-10-07 21:25 JST -->
+<!-- Ver2.22: shiny regression routes/checks. Updated: 2026-10-07 21:45 JST -->
 </html>
