@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.22">
+<html lang="ja" data-test-center-version="2.23">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -67,7 +67,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 
 <section class="card">
  <div class="sectionTitle">色違い</div>
- <div class="deviceHint">マスターで category=shiny と明示されたピックだけを色違いとして扱います。★付き番号だけでは判定しません。</div>
+ <div class="deviceHint">マスターで category=shiny と明示されたピックだけを色違いとして扱います。★付き番号だけでは判定しません。出現率は通常戦R1〜R5=1〜2%、強敵=2〜3%、ボス=2.5〜5%、レジェンド=5%、草むら=2%。卵は普通1%／レア・タイプ2%／Sレア4%（対応する色違いデータがある場合）。</div>
  <div id="shinyChecks"></div>
 </section>
 
@@ -251,6 +251,10 @@ async function runAuto(){
   ["所持・図鑑 色違いフィルタ",/ownedShiny352/.test(d)&&/ownedShiny352\"/.test(d)&&/dexShiny352/.test(d)&&/shinyFilterMatch352/.test(d),"所持ピックと図鑑で すべて／色違いのみ／通常色のみ を切替"],
   ["色違い演出",/shinyEncounter352/.test(d)&&/shinyBattle352/.test(d)&&/shinyHatch352/.test(d)&&/shinyResult352/.test(d)&&/色違いが生まれた/.test(d),"登場・バトル・孵化・ゲット結果で専用表示。追加待ち時間なし"],
   ["色違い回帰プリセット",["shiny-owned","shiny-dex","shiny-battle","shiny-hatch"].every(x=>d.includes(`\"${x}\"`)),"所持・図鑑・バトル・孵化を直接再現"],
+  ["色違い出現率制御",/SHINY_ENCOUNTER_RATE_353/.test(d)&&/battle:\{1:\.01,2:\.0125,3:\.015,4:\.0175,5:\.02\}/.test(d)&&/elite:\{1:\.02,2:\.0225,3:\.025,4:\.0275,5:\.03\}/.test(d)&&/boss:\{1:\.025,2:\.03,3:\.035,4:\.04,5:\.05\}/.test(d)&&/legend:\.05/.test(d)&&/wantShiny=Math\.random\(\)<shinyRate/.test(d),"通常1〜2%、強敵2〜3%、ボス2.5〜5%、レジェンド5%。通常抽選では色違いを除外して明示抽選のみ"],
+  ["色違い卵・草むら率",/SHINY_EGG_RATE_353=\{normal:\.01,rare:\.02,type:\.02,super:\.04\}/.test(d)&&/grass:\.02/.test(d)&&/grassRandomRecord353/.test(d)&&/chooseHatchRecord\(egg\)/.test(d)&&/normalRecords=RECORDS\.filter\(r=>!isShinyRecord352\(r\)\)/.test(d),"草むら2%。卵は普通1%、レア/タイプ2%、Sレア4%。通常抽選へ色違いが自然混入しない"],
+  ["色違いゲット優遇",/SHINY_CAPTURE_CHANCE_353=\{battle:\.35,elite:\.60\}/.test(d)&&/shinyChanceBonus353/.test(d)&&/色違い発見！ ゲットチャンス発生/.test(d),"色違いを倒した場合、ゲットチャンス発生率を通常戦35%・強敵60%へ優遇。捕獲率そのものは通常ルール維持"],
+  ["色違いボス捕獲導線",/shinyBoss353:true/.test(d)&&/色違いボス撃破！ 特別ゲットチャンス！/.test(d)&&/if\(c\?\.shinyBoss353\)\{run\.capture=null;return runClear\(\)\}/.test(d),"色違いボス撃破時はクリア前に特別ゲットチャンス。結果後に通常クリア処理へ戻る"],
   ["ウィークリー週替わり",/weeklyWeekStart347/.test(d)&&/\(x\.getDay\(\)\+6\)%7/.test(d)&&/w\.week!==week/.test(d)&&/createWeeklyMissions347\(week\)/.test(d),"月曜始まり・日曜終わりで新しい7件へ更新"],
   ["ウィークリー未解放除外",/weeklyPool347\(\)\.filter\(x=>!x\.visible\|\|x\.visible\(\)\)/.test(d)&&/featureTrainingUnlocked341/.test(d)&&/featureExpeditionUnlocked341/.test(d),"週の生成時点で未解放機能を候補から除外"],
   ["ウィークリー同時保存",/mergeWeeklyMissions347/.test(d)&&/weekly:mergeWeeklyMissions347/.test(d),"探索との同時更新でも当週選択・受取状態を保護"],
@@ -272,7 +276,7 @@ async function runAuto(){
 }
 window.addEventListener("resize",updateViewport);
 document.querySelectorAll("[data-profile]").forEach(b=>b.onclick=()=>setProfile(b.dataset.profile));
-$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...progressionCases,...dailyCases,...weeklyCases,...expCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
+$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...progressionCases,...dailyCases,...weeklyCases,...shinyCases,...expCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
 setProfile(currentProfile);runAuto();
 })();
 </script>
@@ -294,4 +298,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.20: final-rank-balance regression check added for boss enemy count R1=1, R2=2, R3-R5=3. Updated: 2026-10-07 21:05 JST -->
 <!-- Ver2.21: post-R5 Legend Battle regression route/checks added: unlock, 10% mythical slot, 80% unowned priority, one reroll, +15% strength, and 10/30/70/100% capture rates. Updated: 2026-10-07 21:25 JST -->
 <!-- Ver2.22: shiny regression routes/checks. Updated: 2026-10-07 21:45 JST -->
+<!-- Ver2.23: explicit shiny appearance-rate / capture-balance regression checks added. Updated: 2026-10-08 07:30 JST -->
 </html>

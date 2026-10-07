@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.52">
+<html lang="ja" data-app-version="3.53">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6025,7 +6025,14 @@ function eggVisualHTML(eOrKind,type=null,small=false){const kind=typeof eOrKind=
 function chooseThemeEggType(did){const th=THEMES[did]||THEMES.forest,groups=speciesGroups(RECORDS.filter(validBattle)),counts={};for(const t of th.types)counts[t]=groups.reduce((n,g)=>{const types=new Set(g.records.flatMap(r=>[r.type1,r.type2]).filter(Boolean));if(!types.has(t))return n;return n+(th.types.every(x=>types.has(x))?.5:1)},0);return chooseWeighted(counts)}
 function makeEgg(kind,did,diff){const d=EGG_DEF[kind]||EGG_DEF.normal;return {id:eggId(),kind:d===EGG_DEF.normal&&kind!=="normal"?"normal":kind,type:kind==="type"?chooseThemeEggType(did):null,points:0,required:d.required,sourceDungeon:did,sourceDifficulty:diff,createdAt:new Date().toISOString()}}
 function advanceEggs(n=1){if(!Array.isArray(state.eggs)||!state.eggs.length)return;for(const e of state.eggs)e.points=Math.min(eggReq(e),Number(e.points||0)+n);addLog(`所持している卵すべての孵化ポイント +${n}。`)}
-function chooseHatchRecord(egg){return RULES.chooseHatchRecord({egg,records:RECORDS,pickRecordBySpecies,isSpecialLimitedRecord})}
+function chooseHatchRecord(egg){
+ const wantShiny=Math.random()<shinyEggRate353(egg?.kind),shinyRecords=RECORDS.filter(isShinyRecord352),normalRecords=RECORDS.filter(r=>!isShinyRecord352(r));
+ if(wantShiny&&shinyRecords.length){
+  const shiny=RULES.chooseHatchRecord({egg,records:shinyRecords,pickRecordBySpecies,isSpecialLimitedRecord});
+  if(shiny&&isShinyRecord352(shiny))return shiny
+ }
+ return RULES.chooseHatchRecord({egg,records:normalRecords,pickRecordBySpecies,isSpecialLimitedRecord})
+}
 function resolveReadyEggs(){const ready=(state.eggs||[]).filter(eggReady),keep=(state.eggs||[]).filter(e=>!eggReady(e));state.eggs=keep;const results=[];for(const e of ready){const r=chooseHatchRecord(e);if(!r)continue;const duplicate=!!ownedEntry(r.master_id),newSpeciesRegistration=!pickRegistered(r);let duplicateRewardKind=null,duplicateRewardLabel="";if(duplicate){const award=awardGrowthOrDrill(r.master_id,1);duplicateRewardKind=award.kind;duplicateRewardLabel=award.label}else ownNew(r.master_id);results.push({egg:e,pickId:r.master_id,duplicate,duplicateRewardKind,duplicateRewardLabel,newSpeciesRegistration})}if(results.length)missionInc("eggsHatched",results.length);return results}
 function eggSlotsFor(diff,did){
  const savedLuck=Number(state.postRun?.summary?.luckAverage??state.lastSummary?.luckAverage??0),avgLuck=state.run?currentPartyLuck():savedLuck,base=EGG_SLOT_RATES[diff]||EGG_SLOT_RATES[1],mul=luckMultiplier(avgLuck),rates={};
@@ -6115,6 +6122,7 @@ function chooseLegendOpponent351(excludeId=null){
  let pool=(useMythical?mythicalPool:legendPool).slice();
  if(!pool.length)pool=(useMythical?legendPool:mythicalPool).slice();
  if(excludeId&&pool.length>1){const filtered=pool.filter(r=>r.master_id!==excludeId);if(filtered.length)pool=filtered}
+ pool=applyLegendShinyRate353(pool);
  const unowned=pool.filter(r=>!ownedEntry(r.master_id));
  if(unowned.length&&Math.random()<LEGEND_UNOWNED_PRIORITY_351)pool=unowned;
  return pool[Math.floor(Math.random()*pool.length)]||null
@@ -6149,8 +6157,8 @@ function renderLegendLobby351(){
   document.getElementById("legendBack351").onclick=()=>{screen="home";render()};return
  }
  const opp=ensureLegendOpponent351();if(!opp){app.innerHTML=`<div class="errorBox">レジェンド戦の相手を準備できませんでした。</div>`;return}
- const l=ensureLegendState351(),myth=isMythicalRecord(opp),msg=legendResultMessage351();
- app.innerHTML=`<div class="card legendLobby351"><div class="legendLobbyHead351"><div><small>END GAME CONTENT</small><h1>🌟 レジェンド戦</h1><p>全R5制覇後の特別バトル。挑戦回数の制限はありません。</p></div><button type="button" id="legendBack351" class="ghost">ホームへ戻る</button></div>${msg?`<div class="legendResultNotice351">${esc(msg)}</div>`:""}<div class="legendOpponent351 ${myth?"mythical":""}"><div class="legendOpponentVisual351 ownershipImageWrap"><img src="${esc(imageOf(opp))}" alt="">${pickOwnershipBadgeHTML(opp.master_id,false,"legendLobbyOwnership")}</div><div class="legendOpponentInfo351"><span class="legendKind351">${myth?"✨ 幻・SPECIAL":"👑 伝説・LEGENDARY"}</span><h2>${esc(opp.name_ja)}</h2><div>${typesHTML(opp)}</div><p>${gradeText(opp)}　⚡ ${esc(opp.poke_ene??"-")}　${ownedEntry(opp.master_id)?"所持済み":"未所持"}</p><small>通常R5ボスより約15%強化。勝利すると、この相手の特別ゲットチャンスへ進みます。</small></div></div><div class="legendRuleGrid351"><div><b>🎯 捕獲率</b><span>モンボ10% / スーパー30% / ハイパー70% / マスター100%</span></div><div><b>🔁 再挑戦</b><span>敗北・捕獲失敗でも回数制限なし</span></div><div><b>✨ 幻</b><span>相手抽選の約10%で特別枠</span></div><div><b>🎴 抽選</b><span>未所持を80%優先</span></div></div><div class="legendActions351"><button type="button" id="legendReroll351" class="ghost" ${l.rerollsRemaining>0?"":"disabled"}>🔄 相手を変更 ${l.rerollsRemaining>0?"（あと1回）":"（使用済み）"}</button><button type="button" id="legendTeam351">⚔️ 挑戦チームを選ぶ</button></div></div>`;
+ const l=ensureLegendState351(),myth=isMythicalRecord(opp),shiny=isShinyRecord352(opp),msg=legendResultMessage351();
+ app.innerHTML=`<div class="card legendLobby351"><div class="legendLobbyHead351"><div><small>END GAME CONTENT</small><h1>🌟 レジェンド戦</h1><p>全R5制覇後の特別バトル。挑戦回数の制限はありません。</p></div><button type="button" id="legendBack351" class="ghost">ホームへ戻る</button></div>${msg?`<div class="legendResultNotice351">${esc(msg)}</div>`:""}<div class="legendOpponent351 ${myth?"mythical":""} ${shiny?"shinyFrame352":""}"><div class="legendOpponentVisual351 ownershipImageWrap"><img src="${esc(imageOf(opp))}" alt="">${pickOwnershipBadgeHTML(opp.master_id,false,"legendLobbyOwnership")}</div><div class="legendOpponentInfo351"><span class="legendKind351">${myth?"✨ 幻・SPECIAL":"👑 伝説・LEGENDARY"}</span><h2>${esc(opp.name_ja)} ${shiny?shinyBadgeHTML352():""}</h2><div>${typesHTML(opp)}</div><p>${gradeText(opp)}　⚡ ${esc(opp.poke_ene??"-")}　${ownedEntry(opp.master_id)?"所持済み":"未所持"}</p><small>通常R5ボスより約15%強化。勝利すると、この相手の特別ゲットチャンスへ進みます。</small></div></div><div class="legendRuleGrid351"><div><b>🎯 捕獲率</b><span>モンボ10% / スーパー30% / ハイパー70% / マスター100%</span></div><div><b>🔁 再挑戦</b><span>敗北・捕獲失敗でも回数制限なし</span></div><div><b>✨ 幻</b><span>相手抽選の約10%で特別枠</span></div><div><b>🎴 抽選</b><span>未所持を80%優先</span></div></div><div class="legendActions351"><button type="button" id="legendReroll351" class="ghost" ${l.rerollsRemaining>0?"":"disabled"}>🔄 相手を変更 ${l.rerollsRemaining>0?"（あと1回）":"（使用済み）"}</button><button type="button" id="legendTeam351">⚔️ 挑戦チームを選ぶ</button></div></div>`;
  document.getElementById("legendBack351").onclick=()=>{screen="home";render()};
  document.getElementById("legendReroll351").onclick=rerollLegendOpponent351;
  document.getElementById("legendTeam351").onclick=()=>{legendTeamSelect351=true;currentDungeon={id:"dragon",difficulty:5};const last=validLastTeam(3);teamSelection=last.length?last:[];screen="team";render()}
@@ -6352,8 +6360,8 @@ function grassEligiblePools(did,diff){
  const wander=all.filter(r=>!isMainHabitatRecord(r,did,diff));
  return {main,wander,all}
 }
-function grassRandomRecord(pool,used){
- const list=(pool||[]).filter(r=>!used.has(String(r.master_id)));
+function grassRandomRecord353(pool,used,wantShiny){
+ const list=(pool||[]).filter(r=>!used.has(String(r.master_id))&&(wantShiny?isShinyRecord352(r):!isShinyRecord352(r)));
  if(!list.length)return null;
  return list[Math.floor(Math.random()*list.length)]||null
 }
@@ -6369,10 +6377,13 @@ function buildGrassSpots(did,diff){
  for(let i=0;i<6;i++){
   let pool=Math.random()<MAIN_HABITAT_RATE?main:wander;
   if(!pool?.length)pool=main.length?main:all;
-  const r=grassRandomRecord(pool,used)||grassRandomRecord(all,used)||grassRandomRecord(all,new Set());
+  const wantShiny=Math.random()<shinyEncounterRate353("grass",diff);
+  let r=grassRandomRecord353(pool,used,wantShiny);
+  if(!r&&wantShiny)r=grassRandomRecord353(all,used,true)||grassRandomRecord353(all,new Set(),true);
+  if(!r)r=grassRandomRecord353(pool,used,false)||grassRandomRecord353(all,used,false)||grassRandomRecord353(all,new Set(),false);
   if(!r)continue;
   used.add(String(r.master_id));
-  spots.push({id:String(r.master_id),reaction:grassReactionForRecord(r),main:isMainHabitatRecord(r,did,diff)})
+  spots.push({id:String(r.master_id),reaction:grassReactionForRecord(r),main:isMainHabitatRecord(r,did,diff),shinyRoll353:wantShiny&&isShinyRecord352(r)})
  }
  return spots
 }
@@ -6610,6 +6621,28 @@ function shinyFilterMatch352(r,mode){return mode==="shiny"?isShinyRecord352(r):m
 function shinyBadgeHTML352(){return '<span class="shinyBadge352">✨ 色違い</span>'}
 function shinyFilterHTML352(id,value){return `<div class="shinyFilter352"><select id="${id}"><option value="all" ${value==="all"?"selected":""}>色違い：すべて</option><option value="shiny" ${value==="shiny"?"selected":""}>✨ 色違いのみ</option><option value="normal" ${value==="normal"?"selected":""}>通常色のみ</option></select><small>マスターで色違い登録されたピックを判定</small></div>`}
 
+/* Ver3.53: 色違いは通常抽選に混ぜず、プレイ種別ごとの明示確率でだけ出現させる。 */
+const SHINY_ENCOUNTER_RATE_353={
+ battle:{1:.01,2:.0125,3:.015,4:.0175,5:.02},
+ elite:{1:.02,2:.0225,3:.025,4:.0275,5:.03},
+ boss:{1:.025,2:.03,3:.035,4:.04,5:.05},
+ legend:.05,
+ grass:.02
+};
+const SHINY_EGG_RATE_353={normal:.01,rare:.02,type:.02,super:.04};
+const SHINY_CAPTURE_CHANCE_353={battle:.35,elite:.60};
+function shinyEncounterRate353(kind,diff=1){
+ const v=SHINY_ENCOUNTER_RATE_353[kind];
+ if(typeof v==="number")return v;
+ return Number(v?.[Math.max(1,Math.min(5,Number(diff)||1))]||0)
+}
+function shinyEggRate353(kind){return Number(SHINY_EGG_RATE_353[String(kind||"normal")]??SHINY_EGG_RATE_353.normal)}
+function applyLegendShinyRate353(pool){
+ const list=(pool||[]).filter(Boolean),shiny=list.filter(isShinyRecord352),normal=list.filter(r=>!isShinyRecord352(r));
+ if(shiny.length&&Math.random()<shinyEncounterRate353("legend",5))return shiny;
+ return normal.length?normal:list
+}
+
 function commonFilterSeries(records){return UI.pickFilter.series(records,compareSeriesRelease)}
 function commonFilterTypes(records){return UI.pickFilter.types(records,Array.isArray(CORE?.TYPES)?CORE.TYPES:[])}
 function commonFilterGrades(records){return UI.pickFilter.grades(records)}
@@ -6728,8 +6761,35 @@ function pickEnemy({elite=false,boss=false,exclude=[]}={}){
  if(boss&&!gp.length)gp=allPool.filter(r=>effectiveDungeonGrade(r)===g);
  if(!gp.length){const grades=[...new Set(pool.map(effectiveDungeonGrade).filter(Boolean))].sort((a,b)=>Math.abs(a-g)-Math.abs(b-g));gp=grades.length?pool.filter(r=>effectiveDungeonGrade(r)===grades[0]):[]}
  let candidatePool=gp.length?gp:pool;
- if(!boss){const dupBias=Math.random()<(elite?.58:.36);if(dupBias){const ownedPool=candidatePool.filter(r=>ownedEntry(r.master_id)),evoPool=ownedPool.filter(r=>evolutionInfoForPick(r.master_id).hasEvolution);if(evoPool.length&&Math.random()<.78)candidatePool=evoPool;else if(ownedPool.length)candidatePool=ownedPool}}
- const picked=pickRecordBySpecies(candidatePool,{boss})||pickRecordBySpecies(gp,{boss})||pickRecordBySpecies(pool,{boss})||pickRecordBySpecies(allPool,{boss});const base=clone(picked);base._mainHabitat=!!(picked&&isMainHabitatRecord(picked,state.run.dungeonId,diff));base._wandered=!base._mainHabitat;return scaleEnemy(base,{elite,boss})
+ const kind=boss?"boss":elite?"elite":"battle",shinyRate=shinyEncounterRate353(kind,diff),wantShiny=Math.random()<shinyRate;
+ let shinyApplied=false;
+ if(wantShiny){
+  let shinyPool=candidatePool.filter(isShinyRecord352);
+  if(!shinyPool.length)shinyPool=pool.filter(r=>isShinyRecord352(r)&&effectiveDungeonGrade(r)===g);
+  if(!shinyPool.length)shinyPool=allPool.filter(r=>isShinyRecord352(r)&&effectiveDungeonGrade(r)===g);
+  if(!shinyPool.length&&!boss){
+   const shinyNear=pool.filter(isShinyRecord352);
+   if(shinyNear.length){const min=Math.min(...shinyNear.map(r=>Math.abs(effectiveDungeonGrade(r)-g)));shinyPool=shinyNear.filter(r=>Math.abs(effectiveDungeonGrade(r)-g)===min)}
+  }
+  if(!shinyPool.length&&!boss){
+   const shinyNear=allPool.filter(isShinyRecord352);
+   if(shinyNear.length){const min=Math.min(...shinyNear.map(r=>Math.abs(effectiveDungeonGrade(r)-g)));shinyPool=shinyNear.filter(r=>Math.abs(effectiveDungeonGrade(r)-g)===min)}
+  }
+  if(shinyPool.length){candidatePool=shinyPool;shinyApplied=true}
+ }
+ if(!shinyApplied){
+  const nonShiny=candidatePool.filter(r=>!isShinyRecord352(r));
+  if(nonShiny.length)candidatePool=nonShiny;
+  else{
+   const poolNormal=pool.filter(r=>!isShinyRecord352(r)&&effectiveDungeonGrade(r)===g),allNormal=allPool.filter(r=>!isShinyRecord352(r)&&effectiveDungeonGrade(r)===g);
+   candidatePool=poolNormal.length?poolNormal:allNormal.length?allNormal:pool.filter(r=>!isShinyRecord352(r));
+   if(!candidatePool.length)candidatePool=allPool.filter(r=>!isShinyRecord352(r))
+  }
+  if(!boss){const dupBias=Math.random()<(elite?.58:.36);if(dupBias){const ownedPool=candidatePool.filter(r=>ownedEntry(r.master_id)),evoPool=ownedPool.filter(r=>evolutionInfoForPick(r.master_id).hasEvolution);if(evoPool.length&&Math.random()<.78)candidatePool=evoPool;else if(ownedPool.length)candidatePool=ownedPool}}
+ }
+ const modeFilter=r=>shinyApplied?isShinyRecord352(r):!isShinyRecord352(r),gpMode=gp.filter(modeFilter),poolMode=pool.filter(modeFilter),allMode=allPool.filter(modeFilter);
+ const picked=pickRecordBySpecies(candidatePool,{boss})||pickRecordBySpecies(gpMode,{boss})||pickRecordBySpecies(poolMode,{boss})||pickRecordBySpecies(allMode,{boss})||pickRecordBySpecies(allPool,{boss});
+ const base=clone(picked);base._mainHabitat=!!(picked&&isMainHabitatRecord(picked,state.run.dungeonId,diff));base._wandered=!base._mainHabitat;base._shinyRate353=shinyRate;base._shinyRolled353=wantShiny;base._shinyApplied353=shinyApplied;return scaleEnemy(base,{elite,boss})
 }
 function floorBonus(){const f=state.run.floor;return f>=10?.15:f>=7?.10:f>=4?.05:0}
 function scaleEnemy(base,{elite=false,boss=false}={}){const bonus=(DIFF_BONUS[state.run.difficulty]||0)+floorBonus()+(elite&&!boss ? .10 : 0);const damageModel=STORE.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1";const forest1Ease=(state.run.dungeonId==="forest"&&state.run.difficulty===1)?(damageModel==="v2"?0.40:0.55):1;const r=clone(base);for(const k of ["hp","atk","def","sp_atk","sp_def"])if(Number(r[k])>0)r[k]=Math.max(1,Math.round(Number(r[k])*(1+bonus)*forest1Ease));r._dungeonBonus=bonus;r._forest1Ease=forest1Ease;r._elite=elite;r._boss=boss;return r}
@@ -6872,8 +6932,18 @@ function enemyDefeated(){
  state.run.victory={kind:enc.kind,enemyName:en.name_ja,enemyId:en.master_id,turns:Number(enc.totalTurns||0),floor:Number(state.run.floor||1),bonus,specialReward:!!enc.specialReward};state.run.scene="victory";save();render();
 }
 function applyBattleVictoryBonus(kind){const bonus=kind==="elite"?4:2;runTeam().forEach(t=>{t.tempAtk=Math.min(TEMP_BOOST_MAX,Number(t.tempAtk||0)+bonus);t.tempDef=Math.min(TEMP_BOOST_MAX,Number(t.tempDef||0)+bonus)});state.run.battleWins=Number(state.run.battleWins||0)+(kind==="elite"?2:1);addLog(`🔥 闘志ボーナス：パーティ全員の攻撃・防御+${bonus}（ダンジョン終了まで）。`);return bonus}
-function prepareCaptureChance(enc){const rate=CAPTURE_CHANCE[enc.kind]||0,eligible=Math.random()<rate;state.run.capture={eligible,kind:enc.kind,candidateIds:enc.enemies.map(e=>e.master_id),targetId:null,balls:null,pendingOutcome:null,result:null};addLog(eligible?"🎯 ゲットチャンス発生！":"ゲットチャンスは発生しなかった。");save()}
-function proceedVictory(){const v=state.run?.victory;if(!v)return;if(v.kind==="legend"){const id=v.enemyId||state.run?.legendOpponentId;state.run.victory=null;state.run.capture={eligible:true,kind:"legend",legendBattle:true,candidateIds:[id].filter(Boolean),targetId:null,balls:null,pendingOutcome:null,result:null};state.run.scene="captureIntro";autoBackupCapture("レジェンド戦勝利",{force:true});save();render();return}if(v.kind==="boss"){state.run.victory=null;return runClear()}const kind=v.kind,special=!!v.specialReward,summary={...v,floor:Number(v.floor||state.run.floor||1)};state.run.victory=null;if(special)showSpecialReward(summary);else showBattleReward(kind,summary);save();render()}
+function prepareCaptureChance(enc){
+ const hasShiny=(enc?.enemies||[]).some(isShinyRecord352),baseRate=CAPTURE_CHANCE[enc.kind]||0,rate=hasShiny?(SHINY_CAPTURE_CHANCE_353[enc.kind]??baseRate):baseRate,eligible=Math.random()<rate;
+ state.run.capture={eligible,kind:enc.kind,candidateIds:enc.enemies.map(e=>e.master_id),targetId:null,balls:null,pendingOutcome:null,result:null,shinyChanceBonus353:hasShiny,triggerRate353:rate};
+ addLog(eligible?(hasShiny?`✨ 色違い発見！ ゲットチャンス発生！（発生率${Math.round(rate*100)}%）`:"🎯 ゲットチャンス発生！"):(hasShiny?`✨ 色違いだったがゲットチャンスは発生しなかった。（発生率${Math.round(rate*100)}%）`:"ゲットチャンスは発生しなかった。再抽選はチケットで可能。"));save()
+}
+function proceedVictory(){
+ const v=state.run?.victory;if(!v)return;
+ if(v.kind==="legend"){const id=v.enemyId||state.run?.legendOpponentId;state.run.victory=null;state.run.capture={eligible:true,kind:"legend",legendBattle:true,candidateIds:[id].filter(Boolean),targetId:null,balls:null,pendingOutcome:null,result:null};state.run.scene="captureIntro";autoBackupCapture("レジェンド戦勝利",{force:true});save();render();return}
+ if(v.kind==="boss"&&isShinyRecord352(rec(v.enemyId))){const id=v.enemyId;state.run.victory=null;state.run.capture={eligible:true,kind:"shinyBoss",shinyBoss353:true,candidateIds:[id].filter(Boolean),targetId:null,balls:null,pendingOutcome:null,result:null};state.run.scene="captureIntro";addLog("✨ 色違いボス撃破！ 特別ゲットチャンス！");autoBackupCapture("色違いボス勝利",{force:true});save();render();return}
+ if(v.kind==="boss"){state.run.victory=null;return runClear()}
+ const kind=v.kind,special=!!v.specialReward,summary={...v,floor:Number(v.floor||state.run.floor||1)};state.run.victory=null;if(special)showSpecialReward(summary);else showBattleReward(kind,summary);save();render()
+}
 function captureTicketQty(){return Math.max(0,Math.floor(Number(state.shopItems?.captureTicket)||0))}
 function captureTicketOfferAvailable(c=state.run?.capture){return !!(state.run&&c&&!c.eligible&&["battle","elite"].includes(c.kind)&&captureTicketQty()>0&&!state.run.autoAdventure)}
 function finishMissedCapture(){const forced=!!state.run?.encounter?.forcedAlert;state.run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}
@@ -6888,7 +6958,7 @@ function chooseCaptureTarget(id){const c=state.run.capture;if(!c||!c.eligible)re
 function captureRate(targetId,ballKey){if(state.run?.capture?.legendBattle)return LEGEND_CAPTURE_RATE_351[ballKey]??.10;const base=RULES.captureRate(Number(rec(targetId)?.grade||2),ballKey,Number(state.run?.captureBoost||0));return Math.min(1,base*luckMultiplier(currentPartyLuck()))}
 function resolveCapture(ballKey){const c=state.run.capture;if(!c||!c.targetId||c.result)return;if(!c.pendingOutcome){const boost=Math.max(0,Number(state.run.captureBoost||0)),rate=captureRate(c.targetId,ballKey),success=Math.random()<rate;c.pendingOutcome={ballKey,rate,success,captureBoost:boost};state.run.captureBoost=0;if(boost)addLog(`拾ったモンスターボール効果を使用：捕獲率${Math.round(boost*100)}%アップ。`)}state.run.scene="captureThrow";save();render()}
 function commitCaptureOutcome(){const c=state.run?.capture;if(!c||c.result)return;if(!c.pendingOutcome)return;const {ballKey,rate,success}=c.pendingOutcome,target=rec(c.targetId),newSpeciesRegistration=!!success&&target&&!pickRegistered(target);let duplicate=false,duplicateRewardKind=null,duplicateRewardLabel="";if(success){missionInc("captures",1);if(ownedEntry(c.targetId)){duplicate=true;const award=awardGrowthOrDrill(c.targetId,1);duplicateRewardKind=award.kind;duplicateRewardLabel=award.label;addLog(`${rec(c.targetId).name_ja}は所持済み。${award.label}。`)}else{ownNew(c.targetId);state.run.captured=state.run.captured||[];state.run.captured.push(c.targetId);addLog(`${rec(c.targetId).name_ja}が仲間になった！`);if(newSpeciesRegistration)addLog(`📖 ${rec(c.targetId).name_ja}が図鑑に登録された！`)}}else addLog(`${rec(c.targetId).name_ja}のゲットに失敗した。`);c.result={ballKey,rate,success,duplicate,duplicateRewardKind,duplicateRewardLabel,newSpeciesRegistration};c.pendingOutcome=null;state.run.scene="captureResult";save();render();sfx(success?"captureSuccess":"captureFail")}
-function finishCapture(){const run=state.run,c=run?.capture;if(c?.legendBattle){const success=!!c.result?.success,targetId=c.targetId||run?.legendOpponentId;run.capture=null;return finishLegendRun351(success?"caught":"captureFail",targetId)}const forced=!!run?.encounter?.forcedAlert;run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}
+function finishCapture(){const run=state.run,c=run?.capture;if(c?.legendBattle){const success=!!c.result?.success,targetId=c.targetId||run?.legendOpponentId;run.capture=null;return finishLegendRun351(success?"caught":"captureFail",targetId)}if(c?.shinyBoss353){run.capture=null;return runClear()}const forced=!!run?.encounter?.forcedAlert;run.capture=null;if(forced)resumeAfterForcedAlertBattle();else afterFloorResolved()}
 function rewardPool(kind){const elite=kind==="elite";return [{type:"heal",label:`全員HP${elite?40:20}%回復`,desc:"生存中のパーティ全員",value:elite?.40:.20},{type:"atk",label:`全員 攻撃+${elite?4:2}`,desc:"生存中のパーティ全員・ダンジョン終了まで",value:elite?4:2},{type:"def",label:`全員 防御+${elite?4:2}`,desc:"生存中のパーティ全員・ダンジョン終了まで",value:elite?4:2},{type:"shield",label:`被ダメ${elite?35:20}%減`,desc:"次の戦闘のみ・パーティ共通",value:elite?.35:.20}]}
 function showBattleReward(kind,battleSummary=null){const n=kind==="elite"?3:2;state.run.reward={kind,options:uniqueSample(rewardPool(kind),n),battleSummary:battleSummary||null};state.run.scene="reward"}
 function showSpecialReward(battleSummary=null){const options=[{type:"heal",label:"全員HP50%回復",desc:"生存中のパーティ全員",value:.50},{type:"atk",label:"全員 攻撃+6",desc:"生存中のパーティ全員・ダンジョン終了まで",value:6},{type:"def",label:"全員 防御+6",desc:"生存中のパーティ全員・ダンジョン終了まで",value:6},{type:"shield",label:"被ダメ50%減",desc:"次の戦闘のみ・パーティ共通",value:.50}];state.run.reward={kind:"special",options:uniqueSample(options,3),battleSummary:battleSummary||null};state.run.scene="reward"}
@@ -15826,4 +15896,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.50: final rank balance adjustment. Boss enemy count is now R1=1, R2=2, R3-R5=3 to smooth the R1→R2 difficulty jump. Updated: 2026-10-07 21:05 JST -->
 <!-- Ver3.51: post-R5 Legend Battle added. Unlimited 3-v-1 challenge, 15% above R5 boss, 10% mythical slot, 80% unowned priority, one pre-battle reroll, and special 10/30/70/100% capture rates. Updated: 2026-10-07 21:25 JST -->
 <!-- Ver3.52: shiny filters and shiny visual effects. Updated: 2026-10-07 21:45 JST -->
+<!-- Ver3.53: explicit shiny appearance rates, shiny encounter capture-chance bonus, controlled grass/egg rolls, future shiny Legend support, and shiny-boss capture flow. Updated: 2026-10-08 07:30 JST -->
 </html>
