@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.16">
+<html lang="ja" data-test-center-version="2.17">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -60,6 +60,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </section>
 
 <section class="card">
+ <div class="sectionTitle">ウィークリーミッション</div>
+ <div class="deviceHint">毎週7件、5件達成でハイパーボール×1、週替わり、未解放機能の除外を直接確認します。</div>
+ <div id="weeklyChecks"></div>
+</section>
+
+<section class="card">
  <div class="sectionTitle">おでかけ探索</div>
  <div id="expeditionChecks"></div>
 </section>
@@ -92,6 +98,14 @@ const dailyCases=[
  ["m-daily-all","デイリー 全達成","5件すべて達成。個別報酬と3個達成ボーナスをまとめて受け取れる。","daily-all","dungeon"],
  ["m-daily-rollover","デイリー 日付変更","前日分の受取済み状態を用意し、今日の5件へ自動更新・受取状態リセットを確認。","daily-rollover","dungeon"],
  ["m-daily-locked","デイリー 未解放機能除外","開始直後。特訓・進化・卵・草むら・探索のミッションが候補に入らず、基本5件だけになる。","daily-locked-filter","dungeon"]
+];
+const weeklyCases=[
+ ["m-weekly-empty","ウィークリー 未達成","今週の7件がすべて進行中。5個達成ボーナスは未解放。","weekly-empty","dungeon"],
+ ["m-weekly-partial","ウィークリー 一部達成","1件達成＋別ミッションが途中進行。達成未受取と進行中を見分ける。","weekly-partial","dungeon"],
+ ["m-weekly-five","ウィークリー 5個達成","5件達成で『ハイパーボール×1』の週間ボーナスが受取可能になる。","weekly-five","dungeon"],
+ ["m-weekly-all","ウィークリー 全達成","7件すべて達成。個別報酬と5個達成ボーナスをまとめて受け取れる。","weekly-all","dungeon"],
+ ["m-weekly-rollover","ウィークリー 週替わり","前週分の受取済み状態を用意し、今週の7件へ自動更新・受取状態リセットを確認。","weekly-rollover","dungeon"],
+ ["m-weekly-locked","ウィークリー 未解放機能除外","開始直後。特訓・進化・卵・草むら・探索系が候補に入らず、基本候補だけから7件選ばれる。","weekly-locked-filter","dungeon"]
 ];
 const expCases=[
  ["e-prep","探索準備","所持50体で派遣メンバー選択の縦スクロールも確認。ヘッダーの探索中→卵→コイン→閉じる。白PCで卵数が消えない。","prep"],
@@ -135,6 +149,7 @@ function renderChecks(){
  $("#dungeonChecks").innerHTML=dungeonCases.map(x=>rowHTML(x,"dungeon")).join("");
  $("#progressionChecks").innerHTML=progressionCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#dailyChecks").innerHTML=dailyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
+ $("#weeklyChecks").innerHTML=weeklyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#expeditionChecks").innerHTML=expCases.map(x=>rowHTML(x,"expedition")).join("");
  document.querySelectorAll("[data-check]").forEach(el=>{el.checked=localStorage.getItem(checkKey(el.dataset.check))==="1";el.onchange=()=>{localStorage.setItem(checkKey(el.dataset.check),el.checked?"1":"0");updateProgress()}});updateProgress()
 }
@@ -194,7 +209,7 @@ async function runAuto(){
   ["旧全画像監視なし",!/new\s+MutationObserver\s*\(/.test(d)&&!/new\s+MutationObserver\s*\(/.test(e),"所持バッジの全画像監視を再導入していない"],
   ["ミッション初期化順",d.indexOf('const MISSION_STAT_KEYS=')>=0&&d.indexOf('const MISSION_STAT_KEYS=')<d.indexOf('migrateState();'),"起動時migrateStateより先にミッションキーを初期化（TDZ停止を防止）"],
   ["ミッション状態",/missions:\{version:1/.test(d)&&/ensureMissionState/.test(d)&&/claimed/.test(d),"ミッション統計・受取状態をダンジョンセーブへ保存"],
-  ["ミッション画面",/renderMissionScreen/.test(d)&&/homeMissionShortcut338/.test(d)&&/data-mission-claim/.test(d),"デイリー・はじめて・チャレンジ・報酬受取UI"],
+  ["ミッション画面",/renderMissionScreen/.test(d)&&/homeMissionShortcut338/.test(d)&&/data-mission-claim/.test(d),"デイリー・ウィークリー・はじめて・チャレンジ・報酬受取UI"],
   ["黒PCミッション導線",/v342-blackpc-mission-and-expedition-lock-fix/.test(d)&&/grid-template-columns:auto auto minmax\(110px,1fr\) auto!important/.test(d),"黒PCホーム上段を4列化し、ミッションボタンをoverflow外へ追い出さない"],
   ["ミッション状態3色区別",/missionVisualState340/.test(d)&&/missionStateBadge340/.test(d)&&/\.missionCard338\.inprogress/.test(d)&&/\.missionCard338\.claimable/.test(d)&&/\.missionCard338\.claimed/.test(d),"進行中=青・達成未受取=黄・受取済=緑を明示"],
   ["ミッション状態順ソート",/missionStateOrder340/.test(d)&&/missionStateOrder340\(a\.m\)-missionStateOrder340\(b\.m\)/.test(d),"未受取→進行中→受取済みの順に表示"],
@@ -208,6 +223,12 @@ async function runAuto(){
   ["デイリー進捗カウンタ",/missionInc\("routeChoices"/.test(d)&&/missionInc\("rewardChoices"/.test(d)&&/routeChoices/.test(d)&&/rewardChoices/.test(d),"基本5件を運任せにせず進められるよう道選択・報酬選択を記録"],
   ["デイリー同時保存",/mergeDailyMissions346/.test(d)&&/daily:mergeDailyMissions346/.test(d),"探索との同時更新でも当日選択・受取状態を保護"],
   ["デイリー回帰プリセット",["daily-empty","daily-partial","daily-three","daily-all","daily-rollover","daily-locked-filter"].every(x=>d.includes(`\"${x}\"`)),"未達成・一部・3件・全達成・日付変更・未解放除外を直接再現"],
+  ["ウィークリーミッション7件",/WEEKLY_MISSION_COUNT_347=7/.test(d)&&/weeklyPool347/.test(d)&&/slice\(0,WEEKLY_MISSION_COUNT_347\)/.test(d),"月〜日単位で解放済み候補から7件を選択"],
+  ["ウィークリー5件ボーナス",/WEEKLY_BONUS_REQUIRED_347=5/.test(d)&&/weeklyBonusReward347/.test(d)&&/hyperBall/.test(d)&&/claimWeeklyBonus347/.test(d),"5件達成でハイパーボール×1を手動受取"],
+  ["ウィークリー週替わり",/weeklyWeekStart347/.test(d)&&/\(x\.getDay\(\)\+6\)%7/.test(d)&&/w\.week!==week/.test(d)&&/createWeeklyMissions347\(week\)/.test(d),"月曜始まり・日曜終わりで新しい7件へ更新"],
+  ["ウィークリー未解放除外",/weeklyPool347\(\)\.filter\(x=>!x\.visible\|\|x\.visible\(\)\)/.test(d)&&/featureTrainingUnlocked341/.test(d)&&/featureExpeditionUnlocked341/.test(d),"週の生成時点で未解放機能を候補から除外"],
+  ["ウィークリー同時保存",/mergeWeeklyMissions347/.test(d)&&/weekly:mergeWeeklyMissions347/.test(d),"探索との同時更新でも当週選択・受取状態を保護"],
+  ["ウィークリー回帰プリセット",["weekly-empty","weekly-partial","weekly-five","weekly-all","weekly-rollover","weekly-locked-filter"].every(x=>d.includes(`\"${x}\"`)),"未達成・一部・5件・全達成・週替わり・未解放除外を直接再現"],
   ["段階解放ルール",/featureTrainingUnlocked341/.test(d)&&/featureEvolutionUnlocked341/.test(d)&&/featureEggUnlocked341/.test(d)&&/featureGrassUnlocked341/.test(d)&&/featureBulkTrainingUnlocked341/.test(d)&&/featureExpeditionUnlocked341/.test(d),"特訓・進化・卵・草むら・一括特訓・探索を進行条件で制御"],
   ["解放演出＋NEW",/PROGRESSION_UNLOCK_KEYS_345/.test(d)&&/progressionRecordNewUnlocks345/.test(d)&&/showProgressionUnlockNotice345/.test(d)&&/progressionNewBadge345/.test(d)&&/progressionClearTargetNew345/.test(d)&&/progress-unlock-notice/.test(d),"新規解放を1回だけ演出し、対象ホームカードにNEW。1回開くとNEW解除"],
   ["旧セーブに解放演出を再表示しない",/ensureProgressionUi345\(state,\{seedCurrent:v<15\}\)/.test(d)&&/progressionUnlockRuntimeReady345=false/.test(d)&&/progressionUnlockRuntimeReady345=true/.test(d),"Ver3.44以前の既達成機能は移行時に既読化し、過去分を一斉表示しない"],
@@ -225,7 +246,7 @@ async function runAuto(){
 }
 window.addEventListener("resize",updateViewport);
 document.querySelectorAll("[data-profile]").forEach(b=>b.onclick=()=>setProfile(b.dataset.profile));
-$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...progressionCases,...dailyCases,...expCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
+$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...progressionCases,...dailyCases,...weeklyCases,...expCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
 setProfile(currentProfile);runAuto();
 })();
 </script>
@@ -241,4 +262,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.14: progression unlock celebration + persistent NEW markers regression route/checks added. Updated: 2026-10-07 05:20 JST -->
 <!-- Ver2.15: mission concurrent-save check updated to allow progressionUi after missions in the synchronized state list. Updated: 2026-10-07 06:55 JST -->
 <!-- Ver2.16: daily mission manual presets and static regression checks added. Updated: 2026-10-07 07:04 JST -->
+<!-- Ver2.17: weekly mission manual presets and static regression checks added. Updated: 2026-10-07 07:25 JST -->
 </html>
