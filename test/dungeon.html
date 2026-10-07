@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.53">
+<html lang="ja" data-app-version="3.54">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4420,6 +4420,20 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 @media(max-width:700px){.shinyFilter352{margin-top:4px}.shinyFilter352 select{min-width:0;flex:1;padding:7px 8px;font-size:10px}.shinyFilter352 small{font-size:7px}.shinyBadge352{font-size:7px;padding:2px 5px}.shinyFrame352::before{font-size:18px}.shinyFrame352::after{font-size:14px}}
 </style>
 
+
+<style id="v354-compact-dex-filter">
+.dexCompactFilter354{display:grid;grid-template-columns:minmax(210px,1fr) minmax(120px,.45fr) minmax(165px,.55fr) auto;gap:7px;align-items:stretch;margin:9px 0 11px;padding:8px;border:1px solid #d4e0e6;border-radius:13px;background:#f7fafb}
+.dexCompactFilter354 input,.dexCompactFilter354 select,.dexCompactFilter354 button{min-width:0;width:100%;padding:9px 8px;border:1px solid #bdcbd4;border-radius:10px;background:#fff;color:#233947;font-size:11px}
+.dexCompactFilter354 button{background:#eaf1f5;color:#315467}.dexCompactFilter354 button.active{background:linear-gradient(180deg,#267fa8,#176487);border-color:#176487;color:#fff}
+.dexCompactCount354{display:flex;align-items:center;justify-content:center;min-width:54px;padding:0 7px;border-radius:10px;background:#eef4f7;color:#526c79;font-size:10px;font-weight:1000}
+.dexFilterOverlay354{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:14px;background:#071927b8;backdrop-filter:blur(4px)}
+.dexFilterPanel354{width:min(580px,96vw);max-height:90dvh;overflow:auto;border-radius:20px;background:#fff;padding:14px;box-shadow:0 18px 60px #0005}
+.dexFilterHead354{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.dexFilterHead354 b{font-size:20px;color:#173d50}.dexFilterHead354 button{min-width:42px}
+.dexFilterGrid354{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dexFilterGrid354 label{display:grid;gap:4px}.dexFilterGrid354 label span{font-size:9px;font-weight:1000;color:#58707c}.dexFilterGrid354 select{width:100%;min-width:0;padding:10px 8px;border:1px solid #bdcbd4;border-radius:10px;background:#fff}
+.dexFilterActions354{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.dexFilterActions354 button{min-height:44px}
+.legendDexBar354{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border-radius:15px;background:linear-gradient(135deg,#f4edff,#fff7d8);border:1px solid #d9c574}.legendDexBar354 b{display:block;font-size:16px;color:#4d3c15}.legendDexBar354 span{display:block;margin-top:3px;font-size:10px;font-weight:900;color:#756331}.legendDexBar354 button{min-width:145px;background:linear-gradient(180deg,#6e51bf,#4b3493)}
+@media(max-width:700px){.dexCompactFilter354{grid-template-columns:1fr 1fr;gap:5px;padding:6px}.dexCompactFilter354 #dexSearch354{grid-column:1/-1}.dexCompactFilter354 input,.dexCompactFilter354 select,.dexCompactFilter354 button{font-size:9px;padding:8px 6px}.dexCompactCount354{display:none}.dexFilterPanel354{padding:10px}.dexFilterGrid354{grid-template-columns:1fr 1fr;gap:6px}.dexFilterGrid354 select{font-size:9px;padding:8px 6px}.legendDexBar354{grid-template-columns:1fr;gap:7px;padding:9px}.legendDexBar354 button{width:100%;min-width:0}}
+</style>
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -5101,6 +5115,8 @@ let EVO_INDEX=null,EVO_BY_NAME=new Map(),EVO_BY_NO=new Map(),EVO_PARENTS=new Map
 const makePickFilter=UI.pickFilter.create;
 let dexLimit=120;
 let dexPickFilter=makePickFilter();
+let dexReturnScreen354="home";
+let dexSavedFilter354=null;
 let ownedPickFilter=makePickFilter();
 let teamPickFilter=makePickFilter({sort:"energy"});
 let teamRecommendOnly=false;
@@ -5538,6 +5554,9 @@ function applyDungeonTestCase(){
  }
  if(DUNGEON_TEST_CASE==="legend-battle-lobby"){
   setProgressionPreset341("progress-r5",ids);state.legend={version:1,opponentId:null,rerollsRemaining:1,lastResult:null,lastOpponentId:null};screen="legend";save();render();banner();return true
+ }
+ if(DUNGEON_TEST_CASE==="legend-dex"){
+  setProgressionPreset341("progress-r5",ids);dexResetFilters354({keepSort:false});dexPickFilter.legendClass="legend";dexReturnScreen354="legend";screen="dex";save();render();banner();return true
  }
  if(DUNGEON_TEST_CASE==="team-star5"){
   state.run=null;state.postRun=null;currentDungeon={id:"dragon",difficulty:5};screen="team";save();render();banner();return true
@@ -6157,10 +6176,11 @@ function renderLegendLobby351(){
   document.getElementById("legendBack351").onclick=()=>{screen="home";render()};return
  }
  const opp=ensureLegendOpponent351();if(!opp){app.innerHTML=`<div class="errorBox">レジェンド戦の相手を準備できませんでした。</div>`;return}
- const l=ensureLegendState351(),myth=isMythicalRecord(opp),shiny=isShinyRecord352(opp),msg=legendResultMessage351();
- app.innerHTML=`<div class="card legendLobby351"><div class="legendLobbyHead351"><div><small>END GAME CONTENT</small><h1>🌟 レジェンド戦</h1><p>全R5制覇後の特別バトル。挑戦回数の制限はありません。</p></div><button type="button" id="legendBack351" class="ghost">ホームへ戻る</button></div>${msg?`<div class="legendResultNotice351">${esc(msg)}</div>`:""}<div class="legendOpponent351 ${myth?"mythical":""} ${shiny?"shinyFrame352":""}"><div class="legendOpponentVisual351 ownershipImageWrap"><img src="${esc(imageOf(opp))}" alt="">${pickOwnershipBadgeHTML(opp.master_id,false,"legendLobbyOwnership")}</div><div class="legendOpponentInfo351"><span class="legendKind351">${myth?"✨ 幻・SPECIAL":"👑 伝説・LEGENDARY"}</span><h2>${esc(opp.name_ja)} ${shiny?shinyBadgeHTML352():""}</h2><div>${typesHTML(opp)}</div><p>${gradeText(opp)}　⚡ ${esc(opp.poke_ene??"-")}　${ownedEntry(opp.master_id)?"所持済み":"未所持"}</p><small>通常R5ボスより約15%強化。勝利すると、この相手の特別ゲットチャンスへ進みます。</small></div></div><div class="legendRuleGrid351"><div><b>🎯 捕獲率</b><span>モンボ10% / スーパー30% / ハイパー70% / マスター100%</span></div><div><b>🔁 再挑戦</b><span>敗北・捕獲失敗でも回数制限なし</span></div><div><b>✨ 幻</b><span>相手抽選の約10%で特別枠</span></div><div><b>🎴 抽選</b><span>未所持を80%優先</span></div></div><div class="legendActions351"><button type="button" id="legendReroll351" class="ghost" ${l.rerollsRemaining>0?"":"disabled"}>🔄 相手を変更 ${l.rerollsRemaining>0?"（あと1回）":"（使用済み）"}</button><button type="button" id="legendTeam351">⚔️ 挑戦チームを選ぶ</button></div></div>`;
+ const l=ensureLegendState351(),myth=isMythicalRecord(opp),shiny=isShinyRecord352(opp),msg=legendResultMessage351(),dexProg354=dexLegendProgress354();
+ app.innerHTML=`<div class="card legendLobby351"><div class="legendLobbyHead351"><div><small>END GAME CONTENT</small><h1>🌟 レジェンド戦</h1><p>全R5制覇後の特別バトル。挑戦回数の制限はありません。</p></div><button type="button" id="legendBack351" class="ghost">ホームへ戻る</button></div>${msg?`<div class="legendResultNotice351">${esc(msg)}</div>`:""}<div class="legendOpponent351 ${myth?"mythical":""} ${shiny?"shinyFrame352":""}"><div class="legendOpponentVisual351 ownershipImageWrap"><img src="${esc(imageOf(opp))}" alt="">${pickOwnershipBadgeHTML(opp.master_id,false,"legendLobbyOwnership")}</div><div class="legendOpponentInfo351"><span class="legendKind351">${myth?"✨ 幻・SPECIAL":"👑 伝説・LEGENDARY"}</span><h2>${esc(opp.name_ja)} ${shiny?shinyBadgeHTML352():""}</h2><div>${typesHTML(opp)}</div><p>${gradeText(opp)}　⚡ ${esc(opp.poke_ene??"-")}　${ownedEntry(opp.master_id)?"所持済み":"未所持"}</p><small>通常R5ボスより約15%強化。勝利すると、この相手の特別ゲットチャンスへ進みます。</small></div></div><div class="legendDexBar354"><div><b>📖 レジェンド図鑑</b><span>発見 ${dexProg354.seen}/${dexProg354.total}　所持 ${dexProg354.owned}/${dexProg354.total}　✨色違い所持 ${dexProg354.shinyOwned}</span></div><button type="button" id="legendDex354">図鑑を開く</button></div><div class="legendRuleGrid351"><div><b>🎯 捕獲率</b><span>モンボ10% / スーパー30% / ハイパー70% / マスター100%</span></div><div><b>🔁 再挑戦</b><span>敗北・捕獲失敗でも回数制限なし</span></div><div><b>✨ 幻</b><span>相手抽選の約10%で特別枠</span></div><div><b>🎴 抽選</b><span>未所持を80%優先</span></div></div><div class="legendActions351"><button type="button" id="legendReroll351" class="ghost" ${l.rerollsRemaining>0?"":"disabled"}>🔄 相手を変更 ${l.rerollsRemaining>0?"（あと1回）":"（使用済み）"}</button><button type="button" id="legendTeam351">⚔️ 挑戦チームを選ぶ</button></div></div>`;
  document.getElementById("legendBack351").onclick=()=>{screen="home";render()};
  document.getElementById("legendReroll351").onclick=rerollLegendOpponent351;
+ document.getElementById("legendDex354").onclick=openLegendDex354;
  document.getElementById("legendTeam351").onclick=()=>{legendTeamSelect351=true;currentDungeon={id:"dragon",difficulty:5};const last=validLastTeam(3);teamSelection=last.length?last:[];screen="team";render()}
 }
 function scaleLegendEnemy351(base){
@@ -6314,7 +6334,7 @@ function renderHome(){
    <button class="homeMenuBtn shop progressionNewHost345 ${shopLv?"":"progressLocked341"}" id="homeShopBtn">${progressionNewBadge345("shop")}<b>🛍️</b><span>ショップ</span><strong class="homeManageValue">${shopLv?`SHOP Lv${shopLv}`:"🔒 未解放"}</strong><small>🪙 ${coins.toLocaleString("ja-JP")}</small><small>${shopLv?`現在 SHOP Lv${shopLv}`:featureLockText341("shop")}</small></button>
   </div>
  </div></div>`;
- app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="owned")progressionClearTargetNew345("owned");if(screen==="items"||screen==="eggs")progressionClearTargetNew345("items");if(screen==="dex")dexLimit=120;if(screen==="training")trainingStickyIds.clear();render()});
+ app.querySelectorAll("[data-menu]").forEach(b=>b.onclick=()=>{screen=b.dataset.menu;if(screen==="owned")progressionClearTargetNew345("owned");if(screen==="items"||screen==="eggs")progressionClearTargetNew345("items");if(screen==="dex"){dexLimit=120;dexReturnScreen354="home";dexSavedFilter354=null}if(screen==="training")trainingStickyIds.clear();render()});
  const eb=document.getElementById("expeditionMenuBtn");if(eb)eb.onclick=()=>{if(!featureExpeditionUnlocked341()){UI.dialog.alert(featureLockText341("expedition"));return}progressionClearTargetNew345("expedition");location.href="expedition.html"};
  const lb=document.getElementById("legendMenuBtn");if(lb)lb.onclick=()=>{if(!legendBattleUnlocked351()){UI.dialog.alert("レジェンド戦は、全10ダンジョンのランク5制覇で解放されます。");return}progressionClearTargetNew345("legend");screen="legend";render()};
  const shop=document.getElementById("homeShopBtn");if(shop)shop.onclick=()=>{if(featureShopLevel341()>0)progressionClearTargetNew345("shop");showLuckShop("home")};
@@ -6620,6 +6640,73 @@ function isShinyRecord352(r){return !!r&&(r.shiny===true||String(r.category||"")
 function shinyFilterMatch352(r,mode){return mode==="shiny"?isShinyRecord352(r):mode==="normal"?!isShinyRecord352(r):true}
 function shinyBadgeHTML352(){return '<span class="shinyBadge352">✨ 色違い</span>'}
 function shinyFilterHTML352(id,value){return `<div class="shinyFilter352"><select id="${id}"><option value="all" ${value==="all"?"selected":""}>色違い：すべて</option><option value="shiny" ${value==="shiny"?"selected":""}>✨ 色違いのみ</option><option value="normal" ${value==="normal"?"selected":""}>通常色のみ</option></select><small>マスターで色違い登録されたピックを判定</small></div>`}
+
+/* Ver3.54: 図鑑の検索／統合絞り込み／ソート順を最小3枠に整理。 */
+function dexLegendClassMatch354(r,mode){
+ const legendary=isLegendaryRecord(r),mythical=isMythicalRecord(r),legend=legendary||mythical;
+ if(mode==="normal")return !legend;
+ if(mode==="legend")return legend;
+ if(mode==="legendary")return legendary&&!mythical;
+ if(mode==="mythical")return mythical;
+ return true
+}
+function dexFilterCount354(){
+ const f=dexPickFilter||{};let n=0;
+ for(const k of ["series","type","grade","status"])if(f[k]&&f[k]!=="all")n++;
+ if(f.shiny&&f.shiny!=="all")n++;
+ if(f.legendClass&&f.legendClass!=="all")n++;
+ return n
+}
+function dexLegendProgress354(){
+ const list=RECORDS.filter(r=>isLegendaryRecord(r)||isMythicalRecord(r)),seen=list.filter(pickSeen).length,owned=list.filter(r=>!!ownedEntry(r.master_id)).length,shinyOwned=list.filter(r=>isShinyRecord352(r)&&!!ownedEntry(r.master_id)).length;
+ return {total:list.length,seen,owned,shinyOwned}
+}
+function dexResetFilters354({keepSort=true}={}){
+ const sort=keepSort?(dexPickFilter?.sort||"standard"):"standard";
+ dexPickFilter=makePickFilter();dexPickFilter.sort=sort;dexPickFilter.shiny="all";dexPickFilter.legendClass="all";dexLimit=120
+}
+function openLegendDex354(){
+ dexSavedFilter354={...(dexPickFilter||{})};const sort=dexPickFilter?.sort||"standard";
+ dexPickFilter=makePickFilter();dexPickFilter.sort=sort;dexPickFilter.shiny="all";dexPickFilter.legendClass="legend";
+ dexLimit=120;dexReturnScreen354="legend";screen="dex";render()
+}
+function dexCompactFilterHTML354(filter,records,statusOptions,sortOptions,shownCount){
+ const active=dexFilterCount354(),sort=filter.sort||"standard";
+ return `<div class="dexCompactFilter354"><input id="dexSearch354" type="search" placeholder="名前・ピックNo.で検索" value="${esc(filter.search||"")}"><button type="button" id="dexFilterBtn354" class="${active?"active":""}">⚙️ 絞り込み${active?` ${active}`:""}</button><select id="dexSort354" aria-label="ソート順">${sortOptions.map(([v,label])=>`<option value="${esc(v)}" ${sort===v?"selected":""}>ソート順：${esc(label)}</option>`).join("")}</select><span class="dexCompactCount354">${shownCount}件</span></div>`
+}
+function openDexFilter354(records,statusOptions){
+ document.getElementById("dexFilterOverlay354")?.remove();
+ const series=commonFilterSeries(records),types=commonFilterTypes(records),grades=commonFilterGrades(records),f=dexPickFilter||{};
+ const ov=document.createElement("div");ov.id="dexFilterOverlay354";ov.className="dexFilterOverlay354";
+ ov.innerHTML=`<div class="dexFilterPanel354" role="dialog" aria-modal="true" aria-label="図鑑の絞り込み"><div class="dexFilterHead354"><b>⚙️ 絞り込み</b><button type="button" id="dexFilterClose354" class="ghost">×</button></div><div class="dexFilterGrid354">
+ <label><span>分類</span><select id="dexClass354"><option value="all">すべて</option><option value="normal">通常</option><option value="legend">レジェンド（伝説＋幻）</option><option value="legendary">伝説</option><option value="mythical">幻</option></select></label>
+ <label><span>所持・遭遇</span><select id="dexStatus354">${statusOptions.map(([v,label])=>`<option value="${esc(v)}">${esc(label)}</option>`).join("")}</select></label>
+ <label><span>色</span><select id="dexShiny354"><option value="all">すべて</option><option value="shiny">✨ 色違いのみ</option><option value="normal">通常色のみ</option></select></label>
+ <label><span>タイプ</span><select id="dexType354"><option value="all">すべて</option>${types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("")}</select></label>
+ <label><span>★</span><select id="dexGrade354"><option value="all">すべて</option>${grades.map(g=>`<option value="${esc(g)}">★${esc(g)}</option>`).join("")}</select></label>
+ <label><span>弾</span><select id="dexSeries354"><option value="all">すべて</option>${series.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("")}</select></label>
+ </div><div class="dexFilterActions354"><button type="button" id="dexFilterReset354" class="ghost">条件をリセット</button><button type="button" id="dexFilterApply354">適用</button></div></div>`;
+ document.body.appendChild(ov);
+ const set=(id,v)=>{const el=document.getElementById(id);if(el&&[...el.options].some(o=>String(o.value)===String(v??"all")))el.value=String(v??"all")};
+ set("dexClass354",f.legendClass||"all");set("dexStatus354",f.status||"all");set("dexShiny354",f.shiny||"all");set("dexType354",f.type||"all");set("dexGrade354",f.grade||"all");set("dexSeries354",f.series||"all");
+ const close=()=>ov.remove();document.getElementById("dexFilterClose354").onclick=close;ov.onclick=e=>{if(e.target===ov)close()};
+ document.getElementById("dexFilterReset354").onclick=()=>{for(const id of ["dexClass354","dexStatus354","dexShiny354","dexType354","dexGrade354","dexSeries354"])document.getElementById(id).value="all"};
+ document.getElementById("dexFilterApply354").onclick=()=>{
+  dexPickFilter.legendClass=document.getElementById("dexClass354").value;
+  dexPickFilter.status=document.getElementById("dexStatus354").value;
+  dexPickFilter.shiny=document.getElementById("dexShiny354").value;
+  dexPickFilter.type=document.getElementById("dexType354").value;
+  dexPickFilter.grade=document.getElementById("dexGrade354").value;
+  dexPickFilter.series=document.getElementById("dexSeries354").value;
+  dexLimit=120;close();renderDex()
+ }
+}
+function bindDexCompactFilter354(records,statusOptions){
+ const q=document.getElementById("dexSearch354"),fb=document.getElementById("dexFilterBtn354"),so=document.getElementById("dexSort354");
+ if(q)bindImeSearch(q,()=>{const pos=q.selectionStart??q.value.length;dexPickFilter.search=q.value;dexLimit=120;renderDex();requestAnimationFrame(()=>{const n=document.getElementById("dexSearch354");if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch{}}})});
+ if(fb)fb.onclick=()=>openDexFilter354(records,statusOptions);
+ if(so)so.onchange=()=>{dexPickFilter.sort=so.value;dexLimit=120;renderDex()}
+}
 
 /* Ver3.53: 色違いは通常抽選に混ぜず、プレイ種別ごとの明示確率でだけ出現させる。 */
 const SHINY_ENCOUNTER_RATE_353={
@@ -8166,13 +8253,13 @@ function renderDex(){
  };
  normalizeCommonPickFilter(dexPickFilter,all,statusOptions,sortOptions);
  if(!["all","shiny","normal"].includes(dexPickFilter.shiny))dexPickFilter.shiny="all";
- const list=applyCommonPickFilter(all,dexPickFilter,statusPredicate).filter(r=>shinyFilterMatch352(r,dexPickFilter.shiny)),shown=list.slice(0,dexLimit);
- const filterHtml=commonPickFilterHTML("dex",dexPickFilter,all,statusOptions,sortOptions,list.length)+shinyFilterHTML352("dexShiny352",dexPickFilter.shiny);
- app.innerHTML=`<div class="card"><div class="row spread managerScreenHead"><div class="sectionTitle">📖 ポケモン図鑑</div><div class="managerHeadActions">${gridSizeControlHTML("dex",dexViewSize)}<button type="button" class="managerCloseBtn" id="dexCloseBtn">閉じる</button></div></div><div class="muted">判定はピック単位です。未遭遇ピックは「？？？」、遭遇済みで未所持のピックは姿を薄く表示し、現在所持しているピックだけ通常表示します。</div>${filterHtml}<div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=pickSeen(r),cls=d.current?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}${isShinyRecord352(r)?" shinyPick352":""}" ${(seen||d.current)?`data-dex-detail="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen?'<span class="dexSeenTag">遭遇済み</span>':""}<div class="${isShinyRecord352(r)?"shinyFrame352":""}"><img src="${esc(imageOf(r))}" alt=""></div><div class="dexName">${seen?esc(r.name_ja):"？？？"}${seen&&isShinyRecord352(r)?` ${shinyBadgeHTML352()}`:""}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}<br><span class="dexHabitatMini">🌿 生息地：${esc(habitatLabelForRecord(r,seen||d.current))}</span></div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
- bindCommonPickFilter("dex",dexPickFilter,()=>{dexLimit=120;renderDex()});
- const dexShiny=document.getElementById("dexShiny352");if(dexShiny)dexShiny.onchange=()=>{dexPickFilter.shiny=dexShiny.value;dexLimit=120;renderDex()};
+ if(!["all","normal","legend","legendary","mythical"].includes(dexPickFilter.legendClass))dexPickFilter.legendClass="all";
+ const list=applyCommonPickFilter(all,dexPickFilter,statusPredicate).filter(r=>shinyFilterMatch352(r,dexPickFilter.shiny)).filter(r=>dexLegendClassMatch354(r,dexPickFilter.legendClass)),shown=list.slice(0,dexLimit);
+ const filterHtml=dexCompactFilterHTML354(dexPickFilter,all,statusOptions,sortOptions,list.length),legendView=dexReturnScreen354==="legend",title=legendView?"🌟 レジェンド図鑑":"📖 ポケモン図鑑",closeLabel=legendView?"レジェンド戦へ戻る":"閉じる";
+ app.innerHTML=`<div class="card"><div class="row spread managerScreenHead"><div class="sectionTitle">${title}</div><div class="managerHeadActions">${gridSizeControlHTML("dex",dexViewSize)}<button type="button" class="managerCloseBtn" id="dexCloseBtn">${closeLabel}</button></div></div><div class="muted">${legendView?"伝説・幻を同じ図鑑データから表示しています。絞り込みで「伝説」「幻」を切り替えられます。":"判定はピック単位です。未遭遇ピックは「？？？」、遭遇済みで未所持のピックは姿を薄く表示し、現在所持しているピックだけ通常表示します。"}</div>${filterHtml}<div class="dexGrid size-${dexViewSize}">${shown.map(r=>{const d=dexState(r.master_id),seen=pickSeen(r),cls=d.current?"ownedSpecies":seen?"seenUnowned":"unseen",meta=d.current?`${gradeText(r)} / ${esc(r.series||"")}`:d.obtained?`${gradeText(r)} / 入手歴あり`:seen?"遭遇済み・未所持":"未遭遇";return `<div class="dexCard ${d.obtained?"obtained":"unobtained"} ${cls}${isShinyRecord352(r)?" shinyPick352":""}" ${(seen||d.current)?`data-dex-detail="${esc(r.master_id)}" role="button" tabindex="0"`:""}>${d.current?'<span class="dexCurrent">所持中</span>':seen?'<span class="dexSeenTag">遭遇済み</span>':""}<div class="${isShinyRecord352(r)?"shinyFrame352":""}"><img src="${esc(imageOf(r))}" alt=""></div><div class="dexName">${seen?esc(r.name_ja):"？？？"}${seen&&isShinyRecord352(r)?` ${shinyBadgeHTML352()}`:""}</div><div class="dexMeta">${esc(r.pick_no)}<br>${meta}<br><span class="dexHabitatMini">🌿 生息地：${esc(habitatLabelForRecord(r,seen||d.current))}</span></div></div>`}).join("")||'<div class="dexEmpty">該当するピックはありません。</div>'}</div>${shown.length<list.length?`<button class="dexMore" id="dexMore">さらに表示（${shown.length}/${list.length}）</button>`:""}</div>`;
+ bindDexCompactFilter354(all,statusOptions);
  UI.viewSize.bind({root:app,scope:"dex",key:GRID_SIZE_KEY_PREFIX+"dex",onChange:size=>{dexViewSize=size;renderDex()}});
- const more=document.getElementById("dexMore");if(more)more.onclick=()=>{dexLimit+=120;renderDex()};const closeBtn=document.getElementById("dexCloseBtn");if(closeBtn)closeBtn.onclick=()=>{screen="home";render()};
+ const more=document.getElementById("dexMore");if(more)more.onclick=()=>{dexLimit+=120;renderDex()};const closeBtn=document.getElementById("dexCloseBtn");if(closeBtn)closeBtn.onclick=()=>{const back=dexReturnScreen354==="legend"?"legend":"home";if(back==="legend"&&dexSavedFilter354)dexPickFilter={...dexSavedFilter354};dexSavedFilter354=null;dexReturnScreen354="home";screen=back;render()};
  app.querySelectorAll("[data-dex-detail]").forEach(c=>c.onclick=()=>showDexPickDetail(c.dataset.dexDetail))
 }
 
@@ -15897,4 +15984,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.51: post-R5 Legend Battle added. Unlimited 3-v-1 challenge, 15% above R5 boss, 10% mythical slot, 80% unowned priority, one pre-battle reroll, and special 10/30/70/100% capture rates. Updated: 2026-10-07 21:25 JST -->
 <!-- Ver3.52: shiny filters and shiny visual effects. Updated: 2026-10-07 21:45 JST -->
 <!-- Ver3.53: explicit shiny appearance rates, shiny encounter capture-chance bonus, controlled grass/egg rolls, future shiny Legend support, and shiny-boss capture flow. Updated: 2026-10-08 07:30 JST -->
+<!-- Ver3.54: Pokemon Dex filters consolidated into one popup while keeping Search and Sort as separate visible controls. Legend Battle lobby now opens the same Dex prefiltered to Legendary+Mythical, with shared progress counts. Updated: 2026-10-08 08:35 JST -->
 </html>
