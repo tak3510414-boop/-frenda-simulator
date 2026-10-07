@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.17">
+<html lang="ja" data-test-center-version="2.18">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -89,7 +89,8 @@ const dungeonCases=[
  ["d-owned","所持ピック","所持50体で一覧の縦スクロール、初期ソート、画像、ボタンを確認。","owned"],
  ["d-quick","個別特訓","テスト用特訓Pあり。HP/ATK/DEFを実際に強化し、背景・モーダル位置が上へ飛ばないか確認。","quick-training"],
  ["d-bulk","一括特訓","所持ピックから一括特訓を開き、方針選択→確認→実行まで確認。","bulk-training"],
- ["d-shop","ショップ","テスト用🪙20,000あり。下へスクロールして購入後も位置が戻らないこと、コイン情報と商品が区別されることを確認。","shop"]
+ ["d-shop","ショップ","テスト用🪙20,000あり。下へスクロールして購入後も位置が戻らないこと、コイン情報と商品が区別されることを確認。","shop"],
+ ["d-mission-tabs","ミッション タブ未受取バッジ","デイリー／ウィークリー／はじめて／チャレンジの各タブに、未受取報酬があるタブだけ赤い件数バッジが表示されること。受取後は件数が減ること。","mission-tab-badges"]
 ];
 const dailyCases=[
  ["m-daily-empty","デイリー 未達成","今日の5件がすべて進行中。3個達成ボーナスは未解放。","daily-empty","dungeon"],
@@ -213,6 +214,7 @@ async function runAuto(){
   ["黒PCミッション導線",/v342-blackpc-mission-and-expedition-lock-fix/.test(d)&&/grid-template-columns:auto auto minmax\(110px,1fr\) auto!important/.test(d),"黒PCホーム上段を4列化し、ミッションボタンをoverflow外へ追い出さない"],
   ["ミッション状態3色区別",/missionVisualState340/.test(d)&&/missionStateBadge340/.test(d)&&/\.missionCard338\.inprogress/.test(d)&&/\.missionCard338\.claimable/.test(d)&&/\.missionCard338\.claimed/.test(d),"進行中=青・達成未受取=黄・受取済=緑を明示"],
   ["ミッション状態順ソート",/missionStateOrder340/.test(d)&&/missionStateOrder340\(a\.m\)-missionStateOrder340\(b\.m\)/.test(d),"未受取→進行中→受取済みの順に表示"],
+  ["ミッションタブ未受取バッジ",/missionTabClaimableCount348/.test(d)&&/missionTabButtonHTML348/.test(d)&&/missionTabBadge348/.test(d)&&["daily","weekly","first","challenge"].every(x=>d.includes(`missionTabButtonHTML348("${x}"`))&&/mission-tab-badges/.test(d),"4タブそれぞれの未受取件数を赤バッジ表示。0件は非表示、受取後は即時再計算"],
   ["ミッション進捗連携",/missionInc\("enemyDefeats"/.test(d)&&/missionInc\("captures"/.test(d)&&/missionInc\("eggsHatched"/.test(d)&&/missionInc\("trainings"/.test(d)&&/missionInc\("evolutions"/.test(d)&&/missionInc\("grassAttempts"/.test(d),"主要プレイ実績を自動加算"],
   ["探索ミッション連携",/addMissionExpeditionComplete122/.test(e)&&/expeditionsCompleted/.test(e),"探索完了を共有ミッションへ加算"],
   ["ミッション同時保存",/out\.missions=\{version:1/.test(d)&&/"missions"[^\]]*\]\)if\(Object\.prototype\.hasOwnProperty\.call\(merged,k\)\)state\[k\]/.test(d),"探索とダンジョンの同時更新でミッションを保護"],
@@ -263,4 +265,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.15: mission concurrent-save check updated to allow progressionUi after missions in the synchronized state list. Updated: 2026-10-07 06:55 JST -->
 <!-- Ver2.16: daily mission manual presets and static regression checks added. Updated: 2026-10-07 07:04 JST -->
 <!-- Ver2.17: weekly mission manual presets and static regression checks added. Updated: 2026-10-07 07:25 JST -->
+<!-- Ver2.18: mission-tab unclaimed-count badge regression case and static check. Updated: 2026-10-07 13:20 JST -->
 </html>
