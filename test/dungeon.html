@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.54">
+<html lang="ja" data-app-version="3.55">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6322,10 +6322,10 @@ function renderHome(){
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
  const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary(),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0)),invClover=inventoryItemQty("luckyClover"),invTicket=inventoryItemQty("captureTicket"),invGrass=inventoryItemQty("grassTicket"),expOpen=featureExpeditionUnlocked341(),shopLv=featureShopLevel341(),trainOpen=featureTrainingUnlocked341(),evoOpen=featureEvolutionUnlocked341(),eggOpen=featureEggUnlocked341(),grassOpen=featureGrassUnlocked341(),legendOpen=legendBattleUnlocked351();
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
-  <div class="homePlayGrid">
+  <div class="homePlayGrid ${legendOpen?"hasLegend351":"legendHidden355"}">
    <button class="homeMenuBtn homePlayBtn dungeon" data-menu="dungeons"><b>⚔️</b><span>冒険スタート</span><small class="homeCardLead">ダンジョンへ出発！</small><div class="homeCardInfo homeGoalInline"><em>🎯 次の目標</em><strong>${esc(goal.title)}</strong><small>${esc(goal.body)}</small></div></button>
    <button class="homeMenuBtn homePlayBtn expedition progressionNewHost345 ${expOpen?"":"progressLocked341"}" id="expeditionMenuBtn">${progressionNewBadge345("expedition")}<b>🧭</b><span>おでかけ探索</span><small class="homeCardLead">${expOpen?"解放したグループでおでかけ探索":featureLockText341("expedition")}</small>${expOpen?homeExpeditionStatusHTML():`<small class="progressLockText341">🔒 ${esc(featureLockText341("expedition"))}</small>`}</button>
-   <button class="homeMenuBtn homePlayBtn legend351 progressionNewHost345 ${legendOpen?"":"progressLocked341"}" id="legendMenuBtn">${progressionNewBadge345("legend")}<b>${legendOpen?"🌟":"🔒"}</b><span>レジェンド戦</span><small class="homeCardLead">${legendOpen?"全R5制覇後の特別バトル":"全10ダンジョン R5制覇で解放"}</small><small class="legendHomeSub351">${legendOpen?"伝説・幻に挑戦！":"🔒 END GAME"}</small></button>
+   ${legendOpen?`<button class="homeMenuBtn homePlayBtn legend351 progressionNewHost345" id="legendMenuBtn">${progressionNewBadge345("legend")}<b>🌟</b><span>レジェンド戦</span><small class="homeCardLead">全R5制覇後の特別バトル</small><small class="legendHomeSub351">伝説・幻に挑戦！</small></button>`:""}
   </div>
   <div class="homeManageGrid">
    <button class="homeMenuBtn owned progressionNewHost345" data-menu="owned">${progressionNewBadge345("owned")}<b>🎴</b><span>所持ピック</span><strong class="homeManageValue">${state.owned.length}枚</strong><small>確認・チーム編成${trainOpen?"・特訓":""}${evoOpen?"・進化":""}</small><small class="homeTrainingReady">${trainOpen?`特訓可能 ${training.train||0}体`:"🔒 特訓"}${evoOpen?(training.loading?" / 進化確認中…":training.error?" / 進化確認不可":` / 進化可能 ${training.evolve}体`):" / 🔒 進化"}</small></button>
@@ -15971,6 +15971,15 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized[data-dungeon-page="ru
 html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 </style>
 
+<style id="v355-legend-home-unlock-only">
+/* Ver3.55: hide the Legend Battle home card completely until all Rank 5 dungeons are cleared. */
+.homePlayGrid.legendHidden355{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media(max-width:700px){
+ .homePlayGrid.legendHidden355{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGrid.legendHidden355{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+</style>
+
 </body>
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
@@ -15985,4 +15994,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.52: shiny filters and shiny visual effects. Updated: 2026-10-07 21:45 JST -->
 <!-- Ver3.53: explicit shiny appearance rates, shiny encounter capture-chance bonus, controlled grass/egg rolls, future shiny Legend support, and shiny-boss capture flow. Updated: 2026-10-08 07:30 JST -->
 <!-- Ver3.54: Pokemon Dex filters consolidated into one popup while keeping Search and Sort as separate visible controls. Legend Battle lobby now opens the same Dex prefiltered to Legendary+Mythical, with shared progress counts. Updated: 2026-10-08 08:35 JST -->
+<!-- Ver3.55: Legend Battle home card is hidden until all Rank 5 dungeons are cleared; the card first appears at unlock and retains the NEW marker. Pre-unlock home play grid returns to two columns. Updated: 2026-10-08 08:55 JST -->
 </html>

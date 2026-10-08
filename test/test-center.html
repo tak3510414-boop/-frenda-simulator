@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.24">
+<html lang="ja" data-test-center-version="2.25">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -248,6 +248,7 @@ async function runAuto(){
   ["レジェンド戦解放・抽選",/function legendBattleUnlocked351\(\)/.test(d)&&/statKey\(did,5\)/.test(d)&&/LEGEND_MYTHICAL_RATE_351=\.10/.test(d)&&/LEGEND_UNOWNED_PRIORITY_351=\.80/.test(d)&&/rerollsRemaining/.test(d),"全R5制覇で解放。幻10%、未所持80%優先、挑戦前の相手変更1回"],
   ["レジェンド戦強度・捕獲率",/LEGEND_POWER_MULT_351=1\.15/.test(d)&&/LEGEND_CAPTURE_RATE_351=\{poke:\.10,super:\.30,hyper:\.70,master:1\}/.test(d)&&/c\.legendBattle\?\["poke","poke","poke","poke","poke","super","super","hyper"\]/.test(d),"R5ボス比1.15倍。特別捕獲率10/30/70/100%、無料スロットにマスターボールを入れない"],
   ["レジェンド戦専用フロー",/startLegendRun351/.test(d)&&/v\.kind==="legend"/.test(d)&&/finishLegendRun351/.test(d)&&/legend-battle-lobby/.test(d),"3対1→勝利→特別ゲット→成功/失敗/敗北から専用ロビーへ戻る。卵・草むら報酬なし"],
+  ["レジェンド戦ホーム枠は解放後のみ",/homePlayGrid \$\{legendOpen\?"hasLegend351":"legendHidden355"\}/.test(d)&&/\$\{legendOpen\?`<button class="homeMenuBtn homePlayBtn legend351 progressionNewHost345"/.test(d)&&/homePlayGrid\.legendHidden355\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important\}/.test(d),"未解放時はホームにレジェンド戦枠自体を表示しない。全R5制覇で初めて出現し、NEW表示は維持"],
   ["図鑑フィルタ最小化・ソート独立",/dexCompactFilterHTML354/.test(d)&&/id="dexSearch354"/.test(d)&&/id="dexFilterBtn354"/.test(d)&&/id="dexSort354"/.test(d)&&!d.slice(d.indexOf("function renderDex(){"),d.indexOf("function exportSave()",d.indexOf("function renderDex(){"))).includes("dexShiny352"),"図鑑上部は検索・統合絞り込み・ソート順。色違い等の個別フィルタ枠を追加しない"],
   ["レジェンド図鑑共通化",/openLegendDex354/.test(d)&&/legendClass="legend"/.test(d)&&/legendDexBar354/.test(d)&&/id="legendDex354"/.test(d)&&/legend-dex/.test(d),"独立図鑑を作らず、レジェンド戦ロビーから通常図鑑を伝説＋幻に絞って開く"],
   ["色違い判定",/function isShinyRecord352/.test(d)&&/category\|\|""/.test(d)&&/===\"shiny\"/.test(d)&&!/pick_no.*★.*isShinyRecord352/.test(d),"category=shiny（または将来の明示shinyフラグ）のみ。★付き番号だけでは判定しない"],
@@ -303,4 +304,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.22: shiny regression routes/checks. Updated: 2026-10-07 21:45 JST -->
 <!-- Ver2.23: explicit shiny appearance-rate / capture-balance regression checks added. Updated: 2026-10-08 07:30 JST -->
 <!-- Ver2.24: compact shared Pokédex filter regression added. Search / one filter popup / Sort remain as the minimum visible controls, and Legend lobby opens the same Dex prefiltered. Updated: 2026-10-08 08:35 JST -->
+<!-- Ver2.25: regression check added for Legend Battle home card appearing only after all Rank 5 clears. Updated: 2026-10-08 08:55 JST -->
 </html>
