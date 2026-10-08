@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.55">
+<html lang="ja" data-app-version="3.56">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5126,7 +5126,7 @@ function saveGridSize(scope,size){return UI.viewSize.save(GRID_SIZE_KEY_PREFIX+s
 function gridSizeControlHTML(scope,current){return UI.viewSize.html({scope,current,wrapperClass:"viewSizeControl"})}
 let dexViewSize=loadGridSize("dex"),ownedViewSize=loadGridSize("owned"),teamViewSize=loadGridSize("team");
 if(isBlackPcOptimization()){try{if(!localStorage.getItem(GRID_SIZE_KEY_PREFIX+"team"))teamViewSize="small"}catch{}}
-let ownedSearch="",ownedType="all",ownedGrade="all",ownedSort="acquired",ownedShiny352="all",ownedActionOnly=false;
+let ownedSearch="",ownedType="all",ownedGrade="all",ownedSort="acquired",ownedShiny352="all",ownedSeries356="all",ownedLegendClass356="all",ownedGrowth356="all";
 let trainingFocusId=null;
 let trainingStickyIds=new Set();
 let teamAutoNotice="";
@@ -7998,20 +7998,79 @@ function ownedRelationBoxHTML(id){
  return `<div class="ownedRelationBox"><span><small>♥ なつき</small><b>${bond}/${bondMax}</b></span><span><small>🍀 幸運</small><b>${luck}/${LUCK_MAX}</b></span></div>`
 }
 function ownedMoveSummary(r){const normal=String(r?.move||"未登録"),fin=(r?.finisher_move&&String(r.finisher_move).trim())?String(r.finisher_move).trim():"なし";return `<div class="ownedMoveCompact"><div><span>わざ</span><b>${esc(normal)}</b><small>${esc(r?.move_type||"-")} / ${esc(r?.move_class||"-")}</small></div><div><span>必殺技</span><b>${esc(fin)}</b></div></div>`}
+function ownedFilterCount356(){
+ const values=[ownedType,ownedGrade,ownedSeries356,ownedShiny352,ownedLegendClass356,ownedGrowth356];
+ return values.reduce((n,v)=>n+(v&&v!=="all"?1:0),0)
+}
+function ownedGrowthState356(r){
+ const id=r?.master_id,ei=id?evolutionInfoForPick(id):{canEvolve:false,hasEvolution:false,registered:false,fainted:false,points:0,cost:0};
+ const train=!!id&&featureTrainingUnlocked341()&&trainingAvailable(id),evolve=!!id&&featureEvolutionUnlocked341()&&!!ei.canEvolve;
+ const near=!!id&&featureEvolutionUnlocked341()&&!!ei.hasEvolution&&!!ei.registered&&!ei.fainted&&!ei.canEvolve&&ei.points===Math.max(0,ei.cost-1);
+ return {train,evolve,near,action:train||evolve||near}
+}
+function ownedGrowthFilterMatch356(r,mode){
+ if(!mode||mode==="all")return true;const s=ownedGrowthState356(r);
+ if(mode==="action")return s.action;
+ if(mode==="train")return s.train;
+ if(mode==="evolve")return s.evolve;
+ if(mode==="near")return s.near;
+ return true
+}
+function ownedCompactFilterHTML356(shown,total){
+ const active=ownedFilterCount356(),sort=ownedSort||"acquired",sortOptions=[
+  ["acquired","入手順（新しい順）"],["standard","番号順"],["name","名前順"],["grade","★高い順"],["energy","ポケエネ高い順"],["evolution","進化P多い順"],["drill","特訓P多い順"],["luck","🍀 幸運高い順"]
+ ];
+ return `<div class="dexCompactFilter354 ownedCompactFilter356"><input id="ownedSearch356" type="search" placeholder="名前・ピックNo.で検索" value="${esc(ownedSearch||"")}"><button type="button" id="ownedFilterBtn356" class="${active?"active":""}">⚙️ 絞り込み${active?` ${active}`:""}</button><select id="ownedSort356" aria-label="ソート順">${sortOptions.map(([v,label])=>`<option value="${esc(v)}" ${sort===v?"selected":""}>ソート順：${esc(label)}</option>`).join("")}</select><span class="dexCompactCount354">${shown}/${total}枚</span></div>`
+}
+function openOwnedFilter356(allCards){
+ document.getElementById("ownedFilterOverlay356")?.remove();
+ const series=commonFilterSeries(allCards),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
+ const ov=document.createElement("div");ov.id="ownedFilterOverlay356";ov.className="dexFilterOverlay354";
+ ov.innerHTML=`<div class="dexFilterPanel354" role="dialog" aria-modal="true" aria-label="所持ピックの絞り込み"><div class="dexFilterHead354"><b>⚙️ 絞り込み</b><button type="button" id="ownedFilterClose356" class="ghost">×</button></div><div class="dexFilterGrid354">
+ <label><span>分類</span><select id="ownedClass356"><option value="all">すべて</option><option value="normal">通常</option><option value="legend">レジェンド（伝説＋幻）</option><option value="legendary">伝説</option><option value="mythical">幻</option></select></label>
+ <label><span>色</span><select id="ownedShiny356"><option value="all">すべて</option><option value="shiny">✨ 色違いのみ</option><option value="normal">通常色のみ</option></select></label>
+ <label><span>タイプ</span><select id="ownedType356"><option value="all">すべて</option>${types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("")}</select></label>
+ <label><span>★</span><select id="ownedGrade356"><option value="all">すべて</option>${grades.map(g=>`<option value="${esc(g)}">★${esc(g)}</option>`).join("")}</select></label>
+ <label><span>弾</span><select id="ownedSeries356"><option value="all">すべて</option>${series.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("")}</select></label>
+ <label><span>育成</span><select id="ownedGrowth356"><option value="all">すべて</option><option value="action">特訓・進化対象</option><option value="train">特訓可能</option><option value="evolve">進化可能</option><option value="near">あと1で進化</option></select></label>
+ </div><div class="dexFilterActions354"><button type="button" id="ownedFilterReset356" class="ghost">条件をリセット</button><button type="button" id="ownedFilterApply356">適用</button></div></div>`;
+ document.body.appendChild(ov);
+ const set=(id,v)=>{const el=document.getElementById(id);if(el&&[...el.options].some(o=>String(o.value)===String(v??"all")))el.value=String(v??"all")};
+ set("ownedClass356",ownedLegendClass356);set("ownedShiny356",ownedShiny352);set("ownedType356",ownedType);set("ownedGrade356",ownedGrade);set("ownedSeries356",ownedSeries356);set("ownedGrowth356",ownedGrowth356);
+ const close=()=>ov.remove();document.getElementById("ownedFilterClose356").onclick=close;ov.onclick=e=>{if(e.target===ov)close()};
+ document.getElementById("ownedFilterReset356").onclick=()=>{for(const id of ["ownedClass356","ownedShiny356","ownedType356","ownedGrade356","ownedSeries356","ownedGrowth356"])document.getElementById(id).value="all"};
+ document.getElementById("ownedFilterApply356").onclick=()=>{
+  ownedLegendClass356=document.getElementById("ownedClass356").value;
+  ownedShiny352=document.getElementById("ownedShiny356").value;
+  ownedType=document.getElementById("ownedType356").value;
+  ownedGrade=document.getElementById("ownedGrade356").value;
+  ownedSeries356=document.getElementById("ownedSeries356").value;
+  ownedGrowth356=document.getElementById("ownedGrowth356").value;
+  close();renderOwned()
+ }
+}
+function bindOwnedCompactFilter356(allCards){
+ const q=document.getElementById("ownedSearch356"),fb=document.getElementById("ownedFilterBtn356"),so=document.getElementById("ownedSort356");
+ if(q)bindImeSearch(q,()=>{const pos=q.selectionStart??q.value.length;ownedSearch=q.value;renderOwned();requestAnimationFrame(()=>{const n=document.getElementById("ownedSearch356");if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch{}}})});
+ if(fb)fb.onclick=()=>openOwnedFilter356(allCards);
+ if(so)so.onchange=()=>{ownedSort=so.value;renderOwned()}
+}
 function renderOwned(){
  reconcileDexState();normalizeMaxedDrillPoints();
- const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),acquiredOrder=new Map(state.owned.map((o,i)=>[String(o.id),i])),types=commonFilterTypes(allCards),grades=commonFilterGrades(allCards);
- const actionTarget=r=>{const ei=evolutionInfoForPick(r.master_id);return (featureTrainingUnlocked341()&&trainingAvailable(r.master_id))||(featureEvolutionUnlocked341()&&(ei.canEvolve||(ei.hasEvolution&&ei.registered&&!ei.fainted&&ei.points===Math.max(0,ei.cost-1))))};
- let cards=ownedActionOnly?allCards.filter(actionTarget):allCards.filter(r=>{
+ const allCards=state.owned.map(o=>rec(o.id)).filter(Boolean),acquiredOrder=new Map(state.owned.map((o,i)=>[String(o.id),i]));
+ let cards=allCards.filter(r=>{
    if(!pickSearchMatch(r,ownedSearch))return false;
    if(ownedType!=="all"&&r.type1!==ownedType&&r.type2!==ownedType)return false;
    if(ownedGrade!=="all"&&Number(r.grade)!==Number(ownedGrade))return false;
+   if(ownedSeries356!=="all"&&String(r.series||"")!==String(ownedSeries356))return false;
    if(!shinyFilterMatch352(r,ownedShiny352))return false;
+   if(!dexLegendClassMatch354(r,ownedLegendClass356))return false;
+   if(!ownedGrowthFilterMatch356(r,ownedGrowth356))return false;
    return true
  });
  const cmpNum=(a,b)=>String(a.pick_no||"").localeCompare(String(b.pick_no||""),"ja",{numeric:true});
  cards=cards.slice().sort((a,b)=>ownedSort==="acquired"?(acquiredOrder.get(String(b.master_id))??-1)-(acquiredOrder.get(String(a.master_id))??-1):ownedSort==="name"?String(a.name_ja||"").localeCompare(String(b.name_ja||""),"ja"):ownedSort==="grade"?(Number(b.grade)||0)-(Number(a.grade)||0)||cmpNum(a,b):ownedSort==="energy"?(Number(b.poke_ene)||0)-(Number(a.poke_ene)||0)||cmpNum(a,b):ownedSort==="evolution"?growthPointsFor(b.master_id)-growthPointsFor(a.master_id)||cmpNum(a,b):ownedSort==="drill"?drillFor(b.master_id)-drillFor(a.master_id)||cmpNum(a,b):ownedSort==="luck"?luckFor(b.master_id)-luckFor(a.master_id)||cmpNum(a,b):cmpNum(a,b));
- const filterHtml=`<div class="ownedFilterPanel"><div class="ownedFilterGrid"><input id="ownedSearch" type="search" placeholder="名前（ひらがなOK）・ピックNo.で検索" value="${esc(ownedSearch)}"><select id="ownedType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${ownedType===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="ownedGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(ownedGrade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="ownedSort"><option value="acquired" ${ownedSort==="acquired"?"selected":""}>入手順（新しい順）</option><option value="standard" ${ownedSort==="standard"?"selected":""}>番号順</option><option value="name" ${ownedSort==="name"?"selected":""}>名前順</option><option value="grade" ${ownedSort==="grade"?"selected":""}>★高い順</option><option value="energy" ${ownedSort==="energy"?"selected":""}>ポケエネ高い順</option><option value="evolution" ${ownedSort==="evolution"?"selected":""}>進化P多い順</option><option value="drill" ${ownedSort==="drill"?"selected":""}>特訓P多い順</option><option value="luck" ${ownedSort==="luck"?"selected":""}>🍀 幸運高い順</option></select></div>${shinyFilterHTML352("ownedShiny352",ownedShiny352)}<div class="ownedFilterFoot"><button id="ownedActionToggle" class="${ownedActionOnly?"active":""}">特訓・進化 ${ownedActionOnly?"ON":"のみ"}</button><span>${cards.length}/${allCards.length}枚</span></div>${ownedActionOnly?'<div class="ownedFilterBypass">通常フィルタを一時的に無視しています。特訓可能・進化可能に加え、進化Pがあと1のピックは「👀 あと1で進化」と表示します。</div>':""}</div>`;
+ const filterHtml=ownedCompactFilterHTML356(cards.length,allCards.length);
  const cardsHtml=cards.length?cards.map(r=>{
    const id=r.master_id,expLocked=isExpeditionLocked(id),pb=state.permanentBoosts[id]||{},dp=drillFor(id),gp=growthPointsFor(id),ei=evolutionInfoForPick(id),trainFeature=featureTrainingUnlocked341(),evoFeature=featureEvolutionUnlocked341(),trainOk=trainFeature&&trainingAvailable(id),evoOk=evoFeature&&ei.canEvolve,nearEvo=evoFeature&&ei.hasEvolution&&ei.registered&&!ei.fainted&&!ei.canEvolve&&ei.points===Math.max(0,ei.cost-1);
    return `<div class="pickCard ownedDetailCard ownedFrontCardV190 ${isShinyRecord352(r)?"shinyPick352":""} ${expLocked?"expLockedCard":""} ${nearEvo?"ownedNearEvoCard":""}" data-owned-detail="${esc(id)}" role="button" tabindex="0"><div class="ownedV190Visual${isShinyRecord352(r)?" shinyFrame352":""}"><img src="${esc(imageOf(r))}" alt="">${isShinyRecord352(r)?shinyBadgeHTML352():""}${nearEvo?'<div class="ownedNearEvoBadge">👀 あと1で進化</div>':""}</div><div class="ownedV190Identity"><b>${esc(r.name_ja)} <small>（${esc(r.pick_no)}）</small></b><div class="ownedV190Meta"><strong class="starStrong">${gradeText(r)}</strong><strong class="energyStrong">⚡ ${esc(r.poke_ene??"-")}</strong><div class="typeStrong">${typesHTML(r)}</div></div></div>${ownedRelationBoxHTML(id)}<div class="ownedV190Actions"><button class="ownedActionBtn train ${trainFeature?"":"progressFeatureLocked341"}" data-quick-train="${esc(id)}" ${trainOk?"":"disabled"} title="${trainFeature?"":esc(featureLockText341("training"))}"><span>特訓</span><b>${trainFeature?dp:"🔒"}</b></button><button class="ownedActionBtn evolve${evoOk?" ready":""} ${evoFeature?"":"progressFeatureLocked341"}" data-evolve-id="${esc(id)}" ${evoOk?"":"disabled"} title="${evoFeature?"":esc(featureLockText341("evolution"))}"><span>進化</span><b>${evoFeature?gp:"🔒"}</b></button></div>${trainingGraphHTML(r,pb)}${ownedMoveSummary(r)}${expLocked?'<div class="ownedDetailHint">🧭 探索中：特訓・進化・冒険参加不可</div>':nearEvo?'<div class="ownedDetailHint">次に進化Pを1獲得すると進化可能</div>':ei.hasEvolution&&!ei.registered?'<div class="ownedDetailHint">進化先ピックがマスター未登録</div>':!ei.hasEvolution?'<div class="ownedDetailHint">進化先なし：進化P相当は特訓P+2</div>':'<div class="ownedDetailHint">タップで詳しい裏面データ</div>'}</div>`
@@ -8020,13 +8079,7 @@ function renderOwned(){
  app.querySelectorAll("[data-owned-detail]").forEach(c=>{const open=()=>showOwnedPickDetail(c.dataset.ownedDetail);c.onclick=e=>{if(e.target.closest("button"))return;open()};c.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();open()}}});
  app.querySelectorAll("[data-quick-train]").forEach(b=>b.onclick=e=>{e.stopPropagation();showQuickTraining(b.dataset.quickTrain)});
  app.querySelectorAll("[data-evolve-id]").forEach(b=>b.onclick=e=>{e.stopPropagation();openEvolutionDialog(b.dataset.evolveId)});
- const q=document.getElementById("ownedSearch"),ty=document.getElementById("ownedType"),gr=document.getElementById("ownedGrade"),sh=document.getElementById("ownedShiny352"),so=document.getElementById("ownedSort"),toggle=document.getElementById("ownedActionToggle");
- bindImeSearch(q,()=>{ownedSearch=q.value;if(!ownedActionOnly){const pos=q.selectionStart??ownedSearch.length;renderOwned();requestAnimationFrame(()=>{const nq=document.getElementById("ownedSearch");if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch{}}})}});
- if(ty)ty.onchange=()=>{ownedType=ty.value;if(!ownedActionOnly)renderOwned()};
- if(gr)gr.onchange=()=>{ownedGrade=gr.value;if(!ownedActionOnly)renderOwned()};
- if(sh)sh.onchange=()=>{ownedShiny352=sh.value;if(!ownedActionOnly)renderOwned()};
- if(so)so.onchange=()=>{ownedSort=so.value;renderOwned()};
- if(toggle)toggle.onclick=()=>{ownedActionOnly=!ownedActionOnly;renderOwned()};
+ bindOwnedCompactFilter356(allCards);
  UI.viewSize.bind({root:app,scope:"owned",key:GRID_SIZE_KEY_PREFIX+"owned",onChange:size=>{ownedViewSize=size;renderOwned()}});const bulkBtn311=document.getElementById("ownedBulkTrainBtn311");if(bulkBtn311)bulkBtn311.onclick=showBulkTrainingDialog;const closeBtn=document.getElementById("ownedCloseBtn");if(closeBtn)closeBtn.onclick=()=>{screen="home";render()}
 }
 function ownedPointHelpData(kind,id){
@@ -15980,6 +16033,12 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGrid.legendHidden355{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 </style>
 
+
+<style id="v356-owned-compact-filter">
+/* Ver3.56: Owned Picks follows the Pokédex: Search / one integrated Filter / Sort remain visible. */
+.ownedCompactFilter356{margin-top:8px!important}
+@media(max-width:700px){.dexCompactFilter354 #ownedSearch356{grid-column:1/-1}}
+</style>
 </body>
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
@@ -15995,4 +16054,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.53: explicit shiny appearance rates, shiny encounter capture-chance bonus, controlled grass/egg rolls, future shiny Legend support, and shiny-boss capture flow. Updated: 2026-10-08 07:30 JST -->
 <!-- Ver3.54: Pokemon Dex filters consolidated into one popup while keeping Search and Sort as separate visible controls. Legend Battle lobby now opens the same Dex prefiltered to Legendary+Mythical, with shared progress counts. Updated: 2026-10-08 08:35 JST -->
 <!-- Ver3.55: Legend Battle home card is hidden until all Rank 5 dungeons are cleared; the card first appears at unlock and retains the NEW marker. Pre-unlock home play grid returns to two columns. Updated: 2026-10-08 08:55 JST -->
+<!-- Ver3.56: Owned Picks search UI now follows the Pokédex. Search / one integrated filter popup / Sort stay visible; type, grade, series, shiny, Legend class, and training/evolution state are consolidated in the popup. Updated: 2026-10-08 09:10 JST -->
 </html>
