@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.31">
+<html lang="ja" data-app-version="1.32">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -322,13 +322,14 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 /* Ver1.29: R2-unlocked batch return. Return all exploring groups at once, then reveal arrivals one group at a time before opening rewards. */
 .batchReturnActions129{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
 .batchReturnBtn129{background:linear-gradient(180deg,#ffcf61,#e99a23);color:#5a3900;border:0;font-weight:1000}
+.batchReturnActions129>button{height:76px!important;min-height:76px!important;margin:0!important;padding:8px 10px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1.18!important}
 .batchReturnOverlay129{position:fixed;inset:0;z-index:100650;background:#071b2bd9;display:grid;place-items:center;padding:7px}
 .batchReturnPanel129{width:min(820px,98vw);max-height:96dvh;overflow:auto;background:#fff;border-radius:18px;padding:10px;box-shadow:0 22px 80px #0008}
 .batchReturnHead129{display:flex;align-items:center;justify-content:space-between;gap:8px}.batchReturnHead129 small{display:block;color:#6d7d85;font-size:9px;font-weight:1000;letter-spacing:.1em}.batchReturnHead129 h2{margin:1px 0 0;font-size:24px;color:#173a4d}.batchReturnClose129{width:34px;height:34px;border:0;border-radius:999px;background:#e8f0f4;color:#23485a;font-size:19px;font-weight:1000}
 .batchReturnList129{display:grid;gap:5px;margin:7px 0}.batchReturnRow129{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:7px;align-items:center;padding:7px;border:1px solid #d7e4ea;border-radius:11px;background:#f8fbfd}.batchReturnGroup129{font-weight:1000;color:#2b5569}.batchReturnMain129 b{display:block;font-size:16px;color:#173a4d}.batchReturnPicks129{display:flex;gap:4px;margin-top:4px}.batchReturnPicks129 img{width:52px;height:62px;object-fit:contain;background:#fff;border:1px solid #d4e1e7;border-radius:7px}.batchReturnMeta129{display:flex;gap:5px 9px;flex-wrap:wrap;margin-top:4px;font-size:11px;font-weight:900;color:#58707d}.batchReturnStat129{text-align:right}.batchReturnStat129 strong{display:block;font-size:24px;color:#b66a0d;line-height:1}.batchReturnStat129 small{display:block;margin-top:3px;font-size:11px;color:#5b707c;font-weight:1000}.batchReturnNoReward129{color:#9b3e25!important}.batchReturnNote129{padding:6px 8px;border-radius:10px;background:#fff7df;color:#785519;font-size:10px;line-height:1.35}.batchReturnButtons129{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.batchReturnButtons129 button{min-height:43px;font-size:14px}.batchReturnStart129,.batchReturnNext129{background:linear-gradient(180deg,#f2b94f,#d98a19);color:#fff;border:0;font-weight:1000}
 .batchArrival129{text-align:center;animation:batchArrivalPop129 .34s cubic-bezier(.2,.8,.2,1) both}.batchArrival129 .arrivalIcon129{font-size:46px}.batchArrival129 h2{margin:1px 0 5px;font-size:27px}.batchArrival129 .arrivalDest129{font-size:17px;font-weight:1000;color:#254b5d}.batchArrivalPicks129{display:flex;justify-content:center;gap:7px;margin:8px 0}.batchArrivalPicks129 img{width:72px;height:88px;object-fit:contain;border-radius:9px;border:1px solid #d6e2e8;background:#fff}.batchArrivalStats129{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:1000;color:#536d79}.batchArrivalBoxes129{margin:9px 0;padding:8px;border-radius:12px;background:#fff5d2;color:#6e4b00;font-size:20px;font-weight:1000}.batchReturnFinal129{text-align:center}.batchReturnFinal129 h2{margin:2px 0 7px;font-size:26px}.batchReturnFinalStats129{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:8px 0}.batchReturnFinalStats129 div{padding:10px;border-radius:12px;background:#eef6fa}.batchReturnFinalStats129 b{display:block;font-size:23px;color:#17698a}.batchReturnFinalStats129 small{font-size:10px;color:#637984;font-weight:900}
 @keyframes batchArrivalPop129{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-@media(max-width:700px){.batchReturnActions129{grid-template-columns:1fr 1fr;gap:5px}.batchReturnPanel129{width:calc(100vw - 6px);padding:7px;border-radius:14px}.batchReturnHead129 h2{font-size:21px}.batchReturnRow129{grid-template-columns:62px minmax(0,1fr) 62px;gap:5px;padding:6px}.batchReturnGroup129{font-size:13px}.batchReturnMain129 b{font-size:14px}.batchReturnPicks129 img{width:43px;height:51px}.batchReturnMeta129{font-size:9px;gap:3px 6px}.batchReturnStat129 strong{font-size:22px}.batchReturnStat129 small{font-size:9px}.batchArrivalPicks129 img{width:62px;height:76px}.batchReturnButtons129{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.batchReturnActions129{grid-template-columns:1fr 1fr;gap:5px}.batchReturnActions129>button{height:70px!important;min-height:70px!important;padding:6px 7px!important;font-size:17px!important;line-height:1.16!important}.batchReturnPanel129{width:calc(100vw - 6px);padding:7px;border-radius:14px}.batchReturnHead129 h2{font-size:21px}.batchReturnRow129{grid-template-columns:62px minmax(0,1fr) 62px;gap:5px;padding:6px}.batchReturnGroup129{font-size:13px}.batchReturnMain129 b{font-size:14px}.batchReturnPicks129 img{width:43px;height:51px}.batchReturnMeta129{font-size:9px;gap:3px 6px}.batchReturnStat129 strong{font-size:22px}.batchReturnStat129 small{font-size:9px}.batchArrivalPicks129 img{width:62px;height:76px}.batchReturnButtons129{grid-template-columns:1fr 1fr}}
 </style>
 
 <style id="v131-batch-return-aggregate">
@@ -3149,7 +3150,7 @@ body.blackExpExplore075 .eventTitle{font-size:17px!important;}
 body.blackExpExplore075 .adventureEvent p{font-size:15px!important;}
 body.blackExpExplore075 .adventureEvent time{font-size:13px!important;}
 body.blackExpExplore075 .exploreInfo>.notice{font-size:13px!important;line-height:1.3!important;padding:5px 8px!important;margin:0!important;flex:0 0 auto!important;}
-body.blackExpExplore075 .returnMissionBtn{flex:0 0 49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
+body.blackExpExplore075 .batchReturnActions129>button{height:49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
 }
 </style>
 <!-- Updated: 2026-10-03 22:33 JST / Ver0.79 -->
@@ -3354,7 +3355,7 @@ body.blackExpExplore075 .eventTitle{font-size:12px!important;}
 body.blackExpExplore075 .adventureEvent p{font-size:10px!important;line-height:1.25!important;}
 body.blackExpExplore075 .adventureEvent time{font-size:9px!important;}
 body.blackExpExplore075 .exploreInfo>.notice{font-size:9px!important;line-height:1.2!important;padding:3px 5px!important;}
-body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:38px!important;font-size:18px!important;padding:4px!important;}
+body.blackExpExplore075 .batchReturnActions129>button{height:38px!important;min-height:38px!important;font-size:18px!important;padding:4px!important;}
 }
 </style>
 <!-- Ver0.80: 黒PCで確定した探索ホーム・探索中レイアウトを白PC1366x688へ適用。高さ688px向けに各領域を圧縮し、主要操作を1画面に維持。 -->
@@ -3639,5 +3640,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.29: R2-unlocked batch return added. Two or more exploring groups can return together; confirmation warns under-30-minute no-reward groups, arrivals reveal one group at a time, and reward contents remain hidden until the user opens each group in the normal return flow. Added batch-return regression preset. Updated: 2026-10-10 07:44 JST -->
 <!-- Ver1.30: free exploration maximum extended from 12h to 24h. Existing 0.5–12h rewards are unchanged; 14/16/18/20/22/24h milestones add 9/10/11/12/13/14 boxes, XP 88/101/113/125/136/145, bond .37/.42/.46/.51/.55/.60, discovery 28/32/35/39/42/45, and base souvenirs 4/5/5/6/6/7. Rare-box quality rules remain capped at the existing 8h quality tier. Active free-return missions migrate to the new 24h cap. Updated: 2026-10-10 08:05 JST -->
 <!-- Ver1.31: batch return redesigned as a true aggregate flow. All groups are reported together; RARE-below/normal rewards are summarized in one screen, while RARE and jackpot (= SUPER RARE in batch UI) are revealed individually. Per-group arrival sequence and per-group result traversal removed. Batch flow also resolves egg overflow, then finalizes all returned groups together. Updated: 2026-10-10 08:12 JST -->
-<!-- SOURCE FILE: Expedition Ver1.31 full source. Updated: 2026-10-10 08:12 JST -->
+<!-- Ver1.32: 探索中画面の「このグループだけ帰還」と「一括帰還」の縦サイズを共通固定し、iPhone・黒PCとも左右ボタンの高さを統一。Updated: 2026-10-10 08:47 JST -->
+<!-- SOURCE FILE: Expedition Ver1.32 full source. Updated: 2026-10-10 08:47 JST -->
 </html>
