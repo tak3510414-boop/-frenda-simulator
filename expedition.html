@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.25">
+<html lang="ja" data-app-version="1.32">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -242,6 +242,100 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 </style>
 
 
+
+<style id="v126-batch-auto-destination-lock">
+/* Ver1.26: one destination per group at a time + R2 unlocked batch auto expedition. */
+.batchAutoBar126{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:9px 11px;border:1px solid #c8dce8;border-radius:14px;background:linear-gradient(180deg,#f7fcff,#edf7fb)}
+.batchAutoBar126>div{min-width:0}.batchAutoBar126 b{display:block;font-size:14px;color:#24475a}.batchAutoBar126 small{display:block;margin-top:2px;font-size:10px;color:#647b88;line-height:1.35}
+.batchAutoBtn126{flex:0 0 auto;min-width:210px;background:linear-gradient(180deg,#6edb92,#32aa67);color:#fff;border:0;font-weight:1000}.batchAutoBtn126.locked{background:#dce5e9;color:#75858d}.batchAutoBtn126:disabled{box-shadow:none;cursor:not-allowed}
+.destinationCompact.destBusy126{opacity:.58;filter:saturate(.55);cursor:not-allowed!important;border-style:dashed!important}
+.destBusyBadge126{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;background:#e7edf0;color:#53656f;font-size:8px;font-weight:1000;white-space:nowrap}
+.batchAutoOverlay126{position:fixed;inset:0;z-index:100600;background:#071b2bcc;display:grid;place-items:center;padding:14px}
+.batchAutoPanel126{width:min(780px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:16px;box-shadow:0 22px 80px #0008}
+.batchAutoHead126{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.batchAutoHead126 small{display:block;color:#4f7b90;font-weight:1000;letter-spacing:.12em}.batchAutoHead126 h2{margin:3px 0 0;font-size:24px;color:#173a4d}.batchAutoClose126{width:38px;height:38px;border-radius:999px;border:0;background:#e8f0f4;color:#23485a;font-size:20px;font-weight:1000}
+.batchAutoList126{display:grid;gap:8px;margin:13px 0}.batchAutoRow126{display:grid;grid-template-columns:88px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid #d7e4ea;border-radius:14px;background:#f8fbfd}
+.batchAutoGroup126{font-weight:1000;color:#2b5569}.batchAutoMain126 b{display:block;font-size:15px;color:#173a4d}.batchAutoMain126 small{display:block;margin-top:3px;color:#627986;font-size:10px;line-height:1.4}.batchAutoScore126{text-align:right}.batchAutoScore126 strong{display:block;font-size:20px;color:#25714a}.batchAutoScore126 small{font-size:9px;color:#6f7e86}
+.batchAutoNote126{padding:9px 11px;border-radius:12px;background:#eef8f1;color:#2e6846;font-size:10px;line-height:1.5}
+.batchAutoActions126{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.batchAutoStart126{background:linear-gradient(180deg,#39bb72,#239754);color:#fff;border:0;font-weight:1000}
+@media(max-width:700px){.batchAutoBar126{align-items:stretch;flex-direction:column;margin:6px 0;padding:8px}.batchAutoBtn126{width:100%;min-width:0}.batchAutoRow126{grid-template-columns:72px minmax(0,1fr);gap:7px}.batchAutoScore126{grid-column:1/-1;text-align:left;display:flex;gap:8px;align-items:baseline}.batchAutoScore126 strong{font-size:17px}.batchAutoActions126{grid-template-columns:1fr}}
+@media(min-width:1200px) and (min-height:650px) and (max-height:840px){body.blackExpPrep073 .batchAutoBar126{margin:4px 0;padding:5px 8px;border-radius:10px}.batchAutoBar126 b{font-size:11px}.batchAutoBar126 small{font-size:7px}.batchAutoBtn126{min-width:190px;min-height:28px!important;padding:3px 7px!important;font-size:11px!important}}
+</style>
+
+<style id="v127-batch-auto-confirm-visuals">
+/* Ver1.27: batch-auto confirmation uses pick images and shows discovery/secret status. */
+.batchAutoPicks127{display:flex;gap:7px;align-items:flex-end;margin-top:7px;flex-wrap:nowrap}
+.batchAutoPick127{width:58px;height:78px;border-radius:10px;border:1px solid #cddde6;background:#fff;display:grid;place-items:center;overflow:hidden;box-shadow:0 2px 6px #18394b12}
+.batchAutoPick127 img{display:block;width:100%;height:100%;object-fit:contain;background:#fff}
+.batchAutoMeta127{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;margin-top:7px;font-size:10px;font-weight:900;color:#58707d}
+.batchAutoMeta127 span{display:inline-flex;align-items:center;gap:3px}
+.batchAutoMeta127 .secret127{color:#8a6500;background:#fff5c9;border:1px solid #e5cb6a;border-radius:999px;padding:3px 7px}
+.batchAutoMeta127 .normal127{color:#57707c;background:#edf3f6;border:1px solid #d5e1e7;border-radius:999px;padding:3px 7px}
+@media(max-width:700px){.batchAutoPicks127{gap:5px}.batchAutoPick127{width:54px;height:73px;border-radius:8px}.batchAutoMeta127{font-size:9px;gap:5px 8px}.batchAutoMain126 b{font-size:14px}}
+</style>
+
+
+<style id="v128-batch-auto-compact-confirm">
+/* Ver1.28: compact batch-auto confirmation; larger score/status typography and minimal whitespace. */
+.batchAutoOverlay126{padding:6px}
+.batchAutoPanel126{width:min(820px,99vw);max-height:97dvh;border-radius:16px;padding:9px}
+.batchAutoHead126{align-items:center;gap:6px}
+.batchAutoHead126 small{font-size:9px;line-height:1}
+.batchAutoHead126 h2{margin:1px 0 0;font-size:24px;line-height:1.08}
+.batchAutoClose126{width:34px;height:34px;font-size:19px}
+.batchAutoList126{gap:5px;margin:7px 0}
+.batchAutoRow126{grid-template-columns:82px minmax(0,1fr) 92px;gap:7px;padding:7px 8px;border-radius:11px}
+.batchAutoGroup126{font-size:15px;line-height:1.05}
+.batchAutoMain126 b{font-size:17px;line-height:1.1}
+.batchAutoPicks127{gap:4px;margin-top:4px}
+.batchAutoPick127{width:58px;height:68px;border-radius:7px}
+.batchAutoMeta127{gap:4px 8px;margin-top:4px;font-size:12px;line-height:1.15}
+.batchAutoMeta127 .secret127,.batchAutoMeta127 .normal127{padding:2px 5px}
+.batchAutoScore126{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;text-align:right;line-height:1}
+.batchAutoScore126 strong{font-size:32px;line-height:.95}
+.batchAutoScore126 small{margin-top:4px;font-size:16px;font-weight:1000;line-height:1;color:#345b6a}
+.batchAutoNote126{padding:6px 8px;font-size:10px;line-height:1.25}
+.batchAutoActions126{grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.batchAutoActions126 button{min-height:44px;padding:7px 10px;font-size:15px}
+@media(max-width:700px){
+ .batchAutoOverlay126{padding:3px}
+ .batchAutoPanel126{width:calc(100vw - 6px);max-height:calc(100dvh - 8px);border-radius:14px;padding:7px}
+ .batchAutoHead126{gap:4px}.batchAutoHead126 h2{font-size:21px}.batchAutoHead126 small{font-size:8px}
+ .batchAutoClose126{width:32px;height:32px;font-size:18px}
+ .batchAutoList126{gap:4px;margin:5px 0}
+ .batchAutoRow126{grid-template-columns:70px minmax(0,1fr) 72px;gap:5px;padding:6px}
+ .batchAutoGroup126{font-size:14px}
+ .batchAutoMain126 b{font-size:15px}
+ .batchAutoPicks127{gap:3px;margin-top:3px}
+ .batchAutoPick127{width:48px;height:58px;border-radius:6px}
+ .batchAutoMeta127{font-size:11px;gap:3px 6px;margin-top:3px}
+ .batchAutoMeta127 .secret127,.batchAutoMeta127 .normal127{padding:2px 4px}
+ .batchAutoScore126{grid-column:auto;display:flex;flex-direction:column;gap:0;align-items:flex-end;text-align:right}
+ .batchAutoScore126 strong{font-size:30px}
+ .batchAutoScore126 small{font-size:15px;margin-top:3px}
+ .batchAutoNote126{padding:5px 7px;font-size:9px}
+ .batchAutoActions126{grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+ .batchAutoActions126 button{min-height:42px;padding:6px 8px;font-size:14px}
+}
+</style>
+
+<style id="v129-batch-return">
+/* Ver1.29: R2-unlocked batch return. Return all exploring groups at once, then reveal arrivals one group at a time before opening rewards. */
+.batchReturnActions129{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.batchReturnBtn129{background:linear-gradient(180deg,#ffcf61,#e99a23);color:#5a3900;border:0;font-weight:1000}
+.batchReturnActions129>button{height:76px!important;min-height:76px!important;margin:0!important;padding:8px 10px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1.18!important}
+.batchReturnOverlay129{position:fixed;inset:0;z-index:100650;background:#071b2bd9;display:grid;place-items:center;padding:7px}
+.batchReturnPanel129{width:min(820px,98vw);max-height:96dvh;overflow:auto;background:#fff;border-radius:18px;padding:10px;box-shadow:0 22px 80px #0008}
+.batchReturnHead129{display:flex;align-items:center;justify-content:space-between;gap:8px}.batchReturnHead129 small{display:block;color:#6d7d85;font-size:9px;font-weight:1000;letter-spacing:.1em}.batchReturnHead129 h2{margin:1px 0 0;font-size:24px;color:#173a4d}.batchReturnClose129{width:34px;height:34px;border:0;border-radius:999px;background:#e8f0f4;color:#23485a;font-size:19px;font-weight:1000}
+.batchReturnList129{display:grid;gap:5px;margin:7px 0}.batchReturnRow129{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:7px;align-items:center;padding:7px;border:1px solid #d7e4ea;border-radius:11px;background:#f8fbfd}.batchReturnGroup129{font-weight:1000;color:#2b5569}.batchReturnMain129 b{display:block;font-size:16px;color:#173a4d}.batchReturnPicks129{display:flex;gap:4px;margin-top:4px}.batchReturnPicks129 img{width:52px;height:62px;object-fit:contain;background:#fff;border:1px solid #d4e1e7;border-radius:7px}.batchReturnMeta129{display:flex;gap:5px 9px;flex-wrap:wrap;margin-top:4px;font-size:11px;font-weight:900;color:#58707d}.batchReturnStat129{text-align:right}.batchReturnStat129 strong{display:block;font-size:24px;color:#b66a0d;line-height:1}.batchReturnStat129 small{display:block;margin-top:3px;font-size:11px;color:#5b707c;font-weight:1000}.batchReturnNoReward129{color:#9b3e25!important}.batchReturnNote129{padding:6px 8px;border-radius:10px;background:#fff7df;color:#785519;font-size:10px;line-height:1.35}.batchReturnButtons129{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.batchReturnButtons129 button{min-height:43px;font-size:14px}.batchReturnStart129,.batchReturnNext129{background:linear-gradient(180deg,#f2b94f,#d98a19);color:#fff;border:0;font-weight:1000}
+.batchArrival129{text-align:center;animation:batchArrivalPop129 .34s cubic-bezier(.2,.8,.2,1) both}.batchArrival129 .arrivalIcon129{font-size:46px}.batchArrival129 h2{margin:1px 0 5px;font-size:27px}.batchArrival129 .arrivalDest129{font-size:17px;font-weight:1000;color:#254b5d}.batchArrivalPicks129{display:flex;justify-content:center;gap:7px;margin:8px 0}.batchArrivalPicks129 img{width:72px;height:88px;object-fit:contain;border-radius:9px;border:1px solid #d6e2e8;background:#fff}.batchArrivalStats129{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:1000;color:#536d79}.batchArrivalBoxes129{margin:9px 0;padding:8px;border-radius:12px;background:#fff5d2;color:#6e4b00;font-size:20px;font-weight:1000}.batchReturnFinal129{text-align:center}.batchReturnFinal129 h2{margin:2px 0 7px;font-size:26px}.batchReturnFinalStats129{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:8px 0}.batchReturnFinalStats129 div{padding:10px;border-radius:12px;background:#eef6fa}.batchReturnFinalStats129 b{display:block;font-size:23px;color:#17698a}.batchReturnFinalStats129 small{font-size:10px;color:#637984;font-weight:900}
+@keyframes batchArrivalPop129{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:700px){.batchReturnActions129{grid-template-columns:1fr 1fr;gap:5px}.batchReturnActions129>button{height:70px!important;min-height:70px!important;padding:6px 7px!important;font-size:17px!important;line-height:1.16!important}.batchReturnPanel129{width:calc(100vw - 6px);padding:7px;border-radius:14px}.batchReturnHead129 h2{font-size:21px}.batchReturnRow129{grid-template-columns:62px minmax(0,1fr) 62px;gap:5px;padding:6px}.batchReturnGroup129{font-size:13px}.batchReturnMain129 b{font-size:14px}.batchReturnPicks129 img{width:43px;height:51px}.batchReturnMeta129{font-size:9px;gap:3px 6px}.batchReturnStat129 strong{font-size:22px}.batchReturnStat129 small{font-size:9px}.batchArrivalPicks129 img{width:62px;height:76px}.batchReturnButtons129{grid-template-columns:1fr 1fr}}
+</style>
+
+<style id="v131-batch-return-aggregate">
+.batchReturnOverview131{display:grid;gap:6px;margin:7px 0}.batchReturnOverviewRow131{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:6px;align-items:center;padding:6px 7px;border:1px solid #d7e4ea;border-radius:11px;background:#f8fbfd}.batchReturnOverviewRow131 .batchReturnPicks129{margin-top:3px}.batchReturnOverviewRow131 .batchReturnPicks129 img{width:44px;height:52px}.batchReturnOverviewStat131{text-align:right;min-width:66px}.batchReturnOverviewStat131 b{display:block;font-size:25px;line-height:1;color:#17698a}.batchReturnOverviewStat131 small{font-size:9px;font-weight:1000;color:#637984}.batchReturnOverviewFoot131{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}.batchReturnOverviewFoot131 div,.batchReturnMetric131{padding:7px 5px;border-radius:10px;background:#eef6fa;text-align:center}.batchReturnOverviewFoot131 b,.batchReturnMetric131 b{display:block;font-size:20px;line-height:1.05;color:#17698a}.batchReturnOverviewFoot131 small,.batchReturnMetric131 small{display:block;margin-top:3px;font-size:9px;font-weight:900;color:#637984}.batchReturnNormalGrid131{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:7px 0}.batchReturnMetric131.zero{opacity:.48}.batchReturnSection131{margin-top:7px;padding:7px;border:1px solid #dbe5ea;border-radius:11px;background:#fbfdfe}.batchReturnSection131 h3{margin:0 0 5px;font-size:13px;color:#284f61}.batchReturnSurvey131{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.batchReturnSurvey131 div{display:flex;justify-content:space-between;gap:5px;padding:5px 6px;border-radius:8px;background:#f1f7fa;font-size:10px;font-weight:900;color:#4f6875}.batchReturnRareHint131{margin:6px 0;padding:7px;border-radius:10px;background:#eff8ff;font-size:11px;font-weight:900;color:#315a70;text-align:center}.batchReturnEggGrid131{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px}.batchReturnEggBtn131{padding:8px 5px;border:1px solid #d8e2e7;border-radius:11px;background:#fff;text-align:center}.batchReturnEggBtn131 .eggIcon{font-size:30px}.batchReturnEggBtn131 b{display:block;font-size:11px}.batchReturnEggBtn131 small{font-size:9px;color:#6d7d85}.batchRevealCounter131{font-size:13px;font-weight:1000;letter-spacing:.08em;color:#d5edf6;margin-bottom:2px}.batchRevealGroup131{font-size:12px;font-weight:900;color:#c8dde7;margin-bottom:5px}.batchReturnFinalGrid131{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:8px 0}.batchReturnFinalGrid131 div{padding:8px 5px;border-radius:10px;background:#eef6fa}.batchReturnFinalGrid131 b{display:block;font-size:22px;color:#17698a;line-height:1}.batchReturnFinalGrid131 small{font-size:9px;font-weight:900;color:#637984}.batchReturnFinal131 .batchReturnStart129{width:100%;margin-top:7px;min-height:44px}
+@media(max-width:700px){.batchReturnOverviewRow131{grid-template-columns:56px minmax(0,1fr) 58px;padding:5px}.batchReturnOverviewRow131 .batchReturnPicks129 img{width:39px;height:46px}.batchReturnOverviewFoot131,.batchReturnNormalGrid131,.batchReturnFinalGrid131{gap:3px}.batchReturnOverviewFoot131 b,.batchReturnMetric131 b{font-size:17px}.batchReturnOverviewFoot131 small,.batchReturnMetric131 small{font-size:8px}.batchReturnNormalGrid131{grid-template-columns:repeat(4,1fr)}.batchReturnSurvey131{grid-template-columns:1fr 1fr}.batchReturnEggGrid131{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
 </head>
 <body>
 <header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="expCloseBtn ghost" id="expCloseBtn" title="おでかけ探索を閉じる" aria-label="おでかけ探索を閉じる">閉じる</button></div></div></div></header>
@@ -379,7 +473,7 @@ document.addEventListener("pointerdown",unlockExpAudio,{passive:true});document.
 const THEME_ORDER=RULES.THEME_ORDER;
 const THEMES=RULES.THEMES;
 const TIME_DEF={1:{label:"ちょこっと探索",hours:1,boxes:2,baseXp:6,baseBond:.05,report:3,style:"回数向き",benefit:"短時間で回数をこなして箱数を稼ぐ"},4:{label:"じっくり探索",hours:4,boxes:4,baseXp:22,baseBond:.12,report:5,style:"バランス",benefit:"4箱目はレア率アップ"},8:{label:"大探索",hours:8,boxes:6,baseXp:48,baseBond:.22,report:7,style:"高品質重視",benefit:"5箱目はレア率アップ・6箱目はレア以上確定"}};
-const FREE_EXP_MAX_HOURS=12;
+const FREE_EXP_MAX_HOURS=24;
 const FREE_EXP_MIN_REWARD_HOURS=.5;
 const FREE_EXP_ANCHORS=[
  {h:.5,boxes:1,xp:3,bond:.03,discovery:2,souvenirs:1,report:3},
@@ -389,7 +483,13 @@ const FREE_EXP_ANCHORS=[
  {h:6,boxes:5,xp:34,bond:.17,discovery:13,souvenirs:2,report:6},
  {h:8,boxes:6,xp:48,bond:.22,discovery:17,souvenirs:3,report:7},
  {h:10,boxes:7,xp:61,bond:.27,discovery:21,souvenirs:3,report:8},
- {h:12,boxes:8,xp:75,bond:.32,discovery:25,souvenirs:4,report:9}
+ {h:12,boxes:8,xp:75,bond:.32,discovery:25,souvenirs:4,report:9},
+ {h:14,boxes:9,xp:88,bond:.37,discovery:28,souvenirs:4,report:10},
+ {h:16,boxes:10,xp:101,bond:.42,discovery:32,souvenirs:5,report:11},
+ {h:18,boxes:11,xp:113,bond:.46,discovery:35,souvenirs:5,report:12},
+ {h:20,boxes:12,xp:125,bond:.51,discovery:39,souvenirs:6,report:13},
+ {h:22,boxes:13,xp:136,bond:.55,discovery:42,souvenirs:6,report:14},
+ {h:24,boxes:14,xp:145,bond:.60,discovery:45,souvenirs:7,report:15}
 ];
 function clampFreeHours(h){return Math.max(0,Math.min(FREE_EXP_MAX_HOURS,Number(h)||0))}
 function missionElapsedHours(m,now=Date.now()){return m?.startAt?clampFreeHours((Math.min(now,Number(m.maxReturnAt||m.startAt+FREE_EXP_MAX_HOURS*3600000))-Number(m.startAt))/3600000):0}
@@ -419,7 +519,7 @@ function freeRewardProfile(hours){
 function missionRewardProfile(m){if(m?.rewardProfile&&m?.settledAt)return m.rewardProfile;return freeRewardProfile(m?.settledHoursExact??missionElapsedHours(m))}
 function freeNextMilestoneText(m,now=Date.now()){
  const h=missionElapsedHours(m,now),next=freeNextAnchor(h);
- if(!next)return "最大12時間の成果に到達";
+ if(!next)return "最大24時間の成果に到達";
  const remain=Math.max(0,(next.h-h)*3600000);
  return `次の成果アップまで ${formatRemain(remain)}（${next.h}時間）`
 }
@@ -439,8 +539,8 @@ function freeReturnMilestoneHTML(d,p){
  return FREE_EXP_ANCHORS.map(a=>{
   const rarePct=hasTeam?milestoneRarePct(a.h,diff,score?.rank,luckMul):null;
   const bonus=a.h>=8?"<em>最終1箱 RARE+</em>":a.h>=4?"<em>レア率UP枠</em>":"";
-  const time=a.h===.5?"30分":`${a.h}h${a.h===12?" MAX":""}`;
-  return `<div class="freeMilestone ${a.h===12?"max":""}"><b>${time}</b><span>🎁 ${a.boxes}箱</span><span class="rareRate">✨ ${rarePct==null?"編成後":`レア以上 ${rarePct}%`}</span>${bonus}</div>`
+  const time=a.h===.5?"30分":`${a.h}h${a.h===24?" MAX":""}`;
+  return `<div class="freeMilestone ${a.h===24?"max":""}"><b>${time}</b><span>🎁 ${a.boxes}箱</span><span class="rareRate">✨ ${rarePct==null?"編成後":`レア以上 ${rarePct}%`}</span>${bonus}</div>`
  }).join("")
 }
 
@@ -463,14 +563,13 @@ function freeReturnDockGuideHTML(now=Date.now()){
  }
  const currentAnchor=hasPosition?[...FREE_EXP_ANCHORS].reverse().find(a=>a.h<=elapsed+1e-9):null;
  const rows=FREE_EXP_ANCHORS.map(a=>{
-  const normal=a.h>=8?Math.max(0,a.boxes-2):a.h>=4?Math.max(0,a.boxes-1):a.boxes;
   const boost=a.h>=4?1:0,guaranteed=a.h>=8?1:0;
-  const symbols=`${"○".repeat(normal)}${"🪎".repeat(boost)}${"⭐️".repeat(guaranteed)}`;
+  const symbols=`🎁${a.boxes}${boost?" 🪎":""}${guaranteed?" ⭐":""}`;
   const time=a.h===.5?"30分":`${a.h}時間`;
   const reached=hasPosition&&elapsed>=a.h-1e-9;
-  return `<div class="freeGuideRow ${a.h===12?"max ":""}${reached?"reached ":""}${currentAnchor===a?"currentReward079 ":""}"><b>${currentAnchor===a?"▶ ":""}${time}</b><span class="boxSymbols" aria-label="${a.boxes}箱">${symbols}</span></div>`
+  return `<div class="freeGuideRow ${a.h===24?"max ":""}${reached?"reached ":""}${currentAnchor===a?"currentReward079 ":""}"><b>${currentAnchor===a?"▶ ":""}${time}</b><span class="boxSymbols" aria-label="成果箱${a.boxes}個">${symbols}</span></div>`
  });
- return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuidePosition ${status==="exploring"?"running":status==="returned"?"returned":""}">${positionText}</div><div class="freeGuideRows">${rows.join("")}</div><div class="freeGuideFoot"><span>○ 通常</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
+ return `<div class="freeGuideHead"><b>⏱️ 自由探索</b><small>30分未満 0箱</small></div><div class="freeGuidePosition ${status==="exploring"?"running":status==="returned"?"returned":""}">${positionText}</div><div class="freeGuideRows">${rows.join("")}</div><div class="freeGuideFoot"><span>🎁 箱数</span><span>🪎 レア率UP</span><span>⭐️ レア以上確定</span></div>`
 }
 
 const BASE_BOX=RULES.EXPEDITION_BASE_BOX;
@@ -526,11 +625,19 @@ function defaultExp(){return {version:5,appVersion:APP_VERSION,groups:[defaultGr
 function migrateMissionToFreeReturn(g){
  const m=g?.mission;if(!m||g.status!=="exploring")return false;
  const start=Number(m.startAt)||Date.now();
- if(Number(m.freeReturnVersion)>=1){
-  m.maxReturnAt=Number(m.maxReturnAt)||start+FREE_EXP_MAX_HOURS*3600000;
+ if(Number(m.freeReturnVersion)>=2){
+  const targetCap=start+FREE_EXP_MAX_HOURS*3600000,currentCap=Number(m.maxReturnAt)||0;
+  if(currentCap<targetCap){m.maxReturnAt=targetCap;m.returnAt=targetCap;return true}
   return false
  }
- m.freeReturnVersion=1;
+ if(Number(m.freeReturnVersion)>=1){
+  m.freeReturnVersion=2;
+  m.maxReturnAt=start+FREE_EXP_MAX_HOURS*3600000;
+  m.returnAt=m.maxReturnAt;
+  m.extendedTo24At=Date.now();
+  return true
+ }
+ m.freeReturnVersion=2;
  m.rewardMode="freeReturn";
  m.legacyFixedHours=[1,4,8].includes(Number(m.hours))?Number(m.hours):null;
  m.legacyReturnAt=Number(m.returnAt)||null;
@@ -616,7 +723,7 @@ function applyExpeditionTestCase(){
  const seen=new Set(),ids=[];
  for(const r of RECORDS){const id=r?.master_id;if(!id||seen.has(id))continue;seen.add(id);ids.push(id);if(ids.length>=EXPEDITION_TEST_PICK_COUNT)break}
  const team=ids.length>=3?ids.slice(0,3):ids.concat(ids,ids).slice(0,3);
- const groupRank=EXPEDITION_STRICT_UNLOCK_TESTS_124.has(EXPEDITION_TEST_CASE)?(EXPEDITION_TEST_CASE==="admin-temp"?0:Number(EXPEDITION_TEST_CASE.slice(-1))):1;
+ const groupRank=EXPEDITION_PROGRESS_GROUP_TESTS_124.has(EXPEDITION_TEST_CASE)?Number(EXPEDITION_TEST_CASE.slice(-1)):(EXPEDITION_TEST_CASE==="batch-auto"||EXPEDITION_TEST_CASE==="destination-lock"||EXPEDITION_TEST_CASE==="batch-return"?2:EXPEDITION_TEST_CASE==="admin-temp"?0:1);
  seedExpeditionTestDungeon(ids,team,groupRank);
  const mission=testMission(team),x=defaultExp(),g=x.groups[0];
  g.lastTeamIds=team.slice(0,3);
@@ -626,10 +733,25 @@ function applyExpeditionTestCase(){
   TEMP_ADMIN_UNLOCK_GROUPS_124.clear();TEMP_ADMIN_UNLOCK_GROUPS_124.add(5);activeGroup=4;screen="prep";
  }else if(EXPEDITION_PROGRESS_GROUP_TESTS_124.has(EXPEDITION_TEST_CASE)){
   g.status="idle";g.mission=null;screen="prep";
+ }else if(EXPEDITION_TEST_CASE==="batch-auto"){
+  for(let i=0;i<3;i++){const gg=x.groups[i];gg.status="idle";gg.mission=null;gg.lastTeamIds=[];gg.prep={dungeonId:THEME_ORDER[i]||"forest",difficulty:2,hours:1,teamIds:[]}}
+  activeGroup=0;screen="prep";
+ }else if(EXPEDITION_TEST_CASE==="destination-lock"){
+  const g1=x.groups[0],g2=x.groups[1],t1=ids.slice(0,3),t2=ids.slice(3,6);
+  const m1=testMission(t1);m1.id="test-destination-lock";m1.groupIndex=0;m1.dungeonId="forest";m1.difficulty=2;m1.teamIds=t1;m1.stage="exploring";m1.freeReturnVersion=2;m1.maxReturnAt=m1.startAt+FREE_EXP_MAX_HOURS*3600000;m1.returnAt=m1.maxReturnAt;
+  g1.status="exploring";g1.mission=m1;g1.lastTeamIds=t1;g1.prep={dungeonId:"forest",difficulty:2,hours:1,teamIds:t1};
+  g2.status="idle";g2.mission=null;g2.lastTeamIds=t2;g2.prep={dungeonId:"wetlands",difficulty:2,hours:1,teamIds:t2};
+  activeGroup=1;screen="prep";
+ }else if(EXPEDITION_TEST_CASE==="batch-return"){
+  for(let i=0;i<3;i++){const gg=x.groups[i],tt=ids.slice(i*3,i*3+3),mm=testMission(tt);mm.id=`test-batch-return-${i+1}`;mm.groupIndex=i;mm.dungeonId=THEME_ORDER[i]||"forest";mm.difficulty=2;mm.teamIds=tt;mm.startAt=Date.now()-(70+i*12)*60000;mm.returnAt=mm.startAt+FREE_EXP_MAX_HOURS*3600000;mm.maxReturnAt=mm.returnAt;mm.freeReturnVersion=2;mm.stage="exploring";if(i===2)mm.boxes.push({rarity:"jackpot",reward:{type:"allxp",amount:30},opened:false,applied:false,resultText:""});gg.status="exploring";gg.mission=mm;gg.lastTeamIds=tt;gg.prep={dungeonId:mm.dungeonId,difficulty:2,hours:1,teamIds:tt}}
+  activeGroup=0;screen="explore";
  }else if(EXPEDITION_TEST_CASE==="prep"){
   g.status="idle";g.mission=null;screen="prep";
  }else if(EXPEDITION_TEST_CASE==="exploring"){
-  mission.stage="exploring";mission.returnAt=Date.now()+3540000;mission.maxReturnAt=mission.startAt+FREE_EXP_MAX_HOURS*3600000;mission.freeReturnVersion=1;
+  mission.stage="exploring";mission.returnAt=Date.now()+3540000;mission.maxReturnAt=mission.startAt+FREE_EXP_MAX_HOURS*3600000;mission.freeReturnVersion=2;
+  g.status="exploring";g.mission=mission;screen="explore";
+ }else if(EXPEDITION_TEST_CASE==="expedition-24h"){
+  mission.id="test-expedition-24h";mission.stage="exploring";mission.startAt=Date.now()-23.5*3600000;mission.maxReturnAt=mission.startAt+FREE_EXP_MAX_HOURS*3600000;mission.returnAt=mission.maxReturnAt;mission.freeReturnVersion=2;mission.boxes=[];mission.rewardProfile=null;mission.liveReport=buildLiveReport(mission);
   g.status="exploring";g.mission=mission;screen="explore";
  }else if(EXPEDITION_TEST_CASE==="boxes"){
   mission.returnAt=Date.now()-1;mission.settledAt=Date.now();mission.settledHoursExact=1;mission.stage="boxes";
@@ -743,7 +865,7 @@ function exchangeAllSouvenirs(){
 function discoveryAverage(){const dids=THEME_ORDER.filter(d=>SOUVENIR_DEF[d]);return dids.length?Math.round(dids.reduce((n,d)=>n+discoveryPct(d),0)/dids.length):0}
 function discoveryGainFor(m){const base=missionRewardProfile(m).discovery,rank={D:0,C:1,B:2,A:3,S:5}[m.rank]||0,secret=m.secretSpotUsed?8:0;return Math.max(1,base+Math.max(0,Number(m.difficulty||1)-1)+rank+secret)}
 function pickSouvenir(did,rareWanted=false){const defs=souvenirDefs(did),pool=defs.filter(s=>!!s.rare===!!rareWanted),choices=pool.length?pool:defs;const unowned=choices.filter(s=>souvenirCount(did,s.id)===0);return pickRandom(unowned.length&&Math.random()<.72?unowned:choices)}
-function generateMissionFindings(m){if(m.findings)return m.findings;const profile=missionRewardProfile(m),before=discoveryPct(m.dungeonId),gain=Math.min(100-before,discoveryGainFor(m)),after=Math.min(100,before+gain),completedNow=before<100&&after>=100,count=Math.min(4,profile.souvenirs+(m.rank==="S"?1:0)),rankRare={D:0,C:.01,B:.025,A:.05,S:.09}[m.rank]||0,rareBase=Math.min(.34,.05+Number(m.difficulty||1)*.018+rankRare),rareChance=Math.min(.75,rareBase*missionLuckMultiplier(m)),souvenirs=[];for(let i=0;i<count;i++){const rare=completedNow&&i===count-1?true:Math.random()<rareChance,s=pickSouvenir(m.dungeonId,rare);if(s)souvenirs.push({id:s.id,icon:s.icon,name:s.name,rare:!!s.rare})}m.findings={before,after,gain,souvenirs,completedNow,applied:false};return m.findings}
+function generateMissionFindings(m){if(m.findings)return m.findings;const profile=missionRewardProfile(m),before=discoveryPct(m.dungeonId),gain=Math.min(100-before,discoveryGainFor(m)),after=Math.min(100,before+gain),completedNow=before<100&&after>=100,souvenirCap=profile.effectiveHours>12?7:4,count=Math.min(souvenirCap,profile.souvenirs+(m.rank==="S"?1:0)),rankRare={D:0,C:.01,B:.025,A:.05,S:.09}[m.rank]||0,rareBase=Math.min(.34,.05+Number(m.difficulty||1)*.018+rankRare),rareChance=Math.min(.75,rareBase*missionLuckMultiplier(m)),souvenirs=[];for(let i=0;i<count;i++){const rare=completedNow&&i===count-1?true:Math.random()<rareChance,s=pickSouvenir(m.dungeonId,rare);if(s)souvenirs.push({id:s.id,icon:s.icon,name:s.name,rare:!!s.rare})}m.findings={before,after,gain,souvenirs,completedNow,applied:false};return m.findings}
 function applyMissionFindings(m){const f=generateMissionFindings(m);if(f.applied)return f;exp.discovery=exp.discovery||{};exp.souvenirs=exp.souvenirs||{};exp.discovery[m.dungeonId]=f.after;exp.souvenirs[m.dungeonId]=exp.souvenirs[m.dungeonId]||{};f.souvenirs=f.souvenirs.map(s=>{const beforeCount=souvenirCount(m.dungeonId,s.id);exp.souvenirs[m.dungeonId][s.id]=beforeCount+1;return {...s,beforeCount,afterCount:beforeCount+1,isNew:beforeCount===0}});f.applied=true;writeExp();return f}
 function souvenirNameLine(f){return (f?.souvenirs||[]).map(s=>`${s.icon} ${s.name}`).join("・")||"おみやげなし"}
 
@@ -849,7 +971,7 @@ function scoreTeam(ids,did,diff){const d=readDungeon(),team=(Array.isArray(ids)?
    ========================================================= */
 const GROUP_COUNT=5;
 const EXPEDITION_PROGRESS_GROUP_TESTS_124=new Set(["groups-r1","groups-r2","groups-r3","groups-r4"]);
-const EXPEDITION_STRICT_UNLOCK_TESTS_124=new Set([...EXPEDITION_PROGRESS_GROUP_TESTS_124,"admin-temp"]);
+const EXPEDITION_STRICT_UNLOCK_TESTS_124=new Set([...EXPEDITION_PROGRESS_GROUP_TESTS_124,"admin-temp","batch-auto","destination-lock"]);
 function groupRequiredRank(groupIndex){return [1,1,2,3,4][Math.max(0,Math.min(GROUP_COUNT-1,Number(groupIndex)||0))]}
 function groupProgressUnlocked(groupIndex){
  const d=readDungeon();if(!d)return false;
@@ -907,19 +1029,76 @@ function expeditionBusyIds(exceptGroup=-1){const out=new Set();exp.groups.forEac
 function eligiblePickIds(groupIndex=activeGroup){const d=readDungeon(),run=new Set(currentRunIds()),other=expeditionBusyIds(groupIndex),owned=(d?.owned||[]).map(x=>x.id);return owned.filter(id=>!run.has(id)&&!other.has(id))}
 function highestDifficultyForDungeon(did,dests=clearedDestinations()){const diffs=dests.filter(x=>x.did===did).map(x=>Number(x.diff)).filter(Number.isFinite);return diffs.length?Math.max(...diffs):null}
 function availableDungeonIds(dests=clearedDestinations()){return THEME_ORDER.filter(did=>dests.some(x=>x.did===did))}
+function destinationOccupant126(did,exceptGroup=-1){
+ const key=String(did||"");if(!key)return -1;
+ for(let i=0;i<GROUP_COUNT;i++){if(i===Number(exceptGroup))continue;const g=groupState(i),m=g?.mission;if(g&&g.status!=="idle"&&m&&String(m.dungeonId||"")===key)return i}
+ return -1
+}
+function destinationReserved126(did,exceptGroup=-1){return destinationOccupant126(did,exceptGroup)>=0}
+function destinationBusyLabel126(did,exceptGroup=-1){const i=destinationOccupant126(did,exceptGroup);if(i<0)return"";const g=groupState(i);return `G${i+1}${g?.status==="returned"?"帰還済":"探索中"}`}
+function availableDungeonIdsForGroup126(groupIndex=activeGroup,dests=clearedDestinations()){return availableDungeonIds(dests).filter(did=>!destinationReserved126(did,groupIndex))}
+function batchAutoUnlocked126(d=readDungeon()){return !!d&&THEME_ORDER.every(did=>Number(d.stats?.[statKey(did,2)]?.clears||0)>0)}
 /* ===== GROUP PREPARATION / MISSION SETUP ===== */
-function ensurePrepValid(groupIndex=activeGroup){const g=groupState(groupIndex),p=g.prep,dests=clearedDestinations(),dids=availableDungeonIds(dests);if(!dids.length)return p;if(!p.dungeonId||!dids.includes(p.dungeonId))p.dungeonId=dids[0];p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);p.hours=[1,4,8].includes(Number(p.hours))?Number(p.hours):8;p.teamIds=(p.teamIds||[]).filter(id=>eligiblePickIds(groupIndex).includes(id)).slice(0,3);return p}
+function ensurePrepValid(groupIndex=activeGroup){
+ const g=groupState(groupIndex),p=g.prep,dests=clearedDestinations(),dids=availableDungeonIdsForGroup126(groupIndex,dests),before=p.dungeonId;
+ if(!dids.length){p.dungeonId=null;p.difficulty=null;p.teamIds=[];return p}
+ if(!p.dungeonId||!dids.includes(p.dungeonId))p.dungeonId=dids[0];
+ if(before&&before!==p.dungeonId)p.teamIds=[];
+ p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);p.hours=[1,4,8].includes(Number(p.hours))?Number(p.hours):8;p.teamIds=(p.teamIds||[]).filter(id=>eligiblePickIds(groupIndex).includes(id)).slice(0,3);return p
+}
 function discoveryStep(did){const p=discoveryPct(did);return p<=0?0:Math.min(5,Math.ceil(p/20))}
 function discoveryStepText(did){return `調査Lv ${discoveryStep(did)}/5`}
 function discoveryMiniHTML(did){const step=discoveryStep(did),p=discoveryPct(did);return `<div class="discoveryMini compactDiscovery"><div class="discoveryMiniHead"><span>🗺️ 調査Lv</span><b>${step}/5 <em>調査度 ${p}%</em></b></div><div class="discoveryMeter"><span style="width:${p}%"></span></div></div>`}
-function autoTeam(did,diff,groupIndex=activeGroup){
- const ids=eligiblePickIds(groupIndex);if(ids.length<=3)return ids.slice();
+function autoTeamFromPool126(did,diff,poolIds){
+ const ids=[...new Set(Array.isArray(poolIds)?poolIds:[])].filter(id=>!!rec(id));if(ids.length<=3)return ids.slice(0,3);
  const d=readDungeon(),states=new Map();states.set("0|0|0",{ids:[],energy:0,good:0,bond:0});
  for(const id of ids){const r=rec(id);if(!r)continue;const energy=Number(r.poke_ene)||0,good=recommended(r,did)?1:0,bond=bondLevel(d,id),snapshot=[...states.values()];for(const st of snapshot){if(st.ids.length>=3)continue;const nx={ids:[...st.ids,id],energy:st.energy+energy,good:st.good+good,bond:st.bond+bond},key=`${nx.ids.length}|${nx.good}|${nx.bond}`,old=states.get(key);if(!old||nx.energy>old.energy)states.set(key,nx)}}
  let best=null;for(const st of states.values()){if(st.ids.length!==3)continue;const score=scoreTeam(st.ids,did,diff);if(!best||score.total>best.score.total||(score.total===best.score.total&&st.energy>best.energy)||(score.total===best.score.total&&st.energy===best.energy&&st.good>best.good)||(score.total===best.score.total&&st.energy===best.energy&&st.good===best.good&&st.bond>best.bond))best={...st,score}}
  return best?.ids||ids.slice(0,3)
 }
-function bestDungeonForTeam(ids){if(!Array.isArray(ids)||!ids.length)return null;const dests=clearedDestinations();let best=null;for(const did of availableDungeonIds(dests)){const diff=highestDifficultyForDungeon(did,dests),score=scoreTeam(ids,did,diff),order=THEME_ORDER.indexOf(did);if(!best||score.total>best.score.total||(score.total===best.score.total&&diff>best.diff)||(score.total===best.score.total&&diff===best.diff&&order<best.order))best={did,diff,score,order}}return best}
+function autoTeam(did,diff,groupIndex=activeGroup){return autoTeamFromPool126(did,diff,eligiblePickIds(groupIndex))}
+function bestDungeonForTeam(ids,groupIndex=activeGroup){if(!Array.isArray(ids)||!ids.length)return null;const dests=clearedDestinations();let best=null;for(const did of availableDungeonIdsForGroup126(groupIndex,dests)){const diff=highestDifficultyForDungeon(did,dests),score=scoreTeam(ids,did,diff),order=THEME_ORDER.indexOf(did);if(!best||score.total>best.score.total||(score.total===best.score.total&&diff>best.diff)||(score.total===best.score.total&&diff===best.diff&&order<best.order))best={did,diff,score,order}}return best}
+function batchIdleGroups126(){return Array.from({length:GROUP_COUNT},(_,i)=>i).filter(i=>groupUnlocked(i)&&groupState(i)?.status==="idle")}
+function batchAvailablePickIds126(){const d=readDungeon()||{},run=new Set(currentRunIds()),busy=expeditionBusyIds(-1);return (d.owned||[]).map(o=>o.id).filter(id=>!run.has(id)&&!busy.has(id))}
+function batchMissingSouvenirs126(did){return souvenirDefs(did).filter(s=>souvenirCount(did,s.id)<=0).length}
+function batchStateCompare126(a,b){return b.totalScore-a.totalScore||b.secretCount-a.secretCount||b.discoveryNeed-a.discoveryNeed||b.missingSouvenirs-a.missingSouvenirs||b.diffSum-a.diffSum||a.orderSum-b.orderSum}
+function planBatchAuto126(){
+ if(!batchAutoUnlocked126())return {assignments:[],reason:"locked"};
+ const groups=batchIdleGroups126(),dests=clearedDestinations(),occupied=new Set();
+ for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g?.mission;if(g&&g.status!=="idle"&&m?.dungeonId)occupied.add(m.dungeonId)}
+ const dids=availableDungeonIds(dests).filter(did=>!occupied.has(did)),pool=batchAvailablePickIds126(),count=Math.min(groups.length,dids.length,Math.floor(pool.length/3));
+ if(count<2)return {assignments:[],reason:groups.length<2?"groups":dids.length<2?"destinations":"picks",groups,dids,pool};
+ let states=[{assignments:[],remainingIds:pool,usedDids:[],totalScore:0,secretCount:0,discoveryNeed:0,missingSouvenirs:0,diffSum:0,orderSum:0}];
+ const BEAM=16;
+ for(let step=0;step<count;step++){
+  const groupIndex=groups[step],next=[];
+  for(const st of states){
+   const used=new Set(st.usedDids);
+   for(const did of dids){if(used.has(did))continue;const diff=highestDifficultyForDungeon(did,dests),teamIds=autoTeamFromPool126(did,diff,st.remainingIds);if(teamIds.length<3)continue;const score=scoreTeam(teamIds,did,diff),teamSet=new Set(teamIds),remainingIds=st.remainingIds.filter(id=>!teamSet.has(id)),secret=activeSecretSpot(did)?1:0,need=Math.max(0,100-discoveryPct(did)),missing=batchMissingSouvenirs126(did),order=Math.max(0,THEME_ORDER.indexOf(did));next.push({assignments:[...st.assignments,{groupIndex,did,diff,teamIds,score}],remainingIds,usedDids:[...st.usedDids,did],totalScore:st.totalScore+score.total,secretCount:st.secretCount+secret,discoveryNeed:st.discoveryNeed+need,missingSouvenirs:st.missingSouvenirs+missing,diffSum:st.diffSum+Number(diff||0),orderSum:st.orderSum+order})}
+  }
+  if(!next.length)break;
+  next.sort(batchStateCompare126);states=next.slice(0,BEAM)
+ }
+ states.sort(batchStateCompare126);const best=states[0];
+ return best?.assignments?.length>=2?{...best,reason:"ok"}:{assignments:[],reason:"no-plan",groups,dids,pool}
+}
+function batchAutoReason126(reason){return reason==="locked"?"全ダンジョンのR2をクリアすると解放されます。":reason==="groups"?"待機中の解放済みグループが2つ以上必要です。":reason==="destinations"?"同時に使える探索先が2か所以上ありません。":reason==="picks"?"使用できる所持ピックが6体以上必要です。":"現在の状態では2グループ以上を自動編成できません。"}
+function closeBatchAuto126(){const ov=document.getElementById("batchAutoOverlay126");if(ov)ov.remove();document.body.style.overflow=document.body.dataset.batchAutoOverflow126||"";delete document.body.dataset.batchAutoOverflow126}
+function showBatchAutoConfirm126(){
+ const plan=planBatchAuto126();if(!plan.assignments?.length){UI.dialog.alert(batchAutoReason126(plan.reason));return}
+ closeBatchAuto126();const ov=document.createElement("div");ov.id="batchAutoOverlay126";ov.className="batchAutoOverlay126";
+ const d=readDungeon()||{};const rows=plan.assignments.map(a=>{const th=THEMES[a.did],luck=averageLuckForIds(d,a.teamIds),step=discoveryStep(a.did),secret=activeSecretSpot(a.did),picks=a.teamIds.map(id=>{const r=rec(id);return `<span class="batchAutoPick127"><img src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"ピック")}" loading="lazy" decoding="async"></span>`}).join("");return `<div class="batchAutoRow126"><div class="batchAutoGroup126">グループ${a.groupIndex+1}</div><div class="batchAutoMain126"><b>${th?.icon||"🧭"} ${esc(th?.name||a.did)} R${a.diff}</b><div class="batchAutoPicks127">${picks}</div><div class="batchAutoMeta127"><span>🍀 運 ${luck.toFixed(1)}</span><span>🗺️ 調査Lv ${step}/5</span><span class="${secret?"secret127":"normal127"}">${secret?"🌟 ひみつの場所 解放中":"通常探索"}</span></div></div><div class="batchAutoScore126"><strong>${a.score.rank}</strong><small>${a.score.total}点</small></div></div>`}).join("");
+ ov.innerHTML=`<div class="batchAutoPanel126" role="dialog" aria-modal="true" aria-label="まとめておまかせ探索"><div class="batchAutoHead126"><div><small>MULTI AUTO EXPEDITION</small><h2>✨ まとめておまかせ探索</h2></div><button type="button" class="batchAutoClose126" aria-label="閉じる">×</button></div><div class="batchAutoList126">${rows}</div><div class="batchAutoNote126">おすすめの探索先とメンバーを自動で選びました。</div><div class="batchAutoActions126"><button type="button" class="ghost batchAutoCancel126">キャンセル</button><button type="button" class="batchAutoStart126">この内容でまとめて出発</button></div></div>`;
+ document.body.dataset.batchAutoOverflow126=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);
+ const close=()=>closeBatchAuto126();ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector(".batchAutoClose126").onclick=close;ov.querySelector(".batchAutoCancel126").onclick=close;ov.querySelector(".batchAutoStart126").onclick=()=>startBatchAuto126(plan)
+}
+function startBatchAuto126(plan){
+ const assignments=Array.isArray(plan?.assignments)?plan.assignments:[];if(assignments.length<2){closeBatchAuto126();return}
+ const usedDids=new Set(),usedIds=new Set(),available=new Set(batchAvailablePickIds126());for(const a of assignments){const g=groupState(a.groupIndex);if(!g||g.status!=="idle"||!groupUnlocked(a.groupIndex)||destinationReserved126(a.did,a.groupIndex)||usedDids.has(a.did)||a.teamIds.length!==3||a.teamIds.some(id=>usedIds.has(id)||!available.has(id))){closeBatchAuto126();UI.dialog.alert("探索状態が変わったため、まとめておまかせを再計算してください。");render();return}usedDids.add(a.did);for(const id of a.teamIds)usedIds.add(id)}
+ closeBatchAuto126();let started=0,first=-1;
+ for(const a of assignments){const g=groupState(a.groupIndex),p=g.prep;p.dungeonId=a.did;p.difficulty=a.diff;p.teamIds=a.teamIds.slice(0,3);if(startMission(a.groupIndex)){started++;if(first<0)first=a.groupIndex}}
+ if(first>=0)setActiveGroup(first);screen=first>=0?"explore":"home";render();setTimeout(()=>UI.dialog.alert(`✨ ${started}グループをまとめて探索へ送り出しました。\n探索先とピックは重複していません。`),0)
+}
 function boxProb(hours,diff,rank){return RULES.expeditionBoxProbability(hours,diff,rank)}
 function boxRarityForSlot(hours,diff,rank,index,total,luckMul=1){
  const base=RULES.expeditionBoxRarityForSlot(hours,diff,rank,index,total);if(base!=="normal"||luckMul<=1)return base;
@@ -992,7 +1171,7 @@ function repairReturnedReport(m){
 function settleMissionReturn(groupIndex=activeGroup){
  const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return false;
  const m=g.mission,now=Date.now(),cap=Number(m.maxReturnAt)||Number(m.startAt)+FREE_EXP_MAX_HOURS*3600000,settledAt=Math.min(now,cap),elapsed=clampFreeHours((settledAt-Number(m.startAt))/3600000),profile=freeRewardProfile(elapsed);
- m.freeReturnVersion=1;m.rewardMode="freeReturn";m.maxReturnAt=cap;m.settledAt=settledAt;m.returnAt=settledAt;m.settledHoursExact=elapsed;m.rewardProfile=profile;m.rewardTierHours=profile.tierHours;
+ m.freeReturnVersion=2;m.rewardMode="freeReturn";m.maxReturnAt=cap;m.settledAt=settledAt;m.returnAt=settledAt;m.settledHoursExact=elapsed;m.rewardProfile=profile;m.rewardTierHours=profile.tierHours;
  ensureLiveReport(m);
  if(!Array.isArray(m.boxes)||!m.boxes.length){
   const ruleHours=profile.ruleHours,total=profile.boxes;
@@ -1038,6 +1217,50 @@ function requestMissionReturn(groupIndex=activeGroup){
  if(!UI.dialog.confirm(`グループ${groupIndex+1}を帰還させますか？\n\n探索時間 ${formatElapsedHours(elapsed)}\n成果箱 ${profile.boxes}個予定\n${freeNextMilestoneText(m)}`))return;
  if(settleMissionReturn(groupIndex)){setActiveGroup(groupIndex);screen="return";render()}
 }
+let batchReturnReport131=null;
+function batchReturnUnlocked129(d=readDungeon()){return batchAutoUnlocked126(d)}
+function batchReturnExploringGroups129(){return Array.from({length:GROUP_COUNT},(_,i)=>i).filter(i=>groupUnlocked(i)&&groupState(i)?.status==="exploring"&&groupState(i)?.mission)}
+function closeBatchReturn129(){const ov=document.getElementById("batchReturnOverlay129");if(ov)ov.remove();document.body.style.overflow=document.body.dataset.batchReturnOverflow129||"";delete document.body.dataset.batchReturnOverflow129}
+function batchReturnPickHTML129(ids){return (ids||[]).slice(0,3).map(id=>{const r=rec(id);return `<img src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"ピック")}" loading="lazy" decoding="async">`}).join("")}
+function batchReturnSnapshot129(groupIndex,now=Date.now()){const g=groupState(groupIndex),m=g?.mission;if(!g||g.status!=="exploring"||!m)return null;const elapsed=missionElapsedHours(m,now),profile=freeRewardProfile(elapsed),th=THEMES[m.dungeonId];return {groupIndex,did:m.dungeonId,diff:m.difficulty,teamIds:(m.teamIds||[]).slice(),rank:m.rank,elapsed,boxes:profile.boxes,noReward:elapsed<FREE_EXP_MIN_REWARD_HOURS,dest:`${th?.icon||"🧭"} ${th?.name||m.dungeonId}`}}
+function showBatchReturnConfirm131(){
+ if(!batchReturnUnlocked129()){UI.dialog.alert("一括帰還は全ダンジョンR2制覇で解放されます。");return}
+ const groups=batchReturnExploringGroups129();if(groups.length<2){UI.dialog.alert("一括帰還には探索中のグループが2つ以上必要です。");return}
+ const now=Date.now(),rows=groups.map(i=>batchReturnSnapshot129(i,now)).filter(Boolean);if(rows.length<2)return;
+ closeBatchReturn129();const ov=document.createElement("div");ov.id="batchReturnOverlay129";ov.className="batchReturnOverlay129";
+ const html=rows.map(x=>`<div class="batchReturnRow129"><div class="batchReturnGroup129">グループ${x.groupIndex+1}</div><div class="batchReturnMain129"><b>${esc(x.dest)} R${x.diff}</b><div class="batchReturnPicks129">${batchReturnPickHTML129(x.teamIds)}</div><div class="batchReturnMeta129"><span>⏱️ ${formatElapsedHours(x.elapsed)}</span><span>探索ランク ${x.rank}</span></div></div><div class="batchReturnStat129"><strong class="${x.noReward?"batchReturnNoReward129":""}">${x.noReward?"0":x.boxes}</strong><small>${x.noReward?"成果なし":"成果箱予定"}</small></div></div>`).join("");
+ const shortCount=rows.filter(x=>x.noReward).length;
+ ov.innerHTML=`<div class="batchReturnPanel129" role="dialog" aria-modal="true" aria-label="一括帰還"><div class="batchReturnHead129"><div><small>MULTI RETURN</small><h2>🏠 一括帰還</h2></div><button type="button" class="batchReturnClose129" aria-label="閉じる">×</button></div><div class="batchReturnList129">${html}</div><div class="batchReturnNote129">${shortCount?`⚠️ 30分未満の${shortCount}グループは成果なしで帰還します。<br>`:""}帰還後は全グループをまとめて報告します。通常成果は一括表示し、RARE・SUPER RAREだけ1つずつ演出します。</div><div class="batchReturnButtons129"><button type="button" class="ghost batchReturnCancel129">キャンセル</button><button type="button" class="batchReturnStart129">${rows.length}グループをまとめて帰還</button></div></div>`;
+ document.body.dataset.batchReturnOverflow129=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);const close=()=>closeBatchReturn129();ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector(".batchReturnClose129").onclick=close;ov.querySelector(".batchReturnCancel129").onclick=close;ov.querySelector(".batchReturnStart129").onclick=async e=>{const b=e.currentTarget;b.disabled=true;b.textContent="帰還処理中…";await startBatchReturn131(rows)}
+}
+function finishNoRewardReturnSilent129(groupIndex){const g=groupState(groupIndex),m=g?.mission;if(!g||g.status!=="exploring"||!m)return false;restoreSecretSpotFromMission(m);g.lastTeamIds=(m.teamIds||[]).slice();g.status="idle";g.mission=null;g.prep.teamIds=[];exp.mission=null;return true}
+function batchRewardWalk131(rw,fn){if(!rw)return;if(rw.type==="combo"){for(const x of rw.items||[])batchRewardWalk131(x,fn);return}fn(rw)}
+function batchBoxTotals131(items){const t={boxes:0,xp:0,drill:0,evo:0,bond:0,coins:0,eggs:0,newCompanions:0,companionIds:new Set()};for(const it of items||[]){const b=it.box;if(!b)continue;t.boxes++;for(const d of b.appliedDelta094||[]){t.xp+=Math.max(0,Number(d?.xp)||0);t.drill+=Math.max(0,Number(d?.drill)||0);t.evo+=Math.max(0,Number(d?.evo)||0);t.bond+=Math.max(0,Number(d?.bond)||0)}for(const m of String(b.resultText||"").matchAll(/🪙[^+]*\+(\d+)/g))t.coins+=Number(m[1])||0;batchRewardWalk131(b.reward,rw=>{if(rw.type==="egg")t.eggs++;if(rw.type==="companion"&&rw.target&&(b.newCompanionIds104||[]).includes(rw.target))t.companionIds.add(rw.target)})}t.newCompanions=t.companionIds.size;return t}
+function batchBaseTotals131(rows){const t={xp:0,drill:0,bond:0,coins:0};for(const row of rows||[])for(const x of row.baseResults||[]){t.xp+=Math.max(0,Number(x?.xp)||0);t.drill+=Math.max(0,Number(x?.drill)||0);t.bond+=Math.max(0,Number(x?.bondAmount)||(x?.bond?1:0));t.coins+=Math.max(0,Number(x?.coins)||0)+Math.max(0,Number(x?.bondCoins)||0)}return t}
+function batchReturnMetricHTML131(value,label,icon="",zero=false){return `<div class="batchReturnMetric131 ${zero?"zero":""}"><b>${icon}${esc(value)}</b><small>${esc(label)}</small></div>`}
+function batchReturnSurveyHTML131(rows){const list=(rows||[]).filter(x=>x.findings);if(!list.length)return"";return `<div class="batchReturnSection131"><h3>🗺️ 調査・おみやげ</h3><div class="batchReturnSurvey131">${list.map(x=>{const f=x.findings||{},before=f.before<=0?0:Math.min(5,Math.ceil(f.before/20)),after=f.after<=0?0:Math.min(5,Math.ceil(f.after/20)),sv=(f.souvenirs||[]).length;return `<div><span>G${x.groupIndex+1} ${esc(x.dest)}</span><b>Lv${before}→${after}　🎒${sv}</b></div>`}).join("")}</div></div>`}
+async function startBatchReturn131(rows){
+ const requested=Array.isArray(rows)?rows:[];if(requested.length<2){closeBatchReturn129();return}
+ const now=Date.now(),fresh=requested.map(x=>batchReturnSnapshot129(x.groupIndex,now)).filter(Boolean);if(fresh.length!==requested.length){closeBatchReturn129();UI.dialog.alert("探索状態が変わったため、一括帰還をやり直してください。");render();return}
+ if(!await ensureEvolutionForReward106()){const b=document.querySelector(".batchReturnStart129");if(b){b.disabled=false;b.textContent=`${fresh.length}グループをまとめて帰還`}return}
+ const report={rows:[],normal:[],rare:[],superRare:[],totalBoxes:0,rewardedGroupIndices:[],noRewardCount:0};let processed=0;
+ for(const x of fresh){const snap={...x};if(x.noReward){if(finishNoRewardReturnSilent129(x.groupIndex)){report.rows.push({...snap,noReward:true,boxes:0,findings:null,baseResults:[]});report.noRewardCount++}continue}
+  if(!settleMissionReturn(x.groupIndex))continue;applyBaseGrowth(x.groupIndex);const m=groupMission(x.groupIndex);if(!m)continue;const row={...snap,noReward:false,boxes:m.boxes?.length||0,findings:m.findings?JSON.parse(JSON.stringify(m.findings)):null,baseResults:(m.baseResults||[]).map(v=>({...v}))};report.totalBoxes+=row.boxes;report.rewardedGroupIndices.push(x.groupIndex);
+  for(let bi=0;bi<(m.boxes||[]).length;bi++){const box=m.boxes[bi];if(!box.opened)box.opened=true;if(!box.applied)applyReward(box,x.groupIndex);const item={groupIndex:x.groupIndex,boxIndex:bi,box,dest:x.dest};if(box.rarity==="jackpot")report.superRare.push(item);else if(box.rarity==="rare")report.rare.push(item);else report.normal.push(item);processed++;if(processed%10===0)await UI.sleep(0)}
+  m.stage="summary";row.findings=m.findings?JSON.parse(JSON.stringify(m.findings)):row.findings;row.baseResults=(m.baseResults||[]).map(v=>({...v}));report.rows.push(row);await UI.sleep(0)
+ }
+ writeExp();autoBackupCapture("一括帰還・成果確定",{force:true});batchReturnReport131=report;closeBatchReturn129();showBatchReturnReport131(report)
+}
+function showBatchReturnReport131(report){const rows=report?.rows||[];if(!rows.length){render();return}closeBatchReturn129();const ov=document.createElement("div");ov.id="batchReturnOverlay129";ov.className="batchReturnOverlay129";const html=rows.map(x=>`<div class="batchReturnOverviewRow131"><div class="batchReturnGroup129">G${x.groupIndex+1}</div><div class="batchReturnMain129"><b>${esc(x.dest)} R${x.diff}</b><div class="batchReturnPicks129">${batchReturnPickHTML129(x.teamIds)}</div><div class="batchReturnMeta129"><span>⏱️ ${formatElapsedHours(x.elapsed)}</span><span>探索ランク ${x.rank}</span>${x.findings?`<span>🗺️ 調査Lv ${Math.min(5,Math.ceil((x.findings.after||0)/20))}/5</span>`:""}</div></div><div class="batchReturnOverviewStat131"><b>${x.noReward?"0":x.boxes}</b><small>${x.noReward?"成果なし":"成果箱"}</small></div></div>`).join("");ov.innerHTML=`<div class="batchReturnPanel129 batchReturnFinal129"><div style="font-size:38px">🏠✨</div><h2>${rows.length}グループが帰ってきた！</h2><div class="batchReturnOverview131">${html}</div><div class="batchReturnOverviewFoot131"><div><b>${rows.length}</b><small>帰還</small></div><div><b>🎁${report.totalBoxes}</b><small>成果箱</small></div><div><b>✨${report.rare.length}</b><small>RARE</small></div><div><b>🌟${report.superRare.length}</b><small>SUPER RARE</small></div></div><div class="batchReturnRareHint131">通常成果はまとめて表示。RARE・SUPER RAREだけ1つずつ発表します。</div><button type="button" class="batchReturnStart129 batchReturnSummary131" style="width:100%;min-height:44px">🎁 成果をまとめて見る</button></div>`;document.body.dataset.batchReturnOverflow129=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);ov.querySelector(".batchReturnSummary131").onclick=()=>showBatchNormalSummary131(report)}
+function showBatchNormalSummary131(report){closeBatchReturn129();const normal=batchBoxTotals131(report.normal),base=batchBaseTotals131(report.rows),ov=document.createElement("div");ov.id="batchReturnOverlay129";ov.className="batchReturnOverlay129";const next=report.rare.length?`✨ RAREを見る（${report.rare.length}）`:report.superRare.length?`🌟 SUPER RAREを見る（${report.superRare.length}）`:"最終結果へ";ov.innerHTML=`<div class="batchReturnPanel129"><div class="batchReturnHead129"><div><small>COMMON RESULTS</small><h2>🎁 通常成果まとめ</h2></div></div><div class="batchReturnOverviewFoot131"><div><b>${report.normal.length}</b><small>通常成果箱</small></div><div><b>⭐${base.xp}</b><small>探索参加EXP</small></div><div><b>🏋️${base.drill}</b><small>探索参加 特訓P</small></div><div><b>♥${base.bond}</b><small>探索参加 絆</small></div></div><div class="batchReturnSection131"><h3>成果箱（RARE未満）</h3><div class="batchReturnNormalGrid131">${batchReturnMetricHTML131(`+${normal.xp}`,"EXP","⭐",normal.xp===0)}${batchReturnMetricHTML131(`+${normal.drill}`,"特訓P","🏋️",normal.drill===0)}${batchReturnMetricHTML131(`+${normal.evo}`,"進化P","✨",normal.evo===0)}${batchReturnMetricHTML131(`+${normal.bond}`,"絆","♥",normal.bond===0)}${batchReturnMetricHTML131(`+${normal.coins}`,"コイン","🪙",normal.coins===0)}${batchReturnMetricHTML131(`${normal.eggs}`,"卵","🥚",normal.eggs===0)}${batchReturnMetricHTML131(`${normal.newCompanions}`,"新しい仲間","👣",normal.newCompanions===0)}${batchReturnMetricHTML131(`${normal.boxes}`,"通常箱","🎁",normal.boxes===0)}</div></div>${batchReturnSurveyHTML131(report.rows)}<div class="batchReturnRareHint131">✨ RARE ${report.rare.length}個　／　🌟 SUPER RARE ${report.superRare.length}個は、このあと個別演出します。</div><button type="button" class="batchReturnStart129 batchReturnNextRare131" style="width:100%;min-height:44px">${next}</button></div>`;document.body.dataset.batchReturnOverflow129=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);ov.querySelector(".batchReturnNextRare131").onclick=()=>startBatchRareSequence131(report)}
+function batchLootLabel131(box){return box?.rarity==="jackpot"?"🌟 SUPER RARE!":"✨ RARE!"}
+function startBatchRareSequence131(report){closeBatchReturn129();const queue=[...(report.rare||[]),...(report.superRare||[])];if(!queue.length){return afterBatchRareSequence131(report)};const show=(pos)=>{if(pos>=queue.length)return afterBatchRareSequence131(report);const item=queue[pos],box=item.box,kind=box.rarity==="jackpot"?"SUPER RARE":"RARE",kindList=box.rarity==="jackpot"?report.superRare:report.rare,kindIndex=kindList.indexOf(item)+1;playBatchLootReveal131(item,kindIndex,kindList.length,()=>show(pos+1))};show(0)}
+async function playBatchLootReveal131(item,index,total,onDone){if(lootAnimating)return;const box=item.box;lootAnimating=true;expSfx("chestRattle");const seq=++lootRevealSeq,companion=box.reward?.type==="companion"&&box.reward?.target,ov=document.createElement("div");ov.className=`lootRevealOverlay ${box.rarity}`;ov.innerHTML=`<span class="lootSpark s1">✦</span><span class="lootSpark s2">★</span><span class="lootSpark s3">✧</span><span class="lootSpark s4">✦</span><div class="lootBurst"></div><div class="lootRevealStage"><div class="batchRevealCounter131">${box.rarity==="jackpot"?"SUPER RARE":"RARE"} ${index} / ${total}</div><div class="batchRevealGroup131">グループ${item.groupIndex+1}　${esc(item.dest||"")}</div><div class="lootRevealKicker">BATCH EXPEDITION REWARD</div><div class="lootChest"><div class="lootChestLid"></div><div class="lootChestBody"></div><div class="lootChestBand"></div><div class="lootChestLock"></div></div><div class="lootRarityText">${esc(batchLootLabel131(box))}</div><div class="lootMystery">！？</div><div class="lootRewardReveal" id="lootRewardReveal"></div><div class="lootRevealHint"></div></div>`;document.body.appendChild(ov);const prevOverflow=document.body.style.overflow;document.body.style.overflow="hidden";let final=false;const showFinal=()=>{if(final)return;final=true;ov.classList.remove("phase-shake","phase-rarity","phase-companion");ov.classList.add("phase-final");const rewardType=box.reward?.type||"";expSfx(box.rarity==="jackpot"?"jackpot":"rare");const rr=ov.querySelector("#lootRewardReveal");if(rr){rr.style.display="";rr.innerHTML=lootRevealFinalHTML(box)}try{navigator.vibrate?.(box.rarity==="jackpot"?[30,35,70]:[25,25,35])}catch{}};const close=()=>{if(!final){lootRevealSeq++;showFinal();return}ov.remove();document.body.style.overflow=prevOverflow;lootAnimating=false;onDone?.()};ov.onclick=close;ov.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();close()}};ov.tabIndex=0;ov.focus();await lootSleep(220);if(seq!==lootRevealSeq||!ov.isConnected)return;ov.classList.add("phase-shake");await lootSleep(box.rarity==="jackpot"?1150:850);if(seq!==lootRevealSeq||!ov.isConnected)return;ov.classList.remove("phase-shake");ov.classList.add("phase-rarity");expSfx("chestOpen");try{navigator.vibrate?.(box.rarity==="jackpot"?[20,35,20,35,45]:[20,20,30])}catch{}await lootSleep(box.rarity==="jackpot"?1050:700);if(seq!==lootRevealSeq||!ov.isConnected)return;if(companion){ov.classList.remove("phase-rarity");ov.classList.add("phase-companion");const rr=ov.querySelector("#lootRewardReveal");if(rr){rr.innerHTML=`${rewardVisualHTML(box.reward,false)}<div class="lootRewardTitle">後ろから足音がする……</div>`;rr.style.display="flex"}await lootSleep(1250);if(seq!==lootRevealSeq||!ov.isConnected)return;if(rr)rr.style.display=""}showFinal()}
+function afterBatchRareSequence131(report){if(maybeNeedEggDiscard())return showBatchEggOverflow131(report);finalizeBatchReturn131(report)}
+function showBatchEggOverflow131(report){closeBatchReturn129();const d=readDungeon()||{},over=(d.eggs?.length||0)-Number(d.eggCap||2);if(over<=0)return finalizeBatchReturn131(report);const ov=document.createElement("div");ov.id="batchReturnOverlay129";ov.className="batchReturnOverlay129";ov.innerHTML=`<div class="batchReturnPanel129"><div class="batchReturnHead129"><div><small>EGG STORAGE</small><h2>🥚 卵が所持上限を超えました</h2></div></div><div class="batchReturnNote129">一括帰還の成果をすべて受け取りました。上限まであと${over}個捨てる卵を選んでください。</div><div class="batchReturnEggGrid131">${(d.eggs||[]).map(e=>`<button type="button" class="batchReturnEggBtn131" data-batch-discard="${esc(e.id)}"><div class="eggIcon">${e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚"}</div><b>${esc(e.kind==="type"?`${e.type}タイプの卵`:EGG_DEF[e.kind]?.label||"卵")}</b><small>${e.source==="expedition"?"おでかけ探索産":"本編で入手"}<br>この卵を捨てる</small></button>`).join("")}</div></div>`;document.body.dataset.batchReturnOverflow129=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);ov.querySelectorAll("[data-batch-discard]").forEach(b=>b.onclick=()=>{if(!UI.dialog.confirm("この卵を捨てますか？"))return;mutateDungeon(dd=>{dd.eggs=(dd.eggs||[]).filter(e=>e.id!==b.dataset.batchDiscard)});showBatchEggOverflow131(report)})}
+function finalizeBatchReturn131(report){closeBatchReturn129();const indices=(report.rewardedGroupIndices||[]).filter(i=>groupState(i)?.status==="returned"&&groupMission(i));if(indices.length){mutateDungeon(d=>{const ms=ensureMissionStatsExp122(d);ms.stats.expeditionsCompleted=Math.max(0,Math.floor(Number(ms.stats.expeditionsCompleted)||0))+indices.length});for(const i of indices){const g=groupState(i),m=g?.mission;if(!g||!m)continue;g.lastTeamIds=(m.teamIds||[]).slice();g.status="idle";g.mission=null;g.prep.teamIds=[]}exp.mission=null;writeExp();autoBackupCapture("一括帰還完了",{force:true})}showBatchReturnFinal131(report)}
+function showBatchReturnFinal131(report){closeBatchReturn129();const all=[...(report.normal||[]),...(report.rare||[]),...(report.superRare||[])],tot=batchBoxTotals131(all),ov=document.createElement("div");ov.id="batchReturnOverlay129";ov.className="batchReturnOverlay129";ov.innerHTML=`<div class="batchReturnPanel129 batchReturnFinal129"><div style="font-size:40px">✨</div><h2>一括帰還完了！</h2><div class="batchReturnFinalGrid131"><div><b>${report.rows.length}</b><small>帰還グループ</small></div><div><b>🎁${report.totalBoxes}</b><small>成果箱</small></div><div><b>✨${report.rare.length}</b><small>RARE</small></div><div><b>🌟${report.superRare.length}</b><small>SUPER RARE</small></div></div><div class="batchReturnNote129">通常成果はまとめて受取済み。RARE・SUPER RAREもすべて受け取りました。${tot.newCompanions?`<br>👣 新しい仲間 ${tot.newCompanions}体`:""}${tot.eggs?`<br>🥚 卵 ${tot.eggs}個`:""}</div><button type="button" class="batchReturnStart129 batchReturnDone131">探索画面へ</button></div>`;document.body.dataset.batchReturnOverflow129=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);ov.querySelector(".batchReturnDone131").onclick=()=>{batchReturnReport131=null;closeBatchReturn129();const idx=Array.from({length:GROUP_COUNT},(_,i)=>i).find(i=>groupUnlocked(i)&&groupState(i)?.status==="idle")??0;setActiveGroup(idx);screen="home";render()}}
+
 function prepareReturnForGroup(){return false}
 function prepareReturnAll(){let changed=false;for(let i=0;i<GROUP_COUNT;i++)changed=prepareReturnForGroup(i)||changed;return changed}
 function applyBaseGrowth(groupIndex=activeGroup){
@@ -1069,8 +1292,8 @@ function discardEgg(id){mutateDungeon(d=>{d.eggs=(d.eggs||[]).filter(e=>e.id!==i
 function completeMission(groupIndex=activeGroup){stopLootAuto();const g=groupState(groupIndex),m=g.mission;if(!m)return;addMissionExpeditionComplete122();g.lastTeamIds=m.teamIds.slice();g.status="idle";g.mission=null;g.prep.teamIds=[];exp.mission=null;writeExp();autoBackupCapture("探索完了",{force:true});setActiveGroup(groupIndex);screen="home";render()}
 function cancelMission(groupIndex=activeGroup){const g=groupState(groupIndex);if(g.status!=="exploring"||!g.mission)return;if(!UI.dialog.confirm(`グループ${groupIndex+1}の探索を中止しますか？\nEXP・絆・成果は一切獲得できません。`))return;g.status="idle";g.mission=null;exp.mission=null;writeExp();setActiveGroup(groupIndex);screen="home";render()}
 
-function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length)return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),d=readDungeon()||{},luckAverage=averageLuckForIds(d,ids),luckMultiplier=luckMultiplierFromAverage(luckAverage),now=Date.now();g.status="exploring";expSfx("depart");g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours:1,freeReturnVersion:1,rewardMode:"freeReturn",teamIds:ids,startAt:now,maxReturnAt:now+FREE_EXP_MAX_HOURS*3600000,returnAt:now+FREE_EXP_MAX_HOURS*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,luckAverage,luckMultiplier,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
-function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),diff=highestDifficultyForDungeon(p.dungeonId),s=scoreTeam(p.teamIds,p.dungeonId,diff);if(!p.teamIds.length)return;if(!diff)return;const names=p.teamIds.map(id=>rec(id)?.name_ja||id).join("・");if(UI.dialog.confirm(`グループ${groupIndex+1}\n${THEMES[p.dungeonId].name} ランク${diff}へ探索に出発します。\n\n${names}\n探索ランク ${s.rank}（${s.total}点）\n🍀 グループ運 ${averageLuckForIds(readDungeon()||{},p.teamIds).toFixed(1)} / 効果×${luckMultiplierFromAverage(averageLuckForIds(readDungeon()||{},p.teamIds)).toFixed(2)}\n\n帰還を押した時点まで探索します（最大12時間）。\n30分未満で帰還した場合は成果なしです。\n\n探索中はこのピックを他の探索グループ・本編・特訓・進化で使用できません。`)){if(startMission(groupIndex))render()}}
+function startMission(groupIndex=activeGroup){const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),ids=p.teamIds.slice(0,3),diff=highestDifficultyForDungeon(p.dungeonId);if(g.status!=="idle"||!p.dungeonId||!diff||!ids.length||destinationReserved126(p.dungeonId,groupIndex))return false;p.difficulty=diff;const s=scoreTeam(ids,p.dungeonId,diff),d=readDungeon()||{},luckAverage=averageLuckForIds(d,ids),luckMultiplier=luckMultiplierFromAverage(luckAverage),now=Date.now();g.status="exploring";expSfx("depart");g.mission={id:`mission-g${groupIndex+1}-${now}`,groupIndex,dungeonId:p.dungeonId,difficulty:diff,hours:1,freeReturnVersion:2,rewardMode:"freeReturn",teamIds:ids,startAt:now,maxReturnAt:now+FREE_EXP_MAX_HOURS*3600000,returnAt:now+FREE_EXP_MAX_HOURS*3600000,rank:s.rank,score:s.total,scoreParts:s.parts,baseline:s.baseline,avgEnergy:s.avgEnergy,luckAverage,luckMultiplier,boxes:[],report:[],liveReport:[],stage:"exploring",baseApplied:false,summary:[],secretSpotUsed:null,secretSpotDiscovered:undefined};claimSecretSpotForMission(g.mission);g.mission.liveReport=buildLiveReport(g.mission);g.lastTeamIds=ids.slice();writeExp();screen="home";return true}
+function confirmAndStartMission(groupIndex){setActiveGroup(groupIndex);const g=groupState(groupIndex),p=ensurePrepValid(groupIndex),diff=highestDifficultyForDungeon(p.dungeonId),s=scoreTeam(p.teamIds,p.dungeonId,diff);if(!p.teamIds.length)return;if(!diff)return;const occupied=destinationOccupant126(p.dungeonId,groupIndex);if(occupied>=0){UI.dialog.alert(`${THEMES[p.dungeonId]?.name||"この探索先"}はグループ${occupied+1}が使用中です。\n同じ探索先へ複数グループを同時派遣することはできません。`);render();return}const names=p.teamIds.map(id=>rec(id)?.name_ja||id).join("・");if(UI.dialog.confirm(`グループ${groupIndex+1}\n${THEMES[p.dungeonId].name} ランク${diff}へ探索に出発します。\n\n${names}\n探索ランク ${s.rank}（${s.total}点）\n🍀 グループ運 ${averageLuckForIds(readDungeon()||{},p.teamIds).toFixed(1)} / 効果×${luckMultiplierFromAverage(averageLuckForIds(readDungeon()||{},p.teamIds)).toFixed(2)}\n\n帰還を押した時点まで探索します（最大24時間）。\n30分未満で帰還した場合は成果なしです。\n\n探索中はこのピックを他の探索グループ・本編・特訓・進化で使用できません。`)){if(startMission(groupIndex))render()}}
 function expeditionOwned(id){const d=readDungeon()||{};return !!(d.owned||[]).some(o=>String(o.id)===String(id||""))}
 function expeditionOwnershipBadgeHTML(id,mode="auto"){const owned=expeditionOwned(id);let cls=owned?"owned":"unowned",label=owned?"所持済":"未所持";if(mode==="owned"){cls="owned";label="所持済"}else if(mode==="unowned"){cls="unowned";label="未所持"}else if(mode==="new"){cls="newowned";label="未所持 → 仲間入り"}return `<span class="expOwnershipBadge ${cls}">${label}</span>`}
 function expeditionEventBadgeHTML(label="NEW"){return `<span class="expEventBadge">${esc(label)}</span>`}
@@ -1088,7 +1311,7 @@ function groupCardHTML(groupIndex){
   return `<button type="button" class="groupCard returned returnedResultCard091 ${selected?"active":""}" data-group="${groupIndex}" data-return-card="${groupIndex}" aria-label="グループ${groupIndex+1}の成果を見る">${head}<div class="groupCardFoot"><span class="groupReturned">🎉 帰還済み</span><span class="groupAction goldBtn groupResultAction091">🎁 成果を見る</span></div></button>`
  }
  let action="",sub="";
- if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大12時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
+ if(status==="exploring"&&m){const eh=missionElapsedHours(m);sub=`<span class="groupRemain" id="groupCountdown${groupIndex}">${eh>=FREE_EXP_MAX_HOURS?"24時間 MAX":`探索 ${formatElapsedHours(eh)}`}</span>`;action=`<button class="groupAction goldBtn returnNow" data-return-now-group="${groupIndex}">帰還</button>`}else{const can=p.teamIds.length>0&&!!did;sub=`<span>自由帰還・最大24時間</span>`;action=`<button class="groupAction goldBtn" data-depart-group="${groupIndex}" ${can?"":"disabled"}>出発</button>`}
  return `<div class="groupCard ${selected?"active":""} ${status}" data-group="${groupIndex}" role="button" tabindex="0">${head}<div class="groupCardFoot">${sub}${action}</div></div>`
 }
 /* ===== GROUP DOCK / GROUP SWITCHING ===== */
@@ -1259,17 +1482,18 @@ function renderPrep(){
   startTicker();
   return
  }
- const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);
+ const grouped=availableDungeonIds(dests).map(did=>({did,diff:highestDifficultyForDungeon(did,dests)}));p.difficulty=highestDifficultyForDungeon(p.dungeonId,dests);const batchUnlocked126=batchAutoUnlocked126(d),batchIdleCount126=batchIdleGroups126().length;
  const runSet=new Set(currentRunIds()),otherExp=expeditionBusyIds(activeGroup),busySet=new Set([...runSet,...otherExp]),eligible=new Set(eligiblePickIds(activeGroup)),all=(d.owned||[]).map(o=>rec(o.id)).filter(Boolean),filtered=filterExpeditionPicks(all,d,eligible,busySet),th=THEMES[p.dungeonId],spot=activeSecretSpot(p.dungeonId),score=scoreTeam(p.teamIds,p.dungeonId,p.difficulty);
  const slots=prepSelectedStripHTML(d,p);
  const cards=filtered.length?filtered.map(r=>{const id=r.master_id,disabled=!eligible.has(id),sel=p.teamIds.includes(id),recOk=recommended(r,p.dungeonId),why=runSet.has(id)?"本編攻略中":otherExp.has(id)?"別グループ派遣中":"",types=[r.type1,r.type2].filter(Boolean),badges=`${recOk?'<span class="recommend">🔥 適性</span>':""}${disabled?`<span class="busyTag">${why||"使用不可"}</span>`:""}`,body=`<small class="pickSummary078">${gradeText(r)}/ﾎﾟｹｴﾈ${esc(r.poke_ene??"-")}/運${luckFor(d,id)}</small><div class="pickTypeRow">${UI.pickCard.chips(types,"pickTypeChip")}</div>`;return UI.pickCard.html({classes:`${sel?"selected":""} ${disabled?"disabled":""}`,attributes:{"data-pick":id,"data-disabled":disabled?1:0},badges,image:imageOf(r),name:r.name_ja,body}).replace('<img ','<img loading="lazy" decoding="async" ') }).join(""):`<div class="pickEmpty">条件に合う所持ピックがありません。</div>`;
  const filterHtml=expeditionPickFilterHTML(all,filtered.length);
- app.innerHTML=`${groupDockHTML()}<div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId;return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""}" data-did="${x.did}" ${secret?'title="🌟 ひみつの場所ボーナス対象"':""}><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span>${secret?'<span class="destSecretBadge" aria-label="ひみつの場所ボーナス">🌟</span>':""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`}).join("")}</div><div class="muted destinationAutoHint" style="margin-top:7px">🌟枠はひみつの場所ボーナス対象。派遣先タップでおまかせ編成、ランクは攻略済み最高ランクを使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="bestDestBtn103" id="bestDestBtn" ${p.teamIds.length===3?"":"disabled"}>🎯 おすすめ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループを切り替えると、未出発のパーティ選択はクリアされます。ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
+ app.innerHTML=`${groupDockHTML()}<div class="batchAutoBar126"><div><b>✨ まとめておまかせ探索</b><small>${batchUnlocked126?"空いている複数グループを、重複しないおすすめ探索先へ一括派遣。":"全ダンジョンR2制覇で解放します。"}</small></div><button type="button" class="batchAutoBtn126 ${batchUnlocked126?"":"locked"}" id="batchAutoBtn126" ${batchUnlocked126&&batchIdleCount126>=2?"":"disabled"}>${batchUnlocked126?(batchIdleCount126>=2?"✨ まとめておまかせ探索":`待機グループ ${batchIdleCount126}`):"🔒 全R2で解放"}</button></div><div class="activeGroupLabel" id="expActiveGroupLabel">設定中：グループ${activeGroup+1}　<span>探索ランク ${score.rank} / ${score.total}点　🍀運 ${averageLuckForIds(d,p.teamIds).toFixed(1)}（×${luckMultiplierFromAverage(averageLuckForIds(d,p.teamIds)).toFixed(2)}）</span></div><div class="setupStack"><div class="card"><div class="sectionTitle">① 派遣先</div><div class="destinationList compactDestList">${grouped.map(x=>{const secret=activeSecretSpot(x.did),selected=x.did===p.dungeonId,occ=destinationOccupant126(x.did,activeGroup),busy=occ>=0,busyLabel=busy?destinationBusyLabel126(x.did,activeGroup):"";return `<button class="destinationCompact ${selected?"active selectedDestination":""} ${secret?"hasSecretBonus":""} ${busy?"destBusy126":""}" data-did="${x.did}" data-dest-busy="${busy?"1":"0"}" ${busy?"disabled":""} ${secret&&!busy?'title="🌟 ひみつの場所ボーナス対象"':busy?`title="${esc(busyLabel)}のため選択不可"`:""}><span class="destNameWrap"><span class="destName">${THEMES[x.did].icon} ${esc(THEMES[x.did].name)}</span>${secret?'<span class="destSecretBadge" aria-label="ひみつの場所ボーナス">🌟</span>':""}${busy?`<span class="destBusyBadge126">🚫 ${esc(busyLabel)}</span>`:""}</span><span class="destMeta"><b>ランク${x.diff}</b><em>${discoveryStepText(x.did)}</em></span></button>`}).join("")}</div><div class="muted destinationAutoHint" style="margin-top:7px">🌟枠はひみつの場所ボーナス対象。🚫表示の探索先は別グループが使用中のため選べません。派遣先タップでおまかせ編成、ランクは攻略済み最高ランクを使用します。</div></div><div class="card"><div class="sectionTitle">② 派遣パーティ <span class="badge" id="expTeamCount">${p.teamIds.length}/3</span></div><div id="expSelectedStrip">${slots}</div><div class="pickTools"><button class="ghost" id="lastBtn">↩ 前回編成</button><button class="greenBtn" id="autoBtn">✨ おまかせ編成</button><button class="bestDestBtn103" id="bestDestBtn" ${p.teamIds.length===3?"":"disabled"}>🎯 おすすめ派遣先</button></div><div class="teamSelectHint"><b>${th.icon} ${esc(th.name)} ランク${p.difficulty}</b><br>グループを切り替えると、未出発のパーティ選択はクリアされます。ほかの探索グループで派遣中のピックは選択できません。設定変更は上部カードの探索ランク・点数へ即時反映されます。</div>${filterHtml}<div class="pickGrid size-${prepPickView}">${cards}</div></div></div><div class="card collectionShortcut"><button class="ghost" id="collectionBtn" style="width:100%">🗺️ 探索コレクションを見る</button></div></div>`;
  bindGroupDock();
  const groupDock=document.getElementById("groupDock"),headerEl=document.querySelector("header"),syncTop=()=>{if(groupDock&&headerEl)groupDock.style.top=`${Math.ceil(headerEl.getBoundingClientRect().height)+4}px`};syncTop();requestAnimationFrame(syncTop);
 
+ const batchAutoBtn126=document.getElementById("batchAutoBtn126");if(batchAutoBtn126&&!batchAutoBtn126.disabled)batchAutoBtn126.onclick=showBatchAutoConfirm126;
  app.querySelectorAll("[data-did]").forEach(b=>b.onclick=()=>{
-  const did=b.dataset.did;if(!did||did===p.dungeonId)return;flushPrepWrite();const token=++destinationSelectToken;p.dungeonId=did;p.difficulty=highestDifficultyForDungeon(did,dests);
+  const did=b.dataset.did;if(!did||b.dataset.destBusy==="1"||did===p.dungeonId)return;flushPrepWrite();const token=++destinationSelectToken;p.dungeonId=did;p.difficulty=highestDifficultyForDungeon(did,dests);
   app.querySelectorAll(".destinationCompact[data-did]").forEach(x=>{const sel=x.dataset.did===did;x.classList.toggle("active",sel);x.classList.toggle("selectedDestination",sel);x.classList.toggle("destinationSelecting",sel);let badge=x.querySelector(".destSelectedBadge");if(sel&&!badge){const wrap=x.querySelector(".destBadges");if(wrap)wrap.insertAdjacentHTML("afterbegin",'<span class="destSelectedBadge">✓ 選択中</span>')}else if(!sel&&badge)badge.remove()});
   const label=document.getElementById("expActiveGroupLabel");if(label)label.innerHTML=`設定中：グループ${activeGroup+1}　<span>🧭 ${esc(THEMES[did]?.name||did)} に変更中… おまかせ編成を計算しています</span>`;
   requestAnimationFrame(()=>setTimeout(()=>{if(token!==destinationSelectToken||p.dungeonId!==did)return;p.teamIds=autoTeam(did,p.difficulty,activeGroup);writeExp();renderPrep()},20))
@@ -1282,12 +1506,12 @@ function renderPrep(){
  bindPrepSelectedStrip(d,p);
  document.getElementById("autoBtn").onclick=()=>{flushPrepWrite();p.teamIds=autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
  document.getElementById("lastBtn").onclick=()=>{flushPrepWrite();const ok=(g.lastTeamIds||[]).filter(id=>eligible.has(id)).slice(0,3);p.teamIds=ok.length?ok:autoTeam(p.dungeonId,p.difficulty,activeGroup);writeExp();renderPrep()};
- const bestDestBtn=document.getElementById("bestDestBtn");if(bestDestBtn)bestDestBtn.onclick=()=>{if(p.teamIds.length!==3)return;flushPrepWrite();const best=bestDungeonForTeam(p.teamIds);if(!best)return UI.dialog.alert("攻略済みの派遣先がありません。");p.dungeonId=best.did;p.difficulty=best.diff;writeExp();renderPrep()};
+ const bestDestBtn=document.getElementById("bestDestBtn");if(bestDestBtn)bestDestBtn.onclick=()=>{if(p.teamIds.length!==3)return;flushPrepWrite();const best=bestDungeonForTeam(p.teamIds,activeGroup);if(!best)return UI.dialog.alert("攻略済みの派遣先がありません。");p.dungeonId=best.did;p.difficulty=best.diff;writeExp();renderPrep()};
  document.getElementById("collectionBtn").onclick=()=>openCollection();
  bindExpeditionPickFilters();optimizeBlackPrep073();startTicker()
 }
 
-function renderExplore(){document.body.classList.remove("blackExpPrep073");const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"12時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone ${profile.noReward?"noRewardYet":""}" id="nextMilestone">${profile.noReward?`⚠️ 30分到達まで成果なし・${freeNextMilestoneText(m)}`:freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b id="plannedBoxes075">${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大12時間。30分未満で帰還すると成果はありません。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}ほかのグループは別のピックで派遣できます。</div><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 帰還する</button></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);optimizeBlackExplore075();startTicker()}
+function renderExplore(){document.body.classList.remove("blackExpPrep073");const g=groupState(),m=g.mission;if(!m){screen="home";return renderPrep()}if(g.status==="returned"){screen="return";return renderReturn()}const th=THEMES[m.dungeonId],elapsed=missionElapsedHours(m),profile=freeRewardProfile(elapsed),pct=Math.min(100,elapsed/FREE_EXP_MAX_HOURS*100),maxed=elapsed>=FREE_EXP_MAX_HOURS;app.innerHTML=`${groupDockHTML()}<div class="exploreLayout"><div class="walkStage"><div class="walkTitle">グループ${activeGroup+1} / ${th.icon} ${esc(th.name)} ランク${m.difficulty}</div><div class="walkGround"></div><div class="walkTeam">${m.teamIds.map(id=>`<div class="walker"><img src="${esc(imageOf(rec(id)))}" alt=""></div>`).join("")}</div></div><div class="card exploreInfo"><div class="kicker">EXPEDITION IN PROGRESS</div><div class="big">🧭 グループ${activeGroup+1} 探索中</div><div class="countdown elapsedCount" id="countdown">${maxed?"24時間 MAX":formatElapsedHours(elapsed)}</div><div class="progress freeProgress"><div id="exploreProgressFill" style="width:${pct}%"></div></div><div class="nextMilestone ${profile.noReward?"noRewardYet":""}" id="nextMilestone">${profile.noReward?`⚠️ 30分到達まで成果なし・${freeNextMilestoneText(m)}`:freeNextMilestoneText(m)}</div><div class="exploreStats"><div><b>${m.rank}</b><small>探索ランク</small></div><div><b id="elapsedStat">${elapsed.toFixed(1)}h</b><small>経過時間</small></div><div><b id="plannedBoxes075">${profile.boxes}</b><small>成果箱予定</small></div><div><b>🍀${missionLuckAverage(m).toFixed(1)}</b><small>運 ×${missionLuckMultiplier(m).toFixed(2)}</small></div></div><div class="missionTeam">${m.teamIds.map(miniPickHTML).join("")}</div><div class="liveLogBox" id="liveLogBox">${liveLogHTML(m)}</div><div class="notice"><b>帰還を押した時点で成果を確定します。</b><br>最大24時間。30分未満で帰還すると成果はありません。<br>${m.secretSpotUsed?`🌟 ひみつの場所 <b>${esc(m.secretSpotUsed.name)}</b> を調査中！<br>`:""}ほかのグループは、別の探索先・別のピックで派遣できます。</div><div class="batchReturnActions129"><button class="goldBtn returnMissionBtn" id="returnMissionBtn">🏠 このグループだけ帰還</button>${batchReturnUnlocked129()&&batchReturnExploringGroups129().length>=2?`<button class="batchReturnBtn129" id="batchReturnBtn129">🏠 一括帰還 (${batchReturnExploringGroups129().length})</button>`:""}</div></div></div>`;bindGroupDock();document.getElementById("returnMissionBtn").onclick=()=>requestMissionReturn(activeGroup);const br=document.getElementById("batchReturnBtn129");if(br)br.onclick=showBatchReturnConfirm131;optimizeBlackExplore075();startTicker()}
 let returnFlowBound092=false,returnFlowSuppressUntil092=0;
 function runReturnFlow092(action){
  const m=groupMission();if(!m)return false;
@@ -1354,6 +1578,7 @@ function renderBoxes(){
 function renderEggDiscard(){const d=readDungeon();app.innerHTML=`<div class="card"><div class="sectionTitle">🥚 卵が所持上限を超えました</div><div class="notice" style="margin-bottom:10px">卵 ${d.eggs.length}/${d.eggCap}。残す卵を選ぶため、不要な卵を1個捨ててください。探索で拾った新しい卵を捨てても構いません。</div><div class="discardGrid">${d.eggs.map(e=>`<button class="discardEgg" data-discard="${esc(e.id)}"><div class="eggIcon">${e.kind==="super"?"🌟🥚":e.kind==="rare"?"✨🥚":e.kind==="type"?"🎨🥚":"🥚"}</div><b>${esc(e.kind==="type"?`${e.type}タイプの卵`:EGG_DEF[e.kind]?.label||"卵")}</b><small>${e.source==="expedition"?"おでかけ探索産":"本編で入手"}</small><br><small>この卵を捨てる</small></button>`).join("")}</div></div>`;app.querySelectorAll("[data-discard]").forEach(b=>b.onclick=()=>{if(UI.dialog.confirm("この卵を捨てますか？"))discardEgg(b.dataset.discard)})}
 function goExploreFromCollection(did){
  const dests=clearedDestinations(),diff=highestDifficultyForDungeon(did,dests);if(!diff){UI.dialog.alert("この探索先はまだ解放されていません。先に本編ダンジョンをクリアしてください。");return}
+ const occupied=destinationOccupant126(did,-1);if(occupied>=0){UI.dialog.alert(`${THEMES[did]?.name||"この探索先"}はグループ${occupied+1}が使用中です。\n同じ探索先へ複数グループを同時派遣することはできません。`);return}
  let gi=(groupUnlocked(activeGroup)&&groupState(activeGroup)?.status==="idle")?activeGroup:Array.from({length:GROUP_COUNT},(_,i)=>i).find(i=>groupUnlocked(i)&&groupState(i)?.status==="idle");
  if(gi===undefined){UI.dialog.alert("空いている探索グループがありません。帰還済みの成果受取、または探索中グループの帰還後に選択してください。");return}
  setActiveGroup(gi);const p=ensurePrepValid(gi);p.dungeonId=did;p.difficulty=diff;p.teamIds=[];writeExp();screen="prep";collectionReturnScreen="prep";renderPrep();
@@ -1415,7 +1640,7 @@ function renderSummary(){
  app.innerHTML=`<div class="card expeditionSummaryCard summary104"><div class="summaryTop104"><div><b>✨ 探索完了！</b><span>グループ${activeGroup+1}</span></div><small>${th.icon} ${esc(th.name)} R${m.difficulty} ／ ${elapsed} ／ ${m.rank}ランク ／ 🎁${boxCount}</small></div><div class="summaryOverviewGrid104">${surveyHtml}${summarySouvenirsHTML104(souvenirs)}</div><div class="summaryHighlights104">${summarySecretHTML104(secret,m)}${companionHtml}</div><div class="summaryGrowthPanel104"><div class="summaryGrowthTitle094"><b>📈 今回の成長合計</b><small>探索参加＋成果箱を合算</small></div>${summaryGrowthTableHTML094(m)}</div>${bondCoinHtml}<div class="summaryFooter104"><span>探索終了でグループ${activeGroup+1}の3体が再び使用できます。</span><button class="goldBtn summaryCompleteBtn returnFlowBtn092 summaryComplete104" data-return-action="complete">探索終了</button></div></div>`
 }
 
-function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"12時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"12時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const boxes=document.getElementById("plannedBoxes075");if(boxes)boxes.textContent=profile.boxes;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
+function startTicker(){if(ticker){clearInterval(ticker);ticker=null}if(!exp.groups.some(g=>g.status==="exploring"&&g.mission))return;ticker=setInterval(()=>{const now=Date.now();const guide=document.getElementById("freeReturnDockGuide");if(guide){const guideHtml=freeReturnDockGuideHTML(now);if(guide.innerHTML!==guideHtml)guide.innerHTML=guideHtml}for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g.mission,el=document.getElementById(`groupCountdown${i}`);if(el&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now);el.textContent=h>=FREE_EXP_MAX_HOURS?"24時間 MAX":`探索 ${formatElapsedHours(h)}`}}const g=groupState(),m=g.mission;if(screen==="explore"&&g.status==="exploring"&&m){const h=missionElapsedHours(m,now),maxed=h>=FREE_EXP_MAX_HOURS,profile=freeRewardProfile(h),el=document.getElementById("countdown");if(el)el.textContent=maxed?"24時間 MAX":formatElapsedHours(h);const stat=document.getElementById("elapsedStat");if(stat)stat.textContent=`${h.toFixed(1)}h`;const boxes=document.getElementById("plannedBoxes075");if(boxes)boxes.textContent=profile.boxes;const next=document.getElementById("nextMilestone");if(next)next.textContent=freeNextMilestoneText(m,now);const fill=document.getElementById("exploreProgressFill");if(fill)fill.style.width=`${Math.min(100,h/FREE_EXP_MAX_HOURS*100)}%`;const log=document.getElementById("liveLogBox");if(log){const htm=liveLogHTML(m,now);if(log.innerHTML!==htm)log.innerHTML=htm}}},1000)}
 function openCollection(){if(screen!=="collection")collectionReturnScreen=screen||"home";screen="collection";render()}
 function updateHeaderNav(){const hb=document.getElementById("homeBtn"),cb=document.getElementById("collectionHeaderBtn"),show=!(["home","prep"].includes(screen));if(hb)hb.style.setProperty("display",show?"grid":"none","important");if(cb)cb.classList.toggle("active",screen==="collection");document.body.classList.toggle("homeNavVisible",show)}
 
@@ -2925,7 +3150,7 @@ body.blackExpExplore075 .eventTitle{font-size:17px!important;}
 body.blackExpExplore075 .adventureEvent p{font-size:15px!important;}
 body.blackExpExplore075 .adventureEvent time{font-size:13px!important;}
 body.blackExpExplore075 .exploreInfo>.notice{font-size:13px!important;line-height:1.3!important;padding:5px 8px!important;margin:0!important;flex:0 0 auto!important;}
-body.blackExpExplore075 .returnMissionBtn{flex:0 0 49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
+body.blackExpExplore075 .batchReturnActions129>button{height:49px!important;min-height:49px!important;font-size:24px!important;margin:0!important;padding:6px!important;}
 }
 </style>
 <!-- Updated: 2026-10-03 22:33 JST / Ver0.79 -->
@@ -3130,7 +3355,7 @@ body.blackExpExplore075 .eventTitle{font-size:12px!important;}
 body.blackExpExplore075 .adventureEvent p{font-size:10px!important;line-height:1.25!important;}
 body.blackExpExplore075 .adventureEvent time{font-size:9px!important;}
 body.blackExpExplore075 .exploreInfo>.notice{font-size:9px!important;line-height:1.2!important;padding:3px 5px!important;}
-body.blackExpExplore075 .returnMissionBtn{flex-basis:38px!important;min-height:38px!important;font-size:18px!important;padding:4px!important;}
+body.blackExpExplore075 .batchReturnActions129>button{height:38px!important;min-height:38px!important;font-size:18px!important;padding:4px!important;}
 }
 </style>
 <!-- Ver0.80: 黒PCで確定した探索ホーム・探索中レイアウトを白PC1366x688へ適用。高さ688px向けに各領域を圧縮し、主要操作を1画面に維持。 -->
@@ -3390,6 +3615,31 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Updated: 2026-10-06 17:20 JST -->
 <!-- Ver1.23: expedition feature unlock at all-R1 plus group-progression regression presets (R1=G1/G2, R2=G3, R3=G4, R4=G5). Updated: 2026-10-06 19:31 JST -->
 <!-- Ver1.24: administrator group unlock is temporary/in-memory only; legacy persisted adminUnlockedGroups is ignored and removed. Updated: 2026-10-06 20:58 JST -->
+
+<style id="v130-free-exploration-24h">
+/* Ver1.30: 24-hour free exploration. Fourteen milestones are kept compact on black-PC layouts. */
+@media(min-width:1200px) and (min-height:650px) and (max-height:840px){
+ body.blackExpPrep073 .freeGuideRows{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(7,16px)!important;grid-auto-flow:column!important;gap:1px 10px!important}
+ body.blackExpPrep073 .freeGuideRow{height:16px!important;min-height:0!important;padding:0 2px!important;grid-template-columns:52px minmax(0,1fr)!important}
+ body.blackExpPrep073 .freeGuideRow b,body.blackExpPrep073 .freeGuideRow span{font-size:9px!important;line-height:15px!important}
+ body.blackExpExplore075 .exploreGuide075 .freeGuideRows{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(7,16px)!important;grid-auto-flow:column!important;gap:1px 22px!important;width:min(760px,100%)!important}
+ body.blackExpExplore075 .exploreGuide075 .freeGuideRow{height:16px!important;min-height:0!important;padding:0 4px!important;grid-template-columns:68px minmax(0,1fr)!important}
+ body.blackExpExplore075 .exploreGuide075 .freeGuideRow b,body.blackExpExplore075 .exploreGuide075 .freeGuideRow span{font-size:10px!important;line-height:15px!important}
+}
+@media(max-width:600px){
+ .freeGuideRow{min-height:10px}
+ .freeGuideRow b,.freeGuideRow span{font-size:5.5px}
+ .freeGuideRow .boxSymbols{font-size:5.8px;letter-spacing:0}
+}
+</style>
 </body>
 <!-- Ver1.25: legacy adminUnlockedGroups is cleaned from persistent expedition data; normal expedition feature unlock is strictly all-R1 except active/returned mission protection and current-session admin temporary unlock. Updated: 2026-10-06 21:21 JST -->
+<!-- Ver1.26: same-destination multi-group dispatch is blocked in manual/collection/best-destination flows; all-R2 unlocks "まとめておまかせ探索", which plans 2+ idle groups with unique destinations and unique 3-pick teams, then confirms and dispatches them together. Updated: 2026-10-10 00:24 JST -->
+<!-- Ver1.27: batch-auto confirmation now shows three pick images instead of names, hides duplicate-rule explanatory text, and shows discovery level plus current secret-spot status for each destination. Updated: 2026-10-10 00:52 JST -->
+<!-- Ver1.28: batch-auto confirmation compacts all margins/padding and enlarges score, luck, discovery-level, and secret-status displays, especially on iPhone. Updated: 2026-10-10 04:43 JST -->
+<!-- Ver1.29: R2-unlocked batch return added. Two or more exploring groups can return together; confirmation warns under-30-minute no-reward groups, arrivals reveal one group at a time, and reward contents remain hidden until the user opens each group in the normal return flow. Added batch-return regression preset. Updated: 2026-10-10 07:44 JST -->
+<!-- Ver1.30: free exploration maximum extended from 12h to 24h. Existing 0.5–12h rewards are unchanged; 14/16/18/20/22/24h milestones add 9/10/11/12/13/14 boxes, XP 88/101/113/125/136/145, bond .37/.42/.46/.51/.55/.60, discovery 28/32/35/39/42/45, and base souvenirs 4/5/5/6/6/7. Rare-box quality rules remain capped at the existing 8h quality tier. Active free-return missions migrate to the new 24h cap. Updated: 2026-10-10 08:05 JST -->
+<!-- Ver1.31: batch return redesigned as a true aggregate flow. All groups are reported together; RARE-below/normal rewards are summarized in one screen, while RARE and jackpot (= SUPER RARE in batch UI) are revealed individually. Per-group arrival sequence and per-group result traversal removed. Batch flow also resolves egg overflow, then finalizes all returned groups together. Updated: 2026-10-10 08:12 JST -->
+<!-- Ver1.32: 探索中画面の「このグループだけ帰還」と「一括帰還」の縦サイズを共通固定し、iPhone・黒PCとも左右ボタンの高さを統一。Updated: 2026-10-10 08:47 JST -->
+<!-- SOURCE FILE: Expedition Ver1.32 full source. Updated: 2026-10-10 08:47 JST -->
 </html>
