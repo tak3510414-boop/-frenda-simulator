@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.31">
+<html lang="ja" data-test-center-version="2.32">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.31</title>
+<title>フレンダ 回帰テストセンター Ver2.32</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -18,11 +18,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.31</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.32</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.31</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.32</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -148,6 +148,7 @@ const progressionCases=[
  ["p-groups1","探索 G1/G2","全R1状態。G1/G2のみ解放。","groups-r1","expedition"],
  ["p-groups2","探索 G1〜G3","全R2状態。G3＋まとめておまかせ探索が解放。","groups-r2","expedition"],
  ["p-batch-auto","まとめておまかせ探索","全R2状態。空きG1〜G3を別々の探索先・別々の3体へ一括自動配分。確認画面でピック画像・調査Lv・ひみつ状態を確認して出発。","batch-auto","expedition"],
+ ["p-batch-return","一括帰還","全R2状態＋G1〜G3探索中。一括帰還の確認→グループごとの帰還演出→成果箱の中身を隠したまま最終まとめ→順番に成果を見る、を確認。","batch-return","expedition"],
  ["p-destination-lock","探索先の重複禁止","G1が森へ探索中。G2準備では森が「G1探索中」となり選択不可。おすすめ派遣先・出発でも重複できないことを確認。","destination-lock","expedition"],
  ["p-groups3","探索 G1〜G4","全R3状態。G4まで解放。","groups-r3","expedition"],
  ["p-groups4","探索 G1〜G5","全R4状態。G5まで解放。","groups-r4","expedition"],
@@ -205,7 +206,7 @@ async function runAuto(){
  let d,e,t;
  try{[d,e,t]=await Promise.all([fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js")]);addResult("必要ファイル取得","ok","test/dungeon / test/expedition / test/frenda-test")}
  catch(err){addResult("必要ファイル取得","ng",err.message);return}
- versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC 2.31 / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
+ versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC 2.32 / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
 
  // Ver2.28: 現行ナビゲーション仕様に合わせて導線監査を分離（Simulator→Portal / Dungeon→内部Home / Expedition→内部Home＋Dungeonへ閉じる）
  const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
@@ -229,7 +230,7 @@ async function runAuto(){
  addResult("test/ 4ファイル",self.ok?"ok":"ng","dungeon.html / expedition.html / frenda-test.js / test-center.html");
 
  const checks=[
-  ["Test Center版表示",document.documentElement.dataset.testCenterVersion==="2.31"&&document.getElementById("testCenterVersion")?.textContent.includes("2.31"),"画面上でTest Center自身のVerを確認可能"],
+  ["Test Center版表示",document.documentElement.dataset.testCenterVersion==="2.32"&&document.getElementById("testCenterVersion")?.textContent.includes("2.32"),"画面上でTest Center自身のVerを確認可能"],
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.1/.test(t)&&/active:\s*!!isolated/.test(t),"本番localStorageのスナップショットをメモリ分離"],
@@ -309,7 +310,9 @@ async function runAuto(){
   ["まとめておまかせ 全体配分",/function planBatchAuto126/.test(e)&&/usedDids/.test(e)&&/remainingIds/.test(e)&&/autoTeamFromPool126/.test(e)&&/function startBatchAuto126/.test(e),"2〜5の待機グループを対象に、探索先と3体編成を重複なしでまとめて計算・確認・出発"],
   ["まとめておまかせ 確認UI",/batchAutoPicks127/.test(e)&&/batchAutoPick127/.test(e)&&/🗺️ 調査Lv/.test(e)&&/🌟 ひみつの場所 解放中/.test(e)&&/おすすめの探索先とメンバーを自動で選びました/.test(e)&&!/同じ探索先・同じピックの重複なし/.test(e),"確認画面は名前列挙ではなく3体のピック画像を表示し、調査Lv・ひみつ状態を表示。重複なし説明文は非表示"],
   ["まとめておまかせ 確認UIコンパクト",/v128-batch-auto-compact-confirm/.test(e)&&/batchAutoScore126 strong\{font-size:32px/.test(e)&&/batchAutoMeta127\{[^}]*font-size:12px/.test(e)&&/grid-template-columns:70px minmax\(0,1fr\) 72px/.test(e),"確認画面は余白を圧縮し、ランク・点数・運・調査Lv・ひみつ状態を大きく表示。iPhoneでもスコアを右列に保持"],
-  ["まとめておまかせ回帰プリセット",["batch-auto","destination-lock"].every(x=>e.includes(`\"${x}\"`)),"一括おまかせと手動探索先ロックを直接再現"],
+  ["一括帰還",/v129-batch-return/.test(e)&&/batchReturnUnlocked129/.test(e)&&/showBatchReturnConfirm129/.test(e)&&/startBatchReturn129/.test(e)&&/showBatchReturnArrival129/.test(e)&&/showBatchReturnFinal129/.test(e),"全R2で解放。探索中2グループ以上をまとめて帰還し、グループ単位で帰還演出"],
+  ["一括帰還のドキドキ維持",/成果の中身はまだ表示しません/.test(e)&&/順番に成果を見る/.test(e)&&/batchReturnQueue129/.test(e)&&/一括帰還分の成果確認がすべて完了/.test(e),"一括帰還時点では箱の中身を見せず、通常の成果フローをグループごとに順番確認"],
+  ["まとめて探索・一括帰還 回帰プリセット",["batch-auto","batch-return","destination-lock"].every(x=>e.includes(`"${x}"`)),"一括おまかせ・一括帰還・手動探索先ロックを直接再現"],
   ["ダンジョンダメージ±5%",/DUNGEON_DAMAGE_SPREAD_MIN_343=95/.test(d)&&/DUNGEON_DAMAGE_SPREAD_MAX_343=105/.test(d)&&/spreadPct=DUNGEON_DAMAGE_SPREAD_MIN_343\+Math\.floor\(Math\.random\(\)\*\(DUNGEON_DAMAGE_SPREAD_MAX_343-DUNGEON_DAMAGE_SPREAD_MIN_343\+1\)\)/.test(d),"ダンジョン内だけ95〜105%で自動変動"],
   ["ナイスアタック5%×1.2",/DUNGEON_NICE_ATTACK_RATE_343=0\.05/.test(d)&&/DUNGEON_NICE_ATTACK_MULT_343=1\.2/.test(d)&&/nice=Math\.random\(\)<DUNGEON_NICE_ATTACK_RATE_343/.test(d),"命中時5%で1.2倍"],
   ["ナイスアタック追加待ちなし",/x\.nice\?`✨ ナイスアタック！ \$\{actualDamage\}ダメージ！`/.test(d)&&!/await\s+showNiceAttack/.test(d),"既存のダメージ表示内で通知し、追加ルーレット・追加待ちを設けない"],
@@ -351,5 +354,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.29: Expedition Ver1.26 regression checks/presets added for unique-destination rule and all-R2 "まとめておまかせ探索"; Dungeon Ver3.57 unlock announcement is also audited. Updated: 2026-10-10 00:24 JST -->
 <!-- Ver2.30: regression audit updated for Expedition Ver1.27 batch-auto confirmation UI (pick images / discovery level / secret status / no duplicate-rule text). Updated: 2026-10-10 00:52 JST -->
 <!-- Ver2.31: regression audit added for Expedition Ver1.28 compact batch-auto confirmation UI and enlarged score/status typography. Updated: 2026-10-10 04:43 JST -->
-<!-- SOURCE FILE: Test Center Ver2.31 full source. Updated: 2026-10-10 04:43 JST -->
+<!-- Ver2.32: regression preset and static audits added for Expedition Ver1.29 batch return (R2 unlock / 2+ exploring groups / staged arrival reveal / reward contents hidden until normal result flow). Updated: 2026-10-10 07:44 JST -->
+<!-- SOURCE FILE: Test Center Ver2.32 full source. Updated: 2026-10-10 07:44 JST -->
 </html>
