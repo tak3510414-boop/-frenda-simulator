@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.27">
+<html lang="ja" data-app-version="1.28">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -273,6 +273,50 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 @media(max-width:700px){.batchAutoPicks127{gap:5px}.batchAutoPick127{width:54px;height:73px;border-radius:8px}.batchAutoMeta127{font-size:9px;gap:5px 8px}.batchAutoMain126 b{font-size:14px}}
 </style>
 
+
+<style id="v128-batch-auto-compact-confirm">
+/* Ver1.28: compact batch-auto confirmation; larger score/status typography and minimal whitespace. */
+.batchAutoOverlay126{padding:6px}
+.batchAutoPanel126{width:min(820px,99vw);max-height:97dvh;border-radius:16px;padding:9px}
+.batchAutoHead126{align-items:center;gap:6px}
+.batchAutoHead126 small{font-size:9px;line-height:1}
+.batchAutoHead126 h2{margin:1px 0 0;font-size:24px;line-height:1.08}
+.batchAutoClose126{width:34px;height:34px;font-size:19px}
+.batchAutoList126{gap:5px;margin:7px 0}
+.batchAutoRow126{grid-template-columns:82px minmax(0,1fr) 92px;gap:7px;padding:7px 8px;border-radius:11px}
+.batchAutoGroup126{font-size:15px;line-height:1.05}
+.batchAutoMain126 b{font-size:17px;line-height:1.1}
+.batchAutoPicks127{gap:4px;margin-top:4px}
+.batchAutoPick127{width:58px;height:68px;border-radius:7px}
+.batchAutoMeta127{gap:4px 8px;margin-top:4px;font-size:12px;line-height:1.15}
+.batchAutoMeta127 .secret127,.batchAutoMeta127 .normal127{padding:2px 5px}
+.batchAutoScore126{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;text-align:right;line-height:1}
+.batchAutoScore126 strong{font-size:32px;line-height:.95}
+.batchAutoScore126 small{margin-top:4px;font-size:16px;font-weight:1000;line-height:1;color:#345b6a}
+.batchAutoNote126{padding:6px 8px;font-size:10px;line-height:1.25}
+.batchAutoActions126{grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.batchAutoActions126 button{min-height:44px;padding:7px 10px;font-size:15px}
+@media(max-width:700px){
+ .batchAutoOverlay126{padding:3px}
+ .batchAutoPanel126{width:calc(100vw - 6px);max-height:calc(100dvh - 8px);border-radius:14px;padding:7px}
+ .batchAutoHead126{gap:4px}.batchAutoHead126 h2{font-size:21px}.batchAutoHead126 small{font-size:8px}
+ .batchAutoClose126{width:32px;height:32px;font-size:18px}
+ .batchAutoList126{gap:4px;margin:5px 0}
+ .batchAutoRow126{grid-template-columns:70px minmax(0,1fr) 72px;gap:5px;padding:6px}
+ .batchAutoGroup126{font-size:14px}
+ .batchAutoMain126 b{font-size:15px}
+ .batchAutoPicks127{gap:3px;margin-top:3px}
+ .batchAutoPick127{width:48px;height:58px;border-radius:6px}
+ .batchAutoMeta127{font-size:11px;gap:3px 6px;margin-top:3px}
+ .batchAutoMeta127 .secret127,.batchAutoMeta127 .normal127{padding:2px 4px}
+ .batchAutoScore126{grid-column:auto;display:flex;flex-direction:column;gap:0;align-items:flex-end;text-align:right}
+ .batchAutoScore126 strong{font-size:30px}
+ .batchAutoScore126 small{font-size:15px;margin-top:3px}
+ .batchAutoNote126{padding:5px 7px;font-size:9px}
+ .batchAutoActions126{grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+ .batchAutoActions126 button{min-height:42px;padding:6px 8px;font-size:14px}
+}
+</style>
 </head>
 <body>
 <header><div class="head"><div class="headerTop"><div class="brand"><b><button type="button" id="expHomeTitle076" aria-label="探索ホームへ戻る">🧭 おでかけ探索</button> <span class="ver" id="versionBadge"></span><span class="headerEggBadge" id="headerEggBadge" title="所持卵数">🥚 <b id="headerEggCount">0/0</b></span></b></div><div class="headerBtns"><button class="headerIconBtn expSoundBtn ghost" id="expeditionSoundBtn" title="音量" aria-label="音量">🔊</button><button class="headerIconBtn collectionHeaderBtn ghost" id="collectionHeaderBtn" title="探索コレクション" aria-label="探索コレクション">🗺️</button><button class="expCloseBtn ghost" id="expCloseBtn" title="おでかけ探索を閉じる" aria-label="おでかけ探索を閉じる">閉じる</button></div></div></div></header>
@@ -3493,5 +3537,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.25: legacy adminUnlockedGroups is cleaned from persistent expedition data; normal expedition feature unlock is strictly all-R1 except active/returned mission protection and current-session admin temporary unlock. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver1.26: same-destination multi-group dispatch is blocked in manual/collection/best-destination flows; all-R2 unlocks "まとめておまかせ探索", which plans 2+ idle groups with unique destinations and unique 3-pick teams, then confirms and dispatches them together. Updated: 2026-10-10 00:24 JST -->
 <!-- Ver1.27: batch-auto confirmation now shows three pick images instead of names, hides duplicate-rule explanatory text, and shows discovery level plus current secret-spot status for each destination. Updated: 2026-10-10 00:52 JST -->
-<!-- SOURCE FILE: Expedition Ver1.27 full source. Updated: 2026-10-10 00:52 JST -->
+<!-- Ver1.28: batch-auto confirmation compacts all margins/padding and enlarges score, luck, discovery-level, and secret-status displays, especially on iPhone. Updated: 2026-10-10 04:43 JST -->
+<!-- SOURCE FILE: Expedition Ver1.28 full source. Updated: 2026-10-10 04:43 JST -->
 </html>
