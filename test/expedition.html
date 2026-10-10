@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.34">
+<html lang="ja" data-app-version="1.35">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -340,6 +340,11 @@ body[data-exp-screen="prep"] main{padding-top:8px}
 <style id="v133-egg-overflow-detail">
 .eggDiscardMeta133{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:5px 0 4px}.eggBadge133{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:1000;line-height:1.1;background:#eef4f7;color:#365769;border:1px solid #d1dee5}.eggBadge133.super{background:#fff0c9;color:#7b4d00;border-color:#efc95a}.eggBadge133.rare{background:#f4edff;color:#65419a;border-color:#cab4ec}.eggBadge133.type{background:#eaf7ff;color:#176488;border-color:#add7ea}.eggBadge133.normal{background:#f0f4f6;color:#526771;border-color:#d5e0e5}.eggBadge133.new{background:#e9f9ee;color:#25723a;border-color:#a9ddb7}.eggType133{display:block;margin:3px 0 2px;font-size:12px;font-weight:1000;color:#244f63}.eggProgress133{display:block;margin-top:3px;font-size:10px;font-weight:900;color:#667983}.eggDiscardSource133{display:block;margin-top:2px;font-size:9px;color:#7b8a91}.batchReturnEggBtn131,.discardEgg{position:relative}.batchReturnEggBtn131 .eggIcon,.discardEgg .eggIcon{margin-bottom:2px}.batchReturnEggBtn131 b,.discardEgg b{font-size:12px!important;line-height:1.2}.batchReturnEggBtn131 .eggDiscardAction133,.discardEgg .eggDiscardAction133{display:block;margin-top:6px;padding-top:5px;border-top:1px dashed #dbe4e8;font-size:10px;font-weight:1000;color:#9a3b3b}
 @media(max-width:700px){.batchReturnEggBtn131{padding:7px 4px}.eggBadge133{font-size:9px;padding:2px 5px}.eggType133{font-size:11px}.eggProgress133{font-size:9px}}
+</style>
+
+<style id="v135-batch-auto-fast-planner">
+/* Ver1.35: fast batch-auto planner + immediate calculating feedback. */
+.batchAutoCalc135{width:min(560px,92vw);background:#fff;border-radius:20px;padding:22px 18px;box-shadow:0 22px 80px #0008;text-align:center}.batchAutoCalc135 .spin135{width:44px;height:44px;margin:0 auto 12px;border:5px solid #dbe9ef;border-top-color:#2da96a;border-radius:50%;animation:spin135 .75s linear infinite}.batchAutoCalc135 b{display:block;font-size:22px;color:#173a4d}.batchAutoCalc135 small{display:block;margin-top:7px;color:#647b87;font-weight:800;line-height:1.45}@keyframes spin135{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -1076,35 +1081,62 @@ function batchIdleGroups126(){return Array.from({length:GROUP_COUNT},(_,i)=>i).f
 function batchAvailablePickIds126(){const d=readDungeon()||{},run=new Set(currentRunIds()),busy=expeditionBusyIds(-1);return (d.owned||[]).map(o=>o.id).filter(id=>!run.has(id)&&!busy.has(id))}
 function batchMissingSouvenirs126(did){return souvenirDefs(did).filter(s=>souvenirCount(did,s.id)<=0).length}
 function batchStateCompare126(a,b){return b.totalScore-a.totalScore||b.secretCount-a.secretCount||b.discoveryNeed-a.discoveryNeed||b.missingSouvenirs-a.missingSouvenirs||b.diffSum-a.diffSum||a.orderSum-b.orderSum}
+function batchFastScore135(a,b,c,baseline){
+ const energy=a.energy+b.energy+c.energy,avg=energy/3,ratio=baseline?avg/baseline:0;
+ const strength=ratio<.7?5:ratio<.9?12:ratio<1.1?20:ratio<1.3?27:35;
+ const good=a.good+b.good+c.good,typePts=good>=3?25:good===2?18:good===1?10:0;
+ const bondSum=a.bond+b.bond+c.bond,bondPts=Math.round(bondSum*2/3),total=30+strength+typePts+bondPts;
+ return {total,rank:total>=85?"S":total>=70?"A":total>=55?"B":total>=40?"C":"D",parts:{number:30,strength,type:typePts,bond:bondPts},baseline:Math.round(baseline),avgEnergy:Math.round(avg),recommended:good,_energy:energy,_good:good,_bondSum:bondSum}
+}
+function batchCandidateTeams135(did,diff,poolIds,d,baseline){
+ const all=[];for(const id of poolIds){const r=rec(id);if(!r)continue;all.push({id,energy:Number(r.poke_ene)||0,bond:Number(bondLevel(d,id))||0,good:recommended(r,did)?1:0})}
+ const chosen=new Map(),take=(arr,n,key)=>arr.slice().sort((a,b)=>key(b)-key(a)||String(a.id).localeCompare(String(b.id),"ja",{numeric:true})).slice(0,n).forEach(x=>chosen.set(x.id,x));
+ for(const good of [0,1]){const arr=all.filter(x=>x.good===good);take(arr,24,x=>x.energy);take(arr,12,x=>x.bond);take(arr,12,x=>x.energy+x.bond*Math.max(1,baseline)*.12)}
+ const list=[...chosen.values()],cells=new Map(),KEEP_PER_CELL=12;
+ for(let i=0;i<list.length-2;i++)for(let j=i+1;j<list.length-1;j++)for(let k=j+1;k<list.length;k++){
+  const a=list[i],b=list[j],c=list[k],score=batchFastScore135(a,b,c,baseline),ratio=(score._energy/3)/(baseline||1),tier=ratio<.7?0:ratio<.9?1:ratio<1.1?2:ratio<1.3?3:4,key=`${score._good}|${tier}|${score.parts.bond}`,item={teamIds:[a.id,b.id,c.id],score};let cell=cells.get(key);
+  if(!cell){cells.set(key,[item]);continue}
+  if(cell.length<KEEP_PER_CELL){cell.push(item);cell.sort((x,y)=>y.score._energy-x.score._energy||y.score._bondSum-x.score._bondSum)}
+  else if(score._energy>cell[cell.length-1].score._energy){cell[cell.length-1]=item;cell.sort((x,y)=>y.score._energy-x.score._energy||y.score._bondSum-x.score._bondSum)}
+ }
+ const out=[...cells.values()].flat();out.sort((a,b)=>b.score.total-a.score.total||b.score._energy-a.score._energy||b.score._good-a.score._good||b.score._bondSum-a.score._bondSum);
+ return out.slice(0,600)
+}
 function planBatchAuto126(){
  if(!batchAutoUnlocked126())return {assignments:[],reason:"locked"};
  const groups=batchIdleGroups126(),dests=clearedDestinations(),occupied=new Set();
  for(let i=0;i<GROUP_COUNT;i++){const g=groupState(i),m=g?.mission;if(g&&g.status!=="idle"&&m?.dungeonId)occupied.add(m.dungeonId)}
  const dids=availableDungeonIds(dests).filter(did=>!occupied.has(did)),pool=batchAvailablePickIds126(),count=Math.min(groups.length,dids.length,Math.floor(pool.length/3));
  if(count<2)return {assignments:[],reason:groups.length<2?"groups":dids.length<2?"destinations":"picks",groups,dids,pool};
- let states=[{assignments:[],remainingIds:pool,usedDids:[],totalScore:0,secretCount:0,discoveryNeed:0,missingSouvenirs:0,diffSum:0,orderSum:0}];
- const BEAM=16;
+ const d=readDungeon()||{},meta=new Map(),teams=new Map();
+ for(const did of dids){const diff=highestDifficultyForDungeon(did,dests),baseline=baselineEnergy(did,diff);meta.set(did,{diff,secret:activeSecretSpot(did)?1:0,need:Math.max(0,100-discoveryPct(did)),missing:batchMissingSouvenirs126(did),order:Math.max(0,THEME_ORDER.indexOf(did))});teams.set(did,batchCandidateTeams135(did,diff,pool,d,baseline))}
+ let states=[{assignments:[],usedIds:new Set(),usedDids:[],totalScore:0,secretCount:0,discoveryNeed:0,missingSouvenirs:0,diffSum:0,orderSum:0}];
+ const BEAM=48,ALTS_PER_DEST=8;
  for(let step=0;step<count;step++){
   const groupIndex=groups[step],next=[];
-  for(const st of states){
-   const used=new Set(st.usedDids);
-   for(const did of dids){if(used.has(did))continue;const diff=highestDifficultyForDungeon(did,dests),teamIds=autoTeamFromPool126(did,diff,st.remainingIds);if(teamIds.length<3)continue;const score=scoreTeam(teamIds,did,diff),teamSet=new Set(teamIds),remainingIds=st.remainingIds.filter(id=>!teamSet.has(id)),secret=activeSecretSpot(did)?1:0,need=Math.max(0,100-discoveryPct(did)),missing=batchMissingSouvenirs126(did),order=Math.max(0,THEME_ORDER.indexOf(did));next.push({assignments:[...st.assignments,{groupIndex,did,diff,teamIds,score}],remainingIds,usedDids:[...st.usedDids,did],totalScore:st.totalScore+score.total,secretCount:st.secretCount+secret,discoveryNeed:st.discoveryNeed+need,missingSouvenirs:st.missingSouvenirs+missing,diffSum:st.diffSum+Number(diff||0),orderSum:st.orderSum+order})}
+  for(const st of states){const usedDids=new Set(st.usedDids);for(const did of dids){if(usedDids.has(did))continue;const m=meta.get(did),cands=teams.get(did)||[];let added=0;for(const cand of cands){if(cand.teamIds.some(id=>st.usedIds.has(id)))continue;const ids=new Set(st.usedIds);cand.teamIds.forEach(id=>ids.add(id));next.push({assignments:[...st.assignments,{groupIndex,did,diff:m.diff,teamIds:cand.teamIds,score:cand.score}],usedIds:ids,usedDids:[...st.usedDids,did],totalScore:st.totalScore+cand.score.total,secretCount:st.secretCount+m.secret,discoveryNeed:st.discoveryNeed+m.need,missingSouvenirs:st.missingSouvenirs+m.missing,diffSum:st.diffSum+Number(m.diff||0),orderSum:st.orderSum+m.order});if(++added>=ALTS_PER_DEST)break}}
   }
-  if(!next.length)break;
-  next.sort(batchStateCompare126);states=next.slice(0,BEAM)
+  if(!next.length)break;next.sort(batchStateCompare126);states=next.slice(0,BEAM)
  }
  states.sort(batchStateCompare126);const best=states[0];
- return best?.assignments?.length>=2?{...best,reason:"ok"}:{assignments:[],reason:"no-plan",groups,dids,pool}
+ if(!best?.assignments||best.assignments.length<2)return {assignments:[],reason:"no-plan",groups,dids,pool};
+ /* Re-evaluate only the final few teams with the canonical scorer. The expensive search itself uses the cached fast equivalent above. */
+ best.assignments=best.assignments.map(a=>({...a,score:scoreTeam(a.teamIds,a.did,a.diff)}));best.totalScore=best.assignments.reduce((n,a)=>n+Number(a.score?.total||0),0);
+ return {...best,reason:"ok",planner:"fast135"}
 }
 function batchAutoReason126(reason){return reason==="locked"?"全ダンジョンのR2をクリアすると解放されます。":reason==="groups"?"待機中の解放済みグループが2つ以上必要です。":reason==="destinations"?"同時に使える探索先が2か所以上ありません。":reason==="picks"?"使用できる所持ピックが6体以上必要です。":"現在の状態では2グループ以上を自動編成できません。"}
 function closeBatchAuto126(){const ov=document.getElementById("batchAutoOverlay126");if(ov)ov.remove();document.body.style.overflow=document.body.dataset.batchAutoOverflow126||"";delete document.body.dataset.batchAutoOverflow126}
-function showBatchAutoConfirm126(){
- const plan=planBatchAuto126();if(!plan.assignments?.length){UI.dialog.alert(batchAutoReason126(plan.reason));return}
+function renderBatchAutoConfirm135(plan){
+ if(!plan?.assignments?.length){closeBatchAuto126();UI.dialog.alert(batchAutoReason126(plan?.reason));return}
  closeBatchAuto126();const ov=document.createElement("div");ov.id="batchAutoOverlay126";ov.className="batchAutoOverlay126";
  const d=readDungeon()||{};const rows=plan.assignments.map(a=>{const th=THEMES[a.did],luck=averageLuckForIds(d,a.teamIds),step=discoveryStep(a.did),secret=activeSecretSpot(a.did),picks=a.teamIds.map(id=>{const r=rec(id);return `<span class="batchAutoPick127"><img src="${esc(imageOf(r))}" alt="${esc(r?.name_ja||"ピック")}" loading="lazy" decoding="async"></span>`}).join("");return `<div class="batchAutoRow126"><div class="batchAutoGroup126">グループ${a.groupIndex+1}</div><div class="batchAutoMain126"><b>${th?.icon||"🧭"} ${esc(th?.name||a.did)} R${a.diff}</b><div class="batchAutoPicks127">${picks}</div><div class="batchAutoMeta127"><span>🍀 運 ${luck.toFixed(1)}</span><span>🗺️ 調査Lv ${step}/5</span><span class="${secret?"secret127":"normal127"}">${secret?"🌟 ひみつの場所 解放中":"通常探索"}</span></div></div><div class="batchAutoScore126"><strong>${a.score.rank}</strong><small>${a.score.total}点</small></div></div>`}).join("");
  ov.innerHTML=`<div class="batchAutoPanel126" role="dialog" aria-modal="true" aria-label="まとめておまかせ探索"><div class="batchAutoHead126"><div><small>MULTI AUTO EXPEDITION</small><h2>✨ まとめておまかせ探索</h2></div><button type="button" class="batchAutoClose126" aria-label="閉じる">×</button></div><div class="batchAutoList126">${rows}</div><div class="batchAutoNote126">おすすめの探索先とメンバーを自動で選びました。</div><div class="batchAutoActions126"><button type="button" class="ghost batchAutoCancel126">キャンセル</button><button type="button" class="batchAutoStart126">この内容でまとめて出発</button></div></div>`;
  document.body.dataset.batchAutoOverflow126=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);
  const close=()=>closeBatchAuto126();ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector(".batchAutoClose126").onclick=close;ov.querySelector(".batchAutoCancel126").onclick=close;ov.querySelector(".batchAutoStart126").onclick=()=>startBatchAuto126(plan)
+}
+function showBatchAutoConfirm126(){
+ closeBatchAuto126();const ov=document.createElement("div");ov.id="batchAutoOverlay126";ov.className="batchAutoOverlay126";ov.innerHTML=`<div class="batchAutoCalc135" role="status" aria-live="polite"><div class="spin135"></div><b>おすすめを計算中…</b><small>探索先とメンバーをまとめて最適化しています。</small></div>`;document.body.dataset.batchAutoOverflow126=document.body.style.overflow||"";document.body.style.overflow="hidden";document.body.appendChild(ov);
+ requestAnimationFrame(()=>setTimeout(()=>{if(!document.getElementById("batchAutoOverlay126"))return;const t0=performance.now();try{const plan=planBatchAuto126();console.info("BATCH_AUTO_PLAN_MS",Math.round(performance.now()-t0));renderBatchAutoConfirm135(plan)}catch(err){console.error("BATCH_AUTO_FAST_135",err);closeBatchAuto126();UI.dialog.alert("まとめておまかせ探索の計算に失敗しました。もう一度お試しください。")}},20))
 }
 function startBatchAuto126(plan){
  const assignments=Array.isArray(plan?.assignments)?plan.assignments:[];if(assignments.length<2){closeBatchAuto126();return}
@@ -3638,5 +3670,6 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.32: 探索中画面の「このグループだけ帰還」と「一括帰還」の縦サイズを共通固定し、iPhone・黒PCとも左右ボタンの高さを統一。Updated: 2026-10-10 08:47 JST -->
 <!-- Ver1.33: 卵所持上限超過の選択画面を改善。一括帰還・通常帰還とも各卵に NORMAL/RARE/SUPER RARE/TYPE、タイプ名、孵化進行、入手元を表示し、一括帰還で今回入手した卵は NEW 表示。専用 batch-return-egg-overflow テストを追加。Updated: 2026-10-10 12:49 JST -->
 <!-- Ver1.34: 卵所持上限超過画面に「現在 x/y個・z個オーバー」を大きく表示。一括帰還では捨てるたび残りオーバー数を再計算して更新。通常の卵上限超過画面も同表示へ統一。Updated: 2026-10-10 13:00 JST -->
-<!-- SOURCE FILE: Expedition Ver1.34 full source. Updated: 2026-10-10 13:00 JST -->
+<!-- Ver1.35: 「まとめておまかせ探索」の約1分フリーズ対策。全所持ピック×探索先×beamごとの重い再計算を廃止し、探索先ごとの候補チームを一度だけ高速生成して再利用する方式へ変更。計算前に「おすすめを計算中…」を描画し、最終候補だけ正規scoreTeamで再確認。Updated: 2026-10-10 13:24 JST -->
+<!-- SOURCE FILE: Expedition Ver1.35 full source. Updated: 2026-10-10 13:24 JST -->
 </html>
