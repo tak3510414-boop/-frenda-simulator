@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.42">
+<html lang="ja" data-test-center-version="2.43">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.42</title>
+<title>フレンダ 回帰テストセンター Ver2.43</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -14,15 +14,16 @@ main{max-width:1180px;margin:auto;padding:12px}.card{background:var(--card);bord
 #autoResults{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}.testResult{padding:8px 10px;border-radius:10px;border:1px solid var(--line);font-size:12px}.testResult.ok{background:#eaf8ef;border-color:#a8d9b9;color:#17683b}.testResult.ng{background:#fff0f0;border-color:#e2aaaa;color:#8d2c2c}.testResult.warn{background:#fff8e6;border-color:#e6cc83;color:#785600}
 .sectionTitle{font-size:18px;font-weight:900;margin-bottom:8px}.checkRow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 5px;border-top:1px solid #e3ebef}.checkRow:first-of-type{border-top:0}.checkRow input{width:20px;height:20px}.checkRow b{font-size:13px}.checkRow small{display:block;color:var(--sub);font-size:11px;margin-top:2px}.openBtn{text-decoration:none;white-space:nowrap;background:#e4f0fa}.deviceHint{padding:9px 10px;border-radius:10px;background:#fff7d9;border:1px solid #dfc777;color:#6c5600;font-size:12px;margin-top:8px}.progress{font-size:12px;color:var(--sub);margin-left:auto}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
-@media(max-width:700px){main{padding:8px}.topgrid,#autoResults{grid-template-columns:1fr}.checkRow{grid-template-columns:26px minmax(0,1fr)}.checkRow .openBtn{grid-column:2;justify-self:start}.profiles button{padding:8px 9px;font-size:11px}}
+.jsVersionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.jsVersionItem{padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:#f7fafc}.jsVersionItem b{display:block;font-size:13px}.jsVersionItem code{display:block;margin-top:3px;font-size:12px;font-weight:800;color:#184e73;overflow-wrap:anywhere}.jsVersionItem small{display:block;margin-top:2px;color:var(--sub);font-size:10px}.jsVersionItem.ng{background:#fff0f0;border-color:#e2aaaa}.jsVersionItem.ng code{color:#8d2c2c}
+@media(max-width:700px){.jsVersionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:8px}.topgrid,#autoResults{grid-template-columns:1fr}.checkRow{grid-template-columns:26px minmax(0,1fr)}.checkRow .openBtn{grid-column:2;justify-self:start}.profiles button{padding:8px 9px;font-size:11px}}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.42</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.43</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.42</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.43</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -35,6 +36,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
  <div class="deviceHint"><b>🧪 回帰テストは管理者認証不要</b><br>「開く」を押すと本番セーブから分離されたテスト画面へ直接移動します。本番のローカル保存・クラウド保存・管理者設定は変更しません。</div>
 <div class="deviceHint" id="deviceHint"></div>
  <div class="deviceHint"><b>育成の本番導線</b><br>ホーム → 所持ピック → 個別「特訓」／「特訓 一括実行」。旧「特訓・進化」一覧画面は通常導線がないため回帰対象から外しています。</div>
+</section>
+
+<section class="card">
+ <div class="sectionTitle">本番JSバージョン</div>
+ <div class="deviceHint">本番ルートの共通JSを直接取得して表示します。Test用の <code>frenda-test.js</code> は本番系ではないため、この一覧には含めません。</div>
+ <div id="prodJsVersions" class="jsVersionGrid" style="margin-top:10px"><div class="jsVersionItem"><b>読込中</b><code>--</code></div></div>
 </section>
 
 <section class="card">
@@ -184,6 +191,25 @@ function setProfile(id){currentProfile=id;localStorage.setItem("frenda:regressio
 async function fetchText(name){const r=await fetch(`${name}?_reg=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw new Error(`${name}: HTTP ${r.status}`);return r.text()}
 async function fetchOptional(name){try{const r=await fetch(`${name}?_reg=${Date.now()}`,{cache:"no-store"});return {ok:r.ok,status:r.status,text:r.ok?await r.text():""}}catch(e){return {ok:false,status:0,text:"",error:String(e?.message||e)}}}
 function jsMasterVersion(t){return t.match(/master_version:\s*([0-9A-Za-z._-]+)/)?.[1]||t.match(/["']master_version["']\s*:\s*["']([^"']+)/)?.[1]||"?"}
+function productionJsVersion(file,text){
+ if(file==="frenda-master.js")return jsMasterVersion(text);
+ return text.match(/FRENDA_(?:CORE|RULES|DATA|UI|PARENTAL)_VERSION:\s*([0-9A-Za-z._-]+)/i)?.[1]
+  ||text.match(/CLOUD_VERSION\s*=\s*["']([^"']+)["']/)?.[1]
+  ||text.match(/const\s+VERSION\s*=\s*["']([^"']+)["']/)?.[1]
+  ||text.match(/version\s*:\s*["']([^"']+)["']/)?.[1]
+  ||"?";
+}
+function renderProductionJsVersions(root){
+ const specs=[
+  ["frenda-master.js","Master"],["frenda-core.js","Core"],["frenda-rules.js","Rules"],["frenda-data.js","Data"],
+  ["frenda-ui.js","UI"],["frenda-parental.js","Parental"],["frenda-cloud.js","Cloud"]
+ ];
+ const target=$("#prodJsVersions");if(!target)return;
+ target.innerHTML=specs.map(([file,label])=>{
+  const r=root[`../${file}`];const v=r?.ok?productionJsVersion(file,r.text||""):"?";const ok=!!r?.ok&&v!=="?";
+  return `<div class="jsVersionItem ${ok?"":"ng"}"><b>${label}</b><code>${ok?`Ver ${v}`:"取得失敗"}</code><small>${file}</small></div>`;
+ }).join("");
+}
 function jsonMasterInfo(t){try{const x=JSON.parse(t);return {version:String(x?.master_version||"?"),count:Array.isArray(x?.records)?x.records.length:-1}}catch{return {version:"?",count:-1}}}
 function portalLinksOK(t){return ["simulator.html","dungeon.html","expedition.html"].every(x=>new RegExp(`href=["']${x.replace(".","\\.")}["']`,`i`).test(t))}
 function simulatorPortalLinkOK(t){return /href=["']index\.html["']/i.test(t)}
@@ -216,6 +242,10 @@ async function runAuto(){
  const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
  const rootResults=await Promise.all(rootNames.map(fetchOptional));
  const root=Object.fromEntries(rootNames.map((n,i)=>[n,rootResults[i]]));
+ renderProductionJsVersions(root);
+ const prodJsNames=["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js","frenda-cloud.js"];
+ const prodJsBad=prodJsNames.filter(file=>{const r=root[`../${file}`];return !r?.ok||productionJsVersion(file,r.text||"")==="?"});
+ addResult("本番JSバージョン取得",prodJsBad.length?"ng":"ok",prodJsBad.length?`取得失敗: ${prodJsBad.join(" / ")}`:prodJsNames.map(file=>`${file.replace("frenda-","").replace(".js","")} ${productionJsVersion(file,root[`../${file}`].text)}`).join(" / "));
  const missing=rootNames.filter(n=>!root[n].ok);
  addResult("本番必須ファイル",missing.length?"ng":"ok",missing.length?`未取得: ${missing.map(x=>x.replace("../","")).join(" / ")}`:"ポータル・3アプリ・管理者・共通JS・Master JSON・画像4点を確認");
  const portal=root["../index.html"]?.text||"",sim=root["../simulator.html"]?.text||"",pd=root["../dungeon.html"]?.text||"",pe=root["../expedition.html"]?.text||"";
@@ -385,5 +415,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.40: Test Center自身のVer監査を固定値2.36から動的判定へ修正。探索先重複禁止と卵上限選択情報の静的監査を現行Expedition Ver1.34実装へ追従し、誤検知を解消。Updated: 2026-10-10 13:05 JST -->
 <!-- Ver2.41: Expedition Ver1.35「まとめておまかせ探索」高速化を監査。高速候補生成・計算中表示・最終正規スコア再確認を確認。Updated: 2026-10-10 13:24 JST -->
 <!-- Ver2.42: 本番/testのバージョン差異を赤×ではなく黄色警告で表示。バージョン取得失敗のみNGとし、テスト先行更新中の正常な差異を誤検知しないよう修正。Updated: 2026-10-10 15:35 JST -->
-<!-- SOURCE FILE: Test Center Ver2.42 full source. Updated: 2026-10-10 15:35 JST -->
+<!-- Ver2.43: 本番ルートの共通JS（Master/Core/Rules/Data/UI/Parental/Cloud）のバージョン一覧を画面表示し、自動チェックでも取得可否を監査。Updated: 2026-10-10 15:43 JST -->
+<!-- SOURCE FILE: Test Center Ver2.43 full source. Updated: 2026-10-10 15:43 JST -->
 </html>
