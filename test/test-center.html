@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.39">
+<html lang="ja" data-test-center-version="2.40">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.39</title>
+<title>フレンダ 回帰テストセンター Ver2.40</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -18,11 +18,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.39</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.40</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.39</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.40</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -210,7 +210,7 @@ async function runAuto(){
  let d,e,t;
  try{[d,e,t]=await Promise.all([fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js")]);addResult("必要ファイル取得","ok","test/dungeon / test/expedition / test/frenda-test")}
  catch(err){addResult("必要ファイル取得","ng",err.message);return}
- versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC 2.36 / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
+ versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC ${document.documentElement.dataset.testCenterVersion||"?"} / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
 
  // Ver2.28: 現行ナビゲーション仕様に合わせて導線監査を分離（Simulator→Portal / Dungeon→内部Home / Expedition→内部Home＋Dungeonへ閉じる）
  const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
@@ -234,7 +234,7 @@ async function runAuto(){
  addResult("test/ 4ファイル",self.ok?"ok":"ng","dungeon.html / expedition.html / frenda-test.js / test-center.html");
 
  const checks=[
-  ["Test Center版表示",document.documentElement.dataset.testCenterVersion==="2.36"&&document.getElementById("testCenterVersion")?.textContent.includes("2.36"),"画面上でTest Center自身のVerを確認可能"],
+  ["Test Center版表示",(()=>{const v=document.documentElement.dataset.testCenterVersion||"";return !!v&&document.getElementById("testCenterVersion")?.textContent.includes(v)})(),"画面上でTest Center自身のVerを確認可能"],
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.1/.test(t)&&/active:\s*!!isolated/.test(t),"本番localStorageのスナップショットをメモリ分離"],
@@ -314,7 +314,7 @@ async function runAuto(){
   ["進行プリセット",["progress-start","progress-early","progress-clear3","progress-clear5","progress-r1","progress-r2","progress-r3","progress-r4","progress-r5","shop-lv1","shop-lv2","shop-lv3"].every(x=>d.includes(`\"${x}\"`)),"開始直後からR5・SHOP Lvまで直接再現"],
   ["探索全体R1解放",/expeditionFeatureUnlocked123/.test(e)&&/全10ダンジョンのR1をクリア/.test(e)&&!/d\?\.missions\?\.stats\?\.expeditionsCompleted/.test(e),"通常解放は全R1制覇のみ。過去の探索完了実績だけでは再解放しない"],
   ["探索グループ進行プリセット",["groups-r1","groups-r2","groups-r3","groups-r4"].every(x=>e.includes(`\"${x}\"`))&&/\[1,1,2,3,4\]/.test(e),"R1=G1/G2、R2=G3、R3=G4、R4=G5を直接確認"],
-  ["探索先重複禁止",/function destinationOccupant126/.test(e)&&/destinationReserved126/.test(e)&&/destBusy126/.test(e)&&/destinationReserved126\(p\.dungeonId,groupIndex\)/.test(e)&&/goExploreFromCollection/.test(e),"手動選択・出発・おすすめ派遣先・コレクション導線で、使用中の探索先を他グループへ重複派遣しない"],
+  ["探索先重複禁止",/function destinationOccupant126/.test(e)&&/destinationReserved126/.test(e)&&/destBusy126/.test(e)&&/destinationReserved126\(p\.dungeonId,groupIndex\)/.test(e)&&/const occupied=destinationOccupant126\(p\.dungeonId,groupIndex\)/.test(e)&&/data-dest-busy/.test(e),"手動選択と出発直前の両方で使用中探索先を再検証し、別グループへの重複派遣を防止"],
   ["まとめておまかせ R2解放",/function batchAutoUnlocked126/.test(e)&&/statKey\(did,2\)/.test(e)&&/全ダンジョンR2制覇で解放/.test(e)&&/expeditionBatchAuto:r2/.test(d)&&/progressionEnsureBatchAutoUpgrade357/.test(d),"全R2制覇でG3と同時に解放。既にR2達成済みの旧セーブにも新機能解放演出を1回だけ追加"],
   ["まとめておまかせ 全体配分",/function planBatchAuto126/.test(e)&&/usedDids/.test(e)&&/remainingIds/.test(e)&&/autoTeamFromPool126/.test(e)&&/function startBatchAuto126/.test(e),"2〜5の待機グループを対象に、探索先と3体編成を重複なしでまとめて計算・確認・出発"],
   ["まとめておまかせ 確認UI",/batchAutoPicks127/.test(e)&&/batchAutoPick127/.test(e)&&/🗺️ 調査Lv/.test(e)&&/🌟 ひみつの場所 解放中/.test(e)&&/おすすめの探索先とメンバーを自動で選びました/.test(e)&&!/同じ探索先・同じピックの重複なし/.test(e),"確認画面は名前列挙ではなく3体のピック画像を表示し、調査Lv・ひみつ状態を表示。重複なし説明文は非表示"],
@@ -322,7 +322,7 @@ async function runAuto(){
   ["一括帰還",/v129-batch-return/.test(e)&&/v131-batch-return-aggregate/.test(e)&&/batchReturnUnlocked129/.test(e)&&/showBatchReturnConfirm131/.test(e)&&/startBatchReturn131/.test(e)&&/showBatchReturnReport131/.test(e)&&/showBatchReturnFinal131/.test(e),"全R2で解放。探索中2グループ以上をまとめて帰還し、全グループを1画面でまとめて報告"],
   ["一括帰還 成果まとめ＋レア演出",/通常成果まとめ/.test(e)&&/RARE未満/.test(e)&&/SUPER RARE/.test(e)&&/playBatchLootReveal131/.test(e)&&/batchLootLabel131/.test(e)&&!/function showBatchReturnArrival129/.test(e),"通常成果は一括集計。RAREとSUPER RARE（内部jackpot）はそれぞれ1成果ずつ演出し、グループ別の順番帰還演出は行わない"],
   ["一括帰還 一括完了・卵上限",/showBatchEggOverflow131/.test(e)&&/finalizeBatchReturn131/.test(e)&&/expeditionsCompleted/.test(e)&&/一括帰還完了/.test(e),"成果適用後に卵上限超過を解消し、対象グループをまとめて待機へ戻して探索完了数を加算"],
-  ["卵上限 選択情報",/v133-egg-overflow-detail/.test(e)&&/function eggDiscardCardHTML133/.test(e)&&/SUPER RARE/.test(e)&&/ほのおタイプ/.test(e)&&/孵化 \$\{points\}\/\$\{required\}/.test(e)&&/NEW 今回入手/.test(e),"一括帰還・通常の卵上限画面でレア度、タイプ、孵化進行、入手元を表示。一括帰還では今回入手卵をNEW表示"],
+  ["卵上限 選択情報",/v133-egg-overflow-detail/.test(e)&&/function eggDiscardCardHTML133/.test(e)&&/SUPER RARE/.test(e)&&/name:`\$\{e\?\.type\|\|"\?"\}タイプの卵`/.test(e)&&/eggTypeIcon133\(e\.type\)/.test(e)&&/孵化 \$\{points\}\/\$\{required\}/.test(e)&&/NEW 今回入手/.test(e),"一括帰還・通常の卵上限画面でレア度、具体的なタイプ名、孵化進行、入手元を表示。一括帰還では今回入手卵をNEW表示"],
   ["一括帰還 卵上限プリセット",/batch-return-egg-overflow/.test(e)&&/test-egg-super/.test(e)&&/test-egg-fire/.test(e)&&/type:"ほのお"/.test(e),"卵上限超過の比較画面を専用テストで再現"],
   ["卵上限オーバー数表示",/eggOverflowCount134/.test(e)&&/個オーバー/.test(e)&&/上限に戻すため、あと\$\{over\}個/.test(e),"現在数/上限と何個オーバーかを明示し、捨てるたび再計算"],
   ["探索中 帰還ボタン高さ統一",/\.batchReturnActions129>button\{height:76px!important;min-height:76px!important/.test(e)&&/@media\(max-width:700px\).*?\.batchReturnActions129>button\{height:70px!important;min-height:70px!important/s.test(e),"「このグループだけ帰還」と「一括帰還」を同じ固定高さで表示"],
@@ -377,5 +377,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.37: Expedition Ver1.33 卵上限選択情報の静的監査と「一括帰還 卵上限」専用プリセットを追加。Updated: 2026-10-10 12:49 JST -->
 <!-- Ver2.38: Dungeon Ver3.59 の特訓キャンディ「購入→即使用」と白PCを含むおすすめ即時反映を確認する専用プリセット／静的監査を追加。Updated: 2026-10-10 12:55 JST -->
 <!-- Ver2.39: Expedition Ver1.34 の卵上限超過「x個オーバー」表示を監査。一括帰還 卵上限プリセットでも超過数を確認できるよう説明を更新。Updated: 2026-10-10 13:00 JST -->
-<!-- SOURCE FILE: Test Center Ver2.39 full source. Updated: 2026-10-10 13:00 JST -->
+<!-- Ver2.40: Test Center自身のVer監査を固定値2.36から動的判定へ修正。探索先重複禁止と卵上限選択情報の静的監査を現行Expedition Ver1.34実装へ追従し、誤検知を解消。Updated: 2026-10-10 13:05 JST -->
+<!-- SOURCE FILE: Test Center Ver2.40 full source. Updated: 2026-10-10 13:05 JST -->
 </html>
