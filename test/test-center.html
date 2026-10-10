@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.59">
+<html lang="ja" data-test-center-version="2.60">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.59</title>
+<title>フレンダ 回帰テストセンター Ver2.60</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.59</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.60</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.59</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.60</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -40,7 +40,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 
 <section class="card">
  <div class="sectionTitle">本番 / test バージョン比較</div>
- <div class="deviceHint">Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照します。Cloudは本番の <code>frenda-cloud.js</code> ではなく、クラウド専用保存を検証する <code>frenda-cloud-test.js</code> を使用します。未ログインのテスト保存とログインユーザーのクラウド保存は同期しません。<code>frenda-test.js</code> もテスト専用です。</div>
+ <div class="deviceHint">Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照します。Userは本番の <code>frenda-user.js</code> を本番専用として表示します。Cloudは本番の <code>frenda-cloud.js</code> ではなく、クラウド専用保存を検証する <code>frenda-cloud-test.js</code> を使用します。未ログインのテスト保存とログインユーザーのクラウド保存は同期しません。<code>frenda-test.js</code> もテスト専用です。</div>
  <div id="versionCompare"><table class="versionCompare"><tbody><tr><td>読込中</td><td>--</td><td>--</td><td>--</td></tr></tbody></table></div>
 </section>
 
@@ -215,7 +215,7 @@ async function fetchOptional(name){try{const r=await fetch(`${name}?_reg=${Date.
 function jsMasterVersion(t){return t.match(/master_version:\s*([0-9A-Za-z._-]+)/)?.[1]||t.match(/["']master_version["']\s*:\s*["']([^"']+)/)?.[1]||"?"}
 function productionJsVersion(file,text){
  if(file==="frenda-master.js")return jsMasterVersion(text);
- return text.match(/FRENDA_(?:CORE|RULES|DATA|UI|PARENTAL)_VERSION:\s*([0-9A-Za-z._-]+)/i)?.[1]
+ return text.match(/FRENDA_(?:CORE|RULES|DATA|UI|PARENTAL|USER)_VERSION:\s*([0-9A-Za-z._-]+)/i)?.[1]
   ||text.match(/CLOUD_VERSION\s*=\s*["']([^"']+)["']/)?.[1]
   ||text.match(/const\s+VERSION\s*=\s*["']([^"']+)["']/)?.[1]
   ||text.match(/version\s*:\s*["']([^"']+)["']/)?.[1]
@@ -242,6 +242,8 @@ function renderVersionComparison(root,d,e,t,ct){
   const r=root[`../${file}`],v=r?.ok?productionJsVersion(file,r.text||""):"?";
   rows.push({name:label,prod:v,test:"",note:`${file} / testは本番共通JSを参照`,cls:"na",judge:v==="?"?"取得失敗":"本番参照"});
  }
+ const userJs=root["../frenda-user.js"],userV=userJs?.ok?productionJsVersion("frenda-user.js",userJs.text||""):"?";
+ rows.push({name:"User",prod:userV,test:"",note:"frenda-user.js / 本番ユーザー管理専用",cls:userV==="?"?"bad":"na",judge:userV==="?"?"取得失敗":"本番専用"});
  const cloud=root["../frenda-cloud.js"],cloudV=cloud?.ok?productionJsVersion("frenda-cloud.js",cloud.text||""):"?";
  const testCloudV=testCloudVersion(ct);
  rows.push({name:"Cloud",prod:cloudV,test:testCloudV,note:"本番 frenda-cloud.js / test frenda-cloud-test.js（クラウド専用保存・ローカル同期なし）",cls:(cloudV==="?"||testCloudV==="?")?"bad":"na",judge:(cloudV==="?"||testCloudV==="?")?"取得失敗":"テスト専用"});
@@ -279,15 +281,15 @@ async function runAuto(){
  versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC ${document.documentElement.dataset.testCenterVersion||"?"} / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
 
  // Ver2.28: 現行ナビゲーション仕様に合わせて導線監査を分離（Simulator→Portal / Dungeon→内部Home / Expedition→内部Home＋Dungeonへ閉じる）
- const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
+ const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-user.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
  const rootResults=await Promise.all(rootNames.map(fetchOptional));
  const root=Object.fromEntries(rootNames.map((n,i)=>[n,rootResults[i]]));
  renderVersionComparison(root,d,e,t,ct);
- const prodJsNames=["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js","frenda-cloud.js"];
+ const prodJsNames=["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js","frenda-user.js","frenda-cloud.js"];
  const prodJsBad=prodJsNames.filter(file=>{const r=root[`../${file}`];return !r?.ok||productionJsVersion(file,r.text||"")==="?"});
  addResult("本番JSバージョン取得",prodJsBad.length?"ng":"ok",prodJsBad.length?`取得失敗: ${prodJsBad.join(" / ")}`:prodJsNames.map(file=>`${file.replace("frenda-","").replace(".js","")} ${productionJsVersion(file,root[`../${file}`].text)}`).join(" / "));
  const missing=rootNames.filter(n=>!root[n].ok);
- addResult("本番必須ファイル",missing.length?"ng":"ok",missing.length?`未取得: ${missing.map(x=>x.replace("../","")).join(" / ")}`:"ポータル・3アプリ・管理者・共通JS・Master JSON・画像4点を確認");
+ addResult("本番必須ファイル",missing.length?"ng":"ok",missing.length?`未取得: ${missing.map(x=>x.replace("../","")).join(" / ")}`:"ポータル・3アプリ・管理者・共通JS（User含む）・Master JSON・画像4点を確認");
  const portal=root["../index.html"]?.text||"",sim=root["../simulator.html"]?.text||"",pd=root["../dungeon.html"]?.text||"",pe=root["../expedition.html"]?.text||"";
  addResult("ポータル3導線",portalLinksOK(portal)?"ok":"ng","index.html → simulator.html / dungeon.html / expedition.html");
  addResult("Simulator→ポータル",simulatorPortalLinkOK(sim)?"ok":"ng","simulator.html → index.html");
@@ -483,6 +485,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.56: frenda-test.js Ver1.6 / frenda-cloud-test.js Ver0.7 に追従。ローカルユーザー追加（名前入力・独立保存・作成後切替）の監査を追加。削除・名前変更は未実装。Updated: 2026-10-10 23:55 JST -->
 <!-- Ver2.57: frenda-test.js Ver1.7 / frenda-cloud-test.js Ver0.8 に追従。ローカルユーザー名変更（内部ID・保存領域を維持して表示名のみ更新）の監査を追加。削除は未実装。Updated: 2026-10-11 00:05 JST -->
 <!-- Ver2.58: frenda-test.js Ver1.8 / frenda-cloud-test.js Ver0.9 に追従。ローカルユーザー削除（2段階確認・使用中削除不可・最低1人保持・対象領域のみ削除）の監査を追加。Updated: 2026-10-11 00:48 JST -->
-<!-- Ver2.59: 本番反映前の「ユーザー管理・保存分離 総合回帰」専用チェックリストを追加。追加/独立保存/名前変更/削除制約/クラウド往復/非同期/case完全一時化/本番保持を手動確認し、自動監査に総合安全ガードと本番localStorage監視を追加。Updated: 2026-10-11 00:58 JST -->
-<!-- SOURCE FILE: Test Center Ver2.59 full source. Updated: 2026-10-11 00:58 JST -->
+<!-- Ver2.60: 本番反映前の「ユーザー管理・保存分離 総合回帰」専用チェックリストを追加。追加/独立保存/名前変更/削除制約/クラウド往復/非同期/case完全一時化/本番保持を手動確認し、自動監査に総合安全ガードと本番localStorage監視を追加。Updated: 2026-10-11 00:58 JST -->
+<!-- SOURCE FILE: Test Center Ver2.60 full source. Updated: 2026-10-11 00:58 JST -->
 </html>
