@@ -1,7 +1,7 @@
-/* FRENDA_DATA_VERSION: 1.4 / Updated: 2026-09-28 */
+/* FRENDA_DATA_VERSION: 1.5 / Updated: 2026-10-11 */
 (()=>{
 "use strict";
-const VERSION="1.4";
+const VERSION="1.5";
 const KEYS=Object.freeze({
  simulator:Object.freeze({
   owned:"frenda:owned:v1",
@@ -13,7 +13,7 @@ const KEYS=Object.freeze({
  eyeTimer:"frenda_eye_timer_v1",
  evolutionCache:"frenda:dungeon:evolutionMap:v2"
 });
-const STORAGE=window.FRENDA_TEST?.active?window.FRENDA_TEST.storage:window.localStorage;
+const STORAGE=window.FRENDA_TEST?.active?window.FRENDA_TEST.storage:window.FRENDA_USER?.active?window.FRENDA_USER.storage:window.localStorage;
 const EVOLUTION_SPECIES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv";
 const EVOLUTION_NAMES_URL="https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv";
 
