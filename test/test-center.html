@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.60">
+<html lang="ja" data-test-center-version="2.61">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.60</title>
+<title>フレンダ 回帰テストセンター Ver2.61</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.60</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.61</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.60</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.61</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -487,4 +487,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.58: frenda-test.js Ver1.8 / frenda-cloud-test.js Ver0.9 に追従。ローカルユーザー削除（2段階確認・使用中削除不可・最低1人保持・対象領域のみ削除）の監査を追加。Updated: 2026-10-11 00:48 JST -->
 <!-- Ver2.60: 本番反映前の「ユーザー管理・保存分離 総合回帰」専用チェックリストを追加。追加/独立保存/名前変更/削除制約/クラウド往復/非同期/case完全一時化/本番保持を手動確認し、自動監査に総合安全ガードと本番localStorage監視を追加。Updated: 2026-10-11 00:58 JST -->
 <!-- SOURCE FILE: Test Center Ver2.60 full source. Updated: 2026-10-11 00:58 JST -->
+<!-- Ver2.61: 本番昇格後のtestベースライン同期。/test Dungeonを3.64、Expeditionを1.39へ揃え、本番/test本体バージョンを同一基準へ戻す。test専用frenda-test.js / frenda-cloud-test.jsは継続使用。Updated: 2026-10-11 01:22 JST -->
 </html>

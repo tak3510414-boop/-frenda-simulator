@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.63">
+<html lang="ja" data-app-version="3.64">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4458,6 +4458,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
  const base=inTest?"../":"";
  /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
  if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ else document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
  for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
   document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
  /* /test/: cloud-only user save test. Local-user save and cloud-user save are fully separated. */
@@ -4485,7 +4486,7 @@ if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 
 
-const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
+const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.FRENDA_USER?.active?window.FRENDA_USER.storage:window.localStorage;
 
 
 const EXPEDITION_TIMER_KEY=DATA.KEYS.expedition;
@@ -16159,4 +16160,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- SOURCE FILE: Dungeon Ver3.59 full source. Updated: 2026-10-10 12:55 JST -->
 <!-- TEST CLOUD-ONLY Ver3.62: /test/ uses frenda-test.js Ver1.2 + frenda-cloud-test.js Ver0.3. Unauthenticated play stays in isolated local-test memory; authenticated users use their own Supabase dungeon_data as the authoritative save. No local/cloud comparison or synchronization. Updated: 2026-10-10 18:51 JST -->
 <!-- Ver3.63: /test/ eye-rest overlay restores the hidden administrator shortcut. Long-press the eye-rest title for 5 seconds to open ../admin.html. Normal taps do nothing. Updated: 2026-10-10 22:26 JST -->
+<!-- PROD USER-MODE Dungeon Ver3.64: local profiles are isolated; logged-in users use cloud-only save; no local/cloud synchronization. frenda-user.js Ver1.0 / frenda-cloud.js Ver1.2 / frenda-data.js Ver1.5. Updated: 2026-10-11 01:20 JST -->
 </html>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.38">
+<html lang="ja" data-app-version="1.39">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -358,6 +358,7 @@ body[data-exp-screen="prep"] main{padding-top:8px}
  const base=inTest?"../":"";
  /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
  if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ else document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
  for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
   document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
  /* /test/: cloud-only user save test. Local-user save and cloud-user save are fully separated. */
@@ -377,7 +378,7 @@ const UI=window.FRENDA_UI;
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 const TEST_SANDBOX=window.FRENDA_TEST;
-const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.localStorage;
+const STORE=TEST_SANDBOX?.active?TEST_SANDBOX.storage:window.FRENDA_USER?.active?window.FRENDA_USER.storage:window.localStorage;
 const TEST_PARAMS=new URLSearchParams(location.search);
 const EXPEDITION_TEST_REQUESTED=TEST_PARAMS.get("test")==="1";
 const EXPEDITION_SELFTEST_REQUESTED=TEST_PARAMS.get("selftest")==="1";
@@ -3672,4 +3673,5 @@ body.blackExpHeader077.whiteExpCompact080 #expSharedStatus074 .headerEggBadge,bo
 <!-- Ver1.35: 「まとめておまかせ探索」の約1分フリーズ対策。全所持ピック×探索先×beamごとの重い再計算を廃止し、探索先ごとの候補チームを一度だけ高速生成して再利用する方式へ変更。計算前に「おすすめを計算中…」を描画し、最終候補だけ正規scoreTeamで再確認。Updated: 2026-10-10 13:24 JST -->
 <!-- SOURCE FILE: Expedition Ver1.35 full source. Updated: 2026-10-10 13:24 JST -->
 <!-- TEST CLOUD-ONLY Ver1.38: /test/ uses frenda-test.js Ver1.2 + frenda-cloud-test.js Ver0.3. Unauthenticated play stays in isolated local-test memory; authenticated users use their own Supabase dungeon_data as the authoritative save. No local/cloud comparison or synchronization. Updated: 2026-10-10 18:51 JST -->
+<!-- PROD USER-MODE Expedition Ver1.39: local profiles are isolated; logged-in users use cloud-only save; no local/cloud synchronization. frenda-user.js Ver1.0 / frenda-cloud.js Ver1.2 / frenda-data.js Ver1.5. Updated: 2026-10-11 01:20 JST -->
 </html>
