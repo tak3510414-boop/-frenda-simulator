@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.37">
+<html lang="ja" data-test-center-version="2.39">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.37</title>
+<title>フレンダ 回帰テストセンター Ver2.39</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -18,11 +18,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.37</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.39</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.37</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.39</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -145,13 +145,14 @@ const progressionCases=[
  ["p-r5","全R5制覇","全機能解放・エンドゲーム状態。","progress-r5","dungeon"],
  ["p-shop1","SHOP Lv1","クローバー・特訓キャンディ・スーパーボールのみ購入可能。","shop-lv1","dungeon"],
  ["p-training-candy-recommend","特訓キャンディおすすめ","特訓キャンディ5個＋育成状態入り。『✨ おすすめ』で上位3体・理由・通常順切替を確認。押しただけではキャンディが減らないこと。","training-candy-recommend","dungeon"],
+ ["p-training-candy-purchase-use","特訓キャンディ 購入→即使用","特訓キャンディ0個＋コイン所持。SHOPで1個購入し、再読み込みせずそのまま『使う』。対象ピックが有効表示され、その場で『✨ おすすめ』も反映すること。","training-candy-purchase-use","dungeon"],
  ["p-shop2","SHOP Lv2","Lv1＋進化のアメ・ゲットチャンスチケット・ハイパーボール。","shop-lv2","dungeon"],
  ["p-shop3","SHOP Lv3","マスターボールを含む全商品。","shop-lv3","dungeon"],
  ["p-groups1","探索 G1/G2","全R1状態。G1/G2のみ解放。","groups-r1","expedition"],
  ["p-groups2","探索 G1〜G3","全R2状態。G3＋まとめておまかせ探索が解放。","groups-r2","expedition"],
  ["p-batch-auto","まとめておまかせ探索","全R2状態。空きG1〜G3を別々の探索先・別々の3体へ一括自動配分。確認画面でピック画像・調査Lv・ひみつ状態を確認して出発。","batch-auto","expedition"],
  ["p-batch-return","一括帰還","全R2状態＋G1〜G3探索中。一括帰還→全グループまとめ報告→通常成果一括表示→RARE個別演出→SUPER RARE個別演出→一括完了、を確認。","batch-return","expedition"],
- ["p-batch-return-egg","一括帰還 卵上限","卵2/2の状態から一括帰還でSレア卵＋ほのおタイプ卵を追加。上限超過画面でNORMAL/RARE/SUPER RARE/TYPE、タイプ名、孵化進行、今回入手NEWを確認。","batch-return-egg-overflow","expedition"],
+ ["p-batch-return-egg","一括帰還 卵上限","卵2/2の状態から一括帰還でSレア卵＋ほのおタイプ卵を追加。上限超過画面で「何個オーバー」か、NORMAL/RARE/SUPER RARE/TYPE、タイプ名、孵化進行、今回入手NEWを確認。","batch-return-egg-overflow","expedition"],
  ["p-destination-lock","探索先の重複禁止","G1が森へ探索中。G2準備では森が「G1探索中」となり選択不可。おすすめ派遣先・出発でも重複できないことを確認。","destination-lock","expedition"],
  ["p-groups3","探索 G1〜G4","全R3状態。G4まで解放。","groups-r3","expedition"],
  ["p-groups4","探索 G1〜G5","全R4状態。G5まで解放。","groups-r4","expedition"],
@@ -306,6 +307,7 @@ async function runAuto(){
   ["旧セーブに解放演出を再表示しない",/ensureProgressionUi345\(state,\{seedCurrent:v<15\}\)/.test(d)&&/progressionUnlockRuntimeReady345=false/.test(d)&&/progressionUnlockRuntimeReady345=true/.test(d),"Ver3.44以前の既達成機能は移行時に既読化し、過去分を一斉表示しない"],
   ["SHOP段階解放",/featureShopLevel341/.test(d)&&/luckyClover:1/.test(d)&&/trainingCandy:1/.test(d)&&/superBall:1/.test(d)&&/evolutionCandy:2/.test(d)&&/captureTicket:2/.test(d)&&/hyperBall:2/.test(d)&&/masterBall:3/.test(d),"R1=Lv1 / R2=Lv2 / R4=Lv3の商品制御"],
   ["特訓キャンディおすすめ",/trainingCandyEligibleIds358/.test(d)&&/trainingCandyRecommendData358/.test(d)&&/trainingCandyRecommendSort358/.test(d)&&/trainingCandyRecommendBar358/.test(d)&&/inventoryTrainingRecommend358/.test(d)&&/shopTrainingRecommend358/.test(d)&&/training-candy-recommend/.test(d),"もちもの／SHOPの両方でおすすめ順へ切替。探索中・3能力MAXを除外し、上位3体を理由付きで強調"],
+  ["特訓キャンディ購入→即使用",/trainingCandyUseBody359/.test(d)&&/evolutionCandyUseBody359/.test(d)&&/training-candy-purchase-use/.test(d)&&/body=trainingCandyUseBody359\(\)/.test(d),"購入前に生成した対象HTMLを再利用せず、SHOPの使用ダイアログ表示時に最新所持数・対象・おすすめ状態から再生成"],
   ["おすすめ操作では消費しない",/recBtn\.onclick=\(\)=>\{const y=ov\.scrollTop;trainingCandyRecommendMode358=!trainingCandyRecommendMode358;renderUse\(y\)\}/.test(d)&&/trainingRecBtn\.onclick=\(\)=>\{trainingCandyRecommendMode358=!trainingCandyRecommendMode358;rerenderUse/.test(d)&&/state\.shopItems\.trainingCandy=n-1;state\.drillPoints\[id\]=drillFor\(id\)\+1/.test(d),"おすすめボタンは表示順だけ変更。キャンディ消費は対象ピックをタップした時だけ"],
   ["挑戦／AUTO→説明帯の順序",/teamPartyBottom310[\s\S]{0,900}autoAdventureUnlockHint/.test(d)&&/v358-team-auto-hint-order-audit/.test(d)&&/teamPartyBottom310\{order:4\}\.teamPartyPane305>\.autoAdventureUnlockHint\{order:5\}/.test(d),"挑戦・自動冒険ボタンの直下にAUTO説明帯を固定"],
 
@@ -322,6 +324,7 @@ async function runAuto(){
   ["一括帰還 一括完了・卵上限",/showBatchEggOverflow131/.test(e)&&/finalizeBatchReturn131/.test(e)&&/expeditionsCompleted/.test(e)&&/一括帰還完了/.test(e),"成果適用後に卵上限超過を解消し、対象グループをまとめて待機へ戻して探索完了数を加算"],
   ["卵上限 選択情報",/v133-egg-overflow-detail/.test(e)&&/function eggDiscardCardHTML133/.test(e)&&/SUPER RARE/.test(e)&&/ほのおタイプ/.test(e)&&/孵化 \$\{points\}\/\$\{required\}/.test(e)&&/NEW 今回入手/.test(e),"一括帰還・通常の卵上限画面でレア度、タイプ、孵化進行、入手元を表示。一括帰還では今回入手卵をNEW表示"],
   ["一括帰還 卵上限プリセット",/batch-return-egg-overflow/.test(e)&&/test-egg-super/.test(e)&&/test-egg-fire/.test(e)&&/type:"ほのお"/.test(e),"卵上限超過の比較画面を専用テストで再現"],
+  ["卵上限オーバー数表示",/eggOverflowCount134/.test(e)&&/個オーバー/.test(e)&&/上限に戻すため、あと\$\{over\}個/.test(e),"現在数/上限と何個オーバーかを明示し、捨てるたび再計算"],
   ["探索中 帰還ボタン高さ統一",/\.batchReturnActions129>button\{height:76px!important;min-height:76px!important/.test(e)&&/@media\(max-width:700px\).*?\.batchReturnActions129>button\{height:70px!important;min-height:70px!important/s.test(e),"「このグループだけ帰還」と「一括帰還」を同じ固定高さで表示"],
   ["自由探索24時間",/const FREE_EXP_MAX_HOURS=24;/.test(e)&&/\{h:14,boxes:9,xp:88,bond:\.37,discovery:28,souvenirs:4/.test(e)&&/\{h:24,boxes:14,xp:145,bond:\.60,discovery:45,souvenirs:7/.test(e)&&/expedition-24h/.test(e),"12時間まで据え置き、14〜24時間の長時間探索報酬と24h回帰プリセットを追加"],
   ["まとめて探索・一括帰還・24h 回帰プリセット",["batch-auto","batch-return","batch-return-egg-overflow","destination-lock","expedition-24h"].every(x=>e.includes(`"${x}"`)),"一括おまかせ・一括帰還・卵上限・手動探索先ロック・24時間探索を直接再現"],
@@ -372,5 +375,7 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.35: Expedition Ver1.32 の探索中帰還ボタン高さ統一を監査。Updated: 2026-10-10 08:47 JST -->
 <!-- Ver2.36: Dungeon Ver3.58 特訓キャンディ「おすすめ」回帰プリセット／静的監査を追加。挑戦・AUTOボタン→説明帯の表示順も監査。Updated: 2026-10-10 12:20 JST -->
 <!-- Ver2.37: Expedition Ver1.33 卵上限選択情報の静的監査と「一括帰還 卵上限」専用プリセットを追加。Updated: 2026-10-10 12:49 JST -->
-<!-- SOURCE FILE: Test Center Ver2.37 full source. Updated: 2026-10-10 12:49 JST -->
+<!-- Ver2.38: Dungeon Ver3.59 の特訓キャンディ「購入→即使用」と白PCを含むおすすめ即時反映を確認する専用プリセット／静的監査を追加。Updated: 2026-10-10 12:55 JST -->
+<!-- Ver2.39: Expedition Ver1.34 の卵上限超過「x個オーバー」表示を監査。一括帰還 卵上限プリセットでも超過数を確認できるよう説明を更新。Updated: 2026-10-10 13:00 JST -->
+<!-- SOURCE FILE: Test Center Ver2.39 full source. Updated: 2026-10-10 13:00 JST -->
 </html>
