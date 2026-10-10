@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 1.0 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 1.1 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="1.0";
+const CLOUD_TEST_VERSION="1.1";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -92,6 +92,16 @@ function renameCloudProfile(profileId){
   if(regressionCaseActive()){setStatus("回帰テスト中はクラウドユーザー名を変更できません。","error");return false}
   const p=cloudProfileById(profileId);if(!p)return false;const entered=prompt(`「${p.name}」の新しい表示名を入力してください（20文字以内）`,p.name);if(entered===null)return false;const name=sanitizeName(entered);if(!name){setStatus("表示名を入力してください。","error");return false}if(allDisplayNames("cloud",p.id).includes(name)){setStatus("同じ表示名のユーザーがあります。","error");return false}if(name===p.name)return true;const list=readCloudProfiles().map(x=>x.id===p.id?{...x,name}:x);if(!writeCloudProfiles(list)){setStatus("表示名を変更できませんでした。","error");return false}closeModal();location.reload();return true;
 }
+function deleteCloudProfile(profileId){
+  if(regressionCaseActive()){setStatus("回帰テスト中はクラウドユーザーを削除できません。","error");return false}
+  const p=cloudProfileById(profileId);if(!p)return false;
+  const active=!!session&&currentCloudProfile()?.id===p.id;if(active){setStatus("現在使用中のクラウドユーザーは削除できません。先に別のユーザーへ切り替えてください。","error");return false}
+  if(!confirm(`「${p.name}」をこの端末のユーザー一覧から削除しますか？\n\nクラウドのセーブデータとSupabaseアカウントは削除されません。`))return false;
+  if(!confirm(`最終確認です。\n\nこの端末に記憶した「${p.name}」のログイン情報を削除します。\n再度使う場合は、メールアドレスとパスワードで追加し直してください。`))return false;
+  const next=readCloudProfiles().filter(x=>x.id!==p.id);if(!writeCloudProfiles(next)){setStatus("クラウドユーザーを削除できませんでした。","error");return false}
+  const a=readActiveAccount();if(a.type==="cloud"&&a.id===p.id)setActiveAccount("local",localProfileId());
+  closeModal();location.reload();return true;
+}
 function activeUserLabel(){
   if(regressionCaseActive())return {mode:session?"cloud":"local",icon:"🔒",text:"回帰テスト",title:"回帰テスト一時データ（永続保存なし）"};
   if(session){const p=currentCloudProfile();const text=p?.name||session.user?.email||"クラウドユーザー";return {mode:"cloud",icon:"☁️",text,title:`${text}（クラウド保存）`}}
@@ -154,9 +164,9 @@ function watchLauncher(){ensureLauncher();if(launcherObserver)return;launcherObs
 function injectButton(){if(button)return;injectStyles();watchLauncher();button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="🧪 テスト認証";button.onclick=openModal;(document.querySelector(".headerBtns")||document.querySelector("header")||document.body).appendChild(button)}
 function closeModal(){modal?.remove();modal=null}
 function renderUnifiedUsers(){
-  const regression=regressionCaseActive(),activeLocal=!session&&!regression?localProfileId():"",clouds=readCloudProfiles();
-  const localRows=localProfiles().map(p=>{const active=activeLocal===p.id,disabled=regression;return `<div class="frendaUnifiedRow"><button type="button" class="frendaUnifiedSelect ${active?'active':''}" data-user-type="local" data-user-id="${escapeHTML(p.id)}" ${disabled?'disabled':''}>👤 ${escapeHTML(p.name)}${active?'<span class="frendaUnifiedMeta">使用中・この端末に保存</span>':'<span class="frendaUnifiedMeta">この端末に保存</span>'}</button><button type="button" class="frendaUnifiedEdit" data-local-rename="${escapeHTML(p.id)}" ${disabled?'disabled':''}>✏️</button><button type="button" class="frendaUnifiedDelete" data-local-delete="${escapeHTML(p.id)}" ${disabled||active||localProfiles().length<=1?'disabled':''}>🗑️</button></div>`}).join("");
-  const cloudRows=clouds.map(p=>{const active=!!session&&currentCloudProfile()?.id===p.id,needs=!sessionUsable(p);return `<div class="frendaUnifiedRow"><button type="button" class="frendaUnifiedSelect ${active?'active':''} ${needs?'needsAuth':''}" data-user-type="cloud" data-user-id="${escapeHTML(p.id)}" ${regression?'disabled':''}>☁️ ${escapeHTML(p.name)}<span class="frendaUnifiedMeta">${active?'使用中・クラウド保存':needs?'再ログインが必要':escapeHTML(p.email)}</span></button><button type="button" class="frendaUnifiedEdit" data-cloud-rename="${escapeHTML(p.id)}" ${regression?'disabled':''}>✏️</button><span></span></div>`}).join("");
+  const regression=regressionCaseActive(),activeLocal=!session&&!regression?localProfileId():"",clouds=readCloudProfiles(),locals=localProfiles();
+  const localRows=locals.map(p=>{const active=activeLocal===p.id,disabled=regression;const edit=active&&!regression?`<button type="button" class="frendaUnifiedEdit" data-local-rename="${escapeHTML(p.id)}" title="現在のユーザー名を変更">✏️</button>`:'<span></span>';return `<div class="frendaUnifiedRow"><button type="button" class="frendaUnifiedSelect ${active?'active':''}" data-user-type="local" data-user-id="${escapeHTML(p.id)}" ${disabled?'disabled':''}>👤 ${escapeHTML(p.name)}${active?'<span class="frendaUnifiedMeta">使用中・この端末に保存</span>':'<span class="frendaUnifiedMeta">この端末に保存</span>'}</button>${edit}<button type="button" class="frendaUnifiedDelete" data-local-delete="${escapeHTML(p.id)}" ${disabled||active||locals.length<=1?'disabled':''} title="${active?'使用中のユーザーは削除できません':'この端末から削除'}">🗑️</button></div>`}).join("");
+  const cloudRows=clouds.map(p=>{const active=!!session&&currentCloudProfile()?.id===p.id,needs=!sessionUsable(p);const edit=active&&!regression?`<button type="button" class="frendaUnifiedEdit" data-cloud-rename="${escapeHTML(p.id)}" title="現在のユーザー名を変更">✏️</button>`:'<span></span>';return `<div class="frendaUnifiedRow"><button type="button" class="frendaUnifiedSelect ${active?'active':''} ${needs?'needsAuth':''}" data-user-type="cloud" data-user-id="${escapeHTML(p.id)}" ${regression?'disabled':''}>☁️ ${escapeHTML(p.name)}<span class="frendaUnifiedMeta">${active?'使用中・クラウド保存':needs?'再ログインが必要':escapeHTML(p.email)}</span></button>${edit}<button type="button" class="frendaUnifiedDelete" data-cloud-delete="${escapeHTML(p.id)}" ${regression||active?'disabled':''} title="${active?'使用中のユーザーは削除できません':'この端末の一覧から削除'}">🗑️</button></div>`}).join("");
   return localRows+cloudRows;
 }
 function showAddForm(kind,profileId=""){
@@ -174,6 +184,7 @@ function openModal(){
   modal.querySelectorAll('[data-local-rename]').forEach(el=>el.onclick=()=>renameLocalProfile(el.dataset.localRename));
   modal.querySelectorAll('[data-local-delete]').forEach(el=>el.onclick=()=>deleteLocalProfile(el.dataset.localDelete));
   modal.querySelectorAll('[data-cloud-rename]').forEach(el=>el.onclick=()=>renameCloudProfile(el.dataset.cloudRename));
+  modal.querySelectorAll('[data-cloud-delete]').forEach(el=>el.onclick=()=>deleteCloudProfile(el.dataset.cloudDelete));
   const al=modal.querySelector('#frendaAddLocal'),ac=modal.querySelector('#frendaAddCloud');if(al)al.onclick=()=>showAddForm('local');if(ac)ac.onclick=()=>showAddForm('cloud');
   const lab=modal.querySelector('#frendaLocalAddBtn');if(lab)lab.onclick=()=>createLocalProfile(modal.querySelector('#frendaLocalNewName')?.value||'');
   const cab=modal.querySelector('#frendaCloudAddBtn');if(cab)cab.onclick=()=>addOrReauthCloudProfile(modal.querySelector('#frendaCloudDisplayName')?.value||'',modal.querySelector('#frendaCloudEmail')?.value||'',modal.querySelector('#frendaCloudPassword')?.value||'',pendingCloudProfileId);
@@ -200,7 +211,7 @@ async function restoreCloudProfileSession(profile){
 }
 async function switchCloudProfile(profileId){
   if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを切り替えません。","error");return false}const p=cloudProfileById(profileId);if(!p)return false;
-  if(session&&currentCloudProfile()?.id===p.id){setActiveAccount("cloud",p.id);return true}if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+  if(session&&currentCloudProfile()?.id===p.id){setActiveAccount("cloud",p.id);return true}if(!confirm(`「${p.name}」に切り替えますか？`))return false;if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
   if(!sessionUsable(p)){showAddForm('cloud',p.id);setStatus("認証期限切れです。パスワードを入力して再ログインしてください。","error");return false}
   setStatus(`${p.name}に切り替えています…`);if(!await restoreCloudProfileSession(p)){showAddForm('cloud',p.id);setStatus("再ログインが必要です。パスワードを入力してください。","error");return false}
   setActiveAccount("cloud",p.id);const {data:row,error}=await rowForUser();if(error){setStatus("クラウドセーブ確認失敗："+error.message,"error");return false}activatePayload(row?.[columnName()]??null);closeModal();location.reload();return true;
@@ -256,8 +267,8 @@ async function init(options){
   cfg=options||{};injectButton();ensureLauncher();try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}ensureUserBadge();updateUserBadge();await initializeCloudSession();updateUserBadge();
 }
 window.FrendaCloud={
-  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,unifiedUsers:true,rememberedCloudProfiles:true,passwordStored:false,regressionSaveGuard:true,localProfiles:true,localProfileAdd:true,localProfileRename:true,localProfileDelete:true,isRegressionCase:regressionCaseActive,
+  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,unifiedUsers:true,rememberedCloudProfiles:true,passwordStored:false,regressionSaveGuard:true,localProfiles:true,localProfileAdd:true,localProfileRename:true,localProfileDelete:true,cloudProfileRename:true,cloudProfileDelete:true,isRegressionCase:regressionCaseActive,
   init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,getCloudProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),open:openModal
 };
 })();
-/* Ver1.0: ローカル/クラウドを同じユーザー一覧へ統合。クラウドユーザーは任意表示名を持ち、初回認証後はパスワードを保存せずSupabaseセッションを端末に記憶して一覧タップで切替可能。Updated: 2026-10-11 08:25 JST */
+/* Ver1.1: クラウド切替にも確認を追加。名前変更✏️は現在使用中ユーザーだけ表示。クラウド🗑️を追加し、この端末の登録/認証セッションだけ削除（Supabaseアカウント・クラウドセーブは保持）。Updated: 2026-10-11 08:43 JST */
