@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.36">
+<html lang="ja" data-test-center-version="2.37">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.36</title>
+<title>フレンダ 回帰テストセンター Ver2.37</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -18,11 +18,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.36</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.37</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.36</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.37</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -151,6 +151,7 @@ const progressionCases=[
  ["p-groups2","探索 G1〜G3","全R2状態。G3＋まとめておまかせ探索が解放。","groups-r2","expedition"],
  ["p-batch-auto","まとめておまかせ探索","全R2状態。空きG1〜G3を別々の探索先・別々の3体へ一括自動配分。確認画面でピック画像・調査Lv・ひみつ状態を確認して出発。","batch-auto","expedition"],
  ["p-batch-return","一括帰還","全R2状態＋G1〜G3探索中。一括帰還→全グループまとめ報告→通常成果一括表示→RARE個別演出→SUPER RARE個別演出→一括完了、を確認。","batch-return","expedition"],
+ ["p-batch-return-egg","一括帰還 卵上限","卵2/2の状態から一括帰還でSレア卵＋ほのおタイプ卵を追加。上限超過画面でNORMAL/RARE/SUPER RARE/TYPE、タイプ名、孵化進行、今回入手NEWを確認。","batch-return-egg-overflow","expedition"],
  ["p-destination-lock","探索先の重複禁止","G1が森へ探索中。G2準備では森が「G1探索中」となり選択不可。おすすめ派遣先・出発でも重複できないことを確認。","destination-lock","expedition"],
  ["p-groups3","探索 G1〜G4","全R3状態。G4まで解放。","groups-r3","expedition"],
  ["p-groups4","探索 G1〜G5","全R4状態。G5まで解放。","groups-r4","expedition"],
@@ -319,9 +320,11 @@ async function runAuto(){
   ["一括帰還",/v129-batch-return/.test(e)&&/v131-batch-return-aggregate/.test(e)&&/batchReturnUnlocked129/.test(e)&&/showBatchReturnConfirm131/.test(e)&&/startBatchReturn131/.test(e)&&/showBatchReturnReport131/.test(e)&&/showBatchReturnFinal131/.test(e),"全R2で解放。探索中2グループ以上をまとめて帰還し、全グループを1画面でまとめて報告"],
   ["一括帰還 成果まとめ＋レア演出",/通常成果まとめ/.test(e)&&/RARE未満/.test(e)&&/SUPER RARE/.test(e)&&/playBatchLootReveal131/.test(e)&&/batchLootLabel131/.test(e)&&!/function showBatchReturnArrival129/.test(e),"通常成果は一括集計。RAREとSUPER RARE（内部jackpot）はそれぞれ1成果ずつ演出し、グループ別の順番帰還演出は行わない"],
   ["一括帰還 一括完了・卵上限",/showBatchEggOverflow131/.test(e)&&/finalizeBatchReturn131/.test(e)&&/expeditionsCompleted/.test(e)&&/一括帰還完了/.test(e),"成果適用後に卵上限超過を解消し、対象グループをまとめて待機へ戻して探索完了数を加算"],
+  ["卵上限 選択情報",/v133-egg-overflow-detail/.test(e)&&/function eggDiscardCardHTML133/.test(e)&&/SUPER RARE/.test(e)&&/ほのおタイプ/.test(e)&&/孵化 \$\{points\}\/\$\{required\}/.test(e)&&/NEW 今回入手/.test(e),"一括帰還・通常の卵上限画面でレア度、タイプ、孵化進行、入手元を表示。一括帰還では今回入手卵をNEW表示"],
+  ["一括帰還 卵上限プリセット",/batch-return-egg-overflow/.test(e)&&/test-egg-super/.test(e)&&/test-egg-fire/.test(e)&&/type:"ほのお"/.test(e),"卵上限超過の比較画面を専用テストで再現"],
   ["探索中 帰還ボタン高さ統一",/\.batchReturnActions129>button\{height:76px!important;min-height:76px!important/.test(e)&&/@media\(max-width:700px\).*?\.batchReturnActions129>button\{height:70px!important;min-height:70px!important/s.test(e),"「このグループだけ帰還」と「一括帰還」を同じ固定高さで表示"],
   ["自由探索24時間",/const FREE_EXP_MAX_HOURS=24;/.test(e)&&/\{h:14,boxes:9,xp:88,bond:\.37,discovery:28,souvenirs:4/.test(e)&&/\{h:24,boxes:14,xp:145,bond:\.60,discovery:45,souvenirs:7/.test(e)&&/expedition-24h/.test(e),"12時間まで据え置き、14〜24時間の長時間探索報酬と24h回帰プリセットを追加"],
-  ["まとめて探索・一括帰還・24h 回帰プリセット",["batch-auto","batch-return","destination-lock","expedition-24h"].every(x=>e.includes(`"${x}"`)),"一括おまかせ・一括帰還・手動探索先ロック・24時間探索を直接再現"],
+  ["まとめて探索・一括帰還・24h 回帰プリセット",["batch-auto","batch-return","batch-return-egg-overflow","destination-lock","expedition-24h"].every(x=>e.includes(`"${x}"`)),"一括おまかせ・一括帰還・卵上限・手動探索先ロック・24時間探索を直接再現"],
   ["ダンジョンダメージ±5%",/DUNGEON_DAMAGE_SPREAD_MIN_343=95/.test(d)&&/DUNGEON_DAMAGE_SPREAD_MAX_343=105/.test(d)&&/spreadPct=DUNGEON_DAMAGE_SPREAD_MIN_343\+Math\.floor\(Math\.random\(\)\*\(DUNGEON_DAMAGE_SPREAD_MAX_343-DUNGEON_DAMAGE_SPREAD_MIN_343\+1\)\)/.test(d),"ダンジョン内だけ95〜105%で自動変動"],
   ["ナイスアタック5%×1.2",/DUNGEON_NICE_ATTACK_RATE_343=0\.05/.test(d)&&/DUNGEON_NICE_ATTACK_MULT_343=1\.2/.test(d)&&/nice=Math\.random\(\)<DUNGEON_NICE_ATTACK_RATE_343/.test(d),"命中時5%で1.2倍"],
   ["ナイスアタック追加待ちなし",/x\.nice\?`✨ ナイスアタック！ \$\{actualDamage\}ダメージ！`/.test(d)&&!/await\s+showNiceAttack/.test(d),"既存のダメージ表示内で通知し、追加ルーレット・追加待ちを設けない"],
@@ -368,5 +371,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.34: Expedition Ver1.31 aggregate batch-return audits added. Verifies all-group summary, normal reward aggregation, individual RARE/SUPER RARE reveals, no per-group arrival sequence, egg-overflow handling, and one-shot completion. Updated: 2026-10-10 08:12 JST -->
 <!-- Ver2.35: Expedition Ver1.32 の探索中帰還ボタン高さ統一を監査。Updated: 2026-10-10 08:47 JST -->
 <!-- Ver2.36: Dungeon Ver3.58 特訓キャンディ「おすすめ」回帰プリセット／静的監査を追加。挑戦・AUTOボタン→説明帯の表示順も監査。Updated: 2026-10-10 12:20 JST -->
-<!-- SOURCE FILE: Test Center Ver2.36 full source. Updated: 2026-10-10 12:20 JST -->
+<!-- Ver2.37: Expedition Ver1.33 卵上限選択情報の静的監査と「一括帰還 卵上限」専用プリセットを追加。Updated: 2026-10-10 12:49 JST -->
+<!-- SOURCE FILE: Test Center Ver2.37 full source. Updated: 2026-10-10 12:49 JST -->
 </html>
