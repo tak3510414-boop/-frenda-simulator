@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.50">
+<html lang="ja" data-test-center-version="2.51">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.50</title>
+<title>フレンダ 回帰テストセンター Ver2.51</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.50</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.51</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.50</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.51</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -292,9 +292,10 @@ async function runAuto(){
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.3/.test(t)&&/active:\s*!!isolated/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX="frenda:test:local:v1:"/.test(t)&&/seedLocalSandbox/.test(t)&&/const inTestPath=\/\\\/test/.test(t),"/test/ はURLパラメータなしでも常時分離。未ログイン=本番と別キーのテスト専用localStorage、ログイン=クラウド用sessionStorageキャッシュ。本番セーブキーを書き換えない"],
   ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js を実際の共通JSローダーより先に実行"],
-  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="0.3","/test/ は frenda-cloud-test.js Ver0.3（クラウド専用保存）を使用し、本番frenda-cloud.jsと分離"],
+  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="0.4","/test/ は frenda-cloud-test.js Ver0.4（クラウド専用保存＋利用者表示）を使用し、本番frenda-cloud.jsと分離"],
   ["クラウドユーザー保存分離",/cloudOnly:\s*true/.test(ct)&&/localCloudSync:\s*false/.test(ct)&&/const TABLE="frenda_saves"/.test(ct)&&/client\.from\(TABLE\)/.test(ct)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/storage:\s*window\.sessionStorage/.test(ct),"ログインユーザーはfrenda_savesへ保存。未ログインのローカルテスト保存とは比較・同期せず、認証と一時キャッシュはsessionStorage"],
   ["テスト認証ランチャー",/function ensureLauncher\(\)/.test(ct)&&/frendaCloudTestLauncher/.test(ct)&&/pointerEvents="auto"/.test(ct)&&/onclick=openModal/.test(ct),"左上🧪をタップしてテスト認証画面を開ける"],
+  ["利用中ユーザー表示",/frendaActiveUserBadge/.test(ct)&&/function activeUserLabel\(\)/.test(ct)&&/function ensureUserBadge\(\)/.test(ct)&&/クラウドユーザー：/.test(ct)&&/ローカルユーザー（テスト専用保存）/.test(ct),"ヘッダに 👤ローカル / ☁ログインメールアドレスを常時表示し、タップで認証画面を開ける"],
   ["本番保存監視",/productionStorageUnchanged/.test(t)&&/assertProductionStorageUnchanged/.test(t),"本番保存キーの変化を検出したらテスト停止"],
   ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
   ["テスト表示はレイアウト非占有",/frendaDungeonTestBadge/.test(d)&&/position:fixed/.test(d)&&/frendaExpeditionTestBadge/.test(e)&&/position:fixed/.test(e),"全幅の黄色帯を廃止し、小さな固定オーバーレイのみ"],
@@ -444,5 +445,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.48: Test Center自身の画面表示に残っていたVer2.46を修正し、data属性・ヘッダ・左上メトリクス・titleをVer2.48へ統一。Updated: 2026-10-10 18:46 JST -->
 <!-- Ver2.49: ユーザー管理第2段階。frenda-test.js Ver1.2 / frenda-cloud-test.js Ver0.3 に追従し、未ログインのローカル保存とログインユーザーのクラウド専用保存が同期されない構成を監査。Updated: 2026-10-10 18:51 JST -->
 <!-- Ver2.50: frenda-test.js Ver1.3に追従。未ログイン時に本番localStorageをコピーしていた不具合を修正し、test専用プレフィックス領域のみを使用することを監査。Updated: 2026-10-10 19:08 JST -->
-<!-- SOURCE FILE: Test Center Ver2.50 full source. Updated: 2026-10-10 19:08 JST -->
+<!-- Ver2.51: frenda-cloud-test.js Ver0.4に追従。ヘッダへ現在の利用者（ローカル / クラウドメールアドレス）を常時表示する監査を追加。Updated: 2026-10-10 19:54 JST -->
+<!-- SOURCE FILE: Test Center Ver2.51 full source. Updated: 2026-10-10 19:54 JST -->
 </html>

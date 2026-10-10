@@ -1,13 +1,13 @@
-/* FRENDA_CLOUD_TEST_VERSION: 0.3 / cloud-only save test runtime; local user and cloud user NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 0.4 / cloud-only save test runtime + active user badge; local user and cloud user NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="0.3";
+const CLOUD_TEST_VERSION="0.4";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
 
-let client=null,session=null,cfg=null,authUnsub=null,button=null,modal=null,launcherObserver=null,storageUnsub=null,syncTimer=null;
+let client=null,session=null,cfg=null,authUnsub=null,button=null,modal=null,launcherObserver=null,storageUnsub=null,syncTimer=null,userBadge=null;
 let statusText="未ログイン（ローカル）",syncing=false,lastUploaded="";
 
 function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -19,12 +19,18 @@ function setStatus(text,kind=""){
   statusText=text;
   if(button){const prefix=kind==="error"?"⚠️":session?"☁️":"🧪";button.textContent=`${prefix} ${text}`;button.dataset.kind=kind;}
   const s=modal?.querySelector("#frendaCloudStatus");if(s)s.textContent=text;
+  updateUserBadge();
 }
 function injectStyles(){
   if(document.getElementById("frendaCloudTestStyles"))return;
   const st=document.createElement("style");st.id="frendaCloudTestStyles";st.textContent=`
   .frendaCloudBtn{background:#fff8dd!important;color:#6f5700!important;border:1px solid #e5d48a!important;border-radius:999px!important;padding:7px 10px!important;font-size:11px!important;font-weight:900!important;white-space:nowrap!important;box-shadow:none!important}
   .frendaCloudBtn[data-kind="error"]{background:#fff0f0!important;color:#9a2e2e!important;border-color:#e9b8b8!important}
+  .frendaActiveUserBadge{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;box-sizing:border-box!important;max-width:190px!important;min-height:28px!important;padding:5px 9px!important;border-radius:999px!important;border:1px solid #a9c9d9!important;background:#eef9ff!important;color:#16475f!important;font-size:10px!important;font-weight:1000!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;cursor:pointer!important;box-shadow:none!important;flex:0 1 auto!important}
+  .frendaActiveUserBadge[data-mode="cloud"]{background:#e6f6ff!important;color:#075a7a!important;border-color:#8fd4ef!important}
+  .frendaActiveUserBadge[data-mode="local"]{background:#f2f4f6!important;color:#40515e!important;border-color:#c7d0d6!important}
+  .frendaActiveUserBadge .frendaActiveUserText{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  @media(max-width:700px){.frendaActiveUserBadge{max-width:132px!important;min-height:25px!important;padding:4px 7px!important;font-size:8.5px!important}}
   .frendaCloudTestLauncher{position:fixed!important;left:3px!important;top:calc(env(safe-area-inset-top,0px) + 3px)!important;z-index:100000!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:28px!important;min-height:28px!important;padding:4px 6px!important;border:1px solid #c9ad58!important;border-radius:8px!important;background:#ffe39aee!important;color:#553400!important;font-size:15px!important;line-height:1!important;font-weight:1000!important;box-shadow:0 2px 7px #0003!important;cursor:pointer!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
   .frendaCloudOverlay{position:fixed;inset:0;z-index:3000;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px}
   .frendaCloudPanel{width:min(430px,100%);background:#fff;color:#17202a;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0007;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
@@ -34,6 +40,33 @@ function injectStyles(){
   .frendaCloudInfo{font-size:12px;line-height:1.55;color:#64737e;background:#eef9ff;border:1px solid #b9ddeb;border-radius:10px;padding:10px;margin-top:10px}.frendaCloudUser{font-size:13px;font-weight:800;word-break:break-all;margin:6px 0}.frendaCloudStatus{margin-top:9px;font-size:12px;font-weight:800;color:#31566d;min-height:1.4em}
   `;document.head.appendChild(st);
 }
+function activeUserLabel(){
+  const email=session?.user?.email||"";
+  return email?{mode:"cloud",icon:"☁️",text:email,title:`クラウドユーザー：${email}`}:{mode:"local",icon:"👤",text:"ローカル",title:"ローカルユーザー（テスト専用保存）"};
+}
+function userBadgeTarget(){
+  if(document.getElementById("frendaDungeonTestBadge"))return document.querySelector(".careCluster")||document.querySelector(".headerTop")||document.querySelector("header");
+  if(document.getElementById("frendaExpeditionTestBadge"))return document.querySelector("#expSharedStatus074")||document.querySelector(".headerTop")||document.querySelector("header");
+  return document.querySelector(".headerTop")||document.querySelector("header");
+}
+function ensureUserBadge(){
+  injectStyles();
+  const target=userBadgeTarget();if(!target)return null;
+  let el=document.getElementById("frendaActiveUserBadge");
+  if(!el){el=document.createElement("button");el.type="button";el.id="frendaActiveUserBadge";el.className="frendaActiveUserBadge";el.innerHTML='<span class="frendaActiveUserIcon"></span><span class="frendaActiveUserText"></span>';el.onclick=openModal;}
+  if(el.parentElement!==target){
+    if(target.classList?.contains("careCluster"))target.insertBefore(el,target.firstChild);
+    else if(target.id==="expSharedStatus074")target.insertBefore(el,target.firstChild);
+    else{const buttons=target.querySelector?.(".headerBtns");buttons?target.insertBefore(el,buttons):target.appendChild(el)}
+  }
+  userBadge=el;updateUserBadge();return el;
+}
+function updateUserBadge(){
+  const el=userBadge||document.getElementById("frendaActiveUserBadge");if(!el)return;
+  const info=activeUserLabel();if(el.dataset.mode!==info.mode)el.dataset.mode=info.mode;if(el.title!==info.title)el.title=info.title;if(el.getAttribute("aria-label")!==info.title)el.setAttribute("aria-label",info.title);
+  const icon=el.querySelector(".frendaActiveUserIcon"),text=el.querySelector(".frendaActiveUserText");if(icon&&icon.textContent!==info.icon)icon.textContent=info.icon;if(text&&text.textContent!==info.text)text.textContent=info.text;
+}
+
 function bindLauncher(el){
   if(!el)return false;el.classList.add("frendaCloudTestLauncher");el.style.pointerEvents="auto";el.style.cursor="pointer";el.style.opacity="1";
   el.setAttribute("role","button");el.setAttribute("tabindex","0");el.setAttribute("title","🧪 テスト認証を開く");el.setAttribute("aria-label","テスト認証を開く");
@@ -41,10 +74,11 @@ function bindLauncher(el){
   const fallback=document.getElementById("frendaCloudTestLauncher");if(fallback&&fallback!==el)fallback.remove();return true;
 }
 function ensureLauncher(){
+  ensureUserBadge();
   const native=document.getElementById("frendaDungeonTestBadge")||document.getElementById("frendaExpeditionTestBadge");if(bindLauncher(native))return native;
   let el=document.getElementById("frendaCloudTestLauncher");if(!el){el=document.createElement("button");el.type="button";el.id="frendaCloudTestLauncher";el.className="frendaCloudTestLauncher";el.textContent="🧪";document.body.appendChild(el)}bindLauncher(el);return el;
 }
-function watchLauncher(){ensureLauncher();if(launcherObserver)return;launcherObserver=new MutationObserver(()=>ensureLauncher());launcherObserver.observe(document.documentElement,{childList:true,subtree:true})}
+function watchLauncher(){ensureLauncher();if(launcherObserver)return;launcherObserver=new MutationObserver(()=>{ensureLauncher();ensureUserBadge()});launcherObserver.observe(document.documentElement,{childList:true,subtree:true})}
 function injectButton(){if(button)return;injectStyles();watchLauncher();button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="🧪 テスト認証";button.onclick=openModal;(document.querySelector(".headerBtns")||document.querySelector("header")||document.body).appendChild(button)}
 function closeModal(){modal?.remove();modal=null}
 function openModal(){
@@ -145,8 +179,8 @@ async function init(options){
   if(!window.supabase?.createClient){setStatus("認証ライブラリ未接続","error");return}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storage:window.sessionStorage}});
   if(authUnsub){try{authUnsub.unsubscribe()}catch{}}
-  const {data,error}=await client.auth.getSession();if(error){setStatus("認証確認エラー","error");return}session=data.session||null;
-  const listener=client.auth.onAuthStateChange((_event,newSession)=>{session=newSession||null});authUnsub=listener?.data?.subscription||null;
+  const {data,error}=await client.auth.getSession();if(error){setStatus("認証確認エラー","error");return}session=data.session||null;ensureUserBadge();updateUserBadge();
+  const listener=client.auth.onAuthStateChange((_event,newSession)=>{session=newSession||null;updateUserBadge()});authUnsub=listener?.data?.subscription||null;
   await initializeCloudSession();
 }
 
@@ -155,3 +189,4 @@ window.FrendaCloud={
   init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,open:openModal
 };
 })();
+/* Ver0.4: ヘッダに現在の利用者（👤ローカル / ☁メールアドレス）を常時表示。タップでテスト認証画面を開く。Updated: 2026-10-10 19:54 JST */
