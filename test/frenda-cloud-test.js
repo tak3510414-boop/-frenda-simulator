@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 0.1 / auth-only test runtime; NEVER reads/writes frenda_saves */
+/* FRENDA_CLOUD_TEST_VERSION: 0.2 / auth-only test runtime; NEVER reads/writes frenda_saves */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="0.1";
+const CLOUD_TEST_VERSION="0.2";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 
@@ -12,6 +12,7 @@ let cfg=null;
 let authUnsub=null;
 let button=null;
 let modal=null;
+let launcherObserver=null;
 let statusText="未ログイン（同期停止）";
 let initialized=false;
 
@@ -31,6 +32,7 @@ function injectStyles(){
   const st=document.createElement("style");st.id="frendaCloudTestStyles";st.textContent=`
   .frendaCloudBtn{background:#fff8dd!important;color:#6f5700!important;border:1px solid #e5d48a!important;border-radius:999px!important;padding:7px 10px!important;font-size:11px!important;font-weight:900!important;white-space:nowrap!important;box-shadow:none!important}
   .frendaCloudBtn[data-kind="error"]{background:#fff0f0!important;color:#9a2e2e!important;border-color:#e9b8b8!important}
+  .frendaCloudTestLauncher{position:fixed!important;left:3px!important;top:calc(env(safe-area-inset-top,0px) + 3px)!important;z-index:100000!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:28px!important;min-height:28px!important;padding:4px 6px!important;border:1px solid #c9ad58!important;border-radius:8px!important;background:#ffe39aee!important;color:#553400!important;font-size:15px!important;line-height:1!important;font-weight:1000!important;box-shadow:0 2px 7px #0003!important;cursor:pointer!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
   .frendaCloudOverlay{position:fixed;inset:0;z-index:3000;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px}
   .frendaCloudPanel{width:min(430px,100%);background:#fff;color:#17202a;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0007;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
   .frendaCloudHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaCloudHead b{font-size:18px}.frendaCloudClose{background:#edf2f7!important;color:#243747!important;padding:8px 10px!important}
@@ -39,9 +41,43 @@ function injectStyles(){
   .frendaCloudInfo{font-size:12px;line-height:1.55;color:#64737e;background:#fff8dd;border:1px solid #ead991;border-radius:10px;padding:10px;margin-top:10px}.frendaCloudUser{font-size:13px;font-weight:800;word-break:break-all;margin:6px 0}.frendaCloudStatus{margin-top:9px;font-size:12px;font-weight:800;color:#31566d;min-height:1.4em}
   `;document.head.appendChild(st)
 }
+function bindLauncher(el){
+  if(!el)return false;
+  el.classList.add("frendaCloudTestLauncher");
+  el.style.pointerEvents="auto";
+  el.style.cursor="pointer";
+  el.style.opacity="1";
+  el.setAttribute("role","button");
+  el.setAttribute("tabindex","0");
+  el.setAttribute("title","🧪 テスト認証を開く");
+  el.setAttribute("aria-label","テスト認証を開く");
+  el.onclick=openModal;
+  el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openModal()}};
+  const fallback=document.getElementById("frendaCloudTestLauncher");
+  if(fallback&&fallback!==el)fallback.remove();
+  return true;
+}
+function ensureLauncher(){
+  const native=document.getElementById("frendaDungeonTestBadge")||document.getElementById("frendaExpeditionTestBadge");
+  if(bindLauncher(native))return native;
+  let el=document.getElementById("frendaCloudTestLauncher");
+  if(!el){
+    el=document.createElement("button");el.type="button";el.id="frendaCloudTestLauncher";el.className="frendaCloudTestLauncher";el.textContent="🧪";
+    document.body.appendChild(el);
+  }
+  bindLauncher(el);
+  return el;
+}
+function watchLauncher(){
+  ensureLauncher();
+  if(launcherObserver)return;
+  launcherObserver=new MutationObserver(()=>ensureLauncher());
+  launcherObserver.observe(document.documentElement,{childList:true,subtree:true});
+}
 function injectButton(){
   if(button)return;
   injectStyles();
+  watchLauncher();
   button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="🧪 テスト認証";button.onclick=openModal;
   const host=document.querySelector(".headerBtns")||document.querySelector("header")||document.body;host.appendChild(button);
 }
@@ -93,7 +129,7 @@ function syncBlocked(action){
   return Promise.resolve(false);
 }
 async function init(options){
-  cfg=options||{};injectButton();
+  cfg=options||{};injectButton();ensureLauncher();
   if(!window.supabase?.createClient){setStatus("認証ライブラリ未接続","error");return}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storage:window.sessionStorage}});
   if(authUnsub){try{authUnsub.unsubscribe()}catch{}}
