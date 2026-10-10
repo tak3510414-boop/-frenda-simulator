@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.58">
+<html lang="ja" data-test-center-version="2.59">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.58</title>
+<title>フレンダ 回帰テストセンター Ver2.59</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.58</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.59</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.58</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.59</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -47,6 +47,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 <section class="card">
  <div class="row"><div class="sectionTitle" style="margin:0">自動チェック</div><div class="actions"><button id="runAuto">再チェック</button><button class="secondary" id="resetChecks">選択端末のチェックをリセット</button></div></div>
  <div id="autoResults"></div>
+</section>
+
+<section class="card">
+ <div class="row"><div class="sectionTitle" style="margin:0">ユーザー管理・保存分離 総合回帰</div></div>
+ <div class="deviceHint"><b>本番反映前の必須確認</b><br>この項目は通常の <code>/test/dungeon.html</code> で実施します。<code>?case=...</code> は保存禁止の確認項目以外では使いません。テスト用ローカルユーザー／クラウドユーザー／本番ローカルが互いに混ざらないことを確認してください。</div>
+ <div id="userManagementChecks"></div>
 </section>
 
 <section class="card">
@@ -166,6 +172,20 @@ const progressionCases=[
  ["p-admin-temp","探索 管理者一時解放","未攻略状態でG5だけを管理者一時解放。再読み込みで解除され、ダンジョンホーム側にも解放が残らないこと。","admin-temp","expedition"]
 ];
 
+const userManagementCases=[
+ ["u-user-badge","利用中ユーザー表示","未ログインでは現在のローカルユーザー名、ログイン中ではクラウドのメールアドレスがヘッダに表示される。","dungeon.html","通常testを開く"],
+ ["u-add","ローカルユーザー追加","一時ユーザーを1人追加。新規状態から始まり、追加前ユーザーの所持ピック・進行状況を引き継がない。","dungeon.html","通常testを開く"],
+ ["u-independent","ローカルユーザー独立保存","ユーザーAで状態を変更→別ユーザーへ切替→Aへ戻し、Aだけに変更が残ること。","dungeon.html","通常testを開く"],
+ ["u-rename","名前変更でセーブ維持","✏️で表示名を変更し、所持ピック・進行状況が変化しないこと。内部ID／保存領域は維持される。","dungeon.html","通常testを開く"],
+ ["u-delete-current","使用中ユーザー削除禁止","現在使用中のユーザーの🗑️が無効で、削除できないこと。","dungeon.html","通常testを開く"],
+ ["u-delete-other","非使用ユーザーだけ削除","一時ユーザーを別ユーザーへ切替後に削除。対象だけ消え、他ユーザーのデータが残ること。","dungeon.html","通常testを開く"],
+ ["u-minimum","最低1ユーザー保持","ユーザーを減らしても最後の1人は削除できないこと。実データを残したい場合は一時ユーザーだけで確認する。","dungeon.html","通常testを開く"],
+ ["u-cloud-roundtrip","ローカル→クラウド→ローカル復帰","ローカルの状態Aからクラウドユーザーへログインするとクラウド状態Bへ切替。ログアウトすると元のローカル状態Aへ戻る。","dungeon.html","通常testを開く"],
+ ["u-no-sync","ローカル／クラウド非同期","クラウド側で進行・保存しても、ログアウト後のローカルユーザーの所持・進行が変化しない。逆方向も同期されない。","dungeon.html","通常testを開く"],
+ ["u-case-guard","回帰テストは完全一時データ","case=shop等を開き、🔒回帰テスト表示・ローカル管理操作禁止・クラウド保存禁止を確認。閉じた後、通常testのローカル／クラウド保存が変化していない。","dungeon.html?test=1&case=shop","回帰testを開く"],
+ ["u-prod-isolation","本番ローカル保持","最後に本番Dungeonを開き、従来の本番ローカルユーザーの所持ピック・進行状況が変更されていないこと。","../dungeon.html","本番を確認"]
+];
+
 let currentProfile=localStorage.getItem("frenda:regression:profile")||"white";
 let versions={dungeon:"?",expedition:"?"};
 const $=s=>document.querySelector(s);
@@ -177,6 +197,7 @@ function updateViewport(){
 }
 function checkKey(id){return `frenda:regression:${versions.dungeon}:${versions.expedition}:${currentProfile}:${id}`}
 function rowHTML(x,app){const [id,title,note,c,appOverride]=x,targetApp=appOverride||app,url=`${targetApp}.html?test=1&case=${encodeURIComponent(c)}`;return `<label class="checkRow"><input type="checkbox" data-check="${id}"><span><b>${title}</b><small>${note}</small></span><a class="openBtn" href="${url}" target="_blank" rel="noopener">開く</a></label>`}
+function userManagementRowHTML(x){const [id,title,note,url,label="開く"]=x;return `<label class="checkRow"><input type="checkbox" data-check="${id}"><span><b>${title}</b><small>${note}</small></span><a class="openBtn" href="${url}" target="_blank" rel="noopener">${label}</a></label>`}
 function renderChecks(){
  $("#dungeonChecks").innerHTML=dungeonCases.map(x=>rowHTML(x,"dungeon")).join("");
  $("#progressionChecks").innerHTML=progressionCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
@@ -184,6 +205,7 @@ function renderChecks(){
  $("#weeklyChecks").innerHTML=weeklyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#shinyChecks").innerHTML=shinyCases.map(x=>rowHTML(x,x[4]||"dungeon")).join("");
  $("#expeditionChecks").innerHTML=expCases.map(x=>rowHTML(x,"expedition")).join("");
+ $("#userManagementChecks").innerHTML=userManagementCases.map(userManagementRowHTML).join("");
  document.querySelectorAll("[data-check]").forEach(el=>{el.checked=localStorage.getItem(checkKey(el.dataset.check))==="1";el.onchange=()=>{localStorage.setItem(checkKey(el.dataset.check),el.checked?"1":"0");updateProgress()}});updateProgress()
 }
 function updateProgress(){const all=[...document.querySelectorAll("[data-check]")],done=all.filter(x=>x.checked).length;$("#progressText").textContent=`${PROFILES[currentProfile].label}: ${done}/${all.length} 完了`}
@@ -300,6 +322,8 @@ async function runAuto(){
   ["ローカルユーザー追加",/function createLocalProfile\(name\)/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/profile=\{id:`U\$\{max\+1\}`,name\}/.test(t)&&/createLocalProfile,renameLocalProfile,deleteLocalProfile,snapshot/.test(t)&&/id="frendaLocalNewName"/.test(ct)&&/id="frendaLocalAddBtn"/.test(ct)&&/function createLocalProfile\(name\)/.test(ct)&&/localProfileAdd:true/.test(ct),"名前を入力してローカルユーザーを追加。新規ユーザーはU1,U2...の独立領域で作成し、そのユーザーへ切替"],
   ["ローカルユーザー名変更",/function renameLocalProfile\(profile,newName\)/.test(t)&&/const next=list\.map\(x=>x\.id===profile\?\{\.\.\.x,name:newName\}:\{\.\.\.x\}\)/.test(t)&&/renameLocalProfile,deleteLocalProfile,snapshot/.test(t)&&/data-local-rename/.test(ct)&&/function renameLocalProfile\(profile\)/.test(ct)&&/localProfileRename:true/.test(ct)&&/セーブデータはそのままです/.test(ct),"✏️から表示名のみ変更。内部ID・保存プレフィックス・既存セーブデータは変更しない"],
   ["ローカルユーザー削除",/function deleteLocalProfile\(profile\)/.test(t)&&/list\.length<=1\|\|profile===currentId/.test(t)&&/String\(raw\)\.startsWith\(prefix\)/.test(t)&&/data-local-delete/.test(ct)&&/function deleteLocalProfile\(profile\)/.test(ct)&&/最終確認です/.test(ct)&&/localProfileDelete:true/.test(ct),"🗑️から2段階確認で削除。使用中は削除不可・最低1人を保持し、対象ユーザーの保存領域だけを消去"],
+  ["ユーザー管理・保存分離 総合安全監査",/function createLocalProfile\(name\)/.test(t)&&/function renameLocalProfile\(profile,newName\)/.test(t)&&/function deleteLocalProfile\(profile\)/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/function productionStorageUnchanged\(\)/.test(t)&&/function assertProductionStorageUnchanged\(\)/.test(t)&&/setInterval\(\(\)=>assertProductionStorageUnchanged\(\),1000\)/.test(t)&&/localCloudSync:false/.test(ct)&&/cloudOnly:true/.test(ct)&&/regressionSaveGuard:true/.test(ct)&&/localProfileAdd:true/.test(ct)&&/localProfileRename:true/.test(ct)&&/localProfileDelete:true/.test(ct),"追加・切替・改名・削除・ローカル/クラウド非同期・回帰保存禁止・本番保存監視の主要安全ガードが揃う"],
+  ["本番ローカル保存の監視ガード",/const protectedKeys=\["frenda:dungeon:v1","frenda:expedition:v1","frenda:owned:v1","frenda:favorites:v1","frenda:team:v1"\]/.test(t)&&/productionStorageUnchanged/.test(t)&&/FRENDA_TEST_PRODUCTION_STORAGE_CHANGED/.test(t)&&/pagehide.*assertProductionStorageUnchanged/.test(t),"/test/実行中は主要な本番localStorageキーを基準値と比較し、変更を検出したら安全停止"],
   ["回帰テストのクラウド保存禁止",/function regressionCaseActive\(\)/.test(ct)&&/has\("case"\)/.test(ct)&&/REGRESSION_SAVE_BLOCK_TEXT/.test(ct)&&/regressionCaseActive\(\)\)\{if\(syncTimer\)/.test(ct)&&/regressionSaveGuard:true/.test(ct)&&/if\(cloudMode\(\)&&!regressionCaseActive\(\)\)await pushNow\(true\)/.test(ct),"?case= の回帰テスト中は自動保存・手動保存・ログアウト時保存・起動時書込を禁止"],
   ["回帰テストのローカル保存禁止",/function regressionCaseActive\(\)\{return params\.has\("case"\)\}/.test(t)&&/function seedLocalSandbox\(\)\{\s*mem\.clear\(\);\s*if\(regressionCaseActive\(\)\)return;/.test(t)&&/function persistLocalSet\(k,v\)\{\s*if\(regressionCaseActive\(\)\)return true;/.test(t)&&/function persistLocalRemove\(k\)\{\s*if\(regressionCaseActive\(\)\)return true;/.test(t)&&/function persistLocalClear\(\)\{\s*if\(regressionCaseActive\(\)\)return true;/.test(t)&&/get regressionEphemeral\(\)\{return regressionCaseActive\(\)\}/.test(t),"?case= の回帰テスト中はテスト用localStorageを読込・書込せず、メモリ上の一時データだけを使用"],
   ["休憩画面の管理者5秒長押し",/ADMIN_MENU_HOLD_MS=5000/.test(d)&&/function bindEyeRestAdminHold\(el\)/.test(d)&&/eyeRestTitle/.test(d)&&/adminMenuHref\(\)/.test(d)&&/\.\.\/admin\.html/.test(d),"『目を休めよう』を5秒長押しすると管理者メニューへ移動。通常タップでは開かない"],
@@ -402,7 +426,7 @@ async function runAuto(){
 }
 window.addEventListener("resize",updateViewport);
 document.querySelectorAll("[data-profile]").forEach(b=>b.onclick=()=>setProfile(b.dataset.profile));
-$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...progressionCases,...dailyCases,...weeklyCases,...shinyCases,...expCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
+$("#runAuto").onclick=runAuto;$("#resetChecks").onclick=()=>{for(const x of [...dungeonCases,...progressionCases,...dailyCases,...weeklyCases,...shinyCases,...expCases,...userManagementCases])localStorage.removeItem(checkKey(x[0]));renderChecks()};
 setProfile(currentProfile);runAuto();
 })();
 </script>
@@ -459,5 +483,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.56: frenda-test.js Ver1.6 / frenda-cloud-test.js Ver0.7 に追従。ローカルユーザー追加（名前入力・独立保存・作成後切替）の監査を追加。削除・名前変更は未実装。Updated: 2026-10-10 23:55 JST -->
 <!-- Ver2.57: frenda-test.js Ver1.7 / frenda-cloud-test.js Ver0.8 に追従。ローカルユーザー名変更（内部ID・保存領域を維持して表示名のみ更新）の監査を追加。削除は未実装。Updated: 2026-10-11 00:05 JST -->
 <!-- Ver2.58: frenda-test.js Ver1.8 / frenda-cloud-test.js Ver0.9 に追従。ローカルユーザー削除（2段階確認・使用中削除不可・最低1人保持・対象領域のみ削除）の監査を追加。Updated: 2026-10-11 00:48 JST -->
-<!-- SOURCE FILE: Test Center Ver2.58 full source. Updated: 2026-10-11 00:48 JST -->
+<!-- Ver2.59: 本番反映前の「ユーザー管理・保存分離 総合回帰」専用チェックリストを追加。追加/独立保存/名前変更/削除制約/クラウド往復/非同期/case完全一時化/本番保持を手動確認し、自動監査に総合安全ガードと本番localStorage監視を追加。Updated: 2026-10-11 00:58 JST -->
+<!-- SOURCE FILE: Test Center Ver2.59 full source. Updated: 2026-10-11 00:58 JST -->
 </html>
