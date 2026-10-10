@@ -1,7 +1,7 @@
-/* FRENDA_TEST_VERSION: 1.6 / dynamic isolated local profiles + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 1.7 / dynamic isolated local profiles + add/rename + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="1.6";
+const VERSION="1.7";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
@@ -69,6 +69,18 @@ function createLocalProfile(name){
   const next=[...list,profile];if(!writeLocalProfileRegistry(next))return null;
   const old=localProfileId();if(!setLocalProfileMeta(profile.id))return null;
   seedLocalSandbox();notify("profiles",null,profile.id,old);return {...profile};
+}
+function renameLocalProfile(profile,newName){
+  if(regressionCaseActive()||currentMode()==="cloud")return null;
+  profile=normalizeProfileId(profile);newName=sanitizeProfileName(newName);
+  if(!validLocalProfile(profile)||!newName)return null;
+  const list=localProfiles(),current=list.find(x=>x.id===profile);if(!current)return null;
+  if(list.some(x=>x.id!==profile&&x.name===newName))return null;
+  if(current.name===newName)return {...current};
+  const next=list.map(x=>x.id===profile?{...x,name:newName}:{...x});
+  if(!writeLocalProfileRegistry(next))return null;
+  notify("profileRename",null,{id:profile,name:newName},{id:profile,name:current.name});
+  return {id:profile,name:newName};
 }
 function migrateLegacyLocalA(){
   if(regressionCaseActive())return;
@@ -207,10 +219,10 @@ window.FRENDA_TEST=Object.freeze({
   version:VERSION,requested:true,active:!!isolated,storage,
   get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},get regressionEphemeral(){return regressionCaseActive()},
   get localProfileId(){return localProfileId()},get localProfileName(){return localProfileName()},get localProfiles(){return localProfiles().map(x=>({...x}))},
-  readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,snapshot,
+  readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,renameLocalProfile,snapshot,
   productionStorageUnchanged,assertProductionStorageUnchanged
 });
 if(!isolated){document.addEventListener("DOMContentLoaded",()=>{document.body.innerHTML='<main style="font-family:system-ui;padding:24px"><h1>テストモードを開始できません</h1><p>本番セーブを保護するため、保存領域の分離に失敗した状態ではテストを実行しません。</p><p><a href="test-center.html">テストセンターへ戻る</a></p></main>';});throw new Error("FRENDA_TEST_ISOLATION_FAILED");}
 setInterval(()=>assertProductionStorageUnchanged(),1000);window.addEventListener("pagehide",()=>assertProductionStorageUnchanged());
 })();
-/* Ver1.6: テスト用ローカルユーザーを追加可能に拡張。A/Bは維持し、追加ユーザーはU1,U2...の独立領域で保存。追加時に名前を設定し、そのユーザーへ切替。回帰テスト中は追加・切替・永続保存を禁止。Updated: 2026-10-10 23:55 JST */
+/* Ver1.7: ローカルユーザー名変更を追加。内部IDと保存プレフィックスは変えず、レジストリ上の表示名だけを更新するため既存セーブを保持。A/B/追加ユーザーすべて変更可能。回帰テスト中とクラウドユーザー中は変更禁止。Updated: 2026-10-11 00:05 JST */

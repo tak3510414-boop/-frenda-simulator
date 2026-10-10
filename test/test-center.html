@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.56">
+<html lang="ja" data-test-center-version="2.57">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.56</title>
+<title>フレンダ 回帰テストセンター Ver2.57</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.56</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.57</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.56</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.57</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -290,14 +290,15 @@ async function runAuto(){
   ["Test Center版表示",(()=>{const v=document.documentElement.dataset.testCenterVersion||"";return !!v&&document.getElementById("testCenterVersion")?.textContent.includes(v)})(),"画面上でTest Center自身のVerを確認可能"],
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
-  ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.6/.test(t)&&/active:\s*!!isolated/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/seedLocalSandbox/.test(t)&&t.includes("const inTestPath=/\\/test"),"/test/ はURLパラメータなしでも常時分離。未ログイン=ユーザー別の独立localStorage、ログイン=クラウド用sessionStorageキャッシュ。本番セーブキーを書き換えない"],
+  ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.7/.test(t)&&/active:\s*!!isolated/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/seedLocalSandbox/.test(t)&&t.includes("const inTestPath=/\\/test"),"/test/ はURLパラメータなしでも常時分離。未ログイン=ユーザー別の独立localStorage、ログイン=クラウド用sessionStorageキャッシュ。本番セーブキーを書き換えない"],
   ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js を実際の共通JSローダーより先に実行"],
-  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="0.7","/test/ は frenda-cloud-test.js Ver0.7（クラウド専用保存＋ローカルユーザー追加/切替＋回帰テスト保存禁止）を使用し、本番frenda-cloud.jsと分離"],
+  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="0.8","/test/ は frenda-cloud-test.js Ver0.8（クラウド専用保存＋ローカルユーザー追加/名前変更/切替＋回帰テスト保存禁止）を使用し、本番frenda-cloud.jsと分離"],
   ["クラウドユーザー保存分離",/cloudOnly:\s*true/.test(ct)&&/localCloudSync:\s*false/.test(ct)&&/const TABLE="frenda_saves"/.test(ct)&&/client\.from\(TABLE\)/.test(ct)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/storage:\s*window\.sessionStorage/.test(ct),"ログインユーザーはfrenda_savesへ保存。未ログインのローカルテスト保存とは比較・同期せず、認証と一時キャッシュはsessionStorage"],
   ["テスト認証ランチャー",/function ensureLauncher\(\)/.test(ct)&&/frendaCloudTestLauncher/.test(ct)&&/pointerEvents="auto"/.test(ct)&&/onclick=openModal/.test(ct),"左上🧪をタップしてテスト認証画面を開ける"],
   ["利用中ユーザー表示",/frendaActiveUserBadge/.test(ct)&&/function activeUserLabel\(\)/.test(ct)&&/function ensureUserBadge\(\)/.test(ct)&&/クラウドユーザー：/.test(ct)&&/localProfileName\(\)/.test(ct)&&/text:name/.test(ct),"ヘッダに 👤ローカルユーザー名 / ☁ログインメールアドレスを常時表示し、タップでユーザー切替・認証画面を開ける"],
   ["ローカルユーザー切替",/function switchLocalProfile\(profile\)/.test(t)&&/get localProfileId\(\)/.test(t)&&/get localProfiles\(\)/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/data-local-profile/.test(ct)&&/switchLocalProfile\(el\.dataset\.localProfile\)/.test(ct)&&/に切り替えますか？/.test(ct),"既存A/Bと追加ユーザーは別プレフィックスで独立保存し、確認後に切替"],
-  ["ローカルユーザー追加",/function createLocalProfile\(name\)/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/profile=\{id:`U\$\{max\+1\}`,name\}/.test(t)&&/createLocalProfile,snapshot/.test(t)&&/id="frendaLocalNewName"/.test(ct)&&/id="frendaLocalAddBtn"/.test(ct)&&/function createLocalProfile\(name\)/.test(ct)&&/localProfileAdd:true/.test(ct),"名前を入力してローカルユーザーを追加。新規ユーザーはU1,U2...の独立領域で作成し、そのユーザーへ切替。削除・名前変更はまだ行わない"],
+  ["ローカルユーザー追加",/function createLocalProfile\(name\)/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/profile=\{id:`U\$\{max\+1\}`,name\}/.test(t)&&/createLocalProfile,renameLocalProfile,snapshot/.test(t)&&/id="frendaLocalNewName"/.test(ct)&&/id="frendaLocalAddBtn"/.test(ct)&&/function createLocalProfile\(name\)/.test(ct)&&/localProfileAdd:true/.test(ct),"名前を入力してローカルユーザーを追加。新規ユーザーはU1,U2...の独立領域で作成し、そのユーザーへ切替"],
+  ["ローカルユーザー名変更",/function renameLocalProfile\(profile,newName\)/.test(t)&&/const next=list\.map\(x=>x\.id===profile\?\{\.\.\.x,name:newName\}:\{\.\.\.x\}\)/.test(t)&&/renameLocalProfile,snapshot/.test(t)&&/data-local-rename/.test(ct)&&/function renameLocalProfile\(profile\)/.test(ct)&&/localProfileRename:true/.test(ct)&&/セーブデータはそのままです/.test(ct),"✏️から表示名のみ変更。内部ID・保存プレフィックス・既存セーブデータは変更しない"],
   ["回帰テストのクラウド保存禁止",/function regressionCaseActive\(\)/.test(ct)&&/has\("case"\)/.test(ct)&&/REGRESSION_SAVE_BLOCK_TEXT/.test(ct)&&/regressionCaseActive\(\)\)\{if\(syncTimer\)/.test(ct)&&/regressionSaveGuard:true/.test(ct)&&/if\(cloudMode\(\)&&!regressionCaseActive\(\)\)await pushNow\(true\)/.test(ct),"?case= の回帰テスト中は自動保存・手動保存・ログアウト時保存・起動時書込を禁止"],
   ["回帰テストのローカル保存禁止",/function regressionCaseActive\(\)\{return params\.has\("case"\)\}/.test(t)&&/function seedLocalSandbox\(\)\{\s*mem\.clear\(\);\s*if\(regressionCaseActive\(\)\)return;/.test(t)&&/function persistLocalSet\(k,v\)\{\s*if\(regressionCaseActive\(\)\)return true;/.test(t)&&/function persistLocalRemove\(k\)\{\s*if\(regressionCaseActive\(\)\)return true;/.test(t)&&/function persistLocalClear\(\)\{\s*if\(regressionCaseActive\(\)\)return true;/.test(t)&&/get regressionEphemeral\(\)\{return regressionCaseActive\(\)\}/.test(t),"?case= の回帰テスト中はテスト用localStorageを読込・書込せず、メモリ上の一時データだけを使用"],
   ["休憩画面の管理者5秒長押し",/ADMIN_MENU_HOLD_MS=5000/.test(d)&&/function bindEyeRestAdminHold\(el\)/.test(d)&&/eyeRestTitle/.test(d)&&/adminMenuHref\(\)/.test(d)&&/\.\.\/admin\.html/.test(d),"『目を休めよう』を5秒長押しすると管理者メニューへ移動。通常タップでは開かない"],
@@ -455,5 +456,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.54: Dungeon Ver3.63に追従。休憩画面「目を休めよう」の5秒長押しで管理者メニューへ移動する隠し操作を監査へ追加。Updated: 2026-10-10 22:26 JST -->
 <!-- Ver2.55: frenda-test.js Ver1.5 / frenda-cloud-test.js Ver0.6 に追従。ローカルA/Bの独立保存・切替・旧テストローカルのA移行を監査へ追加。Updated: 2026-10-10 22:40 JST -->
 <!-- Ver2.56: frenda-test.js Ver1.6 / frenda-cloud-test.js Ver0.7 に追従。ローカルユーザー追加（名前入力・独立保存・作成後切替）の監査を追加。削除・名前変更は未実装。Updated: 2026-10-10 23:55 JST -->
-<!-- SOURCE FILE: Test Center Ver2.56 full source. Updated: 2026-10-10 23:55 JST -->
+<!-- Ver2.57: frenda-test.js Ver1.7 / frenda-cloud-test.js Ver0.8 に追従。ローカルユーザー名変更（内部ID・保存領域を維持して表示名のみ更新）の監査を追加。削除は未実装。Updated: 2026-10-11 00:05 JST -->
+<!-- SOURCE FILE: Test Center Ver2.57 full source. Updated: 2026-10-11 00:05 JST -->
 </html>
