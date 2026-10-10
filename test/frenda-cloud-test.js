@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 0.6 / cloud-only save + local A/B selector + regression cloud-write guard; local user and cloud user NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 0.7 / cloud-only save + dynamic local user add/switch + regression cloud-write guard; local user and cloud user NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="0.6";
+const CLOUD_TEST_VERSION="0.7";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -40,24 +40,43 @@ function injectStyles(){
   .frendaCloudPanel label{display:block;font-size:12px;font-weight:800;margin:9px 0 4px}.frendaCloudPanel input{width:100%;padding:11px;border:1px solid #c8d2d9;border-radius:10px;font:inherit;background:#fff;color:#17202a}
   .frendaCloudActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.frendaCloudActions button{width:100%;padding:10px!important;border-radius:10px!important}.frendaCloudActions .wide{grid-column:1/-1}.frendaCloudPrimary{background:#1769e0!important;color:#fff!important}.frendaCloudSecondary{background:#edf2f7!important;color:#243747!important}.frendaCloudDanger{background:#a33!important;color:#fff!important}
   .frendaLocalProfiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 4px}.frendaLocalProfiles button{padding:10px!important;border-radius:10px!important;background:#f2f4f6!important;color:#31424f!important;border:1px solid #c7d0d6!important;font-weight:900!important}.frendaLocalProfiles button.active{background:#dff3ff!important;color:#075a7a!important;border-color:#69bde4!important}.frendaLocalProfiles button:disabled{opacity:.55!important;cursor:not-allowed!important}.frendaLocalTitle{font-size:12px;font-weight:900;margin-top:10px;color:#40515e}
+  .frendaLocalAdd{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px}.frendaLocalAdd input{min-width:0}.frendaLocalAdd button{padding:9px 12px!important;border-radius:10px!important;background:#166534!important;color:#fff!important;font-weight:900!important;white-space:nowrap!important}.frendaLocalAdd button:disabled{opacity:.55!important;cursor:not-allowed!important}
   .frendaCloudInfo{font-size:12px;line-height:1.55;color:#64737e;background:#eef9ff;border:1px solid #b9ddeb;border-radius:10px;padding:10px;margin-top:10px}.frendaCloudUser{font-size:13px;font-weight:800;word-break:break-all;margin:6px 0}.frendaCloudStatus{margin-top:9px;font-size:12px;font-weight:800;color:#31566d;min-height:1.4em}
   `;document.head.appendChild(st);
 }
 function localProfileId(){return testApi()?.localProfileId||"A"}
+function localProfileName(){return testApi()?.localProfileName||"ローカルA"}
+function localProfiles(){
+  const list=testApi()?.localProfiles;
+  return Array.isArray(list)&&list.length?list:[{id:"A",name:"ローカルA"},{id:"B",name:"ローカルB"}];
+}
 function activeUserLabel(){
   const email=session?.user?.email||"";
   if(email&&regressionCaseActive())return {mode:"cloud",icon:"🔒",text:email,title:`クラウドユーザー：${email}（回帰テスト中は保存禁止）`};
   if(email)return {mode:"cloud",icon:"☁️",text:email,title:`クラウドユーザー：${email}`};
   if(regressionCaseActive())return {mode:"local",icon:"🔒",text:"回帰テスト",title:"回帰テスト一時データ（ローカル保存なし）"};
-  const p=localProfileId();return {mode:"local",icon:"👤",text:`ローカル${p}`,title:`ローカル${p}（テスト専用保存）`};
+  const name=localProfileName();return {mode:"local",icon:"👤",text:name,title:`${name}（テスト専用保存）`};
 }
 function switchLocalProfile(profile){
-  profile=String(profile||"").toUpperCase();
+  profile=String(profile||"").trim().toUpperCase();
   if(session){setStatus("クラウドユーザー中はログアウトしてから切り替えてください。","error");return false}
   if(regressionCaseActive()){setStatus("回帰テスト中はローカルユーザーを切り替えません。","error");return false}
+  const info=localProfiles().find(x=>String(x.id).toUpperCase()===profile);if(!info){setStatus("ローカルユーザーが見つかりません。","error");return false}
   if(profile===localProfileId())return true;
-  if(!confirm(`ローカル${profile}に切り替えますか？`))return false;
+  if(!confirm(`${info.name}に切り替えますか？`))return false;
   if(!testApi()?.switchLocalProfile?.(profile)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}
+  closeModal();location.reload();return true;
+}
+function createLocalProfile(name){
+  if(session){setStatus("クラウドユーザー中はログアウトしてから追加してください。","error");return false}
+  if(regressionCaseActive()){setStatus("回帰テスト中はローカルユーザーを追加できません。","error");return false}
+  name=String(name||"").trim().replace(/\s+/g," ");
+  if(!name){setStatus("ローカルユーザー名を入力してください。","error");return false}
+  if(name.length>20){setStatus("名前は20文字以内にしてください。","error");return false}
+  if(localProfiles().some(x=>x.name===name)){setStatus("同じ名前のローカルユーザーがあります。","error");return false}
+  if(!confirm(`「${name}」を追加しますか？`))return false;
+  const created=testApi()?.createLocalProfile?.(name);
+  if(!created){setStatus("ローカルユーザーを追加できませんでした。","error");return false}
   closeModal();location.reload();return true;
 }
 function userBadgeTarget(){
@@ -109,9 +128,10 @@ function openModal(){
     </div>`:`
     <div class="frendaCloudPanel" role="dialog" aria-modal="true">
       <div class="frendaCloudHead"><b>👤 ユーザー切替</b><button type="button" class="frendaCloudClose">閉じる</button></div>
-      <div class="frendaCloudInfo"><b>現在：${regression?'回帰テスト一時データ':`ローカル${escapeHTML(localProfileId())}`}</b><br>ローカルA/Bはそれぞれ独立したテスト専用セーブです。クラウドユーザーとは同期しません。${regression?'<br><b>🔒 回帰テスト中はローカル切替・保存を行いません。</b>':''}<br><small>Cloud Test v${CLOUD_TEST_VERSION}</small></div>
+      <div class="frendaCloudInfo"><b>現在：${regression?'回帰テスト一時データ':escapeHTML(localProfileName())}</b><br>ローカルユーザーごとに独立したテスト専用セーブを使用します。クラウドユーザーとは同期しません。${regression?'<br><b>🔒 回帰テスト中はローカル切替・追加・保存を行いません。</b>':''}<br><small>Cloud Test v${CLOUD_TEST_VERSION}</small></div>
       <div class="frendaLocalTitle">ローカルユーザー</div>
-      <div class="frendaLocalProfiles"><button type="button" id="frendaLocalA" class="${!regression&&localProfileId()==='A'?'active':''}" ${regression?'disabled aria-disabled="true"':''}>👤 ローカルA</button><button type="button" id="frendaLocalB" class="${!regression&&localProfileId()==='B'?'active':''}" ${regression?'disabled aria-disabled="true"':''}>👤 ローカルB</button></div>
+      <div class="frendaLocalProfiles">${localProfiles().map(p=>`<button type="button" data-local-profile="${escapeHTML(p.id)}" class="${!regression&&localProfileId()===p.id?'active':''}" ${regression?'disabled aria-disabled="true"':''}>👤 ${escapeHTML(p.name)}</button>`).join("")}</div>
+      <div class="frendaLocalAdd"><input id="frendaLocalNewName" type="text" maxlength="20" placeholder="新しいユーザー名" ${regression?'disabled':''}><button type="button" id="frendaLocalAddBtn" ${regression?'disabled aria-disabled="true"':''}>＋ 追加</button></div>
       <div class="frendaLocalTitle">クラウドユーザーへログイン</div>
       <label>メールアドレス</label><input id="frendaCloudEmail" type="email" autocomplete="username">
       <label>パスワード</label><input id="frendaCloudPassword" type="password" autocomplete="current-password">
@@ -121,7 +141,8 @@ function openModal(){
   document.body.appendChild(modal);modal.addEventListener("click",e=>{if(e.target===modal)closeModal()});modal.querySelector(".frendaCloudClose").onclick=closeModal;
   if(session){const pushBtn=modal.querySelector("#frendaCloudPush");if(regression){pushBtn.onclick=null;setStatus(REGRESSION_SAVE_BLOCK_TEXT)}else pushBtn.onclick=()=>pushNow(true);modal.querySelector("#frendaCloudPull").onclick=()=>pullNow(true);modal.querySelector("#frendaCloudLogout").onclick=logout}
   else{
-    const a=modal.querySelector("#frendaLocalA"),b=modal.querySelector("#frendaLocalB");if(a)a.onclick=()=>switchLocalProfile("A");if(b)b.onclick=()=>switchLocalProfile("B");
+    modal.querySelectorAll("[data-local-profile]").forEach(el=>{el.onclick=()=>switchLocalProfile(el.dataset.localProfile)});
+    const addBtn=modal.querySelector("#frendaLocalAddBtn"),nameInput=modal.querySelector("#frendaLocalNewName");if(addBtn)addBtn.onclick=()=>createLocalProfile(nameInput?.value||"");if(nameInput)nameInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();createLocalProfile(nameInput.value)}};
     modal.querySelector("#frendaCloudLogin").onclick=async()=>{const email=modal.querySelector("#frendaCloudEmail").value.trim(),password=modal.querySelector("#frendaCloudPassword").value;if(!email||!password){setStatus("メールアドレスとパスワードを入力してください。","error");return}await login(email,password)};
   }
 }
@@ -213,8 +234,8 @@ async function init(options){
 }
 
 window.FrendaCloud={
-  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,syncDisabled:false,regressionSaveGuard:true,localProfiles:true,isRegressionCase:regressionCaseActive,
+  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,syncDisabled:false,regressionSaveGuard:true,localProfiles:true,localProfileAdd:true,isRegressionCase:regressionCaseActive,
   init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,open:openModal
 };
 })();
-/* Ver0.6: 未ログイン時にローカルA/Bを切替可能。各ローカルは独立保存し、クラウドとは同期しない。回帰テスト中は切替・永続保存を禁止。Updated: 2026-10-10 22:40 JST */
+/* Ver0.7: ローカルユーザー追加に対応。名前を入力して独立セーブ領域を追加し、そのユーザーへ切替。削除・名前変更は未実装。クラウドとは同期せず、回帰テスト中は追加・切替・永続保存を禁止。Updated: 2026-10-10 23:55 JST */
