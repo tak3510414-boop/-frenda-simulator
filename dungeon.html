@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.57">
+<html lang="ja" data-app-version="3.58">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4033,6 +4033,17 @@ html[data-view-profile="mobile"]{--frenda-content-max:100vw;--frenda-battle-max:
 .inventoryScreen{max-width:980px;margin:0 auto}.inventoryScreenHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.inventoryScreenHead>div>small{display:block;margin-top:2px;color:#657984;font-size:10px;font-weight:850}.inventoryEggBadge{flex:0 0 auto;padding:7px 11px;border-radius:999px;background:#f4e7ff;border:1px solid #d6b8ec;color:#653c80;font-weight:1000}
 .inventorySection{margin:10px 0;padding:11px;border:1px solid #d7e1e7;border-radius:16px;background:linear-gradient(180deg,#fff,#f7fafc)}.inventorySectionHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.inventorySectionHead>div{display:flex;align-items:center;gap:8px;min-width:0}.inventorySectionHead>div>span{font-size:27px}.inventorySectionHead b{display:block;font-size:16px;color:#284452}.inventorySectionHead small{display:block;font-size:9px;color:#71818a;font-weight:800}.inventorySectionHead>strong{padding:5px 9px;border-radius:999px;background:#f5eaff;color:#67407c;border:1px solid #ddc8ea;font-size:13px}.inventoryEggGrid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));max-height:none}.inventoryEmptyEgg{display:flex;align-items:center;justify-content:center;gap:14px;padding:9px;border-radius:12px;background:#f7f5fb;color:#60717b}.inventoryEmptyEgg .eggVisual{margin:0}.inventoryEmptyEgg p{margin:0;font-size:10px;line-height:1.5;font-weight:800}
 .inventoryItemList{display:grid;grid-template-columns:1fr;gap:7px}.inventoryItemCard{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 10px;border:1px solid #d2dde4;border-radius:13px;background:#fff}.inventoryItemIcon{width:48px;height:48px;display:grid;place-items:center;font-size:34px}.inventoryItemIcon.image img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 3px 4px #0003)}.inventoryItemBody{min-width:0}.inventoryItemTitle{display:flex;align-items:center;justify-content:space-between;gap:8px}.inventoryItemTitle b{font-size:14px;color:#294857}.inventoryItemTitle strong{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:#edf4f8;color:#34586b;font-size:11px}.inventoryItemBody p{margin:3px 0 1px;font-size:9px;line-height:1.4;color:#516a77}.inventoryItemBody small{display:block;font-size:8px;line-height:1.35;color:#7a8a93}.inventoryUseBtn{min-width:72px;padding:9px 10px!important;background:linear-gradient(180deg,#49b86e,#2d944f)!important;color:#fff!important;border:1px solid #237c42!important}.inventoryItemCard.clover{border-color:#b9dd8c;background:linear-gradient(135deg,#fbfff4,#f3ffe5)}.inventoryItemCard.training{border-color:#a7d2ef;background:linear-gradient(135deg,#f7fcff,#eaf7ff)}.inventoryItemCard.evolution{border-color:#aadbaa;background:linear-gradient(135deg,#f7fff5,#eaf9e6)}.inventoryItemCard.ticket{border-color:#e2c779;background:linear-gradient(135deg,#fffdf1,#fff6cf)}.inventoryItemCard.ball.super{border-color:#9dcced;background:#f3fbff}.inventoryItemCard.ball.hyper{border-color:#e2c65f;background:#fffbe8}.inventoryItemCard.ball.master{border-color:#b99ae0;background:#fbf5ff}.inventoryUsePanel{max-width:760px}.inventoryUseTarget span{font-size:10px;font-weight:1000;color:#487b2f}
+/* Ver3.58: training candy recommendation UI. Recommendation only reorders/highlights; it never consumes an item. */
+.trainingCandyRecommendBar358{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:7px 0 9px;padding:7px 8px;border-radius:12px;background:#fff8d9;border:1px solid #ead070}
+.trainingCandyRecommendBar358 button{flex:0 0 auto;padding:8px 12px!important;background:linear-gradient(180deg,#8c62e8,#6842bd)!important;color:#fff!important;border:1px solid #5935a7!important}
+.trainingCandyRecommendBar358 span{font-size:9px;font-weight:850;line-height:1.4;color:#65512b}
+.luckTarget.trainingCandyRecommended358{position:relative;border-color:#b697e8;background:linear-gradient(180deg,#fbf8ff,#f1ebff)}
+.luckTarget.trainingCandyRecommended358.top358{border:2px solid #f0b827;box-shadow:0 0 0 3px #ffd95d33,0 5px 15px #5a3b8b1c}
+.trainingCandyRankBadge358{position:absolute;z-index:2;top:5px;left:5px;padding:3px 6px;border-radius:999px;background:#6d47bf;color:#fff;font-size:8px;font-weight:1000;line-height:1.1;box-shadow:0 2px 5px #0002}
+.trainingCandyRecommended358.top358 .trainingCandyRankBadge358{background:#d79c00;color:#fff8d6}
+.trainingCandyReason358{margin-top:5px!important;padding:4px 5px;border-radius:7px;background:#ffffffcc;color:#5a477c!important;font-size:7.5px!important;font-weight:900!important;line-height:1.3!important}
+@media(max-width:700px){.trainingCandyRecommendBar358{gap:5px;padding:6px;margin:6px 0 7px}.trainingCandyRecommendBar358 button{padding:7px 10px!important;font-size:11px}.trainingCandyRecommendBar358 span{font-size:8px}.trainingCandyRankBadge358{font-size:7px;padding:3px 5px}.trainingCandyReason358{font-size:7px!important}}
+
 @media(max-width:700px){.homeInventoryCounts{gap:3px}.homeInventoryCounts span{font-size:8px!important;padding:2px 4px}.inventoryScreen{padding:9px!important}.inventoryScreenHead{margin-bottom:6px}.inventoryScreenHead .sectionTitle{font-size:18px}.inventoryEggBadge{font-size:11px;padding:5px 8px}.inventorySection{margin:7px 0;padding:8px;border-radius:13px}.inventorySectionHead{margin-bottom:6px}.inventorySectionHead>div>span{font-size:22px}.inventorySectionHead b{font-size:14px}.inventorySectionHead small{font-size:7.5px}.inventoryEggGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.inventoryItemCard{grid-template-columns:42px minmax(0,1fr) auto;gap:6px;padding:7px}.inventoryItemIcon{width:38px;height:38px;font-size:27px}.inventoryItemIcon.image img{width:36px;height:36px}.inventoryItemTitle b{font-size:11px}.inventoryItemTitle strong{font-size:9px;padding:3px 5px}.inventoryItemBody p{font-size:7.5px}.inventoryItemBody small{font-size:6.8px}.inventoryUseBtn{min-width:54px;padding:7px 6px!important;font-size:10px!important}.inventoryBallList .inventoryItemCard{grid-template-columns:42px minmax(0,1fr)}.inventoryEmptyEgg p{font-size:8px}}
 </style>
 
@@ -5556,6 +5567,13 @@ function applyDungeonTestCase(){
  }
  if(DUNGEON_TEST_CASE==="bulk-training"){
   state.run=null;state.postRun=null;screen="owned";save();render();banner();requestAnimationFrame(()=>showBulkTrainingDialog());return true
+ }
+ if(DUNGEON_TEST_CASE==="training-candy-recommend"){
+  state.run=null;state.postRun=null;state.shopItems.trainingCandy=5;
+  if(ids[0]){state.permanentBoosts[ids[0]]={hp:27,atk:27,def:24};state.bondPoints[bondKeyFor(ids[0])]=10}
+  if(ids[1]){state.permanentBoosts[ids[1]]={hp:18,atk:15,def:15};state.bondPoints[bondKeyFor(ids[1])]=6}
+  state.lastTeamIds=ids.slice(0,3);screen="items";save();render();banner();
+  requestAnimationFrame(()=>{showInventoryItemUse("training");requestAnimationFrame(()=>document.getElementById("inventoryTrainingRecommend358")?.click())});return true
  }
  if(DUNGEON_TEST_CASE==="legend-battle-lobby"){
   setProgressionPreset341("progress-r5",ids);state.legend={version:1,opponentId:null,rerollsRemaining:1,lastResult:null,lastOpponentId:null};screen="legend";save();render();banner();return true
@@ -7837,6 +7855,38 @@ function renderItems(){
  </div></section></div>`;
  app.querySelectorAll("[data-inventory-use]").forEach(b=>b.onclick=()=>{if(b.dataset.inventoryUse==="grass"){screen="grass";render()}else showInventoryItemUse(b.dataset.inventoryUse)});const closeBtn=document.getElementById("itemsCloseBtn");if(closeBtn)closeBtn.onclick=()=>{screen="home";render()}
 }
+function trainingCandyEligibleIds358(){
+ return (state.owned||[]).map(o=>o.id).filter(id=>{
+  if(!rec(id)||isExpeditionLocked(id))return false;
+  const pb=state.permanentBoosts?.[id]||{};
+  return ["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX)
+ })
+}
+function trainingCandyRecommendData358(id){
+ const r=rec(id),pb=state.permanentBoosts?.[id]||{},grade=Math.max(0,Number(r?.grade)||0),energy=Math.max(0,Number(r?.poke_ene)||0),bond=bondLevelFor(id);
+ const totalBoost=["hp","atk","def"].reduce((s,k)=>s+Math.max(0,Number(pb[k]||0)),0);
+ const remainingSteps=["hp","atk","def"].reduce((s,k)=>s+Math.max(0,Math.ceil((PERMANENT_BOOST_MAX-Math.max(0,Number(pb[k]||0)))/Math.max(1,TRAINING_STEP))),0);
+ const recent=Array.isArray(state.lastTeamIds)&&state.lastTeamIds.includes(id);
+ const finishBonus=Math.max(0,12-Math.min(12,remainingSteps));
+ const score=energy+grade*25+bond*12+totalBoost+(recent?30:0)+finishBonus;
+ const reason=[grade?gradeText(r):"",energy?`ポケエネ${energy}`:"",bond?`絆Lv${bond}`:"",recent?"直近の挑戦チーム":"",remainingSteps<=3?`あと${remainingSteps}特訓で3能力MAX`:totalBoost>0?"育成中":"強化余地あり"].filter(Boolean).slice(0,4).join("・");
+ return {id,score,grade,energy,bond,totalBoost,remainingSteps,recent,reason}
+}
+function trainingCandyRecommendSort358(ids){
+ const rank=new Map((ids||[]).map(id=>[id,trainingCandyRecommendData358(id)]));
+ const numCmp=(a,b)=>String(rec(a)?.pick_no||"").localeCompare(String(rec(b)?.pick_no||""),"ja",{numeric:true,sensitivity:"base"});
+ return (ids||[]).slice().sort((a,b)=>{
+  const A=rank.get(a),B=rank.get(b);
+  return Number(B?.score||0)-Number(A?.score||0)||Number(B?.energy||0)-Number(A?.energy||0)||Number(B?.grade||0)-Number(A?.grade||0)||numCmp(a,b)
+ })
+}
+function trainingCandyTargetCard358(id,{rank=0,attr="data-training-candy-target",qty=1,extraClass=""}={}){
+ const r=rec(id),d=trainingCandyRecommendData358(id),recommended=rank>0&&rank<=3;
+ return `<button class="luckTarget ${extraClass} ${recommended?"trainingCandyRecommended358":""} ${rank===1?"top358":""}" ${attr}="${esc(id)}" ${qty>0?"":"disabled"}>${recommended?`<span class="trainingCandyRankBadge358">おすすめ${rank}位</span>`:""}<img src="${esc(imageOf(r))}" alt=""><b>${esc(r?.name_ja||"")}</b><small>${gradeText(r)}　⚡${esc(r?.poke_ene??"-")}</small><span>特訓P ${drillFor(id)}</span>${recommended?`<small class="trainingCandyReason358">${esc(d.reason)}</small>`:""}</button>`
+}
+function trainingCandyRecommendBar358(active,id){
+ return `<div class="trainingCandyRecommendBar358"><button type="button" id="${id}">${active?"↩ 通常順に戻す":"✨ おすすめ"}</button><span>${active?"実戦力・育成状況・絆などからおすすめ順に表示中。上位3体を強調しています。":"誰に使うか迷ったら、実戦力・育成状況・絆などから候補を選べます。"}</span></div>`
+}
 function showInventoryItemUse(kind){
  if(kind==="training"&&!featureTrainingUnlocked341()){UI.dialog.alert(featureLockText341("training"));return}
  if(kind==="evolution"&&!featureEvolutionUnlocked341()){UI.dialog.alert(featureLockText341("evolution"));return}
@@ -7844,6 +7894,7 @@ function showInventoryItemUse(kind){
  const prevOverflow=document.body.style.overflow,ov=document.createElement("div");ov.id="inventoryUseOverlay";ov.className="ownedDetailOverlay inventoryUseOverlay";document.body.appendChild(ov);document.body.style.overflow="hidden";
  const close=()=>{ov.remove();document.body.style.overflow=prevOverflow;if(screen==="items"||screen==="eggs")renderItems()};
  const numCmp=(a,b)=>String(rec(a)?.pick_no||"").localeCompare(String(rec(b)?.pick_no||""),"ja",{numeric:true,sensitivity:"base"});
+ let trainingCandyRecommendMode358=false;
  const renderUse=(scroll=0)=>{
   const q=inventoryItemQty(kind==="clover"?"luckyClover":kind==="training"?"trainingCandy":"evolutionCandy");let title="",hint="",targets=[];
   if(kind==="clover"){
@@ -7851,14 +7902,16 @@ function showInventoryItemUse(kind){
    targets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX).sort(numCmp)
   }else if(kind==="training"){
    title="🏋️ 特訓キャンディを使う";hint=`所持 ${q}/${TRAINING_CANDY_MAX}個。対象をタップすると特訓ポイントを+1します。`;
-   targets=(state.owned||[]).map(o=>o.id).filter(id=>{if(!rec(id)||isExpeditionLocked(id))return false;const pb=state.permanentBoosts[id]||{};return ["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX)}).sort(numCmp)
+   targets=trainingCandyEligibleIds358().sort(numCmp);
+   if(trainingCandyRecommendMode358)targets=trainingCandyRecommendSort358(targets)
   }else{
    title="🌱 進化のアメを使う";hint=`所持 ${q}/${EVOLUTION_CANDY_MAX}個。対象をタップすると進化ポイントを+1します。`;
    targets=(state.owned||[]).map(o=>o.id).filter(id=>{if(!rec(id)||isExpeditionLocked(id))return false;const ei=evolutionInfoForPick(id);return ei.hasEvolution&&ei.registered&&ei.points<ei.cost}).sort(numCmp)
   }
-  const cards=targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id),extra=kind==="clover"?`幸運 ${luckFor(id)}/${LUCK_MAX}`:kind==="training"?`特訓P ${drillFor(id)}`:(()=>{const ei=evolutionInfoForPick(id);return `進化P ${ei.points}/${ei.cost}`})();return `<button class="luckTarget inventoryUseTarget" data-inventory-target="${esc(id)}" ${q>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　${esc(r.pick_no||"")}</small><span>${esc(extra)}</span>${locked?'<small class="luckTargetLocked">🧭 探索中</small>':""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${kind==="clover"?"使用できるピックがありません。":kind==="training"?"特訓キャンディを使用できるピックがありません。":evoReady?"進化のアメを使用できるピックがありません。":"進化情報を読み込み中です。"}</div>`;
-  ov.innerHTML=`<div class="ownedBackPanel shopUsePanel inventoryUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="inventoryUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div><div class="luckTargetGrid">${cards}</div></div>`;
+  const cards=targets.length?targets.map((id,i)=>{const r=rec(id),locked=isExpeditionLocked(id),extra=kind==="clover"?`幸運 ${luckFor(id)}/${LUCK_MAX}`:kind==="training"?`特訓P ${drillFor(id)}`:(()=>{const ei=evolutionInfoForPick(id);return `進化P ${ei.points}/${ei.cost}`})();if(kind==="training")return trainingCandyTargetCard358(id,{rank:trainingCandyRecommendMode358&&i<3?i+1:0,attr:"data-inventory-target",qty:q,extraClass:"inventoryUseTarget"});return `<button class="luckTarget inventoryUseTarget" data-inventory-target="${esc(id)}" ${q>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　${esc(r.pick_no||"")}</small><span>${esc(extra)}</span>${locked?'<small class="luckTargetLocked">🧭 探索中</small>':""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${kind==="clover"?"使用できるピックがありません。":kind==="training"?"特訓キャンディを使用できるピックがありません。":evoReady?"進化のアメを使用できるピックがありません。":"進化情報を読み込み中です。"}</div>`;
+  ov.innerHTML=`<div class="ownedBackPanel shopUsePanel inventoryUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="inventoryUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div>${kind==="training"?trainingCandyRecommendBar358(trainingCandyRecommendMode358,"inventoryTrainingRecommend358"):""}<div class="luckTargetGrid">${cards}</div></div>`;
   ov.scrollTop=scroll;ov.onclick=e=>{if(e.target===ov)close()};ov.querySelector("#inventoryUseClose").onclick=close;
+  const recBtn=ov.querySelector("#inventoryTrainingRecommend358");if(recBtn)recBtn.onclick=()=>{const y=ov.scrollTop;trainingCandyRecommendMode358=!trainingCandyRecommendMode358;renderUse(y)};
   ov.querySelectorAll("[data-inventory-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.inventoryTarget,oldScroll=ov.scrollTop;if(kind==="clover"){const n=inventoryItemQty("luckyClover"),before=luckFor(id);if(n<=0||isExpeditionLocked(id)||before>=LUCK_MAX)return;state.shopItems.luckyClover=n-1;setLuck(id,before+1)}else if(kind==="training"){const n=inventoryItemQty("trainingCandy"),pb=state.permanentBoosts[id]||{};if(n<=0||isExpeditionLocked(id)||!["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX))return;state.shopItems.trainingCandy=n-1;state.drillPoints[id]=drillFor(id)+1}else{const n=inventoryItemQty("evolutionCandy"),ei=evolutionInfoForPick(id);if(n<=0||isExpeditionLocked(id)||!ei.hasEvolution||!ei.registered||ei.points>=ei.cost)return;state.shopItems.evolutionCandy=n-1;addGrowthPoint(id,1)}save();renderUse(oldScroll)})
  };
  renderUse()
@@ -7901,6 +7954,7 @@ function showQuickTraining(id,returnScroll=window.scrollY||document.documentElem
 function showLuckShop(returnTo="home"){
  document.getElementById("luckShopOverlay")?.remove();const ov=document.createElement("div");ov.id="luckShopOverlay";ov.className="ownedDetailOverlay";document.documentElement.style.setProperty("--shop-header-height",`${document.querySelector("body>header").getBoundingClientRect().height}px`);
  const shopFilter={search:"",type:"all",grade:"all",luck:"all",sort:"luckAsc"};
+ let trainingCandyRecommendMode358=false;
  const returnScreen=()=>{ov.remove();document.body.style.overflow="";if(returnTo==="owned")renderOwned();else renderHome()};
  const itemQty=key=>Math.max(0,Math.floor(Number(state.shopItems?.[key])||0));
  const buyItem=(key,price,max=Infinity)=>{if(!shopItemPurchasable341(key)){UI.dialog.alert(`🔒 ${shopLevelCondition341(shopRequiredLevel341(key))}で購入できます。`);return false}const q=itemQty(key),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0));if(coins<price||q>=max)return false;state.frendaCoins=coins-price;state.shopItems[key]=q+1;save();return true};
@@ -7912,10 +7966,11 @@ function showLuckShop(returnTo="home"){
   let targets=baseTargets.filter(id=>{const r=rec(id);if(!r)return false;if(!pickSearchMatch(r,shopFilter.search))return false;if(shopFilter.type!=="all"&&r.type1!==shopFilter.type&&r.type2!==shopFilter.type)return false;if(shopFilter.grade!=="all"&&Number(r.grade)!==Number(shopFilter.grade))return false;if(shopFilter.luck!=="all"&&luckFor(id)!==Number(shopFilter.luck))return false;return true});
   const numCmp=(a,b)=>String(rec(a)?.pick_no||"").localeCompare(String(rec(b)?.pick_no||""),"ja",{numeric:true});
   targets.sort((a,b)=>{const ar=rec(a),br=rec(b);if(shopFilter.sort==="luckAsc")return luckFor(a)-luckFor(b)||Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||numCmp(a,b);if(shopFilter.sort==="energy")return Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||Number(br?.grade||0)-Number(ar?.grade||0)||numCmp(a,b);if(shopFilter.sort==="grade")return Number(br?.grade||0)-Number(ar?.grade||0)||Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||numCmp(a,b);if(shopFilter.sort==="name")return String(ar?.name_ja||"").localeCompare(String(br?.name_ja||""),"ja")||numCmp(a,b);return numCmp(a,b)});
-  const trainingTargets=(state.owned||[]).map(o=>o.id).filter(id=>{if(!rec(id)||isExpeditionLocked(id))return false;const pb=state.permanentBoosts[id]||{};return ["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX)}).sort((a,b)=>Number(rec(b)?.poke_ene||0)-Number(rec(a)?.poke_ene||0)||numCmp(a,b));
+  let trainingTargets=trainingCandyEligibleIds358().sort((a,b)=>Number(rec(b)?.poke_ene||0)-Number(rec(a)?.poke_ene||0)||numCmp(a,b));
+  if(trainingCandyRecommendMode358)trainingTargets=trainingCandyRecommendSort358(trainingTargets);
   const evoTargets=(state.owned||[]).map(o=>o.id).filter(id=>{if(!rec(id)||isExpeditionLocked(id))return false;const ei=evolutionInfoForPick(id);return ei.hasEvolution&&ei.registered&&ei.points<ei.cost}).sort((a,b)=>{const ae=evolutionInfoForPick(a),be=evolutionInfoForPick(b);return (be.points/be.cost)-(ae.points/ae.cost)||numCmp(a,b)});
   const filterHtml=`<div class="luckShopFilterPanel"><div class="luckShopFilterGrid"><input id="luckShopSearch" type="search" placeholder="名前（ひらがなOK）・ピックNo.で検索" value="${esc(shopFilter.search)}"><select id="luckShopType"><option value="all">タイプ：すべて</option>${types.map(t=>`<option value="${esc(t)}" ${shopFilter.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select><select id="luckShopGrade"><option value="all">★：すべて</option>${grades.map(g=>`<option value="${g}" ${String(shopFilter.grade)===String(g)?"selected":""}>★${g}</option>`).join("")}</select><select id="luckShopLuck"><option value="all">幸運：すべて</option>${Array.from({length:LUCK_MAX},(_,i)=>`<option value="${i}" ${String(shopFilter.luck)===String(i)?"selected":""}>幸運 ${i}/${LUCK_MAX}</option>`).join("")}</select><select id="luckShopSort"><option value="luckAsc" ${shopFilter.sort==="luckAsc"?"selected":""}>幸運低い順</option><option value="energy" ${shopFilter.sort==="energy"?"selected":""}>ポケエネ高い順</option><option value="grade" ${shopFilter.sort==="grade"?"selected":""}>★高い順</option><option value="number" ${shopFilter.sort==="number"?"selected":""}>番号順</option><option value="name" ${shopFilter.sort==="name"?"selected":""}>名前順</option></select><button type="button" class="ghost luckShopFilterReset" id="luckShopFilterReset">条件クリア</button></div><div class="luckShopFilterCount">表示 ${targets.length}/${baseTargets.length}体　※幸運MAXのピックは対象外</div></div>`;
-  const trainingUse=trainingTargets.length?trainingTargets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget shopUseTarget" data-training-candy-target="${esc(id)}" ${trainingQty>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><span>特訓P ${drillFor(id)}</span></button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">特訓できる所持ピックがありません。</div>`;
+  const trainingUse=trainingTargets.length?trainingTargets.map((id,i)=>trainingCandyTargetCard358(id,{rank:trainingCandyRecommendMode358&&i<3?i+1:0,attr:"data-training-candy-target",qty:trainingQty,extraClass:"shopUseTarget"})).join(""):`<div class="dexEmpty luckFilterEmpty">特訓できる所持ピックがありません。</div>`;
   const evoUse=evoTargets.length?evoTargets.map(id=>{const r=rec(id),ei=evolutionInfoForPick(id);return `<button class="luckTarget shopUseTarget evo" data-evolution-candy-target="${esc(id)}" ${evoQty>0?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small><span>進化P ${ei.points}/${ei.cost}</span></button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">進化ポイントを追加できる所持ピックがありません。</div>`;
   ov.innerHTML=`<div class="ownedBackPanel luckShopPanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>FRENDA SHOP</small><b>🪙 フレンダショップ</b></div><button class="ownedBackClose" id="luckShopClose">閉じる</button></div><div class="coinBalance">フレンダコイン <b>🪙 ${coins.toLocaleString("ja-JP")}</b><span class="shopTierBadge341">${shopLv?`SHOP Lv${shopLv}`:"SHOP 未解放"}</span></div><div class="coinHowTo"><b>🪙 フレンダコインの入手方法</b><p>HP・ATK・DEFの3能力MAX後の余剰特訓Pと、絆Lv5 MAX後の余剰絆Pは自動でフレンダコインに変換されます。</p><span>特訓P 1 → 🪙${COIN_PER_OVERFLOW_DRILL}　／　絆P 1 → 🪙${COIN_PER_OVERFLOW_BOND}</span></div><div class="shopCatalogGrid">
    <div class="shopItemCard clover ${shopItemPurchasable341("luckyClover")?"":"tierLocked341"}"><div class="shopItemIcon">🍀</div><div class="shopItemMain"><div class="shopItemHead"><b>ラッキークローバー</b>${shopLock("luckyClover")}<small id="luckyCloverQty">所持 ${qty}個</small></div><p>所持ピック1体の「幸運」を+1。幸運は最大5。</p></div><div class="shopItemActions"><button id="buyLuckyClover" ${shopItemPurchasable341("luckyClover")&&(coins>=LUCK_ITEM_PRICE)?"":"disabled"}>${shopItemPurchasable341("luckyClover")?"":`🔒 `}🪙${LUCK_ITEM_PRICE}で購入</button><button class="shopUseBtn" id="useLuckyClover" ${qty>0?"":"disabled"}>🍀 使う</button></div></div>
@@ -7940,10 +7995,11 @@ function showLuckShop(returnTo="home"){
    if(kind==="training"){title=`🏋️ 特訓キャンディを使う`;hint=`所持 ${qTraining}/${TRAINING_CANDY_MAX}個　対象をタップすると1個使用し、特訓ポイントを+1します。`;body=trainingUse}
    else if(kind==="evolution"){title=`🌱 進化のアメを使う`;hint=`所持 ${qEvo}/${EVOLUTION_CANDY_MAX}個　進化に必要なポイントまで使用できます。`;body=evoUse}
    else{title=`🍀 ラッキークローバーを使う`;hint=`所持 ${qLucky}個　対象をタップするたび1個使用します。同じピックへ連続適用できます。`;body=`${filterHtml}<div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qLucky>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><span class="luckValue">幸運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small class="luckTargetLocked">🧭 探索中</small>`:""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${baseTargets.length?"条件に合うピックがありません。":"全所持ピックが幸運MAXです。"}</div>`}</div><div class="notice">幸運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。戦闘では幸運が高いほど攻撃のミス率も下がります。</div>`}
-   useOv.innerHTML=`<div class="ownedBackPanel shopUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="shopUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div>${kind==="clover"?body:`<div class="luckTargetGrid">${body}</div>`}</div>`;
+   useOv.innerHTML=`<div class="ownedBackPanel shopUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="shopUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div>${kind==="training"?trainingCandyRecommendBar358(trainingCandyRecommendMode358,"shopTrainingRecommend358"):""}${kind==="clover"?body:`<div class="luckTargetGrid">${body}</div>`}</div>`;
    document.body.appendChild(useOv);
    const closeUse=()=>{useOv.remove();renderShop("",returnShopScroll)};useOv.onclick=e=>{if(e.target===useOv)closeUse()};useOv.querySelector("#shopUseClose").onclick=closeUse;
    const rerenderUse=(focusId="",scroll=0)=>{useOv.remove();renderShop("",returnShopScroll);requestAnimationFrame(()=>{openUseDialog(kind,returnShopScroll);const n=document.getElementById("shopUseOverlay");if(n){n.scrollTop=scroll;if(focusId){const el=n.querySelector(`#${focusId}`);if(el){el.focus();if(focusId==="luckShopSearch"&&typeof el.setSelectionRange==="function"){const l=el.value.length;el.setSelectionRange(l,l)}}}}})};
+   const trainingRecBtn=useOv.querySelector("#shopTrainingRecommend358");if(trainingRecBtn)trainingRecBtn.onclick=()=>{trainingCandyRecommendMode358=!trainingCandyRecommendMode358;rerenderUse("shopTrainingRecommend358",useOv.scrollTop)};
    if(kind==="training")useOv.querySelectorAll("[data-training-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.trainingCandyTarget,q=itemQty("trainingCandy");if(q<=0||isExpeditionLocked(id))return;const pb=state.permanentBoosts[id]||{};if(!["hp","atk","def"].some(k=>Number(pb[k]||0)<PERMANENT_BOOST_MAX))return;state.shopItems.trainingCandy=q-1;state.drillPoints[id]=drillFor(id)+1;save();rerenderUse("",useOv.scrollTop)});
    if(kind==="evolution")useOv.querySelectorAll("[data-evolution-candy-target]").forEach(b=>b.onclick=()=>{const id=b.dataset.evolutionCandyTarget,q=itemQty("evolutionCandy"),ei=evolutionInfoForPick(id);if(q<=0||isExpeditionLocked(id)||!ei.hasEvolution||!ei.registered||ei.points>=ei.cost)return;state.shopItems.evolutionCandy=q-1;addGrowthPoint(id,1);save();rerenderUse("",useOv.scrollTop)});
    if(kind==="clover"){
@@ -15537,6 +15593,7 @@ header .headerCoinBadge{order:91!important;margin-left:0!important;background:#f
 @media(max-width:700px){
   /* Ver3.13: mobile team-select order = quick actions, 3 selected picks, then start actions. */
   .teamPartyPane305{display:flex!important;flex-direction:column!important}
+  /* v358-team-auto-hint-order-audit: challenge/AUTO buttons must appear before the AUTO explanation strip. */
   .teamPartyHead305{order:1}.teamPartyQuick310{order:2}.teamSelectedRow{order:3}.teamPartyBottom310{order:4}.teamPartyPane305>.autoAdventureUnlockHint{order:5}
 }
 </style>
@@ -16061,5 +16118,6 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.55: Legend Battle home card is hidden until all Rank 5 dungeons are cleared; the card first appears at unlock and retains the NEW marker. Pre-unlock home play grid returns to two columns. Updated: 2026-10-08 08:55 JST -->
 <!-- Ver3.56: Owned Picks search UI now follows the Pokédex. Search / one integrated filter popup / Sort stay visible; type, grade, series, shiny, Legend class, and training/evolution state are consolidated in the popup. Updated: 2026-10-08 09:10 JST -->
 <!-- Ver3.57: all-R2 progression unlock now also announces "まとめておまかせ探索" together with Group 3; expedition implementation lives in Expedition Ver1.26. Updated: 2026-10-10 00:24 JST -->
-<!-- SOURCE FILE: Dungeon Ver3.57 full source. Updated: 2026-10-10 00:24 JST -->
+<!-- Ver3.58: 特訓キャンディ対象選択に「おすすめ」を追加。実戦力・育成状況・絆・直近チーム等から候補を順位付けし、上位3体を理由付きで強調。おすすめ操作だけではアイテムを消費しない。挑戦チーム編成の「挑戦／自動冒険」→AUTO説明帯の順序も回帰監査対象として固定。 Updated: 2026-10-10 12:20 JST -->
+<!-- SOURCE FILE: Dungeon Ver3.58 full source. Updated: 2026-10-10 12:20 JST -->
 </html>
