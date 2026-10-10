@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.45">
+<html lang="ja" data-test-center-version="2.46">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.45</title>
+<title>フレンダ 回帰テストセンター Ver2.46</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.45</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.46</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.45</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.46</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -40,7 +40,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 
 <section class="card">
  <div class="sectionTitle">本番 / test バージョン比較</div>
- <div class="deviceHint">Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照し、Cloudだけはテスト中に読み込みません。<code>frenda-test.js</code> はテスト専用です。</div>
+ <div class="deviceHint">Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照します。Cloudは本番の <code>frenda-cloud.js</code> ではなく、認証専用の <code>frenda-cloud-test.js</code> を使用します。<code>frenda-test.js</code> もテスト専用です。</div>
  <div id="versionCompare"><table class="versionCompare"><tbody><tr><td>読込中</td><td>--</td><td>--</td><td>--</td></tr></tbody></table></div>
 </section>
 
@@ -200,7 +200,8 @@ function productionJsVersion(file,text){
   ||"?";
 }
 function testSandboxVersion(text){return text.match(/FRENDA_TEST_VERSION:\s*([0-9A-Za-z._-]+)/i)?.[1]||"?"}
-function renderVersionComparison(root,d,e,t){
+function testCloudVersion(text){return text.match(/FRENDA_CLOUD_TEST_VERSION:\s*([0-9A-Za-z._-]+)/i)?.[1]||text.match(/CLOUD_TEST_VERSION\s*=\s*["']([^"']+)["']/)?.[1]||"?"}
+function renderVersionComparison(root,d,e,t,ct){
  const rows=[];
  const add=(name,prod,test,note="")=>{
   let cls="same",judge="一致";
@@ -220,7 +221,8 @@ function renderVersionComparison(root,d,e,t){
   rows.push({name:label,prod:v,test:"",note:`${file} / testは本番共通JSを参照`,cls:"na",judge:v==="?"?"取得失敗":"本番参照"});
  }
  const cloud=root["../frenda-cloud.js"],cloudV=cloud?.ok?productionJsVersion("frenda-cloud.js",cloud.text||""):"?";
- add("Cloud",cloudV,"読込なし","frenda-cloud.js / testでは意図的に無効");
+ const testCloudV=testCloudVersion(ct);
+ rows.push({name:"Cloud",prod:cloudV,test:testCloudV,note:"本番 frenda-cloud.js / test frenda-cloud-test.js（認証のみ・セーブ同期なし）",cls:(cloudV==="?"||testCloudV==="?")?"bad":"na",judge:(cloudV==="?"||testCloudV==="?")?"取得失敗":"テスト専用"});
  add("Test Sandbox","—",testSandboxVersion(t),"frenda-test.js / test専用");
  add("Test Center","—",document.documentElement.dataset.testCenterVersion||"?","test-center.html / test専用");
  const target=$("#versionCompare");if(!target)return;
@@ -249,8 +251,8 @@ function captureResultHiddenUntilResultOK(text){
 }
 async function runAuto(){
  $("#autoResults").innerHTML="";
- let d,e,t;
- try{[d,e,t]=await Promise.all([fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js")]);addResult("必要ファイル取得","ok","test/dungeon / test/expedition / test/frenda-test")}
+ let d,e,t,ct;
+ try{[d,e,t,ct]=await Promise.all([fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js"),fetchText("frenda-cloud-test.js")]);addResult("必要ファイル取得","ok","test/dungeon / test/expedition / test/frenda-test / test/frenda-cloud-test")}
  catch(err){addResult("必要ファイル取得","ng",err.message);return}
  versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC ${document.documentElement.dataset.testCenterVersion||"?"} / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
 
@@ -258,7 +260,7 @@ async function runAuto(){
  const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
  const rootResults=await Promise.all(rootNames.map(fetchOptional));
  const root=Object.fromEntries(rootNames.map((n,i)=>[n,rootResults[i]]));
- renderVersionComparison(root,d,e,t);
+ renderVersionComparison(root,d,e,t,ct);
  const prodJsNames=["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js","frenda-cloud.js"];
  const prodJsBad=prodJsNames.filter(file=>{const r=root[`../${file}`];return !r?.ok||productionJsVersion(file,r.text||"")==="?"});
  addResult("本番JSバージョン取得",prodJsBad.length?"ng":"ok",prodJsBad.length?`取得失敗: ${prodJsBad.join(" / ")}`:prodJsNames.map(file=>`${file.replace("frenda-","").replace(".js","")} ${productionJsVersion(file,root[`../${file}`].text)}`).join(" / "));
@@ -281,7 +283,8 @@ async function runAuto(){
  const obsoleteR=await Promise.all(obsolete.map(fetchOptional)),found=obsolete.filter((_,i)=>obsoleteR[i].ok);
  addResult("旧・重複ファイル",found.length?"warn":"ok",found.length?`残存候補: ${found.map(x=>x.replace("../","")).join(" / ")}`:"既知の旧版・重複候補なし");
  const self=await fetchOptional("test-center.html");
- addResult("test/ 4ファイル",self.ok?"ok":"ng","dungeon.html / expedition.html / frenda-test.js / test-center.html");
+ const testCloudOk=testCloudVersion(ct)!=="?";
+ addResult("test/ 5ファイル",self.ok&&testCloudOk?"ok":"ng","dungeon.html / expedition.html / frenda-test.js / frenda-cloud-test.js / test-center.html");
 
  const checks=[
   ["Test Center版表示",(()=>{const v=document.documentElement.dataset.testCenterVersion||"";return !!v&&document.getElementById("testCenterVersion")?.textContent.includes(v)})(),"画面上でTest Center自身のVerを確認可能"],
@@ -289,7 +292,8 @@ async function runAuto(){
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.1/.test(t)&&/active:\s*!!isolated/.test(t),"本番localStorageのスナップショットをメモリ分離"],
   ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js を実際の共通JSローダーより先に実行"],
-  ["テスト中クラウド無効",/if\(!inTest\)/.test(d)&&/Cloud runtime is intentionally absent from \/test\//.test(d)&&/if\(!inTest\)/.test(e),"/test/ では Supabase / frenda-cloud.js を読み込まない"],
+  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="0.1","/test/ は frenda-cloud-test.js Ver0.1（認証のみ）を使用し、本番frenda-cloud.jsと分離"],
+  ["テストCloudはセーブ非同期",/NEVER reads\/writes frenda_saves/.test(ct)&&/syncDisabled:\s*true/.test(ct)&&/scheduleSync:\s*\(\)=>false/.test(ct)&&/pushNow:\s*\(\)=>syncBlocked\("push"\)/.test(ct)&&/pullNow:\s*\(\)=>syncBlocked\("pull"\)/.test(ct)&&/storage:\s*window\.sessionStorage/.test(ct)&&!/\.from\(\s*["']frenda_saves["']\s*\)/.test(ct),"frenda_saves DBアクセスなし・push/pull/scheduleSync無効・認証セッションはsessionStorage"],
   ["本番保存監視",/productionStorageUnchanged/.test(t)&&/assertProductionStorageUnchanged/.test(t),"本番保存キーの変化を検出したらテスト停止"],
   ["テスト安全ガード",/FRENDA_TEST_SANDBOX_REQUIRED/.test(d)&&/FRENDA_TEST_SANDBOX_REQUIRED/.test(e),"分離失敗時はテストを開始しない"],
   ["テスト表示はレイアウト非占有",/frendaDungeonTestBadge/.test(d)&&/position:fixed/.test(d)&&/frendaExpeditionTestBadge/.test(e)&&/position:fixed/.test(e),"全幅の黄色帯を廃止し、小さな固定オーバーレイのみ"],
@@ -434,5 +438,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.43: 本番ルートの共通JS（Master/Core/Rules/Data/UI/Parental/Cloud）のバージョン一覧を画面表示し、自動チェックでも取得可否を監査。Updated: 2026-10-10 15:43 JST -->
 <!-- Ver2.44: 本番/testのバージョン比較表を追加。Dungeon/Expedition、共通JS6本、Cloud、Test Sandbox、Test Centerを本番・test・判定の4列で表示。/test/共通JSは本番ルートの同一ファイル参照、Cloudはtestで非読込であることも明示。Updated: 2026-10-10 15:50 JST -->
 <!-- Ver2.45: /test/が本番ルートの共通JSを参照している項目は、test側バージョン欄を空白に変更。判定は「本番参照」と表示。Updated: 2026-10-10 15:52 JST -->
-<!-- SOURCE FILE: Test Center Ver2.45 full source. Updated: 2026-10-10 15:52 JST -->
+<!-- Ver2.46: /test/frenda-cloud-test.js Ver0.1 を構成監査・バージョン比較へ追加。Cloud行は本番 frenda-cloud.js と test認証専用Cloudを並べて表示し、「テスト専用」と判定。必要ファイル監査を5ファイル化し、test専用Cloudの読込・セーブ同期停止も監査。Updated: 2026-10-10 17:09 JST -->
+<!-- SOURCE FILE: Test Center Ver2.46 full source. Updated: 2026-10-10 17:09 JST -->
 </html>
