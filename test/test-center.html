@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.43">
+<html lang="ja" data-test-center-version="2.44">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.43</title>
+<title>フレンダ 回帰テストセンター Ver2.44</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -14,16 +14,16 @@ main{max-width:1180px;margin:auto;padding:12px}.card{background:var(--card);bord
 #autoResults{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}.testResult{padding:8px 10px;border-radius:10px;border:1px solid var(--line);font-size:12px}.testResult.ok{background:#eaf8ef;border-color:#a8d9b9;color:#17683b}.testResult.ng{background:#fff0f0;border-color:#e2aaaa;color:#8d2c2c}.testResult.warn{background:#fff8e6;border-color:#e6cc83;color:#785600}
 .sectionTitle{font-size:18px;font-weight:900;margin-bottom:8px}.checkRow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 5px;border-top:1px solid #e3ebef}.checkRow:first-of-type{border-top:0}.checkRow input{width:20px;height:20px}.checkRow b{font-size:13px}.checkRow small{display:block;color:var(--sub);font-size:11px;margin-top:2px}.openBtn{text-decoration:none;white-space:nowrap;background:#e4f0fa}.deviceHint{padding:9px 10px;border-radius:10px;background:#fff7d9;border:1px solid #dfc777;color:#6c5600;font-size:12px;margin-top:8px}.progress{font-size:12px;color:var(--sub);margin-left:auto}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
-.jsVersionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.jsVersionItem{padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:#f7fafc}.jsVersionItem b{display:block;font-size:13px}.jsVersionItem code{display:block;margin-top:3px;font-size:12px;font-weight:800;color:#184e73;overflow-wrap:anywhere}.jsVersionItem small{display:block;margin-top:2px;color:var(--sub);font-size:10px}.jsVersionItem.ng{background:#fff0f0;border-color:#e2aaaa}.jsVersionItem.ng code{color:#8d2c2c}
-@media(max-width:700px){.jsVersionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:8px}.topgrid,#autoResults{grid-template-columns:1fr}.checkRow{grid-template-columns:26px minmax(0,1fr)}.checkRow .openBtn{grid-column:2;justify-self:start}.profiles button{padding:8px 9px;font-size:11px}}
+.versionCompare{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px;font-size:12px;overflow:hidden;border:1px solid var(--line);border-radius:12px}.versionCompare th,.versionCompare td{padding:8px 9px;border-bottom:1px solid #e4ebef;text-align:left;vertical-align:middle}.versionCompare th{background:#edf4f8;font-size:11px;color:#496473}.versionCompare tr:last-child td{border-bottom:0}.versionCompare td:first-child{font-weight:800}.versionCompare code{font-size:11px;font-weight:800;color:#184e73}.versionCompare .same{color:var(--ok);font-weight:900}.versionCompare .diff{color:var(--warn);font-weight:900}.versionCompare .na{color:var(--sub);font-weight:800}.versionCompare .bad{color:var(--ng);font-weight:900}.versionCompare small{display:block;color:var(--sub);font-size:9px;margin-top:2px}
+@media(max-width:700px){.versionCompare{font-size:10px}.versionCompare th,.versionCompare td{padding:7px 5px}.versionCompare code{font-size:10px}main{padding:8px}.topgrid,#autoResults{grid-template-columns:1fr}.checkRow{grid-template-columns:26px minmax(0,1fr)}.checkRow .openBtn{grid-column:2;justify-self:start}.profiles button{padding:8px 9px;font-size:11px}}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.43</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.44</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.43</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.44</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -39,9 +39,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </section>
 
 <section class="card">
- <div class="sectionTitle">本番JSバージョン</div>
- <div class="deviceHint">本番ルートの共通JSを直接取得して表示します。Test用の <code>frenda-test.js</code> は本番系ではないため、この一覧には含めません。</div>
- <div id="prodJsVersions" class="jsVersionGrid" style="margin-top:10px"><div class="jsVersionItem"><b>読込中</b><code>--</code></div></div>
+ <div class="sectionTitle">本番 / test バージョン比較</div>
+ <div class="deviceHint">Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照し、Cloudだけはテスト中に読み込みません。<code>frenda-test.js</code> はテスト専用です。</div>
+ <div id="versionCompare"><table class="versionCompare"><tbody><tr><td>読込中</td><td>--</td><td>--</td><td>--</td></tr></tbody></table></div>
 </section>
 
 <section class="card">
@@ -199,16 +199,32 @@ function productionJsVersion(file,text){
   ||text.match(/version\s*:\s*["']([^"']+)["']/)?.[1]
   ||"?";
 }
-function renderProductionJsVersions(root){
+function testSandboxVersion(text){return text.match(/FRENDA_TEST_VERSION:\s*([0-9A-Za-z._-]+)/i)?.[1]||"?"}
+function renderVersionComparison(root,d,e,t){
+ const rows=[];
+ const add=(name,prod,test,note="")=>{
+  let cls="same",judge="一致";
+  if(prod==="?"||test==="?"){cls="bad";judge="取得失敗"}
+  else if(prod==="—"||test==="—"||test==="読込なし"){cls="na";judge="対象外"}
+  else if(prod!==test){cls="diff";judge="差異"}
+  rows.push({name,prod,test,note,cls,judge});
+ };
+ add("Dungeon",htmlVersion(root["../dungeon.html"]?.text||""),htmlVersion(d),"HTML");
+ add("Expedition",htmlVersion(root["../expedition.html"]?.text||""),htmlVersion(e),"HTML");
  const specs=[
   ["frenda-master.js","Master"],["frenda-core.js","Core"],["frenda-rules.js","Rules"],["frenda-data.js","Data"],
-  ["frenda-ui.js","UI"],["frenda-parental.js","Parental"],["frenda-cloud.js","Cloud"]
+  ["frenda-ui.js","UI"],["frenda-parental.js","Parental"]
  ];
- const target=$("#prodJsVersions");if(!target)return;
- target.innerHTML=specs.map(([file,label])=>{
-  const r=root[`../${file}`];const v=r?.ok?productionJsVersion(file,r.text||""):"?";const ok=!!r?.ok&&v!=="?";
-  return `<div class="jsVersionItem ${ok?"":"ng"}"><b>${label}</b><code>${ok?`Ver ${v}`:"取得失敗"}</code><small>${file}</small></div>`;
- }).join("");
+ for(const [file,label] of specs){
+  const r=root[`../${file}`],v=r?.ok?productionJsVersion(file,r.text||""):"?";
+  add(label,v,v,`${file} / testは本番共通JSを参照`);
+ }
+ const cloud=root["../frenda-cloud.js"],cloudV=cloud?.ok?productionJsVersion("frenda-cloud.js",cloud.text||""):"?";
+ add("Cloud",cloudV,"読込なし","frenda-cloud.js / testでは意図的に無効");
+ add("Test Sandbox","—",testSandboxVersion(t),"frenda-test.js / test専用");
+ add("Test Center","—",document.documentElement.dataset.testCenterVersion||"?","test-center.html / test専用");
+ const target=$("#versionCompare");if(!target)return;
+ target.innerHTML=`<table class="versionCompare"><thead><tr><th>対象</th><th>本番</th><th>test</th><th>判定</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.name}<small>${r.note}</small></td><td><code>${r.prod==="—"?"—":`Ver ${r.prod}`}</code></td><td><code>${r.test==="読込なし"||r.test==="—"?r.test:`Ver ${r.test}`}</code></td><td class="${r.cls}">${r.judge}</td></tr>`).join("")}</tbody></table>`;
 }
 function jsonMasterInfo(t){try{const x=JSON.parse(t);return {version:String(x?.master_version||"?"),count:Array.isArray(x?.records)?x.records.length:-1}}catch{return {version:"?",count:-1}}}
 function portalLinksOK(t){return ["simulator.html","dungeon.html","expedition.html"].every(x=>new RegExp(`href=["']${x.replace(".","\\.")}["']`,`i`).test(t))}
@@ -242,7 +258,7 @@ async function runAuto(){
  const rootNames=["../index.html","../simulator.html","../dungeon.html","../expedition.html","../admin.html","../frenda-master.js","../frenda-core.js","../frenda-rules.js","../frenda-data.js","../frenda-ui.js","../frenda-parental.js","../frenda-cloud.js","../pickMaster_v1_64_xt2_wonder_preview.json","../home-bg.webp","../icon-dungeon.webp","../icon-expedition.webp","../icon-simulator.webp"];
  const rootResults=await Promise.all(rootNames.map(fetchOptional));
  const root=Object.fromEntries(rootNames.map((n,i)=>[n,rootResults[i]]));
- renderProductionJsVersions(root);
+ renderVersionComparison(root,d,e,t);
  const prodJsNames=["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js","frenda-cloud.js"];
  const prodJsBad=prodJsNames.filter(file=>{const r=root[`../${file}`];return !r?.ok||productionJsVersion(file,r.text||"")==="?"});
  addResult("本番JSバージョン取得",prodJsBad.length?"ng":"ok",prodJsBad.length?`取得失敗: ${prodJsBad.join(" / ")}`:prodJsNames.map(file=>`${file.replace("frenda-","").replace(".js","")} ${productionJsVersion(file,root[`../${file}`].text)}`).join(" / "));
@@ -416,5 +432,6 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.41: Expedition Ver1.35「まとめておまかせ探索」高速化を監査。高速候補生成・計算中表示・最終正規スコア再確認を確認。Updated: 2026-10-10 13:24 JST -->
 <!-- Ver2.42: 本番/testのバージョン差異を赤×ではなく黄色警告で表示。バージョン取得失敗のみNGとし、テスト先行更新中の正常な差異を誤検知しないよう修正。Updated: 2026-10-10 15:35 JST -->
 <!-- Ver2.43: 本番ルートの共通JS（Master/Core/Rules/Data/UI/Parental/Cloud）のバージョン一覧を画面表示し、自動チェックでも取得可否を監査。Updated: 2026-10-10 15:43 JST -->
-<!-- SOURCE FILE: Test Center Ver2.43 full source. Updated: 2026-10-10 15:43 JST -->
+<!-- Ver2.44: 本番/testのバージョン比較表を追加。Dungeon/Expedition、共通JS6本、Cloud、Test Sandbox、Test Centerを本番・test・判定の4列で表示。/test/共通JSは本番ルートの同一ファイル参照、Cloudはtestで非読込であることも明示。Updated: 2026-10-10 15:50 JST -->
+<!-- SOURCE FILE: Test Center Ver2.44 full source. Updated: 2026-10-10 15:50 JST -->
 </html>
