@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.59">
+<html lang="ja" data-app-version="3.60">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4460,11 +4460,10 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
  if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
  for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
   document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
- /* Cloud runtime is intentionally absent from /test/. */
- if(!inTest){
-  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
-  document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
- }
+ /* /test/: authentication only. Save sync is hard-disabled by frenda-cloud-test.js. */
+ document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+ if(inTest)document.write(`<script src="frenda-cloud-test.js?app=${v}"><\/script>`);
+ else document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
 })();
 </script>
 <script>
@@ -8452,7 +8451,7 @@ function applyDungeonCloudData(data){
 function dungeonHasLocalData(){const s=DATA.dungeon.read();return !!(s&&(s.initialized||s.run||(Array.isArray(s.owned)&&s.owned.length)||(Array.isArray(s.eggs)&&s.eggs.length)||s.expeditionShared?.status==="running"))}
 function dungeonCloudSummary(data){const s=data?.state||{},owned=Array.isArray(s.owned)?s.owned.length:0,eggs=Array.isArray(s.eggs)?s.eggs.length:0,exp=s.expeditionShared?.status==="running"?"探索中":"探索なし";return `所持 ${owned}体 / 卵 ${eggs}個 / ${exp}`}
 applyDungeonTimerPreset();
-if(window.FrendaCloud&&!TEST_SANDBOX?.active)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
+if(window.FrendaCloud)window.FrendaCloud.init({app:"dungeon",label:"ダンジョン",compactButton:true,hideButton:true,column:"dungeon_data",getData:dungeonCloudData,applyData:applyDungeonCloudData,watchStorage:k=>k===SAVE_KEY,hasLocalData:dungeonHasLocalData,describeData:dungeonCloudSummary});
 })();
 </script>
 <!-- Updated: 2026-09-30 05:18 JST -->
@@ -16141,3 +16140,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.59: SHOPで特訓キャンディ／進化のアメを購入後すぐ「使う」を押した際、購入前の古いHTMLを再利用しないよう対象一覧をダイアログ表示時に再生成。特訓キャンディの「おすすめ」切替も同じ最新状態から再生成し、白PCを含め順位バッジ・理由表示が即反映されるよう修正。購入→即使用の専用テストを追加。 Updated: 2026-10-10 12:55 JST -->
 <!-- SOURCE FILE: Dungeon Ver3.59 full source. Updated: 2026-10-10 12:55 JST -->
 </html>
+
+<!-- TEST AUTH-ONLY: /test/ loads frenda-cloud-test.js. Supabase authentication is enabled, but local/cloud save synchronization and frenda_saves access are disabled. Updated: 2026-10-10 16:49 JST -->
