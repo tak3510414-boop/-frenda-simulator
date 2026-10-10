@@ -1,7 +1,7 @@
-/* FRENDA_TEST_VERSION: 1.2 / regression sandbox + cloud-session cache; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 1.3 / isolated test-local storage + cloud-session cache; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="1.2";
+const VERSION="1.3";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
@@ -10,6 +10,7 @@ if(!requested){window.FRENDA_TEST=Object.freeze({active:false,requested:false,st
 const MODE_KEY="frenda:test:storage-mode";
 const USER_KEY="frenda:test:cloud-user-id";
 const CACHE_PREFIX="frenda:test:cloud-cache:";
+const LOCAL_PREFIX="frenda:test:local:v1:";
 const DUNGEON_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 
@@ -42,21 +43,43 @@ function seedFromCloudPayload(payload){
   mem.set(DUNGEON_KEY,JSON.stringify(state));
   if(state.expeditionShared&&typeof state.expeditionShared==="object")mem.set(EXPEDITION_KEY,JSON.stringify(state.expeditionShared));
 }
-function seedLocalSnapshot(){
+function seedLocalSandbox(){
   mem.clear();
-  try{for(let i=0;i<real.length;i++){const k=native.key.call(real,i);if(k!==null)mem.set(String(k),String(native.getItem.call(real,k)??""));}}
-  catch(e){console.error("FRENDA_TEST_SNAPSHOT_FAILED",e)}
+  try{
+    for(let i=0;i<real.length;i++){
+      const raw=native.key.call(real,i);
+      if(raw===null||!String(raw).startsWith(LOCAL_PREFIX))continue;
+      const k=String(raw).slice(LOCAL_PREFIX.length);
+      mem.set(k,String(native.getItem.call(real,raw)??""));
+    }
+  }catch(e){console.error("FRENDA_TEST_LOCAL_SEED_FAILED",e)}
 }
-if(currentMode()==="cloud")seedFromCloudPayload(readCloudCache());else seedLocalSnapshot();
+function persistLocalSet(k,v){
+  try{native.setItem.call(real,LOCAL_PREFIX+String(k),String(v));return true}
+  catch(e){console.error("FRENDA_TEST_LOCAL_WRITE_FAILED",e);return false}
+}
+function persistLocalRemove(k){
+  try{native.removeItem.call(real,LOCAL_PREFIX+String(k));return true}
+  catch(e){console.error("FRENDA_TEST_LOCAL_REMOVE_FAILED",e);return false}
+}
+function persistLocalClear(){
+  try{
+    const keys=[];
+    for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(LOCAL_PREFIX))keys.push(String(raw));}
+    for(const raw of keys)native.removeItem.call(real,raw);
+    return true;
+  }catch(e){console.error("FRENDA_TEST_LOCAL_CLEAR_FAILED",e);return false}
+}
+if(currentMode()==="cloud")seedFromCloudPayload(readCloudCache());else seedLocalSandbox();
 
 function notify(type,key,value,oldValue){for(const fn of [...listeners]){try{fn({type,key,value,oldValue,mode:currentMode()})}catch(e){console.error("FRENDA_TEST_STORAGE_LISTENER",e)}}}
 const storage={
   get length(){return mem.size},
   key(i){const a=[...mem.keys()];const n=Number(i);return Number.isInteger(n)?a[n]??null:null},
   getItem(k){k=String(k);return mem.has(k)?mem.get(k):null},
-  setItem(k,v){k=String(k);v=String(v);const old=mem.has(k)?mem.get(k):null;mem.set(k,v);if(old!==v)notify("set",k,v,old)},
-  removeItem(k){k=String(k);const old=mem.has(k)?mem.get(k):null;const had=mem.delete(k);if(had)notify("remove",k,null,old)},
-  clear(){if(!mem.size)return;mem.clear();notify("clear",null,null,null)},
+  setItem(k,v){k=String(k);v=String(v);const old=mem.has(k)?mem.get(k):null;mem.set(k,v);if(currentMode()==="local")persistLocalSet(k,v);if(old!==v)notify("set",k,v,old)},
+  removeItem(k){k=String(k);const old=mem.has(k)?mem.get(k):null;const had=mem.delete(k);if(currentMode()==="local")persistLocalRemove(k);if(had)notify("remove",k,null,old)},
+  clear(){const had=mem.size>0;mem.clear();if(currentMode()==="local")persistLocalClear();if(had)notify("clear",null,null,null)},
   subscribe(fn){if(typeof fn!=="function")return ()=>{};listeners.add(fn);return ()=>listeners.delete(fn)}
 };
 
@@ -86,7 +109,7 @@ function updateCloudCache(payload,userId=cloudUserId()){
   if(!userId||currentMode()!=="cloud")return false;
   writeCloudCache(payload??null,userId);seedFromCloudPayload(payload??null);return true;
 }
-function deactivateCloud(){sessionRemove(MODE_KEY);sessionRemove(USER_KEY);seedLocalSnapshot();return true}
+function deactivateCloud(){sessionRemove(MODE_KEY);sessionRemove(USER_KEY);seedLocalSandbox();return true}
 function clearCloudCache(userId){const key=cacheKey(String(userId||""));if(key)sessionRemove(key)}
 function snapshot(){return Object.fromEntries(mem)}
 
