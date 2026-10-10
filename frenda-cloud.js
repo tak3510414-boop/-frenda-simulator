@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_VERSION: 1.2 / production profile-aware cloud for Dungeon/Expedition; legacy simulator sync retained */
+/* FRENDA_CLOUD_VERSION: 1.3 / production profile-aware cloud for Dungeon/Expedition; legacy simulator sync retained */
 (()=>{
 "use strict";
 if(!window.FRENDA_USER?.active)return;
-const CLOUD_VERSION="1.2";
+const CLOUD_VERSION="1.3";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -29,7 +29,7 @@ function localProfiles(){const list=userApi()?.localProfiles;return Array.isArra
 function activeUserLabel(){const email=session?.user?.email||"";if(email)return {mode:"cloud",icon:"☁️",text:email,title:`クラウドユーザー：${email}`};const name=localProfileName();return {mode:"local",icon:"👤",text:name,title:`ローカルユーザー：${name}`}}
 function userBadgeTarget(){if(document.getElementById("headerMainTitle"))return document.querySelector(".careCluster")||document.querySelector(".headerTop")||document.querySelector("header");return document.getElementById("expSharedStatus074")||document.querySelector(".headerTop")||document.querySelector("header")}
 function ensureUserBadge(){injectStyles();const target=userBadgeTarget();if(!target)return null;let el=document.getElementById("frendaActiveUserBadge");if(!el){el=document.createElement("button");el.type="button";el.id="frendaActiveUserBadge";el.className="frendaActiveUserBadge";el.innerHTML='<span class="frendaActiveUserIcon"></span><span class="frendaActiveUserText"></span>';el.onclick=openModal}if(el.parentElement!==target){target.insertBefore(el,target.firstChild)}userBadge=el;updateUserBadge();return el}
-function updateUserBadge(){const el=userBadge||document.getElementById("frendaActiveUserBadge");if(!el)return;const info=activeUserLabel();el.dataset.mode=info.mode;el.title=info.title;el.setAttribute("aria-label",info.title);const icon=el.querySelector(".frendaActiveUserIcon"),text=el.querySelector(".frendaActiveUserText");if(icon)icon.textContent=info.icon;if(text)text.textContent=info.text}
+function updateUserBadge(){const el=userBadge||document.getElementById("frendaActiveUserBadge");if(!el)return;const info=activeUserLabel();if(el.dataset.mode!==info.mode)el.dataset.mode=info.mode;if(el.title!==info.title)el.title=info.title;if(el.getAttribute("aria-label")!==info.title)el.setAttribute("aria-label",info.title);const icon=el.querySelector(".frendaActiveUserIcon"),text=el.querySelector(".frendaActiveUserText");if(icon&&icon.textContent!==info.icon)icon.textContent=info.icon;if(text&&text.textContent!==info.text)text.textContent=info.text}
 function watchBadge(){ensureUserBadge();if(observer)return;observer=new MutationObserver(()=>ensureUserBadge());observer.observe(document.documentElement,{childList:true,subtree:true})}
 function injectButton(){if(button)return;injectStyles();watchBadge();button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="👤 ローカル";button.onclick=openModal;(document.querySelector(".headerBtns")||document.querySelector("header")||document.body).appendChild(button)}
 function closeModal(){modal?.remove();modal=null}
@@ -73,7 +73,7 @@ if(!window.FRENDA_USER?.active){
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.2";
+const CLOUD_VERSION="1.3";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -290,4 +290,4 @@ window.FrendaCloud={version:CLOUD_VERSION,init,scheduleSync,pushNow,pullNow,isLo
 
 }
 
-/* Updated: 2026-10-11 01:20 JST */
+/* Ver1.3: fixed production user-badge MutationObserver loop by updating DOM only when values actually change. Updated: 2026-10-11 01:26 JST */
