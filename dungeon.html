@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.56">
+<html lang="ja" data-app-version="3.57">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5050,7 +5050,7 @@ const STARTER_SET_DEFS=[
 // Ver3.39: migrateState() runs during startup, so mission keys must be initialized before that call.
 const MISSION_STAT_KEYS=["adventuresStarted","enemyDefeats","captures","eggsHatched","trainings","evolutions","grassAttempts","expeditionsCompleted","routeChoices","rewardChoices"];
 // Ver3.45: progression unlock notification state is persisted with the dungeon save.
-const PROGRESSION_UNLOCK_KEYS_345=["training","evolution","egg","grass","bulkTraining","expeditionR1","shop1","expeditionG3","shop2","expeditionG4","expeditionG5","shop3","legend"];
+const PROGRESSION_UNLOCK_KEYS_345=["training","evolution","egg","grass","bulkTraining","expeditionR1","shop1","expeditionG3","expeditionBatchAuto","shop2","expeditionG4","expeditionG5","shop3","legend"];
 const stateDefault=()=>({saveVersion:15,appVersion:APP_VERSION,initialized:false,starterSetOptions:null,starterSetKey:null,starterIds:[],starterOptions:null,starterId:null,owned:[],dex:{},seenSpecies:{},seenPicks:{},defeatedPicks:{},trainingPoints:{},experience:{},drillPoints:{},permanentBoosts:{},bondPoints:{},luckLevels:{},frendaCoins:0,shopItems:{luckyClover:0,trainingCandy:0,evolutionCandy:0,captureTicket:0,grassTicket:3,superBall:0,hyperBall:0,masterBall:0},eggs:[],eggCap:2,unlocks:{forest:[1]},stats:{},missions:{version:1,stats:{adventuresStarted:0,enemyDefeats:0,captures:0,eggsHatched:0,trainings:0,evolutions:0,grassAttempts:0,expeditionsCompleted:0,routeChoices:0,rewardChoices:0},claimed:{},daily:null,weekly:null},progressionUi:{version:1,recorded:{},newFlags:{},pending:[]},legend:{version:1,opponentId:null,rerollsRemaining:1,lastResult:null,lastOpponentId:null},lastTeamIds:[],run:null,postRun:null,grassSession:null,lastSummary:null});
 // Battle-knowledge cache must exist before migrateState(), because reconcileDexState() invalidates it during startup.
 let battleKnowledgeTypeCache=null;
@@ -5256,7 +5256,7 @@ function progressionUnlockStatus345(target){
  const training=Object.values(t.drillPoints||{}).some(v=>Number(v)>0)||Number(ms.trainings||0)>0||Object.values(t.permanentBoosts||{}).some(pb=>["hp","atk","def"].some(k=>Number(pb?.[k])>0));
  const evolution=Object.values(t.trainingPoints||{}).some(v=>Number(v)>0)||Number(ms.evolutions||0)>0||Object.values(t.dex||{}).some(x=>x?.obtained&&!x?.current);
  const r1=progressionAllRankCleared345(t,1),r2=progressionAllRankCleared345(t,2),r3=progressionAllRankCleared345(t,3),r4=progressionAllRankCleared345(t,4),r5=progressionAllRankCleared345(t,5);
- return {training,evolution,egg:clears>0||(Array.isArray(t.eggs)&&t.eggs.length>0)||Number(ms.eggsHatched||0)>0,grass:clears>=3||Number(ms.grassAttempts||0)>0,bulkTraining:clears>=5,expeditionR1:r1,shop1:r1,expeditionG3:r2,shop2:r2,expeditionG4:r3,expeditionG5:r4,shop3:r4,legend:r5}
+ return {training,evolution,egg:clears>0||(Array.isArray(t.eggs)&&t.eggs.length>0)||Number(ms.eggsHatched||0)>0,grass:clears>=3||Number(ms.grassAttempts||0)>0,bulkTraining:clears>=5,expeditionR1:r1,shop1:r1,expeditionG3:r2,expeditionBatchAuto:r2,shop2:r2,expeditionG4:r3,expeditionG5:r4,shop3:r4,legend:r5}
 }
 function ensureProgressionUi345(target=state,{seedCurrent=false}={}){
  if(!target||typeof target!=="object")return null;
@@ -5281,6 +5281,7 @@ const PROGRESSION_UNLOCK_META_345={
  expeditionR1:{icon:"🧭",title:"おでかけ探索",detail:"探索グループ1・2が使えるようになりました。",target:"expedition"},
  shop1:{icon:"🛍️",title:"SHOP Lv1",detail:"クローバー・特訓キャンディ・スーパーボールを購入できます。",target:"shop"},
  expeditionG3:{icon:"🧭",title:"探索グループ3",detail:"3つ目の探索グループが使えるようになりました。",target:"expedition"},
+ expeditionBatchAuto:{icon:"✨",title:"まとめておまかせ探索",detail:"空いている複数グループを、別々のおすすめ探索先へまとめて派遣できるようになりました。",target:"expedition"},
  shop2:{icon:"🛍️",title:"SHOP Lv2",detail:"進化のアメ・ゲットチャンスチケット・ハイパーボールが追加されました。",target:"shop"},
  expeditionG4:{icon:"🧭",title:"探索グループ4",detail:"4つ目の探索グループが使えるようになりました。",target:"expedition"},
  expeditionG5:{icon:"🧭",title:"探索グループ5",detail:"5つ目の探索グループが使えるようになりました。",target:"expedition"},
@@ -5290,6 +5291,10 @@ const PROGRESSION_UNLOCK_META_345={
 function progressionTargetHasNew345(target){const ui=ensureProgressionUi345();return PROGRESSION_UNLOCK_KEYS_345.some(id=>ui?.newFlags?.[id]&&PROGRESSION_UNLOCK_META_345[id]?.target===target)}
 function progressionNewBadge345(target){return progressionTargetHasNew345(target)?'<span class="progressionNewBadge345">NEW</span>':""}
 function progressionClearTargetNew345(target){const ui=ensureProgressionUi345();if(!ui)return false;let changed=false;for(const id of PROGRESSION_UNLOCK_KEYS_345){if(ui.newFlags?.[id]&&PROGRESSION_UNLOCK_META_345[id]?.target===target){delete ui.newFlags[id];changed=true}}if(changed)save();return changed}
+function progressionEnsureBatchAutoUpgrade357(){
+ const ui=ensureProgressionUi345();if(!ui||ui.recorded?.expeditionBatchAuto||!progressionAllRankCleared345(state,2))return false;
+ ui.recorded.expeditionBatchAuto=true;ui.newFlags.expeditionBatchAuto=true;if(!ui.pending.includes("expeditionBatchAuto"))ui.pending.push("expeditionBatchAuto");save();return true
+}
 function showProgressionUnlockNotice345(){
  if(document.getElementById("progressionUnlockOverlay345"))return;
  const ui=ensureProgressionUi345(),ids=(ui?.pending||[]).filter(id=>PROGRESSION_UNLOCK_META_345[id]);if(!ids.length)return;
@@ -6318,7 +6323,7 @@ function homeTrainingSummary(){
  return {evolve,train,loading:false,error:false};
 }
 function renderHome(){
- legendTeamSelect351=false;
+ legendTeamSelect351=false;progressionEnsureBatchAutoUpgrade357();
  homeBtn.hidden=true;homeBtn.style.setProperty("display","none","important");document.body.classList.remove("homeNavVisible");document.body.classList.add("dungeonHomeScreen");
  const s=getStat("forest",1),deepest=Math.max(0,Number(s?.deepest)||0),clears=totalDungeonClears(),goal=homeNextGoal(),egg=homeEggSummary(),dex=homeDexSummary(),training=homeTrainingSummary(),coins=Math.max(0,Math.floor(Number(state.frendaCoins)||0)),invClover=inventoryItemQty("luckyClover"),invTicket=inventoryItemQty("captureTicket"),invGrass=inventoryItemQty("grassTicket"),expOpen=featureExpeditionUnlocked341(),shopLv=featureShopLevel341(),trainOpen=featureTrainingUnlocked341(),evoOpen=featureEvolutionUnlocked341(),eggOpen=featureEggUnlocked341(),grassOpen=featureGrassUnlocked341(),legendOpen=legendBattleUnlocked351();
  app.innerHTML=`<div class="homeScreen">${homeHero()}<div class="homeActionArea">
@@ -16055,4 +16060,6 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.54: Pokemon Dex filters consolidated into one popup while keeping Search and Sort as separate visible controls. Legend Battle lobby now opens the same Dex prefiltered to Legendary+Mythical, with shared progress counts. Updated: 2026-10-08 08:35 JST -->
 <!-- Ver3.55: Legend Battle home card is hidden until all Rank 5 dungeons are cleared; the card first appears at unlock and retains the NEW marker. Pre-unlock home play grid returns to two columns. Updated: 2026-10-08 08:55 JST -->
 <!-- Ver3.56: Owned Picks search UI now follows the Pokédex. Search / one integrated filter popup / Sort stay visible; type, grade, series, shiny, Legend class, and training/evolution state are consolidated in the popup. Updated: 2026-10-08 09:10 JST -->
+<!-- Ver3.57: all-R2 progression unlock now also announces "まとめておまかせ探索" together with Group 3; expedition implementation lives in Expedition Ver1.26. Updated: 2026-10-10 00:24 JST -->
+<!-- SOURCE FILE: Dungeon Ver3.57 full source. Updated: 2026-10-10 00:24 JST -->
 </html>
