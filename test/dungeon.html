@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.58">
+<html lang="ja" data-app-version="3.59">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5575,6 +5575,12 @@ function applyDungeonTestCase(){
   state.lastTeamIds=ids.slice(0,3);screen="items";save();render();banner();
   requestAnimationFrame(()=>{showInventoryItemUse("training");requestAnimationFrame(()=>document.getElementById("inventoryTrainingRecommend358")?.click())});return true
  }
+ if(DUNGEON_TEST_CASE==="training-candy-purchase-use"){
+  state.run=null;state.postRun=null;state.shopItems.trainingCandy=0;state.frendaCoins=Math.max(5000,Number(state.frendaCoins)||0);
+  if(ids[0])state.permanentBoosts[ids[0]]={hp:0,atk:0,def:0};
+  if(ids[1])state.permanentBoosts[ids[1]]={hp:18,atk:12,def:9};
+  screen="home";save();render();banner();requestAnimationFrame(()=>showLuckShop("home"));return true
+ }
  if(DUNGEON_TEST_CASE==="legend-battle-lobby"){
   setProgressionPreset341("progress-r5",ids);state.legend={version:1,opponentId:null,rerollsRemaining:1,lastResult:null,lastOpponentId:null};screen="legend";save();render();banner();return true
  }
@@ -7965,6 +7971,19 @@ function showLuckShop(returnTo="home"){
   const baseTargets=(state.owned||[]).map(o=>o.id).filter(id=>rec(id)&&luckFor(id)<LUCK_MAX),records=baseTargets.map(id=>rec(id)).filter(Boolean),types=commonFilterTypes(records),grades=commonFilterGrades(records);
   let targets=baseTargets.filter(id=>{const r=rec(id);if(!r)return false;if(!pickSearchMatch(r,shopFilter.search))return false;if(shopFilter.type!=="all"&&r.type1!==shopFilter.type&&r.type2!==shopFilter.type)return false;if(shopFilter.grade!=="all"&&Number(r.grade)!==Number(shopFilter.grade))return false;if(shopFilter.luck!=="all"&&luckFor(id)!==Number(shopFilter.luck))return false;return true});
   const numCmp=(a,b)=>String(rec(a)?.pick_no||"").localeCompare(String(rec(b)?.pick_no||""),"ja",{numeric:true});
+  // Ver3.59: shop item-use dialogs must be built from the CURRENT inventory/state.
+  // Do not reuse HTML captured when renderShop() first ran; purchase -> immediate use and recommendation toggles would otherwise stay stale.
+  const trainingCandyUseBody359=()=>{
+   const qNow=itemQty("trainingCandy");
+   let ids=trainingCandyEligibleIds358().sort((a,b)=>Number(rec(b)?.poke_ene||0)-Number(rec(a)?.poke_ene||0)||numCmp(a,b));
+   if(trainingCandyRecommendMode358)ids=trainingCandyRecommendSort358(ids);
+   return ids.length?ids.map((id,i)=>trainingCandyTargetCard358(id,{rank:trainingCandyRecommendMode358&&i<3?i+1:0,attr:"data-training-candy-target",qty:qNow,extraClass:"shopUseTarget"})).join(""):`<div class="dexEmpty luckFilterEmpty">特訓できる所持ピックがありません。</div>`
+  };
+  const evolutionCandyUseBody359=()=>{
+   const qNow=itemQty("evolutionCandy");
+   const ids=(state.owned||[]).map(o=>o.id).filter(id=>{if(!rec(id)||isExpeditionLocked(id))return false;const ei=evolutionInfoForPick(id);return ei.hasEvolution&&ei.registered&&ei.points<ei.cost}).sort((a,b)=>{const ae=evolutionInfoForPick(a),be=evolutionInfoForPick(b);return (be.points/be.cost)-(ae.points/ae.cost)||numCmp(a,b)});
+   return ids.length?ids.map(id=>{const r=rec(id),ei=evolutionInfoForPick(id);return `<button class="luckTarget shopUseTarget evo" data-evolution-candy-target="${esc(id)}" ${qNow>0?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}</small><span>進化P ${ei.points}/${ei.cost}</span></button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">進化ポイントを追加できる所持ピックがありません。</div>`
+  };
   targets.sort((a,b)=>{const ar=rec(a),br=rec(b);if(shopFilter.sort==="luckAsc")return luckFor(a)-luckFor(b)||Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||numCmp(a,b);if(shopFilter.sort==="energy")return Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||Number(br?.grade||0)-Number(ar?.grade||0)||numCmp(a,b);if(shopFilter.sort==="grade")return Number(br?.grade||0)-Number(ar?.grade||0)||Number(br?.poke_ene||0)-Number(ar?.poke_ene||0)||numCmp(a,b);if(shopFilter.sort==="name")return String(ar?.name_ja||"").localeCompare(String(br?.name_ja||""),"ja")||numCmp(a,b);return numCmp(a,b)});
   let trainingTargets=trainingCandyEligibleIds358().sort((a,b)=>Number(rec(b)?.poke_ene||0)-Number(rec(a)?.poke_ene||0)||numCmp(a,b));
   if(trainingCandyRecommendMode358)trainingTargets=trainingCandyRecommendSort358(trainingTargets);
@@ -7992,8 +8011,8 @@ function showLuckShop(returnTo="home"){
    const useOv=document.createElement("div");useOv.id="shopUseOverlay";useOv.className="ownedDetailOverlay shopUseOverlay";
    const qLucky=itemQty("luckyClover"),qTraining=itemQty("trainingCandy"),qEvo=itemQty("evolutionCandy");
    let title="",hint="",body="";
-   if(kind==="training"){title=`🏋️ 特訓キャンディを使う`;hint=`所持 ${qTraining}/${TRAINING_CANDY_MAX}個　対象をタップすると1個使用し、特訓ポイントを+1します。`;body=trainingUse}
-   else if(kind==="evolution"){title=`🌱 進化のアメを使う`;hint=`所持 ${qEvo}/${EVOLUTION_CANDY_MAX}個　進化に必要なポイントまで使用できます。`;body=evoUse}
+   if(kind==="training"){title=`🏋️ 特訓キャンディを使う`;hint=`所持 ${qTraining}/${TRAINING_CANDY_MAX}個　対象をタップすると1個使用し、特訓ポイントを+1します。`;body=trainingCandyUseBody359()}
+   else if(kind==="evolution"){title=`🌱 進化のアメを使う`;hint=`所持 ${qEvo}/${EVOLUTION_CANDY_MAX}個　進化に必要なポイントまで使用できます。`;body=evolutionCandyUseBody359()}
    else{title=`🍀 ラッキークローバーを使う`;hint=`所持 ${qLucky}個　対象をタップするたび1個使用します。同じピックへ連続適用できます。`;body=`${filterHtml}<div class="luckTargetGrid">${targets.length?targets.map(id=>{const r=rec(id),locked=isExpeditionLocked(id);return `<button class="luckTarget" data-luck-target="${esc(id)}" ${qLucky>0&&!locked?"":"disabled"}><img src="${esc(imageOf(r))}" alt=""><b>${esc(r.name_ja)}</b><small>${gradeText(r)}　⚡${esc(r.poke_ene??"-")}</small><span class="luckValue">幸運 ${luckFor(id)}/${LUCK_MAX}</span>${locked?`<small class="luckTargetLocked">🧭 探索中</small>`:""}</button>`}).join(""):`<div class="dexEmpty luckFilterEmpty">${baseTargets.length?"条件に合うピックがありません。":"全所持ピックが幸運MAXです。"}</div>`}</div><div class="notice">幸運は、冒険では参加パーティ、探索では派遣メンバーの平均を使用します。戦闘では幸運が高いほど攻撃のミス率も下がります。</div>`}
    useOv.innerHTML=`<div class="ownedBackPanel shopUsePanel" role="dialog" aria-modal="true"><div class="ownedBackHead"><div><small>USE ITEM</small><b>${title}</b></div><button class="ownedBackClose" id="shopUseClose">閉じる</button></div><div class="luckContinuousHint">${hint}</div>${kind==="training"?trainingCandyRecommendBar358(trainingCandyRecommendMode358,"shopTrainingRecommend358"):""}${kind==="clover"?body:`<div class="luckTargetGrid">${body}</div>`}</div>`;
    document.body.appendChild(useOv);
@@ -16119,5 +16138,6 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.56: Owned Picks search UI now follows the Pokédex. Search / one integrated filter popup / Sort stay visible; type, grade, series, shiny, Legend class, and training/evolution state are consolidated in the popup. Updated: 2026-10-08 09:10 JST -->
 <!-- Ver3.57: all-R2 progression unlock now also announces "まとめておまかせ探索" together with Group 3; expedition implementation lives in Expedition Ver1.26. Updated: 2026-10-10 00:24 JST -->
 <!-- Ver3.58: 特訓キャンディ対象選択に「おすすめ」を追加。実戦力・育成状況・絆・直近チーム等から候補を順位付けし、上位3体を理由付きで強調。おすすめ操作だけではアイテムを消費しない。挑戦チーム編成の「挑戦／自動冒険」→AUTO説明帯の順序も回帰監査対象として固定。 Updated: 2026-10-10 12:20 JST -->
-<!-- SOURCE FILE: Dungeon Ver3.58 full source. Updated: 2026-10-10 12:20 JST -->
+<!-- Ver3.59: SHOPで特訓キャンディ／進化のアメを購入後すぐ「使う」を押した際、購入前の古いHTMLを再利用しないよう対象一覧をダイアログ表示時に再生成。特訓キャンディの「おすすめ」切替も同じ最新状態から再生成し、白PCを含め順位バッジ・理由表示が即反映されるよう修正。購入→即使用の専用テストを追加。 Updated: 2026-10-10 12:55 JST -->
+<!-- SOURCE FILE: Dungeon Ver3.59 full source. Updated: 2026-10-10 12:55 JST -->
 </html>
