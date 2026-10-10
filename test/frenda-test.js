@@ -1,10 +1,11 @@
-/* FRENDA_TEST_VERSION: 1.3 / isolated test-local storage + cloud-session cache; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 1.4 / isolated test-local storage + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="1.3";
+const VERSION="1.4";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
+function regressionCaseActive(){return params.has("case")}
 if(!requested){window.FRENDA_TEST=Object.freeze({active:false,requested:false,storage:null,version:VERSION});return;}
 
 const MODE_KEY="frenda:test:storage-mode";
@@ -45,6 +46,7 @@ function seedFromCloudPayload(payload){
 }
 function seedLocalSandbox(){
   mem.clear();
+  if(regressionCaseActive())return;
   try{
     for(let i=0;i<real.length;i++){
       const raw=native.key.call(real,i);
@@ -55,14 +57,17 @@ function seedLocalSandbox(){
   }catch(e){console.error("FRENDA_TEST_LOCAL_SEED_FAILED",e)}
 }
 function persistLocalSet(k,v){
+  if(regressionCaseActive())return true;
   try{native.setItem.call(real,LOCAL_PREFIX+String(k),String(v));return true}
   catch(e){console.error("FRENDA_TEST_LOCAL_WRITE_FAILED",e);return false}
 }
 function persistLocalRemove(k){
+  if(regressionCaseActive())return true;
   try{native.removeItem.call(real,LOCAL_PREFIX+String(k));return true}
   catch(e){console.error("FRENDA_TEST_LOCAL_REMOVE_FAILED",e);return false}
 }
 function persistLocalClear(){
+  if(regressionCaseActive())return true;
   try{
     const keys=[];
     for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(LOCAL_PREFIX))keys.push(String(raw));}
@@ -115,7 +120,7 @@ function snapshot(){return Object.fromEntries(mem)}
 
 window.FRENDA_TEST=Object.freeze({
   version:VERSION,requested:true,active:!!isolated,storage,
-  get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},
+  get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},get regressionEphemeral(){return regressionCaseActive()},
   readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,snapshot,
   productionStorageUnchanged,assertProductionStorageUnchanged
 });
