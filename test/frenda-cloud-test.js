@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 0.4 / cloud-only save test runtime + active user badge; local user and cloud user NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 0.5 / cloud-only save + active user badge + regression cloud-write guard; local user and cloud user NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="0.4";
+const CLOUD_TEST_VERSION="0.5";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -15,6 +15,8 @@ function safeJSON(v){try{return JSON.stringify(v??null)}catch{return ""}}
 function testApi(){return window.FRENDA_TEST}
 function cloudMode(){return !!session&&testApi()?.mode==="cloud"&&testApi()?.cloudUserId===session?.user?.id}
 function columnName(){return cfg?.column||"simulator_data"}
+const REGRESSION_SAVE_BLOCK_TEXT="回帰テスト中：クラウド保存禁止";
+function regressionCaseActive(){try{return new URLSearchParams(location.search).has("case")}catch{return false}}
 function setStatus(text,kind=""){
   statusText=text;
   if(button){const prefix=kind==="error"?"⚠️":session?"☁️":"🧪";button.textContent=`${prefix} ${text}`;button.dataset.kind=kind;}
@@ -42,6 +44,7 @@ function injectStyles(){
 }
 function activeUserLabel(){
   const email=session?.user?.email||"";
+  if(email&&regressionCaseActive())return {mode:"cloud",icon:"🔒",text:email,title:`クラウドユーザー：${email}（回帰テスト中は保存禁止）`};
   return email?{mode:"cloud",icon:"☁️",text:email,title:`クラウドユーザー：${email}`}:{mode:"local",icon:"👤",text:"ローカル",title:"ローカルユーザー（テスト専用保存）"};
 }
 function userBadgeTarget(){
@@ -82,14 +85,14 @@ function watchLauncher(){ensureLauncher();if(launcherObserver)return;launcherObs
 function injectButton(){if(button)return;injectStyles();watchLauncher();button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="🧪 テスト認証";button.onclick=openModal;(document.querySelector(".headerBtns")||document.querySelector("header")||document.body).appendChild(button)}
 function closeModal(){modal?.remove();modal=null}
 function openModal(){
-  closeModal();modal=document.createElement("div");modal.className="frendaCloudOverlay";const email=session?.user?.email||"";
+  closeModal();modal=document.createElement("div");modal.className="frendaCloudOverlay";const email=session?.user?.email||"",regression=regressionCaseActive();
   modal.innerHTML=session?`
     <div class="frendaCloudPanel" role="dialog" aria-modal="true">
       <div class="frendaCloudHead"><b>☁️ クラウドユーザー</b><button type="button" class="frendaCloudClose">閉じる</button></div>
       <div class="frendaCloudUser">${escapeHTML(email)}</div>
-      <div class="frendaCloudInfo"><b>クラウド専用保存モード</b><br>このユーザーのゲーム進行はSupabaseだけを正本として扱います。ローカルユーザーのセーブとは比較・同期しません。画面内の一時データはテスト用メモリ／sessionStorageキャッシュで、永続セーブではありません。<br><small>Cloud Test v${CLOUD_TEST_VERSION}</small></div>
+      <div class="frendaCloudInfo"><b>クラウド専用保存モード</b><br>このユーザーのゲーム進行はSupabaseだけを正本として扱います。ローカルユーザーのセーブとは比較・同期しません。画面内の一時データはテスト用メモリ／sessionStorageキャッシュで、永続セーブではありません。${regression?'<br><b>🔒 回帰テスト（case=）中のためクラウドへの保存は完全に禁止されています。</b>':''}<br><small>Cloud Test v${CLOUD_TEST_VERSION}</small></div>
       <div id="frendaCloudStatus" class="frendaCloudStatus">${escapeHTML(statusText)}</div>
-      <div class="frendaCloudActions"><button type="button" id="frendaCloudPush" class="frendaCloudPrimary">今すぐ保存</button><button type="button" id="frendaCloudPull" class="frendaCloudSecondary">クラウド再読込</button><button type="button" id="frendaCloudLogout" class="frendaCloudDanger wide">ログアウト</button></div>
+      <div class="frendaCloudActions"><button type="button" id="frendaCloudPush" class="frendaCloudPrimary" ${regression?'disabled aria-disabled="true"':''}>${regression?'🔒 保存禁止':'今すぐ保存'}</button><button type="button" id="frendaCloudPull" class="frendaCloudSecondary">クラウド再読込</button><button type="button" id="frendaCloudLogout" class="frendaCloudDanger wide">ログアウト</button></div>
     </div>`:`
     <div class="frendaCloudPanel" role="dialog" aria-modal="true">
       <div class="frendaCloudHead"><b>🧪 テスト認証</b><button type="button" class="frendaCloudClose">閉じる</button></div>
@@ -100,14 +103,14 @@ function openModal(){
       <div class="frendaCloudActions"><button type="button" id="frendaCloudLogin" class="frendaCloudPrimary wide">ログイン</button></div>
     </div>`;
   document.body.appendChild(modal);modal.addEventListener("click",e=>{if(e.target===modal)closeModal()});modal.querySelector(".frendaCloudClose").onclick=closeModal;
-  if(session){modal.querySelector("#frendaCloudPush").onclick=()=>pushNow(true);modal.querySelector("#frendaCloudPull").onclick=()=>pullNow(true);modal.querySelector("#frendaCloudLogout").onclick=logout}
+  if(session){const pushBtn=modal.querySelector("#frendaCloudPush");if(regression){pushBtn.onclick=null;setStatus(REGRESSION_SAVE_BLOCK_TEXT)}else pushBtn.onclick=()=>pushNow(true);modal.querySelector("#frendaCloudPull").onclick=()=>pullNow(true);modal.querySelector("#frendaCloudLogout").onclick=logout}
   else modal.querySelector("#frendaCloudLogin").onclick=async()=>{const email=modal.querySelector("#frendaCloudEmail").value.trim(),password=modal.querySelector("#frendaCloudPassword").value;if(!email||!password){setStatus("メールアドレスとパスワードを入力してください。","error");return}await login(email,password)};
 }
 async function rowForUser(){if(!session)return {data:null,error:new Error("not signed in")};return await client.from(TABLE).select(`user_id,${columnName()},updated_at`).eq("user_id",session.user.id).maybeSingle()}
 function cachePayload(payload){try{testApi()?.writeCloudCache?.(payload,session?.user?.id)}catch(e){console.warn("FRENDA_TEST_CACHE_WRITE",e)}}
 function activatePayload(payload){testApi()?.activateCloud?.(session.user.id,payload??null)}
 function subscribeStorage(){
-  storageUnsub?.();storageUnsub=null;const s=testApi()?.storage;if(!s?.subscribe)return;
+  storageUnsub?.();storageUnsub=null;if(regressionCaseActive())return;const s=testApi()?.storage;if(!s?.subscribe)return;
   storageUnsub=s.subscribe(ev=>{if(!cloudMode()||syncing)return;if(ev.type==="clear"||(ev.key&&cfg?.watchStorage?.(String(ev.key))))scheduleSync()});
 }
 async function login(email,password){
@@ -118,15 +121,16 @@ async function login(email,password){
   const payload=row?.[columnName()]??null;activatePayload(payload);closeModal();location.reload();
 }
 async function logout(){
-  if(!client)return;if(syncTimer){clearTimeout(syncTimer);syncTimer=null}if(cloudMode())await pushNow(true);
+  if(!client)return;if(syncTimer){clearTimeout(syncTimer);syncTimer=null}if(cloudMode()&&!regressionCaseActive())await pushNow(true);
   await client.auth.signOut();session=null;storageUnsub?.();storageUnsub=null;testApi()?.deactivateCloud?.();setStatus("未ログイン（ローカル）");closeModal();location.reload();
 }
 function scheduleSync(){
-  if(!cloudMode())return false;if(syncTimer)clearTimeout(syncTimer);
+  if(!cloudMode())return false;if(regressionCaseActive()){if(syncTimer){clearTimeout(syncTimer);syncTimer=null}setStatus(REGRESSION_SAVE_BLOCK_TEXT);return false}if(syncTimer)clearTimeout(syncTimer);
   const current=cfg?.getData?.();if(current)cachePayload(current);
   syncTimer=setTimeout(()=>{syncTimer=null;pushNow(false)},900);setStatus("クラウド保存待ち…");return true;
 }
 async function pushNow(force=false){
+  if(regressionCaseActive()){if(syncTimer){clearTimeout(syncTimer);syncTimer=null}setStatus(REGRESSION_SAVE_BLOCK_TEXT);return false}
   if(!cloudMode()||syncing||!cfg?.getData)return false;syncing=true;setStatus("クラウド保存中…");
   try{
     const payload=cfg.getData(),str=safeJSON(payload);cachePayload(payload);
@@ -158,6 +162,11 @@ async function initializeCloudSession(){
   }
   const {data,error}=await rowForUser();if(error){setStatus("クラウド読込エラー","error");return}
   const remote=data?.[columnName()]??null,current=cfg?.getData?.()??null,cached=testApi()?.readCloudCache?.(uid)??null;
+  if(regressionCaseActive()){
+    const remoteStr=safeJSON(remote),cachedStr=safeJSON(cached);
+    if(remote&&remoteStr!==cachedStr){activatePayload(remote);lastUploaded=remoteStr;location.reload();return}
+    lastUploaded=remoteStr;storageUnsub?.();storageUnsub=null;setStatus(REGRESSION_SAVE_BLOCK_TEXT);return;
+  }
   if(remote){
     const remoteStr=safeJSON(remote),currentStr=safeJSON(current),cachedStr=safeJSON(cached);
     if(remoteStr!==cachedStr){
@@ -185,8 +194,8 @@ async function init(options){
 }
 
 window.FrendaCloud={
-  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,syncDisabled:false,
+  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,syncDisabled:false,regressionSaveGuard:true,isRegressionCase:regressionCaseActive,
   init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,open:openModal
 };
 })();
-/* Ver0.4: ヘッダに現在の利用者（👤ローカル / ☁メールアドレス）を常時表示。タップでテスト認証画面を開く。Updated: 2026-10-10 19:54 JST */
+/* Ver0.5: ?case= 回帰テスト中はクラウド書込を完全禁止。自動保存・今すぐ保存・ログアウト時保存・起動時互換反映をすべて遮断し、認証画面に保存禁止を明示。Updated: 2026-10-10 20:38 JST */
