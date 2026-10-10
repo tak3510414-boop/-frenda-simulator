@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.62">
+<html lang="ja" data-app-version="3.63">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4653,6 +4653,24 @@ function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
 
  function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`}
 
+ const ADMIN_MENU_HOLD_MS=5000;
+ function adminMenuHref(){return /\/test(?:\/|$)/.test(location.pathname)?"../admin.html":"admin.html"}
+ function bindEyeRestAdminHold(el){
+  if(!el||el.dataset.adminHoldBound==="1")return;
+  el.dataset.adminHoldBound="1";
+  el.style.userSelect="none";el.style.webkitUserSelect="none";el.style.touchAction="none";
+  let timer=null,startedAt=0;
+  const cancel=()=>{if(timer)clearTimeout(timer);timer=null;startedAt=0};
+  const start=e=>{
+   if(typeof e.button==="number"&&e.button!==0)return;
+   cancel();startedAt=Date.now();
+   timer=setTimeout(()=>{timer=null;try{navigator.vibrate?.(60)}catch{};location.href=adminMenuHref()},ADMIN_MENU_HOLD_MS);
+  };
+  el.addEventListener("pointerdown",start);
+  ["pointerup","pointercancel","pointerleave"].forEach(name=>el.addEventListener(name,cancel));
+  el.addEventListener("contextmenu",e=>{e.preventDefault();if(Date.now()-startedAt<ADMIN_MENU_HOLD_MS)cancel()});
+ }
+
  function ensureOverlay(state){
   let ov=document.getElementById("eyeRestOverlay");
   if(!ov){
@@ -4664,7 +4682,7 @@ function createEyeCareResume({data,onTick,extraStorageKeys=[]}={}){
   const restMin=Math.max(1,Number(state?.restMinutes)||timerConfig().restMinutes);
   const ready=state?.phase==="ready",title=ov.querySelector("#eyeRestTitle"),txt=ov.querySelector("#eyeRestText"),rule=ov.querySelector("#eyeRestRule"),btn=ov.querySelector("#eyeRestResumeBtn");
   ov.classList.toggle("ready",ready);
-  if(title)title.textContent=ready?"休憩終了！":"目を休めよう";
+  if(title){title.textContent=ready?"休憩終了！":"目を休めよう";bindEyeRestAdminHold(title)};
   if(txt)txt.innerHTML=ready
    ?`休憩時間が終わりました。<br>画面をタップするとゲームに戻り、そこから次の${playMin}分が始まります。`
    :state?.reason==="manual"
@@ -16140,4 +16158,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.59: SHOPで特訓キャンディ／進化のアメを購入後すぐ「使う」を押した際、購入前の古いHTMLを再利用しないよう対象一覧をダイアログ表示時に再生成。特訓キャンディの「おすすめ」切替も同じ最新状態から再生成し、白PCを含め順位バッジ・理由表示が即反映されるよう修正。購入→即使用の専用テストを追加。 Updated: 2026-10-10 12:55 JST -->
 <!-- SOURCE FILE: Dungeon Ver3.59 full source. Updated: 2026-10-10 12:55 JST -->
 <!-- TEST CLOUD-ONLY Ver3.62: /test/ uses frenda-test.js Ver1.2 + frenda-cloud-test.js Ver0.3. Unauthenticated play stays in isolated local-test memory; authenticated users use their own Supabase dungeon_data as the authoritative save. No local/cloud comparison or synchronization. Updated: 2026-10-10 18:51 JST -->
+<!-- Ver3.63: /test/ eye-rest overlay restores the hidden administrator shortcut. Long-press the eye-rest title for 5 seconds to open ../admin.html. Normal taps do nothing. Updated: 2026-10-10 22:26 JST -->
 </html>
