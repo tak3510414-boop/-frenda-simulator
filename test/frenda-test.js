@@ -1,7 +1,7 @@
-/* FRENDA_TEST_VERSION: 1.4 / isolated test-local storage + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 1.5 / isolated local A/B profiles + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="1.4";
+const VERSION="1.5";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
@@ -11,13 +11,50 @@ if(!requested){window.FRENDA_TEST=Object.freeze({active:false,requested:false,st
 const MODE_KEY="frenda:test:storage-mode";
 const USER_KEY="frenda:test:cloud-user-id";
 const CACHE_PREFIX="frenda:test:cloud-cache:";
-const LOCAL_PREFIX="frenda:test:local:v1:";
+const LEGACY_LOCAL_PREFIX="frenda:test:local:v1:";
+const LOCAL_PREFIX_BASE="frenda:test:local:v2:";
+const LOCAL_PROFILE_KEY="frenda:test:active-local-profile:v1";
+const LOCAL_MIGRATION_KEY="frenda:test:local-v2-migrated";
+const LOCAL_PROFILES=Object.freeze(["A","B"]);
 const DUNGEON_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
 
 const real=window.localStorage;
 const proto=Object.getPrototypeOf(real);
 const native={getItem:proto.getItem,setItem:proto.setItem,removeItem:proto.removeItem,clear:proto.clear,key:proto.key};
+function validLocalProfile(v){return LOCAL_PROFILES.includes(String(v||"").toUpperCase())}
+function localProfileId(){
+  try{const v=native.getItem.call(real,LOCAL_PROFILE_KEY);return validLocalProfile(v)?String(v).toUpperCase():"A"}catch{return "A"}
+}
+function localPrefix(profile=localProfileId()){return `${LOCAL_PREFIX_BASE}${profile}:`}
+function setLocalProfileMeta(profile){
+  profile=String(profile||"").toUpperCase();if(!validLocalProfile(profile))return false;
+  try{native.setItem.call(real,LOCAL_PROFILE_KEY,profile);return true}catch{return false}
+}
+function migrateLegacyLocalA(){
+  if(regressionCaseActive())return;
+  try{
+    if(native.getItem.call(real,LOCAL_MIGRATION_KEY)==="1")return;
+    const targetPrefix=localPrefix("A"),legacy=[];
+    for(let i=0;i<real.length;i++){
+      const raw=native.key.call(real,i);
+      if(raw!==null&&String(raw).startsWith(LEGACY_LOCAL_PREFIX))legacy.push(String(raw));
+    }
+    let targetExists=false;
+    for(let i=0;i<real.length;i++){
+      const raw=native.key.call(real,i);
+      if(raw!==null&&String(raw).startsWith(targetPrefix)){targetExists=true;break}
+    }
+    if(!targetExists){
+      for(const raw of legacy){
+        const k=raw.slice(LEGACY_LOCAL_PREFIX.length);
+        native.setItem.call(real,targetPrefix+k,String(native.getItem.call(real,raw)??""));
+      }
+    }
+    native.setItem.call(real,LOCAL_MIGRATION_KEY,"1");
+  }catch(e){console.error("FRENDA_TEST_LOCAL_MIGRATION_FAILED",e)}
+}
+migrateLegacyLocalA();
 const protectedKeys=["frenda:dungeon:v1","frenda:expedition:v1","frenda:owned:v1","frenda:favorites:v1","frenda:team:v1"];
 const baseline=new Map(protectedKeys.map(k=>[k,native.getItem.call(real,k)]));
 const listeners=new Set();
@@ -47,30 +84,31 @@ function seedFromCloudPayload(payload){
 function seedLocalSandbox(){
   mem.clear();
   if(regressionCaseActive())return;
+  const prefix=localPrefix();
   try{
     for(let i=0;i<real.length;i++){
       const raw=native.key.call(real,i);
-      if(raw===null||!String(raw).startsWith(LOCAL_PREFIX))continue;
-      const k=String(raw).slice(LOCAL_PREFIX.length);
+      if(raw===null||!String(raw).startsWith(prefix))continue;
+      const k=String(raw).slice(prefix.length);
       mem.set(k,String(native.getItem.call(real,raw)??""));
     }
   }catch(e){console.error("FRENDA_TEST_LOCAL_SEED_FAILED",e)}
 }
 function persistLocalSet(k,v){
   if(regressionCaseActive())return true;
-  try{native.setItem.call(real,LOCAL_PREFIX+String(k),String(v));return true}
+  try{native.setItem.call(real,localPrefix()+String(k),String(v));return true}
   catch(e){console.error("FRENDA_TEST_LOCAL_WRITE_FAILED",e);return false}
 }
 function persistLocalRemove(k){
   if(regressionCaseActive())return true;
-  try{native.removeItem.call(real,LOCAL_PREFIX+String(k));return true}
+  try{native.removeItem.call(real,localPrefix()+String(k));return true}
   catch(e){console.error("FRENDA_TEST_LOCAL_REMOVE_FAILED",e);return false}
 }
 function persistLocalClear(){
   if(regressionCaseActive())return true;
   try{
-    const keys=[];
-    for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(LOCAL_PREFIX))keys.push(String(raw));}
+    const prefix=localPrefix(),keys=[];
+    for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(prefix))keys.push(String(raw));}
     for(const raw of keys)native.removeItem.call(real,raw);
     return true;
   }catch(e){console.error("FRENDA_TEST_LOCAL_CLEAR_FAILED",e);return false}
@@ -116,14 +154,23 @@ function updateCloudCache(payload,userId=cloudUserId()){
 }
 function deactivateCloud(){sessionRemove(MODE_KEY);sessionRemove(USER_KEY);seedLocalSandbox();return true}
 function clearCloudCache(userId){const key=cacheKey(String(userId||""));if(key)sessionRemove(key)}
+function switchLocalProfile(profile){
+  profile=String(profile||"").toUpperCase();
+  if(regressionCaseActive()||currentMode()==="cloud"||!validLocalProfile(profile))return false;
+  const old=localProfileId();if(old===profile)return true;
+  if(!setLocalProfileMeta(profile))return false;
+  seedLocalSandbox();notify("profile",null,profile,old);return true;
+}
 function snapshot(){return Object.fromEntries(mem)}
 
 window.FRENDA_TEST=Object.freeze({
   version:VERSION,requested:true,active:!!isolated,storage,
   get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},get regressionEphemeral(){return regressionCaseActive()},
-  readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,snapshot,
+  get localProfileId(){return localProfileId()},localProfiles:LOCAL_PROFILES,
+  readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,snapshot,
   productionStorageUnchanged,assertProductionStorageUnchanged
 });
 if(!isolated){document.addEventListener("DOMContentLoaded",()=>{document.body.innerHTML='<main style="font-family:system-ui;padding:24px"><h1>テストモードを開始できません</h1><p>本番セーブを保護するため、保存領域の分離に失敗した状態ではテストを実行しません。</p><p><a href="test-center.html">テストセンターへ戻る</a></p></main>';});throw new Error("FRENDA_TEST_ISOLATION_FAILED");}
 setInterval(()=>assertProductionStorageUnchanged(),1000);window.addEventListener("pagehide",()=>assertProductionStorageUnchanged());
 })();
+/* Ver1.5: テスト用ローカルユーザーA/Bを独立保存。旧v1ローカルデータは初回のみAへ移行。回帰テスト中は両者とも読込・保存しない。Updated: 2026-10-10 22:40 JST */
