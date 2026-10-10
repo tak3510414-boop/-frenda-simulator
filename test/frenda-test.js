@@ -1,7 +1,7 @@
-/* FRENDA_TEST_VERSION: 1.8 / dynamic isolated local profiles + add/rename/delete + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 1.9 / dynamic isolated local profiles + unified account metadata store + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="1.8";
+const VERSION="1.9";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
@@ -16,6 +16,7 @@ const LOCAL_PREFIX_BASE="frenda:test:local:v2:";
 const LOCAL_PROFILE_KEY="frenda:test:active-local-profile:v1";
 const LOCAL_MIGRATION_KEY="frenda:test:local-v2-migrated";
 const LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1";
+const ACCOUNT_META_PREFIX="frenda:test:account:";
 const DEFAULT_LOCAL_PROFILES=Object.freeze([{id:"A",name:"ローカルA"},{id:"B",name:"ローカルB"}]);
 const DUNGEON_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
@@ -122,6 +123,10 @@ function migrateLegacyLocalA(){
     native.setItem.call(real,LOCAL_MIGRATION_KEY,"1");
   }catch(e){console.error("FRENDA_TEST_LOCAL_MIGRATION_FAILED",e)}
 }
+function accountMetaKey(name){name=String(name||"").trim();if(!/^[a-z0-9:_-]{1,80}$/i.test(name))throw new Error("invalid account meta key");return ACCOUNT_META_PREFIX+name}
+function accountGet(name){try{return native.getItem.call(real,accountMetaKey(name))}catch{return null}}
+function accountSet(name,value){if(regressionCaseActive())return false;try{native.setItem.call(real,accountMetaKey(name),String(value));return true}catch(e){console.error("FRENDA_TEST_ACCOUNT_META_WRITE_FAILED",e);return false}}
+function accountRemove(name){if(regressionCaseActive())return false;try{native.removeItem.call(real,accountMetaKey(name));return true}catch(e){console.error("FRENDA_TEST_ACCOUNT_META_REMOVE_FAILED",e);return false}}
 ensureLocalProfileRegistry();
 migrateLegacyLocalA();
 const protectedKeys=["frenda:dungeon:v1","frenda:expedition:v1","frenda:owned:v1","frenda:favorites:v1","frenda:team:v1"];
@@ -236,10 +241,10 @@ window.FRENDA_TEST=Object.freeze({
   version:VERSION,requested:true,active:!!isolated,storage,
   get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},get regressionEphemeral(){return regressionCaseActive()},
   get localProfileId(){return localProfileId()},get localProfileName(){return localProfileName()},get localProfiles(){return localProfiles().map(x=>({...x}))},
-  readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,renameLocalProfile,deleteLocalProfile,snapshot,
+  readCloudCache,writeCloudCache,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,renameLocalProfile,deleteLocalProfile,accountGet,accountSet,accountRemove,snapshot,
   productionStorageUnchanged,assertProductionStorageUnchanged
 });
 if(!isolated){document.addEventListener("DOMContentLoaded",()=>{document.body.innerHTML='<main style="font-family:system-ui;padding:24px"><h1>テストモードを開始できません</h1><p>本番セーブを保護するため、保存領域の分離に失敗した状態ではテストを実行しません。</p><p><a href="test-center.html">テストセンターへ戻る</a></p></main>';});throw new Error("FRENDA_TEST_ISOLATION_FAILED");}
 setInterval(()=>assertProductionStorageUnchanged(),1000);window.addEventListener("pagehide",()=>assertProductionStorageUnchanged());
 })();
-/* Ver1.8: ローカルユーザー削除を追加。現在使用中は削除不可、最低1人を保持し、対象ユーザーの保存プレフィックスだけを削除。削除済みA/Bを自動復活させないようレジストリ読込も動的化。回帰テスト中・クラウドユーザー中は削除禁止。Updated: 2026-10-11 00:48 JST */
+/* Ver1.9: 統合ユーザー一覧用の端末メタデータ領域を追加。クラウドユーザーの表示名・認証セッション情報を本番/テストのゲームセーブとは別領域に保持できる。パスワードは保存しない。Updated: 2026-10-11 08:25 JST */
