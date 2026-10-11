@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.71">
+<html lang="ja" data-app-version="3.73">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -6224,9 +6224,9 @@ function rerollLegendOpponent351(){
 }
 function legendResultMessage351(){
  const l=ensureLegendState351(),r=rec(l.lastOpponentId||l.opponentId),name=r?.name_ja||"相手";
- if(l.lastResult==="defeat")return `💥 ${name}に敗れた……。同じ相手に何度でも再挑戦できます。`;
- if(l.lastResult==="withdraw")return `↩️ ${name}とのレジェンド戦から撤退しました。同じ相手に再挑戦できます。`;
- if(l.lastResult==="captureFail")return `💨 ${name}のゲットに失敗。もう一度倒せば再びゲットチャンス！`;
+ if(l.lastResult==="defeat")return `💥 ${name}に敗れた……。次は別のレジェンドが待っています。`;
+ if(l.lastResult==="withdraw")return `↩️ ${name}とのレジェンド戦から撤退しました。`;
+ if(l.lastResult==="captureFail")return `💨 ${name}のゲットに失敗。次は別のレジェンドが待っています。`;
  if(l.lastResult==="caught")return `🎉 ${name}をゲット！ 次のレジェンドが待っています。`;
  return ""
 }
@@ -6238,9 +6238,8 @@ function renderLegendLobby351(){
  }
  const opp=ensureLegendOpponent351();if(!opp){app.innerHTML=`<div class="errorBox">レジェンド戦の相手を準備できませんでした。</div>`;return}
  const l=ensureLegendState351(),myth=isMythicalRecord(opp),shiny=isShinyRecord352(opp),msg=legendResultMessage351(),dexProg354=dexLegendProgress354();
- app.innerHTML=`<div class="card legendLobby351"><div class="legendLobbyHead351"><div><small>END GAME CONTENT</small><h1>🌟 レジェンド戦</h1><p>全R5制覇後の特別バトル。挑戦回数の制限はありません。</p></div><button type="button" id="legendBack351" class="ghost">ホームへ戻る</button></div>${msg?`<div class="legendResultNotice351">${esc(msg)}</div>`:""}<div class="legendOpponent351 ${myth?"mythical":""} ${shiny?"shinyFrame352":""}"><div class="legendOpponentVisual351 ownershipImageWrap"><img src="${esc(imageOf(opp))}" alt="">${pickOwnershipBadgeHTML(opp.master_id,false,"legendLobbyOwnership")}</div><div class="legendOpponentInfo351"><span class="legendKind351">${myth?"✨ 幻・SPECIAL":"👑 伝説・LEGENDARY"}</span><h2>${esc(opp.name_ja)} ${shiny?shinyBadgeHTML352():""}</h2><div>${typesHTML(opp)}</div><p>${gradeText(opp)}　⚡ ${esc(opp.poke_ene??"-")}　${ownedEntry(opp.master_id)?"所持済み":"未所持"}</p><small>通常R5ボスより約15%強化。勝利すると、この相手の特別ゲットチャンスへ進みます。</small></div></div><div class="legendDexBar354"><div><b>📖 レジェンド図鑑</b><span>発見 ${dexProg354.seen}/${dexProg354.total}　所持 ${dexProg354.owned}/${dexProg354.total}　✨色違い所持 ${dexProg354.shinyOwned}</span></div><button type="button" id="legendDex354">図鑑を開く</button></div><div class="legendRuleGrid351"><div><b>🎯 捕獲率</b><span>モンボ10% / スーパー30% / ハイパー70% / マスター100%</span></div><div><b>🔁 再挑戦</b><span>敗北・捕獲失敗でも回数制限なし</span></div><div><b>✨ 幻</b><span>相手抽選の約10%で特別枠</span></div><div><b>🎴 抽選</b><span>未所持を80%優先</span></div></div><div class="legendActions351"><button type="button" id="legendReroll351" class="ghost" ${l.rerollsRemaining>0?"":"disabled"}>🔄 相手を変更 ${l.rerollsRemaining>0?"（あと1回）":"（使用済み）"}</button><button type="button" id="legendTeam351">⚔️ 挑戦チームを選ぶ</button></div></div>`;
+ app.innerHTML=`<div class="card legendLobby351"><div class="legendLobbyHead351"><div><small>END GAME CONTENT</small><h1>🌟 レジェンド戦</h1><p>全R5制覇後の特別バトル。挑戦回数の制限はありません。</p></div><button type="button" id="legendBack351" class="ghost">ホームへ戻る</button></div>${msg?`<div class="legendResultNotice351">${esc(msg)}</div>`:""}<div class="legendOpponent351 ${myth?"mythical":""} ${shiny?"shinyFrame352":""}"><div class="legendOpponentVisual351 ownershipImageWrap"><img src="${esc(imageOf(opp))}" alt="">${pickOwnershipBadgeHTML(opp.master_id,false,"legendLobbyOwnership")}</div><div class="legendOpponentInfo351"><span class="legendKind351">${myth?"✨ 幻・SPECIAL":"👑 伝説・LEGENDARY"}</span><h2>${esc(opp.name_ja)} ${shiny?shinyBadgeHTML352():""}</h2><div>${typesHTML(opp)}</div><p>${gradeText(opp)}　⚡ ${esc(opp.poke_ene??"-")}　${ownedEntry(opp.master_id)?"所持済み":"未所持"}</p><small>通常R5ボスより約15%強化。勝利すると、この相手の特別ゲットチャンスへ進みます。</small></div></div><div class="legendDexBar354"><div><b>📖 レジェンド図鑑</b><span>発見 ${dexProg354.seen}/${dexProg354.total}　所持 ${dexProg354.owned}/${dexProg354.total}　✨色違い所持 ${dexProg354.shinyOwned}</span></div><button type="button" id="legendDex354">図鑑を開く</button></div><div class="legendRuleGrid351"><div><b>🎯 捕獲率</b><span>モンボ10% / スーパー30% / ハイパー70% / マスター100%</span></div><div><b>🔄 毎戦抽選</b><span>1戦終わるたび、次は別の相手に交代</span></div><div><b>✨ 幻</b><span>相手抽選の約10%で特別枠</span></div><div><b>🎴 抽選</b><span>未所持を80%優先・直前の相手は連続しない</span></div></div><div class="legendActions351"><button type="button" id="legendTeam351">⚔️ 挑戦チームを選ぶ</button></div></div>`;
  document.getElementById("legendBack351").onclick=()=>{screen="home";render()};
- document.getElementById("legendReroll351").onclick=rerollLegendOpponent351;
  document.getElementById("legendDex354").onclick=openLegendDex354;
  document.getElementById("legendTeam351").onclick=()=>{legendTeamSelect351=true;currentDungeon={id:"dragon",difficulty:5};const last=validLastTeam(3);teamSelection=last.length?last:[];screen="team";render()}
 }
@@ -6264,8 +6263,15 @@ function startLegendRun351(){
  markCurrentEnemySeen();legendTeamSelect351=false;autoBackupCapture("レジェンド戦開始",{force:true});save();render()
 }
 function finishLegendRun351(result,targetId=null){
- const l=ensureLegendState351();l.lastOpponentId=targetId||state.run?.legendOpponentId||l.opponentId||null;l.lastResult=result;
- if(result==="caught"){l.opponentId=null;l.rerollsRemaining=1}else if(!l.opponentId&&l.lastOpponentId)l.opponentId=l.lastOpponentId;
+ const l=ensureLegendState351();
+ const finishedId=targetId||state.run?.legendOpponentId||l.opponentId||null;
+ l.lastOpponentId=finishedId;l.lastResult=result;
+ // Ver3.73: 1戦完了ごとに相手を再抽選。直前の相手は候補から除外する。
+ // 撤退は「1戦完了」ではないため、同じ相手を維持する。
+ if(result==="caught"||result==="captureFail"||result==="defeat"){
+  const next=chooseLegendOpponent351(finishedId);
+  l.opponentId=next?.master_id||null;l.rerollsRemaining=1;
+ }else if(!l.opponentId&&finishedId)l.opponentId=finishedId;
  state.run=null;state.postRun=null;legendTeamSelect351=false;screen="legend";save();autoBackupCapture(`レジェンド戦${result==="caught"?"捕獲":"終了"}`,{force:true});render()
 }
 
@@ -16164,3 +16170,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Foundation Phase2 Dungeon Ver3.67: shared frenda-user.js loads in both root/test; test-only differences are frenda-test.js and frenda-cloud-test.js. Updated: 2026-10-11 12:00 JST -->
 <!-- Phase5 Dungeon Ver3.68: ユーザー・セーブ管理へ手動バックアップ・初期化・自動世代バックアップ入口を集約。Ver情報画面は端末情報/音量だけに整理し、旧💾クラウド/セーブ入口を撤去。Updated: 2026-10-11 13:40 JST -->
 </html>
+
+<!-- Ver3.73: レジェンド戦を1戦ごとの相手再抽選方式へ変更。勝利後の捕獲成否・敗北にかかわらず次回は直前と別の相手を抽選。手動「相手を変更」は廃止。未所持80%優先・幻約10%は維持。Updated: 2026-10-11 JST -->
