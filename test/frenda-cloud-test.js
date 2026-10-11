@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 1.6 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 1.7 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="1.6";
+const CLOUD_TEST_VERSION="1.7";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -107,7 +107,7 @@ function activeUserLabel(){
 async function leaveCloudForLocal(profile){
   if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを切り替えません。","error");return false}
   profile=String(profile||"").trim().toUpperCase();const info=localProfiles().find(x=>x.id===profile);if(!info)return false;if(!confirm(`${info.name}に切り替えますか？`))return false;
-  if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+  if(cloudMode()&&!(await flushCloudBeforeAccountChange()))return false;if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
   userApi()?.deactivateCloud?.();if(!userApi()?.switchLocalProfile?.(profile)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}setActiveAccount("local",profile);closeModal();location.reload();return true;
 }
 function switchLocalProfile(profile){
@@ -197,7 +197,7 @@ async function addOrReauthCloudProfile(displayName,email,password,profileId=""){
   const existing=profileId?cloudProfileById(profileId):null;if(!existing&&allDisplayNames().includes(displayName)){setStatus("同じ表示名のユーザーがあります。","error");return false}if(existing&&allDisplayNames("cloud",existing.id).includes(displayName)){setStatus("同じ表示名のユーザーがあります。","error");return false}
   const previousProfileId=activeCloudProfileId;
   try{
-    await ensureClient();if(cloudMode())await pushNow(true);if(session&&previousProfileId)persistCloudProfileSession(previousProfileId,session);
+    await ensureClient();if(cloudMode()&&!(await flushCloudBeforeAccountChange()))return false;if(session&&previousProfileId)persistCloudProfileSession(previousProfileId,session);
     activeCloudProfileId=existing?.id||"";setStatus("認証中…");
     const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;session=data.session||null;if(!session)throw new Error("ログインセッションを取得できません");if(existing?.userId&&existing.userId!==session.user.id)throw new Error("登録済みユーザーと異なるアカウントです");
     const p=persistCloudProfileSession(existing?.id||"",session,displayName);if(!p)throw new Error("端末へのユーザー登録に失敗しました");activeCloudProfileId=p.id;setActiveAccount("cloud",p.id);const {data:row,error:rowError}=await rowForUser();if(rowError)throw rowError;activatePayload(row?.[columnName()]??null);closeModal();location.reload();return true;
@@ -208,24 +208,24 @@ async function restoreCloudProfileSession(profile){
 }
 async function switchCloudProfile(profileId){
   if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを切り替えません。","error");return false}const p=cloudProfileById(profileId);if(!p)return false;
-  if(session&&currentCloudProfile()?.id===p.id){setActiveAccount("cloud",p.id);return true}if(!confirm(`「${p.name}」に切り替えますか？`))return false;if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+  if(session&&currentCloudProfile()?.id===p.id){setActiveAccount("cloud",p.id);return true}if(!confirm(`「${p.name}」に切り替えますか？`))return false;if(cloudMode()&&!(await flushCloudBeforeAccountChange()))return false;if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
   if(!sessionUsable(p)){showAddForm('cloud',p.id);setStatus("認証期限切れです。パスワードを入力して再ログインしてください。","error");return false}
   setStatus(`${p.name}に切り替えています…`);if(!await restoreCloudProfileSession(p)){showAddForm('cloud',p.id);setStatus("再ログインが必要です。パスワードを入力してください。","error");return false}
   setActiveAccount("cloud",p.id);const {data:row,error}=await rowForUser();if(error){setStatus("クラウドセーブ確認失敗："+error.message,"error");return false}activatePayload(row?.[columnName()]??null);closeModal();location.reload();return true;
 }
 async function leaveCloudDirect(){
   if(regressionCaseActive())return false;
-  try{if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);userApi()?.deactivateCloud?.();session=null;activeCloudProfileId="";return true}catch(e){console.error("FRENDA_CLOUD_LEAVE_FAILED",e);return false}
+  try{if(cloudMode()&&!(await flushCloudBeforeAccountChange()))return false;if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);userApi()?.deactivateCloud?.();session=null;activeCloudProfileId="";return true}catch(e){console.error("FRENDA_CLOUD_LEAVE_FAILED",e);return false}
 }
 async function activateProfileDirect(profileId){
   if(regressionCaseActive())return {ok:false,message:"回帰テスト中は切り替えできません"};const p=cloudProfileById(profileId);if(!p)return {ok:false,message:"クラウドユーザーが見つかりません"};
-  if(session&&currentCloudProfile()?.id===p.id)return {ok:true,profileId:p.id};if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+  if(session&&currentCloudProfile()?.id===p.id)return {ok:true,profileId:p.id};if(cloudMode()&&!(await flushCloudBeforeAccountChange()))return false;if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
   if(!sessionUsable(p))return {ok:false,needsAuth:true,profile:p};if(!await restoreCloudProfileSession(p))return {ok:false,needsAuth:true,profile:p};
   const {data:row,error}=await rowForUser();if(error)return {ok:false,message:"クラウドセーブ確認失敗："+error.message};activatePayload(row?.[columnName()]??null);activeCloudProfileId=p.id;return {ok:true,profileId:p.id};
 }
 async function authenticateProfileDirect({displayName,email,password,profileId=""}={}){
   if(regressionCaseActive())return {ok:false,message:"回帰テスト中は追加できません"};displayName=sanitizeName(displayName);email=String(email||"").trim();if(!displayName||!email||!password)return {ok:false,message:"表示名・メールアドレス・パスワードを入力してください。"};
-  const existing=profileId?cloudProfileById(profileId):null,previous=activeCloudProfileId;try{await ensureClient();if(cloudMode())await pushNow(true);if(session&&previous)persistCloudProfileSession(previous,session);activeCloudProfileId=existing?.id||"";const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;session=data.session||null;if(!session)throw new Error("ログインセッションを取得できません");if(existing?.userId&&existing.userId!==session.user.id)throw new Error("登録済みユーザーと異なるアカウントです");const p=persistCloudProfileSession(existing?.id||"",session,displayName);if(!p)throw new Error("端末へのユーザー登録に失敗しました");activeCloudProfileId=p.id;const {data:row,error:rowError}=await rowForUser();if(rowError)throw rowError;activatePayload(row?.[columnName()]??null);return {ok:true,profileId:p.id}}catch(e){activeCloudProfileId=previous;return {ok:false,message:"ログイン失敗："+(e?.message||e)}}
+  const existing=profileId?cloudProfileById(profileId):null,previous=activeCloudProfileId;try{await ensureClient();if(cloudMode()&&!(await flushCloudBeforeAccountChange()))return false;if(session&&previous)persistCloudProfileSession(previous,session);activeCloudProfileId=existing?.id||"";const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;session=data.session||null;if(!session)throw new Error("ログインセッションを取得できません");if(existing?.userId&&existing.userId!==session.user.id)throw new Error("登録済みユーザーと異なるアカウントです");const p=persistCloudProfileSession(existing?.id||"",session,displayName);if(!p)throw new Error("端末へのユーザー登録に失敗しました");activeCloudProfileId=p.id;const {data:row,error:rowError}=await rowForUser();if(rowError)throw rowError;activatePayload(row?.[columnName()]??null);return {ok:true,profileId:p.id}}catch(e){activeCloudProfileId=previous;return {ok:false,message:"ログイン失敗："+(e?.message||e)}}
 }
 async function renameProfileDirect(profileId,name){const p=cloudProfileById(profileId);name=sanitizeName(name);if(!p||!name||regressionCaseActive())return false;if(allDisplayNames("cloud",p.id).includes(name))return false;return writeCloudProfiles(readCloudProfiles().map(x=>x.id===p.id?{...x,name}:x))}
 async function deleteProfileDirect(profileId){const p=cloudProfileById(profileId);if(!p||regressionCaseActive())return false;if(session&&currentCloudProfile()?.id===p.id)return false;const ok=writeCloudProfiles(readCloudProfiles().filter(x=>x.id!==p.id));if(ok){const a=readActiveAccount();if(a.type==="cloud"&&a.id===p.id)setActiveAccount("local",localProfileId())}return ok}
@@ -241,6 +241,14 @@ function scheduleSync(){
   if(!cloudMode())return false;if(regressionCaseActive()){if(syncTimer){clearTimeout(syncTimer);syncTimer=null}setStatus(REGRESSION_SAVE_BLOCK_TEXT);return false}if(syncTimer)clearTimeout(syncTimer);
   const current=cfg?.getData?.();if(current)cachePayload(current);
   syncTimer=setTimeout(()=>{syncTimer=null;pushNow(false)},900);setStatus("クラウド保存待ち…");return true;
+}
+async function flushCloudBeforeAccountChange(){
+  if(!cloudMode())return true;
+  if(syncTimer){clearTimeout(syncTimer);syncTimer=null}
+  const started=Date.now();
+  while(syncing&&Date.now()-started<10000)await new Promise(r=>setTimeout(r,50));
+  if(syncing){setStatus("クラウド保存の完了待ちがタイムアウトしました。","error");return false}
+  return await pushNow(true);
 }
 async function pushNow(force=false){
   if(regressionCaseActive()){if(syncTimer){clearTimeout(syncTimer);syncTimer=null}setStatus(REGRESSION_SAVE_BLOCK_TEXT);return false}
@@ -297,3 +305,5 @@ window.FrendaCloud={version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly
 /* Ver1.5: Phase4。共通frenda-user.jsのバックアップ読込/初期化をクラウドへ即時反映するsaveStorageNow provider APIを追加。Portal(accountOnly)でも現在ストレージからdungeon_dataを構成して保存可能。回帰テスト中は保存禁止を維持。Updated: 2026-10-11 13:10 JST */
 
 /* Ver1.6: Phase4 cloud reset fix. saveStorageNow always serializes FRENDA_USER.storage for user-management backup import/reset, instead of falling back to the page getData snapshot. This prevents a reset from immediately re-uploading the pre-reset in-memory game state. Normal game autosave still uses pushNow/getData. Updated: 2026-10-11 13:24 JST */
+
+/* Ver1.7: Cloud user switch save barrier. Before switching/authenticating/leaving a cloud account, cancel pending debounce, wait for any in-flight save, then force-upload the latest active-user snapshot. Prevents Simulator owned/favorite changes from disappearing when users are switched during the 900ms autosave window. Updated: 2026-10-11 15:28 JST */

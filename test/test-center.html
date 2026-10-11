@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.83">
+<html lang="ja" data-test-center-version="2.84">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -362,13 +362,14 @@ async function runAuto(){
   ["Simulator共通バックアップ",productionJsVersion("frenda-user.js",tu)==="1.5"&&/storage:snapshot/.test(tu)&&/data\.storage/.test(tu)&&/st\.clear\(\)/.test(tu),"User Ver1.6 / 現在ユーザーstorage全体を共通バックアップへ包含し、Simulatorデータも書出・読込・初期化対象"],
   ["共通User基盤",productionJsVersion("frenda-user.js",tu)==="1.5"&&/sharedUI:true/.test(tu)&&/registerCloudProvider/.test(tu)&&/const TEST=window.FRENDA_TEST/.test(tu),"frenda-user.js Ver1.4をtestにも配置し、本番/test共通UI候補として検証"],
   ["本番Cloud provider基盤",productionJsVersion("frenda-cloud.js",root["../frenda-cloud.js"]?.text||"")==="1.5"&&/registerCloudProvider\?\./.test(root["../frenda-cloud.js"]?.text||"")&&/getProfiles:/.test(root["../frenda-cloud.js"]?.text||"")&&/activateProfile:/.test(root["../frenda-cloud.js"]?.text||"")&&/authenticateProfile:/.test(root["../frenda-cloud.js"]?.text||"")&&/passwordStored:false/.test(root["../frenda-cloud.js"]?.text||""),"本番 frenda-cloud.js Ver1.5が共通User向けheadless providerを登録し、パスワード非保存で認証・クラウド保存を担当"],
-  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&testCloudVersion(ct)==="1.6"&&/sharedUserUI:true/.test(ct),"/test/はCloud Test Ver1.6を認証・Supabase保存・安全ガード専用providerとして使用"],
+  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&testCloudVersion(ct)==="1.7"&&/sharedUserUI:true/.test(ct),"/test/はCloud Test Ver1.7を認証・Supabase保存・安全ガード専用providerとして使用"],
   ["ポータル単一入口対応",/sharedUI:true/.test(tu)&&/frendaActiveUserBadge/.test(tu)&&/el\.onclick=openModal/.test(tu)&&/registerCloudProvider/.test(ct)&&!/\binjectButton\(\)\s*;/.test(ct),"ポータルを含む全画面で共通frenda-user.jsの現在ユーザー表示だけを入口とし、Cloud Testはheadless providerとして旧認証ランチャーを起動しない"],
   ["統合ユーザー一覧",/sharedUI:true/.test(tu)&&/function openModal\(\)/.test(tu)&&/data-user-type="local"/.test(tu)&&/data-user-type="cloud"/.test(tu),"ローカル/クラウド統合UIは共通frenda-user.jsが所有"],
   ["ユーザー・セーブ管理統合",/ユーザー・セーブ管理/.test(tu)&&/バックアップを書き出す/.test(tu)&&/バックアップを読み込む/.test(tu)&&/このユーザーのゲームを初期化/.test(tu)&&/保存先：/.test(tu),"ユーザー画面に保存先・手動バックアップ・初期化を統合"],
   ["旧セーブ入口の一本化",/frendaAutoBackup/.test(tu)&&/activeAppSaveTools/.test(tu)&&/FRENDA_USER_SAVE_TOOLS/.test(d)&&/FRENDA_USER_SAVE_TOOLS/.test(e)&&/ver\.title="端末情報・音量"/.test(d)&&/ver\.title="端末情報・音量"/.test(e)&&!/id="infoBackupOut296"/.test(d)&&!/id="infoBackupIn296"/.test(d)&&!/id="infoAutoBackup296"/.test(d)&&!/id="infoSaveManager296"/.test(d)&&!/id="infoBackupOut083"/.test(e)&&!/id="infoBackupIn083"/.test(e)&&!/id="infoAutoBackup083"/.test(e)&&!/id="headerCloudStatus"/.test(d)&&!/save\.id='expSaveStatus074'/.test(e),"Dungeon/ExpeditionのVer画面から旧バックアップ/セーブ入口を撤去し、自動世代バックアップも共通ユーザー・セーブ管理へ集約"],
   ["バックアップ互換形式",/frenda-common-backup-v1/.test(tu)&&/function backupPayload\(\)/.test(tu)&&/function importBackupFile/.test(tu),"従来の共通バックアップJSON形式で現在ユーザーへ書出/読込"],
-  ["クラウド即時保存API",/CLOUD_TEST_VERSION="1\.6"/.test(ct)&&/function saveStorageNow\(\)/.test(ct)&&!/if\(cfg\?\.getData\)return pushNow\(true\)/.test(ct)&&/genericStoragePayload\(\)/.test(ct)&&/regressionCaseActive\(\)/.test(ct),"Cloud Test Ver1.6が読込/初期化後にFRENDA_USER.storageを正として即時保存し、旧画面メモリの再保存を防止。回帰テスト保存禁止も維持"],
+  ["クラウド即時保存API",/CLOUD_TEST_VERSION="1\.7"/.test(ct)&&/function saveStorageNow\(\)/.test(ct)&&!/if\(cfg\?\.getData\)return pushNow\(true\)/.test(ct)&&/genericStoragePayload\(\)/.test(ct)&&/regressionCaseActive\(\)/.test(ct),"Cloud Test Ver1.7が読込/初期化後にFRENDA_USER.storageを正として即時保存し、旧画面メモリの再保存を防止。回帰テスト保存禁止も維持"],
+  ["クラウド切替保存バリア",/function flushCloudBeforeAccountChange\(\)/.test(ct)&&/while\(syncing/.test(ct)&&/clearTimeout\(syncTimer\)/.test(ct)&&/await pushNow\(true\)/.test(ct),"ユーザー切替前に900ms保存予約を回収し、進行中保存を待って最新データを強制保存してから認証を切替"],
   ["初期化のユーザー限定",/st\.removeItem\(DUNGEON_KEY\)/.test(tu)&&/st\.removeItem\(EXPEDITION_KEY\)/.test(tu)&&/ユーザー自体は削除されません/.test(tu),"現在ユーザーのゲーム進行だけ初期化し、ユーザー登録は維持"],
   ["クラウドユーザー切替確認",/async function switchCloud\(id\)/.test(tu)&&/に切り替えますか？/.test(tu)&&/activateProfile/.test(tu),"切替確認は共通frenda-user.js、認証実処理はCloud provider"],
   ["全ユーザー名前変更",/data-local-rename/.test(tu)&&/data-cloud-rename/.test(tu)&&/function renameLocal\(id\)/.test(tu)&&/function renameCloud\(id\)/.test(tu),"全ユーザーの表示名変更UIを共通frenda-user.jsへ集約"],
@@ -564,3 +565,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.81: User Ver1.6 modal display guard. Updated 2026-10-11 JST -->
 
 <!-- Ver2.83: Simulator Ver6.97 test-safe起動を監査。/test/実行時パス判定、Sandbox→User→共通JS→test Cloud、simStorage利用、const storage TDZ再発禁止、Portal→/test/simulator.html導線を確認。Updated: 2026-10-11 15:22 JST -->
+
+<!-- Ver2.84: Cloud Test Ver1.7 user-switch save barrier監査を追加。Simulatorの所持/お気に入り変更直後にクラウドユーザーを切り替えても、保存予約・進行中保存を完了してから切り替えることを確認。Updated: 2026-10-11 15:28 JST -->
