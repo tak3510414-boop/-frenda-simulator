@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.73">
+<html lang="ja" data-app-version="3.74">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -16143,6 +16143,8 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.70: AUTO速度変更時のrender()を廃止。進行中演出DOMと予約済みAUTOタイマーを保持し、変更後の速度は次の待機から適用。Updated: 2026-10-11 18:55 JST -->
 <!-- Ver3.72: 先制ルーレットに残存していた旧AUTO_ADVENTURE_SPEED参照を廃止し、5段階速度係数へ統合。ReferenceErrorによる「先攻を決める！」停止を修正。Updated: 2026-10-11 19:18 JST -->
 <!-- Ver3.72: AUTO戦闘テンポを追加で約15%短縮。重要戦闘演出は約8%短縮に留め、手動戦闘は変更なし。Updated: 2026-10-11 19:32 JST -->
+<!-- Ver3.73: レジェンド戦を1戦ごとの相手再抽選方式へ変更。勝利後の捕獲成否・敗北にかかわらず次回は直前と別の相手を抽選。手動「相手を変更」は廃止。未所持80%優先・幻約10%は維持。Updated: 2026-10-11 JST -->
+<!-- Ver3.74: Ver3.73追記コメントがHTML終了タグ後方へ出ていた終端監査エラーを修正。実体はすべてHTML終了タグより前に配置。Updated: 2026-10-11 JST -->
 </body>
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
@@ -16171,4 +16173,3 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Phase5 Dungeon Ver3.68: ユーザー・セーブ管理へ手動バックアップ・初期化・自動世代バックアップ入口を集約。Ver情報画面は端末情報/音量だけに整理し、旧💾クラウド/セーブ入口を撤去。Updated: 2026-10-11 13:40 JST -->
 </html>
 
-<!-- Ver3.73: レジェンド戦を1戦ごとの相手再抽選方式へ変更。勝利後の捕獲成否・敗北にかかわらず次回は直前と別の相手を抽選。手動「相手を変更」は廃止。未所持80%優先・幻約10%は維持。Updated: 2026-10-11 JST -->
