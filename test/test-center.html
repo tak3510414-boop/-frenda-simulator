@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.73">
+<html lang="ja" data-test-center-version="2.74">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.73</title>
+<title>フレンダ 回帰テストセンター Ver2.74</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.73</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.74</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.73</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.74</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -304,13 +304,37 @@ async function runAuto(){
  const versionStatus=!versionKnown?"ng":versionSame?"ok":"warn";
  const versionDetail=!versionKnown?`バージョン取得失敗：本番 P${prodPV}/D${prodDV}/E${prodEV} ・ test P${versions.portal}/D${versions.dungeon}/E${versions.expedition}`:versionSame?`一致：本番 P${prodPV}/D${prodDV}/E${prodEV} ・ test P${versions.portal}/D${versions.dungeon}/E${versions.expedition}`:`差異あり：本番 P${prodPV}/D${prodDV}/E${prodEV} ・ test P${versions.portal}/D${versions.dungeon}/E${versions.expedition}（テスト先行更新中なら正常）`;
  addResult("本番/test バージョン",versionStatus,versionDetail);
- // Foundation Phase1: exact common HTML audit. Portal may differ only while the shared candidate is under test.
+ // Foundation Phase3: release gate for common assets.
+ // A production release is considered complete only when both version and SHA-256 match for every common asset.
  try{
-   const pairs=[["Portal",root["../index.html"]?.text||"",p],["Dungeon",root["../dungeon.html"]?.text||"",d],["Expedition",root["../expedition.html"]?.text||"",e]];
-   const details=[];let exactOk=true;
-   for(const [name,a,b] of pairs){const ha=await sha256Text(a),hb=await sha256Text(b),same=ha===hb;if(!same)exactOk=false;details.push(`${name} ${same?"同一":"差異"} (${ha.slice(0,8)}/${hb.slice(0,8)})`)}
-   addResult("共通HTML実体一致",exactOk?"ok":"warn",details.join(" ・ ")+(exactOk?"":" / Phase2候補はtest先行。検証後はこのtest実体をそのまま本番へ昇格"));
- }catch(err){addResult("共通HTML実体一致","ng","SHA-256監査失敗："+(err?.message||err))}
+   const prodUserText=root["../frenda-user.js"]?.text||"";
+   const assets=[
+    {name:"Portal",prodText:root["../index.html"]?.text||"",testText:p,prodVer:portalVersion(root["../index.html"]?.text||""),testVer:portalVersion(p)},
+    {name:"Dungeon",prodText:root["../dungeon.html"]?.text||"",testText:d,prodVer:htmlVersion(root["../dungeon.html"]?.text||""),testVer:htmlVersion(d)},
+    {name:"Expedition",prodText:root["../expedition.html"]?.text||"",testText:e,prodVer:htmlVersion(root["../expedition.html"]?.text||""),testVer:htmlVersion(e)},
+    {name:"User",prodText:prodUserText,testText:tu,prodVer:productionJsVersion("frenda-user.js",prodUserText),testVer:productionJsVersion("frenda-user.js",tu)}
+   ];
+   const details=[];let unknown=false,allVersionSame=true,allHashSame=true,sameVersionHashDiff=false;
+   for(const a of assets){
+     const hp=await sha256Text(a.prodText),ht=await sha256Text(a.testText);
+     const versionKnown=a.prodVer!=="?"&&a.testVer!=="?";
+     const versionSame=versionKnown&&a.prodVer===a.testVer;
+     const hashSame=hp===ht;
+     if(!versionKnown)unknown=true;
+     if(!versionSame)allVersionSame=false;
+     if(!hashSame)allHashSame=false;
+     if(versionSame&&!hashSame)sameVersionHashDiff=true;
+     details.push(`${a.name} P${a.prodVer}/T${a.testVer} ${hashSame?"SHA同一":"SHA差異"} (${hp.slice(0,8)}/${ht.slice(0,8)})`);
+   }
+   let gateStatus="warn",gateMsg="test先行中。検証完了後、同じ共通資産をそのまま本番へ昇格してください";
+   if(unknown){gateStatus="ng";gateMsg="バージョン取得失敗があるためリリース判定不可"}
+   else if(sameVersionHashDiff){gateStatus="ng";gateMsg="同じVerなのにファイル実体が異なります。作り直し・取り違え・部分反映を確認してください"}
+   else if(allVersionSame&&allHashSame){gateStatus="ok";gateMsg="共通資産は本番/testでVer・SHA-256とも完全一致。昇格完了"}
+   addResult("共通資産リリースゲート",gateStatus,gateMsg+" / "+details.join(" ・ "));
+   addResult("共通資産SHA-256",allHashSame?"ok":"warn",details.map(x=>x.replace(/ P[^ ]+\/T[^ ]+ /," ")).join(" ・ "));
+ }catch(err){
+   addResult("共通資産リリースゲート","ng","SHA-256監査失敗："+(err?.message||err));
+ }
 
  const masterJs=root["../frenda-master.js"]?.text||"",masterJson=root["../pickMaster_v1_64_xt2_wonder_preview.json"]?.text||"",jm=jsMasterVersion(masterJs),jj=jsonMasterInfo(masterJson);
  addResult("Master JS/JSON整合",jm===jj.version&&jj.count===1066?"ok":"ng",`JS ${jm} / JSON ${jj.version} / JSON ${jj.count}件`);
@@ -519,4 +543,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.69: 基盤共通化Phase1。Portal/Dungeon/Expeditionの本番-test実体SHA-256監査を追加。Dungeon/Expeditionは本番検証済みHTMLをそのままtestへコピーし、Portalはroot/test共通化候補Ver1.3をtestで先行検証。Updated: 2026-10-11 11:45 JST -->
 <!-- Ver2.72: Phase2監査条件を現行基盤へ修正。frenda-test.js Ver2.0を正としてテスト保存領域を監査し、ポータル単一入口は共通frenda-user.jsが所有、frenda-cloud-test.js Ver1.4はheadless providerとして旧認証ランチャーを起動しない構成を正として判定。Updated: 2026-10-11 12:20 JST -->
 <!-- Ver2.73: 本番 frenda-cloud.js Ver1.5 のCloud provider基盤監査を追加。バージョン比較は本番Cloudを動的取得し、共通frenda-user.js Ver1.2との接続（registerCloudProvider / getProfiles / activateProfile / authenticateProfile）とパスワード非保存を確認。Updated: 2026-10-11 12:46 JST -->
+<!-- Ver2.74: 基盤修正Phase3。共通資産 index.html / dungeon.html / expedition.html / frenda-user.js をリリースゲート対象に固定。本番/testでVersionとSHA-256が両方一致した場合のみ緑✓、test先行は黄⚠、同一VersionなのにSHA差異は赤×として、検証済み資産をそのまま本番昇格したかを機械監査。Updated: 2026-10-11 12:50 JST -->
 </html>
