@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 1.5 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 1.6 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="1.5";
+const CLOUD_TEST_VERSION="1.6";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -281,7 +281,7 @@ async function init(options){
   cfg=options||{};try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}await initializeCloudSession();userApi()?.refreshUI?.();
 }
 function genericStoragePayload(){const st=userApi()?.storage;let state={};try{const raw=st?.getItem("frenda:dungeon:v1");if(typeof raw==="string"&&raw)state=JSON.parse(raw)||{};const expRaw=st?.getItem("frenda:expedition:v1");if(typeof expRaw==="string"&&expRaw){const ex=JSON.parse(expRaw);if(ex&&typeof ex==="object")state.expeditionShared=ex}}catch(e){console.warn("FRENDA_CLOUD_TEST_GENERIC_PAYLOAD",e);state={}}return {format_version:1,dungeon_version:String(state?.appVersion||""),state}}
-async function saveStorageNow(){if(regressionCaseActive()){setStatus(REGRESSION_SAVE_BLOCK_TEXT);return false}if(!cloudMode()||!session)return false;if(cfg?.getData)return pushNow(true);if(syncing)return false;syncing=true;setStatus("クラウド保存中…");try{const payload=genericStoragePayload(),str=safeJSON(payload);cachePayload(payload);const row={user_id:session.user.id,[columnName()]:payload,updated_at:new Date().toISOString()};const {error}=await client.from(TABLE).upsert(row,{onConflict:"user_id"});if(error)throw error;lastUploaded=str;setStatus("クラウド保存済み");return true}catch(e){console.error("FrendaCloudTest saveStorageNow",e);setStatus("クラウド保存エラー","error");return false}finally{syncing=false}}
+async function saveStorageNow(){if(regressionCaseActive()){setStatus(REGRESSION_SAVE_BLOCK_TEXT);return false}if(!cloudMode()||!session)return false;if(syncing)return false;syncing=true;setStatus("クラウド保存中…");try{const payload=genericStoragePayload(),str=safeJSON(payload);cachePayload(payload);const row={user_id:session.user.id,[columnName()]:payload,updated_at:new Date().toISOString()};const {error}=await client.from(TABLE).upsert(row,{onConflict:"user_id"});if(error)throw error;lastUploaded=str;setStatus("クラウド保存済み");return true}catch(e){console.error("FrendaCloudTest saveStorageNow",e);setStatus("クラウド保存エラー","error");return false}finally{syncing=false}}
 const provider={
   version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,passwordStored:false,regressionSaveGuard:true,
   getProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),getActiveProfile:()=>{const p=currentCloudProfile();return p?{id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)}:null},
@@ -295,3 +295,5 @@ window.FrendaCloud={version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly
 /* Ver1.4: 共通frenda-user.jsへ統合ユーザーUIを移管。Cloud Testは認証・Supabase保存・回帰テスト保存禁止だけを担うheadless providerとして登録。旧UIコードは移行安全性のため未呼出しで残す。Updated: 2026-10-11 12:00 JST */
 
 /* Ver1.5: Phase4。共通frenda-user.jsのバックアップ読込/初期化をクラウドへ即時反映するsaveStorageNow provider APIを追加。Portal(accountOnly)でも現在ストレージからdungeon_dataを構成して保存可能。回帰テスト中は保存禁止を維持。Updated: 2026-10-11 13:10 JST */
+
+/* Ver1.6: Phase4 cloud reset fix. saveStorageNow always serializes FRENDA_USER.storage for user-management backup import/reset, instead of falling back to the page getData snapshot. This prevents a reset from immediately re-uploading the pre-reset in-memory game state. Normal game autosave still uses pushNow/getData. Updated: 2026-10-11 13:24 JST */
