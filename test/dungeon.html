@@ -7033,8 +7033,9 @@ function attackValue(a,d,luckLevel=0){
  return {damage,hit:true,e:x.e,model:x.model,accuracy,baseDamage,spreadPct,nice}
 }
 function battleLine(s){state.run.battle.log.push(s);if(state.run.battle.log.length>30)state.run.battle.log=state.run.battle.log.slice(-30)}
-const fxSleep=ms=>new Promise(r=>setTimeout(r,autoAdventureRuntimeActive()?Math.max(50,Math.round(ms*AUTO_ADVENTURE_BASE_SPEED*autoAdventureDelayFactor())):ms));
-const fxSleepImportant=ms=>new Promise(r=>setTimeout(r,autoAdventureRuntimeActive()?Math.max(260,Math.round(ms*AUTO_ADVENTURE_BASE_SPEED*Math.max(.65,autoAdventureDelayFactor()))):ms));
+const AUTO_BATTLE_TEMPO_FACTOR=.85; // AUTO戦闘演出だけ追加で約15%短縮
+const fxSleep=ms=>new Promise(r=>setTimeout(r,autoAdventureRuntimeActive()?Math.max(50,Math.round(ms*AUTO_ADVENTURE_BASE_SPEED*autoAdventureDelayFactor()*AUTO_BATTLE_TEMPO_FACTOR)):ms));
+const fxSleepImportant=ms=>new Promise(r=>setTimeout(r,autoAdventureRuntimeActive()?Math.max(260,Math.round(ms*AUTO_ADVENTURE_BASE_SPEED*Math.max(.65,autoAdventureDelayFactor())*.92)):ms));
 function launchTypeFx(type,target){const layer=document.getElementById("battleFxLayer");if(!layer)return;const v=TYPE_FX[type]||TYPE_FX["ノーマル"],el=document.createElement("div");el.className=`battleTypeFx ${target==="enemy"?"toEnemy":"toMe"}${type==="あく"||type==="ゴースト"?" fxDark":""}`;el.style.setProperty("--fx1",v[0]);el.style.setProperty("--fx2",v[1]);el.innerHTML=`<span class="fxSymbol">${v[2]}</span>`;layer.appendChild(el);setTimeout(()=>el.remove(),780)}
 async function showImpactText(text,kind=""){const el=document.getElementById("battleImpact");if(!el)return;el.className=`battleImpact ${kind}`;el.textContent=text;void el.offsetWidth;el.classList.add("show");if(kind==="good"){document.getElementById("battleStage")?.classList.add("stageShake");setTimeout(()=>document.getElementById("battleStage")?.classList.remove("stageShake"),390)}await fxSleep(850);el.classList.remove("show")}
 async function showBondEndurePraise(name){document.getElementById("bondEndurePraise")?.remove();const ov=document.createElement("div");ov.id="bondEndurePraise";ov.className="bondEndurePraise";ov.innerHTML=`<div class="bondEndurePraiseCard"><div class="bondEndurePraiseKicker">♥ BOND POWER ♥</div><div class="bondEndurePraiseName">${esc(name||"仲間")}、すごい！</div><div class="bondEndurePraiseMain">よく耐えた！</div><div class="bondEndurePraiseSub">キミとの絆で、ギリギリ踏ん張った！</div><div class="bondEndurePraiseHp">残りHP <b>1</b></div></div>`;document.body.appendChild(ov);try{navigator.vibrate?.([90,45,130])}catch{}await fxSleep(1850);ov.animate?.([{opacity:1},{opacity:0}],{duration:260,fill:"forwards"});await fxSleep(250);ov.remove()}
@@ -16134,7 +16135,8 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 </style>
 <!-- Ver3.69: 自動冒険速度を×1〜×5の5段階化。全R1/R2/R3/R4制覇で×2/×3/×4/×5を解放。AUTO中は速度変更と停止を分離し、停止は安全なアクション境界で実行。Updated: 2026-10-11 18:46 JST -->
 <!-- Ver3.70: AUTO速度変更時のrender()を廃止。進行中演出DOMと予約済みAUTOタイマーを保持し、変更後の速度は次の待機から適用。Updated: 2026-10-11 18:55 JST -->
-<!-- Ver3.71: 先制ルーレットに残存していた旧AUTO_ADVENTURE_SPEED参照を廃止し、5段階速度係数へ統合。ReferenceErrorによる「先攻を決める！」停止を修正。Updated: 2026-10-11 19:18 JST -->
+<!-- Ver3.72: 先制ルーレットに残存していた旧AUTO_ADVENTURE_SPEED参照を廃止し、5段階速度係数へ統合。ReferenceErrorによる「先攻を決める！」停止を修正。Updated: 2026-10-11 19:18 JST -->
+<!-- Ver3.72: AUTO戦闘テンポを追加で約15%短縮。重要戦闘演出は約8%短縮に留め、手動戦闘は変更なし。Updated: 2026-10-11 19:32 JST -->
 </body>
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
