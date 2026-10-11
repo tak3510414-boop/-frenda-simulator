@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.91">
+<html lang="ja" data-test-center-version="2.92">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.91</title>
+<title>フレンダ 回帰テストセンター Ver2.92</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.91</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.92</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.91</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.92</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -504,7 +504,7 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.87: Test Center自己バージョン識別子を画面表示と統一し、自己監査の誤検知を修正。Updated: 2026-10-11 17:08 JST -->
 <!-- Ver2.88: 共通User監査の期待版をVer1.7へ更新。Simulator共通バックアップ／共通User基盤のVer1.6固定による誤検知を解消。Updated: 2026-10-11 18:07 JST -->
 <!-- Ver2.89: ヘッダー固定表示を含むTest Center全バージョン表記を統一。dataset/title/header/metric/自己監査をVer2.89へ同期。Updated: 2026-10-11 18:31 JST -->
-<!-- Ver2.91: Dungeon Ver3.69 自動冒険速度×1〜×5、R1〜R4段階解放、速度/停止分離、安全停止、重要演出保護の静的監査を追加。Updated: 2026-10-11 18:50 JST -->
+<!-- Ver2.92: Dungeon Ver3.71のAUTO先制ルーレット旧速度定数残存を監査対象化。5段階速度係数への統合を確認。Updated: 2026-10-11 19:18 JST -->
 </body><!-- Ver2.11: black-PC mission shortcut regression check, strict all-R1 expedition unlock, and legacy admin unlock cleanup checks added. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver2.12: dungeon-only 95-105% damage variance and 5% Nice Attack regression checks/manual battle route added. Updated: 2026-10-06 21:35 JST -->
 <!-- Ver2.13: capture-result pre-disclosure regression check added; success/failure must first appear on result screen. Updated: 2026-10-06 21:50 JST -->

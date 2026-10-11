@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.70">
+<html lang="ja" data-app-version="3.71">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -7005,7 +7005,7 @@ async function startInitiativeRoulette(afterAction=""){
  ov.innerHTML=`<div class="initiativeRoulettePanel"><div class="initiativeKicker">⚡ SPEED TIE!</div><h2>すばやさ互角！</h2><div class="initiativeMatch"><div><img src="${esc(imageOf(me))}" alt=""><b>${esc(me.name_ja)}</b><span>すばやさ Lv${ini.meLevel||"?"}</span></div><em>VS</em><div><img src="${esc(imageOf(en))}" alt=""><b>${esc(en.name_ja)}</b><span>すばやさ Lv${ini.enemyLevel||"?"}</span></div></div><div class="initiativeOdds"><span>味方 <b>${chance}%</b></span><strong>${`🍀 パーティ運 ${Number(ini.luck||0).toFixed(1)}/${LUCK_MAX}`}</strong><span>相手 <b>${100-chance}%</b></span></div><div class="initiativeRouletteBar"><div class="initiativeZone ally" style="width:${chance}%">味方</div><div class="initiativeZone enemy" style="width:${100-chance}%">相手</div><i id="initiativeMarker"></i></div><div class="initiativeRouletteText" id="initiativeRouletteText">先攻を決める！</div></div>`;
  document.body.appendChild(ov);document.body.style.overflow="hidden";
  const markerEl=ov.querySelector("#initiativeMarker"),textEl=ov.querySelector("#initiativeRouletteText");
- const start=performance.now(),duration=state.run?.autoAdventure?Math.round(1550*AUTO_ADVENTURE_SPEED):1550;
+ const start=performance.now(),duration=state.run?.autoAdventure?Math.round(1550*AUTO_ADVENTURE_BASE_SPEED*autoAdventureDelayFactor()):1550;
  await new Promise(resolve=>{const tick=now=>{const p=Math.min(1,(now-start)/duration);const sweep=50+48*Math.sin((now-start)/(46+42*p));markerEl.style.left=`${Math.max(1,Math.min(99,sweep))}%`;if(p<1)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
  markerEl.style.transition="left .28s cubic-bezier(.2,.8,.2,1)";markerEl.style.left=`${roll}%`;await fxSleep(330);
  ov.classList.add(ini.meFirst?"allyWin":"enemyWin");textEl.textContent=ini.meFirst?`${me.name_ja}が先攻！`:`${en.name_ja}が先攻！`;
@@ -16134,6 +16134,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 </style>
 <!-- Ver3.69: 自動冒険速度を×1〜×5の5段階化。全R1/R2/R3/R4制覇で×2/×3/×4/×5を解放。AUTO中は速度変更と停止を分離し、停止は安全なアクション境界で実行。Updated: 2026-10-11 18:46 JST -->
 <!-- Ver3.70: AUTO速度変更時のrender()を廃止。進行中演出DOMと予約済みAUTOタイマーを保持し、変更後の速度は次の待機から適用。Updated: 2026-10-11 18:55 JST -->
+<!-- Ver3.71: 先制ルーレットに残存していた旧AUTO_ADVENTURE_SPEED参照を廃止し、5段階速度係数へ統合。ReferenceErrorによる「先攻を決める！」停止を修正。Updated: 2026-10-11 19:18 JST -->
 </body>
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
