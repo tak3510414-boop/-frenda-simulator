@@ -1,7 +1,7 @@
-/* FRENDA_USER_VERSION: 1.6 / shared production+test user storage facade + unified user UI; cloud provider is environment adapter; local/cloud saves never synchronize */
+/* FRENDA_USER_VERSION: 1.7 / shared production+test user storage facade + unified user UI; cloud provider is environment adapter; local/cloud saves never synchronize */
 (()=>{
 "use strict";
-const VERSION="1.6";
+const VERSION="1.7";
 const TEST=window.FRENDA_TEST?.active?window.FRENDA_TEST:null;
 const IS_TEST=!!TEST;
 const MODE_KEY="frenda:user:storage-mode:v1";
@@ -55,7 +55,7 @@ function makeProdBackend(){
  function readCloudCache(u=cloudUserId()){const k=cacheKey(u);if(!k)return null;try{const raw=sessionGet(k);return raw?JSON.parse(raw):null}catch{return null}}
  function writeCloudCache(p,u=cloudUserId()){const k=cacheKey(u);return k?sessionSet(k,JSON.stringify(p??null)):false}
  function markCloudDirty(u=cloudUserId()){const k=dirtyKey(u);return k?sessionSet(k,"1"):false} function clearCloudDirty(u=cloudUserId()){const k=dirtyKey(u);if(k)sessionRemove(k)} function cloudDirty(u=cloudUserId()){const k=dirtyKey(u);return !!k&&sessionGet(k)==="1"}
- function seedCloud(p){mem.clear();const s=p&&typeof p==="object"&&p.state&&typeof p.state==="object"?p.state:null;if(!s)return;mem.set(DUNGEON_KEY,JSON.stringify(s));if(s.expeditionShared&&typeof s.expeditionShared==="object")mem.set(EXPEDITION_KEY,JSON.stringify(s.expeditionShared))}
+ function seedCloud(p){mem.clear();if(!p||typeof p!=="object")return;if(p.storage&&typeof p.storage==="object"&&!Array.isArray(p.storage)){for(const [k,v] of Object.entries(p.storage)){if(typeof k==="string"&&typeof v==="string")mem.set(k,v)}return}const s=p.state&&typeof p.state==="object"?p.state:null;if(!s)return;mem.set(DUNGEON_KEY,JSON.stringify(s));if(s.expeditionShared&&typeof s.expeditionShared==="object")mem.set(EXPEDITION_KEY,JSON.stringify(s.expeditionShared))}
  function seedLocal(){mem.clear();const p=prefix();try{for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw===null||!String(raw).startsWith(p))continue;mem.set(String(raw).slice(p.length),String(native.getItem.call(real,raw)??""))}}catch(e){console.error("FRENDA_USER_LOCAL_SEED_FAILED",e)}}
  function persistSet(k,v){try{native.setItem.call(real,prefix()+String(k),String(v));if(profileId()==="A"&&legacyMirrorKey(k))native.setItem.call(real,String(k),String(v));return true}catch{return false}}
  function persistRemove(k){try{native.removeItem.call(real,prefix()+String(k));if(profileId()==="A"&&legacyMirrorKey(k))native.removeItem.call(real,String(k));return true}catch{return false}}
@@ -118,3 +118,5 @@ new MutationObserver(()=>{if(!document.getElementById("frendaActiveUserBadge"))r
 /* Ver1.4: Phase5 入口一本化。Dungeon/Expeditionが公開するFRENDA_USER_SAVE_TOOLS経由で自動世代バックアップをユーザー・セーブ管理へ移動。Ver画面の旧バックアップ/セーブ入口を廃止する共通UI。Updated: 2026-10-11 13:40 JST */
 
 /* Ver1.5: Phase6 Simulator統合。共通バックアップに現在ユーザーのstorage全体を追加し、Simulatorの所持・お気に入り・修正値・写真等も同一バックアップへ包含。旧frenda-common-backup-v1は引き続き読込可能。ゲーム初期化は現在ユーザーのゲーム保存領域全体を初期化し音量設定のみ維持。Updated: 2026-10-11 14:25 JST */
+
+/* Ver1.7: 本番Cloud復元でSimulator payload.storageを優先復元。クラウドユーザー切替後も所持・お気に入り・修正値・写真等のSimulator保存領域を維持し、Dungeon/Expeditionのpayload.state互換も継続。Updated: 2026-10-11 17:18 JST */
