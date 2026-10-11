@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.65">
+<html lang="ja" data-test-center-version="2.66">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.65</title>
+<title>フレンダ 回帰テストセンター Ver2.66</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.65</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.66</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.65</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.66</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -275,8 +275,8 @@ function captureResultHiddenUntilResultOK(text){
 }
 async function runAuto(){
  $("#autoResults").innerHTML="";
- let d,e,t,ct;
- try{[d,e,t,ct]=await Promise.all([fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js"),fetchText("frenda-cloud-test.js")]);addResult("必要ファイル取得","ok","test/dungeon / test/expedition / test/frenda-test / test/frenda-cloud-test")}
+ let p,d,e,t,ct;
+ try{[p,d,e,t,ct]=await Promise.all([fetchText("index.html"),fetchText("dungeon.html"),fetchText("expedition.html"),fetchText("frenda-test.js"),fetchText("frenda-cloud-test.js")]);addResult("必要ファイル取得","ok","test/index / test/dungeon / test/expedition / test/frenda-test / test/frenda-cloud-test")}
  catch(err){addResult("必要ファイル取得","ng",err.message);return}
  versions={dungeon:htmlVersion(d),expedition:htmlVersion(e)};$("#sourceVersions").textContent=`TC ${document.documentElement.dataset.testCenterVersion||"?"} / Dungeon ${versions.dungeon} / Expedition ${versions.expedition}`;renderChecks();
 
@@ -308,15 +308,20 @@ async function runAuto(){
  addResult("旧・重複ファイル",found.length?"warn":"ok",found.length?`残存候補: ${found.map(x=>x.replace("../","")).join(" / ")}`:"既知の旧版・重複候補なし");
  const self=await fetchOptional("test-center.html");
  const testCloudOk=testCloudVersion(ct)!=="?";
- addResult("test/ 5ファイル",self.ok&&testCloudOk?"ok":"ng","dungeon.html / expedition.html / frenda-test.js / frenda-cloud-test.js / test-center.html");
+ addResult("test/ 6ファイル",self.ok&&testCloudOk?"ok":"ng","index.html / dungeon.html / expedition.html / frenda-test.js / frenda-cloud-test.js / test-center.html");
 
+ const portalUnifiedEntry=/id="homeUserHost"/.test(p)&&/homeUserHost headerTop/.test(p)&&/frenda-test\.js\?portal=1/.test(p)&&/frenda-cloud-test\.js\?portal=1/.test(p)&&/unifiedEntryOnly:true/.test(p)&&!/homeCloudHost/.test(p)&&!/frenda-cloud\.js\?b=/.test(p)&&!/同期エラー/.test(p)&&!/💾/.test(p);
+ addResult("テストポータル入口統合",portalUnifiedEntry?"ok":"ng","/test/index.html は現在ユーザー表示だけを入口とし、旧セーブ/同期/Cloud入口を持たない");
+ const portalRoutes=/href="\.\.\/simulator\.html"/.test(p)&&/href="dungeon\.html"/.test(p)&&/href="expedition\.html"/.test(p);
+ addResult("テストポータル3導線",portalRoutes?"ok":"ng","Simulatorは本番共通、Dungeon/Expeditionは/test/へ遷移");
  const checks=[
   ["Test Center版表示",(()=>{const v=document.documentElement.dataset.testCenterVersion||"";return !!v&&document.getElementById("testCenterVersion")?.textContent.includes(v)})(),"画面上でTest Center自身のVerを確認可能"],
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
   ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.9/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/seedLocalSandbox/.test(t)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/const inTestPath=/.test(t)&&/location\.pathname/.test(t),"/test/ はURLパラメータなしでも常時分離。ローカルはユーザー別localStorage、クラウドのゲームキャッシュはsessionStorage、ユーザー/認証メタはテスト専用メタ領域。本番セーブキーを書き換えない"],
   ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js を実際の共通JSローダーより先に実行"],
-  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="1.2","/test/ は frenda-cloud-test.js Ver1.2（統合ユーザー一覧＋クラウド切替確認＋全ユーザー改名＋クラウド端末登録削除＋認証セッション記憶＋回帰テスト保存禁止）を使用し、本番frenda-cloud.jsと分離"],
+  ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(d)&&/else document\.write\(`<script src="frenda-cloud\.js/.test(e)&&testCloudVersion(ct)==="1.3","/test/ は frenda-cloud-test.js Ver1.3（統合ユーザー一覧＋ポータル単一入口＋クラウド切替確認＋全ユーザー改名＋クラウド端末登録削除＋認証セッション記憶＋回帰テスト保存禁止）を使用し、本番frenda-cloud.jsと分離"],
+  ["ポータル単一入口対応",/unifiedEntryOnlySupported:true/.test(ct)&&/cfg\?\.unifiedEntryOnly/.test(ct)&&/if\(!cfg\?\.unifiedEntryOnly\)ensureLauncher\(\)/.test(ct),"ポータルでは現在ユーザー表示だけを入口にし、旧テスト認証ボタン/ランチャーを生成しない"],
   ["統合ユーザー一覧",/unifiedUsers:true/.test(ct)&&/rememberedCloudProfiles:true/.test(ct)&&/passwordStored:false/.test(ct)&&/CLOUD_PROFILE_META="cloud-profiles:v1"/.test(ct)&&/ACTIVE_ACCOUNT_META="active-user:v1"/.test(ct),"ローカル/クラウドを同一一覧に表示し、クラウドは任意表示名＋セッション記憶（パスワード保存なし）"],
   ["クラウドユーザー切替確認",/async function switchCloudProfile\(profileId\)/.test(ct)&&/「\$\{p\.name\}」に切り替えますか？/.test(ct),"クラウドユーザーへの切替もローカルと同様に確認ダイアログを表示"],
   ["全ユーザー名前変更",/const edit=!regression\?/.test(ct)&&/data-local-rename/.test(ct)&&/data-cloud-rename/.test(ct)&&!/ローカルユーザー名の変更はローカルユーザーに切り替えてから/.test(ct),"✏️はローカル/クラウドの全ユーザーに表示し、現在使用中かどうかに関係なく表示名を変更可能"],

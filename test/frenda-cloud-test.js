@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 1.2 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 1.3 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="1.2";
+const CLOUD_TEST_VERSION="1.3";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -161,7 +161,7 @@ function ensureLauncher(){
   let el=document.getElementById("frendaCloudTestLauncher");if(!el){el=document.createElement("button");el.type="button";el.id="frendaCloudTestLauncher";el.className="frendaCloudTestLauncher";el.textContent="🧪";document.body.appendChild(el)}bindLauncher(el);return el;
 }
 function watchLauncher(){ensureLauncher();if(launcherObserver)return;launcherObserver=new MutationObserver(()=>{ensureLauncher();ensureUserBadge()});launcherObserver.observe(document.documentElement,{childList:true,subtree:true})}
-function injectButton(){if(button)return;injectStyles();watchLauncher();button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="🧪 テスト認証";button.onclick=openModal;(document.querySelector(".headerBtns")||document.querySelector("header")||document.body).appendChild(button)}
+function injectButton(){if(button)return;injectStyles();if(cfg?.unifiedEntryOnly)return;watchLauncher();button=document.createElement("button");button.type="button";button.className="frendaCloudBtn";button.textContent="🧪 テスト認証";button.onclick=openModal;(document.querySelector(".headerBtns")||document.querySelector("header")||document.body).appendChild(button)}
 function closeModal(){modal?.remove();modal=null}
 function renderUnifiedUsers(){
   const regression=regressionCaseActive(),activeLocal=!session&&!regression?localProfileId():"",clouds=readCloudProfiles(),locals=localProfiles();
@@ -264,11 +264,11 @@ async function initializeCloudSession(){
   if(remote){const remoteStr=safeJSON(remote),currentStr=safeJSON(current),cachedStr=safeJSON(cached);if(remoteStr!==cachedStr){activatePayload(remote);lastUploaded=remoteStr;location.reload();return}if(currentStr!==remoteStr){await pushNow(true)}else{lastUploaded=remoteStr;cachePayload(remote)}}else{await pushNow(true)}subscribeStorage();setStatus(`${profile.name}・クラウド保存`);
 }
 async function init(options){
-  cfg=options||{};injectButton();ensureLauncher();try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}ensureUserBadge();updateUserBadge();await initializeCloudSession();updateUserBadge();
+  cfg=options||{};injectButton();if(!cfg?.unifiedEntryOnly)ensureLauncher();try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}ensureUserBadge();updateUserBadge();await initializeCloudSession();updateUserBadge();
 }
 window.FrendaCloud={
-  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,unifiedUsers:true,rememberedCloudProfiles:true,passwordStored:false,regressionSaveGuard:true,localProfiles:true,localProfileAdd:true,localProfileRename:true,localProfileDelete:true,cloudProfileRename:true,cloudProfileDelete:true,isRegressionCase:regressionCaseActive,
+  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,unifiedUsers:true,rememberedCloudProfiles:true,passwordStored:false,unifiedEntryOnlySupported:true,regressionSaveGuard:true,localProfiles:true,localProfileAdd:true,localProfileRename:true,localProfileDelete:true,cloudProfileRename:true,cloudProfileDelete:true,isRegressionCase:regressionCaseActive,
   init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,getCloudProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),open:openModal
 };
 })();
-/* Ver1.2: 名前変更✏️を全ユーザーに表示。現在使用中かどうかに関係なく、ローカル/クラウド双方の表示名だけを変更可能。内部ID・保存領域・認証情報・クラウドセーブは変更しない。Updated: 2026-10-11 08:55 JST */
+/* Ver1.3: ポータル用 unifiedEntryOnly を追加。現在ユーザー表示だけを入口として利用し、旧🧪認証ボタン/ランチャーを生成しない。統合ユーザー一覧・認証・保存仕様はVer1.2を維持。Updated: 2026-10-11 09:35 JST */
