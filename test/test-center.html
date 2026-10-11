@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.67">
+<html lang="ja" data-test-center-version="2.68">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.67</title>
+<title>フレンダ 回帰テストセンター Ver2.68</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.67</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.68</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.67</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.68</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -40,7 +40,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 
 <section class="card">
  <div class="sectionTitle">本番 / test バージョン比較</div>
- <div class="deviceHint">Portal／Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照します。Userは本番の <code>frenda-user.js</code> を本番専用として表示します。Cloudは本番の <code>frenda-cloud.js</code> ではなく、統合ユーザー一覧とクラウド専用保存を検証する <code>frenda-cloud-test.js</code> を使用します。ローカルとクラウドは同期せず、クラウドのパスワードは保存しません。<code>frenda-test.js</code> もテスト専用です。</div>
+ <div class="deviceHint">Portal／Dungeon／Expedition本体とJS構成を比較します。<code>/test/</code> の共通JSは本番ルートと同じファイルを参照します。基盤共通化Phase1ではPortal／Dungeon／Expedition HTMLを共通資産化します。User共通化はPhase2で行います。現時点のUserは本番専用表示です。Cloudは本番の <code>frenda-cloud.js</code> ではなく、統合ユーザー一覧とクラウド専用保存を検証する <code>frenda-cloud-test.js</code> を使用します。ローカルとクラウドは同期せず、クラウドのパスワードは保存しません。<code>frenda-test.js</code> もテスト専用です。</div>
  <div id="versionCompare"><table class="versionCompare"><tbody><tr><td>読込中</td><td>--</td><td>--</td><td>--</td></tr></tbody></table></div>
 </section>
 
@@ -212,6 +212,7 @@ function updateProgress(){const all=[...document.querySelectorAll("[data-check]"
 function setProfile(id){currentProfile=id;localStorage.setItem("frenda:regression:profile",id);document.querySelectorAll("[data-profile]").forEach(b=>b.classList.toggle("active",b.dataset.profile===id));updateViewport();renderChecks()}
 async function fetchText(name){const r=await fetch(`${name}?_reg=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw new Error(`${name}: HTTP ${r.status}`);return r.text()}
 async function fetchOptional(name){try{const r=await fetch(`${name}?_reg=${Date.now()}`,{cache:"no-store"});return {ok:r.ok,status:r.status,text:r.ok?await r.text():""}}catch(e){return {ok:false,status:0,text:"",error:String(e?.message||e)}}}
+async function sha256Text(text){const data=new TextEncoder().encode(String(text));const hash=await crypto.subtle.digest("SHA-256",data);return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("")}
 function jsMasterVersion(t){return t.match(/master_version:\s*([0-9A-Za-z._-]+)/)?.[1]||t.match(/["']master_version["']\s*:\s*["']([^"']+)/)?.[1]||"?"}
 function productionJsVersion(file,text){
  if(file==="frenda-master.js")return jsMasterVersion(text);
@@ -303,6 +304,14 @@ async function runAuto(){
  const versionStatus=!versionKnown?"ng":versionSame?"ok":"warn";
  const versionDetail=!versionKnown?`バージョン取得失敗：本番 P${prodPV}/D${prodDV}/E${prodEV} ・ test P${versions.portal}/D${versions.dungeon}/E${versions.expedition}`:versionSame?`一致：本番 P${prodPV}/D${prodDV}/E${prodEV} ・ test P${versions.portal}/D${versions.dungeon}/E${versions.expedition}`:`差異あり：本番 P${prodPV}/D${prodDV}/E${prodEV} ・ test P${versions.portal}/D${versions.dungeon}/E${versions.expedition}（テスト先行更新中なら正常）`;
  addResult("本番/test バージョン",versionStatus,versionDetail);
+ // Foundation Phase1: exact common HTML audit. Portal may differ only while the shared candidate is under test.
+ try{
+   const pairs=[["Portal",root["../index.html"]?.text||"",p],["Dungeon",root["../dungeon.html"]?.text||"",d],["Expedition",root["../expedition.html"]?.text||"",e]];
+   const details=[];let exactOk=true;
+   for(const [name,a,b] of pairs){const ha=await sha256Text(a),hb=await sha256Text(b),same=ha===hb;if(name!=="Portal"&&!same)exactOk=false;details.push(`${name} ${same?"同一":"差異"} (${ha.slice(0,8)}/${hb.slice(0,8)})`)}
+   addResult("共通HTML実体一致",exactOk?"ok":"ng",details.join(" ・ ")+" / PortalはPhase1検証中のみ差異可");
+ }catch(err){addResult("共通HTML実体一致","ng","SHA-256監査失敗："+(err?.message||err))}
+
  const masterJs=root["../frenda-master.js"]?.text||"",masterJson=root["../pickMaster_v1_64_xt2_wonder_preview.json"]?.text||"",jm=jsMasterVersion(masterJs),jj=jsonMasterInfo(masterJson);
  addResult("Master JS/JSON整合",jm===jj.version&&jj.count===1066?"ok":"ng",`JS ${jm} / JSON ${jj.version} / JSON ${jj.count}件`);
  const obsolete=["../dungeon.html.txt","../expedition.html.txt","../pickMaster_v1_63_xt2_wonder_preview.json","../frenda-test.js","../test-center.html"];
@@ -505,4 +514,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.63: Ver2.62の統合ユーザーUI監査を新仕様へ更新。旧Ver1.8固定・旧メール表示・旧data-local-profile・旧sessionStorage前提を廃止し、frenda-test.js Ver1.9 / frenda-cloud-test.js Ver1.0の統合一覧、任意クラウド表示名、端末メタ領域のSupabaseセッション記憶、パスワード非保存、回帰テスト保存禁止を監査。Updated: 2026-10-11 08:35 JST -->
 <!-- Ver2.65: frenda-cloud-test.js Ver1.2に追従。名前変更✏️を全ローカル/クラウドユーザーへ表示し、使用中かどうかに関係なく表示名だけ変更可能なことを監査。Updated: 2026-10-11 08:55 JST -->
 <!-- Ver2.67: Portal（index.html）を正式なバージョン管理対象へ追加。本番Portal Ver1.0 / test Portal Ver1.1を本番-test比較表・対象ソース表示・総合バージョン監査へ追加。Updated: 2026-10-11 09:45 JST -->
+<!-- Ver2.68: 基盤共通化Phase1。Portal/Dungeon/Expeditionの本番-test実体SHA-256監査を追加。Dungeon/Expeditionは本番検証済みHTMLをそのままtestへコピーし、Portalはroot/test共通化候補Ver1.3をtestで先行検証。Updated: 2026-10-11 11:45 JST -->
 </html>
