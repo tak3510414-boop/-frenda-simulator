@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.75">
+<html lang="ja" data-app-version="3.76">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5177,7 +5177,7 @@ function ensureMissionState(target=state){
  target.missions.version=1;
  target.missions.stats=target.missions.stats&&typeof target.missions.stats==="object"?target.missions.stats:{};
  for(const k of MISSION_STAT_KEYS)target.missions.stats[k]=Math.max(0,Math.floor(Number(target.missions.stats[k])||0));
- target.missions.claimed=target.missions.claimed&&typeof target.missions.claimed==="object"?target.missions.claimed:{};
+ target.missions.claimed=target.missions.claimed&&typeof target.missions.claimed==="object"?target.missions.claimed:{};  target.missions.formationAchievements376=target.missions.formationAchievements376&&typeof target.missions.formationAchievements376==="object"?target.missions.formationAchievements376:{};
  return target.missions
 }
 function missionInc(key,amount=1){const m=ensureMissionState();if(!m||!MISSION_STAT_KEYS.includes(key))return 0;m.stats[key]=Math.max(0,Math.floor(Number(m.stats[key])||0)+Math.max(0,Math.floor(Number(amount)||0)));return m.stats[key]}
@@ -5361,6 +5361,62 @@ function firstMissionDefs(){return [
  {id:"first:r1",icon:"🏅",title:"全ダンジョン ランク1制覇",desc:"10ダンジョンすべてのランク1をクリア",progress:()=>THEME_ORDER.filter(did=>Number(state.stats?.[statKey(did,1)]?.clears||0)>0).length,target:THEME_ORDER.length,reward:missionRewardItem("luckyClover",1,"ラッキークローバー ×1","🍀"),visible:()=>totalDungeonClears()>0},
  {id:"first:expedition",icon:"🧭",title:"おでかけ探索を1回完了",desc:"探索から帰還し、成果を受け取る",progress:()=>missionStat("expeditionsCompleted"),target:1,reward:missionRewardItem("captureTicket",1,"ゲットチャンスチケット ×1","🎟️",500),visible:()=>missionExpeditionUnlocked()}
 ]}
+// Ver3.76: Permanent formation challenges; only post-release clears count.
+const FORMATION_TYPES_376=["ノーマル","ほのお","みず","でんき","くさ","こおり","かくとう","どく","じめん","ひこう","エスパー","むし","いわ","ゴースト","ドラゴン","あく","はがね","フェアリー"];
+const FORMATION_TYPE_NAMES_376={"ノーマル":"ノーマル","ほのお":"炎","みず":"水","でんき":"電気","くさ":"草","こおり":"氷","かくとう":"格闘","どく":"毒","じめん":"地面","ひこう":"飛行","エスパー":"超能力","むし":"虫","いわ":"岩","ゴースト":"ゴースト","ドラゴン":"ドラゴン","あく":"悪","はがね":"鋼","フェアリー":"フェアリー"};
+function formationChallengeDefs376(){
+ const d=[];
+ const add=(key,title,desc,rank,reward,icon="🎯")=>d.push({id:`challenge:formation:${key}`,group:"formation",icon,title,desc,progress:()=>Number(ensureMissionState()?.formationAchievements376?.[key]===true),target:1,reward:missionRewardCoins(reward),visible:()=>true});
+ add("grade2r1","★2で出発！","★2の3体だけでR1クリア",1,500,"⭐");
+ add("grade2r2","★2の本気","★2の3体だけでR2クリア",2,1500,"⭐");
+ add("grade3r3","★3トリオ","★3の3体だけでR3クリア",3,1000,"⭐");
+ add("no5r4","★5封印","★5を使わずR4クリア",4,2000,"⭐");
+ add("mix234r3","バラバラトリオ","★2・★3・★4を各1体でR3クリア",3,1500,"⭐");
+ add("mix345r4","豪華バラバラ","★3・★4・★5を各1体でR4クリア",4,1500,"⭐");
+ for(const t of FORMATION_TYPES_376)add(`type:${t}`,`${FORMATION_TYPE_NAMES_376[t]}統一`,`3体とも${t}タイプを持ってR2クリア`,2,500,"🌈");
+ add("type5","タイプチャレンジャー","異なるタイプ統一を5種類達成",0,1000,"🌈");
+ add("type10","タイプエキスパート","異なるタイプ統一を10種類達成",0,2000,"🌈");
+ add("type18","タイプマスター","全18タイプの統一を達成",0,3000,"🌈");
+ add("slowr3","のんびり軍団","3体ともすばやさLv2以下でR3クリア",3,1500,"🐌");
+ add("fastr3","スピード軍団","3体ともすばやさLv4以上でR3クリア",3,1000,"⚡");
+ add("physicalr3","物理一本勝負","3体とも物理技でR3クリア",3,1000,"💪");
+ add("specialr3","特殊一本勝負","3体とも特殊技でR3クリア",3,1000,"🔮");
+ add("singler3","ひとつのタイプで勝負","3体とも単タイプでR3クリア",3,1000,"🎯");
+ add("dualr3","欲張りタイプ","3体とも複合タイプでR3クリア",3,1000,"🎯");
+ add("sameseriesr3","同じ弾の仲間","同じ弾の3体でR3クリア",3,1000,"🎴");
+ add("diffseriesr3","世代を超えたチーム","異なる弾の3体でR3クリア",3,1000,"🎴");
+ return d;
+}
+function recordFormationClear376(run){
+ if(!run||run.legendBattle||!Number.isInteger(Number(run.difficulty)))return;
+ const rank=Number(run.difficulty),members=run.team;
+ if(!Array.isArray(members)||members.length!==3)return;
+ const records=members.map(m=>rec(m.id));if(records.some(x=>!x))return;
+ const achievements=ensureMissionState()?.formationAchievements376;
+ if(!achievements)return;
+ const mark=k=>{achievements[k]=true};
+ const grades=records.map(x=>Number(x.grade));
+ if(rank===1&&grades.every(g=>g===2))mark("grade2r1");
+ if(rank===2&&grades.every(g=>g===2))mark("grade2r2");
+ if(rank===3&&grades.every(g=>g===3))mark("grade3r3");
+ if(rank===4&&grades.every(g=>Number.isFinite(g)&&g>=2&&g<=4))mark("no5r4");
+ if(rank===3&&grades.slice().sort().join(",")==="2,3,4")mark("mix234r3");
+ if(rank===4&&grades.slice().sort().join(",")==="3,4,5")mark("mix345r4");
+ if(rank===2)for(const t of FORMATION_TYPES_376)if(records.every(x=>x.type1===t||x.type2===t))mark(`type:${t}`);
+ if(rank===3){
+  if(records.every(x=>Number.isFinite(Number(x.speed_level))&&x.speed_level!=null&&Number(x.speed_level)<=2))mark("slowr3");
+  if(records.every(x=>Number.isFinite(Number(x.speed_level))&&x.speed_level!=null&&Number(x.speed_level)>=4))mark("fastr3");
+  if(records.every(x=>x.move_class==="物理"))mark("physicalr3");
+  if(records.every(x=>x.move_class==="特殊"))mark("specialr3");
+  if(records.every(x=>!!x.type1&&!x.type2))mark("singler3");
+  if(records.every(x=>!!x.type1&&!!x.type2))mark("dualr3");
+  const series=records.map(x=>String(x.series||"").trim());
+  if(series.every(Boolean)&&new Set(series).size===1)mark("sameseriesr3");
+  if(series.every(Boolean)&&new Set(series).size===3)mark("diffseriesr3");
+ }
+ const count=FORMATION_TYPES_376.filter(t=>achievements[`type:${t}`]===true).length;
+ if(count>=5)mark("type5");if(count>=10)mark("type10");if(count===18)mark("type18");
+}
 function challengeTierDefs(){const defs=[];const add=(group,icon,title,stat,targets,rewards,visible=()=>true)=>targets.forEach((target,i)=>defs.push({id:`challenge:${group}:${target}`,group,icon,title:`${title} ${["Ⅰ","Ⅱ","Ⅲ","Ⅳ","Ⅴ"][i]||i+1}`,desc:`${title.replace(/しよう|しよう！/g,"")} ${target}${stat==="owned"?"体":"回"}`,progress:()=>missionStat(stat),target,reward:missionRewardCoins(rewards[i]),visible}));
  add("clears","⚔️","冒険者","dungeonClears",[10,50,100,300],[300,800,1500,3000]);
  add("battle","💥","バトルマスター","enemyDefeats",[50,200,500,1000],[250,600,1200,2500],()=>missionStat("enemyDefeats")>0||totalDungeonClears()>0);
@@ -5370,6 +5426,7 @@ function challengeTierDefs(){const defs=[];const add=(group,icon,title,stat,targ
  add("training","🏋️","育成名人","trainings",[10,50,100],[200,600,1200],()=>missionTrainingUnlocked());
  add("evolution","✨","進化研究家","evolutions",[5,20,50],[300,800,1500],()=>missionEvolutionUnlocked());
  [1,2,3,4,5].forEach((rank,i)=>defs.push({id:`challenge:master:r${rank}`,group:"master",icon:"🏆",title:`ダンジョンマスター R${rank}`,desc:`全10ダンジョンのランク${rank}を制覇`,progress:()=>THEME_ORDER.filter(did=>Number(state.stats?.[statKey(did,rank)]?.clears||0)>0).length,target:THEME_ORDER.length,reward:rank<5?missionRewardCoins([300,500,800,1200][i]):missionRewardItem("masterBall",1,"マスターボール ×1","🔮",10000),visible:()=>rank===1||missionAllRankCleared(rank-1)}));
+ defs.push(...formationChallengeDefs376());
  return defs}
 function missionVisibleDefs(tab=missionTab){if(tab==="daily")return dailyMissionDefs346();if(tab==="weekly")return weeklyMissionDefs347();return (tab==="challenge"?challengeTierDefs():firstMissionDefs()).filter(m=>!m.visible||m.visible())}
 function missionProgress(m){return Math.max(0,Math.floor(Number(m.progress?.())||0))}
@@ -5462,7 +5519,7 @@ function mergeDungeonConcurrent320(base,current,latest){
  out.frendaCoins=Math.max(0,Math.floor(cn===bn?ln:ln===bn?cn:ln+(cn-bn)));
  out.eggs=mergeEggs320(b.eggs,c.eggs,l.eggs);
  const bm=saveObj320(b.missions)?b.missions:{},cm=saveObj320(c.missions)?c.missions:{},lm=saveObj320(l.missions)?l.missions:{};
- out.missions={version:1,stats:mergeNumericMap320(bm.stats,cm.stats,lm.stats),claimed:mergeRecordMap320(lm.claimed,cm.claimed),daily:mergeDailyMissions346(bm.daily,cm.daily,lm.daily),weekly:mergeWeeklyMissions347(bm.weekly,cm.weekly,lm.weekly)};
+ out.missions={version:1,stats:mergeNumericMap320(bm.stats,cm.stats,lm.stats),claimed:mergeRecordMap320(lm.claimed,cm.claimed),daily:mergeDailyMissions346(bm.daily,cm.daily,lm.daily),weekly:mergeWeeklyMissions347(bm.weekly,cm.weekly,lm.weekly),formationAchievements376:mergeRecordMap320(lm.formationAchievements376,cm.formationAchievements376)};
  // 同時に絆MAXを超えた分は失わずコイン化する。
  let bondOverflow=0;for(const [k,v] of Object.entries(out.bondPoints||{})){const n=Math.max(0,Math.floor(Number(v)||0));if(n>BOND_MAX_POINTS){bondOverflow+=n-BOND_MAX_POINTS;out.bondPoints[k]=BOND_MAX_POINTS}else out.bondPoints[k]=n}
  if(bondOverflow)out.frendaCoins+=bondOverflow*COIN_PER_OVERFLOW_BOND;
@@ -7194,7 +7251,7 @@ function continueAfterFloorAdvance(){
 function continuePickup(){if(!state.run)return;state.run.pickup=null;continueAfterFloorAdvance()}
 function afterFloorResolved(){const r=state.run;if(!r)return;advanceEggs(1);r.floor++;if(r.floor>10)r.floor=10;runTeam().forEach(t=>{if(!t.ko)healPercent(t,.10)});addLog(`地下${r.floor}階へ。生存中の仲間が10%回復。`);updateDeepest(r.floor);if(maybeStartForcedAlertBattle())return;if(tryFloorPickup())return;continueAfterFloorAdvance()}
 function runSummaryData(type,floor){const r=state.run||{},team=(r.team||[]).map(t=>({id:t.id,hp:Number(t.hp||0),max:maxHpFor(t.id),ko:!!t.ko}));return {type,floor,dungeonId:r.dungeonId||"forest",difficulty:r.difficulty||1,luckAverage:averageLuck(r.team||[]),teamIds:team.map(t=>t.id),teamEnd:team,roadBattleWins:Math.max(0,Number(r.roadBattleWins||0)),battleWins:Math.max(0,Number(r.battleWins||0)),xpGained:clone(r.xpGained||{}),drillGained:clone(r.drillGained||{}),coinGained:clone(r.coinGained||{}),captured:(r.captured||[]).slice(),bondGained:[],unlocked:[],eggAward:null,hatchResults:[],autoAdventure:!!r.autoAdventureStarted,autoAdventureCompleted:!!r.autoAdventureStarted&&!r.autoAdventureStopped&&!!r.autoAdventure,autoAdventureStartedMidRun:!!r.autoAdventureStartedMidRun,autoAdventureStartedFloor:Number(r.autoAdventureStartedFloor)||null,autoMode:r.autoMode||null,autoStats:clone(r.autoStats||{})}}
-function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);for(const b of summary.bondGained||[])if(Number(b.coinGained)>0)summary.coinGained[b.id]=Number(summary.coinGained[b.id]||0)+Number(b.coinGained);if(type==="clear"){const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;summary.autoUnlocked=firstClear&&!r.autoAdventureStarted;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear);
+function beginRunEnd(type,floor){const r=state.run;if(!r)return;if(type==="clear")sfx("clear");const summary=runSummaryData(type,floor);summary.bondGained=awardBondForRun(r);for(const b of summary.bondGained||[])if(Number(b.coinGained)>0)summary.coinGained[b.id]=Number(summary.coinGained[b.id]||0)+Number(b.coinGained);if(type==="clear"){recordFormationClear376(r);const st=getStat(r.dungeonId,r.difficulty),firstClear=Number(st.clears||0)===0;summary.autoUnlocked=firstClear&&!r.autoAdventureStarted;st.clears++;st.deepest=Math.max(st.deepest,10);summary.unlocked=applyClearProgression(r.dungeonId,r.difficulty,firstClear);
  const grassBefore=inventoryItemQty("grassTicket"),grassAfter=Math.min(GRASS_TICKET_MAX,grassBefore+1);
  state.shopItems.grassTicket=grassAfter;summary.grassTicketAward=Math.max(0,grassAfter-grassBefore)}const hatchResults=resolveReadyEggs();summary.hatchResults=clone(hatchResults);writeRunEndGuard(r,summary);state.postRun={type,floor,dungeonId:r.dungeonId,difficulty:r.difficulty,summary,hatchResults,hatchIndex:0,stage:type==="clear"?"eggDiscovery":(hatchResults.length?"hatch":"summary"),eggDiscoveryPlayed:false,eggSlots:null,eggResultIndex:null,eggAwarded:false,autoAdventure:!!r.autoAdventure};state.run=null;state.lastSummary=summary;save();if(type==="clear")autoBackupCapture("ダンジョンクリア",{force:true});screen="postRun";render()}
 function runDefeat(){if(state.run?.legendBattle)return finishLegendRun351("defeat",state.run.legendOpponentId);beginRunEnd("defeat",state.run.floor)}
