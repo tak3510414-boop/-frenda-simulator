@@ -1,7 +1,7 @@
-/* FRENDA_TEST_VERSION: 2.0 / dynamic isolated local profiles + unified account metadata store + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 2.1 / dynamic isolated local profiles + unified account metadata store + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="2.0";
+const VERSION="2.1";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
@@ -150,7 +150,17 @@ function writeCloudCache(payload,userId=cloudUserId()){
 }
 function seedFromCloudPayload(payload){
   mem.clear();
-  const state=payload&&typeof payload==="object"&&payload.state&&typeof payload.state==="object"?payload.state:null;
+  if(!payload||typeof payload!=="object")return;
+  // Simulator and common-backup payloads carry the current user's storage snapshot directly.
+  // Restore that snapshot first so owned/favorite/override/photo settings survive cloud user switching.
+  if(payload.storage&&typeof payload.storage==="object"&&!Array.isArray(payload.storage)){
+    for(const [k,v] of Object.entries(payload.storage)){
+      if(typeof k==="string"&&typeof v==="string")mem.set(k,v);
+    }
+    return;
+  }
+  // Dungeon/Expedition keep the legacy state payload format.
+  const state=payload.state&&typeof payload.state==="object"?payload.state:null;
   if(!state)return;
   mem.set(DUNGEON_KEY,JSON.stringify(state));
   if(state.expeditionShared&&typeof state.expeditionShared==="object")mem.set(EXPEDITION_KEY,JSON.stringify(state.expeditionShared));
@@ -250,3 +260,5 @@ setInterval(()=>assertProductionStorageUnchanged(),1000);window.addEventListener
 /* Ver1.9: 統合ユーザー一覧用の端末メタデータ領域を追加。クラウドユーザーの表示名・認証セッション情報を本番/テストのゲームセーブとは別領域に保持できる。パスワードは保存しない。Updated: 2026-10-11 08:25 JST */
 
 /* Ver2.0: 共通frenda-user.jsから利用するtest保存アダプタへ整理。ローカル表示名変更はクラウド利用中でも許可し、ゲームセーブ分離・回帰テスト永続保存禁止は維持。Updated: 2026-10-11 12:00 JST */
+
+/* Ver2.1: Cloud payload restore now supports payload.storage snapshots used by Simulator/common backup. Fixes Simulator owned/favorite data disappearing after cloud-user switch while preserving legacy Dungeon/Expedition state restore. Updated: 2026-10-11 16:25 JST */
