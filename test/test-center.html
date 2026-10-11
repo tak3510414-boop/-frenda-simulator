@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.89">
+<html lang="ja" data-test-center-version="2.90">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.89</title>
+<title>フレンダ 回帰テストセンター Ver2.90</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.89</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.90</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.89</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.90</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -479,6 +479,10 @@ async function runAuto(){
   ["ダンジョンダメージ±5%",/DUNGEON_DAMAGE_SPREAD_MIN_343=95/.test(d)&&/DUNGEON_DAMAGE_SPREAD_MAX_343=105/.test(d)&&/spreadPct=DUNGEON_DAMAGE_SPREAD_MIN_343\+Math\.floor\(Math\.random\(\)\*\(DUNGEON_DAMAGE_SPREAD_MAX_343-DUNGEON_DAMAGE_SPREAD_MIN_343\+1\)\)/.test(d),"ダンジョン内だけ95〜105%で自動変動"],
   ["ナイスアタック5%×1.2",/DUNGEON_NICE_ATTACK_RATE_343=0\.05/.test(d)&&/DUNGEON_NICE_ATTACK_MULT_343=1\.2/.test(d)&&/nice=Math\.random\(\)<DUNGEON_NICE_ATTACK_RATE_343/.test(d),"命中時5%で1.2倍"],
   ["ナイスアタック追加待ちなし",/x\.nice\?`✨ ナイスアタック！ \$\{actualDamage\}ダメージ！`/.test(d)&&!/await\s+showNiceAttack/.test(d),"既存のダメージ表示内で通知し、追加ルーレット・追加待ちを設けない"],
+  ["AUTO速度5段階",/AUTO_ADVENTURE_SPEED_FACTORS=\{1:1,2:1\/1\.4,3:1\/1\.8,4:1\/2\.4,5:1\/3\}/.test(d)&&/autoAdventureMaxSpeedLevel/.test(d)&&/autoAdventureSpeedBtn/.test(d),"×1〜×5を実装し、×1は従来AUTO速度、上位ほど待ち時間を短縮"],
+  ["AUTO速度 段階解放",/autoSpeed2:r1/.test(d)&&/autoSpeed3:r2/.test(d)&&/autoSpeed4:r3/.test(d)&&/autoSpeed5:r4/.test(d)&&/progressionEnsureAutoSpeedUpgrade369/.test(d),"全R1/R2/R3/R4制覇で×2/×3/×4/×5を順次解放し、旧セーブにも解放通知を追加"],
+  ["AUTO速度・停止 分離",/id=\"autoAdventureSpeedBtn\"/.test(d)&&/id=\"autoAdventureStopBtn\"/.test(d)&&/autoAdventureStopRequested/.test(d)&&/finalizeStopAutoAdventure/.test(d),"AUTO中は速度変更と停止を別ボタン化。停止要求後は安全なアクション境界で停止"],
+  ["AUTO重要演出保護",/fxSleepImportant/.test(d)&&/Math\.max\(\.65,autoAdventureDelayFactor\(\)\)/.test(d),"ゲット・卵孵化など重要演出は高速設定でも最低限の視認時間を確保"],
   ["ゲット結果は結果画面だけ",captureResultHiddenUntilResultOK(d),"3回揺れるまでは成功/失敗共通。結果メッセージ・結果SE・成否アニメは結果画面へ遷移してから"],
   ["探索ヘッダー卵表示",/headerEggBadge/.test(e)&&/headerEggCount/.test(e)&&/expSharedStatus074/.test(e),"PC共通ステータス領域を確認"]
  ];
@@ -500,6 +504,7 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.87: Test Center自己バージョン識別子を画面表示と統一し、自己監査の誤検知を修正。Updated: 2026-10-11 17:08 JST -->
 <!-- Ver2.88: 共通User監査の期待版をVer1.7へ更新。Simulator共通バックアップ／共通User基盤のVer1.6固定による誤検知を解消。Updated: 2026-10-11 18:07 JST -->
 <!-- Ver2.89: ヘッダー固定表示を含むTest Center全バージョン表記を統一。dataset/title/header/metric/自己監査をVer2.89へ同期。Updated: 2026-10-11 18:31 JST -->
+<!-- Ver2.90: Dungeon Ver3.69 自動冒険速度×1〜×5、R1〜R4段階解放、速度/停止分離、安全停止、重要演出保護の静的監査を追加。Updated: 2026-10-11 18:50 JST -->
 </body><!-- Ver2.11: black-PC mission shortcut regression check, strict all-R1 expedition unlock, and legacy admin unlock cleanup checks added. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver2.12: dungeon-only 95-105% damage variance and 5% Nice Attack regression checks/manual battle route added. Updated: 2026-10-06 21:35 JST -->
 <!-- Ver2.13: capture-result pre-disclosure regression check added; success/failure must first appear on result screen. Updated: 2026-10-06 21:50 JST -->
