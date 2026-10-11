@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.78">
+<html lang="ja" data-test-center-version="2.79">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.78</title>
+<title>フレンダ 回帰テストセンター Ver2.79</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.78</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.79</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.78</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.79</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -401,7 +401,7 @@ async function runAuto(){
   ["自動世代バックアップ10世代",/AUTO_BACKUP_MAX=10/.test(d)&&/AUTO_BACKUP_MAX=10/.test(e)&&/frenda:auto-backups:v1/.test(d)&&/frenda:auto-backups:v1/.test(e),"ダンジョン/探索で同じ10世代領域を使用"],
   ["異常セーブを世代化しない",/autoBackupValidDungeonRaw/.test(d)&&/initialized===true/.test(d)&&/owned\.length>0/.test(d)&&/invalid-dungeon/.test(d),"dungeon:null・御三家未選択・JSON破損を自動バックアップ対象外"],
   ["初期化前の緊急退避",/初期化前の緊急退避/.test(d)&&/DATA\.remove\(SAVE_KEY\)/.test(d),"初期化しても10世代履歴は削除しない"],
-  ["世代選択復元UI",/autoBackupOpenManager/.test(d)&&/autoBackupRestore/.test(d)&&/infoAutoBackup296/.test(d)&&/infoAutoBackup083/.test(e),"日時・Ver・所持数を確認して任意世代へ復元"],
+  ["世代選択復元UI",/autoBackupOpenManager/.test(d)&&/autoBackupRestore/.test(d)&&/data-auto-backup-restore/.test(d)&&/autoBackupOpenManager/.test(e)&&/autoBackupRestore/.test(e)&&/data-auto-backup-restore/.test(e)&&/FRENDA_USER_SAVE_TOOLS/.test(d)&&/FRENDA_USER_SAVE_TOOLS/.test(e),"日時・Ver・所持数を確認して任意世代へ復元。入口はユーザー・セーブ管理へ集約"],
   ["進化データ確実化",/ensureEvolutionForReward106/.test(e)&&/await ensureEvolutionForReward106\(\)/.test(e),"成果確定前に進化データを確認"],
   ["共通JSキャッシュ更新",d.includes("?app=${v}")&&e.includes("?app=${v}"),"アプリVerをキャッシュキーに使用"],
   ["旧全画像監視なし",!/new\s+MutationObserver\s*\(/.test(d)&&!/new\s+MutationObserver\s*\(/.test(e),"所持バッジの全画像監視を再導入していない"],
@@ -552,5 +552,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.75: Phase4ユーザー・セーブ管理統合。frenda-user.js Ver1.3の保存先表示・バックアップ書出/読込・現在ユーザー初期化と、frenda-cloud-test.js Ver1.5のsaveStorageNow即時保存APIを監査。旧バックアップ形式互換、回帰テスト保存禁止、ユーザー限定初期化を確認。Updated: 2026-10-11 13:10 JST -->
 <!-- Ver2.76: Phase4監査修正。テスト専用Cloud監査の期待値をfrenda-cloud-test.js Ver1.5へ更新。Ver2.75ではPhase4本体を1.5へ更新済みなのに監査だけ1.4固定で赤×になる誤判定が残っていた。Updated: 2026-10-11 13:14 JST -->
 <!-- Ver2.77: Phase4 cloud initialization fix. frenda-cloud-test.js Ver1.6のsaveStorageNowはページgetDataではなくFRENDA_USER.storageを必ずシリアライズし、初期化直後に旧画面メモリを再アップロードする不具合を防止。Updated: 2026-10-11 13:24 JST -->
-<!-- Ver2.78: Phase5入口一本化監査。Dungeon Ver3.68 / Expedition Ver1.43 / frenda-user.js Ver1.4。Ver情報画面から旧バックアップ・セーブ管理を撤去し、自動世代バックアップ入口をユーザー・セーブ管理へ移動、旧保存状態アイコンも非表示ではなく入口自体を撤去したことを監査。Updated: 2026-10-11 13:40 JST -->
+<!-- Ver2.79: Phase5監査修正。「世代選択復元UI」が撤去済み旧infoAutoBackup296/infoAutoBackup083を要求して赤×になる誤判定を修正。autoBackupOpenManager/autoBackupRestore/data-auto-backup-restore/FRENDA_USER_SAVE_TOOLSで実装を監査。Updated: 2026-10-11 14:00 JST -->
 </html>
