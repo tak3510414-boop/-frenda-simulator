@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.67">
+<html lang="ja" data-app-version="3.68">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4447,7 +4447,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 </style>
 </head>
 <body>
-<header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button><span class="headerCloudStatus" id="headerCloudStatus" role="button" tabindex="0" data-state="local" title="ローカル保存（クラウドなし）" aria-label="ローカル保存（クラウドなし）">💾</span></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
+<header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
 <main id="app"></main>
 
 <!-- ===== DEPENDENCIES: shared Frenda runtime ===== -->
@@ -4825,6 +4825,7 @@ function autoBackupOpenManager(){
  ov.innerHTML=`<div style="width:min(760px,96vw);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0008"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><b style="font-size:20px;color:#183342">🛟 自動世代バックアップ</b><small style="display:block;color:#627785;margin-top:3px">最大10世代。初期化してもこの履歴は削除しません。</small></div><button type="button" id="autoBackupClose" style="border:0;border-radius:999px;width:38px;height:38px;background:#e7eef2;color:#183342;font-size:20px;font-weight:900">×</button></div><div style="margin-top:10px;padding:10px;border-radius:12px;background:#eef8f1;color:#27613f;font-size:12px;line-height:1.55">正常なダンジョンデータだけを保存します。<b>dungeon:null、JSON破損、御三家未選択などの異常状態は世代化しません。</b> 通常保存は10分間隔＋重複排除、アプリ更新・初期化・読込・復元時は緊急世代を作成します。</div><div>${rows}</div></div>`;
  document.body.appendChild(ov);ov.querySelector("#autoBackupClose").onclick=()=>ov.remove();ov.onclick=e=>{if(e.target===ov)ov.remove()};ov.querySelectorAll("[data-auto-backup-restore]").forEach(b=>b.onclick=()=>autoBackupRestore(b.dataset.autoBackupRestore));
 }
+window.FRENDA_USER_SAVE_TOOLS=Object.freeze({app:"dungeon",openAutoBackupManager:()=>autoBackupOpenManager()});
 
 let audioCtx=null;
 function soundMode(){const v=STORE.getItem(SOUND_KEY);return ["100","50","off"].includes(v)?v:"100"}
@@ -5090,12 +5091,6 @@ dungeonSaveBaseline=JSON.parse(JSON.stringify(state));
 migrateState();
 progressionUnlockRuntimeReady345=true;
 let screen="home";
-const headerSaveStatus=document.getElementById("headerCloudStatus");
-function openSaveManagerFromHeader(){if(state?.run||state?.postRun){save()}screen="save";render()}
-if(headerSaveStatus){
- headerSaveStatus.onclick=openSaveManagerFromHeader;
- headerSaveStatus.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSaveManagerFromHeader()}};
-}
 let starterSetCompareSelection=[];
 let teamSelection=[];
 let legendTeamSelect351=false;
@@ -7568,30 +7563,22 @@ function runAutoAdventureStep(){
 
 
 
-/* Ver2.98: common header info/settings is implemented inside the main app scope. */
-function commonHeaderBackupPayload298(){return {format:"frenda-common-backup-v1",createdAt:new Date().toISOString(),app:"dungeon",dungeon:STORE.getItem(SAVE_KEY),expedition:STORE.getItem(EXPEDITION_KEY),sound:STORE.getItem(SOUND_KEY)}}
-function commonHeaderBackupOut298(){const blob=new Blob([JSON.stringify(commonHeaderBackupPayload298(),null,2)],{type:"application/json"}),a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=`frenda-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-function commonHeaderBackupIn298(file){const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x||x.format!=="frenda-common-backup-v1")throw new Error("バックアップ形式が違います");autoBackupCapture("手動バックアップ読込前",{force:true});if(typeof x.dungeon==="string")STORE.setItem(SAVE_KEY,x.dungeon);if(typeof x.expedition==="string")STORE.setItem(EXPEDITION_KEY,x.expedition);else if(x.expedition===null)STORE.removeItem(EXPEDITION_KEY);if(typeof x.sound==="string")STORE.setItem(SOUND_KEY,x.sound);autoBackupCapture("手動バックアップ読込後",{force:true});UI.dialog.alert("バックアップを読み込みました。ページを再読み込みします。");location.reload()}catch(err){UI.dialog.alert("読み込みに失敗しました。\n"+(err?.message||String(err)))}};rd.readAsText(file)}
+/* Phase5: version menu is app/device settings only. Save and backup management lives in FRENDA_USER. */
 function commonHeaderClose298(){document.querySelector(".frendaInfoOverlay296")?.remove()}
 function commonHeaderOpen298(){
  commonHeaderClose298();
  const ov=document.createElement("div"),touch=("ontouchstart" in window)||navigator.maxTouchPoints>0;
  ov.className="frendaInfoOverlay296";
- ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div><div class="frendaInfoSection296"><h3>バックアップ</h3><div class="frendaInfoActions296"><button type="button" id="infoBackupOut296">バックアップを書き出す</button><button type="button" class="secondary" id="infoBackupIn296">バックアップを読み込む</button><button type="button" class="secondary" id="infoAutoBackup296">自動バックアップ（10世代）</button></div><input type="file" id="infoBackupFile296" accept="application/json,.json" class="hidden"><div class="frendaInfoNote296">ダンジョンとおでかけ探索の保存データをまとめてバックアップします。</div></div><div class="frendaInfoSection296"><h3>セーブ管理</h3><div class="frendaInfoActions296"><button type="button" class="secondary" id="infoSaveManager296">セーブ管理を開く</button></div><div class="frendaInfoNote296">セーブの書き出し・読み込み・初期化を行えます。</div></div></div>`;
+ ov.innerHTML=`<div class="frendaInfoPanel296" role="dialog" aria-modal="true"><div class="frendaInfoHead296"><b>Ver${APP_VERSION} 情報・設定</b><button class="frendaInfoClose296" type="button" aria-label="閉じる">×</button></div><div class="frendaInfoSection296"><h3>端末情報</h3><div class="frendaDeviceGrid296"><span>表示プロファイル</span><b>${document.documentElement.dataset.viewProfile||((innerWidth<=767)?"mobile":"desktop")}</b><span>画面サイズ</span><b>${innerWidth} × ${innerHeight}</b><span>DPR</span><b>${window.devicePixelRatio||1}</b><span>タッチ</span><b>${touch?"あり":"なし"}</b><span>User Agent</span><b>${esc(navigator.userAgent)}</b></div></div><div class="frendaInfoSection296"><h3>音量</h3><div class="frendaInfoActions296"><button type="button" id="infoSound296">${soundModeLabel()}</button></div></div></div>`;
  document.body.appendChild(ov);
  ov.querySelector(".frendaInfoClose296").onclick=commonHeaderClose298;
  ov.onclick=e=>{if(e.target===ov)commonHeaderClose298()};
  document.getElementById("infoSound296").onclick=()=>{cycleSoundMode();document.getElementById("infoSound296").textContent=soundModeLabel()};
- document.getElementById("infoBackupOut296").onclick=commonHeaderBackupOut298;
- document.getElementById("infoBackupIn296").onclick=()=>document.getElementById("infoBackupFile296").click();
- document.getElementById("infoBackupFile296").onchange=e=>{if(e.target.files?.[0])commonHeaderBackupIn298(e.target.files[0])};
- const autoMgr=document.getElementById("infoAutoBackup296");if(autoMgr)autoMgr.onclick=()=>{commonHeaderClose298();autoBackupOpenManager()};
- const saveMgr=document.getElementById("infoSaveManager296");if(saveMgr)saveMgr.onclick=()=>{commonHeaderClose298();openSaveManagerFromHeader()};
 }
 function bindCommonHeader298(){
  const title=document.getElementById("headerMainTitle"),ver=document.getElementById("versionBadge"),cluster=document.querySelector("header .careCluster"),egg=document.getElementById("headerEggBadge"),coin=document.getElementById("headerCoinBadge");
  if(title){title.onclick=e=>{e.preventDefault();homeBtn.click()};title.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();homeBtn.click()}}}
- if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量・バックアップ・セーブ管理";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
+ if(ver){ver.setAttribute("role","button");ver.setAttribute("tabindex","0");ver.title="端末情報・音量";ver.onclick=e=>{e.preventDefault();e.stopPropagation();commonHeaderOpen298()};ver.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();commonHeaderOpen298()}}}
  if(cluster&&egg&&coin){if(egg.parentElement!==cluster)cluster.appendChild(egg);if(coin.parentElement!==cluster)cluster.appendChild(coin);cluster.append(egg,coin)}
 }
 
@@ -8986,20 +8973,6 @@ body[data-dungeon-page="dungeons"] .dungeonOverviewRankBtn .rankState{
  .teamSelectHead .viewSizeControl button{min-width:28px;padding:5px 6px;font-size:9px}
 }
 </style>
-<script id="v183-cloud-indicator">
-(()=>{
- const el=document.getElementById("headerCloudStatus");if(!el)return;
- function refresh(){
-  const hidden=document.querySelector(".frendaCloudBtn"),failed=hidden?.dataset?.kind==="error",logged=!!window.FrendaCloud?.isLoggedIn?.();
-  const state=failed?"error":logged?"cloud":"local",icon=failed?"🌧️":logged?"☁️":"💾",base=failed?"クラウドログイン・接続に失敗中":logged?"クラウドログイン中":"ローカル保存（クラウドなし）",label=`${base}・タップでバックアップ管理`;
-  if(el.dataset.state!==state)el.dataset.state=state;
-  if(el.textContent!==icon)el.textContent=icon;
-  if(el.title!==label)el.title=label;
-  if(el.getAttribute("aria-label")!==label)el.setAttribute("aria-label",label);
- }
- refresh();setTimeout(refresh,250);setTimeout(refresh,1000);setInterval(refresh,2000);
-})();
-</script>
 
 <style id="v193-team-selection-scroll-fix">
 /* Ver1.93: make team selection a normal vertically scrollable page on mobile and widen cards. */
@@ -16163,4 +16136,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- PROD USER-MODE Dungeon Ver3.64: local profiles are isolated; logged-in users use cloud-only save; no local/cloud synchronization. frenda-user.js Ver1.0 / frenda-cloud.js Ver1.2 / frenda-data.js Ver1.5. Updated: 2026-10-11 01:20 JST -->
 <!-- PROD UNIFIED USERS Dungeon Ver3.66: frenda-user.js Ver1.1 / frenda-cloud.js Ver1.4. Local/cloud users share one user list; cloud sessions remembered without storing passwords; saves remain separated. Updated: 2026-10-11 11:20 JST -->
 <!-- Foundation Phase2 Dungeon Ver3.67: shared frenda-user.js loads in both root/test; test-only differences are frenda-test.js and frenda-cloud-test.js. Updated: 2026-10-11 12:00 JST -->
+<!-- Phase5 Dungeon Ver3.68: ユーザー・セーブ管理へ手動バックアップ・初期化・自動世代バックアップ入口を集約。Ver情報画面は端末情報/音量だけに整理し、旧💾クラウド/セーブ入口を撤去。Updated: 2026-10-11 13:40 JST -->
 </html>
