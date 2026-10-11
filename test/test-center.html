@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.70</title>
+<title>フレンダ 回帰テストセンター Ver2.71</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.70</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.71</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.70</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.71</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -330,11 +330,11 @@ async function runAuto(){
   ["Test Center版表示",(()=>{const v=document.documentElement.dataset.testCenterVersion||"";return !!v&&document.getElementById("testCenterVersion")?.textContent.includes(v)})(),"画面上でTest Center自身のVerを確認可能"],
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
-  ["テスト保存領域",/FRENDA_TEST_VERSION:\s*1\.9/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/seedLocalSandbox/.test(t)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/const inTestPath=/.test(t)&&/location\.pathname/.test(t),"/test/ はURLパラメータなしでも常時分離。ローカルはユーザー別localStorage、クラウドのゲームキャッシュはsessionStorage、ユーザー/認証メタはテスト専用メタ領域。本番セーブキーを書き換えない"],
+  ["テスト保存領域",/FRENDA_TEST_VERSION:\s*2\.0/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/seedLocalSandbox/.test(t)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/const inTestPath=/.test(t)&&/location\.pathname/.test(t),"/test/ はURLパラメータなしでも常時分離。ローカルはユーザー別localStorage、クラウドのゲームキャッシュはsessionStorage、ユーザー/認証メタはテスト専用メタ領域。本番セーブキーを書き換えない"],
   ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js → 共通frenda-user.js → その他共通JS の順で実行"],
   ["共通User基盤",productionJsVersion("frenda-user.js",tu)==="1.2"&&/sharedUI:true/.test(tu)&&/registerCloudProvider/.test(tu)&&/const TEST=window.FRENDA_TEST/.test(tu),"frenda-user.js Ver1.2をtestにも配置し、本番/test共通UI候補として検証"],
   ["テスト専用Cloud",/frenda-cloud-test\.js\?app=/.test(d)&&/frenda-cloud-test\.js\?app=/.test(e)&&testCloudVersion(ct)==="1.4"&&/sharedUserUI:true/.test(ct),"/test/はCloud Test Ver1.4を認証・Supabase保存・安全ガード専用providerとして使用"],
-  ["ポータル単一入口対応",/unifiedEntryOnlySupported:true/.test(ct)&&/cfg\?\.unifiedEntryOnly/.test(ct)&&/if\(!cfg\?\.unifiedEntryOnly\)ensureLauncher\(\)/.test(ct),"ポータルでは現在ユーザー表示だけを入口にし、旧テスト認証ボタン/ランチャーを生成しない"],
+  ["ポータル単一入口対応",/sharedUI:true/.test(tu)&&/frendaActiveUserBadge/.test(tu)&&/el\.onclick=openModal/.test(tu)&&/registerCloudProvider/.test(ct)&&!/\binjectButton\(\)\s*;/.test(ct),"ポータルを含む全画面で共通frenda-user.jsの現在ユーザー表示だけを入口とし、Cloud Testはheadless providerとして旧認証ランチャーを起動しない"],
   ["統合ユーザー一覧",/sharedUI:true/.test(tu)&&/function openModal\(\)/.test(tu)&&/data-user-type="local"/.test(tu)&&/data-user-type="cloud"/.test(tu),"ローカル/クラウド統合UIは共通frenda-user.jsが所有"],
   ["クラウドユーザー切替確認",/async function switchCloud\(id\)/.test(tu)&&/に切り替えますか？/.test(tu)&&/activateProfile/.test(tu),"切替確認は共通frenda-user.js、認証実処理はCloud provider"],
   ["全ユーザー名前変更",/data-local-rename/.test(tu)&&/data-cloud-rename/.test(tu)&&/function renameLocal\(id\)/.test(tu)&&/function renameCloud\(id\)/.test(tu),"全ユーザーの表示名変更UIを共通frenda-user.jsへ集約"],
@@ -516,5 +516,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.65: frenda-cloud-test.js Ver1.2に追従。名前変更✏️を全ローカル/クラウドユーザーへ表示し、使用中かどうかに関係なく表示名だけ変更可能なことを監査。Updated: 2026-10-11 08:55 JST -->
 <!-- Ver2.67: Portal（index.html）を正式なバージョン管理対象へ追加。本番Portal Ver1.0 / test Portal Ver1.1を本番-test比較表・対象ソース表示・総合バージョン監査へ追加。Updated: 2026-10-11 09:45 JST -->
 <!-- Ver2.69: 基盤共通化Phase1。Portal/Dungeon/Expeditionの本番-test実体SHA-256監査を追加。Dungeon/Expeditionは本番検証済みHTMLをそのままtestへコピーし、Portalはroot/test共通化候補Ver1.3をtestで先行検証。Updated: 2026-10-11 11:45 JST -->
-<!-- Ver2.70: 基盤共通化Phase2。testにも共通frenda-user.js Ver1.2を配置し、統合ユーザーUIをCloud Testから分離。Cloud Test Ver1.4はheadless provider化。HTML候補はPortal1.4/Dungeon3.67/Expedition1.42。検証後は同じHTML/User資産をそのまま本番へ昇格する。Updated: 2026-10-11 12:00 JST -->
+<!-- Ver2.71: Phase2監査条件を現行基盤へ修正。frenda-test.js Ver2.0を正としてテスト保存領域を監査し、ポータル単一入口は共通frenda-user.jsが所有、frenda-cloud-test.js Ver1.4はheadless providerとして旧認証ランチャーを起動しない構成を正として判定。Updated: 2026-10-11 12:20 JST -->
 </html>
