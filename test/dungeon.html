@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.69">
+<html lang="ja" data-app-version="3.70">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5106,7 +5106,7 @@ function autoAdventureUnlocked(did,diff){return Number(getStat(did,diff)?.clears
 function autoAdventureMaxSpeedLevel(){if(progressionAllRankCleared345(state,4))return 5;if(progressionAllRankCleared345(state,3))return 4;if(progressionAllRankCleared345(state,2))return 3;if(progressionAllRankCleared345(state,1))return 2;return 1}
 function autoAdventureSpeedLevel(){const max=autoAdventureMaxSpeedLevel(),n=Math.max(1,Math.min(5,Number(state.autoAdventureSpeedLevel)||1));return Math.min(n,max)}
 function autoAdventureDelayFactor(){return AUTO_ADVENTURE_SPEED_FACTORS[autoAdventureSpeedLevel()]||1}
-function cycleAutoAdventureSpeed(){const max=autoAdventureMaxSpeedLevel();state.autoAdventureSpeedLevel=autoAdventureSpeedLevel()>=max?1:autoAdventureSpeedLevel()+1;save();render()}
+function cycleAutoAdventureSpeed(){const max=autoAdventureMaxSpeedLevel();state.autoAdventureSpeedLevel=autoAdventureSpeedLevel()>=max?1:autoAdventureSpeedLevel()+1;save();const b=document.getElementById("autoAdventureSpeedBtn");if(b)b.textContent=`🤖 AUTO ×${autoAdventureSpeedLevel()}`}
 function autoAdventureRuntimeActive(){return !!state.run?.autoAdventure||!!state.postRun?.autoAdventure}
 function clearAutoAdventureTimer(){if(autoAdventureTimer){clearTimeout(autoAdventureTimer);autoAdventureTimer=null}}
 function scheduleAutoAdventure(delay=420){
@@ -16133,6 +16133,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 @media(max-width:700px){.dexCompactFilter354 #ownedSearch356{grid-column:1/-1}}
 </style>
 <!-- Ver3.69: 自動冒険速度を×1〜×5の5段階化。全R1/R2/R3/R4制覇で×2/×3/×4/×5を解放。AUTO中は速度変更と停止を分離し、停止は安全なアクション境界で実行。Updated: 2026-10-11 18:46 JST -->
+<!-- Ver3.70: AUTO速度変更時のrender()を廃止。進行中演出DOMと予約済みAUTOタイマーを保持し、変更後の速度は次の待機から適用。Updated: 2026-10-11 18:55 JST -->
 </body>
 <!-- Ver3.42: black PC mission shortcut stays visible; dungeon home ignores legacy administrator expedition unlocks; normal expedition unlock is strictly all-R1, while active/returned missions remain protected. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver3.43: dungeon-only damage variance 95-105% and 5% Nice Attack (x1.2); no extra input, roulette, or wait. Simulator/common damage core unchanged. Updated: 2026-10-06 21:35 JST -->
