@@ -2,7 +2,7 @@
 <!-- FRENDA_SIMULATOR_VERSION: 6.95 -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.95</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.97</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:600px){.simHeaderRow{gap:6px}.simHeaderTitle{font-size:12px}.simHomeLink{font-size:9px;padding:6px 7px}}
@@ -638,7 +638,7 @@ body.battleOverlayOpen{overflow:hidden}
 }
 
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.95</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.97</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -912,15 +912,23 @@ body.battleOverlayOpen{overflow:hidden}
 <p class="note">所持・お気に入り・修正値・写真はこの端末内に保存し、マスターDBは変更しません。</p>
 </section></div>
 </section>
-<script src="frenda-master.js?b=20261001_2130_2148"></script>
-<script src="frenda-core.js?b=20260927_2148"></script>
-<script src="frenda-rules.js?b=20260927_2148"></script>
-<script src="frenda-data.js?b=20260927_2148"></script>
-<script src="frenda-ui.js?b=20260927_2148"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="frenda-cloud.js?b=20260928_1925"></script>
-<script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js"></script>
+<!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
+(()=>{
+ const v=encodeURIComponent("6.97");
+ const inTest=/\/test(?:\/|$)/.test(location.pathname);
+ const base=inTest?"../":"";
+ if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
+ document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js"]) document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
+ document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+ if(inTest)document.write(`<script src="frenda-cloud-test.js?app=${v}"><\/script>`); else document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
+ document.write(`<script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js"><\/script>`);
+})();
+</script>
+<script>
+// Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
+const simStorage=window.FRENDA_USER?.storage||window.localStorage;
 const $=id=>document.getElementById(id);
 const DB=window.FRENDA_MASTER;
 const CORE=window.FRENDA_CORE;
@@ -950,13 +958,13 @@ function isFavorite(r){return getIds(FAVORITE_KEY).includes(r.master_id)}
 function migrateLegacyTeamToFavorites(){
  const legacy=getIds(LEGACY_TEAM_KEY);
  if(legacy.length)setIds(FAVORITE_KEY,[...getIds(FAVORITE_KEY),...legacy]);
- if(localStorage.getItem(LEGACY_TEAM_KEY)!==null)localStorage.removeItem(LEGACY_TEAM_KEY);
+ if(simStorage.getItem(LEGACY_TEAM_KEY)!==null)simStorage.removeItem(LEGACY_TEAM_KEY);
 }
 function pickImage(r){return DATA.simulator.pickImage(r,svgPlaceholder)}
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
 let browseSeries=null;
 const PICK_VIEW_SIZE_KEY="frenda:simulator:pickViewSize:v1";
-let pickViewSize=["large","medium","small"].includes(localStorage.getItem(PICK_VIEW_SIZE_KEY))?localStorage.getItem(PICK_VIEW_SIZE_KEY):"medium";
+let pickViewSize=["large","medium","small"].includes(simStorage.getItem(PICK_VIEW_SIZE_KEY))?simStorage.getItem(PICK_VIEW_SIZE_KEY):"medium";
 function applyPickViewSize(){
  const box=$("pickList");if(!box)return;
  box.classList.remove("pickSizeLarge","pickSizeMedium","pickSizeSmall");
@@ -965,7 +973,7 @@ function applyPickViewSize(){
 }
 function setPickViewSize(size){
  if(!["large","medium","small"].includes(size))size="medium";
- pickViewSize=size;localStorage.setItem(PICK_VIEW_SIZE_KEY,size);applyPickViewSize()
+ pickViewSize=size;simStorage.setItem(PICK_VIEW_SIZE_KEY,size);applyPickViewSize()
 }
 const BROWSER_PAGE_SIZE=80;
 let browserRenderLimit=BROWSER_PAGE_SIZE;
@@ -983,8 +991,8 @@ function svgPlaceholder(name){return "data:image/svg+xml;charset=utf-8,"+encodeU
 const PICK_CODE_MAP_KEY="frenda:simulator:pickCodeMap:v1";
 let pickScanStream=null,pickScanTimer=null,pickScanBusy=false,pickScanPaused=false,pickScanLastResult=null,pickScanLastKey="",pickScanFrameNo=0;
 
-function readPickCodeMap(){try{const x=JSON.parse(localStorage.getItem(PICK_CODE_MAP_KEY)||"{}");return x&&typeof x==="object"&&!Array.isArray(x)?x:{}}catch{return{}}}
-function writePickCodeMap(x){try{localStorage.setItem(PICK_CODE_MAP_KEY,JSON.stringify(x||{}));return true}catch{return false}}
+function readPickCodeMap(){try{const x=JSON.parse(simStorage.getItem(PICK_CODE_MAP_KEY)||"{}");return x&&typeof x==="object"&&!Array.isArray(x)?x:{}}catch{return{}}}
+function writePickCodeMap(x){try{simStorage.setItem(PICK_CODE_MAP_KEY,JSON.stringify(x||{}));return true}catch{return false}}
 function pickScanBytesHex(bytes){
  if(!bytes)return "";
  try{return Array.from(bytes).map(v=>Number(v).toString(16).padStart(2,"0")).join("")}catch{return ""}
@@ -1389,7 +1397,7 @@ const TOURNAMENT_HISTORY_KEY="frenda:tournamentHistory:v1";
 const BATTLE_HISTORY_KEY="frenda:battleHistory:v1";
 let tournament={active:false,cup:"all",rounds:[],currentRound:0,pending:null,playerId:null,playerExit:null,completed:false,historySaved:false};
 const DAMAGE_MODEL_KEY="frenda:damageModel:v1";
-let damageModel=localStorage.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1";
+let damageModel=simStorage.getItem(DAMAGE_MODEL_KEY)==="v2"?"v2":"v1";
 function dmg(a,d){return CORE.dmg(a,d,damageModel)}
 function fighterHTML(r,hp,label){
  const max=Number(r.hp)||1,p=Math.max(0,Math.round(hp/max*100)),hc=p<=25?" low":p<=50?" mid":"";
@@ -1402,14 +1410,14 @@ function fighterHTML(r,hp,label){
  return `<div class="fighterMeta">${label}</div><button type="button" class="fighterImageButton" aria-label="${esc(label)}のピックを変更"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"></button>${battleMode==="single"?`<div class="fighterPickTapHint">画像タップで変更</div>`:""}<div class="fighterName">${esc(r.name_ja)}</div>${marks}<div>${types}</div><div class="fighterMeta">${esc(r.pick_no)} / ${r.grade?"★"+esc(r.grade):"ランク-"} / ポケエネ ${esc(r.poke_ene??"-")}</div><div class="fighterMoveInfo"><strong>${esc(skillName(r))}</strong><br>${typeIconHTML(r.move_type,{label:true,tiny:true})} / ${esc(r.move_class??"-")}${moveExtra}</div>${weakView}<div class="fighterStats"><div class="fighterStat"><span>ATK</span><b>${esc(r.atk??"-")}</b></div><div class="fighterStat"><span>DEF</span><b>${esc(r.def??"-")}</b></div><div class="fighterStat"><span>SP.ATK</span><b>${esc(r.sp_atk??"-")}</b></div><div class="fighterStat"><span>SP.DEF</span><b>${esc(r.sp_def??"-")}</b></div><div class="fighterStat"><span>SPEED</span><b>${esc(displaySpeed(r))}</b></div><div class="fighterStat"><span>HP MAX</span><b>${max}</b></div></div><div class="hpbar"><div class="hpfill${hc}" style="width:${p}%"></div></div><b>HP ${Math.max(0,hp)} / ${max}</b>`
 }
 const BATTLE_FX_KEY="frenda:battleFx:v1";
-let battleFxMode=["normal","fast","off"].includes(localStorage.getItem(BATTLE_FX_KEY))?localStorage.getItem(BATTLE_FX_KEY):"normal";
+let battleFxMode=["normal","fast","off"].includes(simStorage.getItem(BATTLE_FX_KEY))?simStorage.getItem(BATTLE_FX_KEY):"normal";
 const TYPE_FX={
  "ノーマル":["#f5f5ef","#aab3b8","✦"],"ほのお":["#fff07b","#ff5b2d","🔥"],"みず":["#c7f6ff","#2499e8","💧"],"でんき":["#fff78a","#f2c400","⚡"],"くさ":["#c9ff9f","#3aa64b","🍃"],"こおり":["#e7ffff","#6ddbea","❄️"],"かくとう":["#ffd0aa","#d9502f","✊"],"どく":["#f2b8ff","#8e44ad","☠"],"じめん":["#f4d4a1","#9b6a36","◆"],"ひこう":["#e5f4ff","#70a8e8","🪽"],"エスパー":["#ffd1f5","#db5fb4","◉"],"むし":["#e4f7a7","#78952e","✣"],"いわ":["#e7d5b0","#8d7957","⬟"],"ゴースト":["#d4c5ff","#58438e","👻"],"ドラゴン":["#c9c1ff","#5e4bc4","✦"],"あく":["#b7b7c8","#31313d","◈"],"はがね":["#f3fbff","#7898a8","⚙"],"フェアリー":["#ffe1f2","#e78bbb","✧"]};
 function fxScale(){return battleFxMode==="off"?0:battleFxMode==="fast"?.46:1}
 function fxTime(ms){return Math.max(0,Math.round(ms*fxScale()))}
 function fxSleep(ms){return new Promise(r=>setTimeout(r,fxTime(ms)))}
 function renderBattleFxUI(){document.querySelectorAll("[data-fx-speed]").forEach(b=>b.classList.toggle("on",b.dataset.fxSpeed===battleFxMode))}
-function setBattleFxMode(mode){if(!["normal","fast","off"].includes(mode))mode="normal";battleFxMode=mode;localStorage.setItem(BATTLE_FX_KEY,mode);renderBattleFxUI()}
+function setBattleFxMode(mode){if(!["normal","fast","off"].includes(mode))mode="normal";battleFxMode=mode;simStorage.setItem(BATTLE_FX_KEY,mode);renderBattleFxUI()}
 function battleSfx(_name){/* reserved for future local sound assets */}
 function launchTypeFx(type,target){
  if(battleFxMode==="off")return;
@@ -1480,12 +1488,12 @@ function renderBattleForecast(){
  const cls=f.adv==="有利"?" good":f.adv==="不利"?" bad":"";
  box.innerHTML=`<div class="battleForecastHead"><b>対戦予測・残りKO目安</b><span class="battleAdvantage${cls}">相性 ${f.score}点・${f.adv}</span></div><div class="battleForecastGrid"><div class="forecastCell forecastWide"><span>先攻</span><b>${esc(first)}</b></div><div class="forecastCell"><span>自分→相手</span><b>${esc(forecastDamageText(f.md))}</b><div class="forecastArrow">${esc(effectText(f.md.e))}</div></div><div class="forecastCell"><span>相手→自分</span><b>${esc(forecastDamageText(f.ed))}</b><div class="forecastArrow">${esc(effectText(f.ed.e))}</div></div><div class="forecastCell"><span>相手KOまで</span><b>${esc(myKO)}</b></div><div class="forecastCell"><span>自分KOまで</span><b>${esc(enKO)}</b></div><div class="forecastCell"><span>自分残HP</span><b>${battle.mhp}</b></div><div class="forecastCell"><span>相手残HP</span><b>${battle.ehp}</b></div></div>`
 }
-function battleHistoryData(){try{const x=JSON.parse(localStorage.getItem(BATTLE_HISTORY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
+function battleHistoryData(){try{const x=JSON.parse(simStorage.getItem(BATTLE_HISTORY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
 function saveBattleHistory(winnerRec){
  if(battleMode!=="single"||!battle.me||!battle.enemy||!battle.stats)return;
  const won=winnerRec.master_id===battle.me.master_id,f=battleForecastData(),list=battleHistoryData();
  list.unshift({date:new Date().toISOString(),meId:battle.me.master_id,enemyId:battle.enemy.master_id,result:won?"win":"lose",turns:battle.turn,myRemain:Math.max(0,battle.mhp),enemyRemain:Math.max(0,battle.ehp),model:damageModel,score:f?.score??null,stats:{me:{...battle.stats.me},enemy:{...battle.stats.enemy}}});
- try{localStorage.setItem(BATTLE_HISTORY_KEY,JSON.stringify(list.slice(0,50)))}catch{}
+ try{simStorage.setItem(BATTLE_HISTORY_KEY,JSON.stringify(list.slice(0,50)))}catch{}
  renderBattleHistory();
 }
 function battleHistoryDate(s){const d=new Date(s);if(Number.isNaN(d.getTime()))return "";return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`}
@@ -1506,7 +1514,7 @@ function renderBattleHistory(){
  listBox.innerHTML=`<div class="historyList639">${list.map(h=>{const me=R.find(x=>x.master_id===h.meId),en=R.find(x=>x.master_id===h.enemyId),model=h.model==="v2"?"Ver2":"Ver1";return `<div class="historyBattleRow"><div class="date">${esc(battleHistoryDate(h.date))}</div><div class="match"><b>${esc(me?.name_ja||h.meId)} 🆚 ${esc(en?.name_ja||h.enemyId)}</b><span>${h.turns}ターン / 残HP ${h.myRemain} / 相性 ${h.score??"-"}点 / ${model}</span></div><span class="historyBattleResult ${h.result}">${h.result==="win"?"WIN":"LOSE"}</span></div>`}).join("")}</div>`;
 }
 function clearBattleHistory(){
- const n=battleHistoryData().length;if(!n)return;if(!UI.dialog.confirm(`保存している対戦履歴 ${n}戦をすべて消去しますか？`))return;localStorage.removeItem(BATTLE_HISTORY_KEY);renderBattleHistory();
+ const n=battleHistoryData().length;if(!n)return;if(!UI.dialog.confirm(`保存している対戦履歴 ${n}戦をすべて消去しますか？`))return;simStorage.removeItem(BATTLE_HISTORY_KEY);renderBattleHistory();
 }
 function battleAnalysisData(winnerRec){
  if(!battle.me||!battle.enemy||!battle.stats)return {won:false,items:[],tip:""};
@@ -1979,10 +1987,10 @@ function roundRobinSignature(meta){
  return roundRobinHash(JSON.stringify([DB.master_version,ROUND_ROBIN_RULE_VERSION,damageModel,meta.ownedOnly?"owned":"all",ids,mods]))
 }
 function readRoundRobinCache(){
- try{const x=JSON.parse(localStorage.getItem(ROUND_ROBIN_CACHE_KEY)||"{}");return x&&typeof x==="object"?x:{}}catch{return {}}
+ try{const x=JSON.parse(simStorage.getItem(ROUND_ROBIN_CACHE_KEY)||"{}");return x&&typeof x==="object"?x:{}}catch{return {}}
 }
 function writeRoundRobinCache(cache){
- try{localStorage.setItem(ROUND_ROBIN_CACHE_KEY,JSON.stringify(cache));return true}catch{return false}
+ try{simStorage.setItem(ROUND_ROBIN_CACHE_KEY,JSON.stringify(cache));return true}catch{return false}
 }
 function roundRobinCacheEntry(meta){
  const mode=meta.ownedOnly?"owned":"all",signature=roundRobinSignature(meta),cache=readRoundRobinCache(),entry=cache[mode];
@@ -2017,9 +2025,9 @@ function calculateStrengthEntries(meta){
 }
 function getStrengthRatings(){
  const meta=strengthMeta(),signature=strengthSignature(meta);if(strengthMemo.signature===signature&&strengthMemo.scores.size===meta.pool.length)return strengthMemo;
- try{const saved=JSON.parse(localStorage.getItem(STRENGTH_CACHE_KEY)||"{}");if(saved.signature===signature&&Array.isArray(saved.entries)&&saved.entries.length===meta.pool.length)return strengthBuildMemo(signature,saved.entries)}catch{}
- const rr=roundRobinCacheEntry(meta).entry;if(rr){const rows=rowsFromRoundRobinCache(rr,meta);if(rows){const entries=strengthEntriesFromRows(rows);try{localStorage.setItem(STRENGTH_CACHE_KEY,JSON.stringify({signature,entries}))}catch{}return strengthBuildMemo(signature,entries)}}
- const entries=calculateStrengthEntries(meta);try{localStorage.setItem(STRENGTH_CACHE_KEY,JSON.stringify({signature,entries}))}catch{}return strengthBuildMemo(signature,entries)
+ try{const saved=JSON.parse(simStorage.getItem(STRENGTH_CACHE_KEY)||"{}");if(saved.signature===signature&&Array.isArray(saved.entries)&&saved.entries.length===meta.pool.length)return strengthBuildMemo(signature,saved.entries)}catch{}
+ const rr=roundRobinCacheEntry(meta).entry;if(rr){const rows=rowsFromRoundRobinCache(rr,meta);if(rows){const entries=strengthEntriesFromRows(rows);try{simStorage.setItem(STRENGTH_CACHE_KEY,JSON.stringify({signature,entries}))}catch{}return strengthBuildMemo(signature,entries)}}
+ const entries=calculateStrengthEntries(meta);try{simStorage.setItem(STRENGTH_CACHE_KEY,JSON.stringify({signature,entries}))}catch{}return strengthBuildMemo(signature,entries)
 }
 function strengthInfo(r){
  if(!r||!hasBattleStats(merged(r)))return null;const data=getStrengthRatings(),score=data.scores.get(r.master_id),rank=data.ranks.get(r.master_id);return Number.isFinite(score)?{score,rank,count:data.count,model:damageModel}:null
@@ -2027,7 +2035,7 @@ function strengthInfo(r){
 function getStrengthRatingsCachedOnly(){
  const meta=strengthMeta(),signature=strengthSignature(meta);
  if(strengthMemo.signature===signature&&strengthMemo.scores.size===meta.pool.length)return strengthMemo;
- try{const saved=JSON.parse(localStorage.getItem(STRENGTH_CACHE_KEY)||"{}");if(saved.signature===signature&&Array.isArray(saved.entries)&&saved.entries.length===meta.pool.length)return strengthBuildMemo(signature,saved.entries)}catch{}
+ try{const saved=JSON.parse(simStorage.getItem(STRENGTH_CACHE_KEY)||"{}");if(saved.signature===signature&&Array.isArray(saved.entries)&&saved.entries.length===meta.pool.length)return strengthBuildMemo(signature,saved.entries)}catch{}
  return null
 }
 function scheduleStrengthRatingsDeferred(){
@@ -2252,7 +2260,7 @@ function renderDamageModelUI(){
 }
 function setDamageModel(m){
  if(!["v1","v2"].includes(m))m="v1";if(m===damageModel){renderDamageModelUI();return}
- damageModel=m;localStorage.setItem(DAMAGE_MODEL_KEY,m);strengthMemo={signature:"",scores:new Map(),ranks:new Map(),count:0};renderDamageModelUI();roundRobinPoolInfo();renderBrowser();
+ damageModel=m;simStorage.setItem(DAMAGE_MODEL_KEY,m);strengthMemo={signature:"",scores:new Map(),ranks:new Map(),count:0};renderDamageModelUI();roundRobinPoolInfo();renderBrowser();
  if(battleMode==="single"&&battle.me&&battle.enemy)startIfReady();
  if(!$("recommendOverlay")?.classList.contains("hidden"))renderRecommendations();
  if(!$("enemyPickOverlay")?.classList.contains("hidden"))renderEnemyRandomRecommendations();
@@ -2267,12 +2275,12 @@ const BEST3_OPP_KEY="frenda:best3Opponent:v1";
 const BEST3_TYPE_CHOICE_KEY="frenda:best3TypeChoice:v1";
 let best3WeakSlot=0;
 let best3OpponentPickerSlot=0;
-let best3WeakSlots=(()=>{try{const x=JSON.parse(localStorage.getItem(BEST3_WEAK_KEY)||"[]");return [0,1,2].map(i=>Array.isArray(x?.[i])?x[i].filter(t=>Object.keys(TYPE).includes(t)):[])}catch{return [[],[],[]]}})();
-let best3OpponentSlots=(()=>{try{const x=JSON.parse(localStorage.getItem(BEST3_OPP_KEY)||"[]");return [0,1,2].map(i=>typeof x?.[i]==="string"&&R.some(r=>r.master_id===x[i])?x[i]:null)}catch{return [null,null,null]}})();
-let best3TypeChoiceSlots=(()=>{try{const x=JSON.parse(localStorage.getItem(BEST3_TYPE_CHOICE_KEY)||"[]");return [0,1,2].map(i=>{const v=x?.[i];return v&&TYPES.includes(v.type1)&&(!v.type2||TYPES.includes(v.type2))&&v.type1!==v.type2?{type1:v.type1,type2:v.type2||""}:null})}catch{return [null,null,null]}})();
-function saveBest3WeakSlots(){try{localStorage.setItem(BEST3_WEAK_KEY,JSON.stringify(best3WeakSlots))}catch{}}
-function saveBest3OpponentSlots(){try{localStorage.setItem(BEST3_OPP_KEY,JSON.stringify(best3OpponentSlots))}catch{}}
-function saveBest3TypeChoiceSlots(){try{localStorage.setItem(BEST3_TYPE_CHOICE_KEY,JSON.stringify(best3TypeChoiceSlots))}catch{}}
+let best3WeakSlots=(()=>{try{const x=JSON.parse(simStorage.getItem(BEST3_WEAK_KEY)||"[]");return [0,1,2].map(i=>Array.isArray(x?.[i])?x[i].filter(t=>Object.keys(TYPE).includes(t)):[])}catch{return [[],[],[]]}})();
+let best3OpponentSlots=(()=>{try{const x=JSON.parse(simStorage.getItem(BEST3_OPP_KEY)||"[]");return [0,1,2].map(i=>typeof x?.[i]==="string"&&R.some(r=>r.master_id===x[i])?x[i]:null)}catch{return [null,null,null]}})();
+let best3TypeChoiceSlots=(()=>{try{const x=JSON.parse(simStorage.getItem(BEST3_TYPE_CHOICE_KEY)||"[]");return [0,1,2].map(i=>{const v=x?.[i];return v&&TYPES.includes(v.type1)&&(!v.type2||TYPES.includes(v.type2))&&v.type1!==v.type2?{type1:v.type1,type2:v.type2||""}:null})}catch{return [null,null,null]}})();
+function saveBest3WeakSlots(){try{simStorage.setItem(BEST3_WEAK_KEY,JSON.stringify(best3WeakSlots))}catch{}}
+function saveBest3OpponentSlots(){try{simStorage.setItem(BEST3_OPP_KEY,JSON.stringify(best3OpponentSlots))}catch{}}
+function saveBest3TypeChoiceSlots(){try{simStorage.setItem(BEST3_TYPE_CHOICE_KEY,JSON.stringify(best3TypeChoiceSlots))}catch{}}
 function best3TypeNames(){return [...TYPES]}
 function best3TypeOrder(t){const i=TYPES.indexOf(t);return i>=0?i:999}
 function best3GoodTypes(r){const c=merged(r),m=c.move_type;if(!m)return [];return best3TypeNames().filter(t=>(TYPE[m]?.[t]??1)>1)}
@@ -2560,10 +2568,10 @@ async function updateBest3CounterTeams(){
  }
 }
 const BEST3_VIEW_KEY="frenda:best3View:v1";
-let best3View=localStorage.getItem(BEST3_VIEW_KEY)==="counter"?"counter":"owned";
+let best3View=simStorage.getItem(BEST3_VIEW_KEY)==="counter"?"counter":"owned";
 function setBestThreeView(view,{save=true,scroll=false}={}){
  if(!["owned","counter"].includes(view))view="owned";
- best3View=view;if(save)localStorage.setItem(BEST3_VIEW_KEY,view);
+ best3View=view;if(save)simStorage.setItem(BEST3_VIEW_KEY,view);
  const owned=$("best3OwnedView"),counter=$("best3CounterView"),ownedBtn=$("best3OwnedViewBtn"),counterBtn=$("best3CounterViewBtn");
  owned?.classList.toggle("hidden",view!=="owned");counter?.classList.toggle("hidden",view!=="counter");
  if(ownedBtn){ownedBtn.classList.toggle("on",view==="owned");ownedBtn.setAttribute("aria-selected",view==="owned"?"true":"false")}
@@ -2661,8 +2669,8 @@ function renderTournament(){
  const titles=["準々決勝","準決勝","決勝"];bracket.innerHTML=titles.map((t,ri)=>`<div class="roundCol round-${ri}"><div class="roundTitle">${t}</div><div class="roundMatches">${(tournament.rounds[ri]||[]).map(matchHTML).join("")||'<div class="matchEmpty">未定</div>'}</div></div>`).join("");
  const player=R.find(r=>r.master_id===tournament.playerId);$("tournamentSub").textContent=player?`参加：${player.name_ja}（${player.pick_no}） / 8体`:`8体`;if(tournament.active)$("tournamentState").textContent=`${titles[tournament.currentRound]} 進行中`
 }
-function historyData(){try{const x=JSON.parse(localStorage.getItem(TOURNAMENT_HISTORY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
-function saveTournamentHistory(champion,result){if(tournament.historySaved)return;tournament.historySaved=true;const player=R.find(r=>r.master_id===tournament.playerId),list=historyData();list.unshift({date:new Date().toISOString(),cup:cupLabel(tournament.cup),player:player?.name_ja||"-",champion:champion.name_ja,result});localStorage.setItem(TOURNAMENT_HISTORY_KEY,JSON.stringify(list.slice(0,20)));renderTournamentHistory()}
+function historyData(){try{const x=JSON.parse(simStorage.getItem(TOURNAMENT_HISTORY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
+function saveTournamentHistory(champion,result){if(tournament.historySaved)return;tournament.historySaved=true;const player=R.find(r=>r.master_id===tournament.playerId),list=historyData();list.unshift({date:new Date().toISOString(),cup:cupLabel(tournament.cup),player:player?.name_ja||"-",champion:champion.name_ja,result});simStorage.setItem(TOURNAMENT_HISTORY_KEY,JSON.stringify(list.slice(0,20)));renderTournamentHistory()}
 function renderTournamentHistory(){const box=$("tournamentHistoryList");if(!box)return;const list=historyData();if(!list.length){box.innerHTML='<div class="historyEmpty">大会履歴はまだありません。</div>';return}box.innerHTML=list.map(h=>{const d=new Date(h.date),date=Number.isNaN(d.getTime())?"":`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;return `<div class="historyItem"><span class="historyDate">${esc(date)}</span><span>${esc(h.cup)} / 自分：${esc(h.player)} / 優勝：${esc(h.champion)}</span><span class="historyResult${h.result==="優勝"?" champ":""}">${esc(h.result)}</span></div>`}).join("")}
 function showChampion(champion,result){const ov=$("championOverlay");$("championPick").src=pickImage(champion);$("championName").textContent=champion.name_ja;$("championCup").textContent=`${cupLabel(tournament.cup)}　${champion.master_id===tournament.playerId?"あなたが優勝！":`あなた：${result}`}`;ov.classList.add("show");ov.setAttribute("aria-hidden","false")}
 function closeChampion(){const ov=$("championOverlay");ov.classList.remove("show");ov.setAttribute("aria-hidden","true")}
@@ -2678,7 +2686,7 @@ $("enemyQ").oninput=enemySearch;$("clearEnemyQ").onclick=()=>{$("enemyQ").value=
 $("best3OpponentQ").oninput=scheduleBest3OpponentSearch;$("clearBest3OpponentQ").onclick=()=>{$("best3OpponentQ").value="";runBest3OpponentSearchNow();$("best3OpponentQ").focus()};$("best3OpponentSeries").onchange=runBest3OpponentSearchNow;
 $("randomEnemyBtn").onclick=()=>{const pool=randomEnemyPool();if(!pool.length){UI.dialog.alert(`${scopeLabel(enemyPickScope)}の現在の条件には、対戦可能なピックがありません。`);return}previewRandomEnemy(pool[Math.floor(Math.random()*pool.length)])};
 $("roundRobinOwnedOnly").onchange=()=>{currentRoundRobinRows=[];currentRoundRobinMeta=null;roundRobinPoolInfo();$("roundRobinProgress").textContent="";$("roundRobinResults").innerHTML=""};$("runRoundRobinBtn").onclick=()=>runRoundRobin(false);$("recalcRoundRobinBtn").onclick=()=>runRoundRobin(true);
-$("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(UI.dialog.confirm("大会履歴をすべて消去しますか？")){localStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("clearBattleHistoryBtn").onclick=clearBattleHistory;$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
+$("startTournamentBtn").onclick=startTournament;$("cancelTournamentBtn").onclick=()=>cancelTournament(true);$("clearTournamentHistoryBtn").onclick=()=>{if(UI.dialog.confirm("大会履歴をすべて消去しますか？")){simStorage.removeItem(TOURNAMENT_HISTORY_KEY);renderTournamentHistory()}};$("clearBattleHistoryBtn").onclick=clearBattleHistory;$("closeChampionBtn").onclick=closeChampion;$("championOverlay").onclick=e=>{if(e.target===$("championOverlay"))closeChampion()};
 $("damageV1Btn").onclick=()=>setDamageModel("v1");$("damageV2Btn").onclick=()=>setDamageModel("v2");renderDamageModelUI();
 document.querySelectorAll("[data-fx-speed]").forEach(b=>b.onclick=()=>setBattleFxMode(b.dataset.fxSpeed));renderBattleFxUI();
 $("battleVsButton").onclick=autoBattleFromVs;$("restartBtn").onclick=()=>{if(battleMode==="tournament"&&tournament.active){if(UI.dialog.confirm("大会のこの試合を最初からやり直しますか？"))startIfReady()}else startIfReady()};
@@ -2701,7 +2709,7 @@ function setMainTab(name,fromUser=false){
    b.classList.toggle("active",on);
    b.setAttribute("aria-selected",on?"true":"false");
  });
- localStorage.setItem(MAIN_TAB_KEY,name);
+ simStorage.setItem(MAIN_TAB_KEY,name);
  if(name==="team"){renderBestThreeMode()}
  if(name==="battle"){updateBattleSelectionStatus();renderTournament();renderTournamentHistory();renderBattleHistory();if(battleMode==="single")arena()}
  if(name==="pick"){renderCollectionOverall();renderSeriesButtons();renderBrowser()}
@@ -2740,16 +2748,16 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 
 function backupData(){
- const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))storage[k]=localStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.95",master_version:DB.master_version,exported_at:new Date().toISOString(),storage};
+ const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.97",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
 $("restoreBtn").onclick=()=>$("restoreFile").click();
-$("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!UI.dialog.confirm("現在の所持・お気に入り・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)localStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")localStorage.setItem(k,v);invalidateBest3CounterCache();migrateLegacyTeamToFavorites();$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderSeriesButtons();renderBrowser()}catch(err){UI.dialog.alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
+$("restoreFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);if(data?.app!=="pokemon-frienda-home-simulator"||!data.storage||typeof data.storage!=="object")throw new Error("invalid");if(!UI.dialog.confirm("現在の所持・お気に入り・修正・写真データを、バックアップ内容で置き換えますか？"))return;const remove=[];for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))remove.push(k)}for(const k of remove)simStorage.removeItem(k);for(const [k,v] of Object.entries(data.storage))if(k.startsWith("frenda:")&&typeof v==="string")simStorage.setItem(k,v);invalidateBest3CounterCache();migrateLegacyTeamToFavorites();$("backupStatus").textContent=`復元しました（${data.exported_at||"日時不明"}）。`;selected=null;$("detailCard").classList.add("hidden");renderBattlePicks();renderSeriesButtons();renderBrowser()}catch(err){UI.dialog.alert("このファイルは有効なフレンダ・バックアップではありません。")};e.target.value=""};rd.readAsText(f)};
 
 migrateLegacyTeamToFavorites();initBrowser();
-setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
+setMainTab(simStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 
 // Ver6.84: 共通データアクセスは frenda-data.js v1.1 を利用。クラウド競合解決は frenda-cloud.js が担当。
 // Ver6.85: 共通UI補助は frenda-ui.js v1.0 を利用。
@@ -2759,21 +2767,21 @@ setMainTab(localStorage.getItem(MAIN_TAB_KEY)||"pick",false);
 // Ver6.93: 左上のMicro QR/QRをカメラまたは写真で読み取り、ピック判別→所持登録するスキャナーを追加。未解決コードは初回だけ手動紐付けし、次回以降は自動判別。
 function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:")&&!k.startsWith("frenda:dungeon:")&&!k.startsWith("frenda:expedition:")&&!k.startsWith("frenda:cloud:")}
 function simulatorCloudData(){
- const storage={};
- for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))storage[k]=localStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.95",storage};
+ const snapshotStorage={};
+ for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
+ return {format_version:1,simulator_version:"6.97",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
- const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))remove.push(k)}
- for(const k of remove)localStorage.removeItem(k);
- for(const [k,v] of Object.entries(data.storage))if(simulatorCloudKey(k)&&typeof v==="string")localStorage.setItem(k,v);
+ const remove=[];for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))remove.push(k)}
+ for(const k of remove)simStorage.removeItem(k);
+ for(const [k,v] of Object.entries(data.storage))if(simulatorCloudKey(k)&&typeof v==="string")simStorage.setItem(k,v);
 }
-function simulatorHasLocalData(){for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(simulatorCloudKey(k))return true}return false}
+function simulatorHasLocalData(){for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))return true}return false}
 function simulatorCloudSummary(data){const s=data?.storage||{};const count=k=>{try{const a=JSON.parse(s[k]||"[]");return Array.isArray(a)?a.length:0}catch{return 0}};return `所持 ${count(OWNED_KEY)}件 / お気に入り ${count(FAVORITE_KEY)}件`}
 if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,label:"シミュレーター",column:"simulator_data",getData:simulatorCloudData,applyData:applySimulatorCloudData,watchStorage:simulatorCloudKey,hasLocalData:simulatorHasLocalData,describeData:simulatorCloudSummary});
 </script></body></html>
-<!-- Updated: 2026-10-01 22:58:00 JST / Ver6.95 -->
+<!-- Updated: 2026-10-11 15:18 JST / Ver6.97 -->
 
 <!-- Ver6.94: frenda-master.js v1.63 XT2ワンダー先行登録版へ更新。 -->
 
@@ -2781,4 +2789,12 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
   ・ピック一覧の画像表示サイズを「大 / 中 / 小」で切替可能にした。設定は端末に保存。
   ・スマホでは 大=1列 / 中=2列 / 小=3列。
   ・ピック画像をタップして開く「ピック裏面データ」画面にも、そのピック画像を表示。
+-->
+
+<!-- Ver6.97:
+  ・本番 /simulator.html と /test/simulator.html を同一HTMLで運用できる実行時パス判定を追加。
+  ・/test/ では frenda-test.js / frenda-user.js / frenda-cloud-test.js をtest階層から、Master/Core/Rules/Data/UIを親ルートから読み込む。
+  ・本番では同一HTMLがルート共通JS / frenda-cloud.js を読み込む。
+  ・Simulator保存参照を simStorage (= FRENDA_USER.storage) に統一し、ユーザー別保存へ接続。
+  ・トップレベル `storage` 宣言を禁止し、frenda-user.js のstorageイベント登録とのTDZ衝突を防止。
 -->
