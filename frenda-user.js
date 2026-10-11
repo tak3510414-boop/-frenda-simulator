@@ -1,7 +1,9 @@
-/* FRENDA_USER_VERSION: 1.1 / production local profiles + cloud-session volatile storage + unified-user account metadata; local and cloud saves never synchronize */
+/* FRENDA_USER_VERSION: 1.2 / shared production+test user storage facade + unified user UI; cloud provider is environment adapter; local/cloud saves never synchronize */
 (()=>{
 "use strict";
-const VERSION="1.1";
+const VERSION="1.2";
+const TEST=window.FRENDA_TEST?.active?window.FRENDA_TEST:null;
+const IS_TEST=!!TEST;
 const MODE_KEY="frenda:user:storage-mode:v1";
 const USER_KEY="frenda:user:cloud-user-id:v1";
 const CACHE_PREFIX="frenda:user:cloud-cache:";
@@ -11,134 +13,92 @@ const LOCAL_PROFILE_KEY="frenda:user:active-local-profile:v1";
 const LOCAL_PROFILE_REGISTRY_KEY="frenda:user:local-profile-registry:v1";
 const LOCAL_MIGRATION_KEY="frenda:user:legacy-local-migrated:v1";
 const ACCOUNT_META_PREFIX="frenda:user:account-meta:v1:";
+const ACTIVE_ACCOUNT_META="active-user:v1";
 const DEFAULT_LOCAL_PROFILES=Object.freeze([{id:"A",name:"ローカルA"},{id:"B",name:"ローカルB"}]);
-const DUNGEON_KEY="frenda:dungeon:v1";
-const EXPEDITION_KEY="frenda:expedition:v1";
-
-const real=window.localStorage;
-const proto=Object.getPrototypeOf(real);
-const native={getItem:proto.getItem,setItem:proto.setItem,removeItem:proto.removeItem,clear:proto.clear,key:proto.key};
+const DUNGEON_KEY="frenda:dungeon:v1",EXPEDITION_KEY="frenda:expedition:v1";
 const listeners=new Set();
-const mem=new Map();
+let cloudProvider=null,userBadge=null,modal=null,statusText="";
 
-function sanitizeProfileName(name){return String(name??"").trim().replace(/\s+/g," ").slice(0,20)}
-function normalizeProfileId(v){return String(v||"").trim().toUpperCase()}
-function managerKey(k){return String(k||"").startsWith("frenda:user:")||String(k||"").startsWith("frenda:test:")}
-function legacyCandidate(k){k=String(k||"");return !managerKey(k)&&(k.startsWith("frenda:")||k.startsWith("frenda_"))}
-function legacyMirrorKey(k){
- k=String(k||"");
- return k===DUNGEON_KEY||k===EXPEDITION_KEY||k==="frenda:auto-backups:v1"||k==="frenda:damageModel:v1"||k==="frenda_eye_timer_v1"||k==="frenda:owned:v1"||k==="frenda:favorites:v1"||k==="frenda:team:v1"||k.startsWith("frenda:dungeon:")||k.startsWith("frenda:expedition:");
-}
-function readLocalProfileRegistry(){
- try{
-  const raw=native.getItem.call(real,LOCAL_PROFILE_REGISTRY_KEY);
-  if(!raw)return DEFAULT_LOCAL_PROFILES.map(x=>({...x}));
-  const parsed=JSON.parse(raw);if(!Array.isArray(parsed))throw new Error("registry is not array");
-  const out=[],seen=new Set();
-  for(const item of parsed){
-   const id=normalizeProfileId(item?.id),name=sanitizeProfileName(item?.name);
-   if(!/^(?:A|B|U[1-9]\d*)$/.test(id)||!name||seen.has(id))continue;
-   seen.add(id);out.push({id,name});
-  }
-  return out.length?out:DEFAULT_LOCAL_PROFILES.map(x=>({...x}));
- }catch(e){console.warn("FRENDA_USER_PROFILE_REGISTRY_READ_FAILED",e);return DEFAULT_LOCAL_PROFILES.map(x=>({...x}))}
-}
-function writeLocalProfileRegistry(list){try{native.setItem.call(real,LOCAL_PROFILE_REGISTRY_KEY,JSON.stringify(list));return true}catch(e){console.error("FRENDA_USER_PROFILE_REGISTRY_WRITE_FAILED",e);return false}}
-function ensureLocalProfileRegistry(){try{if(native.getItem.call(real,LOCAL_PROFILE_REGISTRY_KEY))return;writeLocalProfileRegistry(DEFAULT_LOCAL_PROFILES.map(x=>({...x})))}catch{}}
-function localProfiles(){return readLocalProfileRegistry()}
-function validLocalProfile(v){const id=normalizeProfileId(v);return localProfiles().some(x=>x.id===id)}
-function localProfileId(){
- try{const list=localProfiles(),v=normalizeProfileId(native.getItem.call(real,LOCAL_PROFILE_KEY));return list.some(x=>x.id===v)?v:(list[0]?.id||"A")}catch{return "A"}
-}
-function localProfileInfo(id=localProfileId()){const list=localProfiles(),key=normalizeProfileId(id);return list.find(x=>x.id===key)||list[0]||{id:"A",name:"ローカルA"}}
-function localProfileName(id=localProfileId()){return localProfileInfo(id).name}
-function localPrefix(profile=localProfileId()){return `${LOCAL_PREFIX_BASE}${normalizeProfileId(profile)}:`}
-function setLocalProfileMeta(profile){profile=normalizeProfileId(profile);if(!validLocalProfile(profile))return false;try{native.setItem.call(real,LOCAL_PROFILE_KEY,profile);return true}catch{return false}}
-function migrateLegacyLocalA(){
- try{
-  if(native.getItem.call(real,LOCAL_MIGRATION_KEY)==="1")return;
-  const targetPrefix=localPrefix("A"),keys=[];
-  for(let i=0;i<real.length;i++){const k=native.key.call(real,i);if(k!==null&&legacyCandidate(k))keys.push(String(k))}
-  let copied=0;
-  for(const k of keys){const dst=targetPrefix+k;if(native.getItem.call(real,dst)!==null)continue;const v=native.getItem.call(real,k);if(v!==null){native.setItem.call(real,dst,String(v));copied++}}
-  native.setItem.call(real,LOCAL_MIGRATION_KEY,"1");
-  console.info("FRENDA_USER_LEGACY_MIGRATION",{copied});
- }catch(e){console.error("FRENDA_USER_LEGACY_MIGRATION_FAILED",e)}
-}
-function createLocalProfile(name){
- if(currentMode()==="cloud")return null;name=sanitizeProfileName(name);if(!name)return null;
- const list=localProfiles();if(list.some(x=>x.name===name))return null;
- let max=0;for(const x of list){const m=/^U(\d+)$/.exec(x.id);if(m)max=Math.max(max,Number(m[1])||0)}
- const profile={id:`U${max+1}`,name};if(!writeLocalProfileRegistry([...list,profile]))return null;
- const old=localProfileId();if(!setLocalProfileMeta(profile.id))return null;seedLocalStorage();notify("profiles",null,profile.id,old);return {...profile};
-}
-function renameLocalProfile(profile,newName){
- if(currentMode()==="cloud")return null;profile=normalizeProfileId(profile);newName=sanitizeProfileName(newName);if(!validLocalProfile(profile)||!newName)return null;
- const list=localProfiles(),current=list.find(x=>x.id===profile);if(!current)return null;if(list.some(x=>x.id!==profile&&x.name===newName))return null;if(current.name===newName)return {...current};
- const next=list.map(x=>x.id===profile?{...x,name:newName}:{...x});if(!writeLocalProfileRegistry(next))return null;notify("profileRename",null,{id:profile,name:newName},{id:profile,name:current.name});return {id:profile,name:newName};
-}
-function deleteLocalProfile(profile){
- if(currentMode()==="cloud")return null;profile=normalizeProfileId(profile);const list=localProfiles(),currentId=localProfileId();if(list.length<=1||profile===currentId||!list.some(x=>x.id===profile))return null;
- const target=list.find(x=>x.id===profile),prefix=localPrefix(profile),keys=[];
- try{
-  for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(prefix))keys.push(String(raw))}
-  if(!writeLocalProfileRegistry(list.filter(x=>x.id!==profile)))return null;for(const raw of keys)native.removeItem.call(real,raw);notify("profileDelete",null,{id:profile,name:target.name},null);return {...target};
- }catch(e){console.error("FRENDA_USER_PROFILE_DELETE_FAILED",e);return null}
-}
+function sanitizeName(name){return String(name??"").trim().replace(/\s+/g," ").slice(0,20)}
+function normalizeId(v){return String(v||"").trim().toUpperCase()}
+function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function regressionCaseActive(){return !!TEST?.regressionEphemeral||(()=>{try{return new URLSearchParams(location.search).has("case")}catch{return false}})()}
 
-function accountMetaKey(name){return ACCOUNT_META_PREFIX+String(name||"").trim()}
-function accountGet(name){try{const k=accountMetaKey(name);return k?native.getItem.call(real,k):null}catch{return null}}
-function accountSet(name,value){try{const k=accountMetaKey(name);if(!k)return false;native.setItem.call(real,k,String(value));return true}catch(e){console.error("FRENDA_USER_ACCOUNT_META_WRITE_FAILED",e);return false}}
-function accountRemove(name){try{const k=accountMetaKey(name);if(k)native.removeItem.call(real,k);return true}catch{return false}}
-function sessionGet(k){try{return sessionStorage.getItem(k)}catch{return null}}
-function sessionSet(k,v){try{sessionStorage.setItem(k,String(v));return true}catch{return false}}
-function sessionRemove(k){try{sessionStorage.removeItem(k)}catch{}}
-function cloudUserId(){return sessionGet(USER_KEY)||""}
-function currentMode(){return sessionGet(MODE_KEY)==="cloud"&&cloudUserId()?"cloud":"local"}
-function cacheKey(userId=cloudUserId()){return userId?CACHE_PREFIX+userId:""}
-function dirtyKey(userId=cloudUserId()){return userId?DIRTY_PREFIX+userId:""}
-function readCloudCache(userId=cloudUserId()){const key=cacheKey(userId);if(!key)return null;try{const raw=sessionGet(key);return raw?JSON.parse(raw):null}catch{return null}}
-function writeCloudCache(payload,userId=cloudUserId()){const key=cacheKey(userId);if(!key)return false;try{return sessionSet(key,JSON.stringify(payload??null))}catch{return false}}
-function markCloudDirty(userId=cloudUserId()){const key=dirtyKey(userId);return key?sessionSet(key,"1"):false}
-function clearCloudDirty(userId=cloudUserId()){const key=dirtyKey(userId);if(key)sessionRemove(key)}
-function cloudDirty(userId=cloudUserId()){const key=dirtyKey(userId);return !!key&&sessionGet(key)==="1"}
-function seedFromCloudPayload(payload){mem.clear();const state=payload&&typeof payload==="object"&&payload.state&&typeof payload.state==="object"?payload.state:null;if(!state)return;mem.set(DUNGEON_KEY,JSON.stringify(state));if(state.expeditionShared&&typeof state.expeditionShared==="object")mem.set(EXPEDITION_KEY,JSON.stringify(state.expeditionShared))}
-function seedLocalStorage(){
- mem.clear();const prefix=localPrefix();
- try{for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw===null||!String(raw).startsWith(prefix))continue;const k=String(raw).slice(prefix.length);mem.set(k,String(native.getItem.call(real,raw)??""))}}
- catch(e){console.error("FRENDA_USER_LOCAL_SEED_FAILED",e)}
+function makeTestBackend(){
+ return {
+  storage:TEST.storage,
+  get mode(){return TEST.mode},get cloudUserId(){return TEST.cloudUserId||""},get localProfileId(){return TEST.localProfileId||"A"},get localProfileName(){return TEST.localProfileName||"ローカルA"},get localProfiles(){return Array.isArray(TEST.localProfiles)?TEST.localProfiles.map(x=>({...x})):[]},
+  readCloudCache:(u)=>TEST.readCloudCache?.(u),writeCloudCache:(p,u)=>TEST.writeCloudCache?.(p,u),markCloudDirty:()=>false,clearCloudDirty:()=>{},cloudDirty:()=>false,
+  activateCloud:(u,p,o)=>TEST.activateCloud?.(u,p,o),updateCloudCache:(p,u,o)=>TEST.updateCloudCache?.(p,u,o),deactivateCloud:()=>TEST.deactivateCloud?.(),clearCloudCache:(u)=>TEST.clearCloudCache?.(u),
+  switchLocalProfile:(id)=>TEST.switchLocalProfile?.(id),createLocalProfile:(n)=>TEST.createLocalProfile?.(n),renameLocalProfile:(id,n)=>TEST.renameLocalProfile?.(id,n),deleteLocalProfile:(id)=>TEST.deleteLocalProfile?.(id),
+  accountGet:(n)=>TEST.accountGet?.(n)??null,accountSet:(n,v)=>!!TEST.accountSet?.(n,v),accountRemove:(n)=>!!TEST.accountRemove?.(n),snapshot:()=>TEST.snapshot?.()||{}
+ };
 }
-function persistLocalSet(k,v){try{native.setItem.call(real,localPrefix()+String(k),String(v));if(localProfileId()==="A"&&legacyMirrorKey(k))native.setItem.call(real,String(k),String(v));return true}catch(e){console.error("FRENDA_USER_LOCAL_WRITE_FAILED",e);return false}}
-function persistLocalRemove(k){try{native.removeItem.call(real,localPrefix()+String(k));if(localProfileId()==="A"&&legacyMirrorKey(k))native.removeItem.call(real,String(k));return true}catch(e){console.error("FRENDA_USER_LOCAL_REMOVE_FAILED",e);return false}}
-function persistLocalClear(){
- try{const prefix=localPrefix(),keys=[];for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(prefix))keys.push(String(raw))}
-  for(const raw of keys){const k=raw.slice(prefix.length);native.removeItem.call(real,raw);if(localProfileId()==="A"&&legacyMirrorKey(k))native.removeItem.call(real,k)}return true;
- }catch(e){console.error("FRENDA_USER_LOCAL_CLEAR_FAILED",e);return false}
+function makeProdBackend(){
+ const real=window.localStorage,proto=Object.getPrototypeOf(real),native={getItem:proto.getItem,setItem:proto.setItem,removeItem:proto.removeItem,clear:proto.clear,key:proto.key};
+ const mem=new Map();
+ function managerKey(k){return String(k||"").startsWith("frenda:user:")||String(k||"").startsWith("frenda:test:")}
+ function legacyCandidate(k){k=String(k||"");return !managerKey(k)&&(k.startsWith("frenda:")||k.startsWith("frenda_"))}
+ function legacyMirrorKey(k){k=String(k||"");return k===DUNGEON_KEY||k===EXPEDITION_KEY||k==="frenda:auto-backups:v1"||k==="frenda:damageModel:v1"||k==="frenda_eye_timer_v1"||k==="frenda:owned:v1"||k==="frenda:favorites:v1"||k==="frenda:team:v1"||k.startsWith("frenda:dungeon:")||k.startsWith("frenda:expedition:")}
+ function readRegistry(){try{const raw=native.getItem.call(real,LOCAL_PROFILE_REGISTRY_KEY);if(!raw)return DEFAULT_LOCAL_PROFILES.map(x=>({...x}));const a=JSON.parse(raw),out=[],seen=new Set();if(!Array.isArray(a))throw 0;for(const x of a){const id=normalizeId(x?.id),name=sanitizeName(x?.name);if(!/^(?:A|B|U[1-9]\d*)$/.test(id)||!name||seen.has(id))continue;seen.add(id);out.push({id,name})}return out.length?out:DEFAULT_LOCAL_PROFILES.map(x=>({...x}))}catch{return DEFAULT_LOCAL_PROFILES.map(x=>({...x}))}}
+ function writeRegistry(a){try{native.setItem.call(real,LOCAL_PROFILE_REGISTRY_KEY,JSON.stringify(a));return true}catch{return false}}
+ function profiles(){return readRegistry()}
+ function profileId(){try{const a=profiles(),v=normalizeId(native.getItem.call(real,LOCAL_PROFILE_KEY));return a.some(x=>x.id===v)?v:(a[0]?.id||"A")}catch{return "A"}}
+ function profileInfo(id=profileId()){const a=profiles(),k=normalizeId(id);return a.find(x=>x.id===k)||a[0]||{id:"A",name:"ローカルA"}}
+ function prefix(id=profileId()){return `${LOCAL_PREFIX_BASE}${normalizeId(id)}:`}
+ function setProfile(id){id=normalizeId(id);if(!profiles().some(x=>x.id===id))return false;try{native.setItem.call(real,LOCAL_PROFILE_KEY,id);return true}catch{return false}}
+ function ensureRegistry(){try{if(!native.getItem.call(real,LOCAL_PROFILE_REGISTRY_KEY))writeRegistry(DEFAULT_LOCAL_PROFILES.map(x=>({...x})))}catch{}}
+ function migrate(){try{if(native.getItem.call(real,LOCAL_MIGRATION_KEY)==="1")return;const dst=prefix("A"),keys=[];for(let i=0;i<real.length;i++){const k=native.key.call(real,i);if(k!==null&&legacyCandidate(k))keys.push(String(k))}for(const k of keys){if(native.getItem.call(real,dst+k)!==null)continue;const v=native.getItem.call(real,k);if(v!==null)native.setItem.call(real,dst+k,String(v))}native.setItem.call(real,LOCAL_MIGRATION_KEY,"1")}catch(e){console.error("FRENDA_USER_LEGACY_MIGRATION_FAILED",e)}}
+ function sessionGet(k){try{return sessionStorage.getItem(k)}catch{return null}} function sessionSet(k,v){try{sessionStorage.setItem(k,String(v));return true}catch{return false}} function sessionRemove(k){try{sessionStorage.removeItem(k)}catch{}}
+ function cloudUserId(){return sessionGet(USER_KEY)||""} function mode(){return sessionGet(MODE_KEY)==="cloud"&&cloudUserId()?"cloud":"local"}
+ function cacheKey(u=cloudUserId()){return u?CACHE_PREFIX+u:""} function dirtyKey(u=cloudUserId()){return u?DIRTY_PREFIX+u:""}
+ function readCloudCache(u=cloudUserId()){const k=cacheKey(u);if(!k)return null;try{const raw=sessionGet(k);return raw?JSON.parse(raw):null}catch{return null}}
+ function writeCloudCache(p,u=cloudUserId()){const k=cacheKey(u);return k?sessionSet(k,JSON.stringify(p??null)):false}
+ function markCloudDirty(u=cloudUserId()){const k=dirtyKey(u);return k?sessionSet(k,"1"):false} function clearCloudDirty(u=cloudUserId()){const k=dirtyKey(u);if(k)sessionRemove(k)} function cloudDirty(u=cloudUserId()){const k=dirtyKey(u);return !!k&&sessionGet(k)==="1"}
+ function seedCloud(p){mem.clear();const s=p&&typeof p==="object"&&p.state&&typeof p.state==="object"?p.state:null;if(!s)return;mem.set(DUNGEON_KEY,JSON.stringify(s));if(s.expeditionShared&&typeof s.expeditionShared==="object")mem.set(EXPEDITION_KEY,JSON.stringify(s.expeditionShared))}
+ function seedLocal(){mem.clear();const p=prefix();try{for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw===null||!String(raw).startsWith(p))continue;mem.set(String(raw).slice(p.length),String(native.getItem.call(real,raw)??""))}}catch(e){console.error("FRENDA_USER_LOCAL_SEED_FAILED",e)}}
+ function persistSet(k,v){try{native.setItem.call(real,prefix()+String(k),String(v));if(profileId()==="A"&&legacyMirrorKey(k))native.setItem.call(real,String(k),String(v));return true}catch{return false}}
+ function persistRemove(k){try{native.removeItem.call(real,prefix()+String(k));if(profileId()==="A"&&legacyMirrorKey(k))native.removeItem.call(real,String(k));return true}catch{return false}}
+ function persistClear(){try{const p=prefix(),keys=[];for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(p))keys.push(String(raw))}for(const raw of keys){const k=raw.slice(p.length);native.removeItem.call(real,raw);if(profileId()==="A"&&legacyMirrorKey(k))native.removeItem.call(real,k)}return true}catch{return false}}
+ ensureRegistry();migrate();if(mode()==="cloud")seedCloud(readCloudCache());else seedLocal();
+ const storage={get length(){return mem.size},key(i){return [...mem.keys()][Number(i)]??null},getItem(k){k=String(k);return mem.has(k)?mem.get(k):null},setItem(k,v){k=String(k);v=String(v);const old=mem.get(k)??null;mem.set(k,v);if(mode()==="local")persistSet(k,v);else markCloudDirty();if(old!==v)notify("set",k,v,old)},removeItem(k){k=String(k);const old=mem.get(k)??null,had=mem.delete(k);if(mode()==="local")persistRemove(k);else markCloudDirty();if(had)notify("remove",k,null,old)},clear(){const had=mem.size>0;mem.clear();if(mode()==="local")persistClear();else markCloudDirty();if(had)notify("clear",null,null,null)},subscribe(fn){if(typeof fn!=="function")return()=>{};listeners.add(fn);return()=>listeners.delete(fn)}};
+ function createLocal(name){if(mode()==="cloud")return null;name=sanitizeName(name);if(!name)return null;const a=profiles();if(a.some(x=>x.name===name))return null;let max=0;for(const x of a){const m=/^U(\d+)$/.exec(x.id);if(m)max=Math.max(max,+m[1]||0)}const p={id:`U${max+1}`,name};if(!writeRegistry([...a,p])||!setProfile(p.id))return null;seedLocal();notify("profiles",null,p.id,null);return {...p}}
+ function renameLocal(id,name){id=normalizeId(id);name=sanitizeName(name);const a=profiles(),cur=a.find(x=>x.id===id);if(!cur||!name||a.some(x=>x.id!==id&&x.name===name))return null;if(cur.name===name)return {...cur};if(!writeRegistry(a.map(x=>x.id===id?{...x,name}:{...x})))return null;notify("profileRename",null,{id,name},{id,name:cur.name});return {id,name}}
+ function deleteLocal(id){id=normalizeId(id);const a=profiles(),current=profileId();if(a.length<=1||id===current||!a.some(x=>x.id===id)||mode()==="cloud")return null;const target=a.find(x=>x.id===id),p=prefix(id),keys=[];try{for(let i=0;i<real.length;i++){const raw=native.key.call(real,i);if(raw!==null&&String(raw).startsWith(p))keys.push(String(raw))}if(!writeRegistry(a.filter(x=>x.id!==id)))return null;keys.forEach(k=>native.removeItem.call(real,k));return {...target}}catch{return null}}
+ function switchLocal(id){id=normalizeId(id);if(mode()==="cloud"||!profiles().some(x=>x.id===id))return false;if(profileId()===id)return true;if(!setProfile(id))return false;seedLocal();notify("profile",null,id,null);return true}
+ function accountKey(n){return ACCOUNT_META_PREFIX+String(n||"").trim()}
+ return {storage,get mode(){return mode()},get cloudUserId(){return cloudUserId()},get localProfileId(){return profileId()},get localProfileName(){return profileInfo().name},get localProfiles(){return profiles().map(x=>({...x}))},readCloudCache,writeCloudCache,markCloudDirty,clearCloudDirty,cloudDirty,activateCloud(u,p,{dirty=false}={}){u=String(u||"").trim();if(!u)throw new Error("cloud user id is required");sessionSet(USER_KEY,u);sessionSet(MODE_KEY,"cloud");writeCloudCache(p??null,u);dirty?markCloudDirty(u):clearCloudDirty(u);seedCloud(p??null);return true},updateCloudCache(p,u=cloudUserId(),{dirty=false}={}){if(!u||mode()!=="cloud")return false;writeCloudCache(p??null,u);dirty?markCloudDirty(u):clearCloudDirty(u);seedCloud(p??null);return true},deactivateCloud(){sessionRemove(MODE_KEY);sessionRemove(USER_KEY);seedLocal();return true},clearCloudCache(u){const k=cacheKey(String(u||""));if(k)sessionRemove(k);clearCloudDirty(u)},switchLocalProfile:switchLocal,createLocalProfile:createLocal,renameLocalProfile:renameLocal,deleteLocalProfile:deleteLocal,accountGet(n){try{return native.getItem.call(real,accountKey(n))}catch{return null}},accountSet(n,v){try{native.setItem.call(real,accountKey(n),String(v));return true}catch{return false}},accountRemove(n){try{native.removeItem.call(real,accountKey(n));return true}catch{return false}},snapshot(){return Object.fromEntries(mem)}};
 }
-
-ensureLocalProfileRegistry();migrateLegacyLocalA();
-if(currentMode()==="cloud")seedFromCloudPayload(readCloudCache());else seedLocalStorage();
-function notify(type,key,value,oldValue){for(const fn of [...listeners]){try{fn({type,key,value,oldValue,mode:currentMode()})}catch(e){console.error("FRENDA_USER_STORAGE_LISTENER",e)}}}
-const storage={
- get length(){return mem.size},
- key(i){const a=[...mem.keys()];const n=Number(i);return Number.isInteger(n)?a[n]??null:null},
- getItem(k){k=String(k);return mem.has(k)?mem.get(k):null},
- setItem(k,v){k=String(k);v=String(v);const old=mem.has(k)?mem.get(k):null;mem.set(k,v);if(currentMode()==="local")persistLocalSet(k,v);else markCloudDirty();if(old!==v)notify("set",k,v,old)},
- removeItem(k){k=String(k);const old=mem.has(k)?mem.get(k):null;const had=mem.delete(k);if(currentMode()==="local")persistLocalRemove(k);else markCloudDirty();if(had)notify("remove",k,null,old)},
- clear(){const had=mem.size>0;mem.clear();if(currentMode()==="local")persistLocalClear();else markCloudDirty();if(had)notify("clear",null,null,null)},
- subscribe(fn){if(typeof fn!=="function")return ()=>{};listeners.add(fn);return ()=>listeners.delete(fn)}
-};
-function activateCloud(userId,payload,{dirty=false}={}){userId=String(userId||"").trim();if(!userId)throw new Error("cloud user id is required");sessionSet(USER_KEY,userId);sessionSet(MODE_KEY,"cloud");writeCloudCache(payload??null,userId);if(dirty)markCloudDirty(userId);else clearCloudDirty(userId);seedFromCloudPayload(payload??null);return true}
-function updateCloudCache(payload,userId=cloudUserId(),{dirty=false}={}){if(!userId||currentMode()!=="cloud")return false;writeCloudCache(payload??null,userId);if(dirty)markCloudDirty(userId);seedFromCloudPayload(payload??null);return true}
-function deactivateCloud(){sessionRemove(MODE_KEY);sessionRemove(USER_KEY);seedLocalStorage();return true}
-function clearCloudCache(userId){const id=String(userId||"");const key=cacheKey(id);if(key)sessionRemove(key);clearCloudDirty(id)}
-function switchLocalProfile(profile){profile=normalizeProfileId(profile);if(currentMode()==="cloud"||!validLocalProfile(profile))return false;const old=localProfileId();if(old===profile)return true;if(!setLocalProfileMeta(profile))return false;seedLocalStorage();notify("profile",null,profile,old);return true}
-function snapshot(){return Object.fromEntries(mem)}
-
-window.FRENDA_USER=Object.freeze({
- version:VERSION,active:true,storage,
- get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},get localProfileId(){return localProfileId()},get localProfileName(){return localProfileName()},get localProfiles(){return localProfiles().map(x=>({...x}))},
- readCloudCache,writeCloudCache,markCloudDirty,clearCloudDirty,cloudDirty,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,renameLocalProfile,deleteLocalProfile,accountGet,accountSet,accountRemove,snapshot
-});
+function notify(type,key,value,oldValue){for(const fn of [...listeners]){try{fn({type,key,value,oldValue,mode:backend.mode})}catch(e){console.error("FRENDA_USER_STORAGE_LISTENER",e)}}}
+const backend=IS_TEST?makeTestBackend():makeProdBackend();
+function getActiveAccount(){try{const x=JSON.parse(backend.accountGet(ACTIVE_ACCOUNT_META)||"null");if(x?.type==="cloud")return {type:"cloud",id:normalizeId(x.id)};if(x?.type==="local"&&backend.localProfiles.some(p=>p.id===normalizeId(x.id)))return {type:"local",id:normalizeId(x.id)}}catch{}return {type:"local",id:backend.localProfileId}}
+function setActiveAccount(type,id){return backend.accountSet(ACTIVE_ACCOUNT_META,JSON.stringify({type,id:normalizeId(id)}))}
+function allDisplayNames(excludeType="",excludeId=""){const a=[];for(const p of backend.localProfiles)if(!(excludeType==="local"&&p.id===excludeId))a.push(p.name);for(const p of cloudProvider?.getProfiles?.()||[])if(!(excludeType==="cloud"&&p.id===excludeId))a.push(p.name);return a}
+function setStatus(text,kind=""){statusText=String(text||"");const s=modal?.querySelector("#frendaUserStatus");if(s)s.textContent=statusText;refreshUI()}
+function injectStyles(){if(document.getElementById("frendaUserStyles"))return;const st=document.createElement("style");st.id="frendaUserStyles";st.textContent=`
+.frendaActiveUserBadge{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;box-sizing:border-box!important;max-width:190px!important;min-height:28px!important;padding:5px 9px!important;border-radius:999px!important;border:1px solid #a9c9d9!important;background:#eef9ff!important;color:#16475f!important;font-size:10px!important;font-weight:1000!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;cursor:pointer!important;box-shadow:none!important;flex:0 1 auto!important}.frendaActiveUserBadge[data-mode="cloud"]{background:#e6f6ff!important;color:#075a7a!important;border-color:#8fd4ef!important}.frendaActiveUserBadge[data-mode="local"]{background:#f2f4f6!important;color:#40515e!important;border-color:#c7d0d6!important}.frendaActiveUserBadge .frendaActiveUserText{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}@media(max-width:700px){.frendaActiveUserBadge{max-width:132px!important;min-height:25px!important;padding:4px 7px!important;font-size:8.5px!important}}
+.frendaUserOverlay{position:fixed;inset:0;z-index:3000;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px}.frendaUserPanel{width:min(430px,100%);max-height:min(88vh,760px);overflow:auto;background:#fff;color:#17202a;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0007;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}.frendaUserHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.frendaUserHead b{font-size:18px}.frendaUserHead button{background:#edf2f7!important;color:#243747!important;padding:8px 10px!important}.frendaUserInfo{font-size:12px;line-height:1.55;color:#64737e;background:#eef9ff;border:1px solid #b9ddeb;border-radius:10px;padding:10px;margin-top:10px}.frendaUnifiedList{display:grid;gap:8px;margin:10px 0}.frendaUnifiedRow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:5px;min-width:0}.frendaUnifiedSelect{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:11px!important;border-radius:11px!important;background:#f2f4f6!important;color:#31424f!important;border:1px solid #c7d0d6!important;font-weight:900!important;text-align:left!important}.frendaUnifiedSelect.active{background:#dff3ff!important;color:#075a7a!important;border-color:#69bde4!important}.frendaUnifiedSelect.needsAuth{background:#fff7df!important;color:#6a5100!important;border-color:#e4cf85!important}.frendaUnifiedEdit,.frendaUnifiedDelete{width:38px!important;padding:8px 6px!important;border-radius:10px!important;font-weight:900!important}.frendaUnifiedEdit{background:#fff7df!important;color:#6a5100!important;border:1px solid #e4cf85!important}.frendaUnifiedDelete{background:#fff0f0!important;color:#9b1c1c!important;border:1px solid #efb2b2!important}.frendaUnifiedMeta{display:block;font-size:10px;font-weight:700;opacity:.72;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.frendaUnifiedAddChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.frendaUnifiedAddChoices button{padding:10px!important;border-radius:10px!important;font-weight:900!important}.frendaUnifiedForm{display:none;margin-top:10px;padding:10px;border:1px solid #d3dde3;border-radius:12px;background:#fafcfd}.frendaUnifiedForm.show{display:block}.frendaUnifiedForm label{display:block;font-size:12px;font-weight:800;margin:9px 0 4px}.frendaUnifiedForm input{width:100%;padding:11px;border:1px solid #c8d2d9;border-radius:10px;font:inherit;background:#fff;color:#17202a;box-sizing:border-box}.frendaUserPrimary{width:100%;margin-top:10px;padding:10px!important;border-radius:10px!important;background:#1769e0!important;color:#fff!important}.frendaUserStatus{margin-top:9px;font-size:12px;font-weight:800;color:#31566d;min-height:1.4em}`;document.head.appendChild(st)}
+function activeLabel(){if(regressionCaseActive())return {mode:backend.mode,icon:"🔒",text:"回帰テスト",title:"回帰テスト一時データ（永続保存なし）"};if(backend.mode==="cloud"){const p=cloudProvider?.getActiveProfile?.()||cloudProvider?.getProfiles?.().find(x=>x.userId===backend.cloudUserId);const text=p?.name||p?.email||"クラウドユーザー";return {mode:"cloud",icon:"☁️",text,title:`${text}（クラウド保存）`}}const text=backend.localProfileName;return {mode:"local",icon:"👤",text,title:`${text}（この端末に保存）`}}
+function badgeTarget(){return document.getElementById("homeUserHost")||document.querySelector(".careCluster")||document.querySelector("#expSharedStatus074")||document.querySelector(".headerTop")||document.querySelector("header")}
+function ensureBadge(){injectStyles();const target=badgeTarget();if(!target)return null;let el=document.getElementById("frendaActiveUserBadge");if(!el){el=document.createElement("button");el.type="button";el.id="frendaActiveUserBadge";el.className="frendaActiveUserBadge";el.innerHTML='<span class="frendaActiveUserIcon"></span><span class="frendaActiveUserText"></span>';el.onclick=openModal}if(el.parentElement!==target){if(target.id==="homeUserHost")target.appendChild(el);else target.insertBefore(el,target.firstChild)}userBadge=el;updateBadge();return el}
+function updateBadge(){const el=userBadge||document.getElementById("frendaActiveUserBadge");if(!el)return;const x=activeLabel();el.dataset.mode=x.mode;el.title=x.title;el.setAttribute("aria-label",x.title);const i=el.querySelector(".frendaActiveUserIcon"),t=el.querySelector(".frendaActiveUserText");if(i)i.textContent=x.icon;if(t)t.textContent=x.text}
+function closeModal(){modal?.remove();modal=null}
+function renderRows(){const reg=regressionCaseActive(),locals=backend.localProfiles,clouds=cloudProvider?.getProfiles?.()||[],activeCloud=cloudProvider?.getActiveProfile?.()?.id||"";const l=locals.map(p=>{const active=backend.mode==="local"&&backend.localProfileId===p.id;return `<div class="frendaUnifiedRow"><button class="frendaUnifiedSelect ${active?'active':''}" data-user-type="local" data-user-id="${escapeHTML(p.id)}" ${reg?'disabled':''}>👤 ${escapeHTML(p.name)}<span class="frendaUnifiedMeta">${active?'使用中・':''}この端末に保存</span></button>${reg?'<span></span>':`<button class="frendaUnifiedEdit" data-local-rename="${escapeHTML(p.id)}" title="表示名を変更">✏️</button>`}<button class="frendaUnifiedDelete" data-local-delete="${escapeHTML(p.id)}" ${reg||active||locals.length<=1?'disabled':''}>🗑️</button></div>`}).join("");const c=clouds.map(p=>{const active=backend.mode==="cloud"&&activeCloud===p.id,needs=!p.remembered;return `<div class="frendaUnifiedRow"><button class="frendaUnifiedSelect ${active?'active':''} ${needs?'needsAuth':''}" data-user-type="cloud" data-user-id="${escapeHTML(p.id)}" ${reg?'disabled':''}>☁️ ${escapeHTML(p.name)}<span class="frendaUnifiedMeta">${active?'使用中・クラウド保存':needs?'再ログインが必要':escapeHTML(p.email||'クラウド保存')}</span></button>${reg?'<span></span>':`<button class="frendaUnifiedEdit" data-cloud-rename="${escapeHTML(p.id)}">✏️</button>`}<button class="frendaUnifiedDelete" data-cloud-delete="${escapeHTML(p.id)}" ${reg||active?'disabled':''}>🗑️</button></div>`}).join("");return l+c}
+function showForm(kind,id=""){if(!modal)return;modal.querySelectorAll(".frendaUnifiedForm").forEach(x=>x.classList.remove("show"));const f=modal.querySelector(kind==="cloud"?"#frendaCloudAddForm":"#frendaLocalAddForm");if(f)f.classList.add("show");if(kind==="cloud"){const p=(cloudProvider?.getProfiles?.()||[]).find(x=>x.id===id);f.dataset.profileId=id||"";const n=f.querySelector("#frendaCloudDisplayName"),e=f.querySelector("#frendaCloudEmail");if(n)n.value=p?.name||"";if(e){e.value=p?.email||"";e.readOnly=!!p}}}
+async function switchLocal(id){id=normalizeId(id);const p=backend.localProfiles.find(x=>x.id===id);if(!p||regressionCaseActive())return false;if(backend.mode==="local"&&backend.localProfileId===id)return true;if(!confirm(`「${p.name}」に切り替えますか？`))return false;if(backend.mode==="cloud"){const ok=await cloudProvider?.leaveCloud?.();if(ok===false){setStatus("クラウド保存後の切替に失敗しました。","error");return false}backend.deactivateCloud()}if(!backend.switchLocalProfile(id)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}setActiveAccount("local",id);location.reload();return true}
+async function switchCloud(id){const p=(cloudProvider?.getProfiles?.()||[]).find(x=>x.id===id);if(!p||regressionCaseActive())return false;if(backend.mode==="cloud"&&cloudProvider?.getActiveProfile?.()?.id===id)return true;if(!confirm(`「${p.name}」に切り替えますか？`))return false;const r=await cloudProvider?.activateProfile?.(id);if(r?.needsAuth){showForm("cloud",id);setStatus("再ログインが必要です。パスワードを入力してください。","error");return false}if(!r?.ok){setStatus(r?.message||"クラウドユーザー切替に失敗しました。","error");return false}setActiveAccount("cloud",id);location.reload();return true}
+function createLocal(name){if(backend.mode==="cloud"){setStatus("ローカルユーザーの追加はローカルユーザーに切り替えてから行ってください。","error");return false}name=sanitizeName(name);if(!name||allDisplayNames().includes(name)){setStatus(!name?"ユーザー名を入力してください。":"同じ表示名のユーザーがあります。","error");return false}if(!confirm(`「${name}」を追加しますか？`))return false;const p=backend.createLocalProfile(name);if(!p){setStatus("ローカルユーザーを追加できませんでした。","error");return false}setActiveAccount("local",p.id);location.reload();return true}
+function renameLocal(id){const p=backend.localProfiles.find(x=>x.id===normalizeId(id));if(!p||regressionCaseActive())return false;const entered=prompt(`「${p.name}」の新しい名前を入力してください（20文字以内）`,p.name);if(entered===null)return false;const name=sanitizeName(entered);if(!name||allDisplayNames("local",p.id).includes(name)){setStatus(!name?"ユーザー名を入力してください。":"同じ表示名のユーザーがあります。","error");return false}if(name===p.name)return true;if(!confirm(`「${p.name}」を「${name}」に変更しますか？\n\nセーブデータはそのままです。`))return false;const r=backend.renameLocalProfile(p.id,name);if(!r){setStatus("ユーザー名を変更できませんでした。","error");return false}location.reload();return true}
+function deleteLocal(id){const p=backend.localProfiles.find(x=>x.id===normalizeId(id));if(!p||regressionCaseActive()||backend.mode==="cloud")return false;if(backend.localProfiles.length<=1||backend.localProfileId===p.id){setStatus("現在使用中のユーザー、または最後の1人は削除できません。","error");return false}if(!confirm(`「${p.name}」を削除しますか？\n\nこのユーザーのセーブデータも削除されます。`)||!confirm(`最終確認です。\n\n「${p.name}」とセーブデータを完全に削除します。\nこの操作は元に戻せません。`))return false;if(!backend.deleteLocalProfile(p.id)){setStatus("ユーザーを削除できませんでした。","error");return false}location.reload();return true}
+async function renameCloud(id){const p=(cloudProvider?.getProfiles?.()||[]).find(x=>x.id===id);if(!p||regressionCaseActive())return false;const entered=prompt(`「${p.name}」の新しい表示名を入力してください（20文字以内）`,p.name);if(entered===null)return false;const name=sanitizeName(entered);if(!name||allDisplayNames("cloud",p.id).includes(name)){setStatus(!name?"表示名を入力してください。":"同じ表示名のユーザーがあります。","error");return false}if(name===p.name)return true;const ok=await cloudProvider?.renameProfile?.(p.id,name);if(!ok){setStatus("表示名を変更できませんでした。","error");return false}location.reload();return true}
+async function deleteCloud(id){const p=(cloudProvider?.getProfiles?.()||[]).find(x=>x.id===id);if(!p||regressionCaseActive())return false;if(backend.mode==="cloud"&&cloudProvider?.getActiveProfile?.()?.id===p.id){setStatus("現在使用中のクラウドユーザーは削除できません。先に別ユーザーへ切り替えてください。","error");return false}if(!confirm(`「${p.name}」をこの端末のユーザー一覧から削除しますか？\n\nクラウドのセーブデータとSupabaseアカウントは削除されません。`)||!confirm(`最終確認です。\n\nこの端末に記憶した「${p.name}」のログイン情報を削除します。`))return false;if(!await cloudProvider?.deleteProfile?.(p.id)){setStatus("クラウドユーザーを削除できませんでした。","error");return false}location.reload();return true}
+async function authenticateCloud(){const f=modal?.querySelector("#frendaCloudAddForm");if(!f)return;const name=sanitizeName(f.querySelector("#frendaCloudDisplayName")?.value),email=String(f.querySelector("#frendaCloudEmail")?.value||"").trim(),password=String(f.querySelector("#frendaCloudPassword")?.value||""),id=f.dataset.profileId||"";if(!name||!email||!password){setStatus("表示名・メールアドレス・パスワードを入力してください。","error");return}if(!id&&allDisplayNames().includes(name)){setStatus("同じ表示名のユーザーがあります。","error");return}const r=await cloudProvider?.authenticateProfile?.({displayName:name,email,password,profileId:id});if(!r?.ok){setStatus(r?.message||"ログインに失敗しました。","error");return}setActiveAccount("cloud",r.profileId||id);location.reload()}
+function openModal(){closeModal();injectStyles();const x=activeLabel();modal=document.createElement("div");modal.className="frendaUserOverlay";modal.innerHTML=`<div class="frendaUserPanel"><div class="frendaUserHead"><b>ユーザーを選ぶ</b><button type="button" id="frendaUserClose">閉じる</button></div><div class="frendaUserInfo"><b>現在：${escapeHTML(x.icon+' '+x.text)}</b><br>👤はこの端末、☁️はクラウドに保存します。ローカルとクラウドは同期しません。${regressionCaseActive()?'<br><b>🔒 回帰テスト中は切替・追加・変更・永続保存を行いません。</b>':''}<br><small>User v${VERSION}${IS_TEST?' / test':''}</small></div><div class="frendaUnifiedList">${renderRows()}</div><div class="frendaUnifiedAddChoices"><button id="frendaAddLocal" ${regressionCaseActive()?'disabled':''}>＋ この端末に追加</button><button id="frendaAddCloud" ${regressionCaseActive()?'disabled':''}>＋ クラウドを追加</button></div><div id="frendaLocalAddForm" class="frendaUnifiedForm"><label>ユーザー名</label><input id="frendaLocalNewName" maxlength="20"><button id="frendaLocalAddBtn" class="frendaUserPrimary">追加する</button></div><div id="frendaCloudAddForm" class="frendaUnifiedForm"><label>表示名</label><input id="frendaCloudDisplayName" maxlength="20"><label>メールアドレス</label><input id="frendaCloudEmail" type="email" autocomplete="username"><label>パスワード</label><input id="frendaCloudPassword" type="password" autocomplete="current-password"><div class="frendaUserInfo">初回だけ認証します。<b>パスワードは保存しません。</b> 認証後はSupabaseセッションを記憶します。</div><button id="frendaCloudAddBtn" class="frendaUserPrimary">認証して追加</button></div><div id="frendaUserStatus" class="frendaUserStatus">${escapeHTML(statusText)}</div></div>`;document.body.appendChild(modal);modal.onclick=e=>{if(e.target===modal)closeModal()};modal.querySelector("#frendaUserClose").onclick=closeModal;modal.querySelectorAll('[data-user-type="local"]').forEach(el=>el.onclick=()=>switchLocal(el.dataset.userId));modal.querySelectorAll('[data-user-type="cloud"]').forEach(el=>el.onclick=()=>switchCloud(el.dataset.userId));modal.querySelectorAll('[data-local-rename]').forEach(el=>el.onclick=()=>renameLocal(el.dataset.localRename));modal.querySelectorAll('[data-local-delete]').forEach(el=>el.onclick=()=>deleteLocal(el.dataset.localDelete));modal.querySelectorAll('[data-cloud-rename]').forEach(el=>el.onclick=()=>renameCloud(el.dataset.cloudRename));modal.querySelectorAll('[data-cloud-delete]').forEach(el=>el.onclick=()=>deleteCloud(el.dataset.cloudDelete));modal.querySelector("#frendaAddLocal").onclick=()=>showForm("local");modal.querySelector("#frendaAddCloud").onclick=()=>showForm("cloud");modal.querySelector("#frendaLocalAddBtn").onclick=()=>createLocal(modal.querySelector("#frendaLocalNewName").value);modal.querySelector("#frendaCloudAddBtn").onclick=authenticateCloud}
+function registerCloudProvider(provider){cloudProvider=provider||null;refreshUI();return true}
+function refreshUI(){ensureBadge();updateBadge()}
+const api={version:VERSION,active:true,sharedUI:true,isTest:IS_TEST,storage:backend.storage,get mode(){return backend.mode},get cloudUserId(){return backend.cloudUserId},get localProfileId(){return backend.localProfileId},get localProfileName(){return backend.localProfileName},get localProfiles(){return backend.localProfiles},readCloudCache:(...a)=>backend.readCloudCache(...a),writeCloudCache:(...a)=>backend.writeCloudCache(...a),markCloudDirty:(...a)=>backend.markCloudDirty(...a),clearCloudDirty:(...a)=>backend.clearCloudDirty(...a),cloudDirty:(...a)=>backend.cloudDirty(...a),activateCloud:(...a)=>backend.activateCloud(...a),updateCloudCache:(...a)=>backend.updateCloudCache(...a),deactivateCloud:(...a)=>backend.deactivateCloud(...a),clearCloudCache:(...a)=>backend.clearCloudCache(...a),switchLocalProfile:(...a)=>backend.switchLocalProfile(...a),createLocalProfile:(...a)=>backend.createLocalProfile(...a),renameLocalProfile:(...a)=>backend.renameLocalProfile(...a),deleteLocalProfile:(...a)=>backend.deleteLocalProfile(...a),accountGet:(...a)=>backend.accountGet(...a),accountSet:(...a)=>backend.accountSet(...a),accountRemove:(...a)=>backend.accountRemove(...a),snapshot:(...a)=>backend.snapshot(...a),getActiveAccount,setActiveAccount,registerCloudProvider,open:openModal,refreshUI,setStatus};
+window.FRENDA_USER=Object.freeze(api);
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(refreshUI,0));else setTimeout(refreshUI,0);
+new MutationObserver(()=>{if(!document.getElementById("frendaActiveUserBadge"))refreshUI()}).observe(document.documentElement,{childList:true,subtree:true});
 })();
-/* Ver1.1: 統合ユーザー一覧用の端末メタ領域APIを追加。クラウドユーザーの表示名・認証セッション情報をゲームセーブと分離して保持する。パスワードは保存しない。Updated: 2026-10-11 11:20 JST */
+/* Ver1.2: 本番/test共通のユーザー管理基盤。統合ユーザー一覧UIをCloud実装から分離し、Cloudは環境アダプタとして登録。testではFRENDA_TESTへ委譲し、本番では同一ファイルがローカル保存基盤を担当。Updated: 2026-10-11 12:00 JST */

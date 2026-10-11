@@ -1,22 +1,25 @@
 <!-- home lightweight assets 20260928_1745 -->
-<!-- FRENDA_PORTAL_VERSION: 1.2 -->
+<!-- FRENDA_PORTAL_VERSION: 1.4 -->
 <!-- app versions: auto-detected from simulator.html / dungeon.html / expedition.html; fixed 2026-10-02 19:50 JST -->
 <!doctype html>
-<html lang="ja" data-portal-version="1.2">
+<html lang="ja" data-portal-version="1.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102c40">
+<script>window.FRENDA_PORTAL_VERSION="1.4";window.FRENDA_PORTAL_TEST=/\/test(?:\/|$)/.test(location.pathname);window.FRENDA_PORTAL_BASE=window.FRENDA_PORTAL_TEST?"../":"";document.documentElement.classList.toggle("testEnv",window.FRENDA_PORTAL_TEST);</script>
 <title>ポケモンフレンダ 家庭版</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
 body{min-height:100dvh;color:#fff;overflow-x:hidden;background:#071923}
 body::before{content:"";position:fixed;inset:0;background:url("home-bg.webp") center center / cover no-repeat;z-index:-3}
+html.testEnv body::before{background-image:url("../home-bg.webp")}
 body::after{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(4,15,24,.25) 0%,rgba(5,18,29,.45) 22%,rgba(6,18,29,.72) 60%,rgba(5,16,26,.9) 100%),radial-gradient(circle at 50% 10%,rgba(143,214,255,.28) 0,rgba(16,44,64,.08) 28%,rgba(7,25,35,.76) 72%);z-index:-2}
 .wrap{width:min(920px,100%);margin:auto;padding:calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
 .hero{position:relative;padding:28px 20px 18px;text-align:center;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:linear-gradient(180deg,rgba(9,30,43,.42),rgba(8,26,38,.68));backdrop-filter:blur(8px);box-shadow:0 18px 46px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);margin-bottom:18px}
 .randomPick{width:96px;height:96px;margin:0 auto 5px;padding:5px;border-radius:24px;border:1px solid rgba(255,255,255,.25);background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.06));box-shadow:0 10px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.18);display:grid;place-items:center;overflow:hidden;cursor:pointer}.randomPick img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(0,0,0,.28))}.randomPickFallback{font-size:54px}.homeUserHost{position:absolute;right:14px;top:14px;z-index:2;display:flex;justify-content:flex-end;max-width:min(46vw,240px)}
+.testRibbon{display:none;margin:0 0 14px;padding:10px 12px;border-radius:16px;background:rgba(255,214,91,.22);border:1px solid rgba(255,214,91,.42);font-size:12px;line-height:1.6;color:#fff5c6;text-align:center}html.testEnv .testRibbon{display:block}
 h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-shadow:0 4px 16px rgba(0,0,0,.36)}
 .sub{font-size:12px;color:#d7ebf8;font-weight:800;letter-spacing:.08em}
 .lead{margin:12px auto 0;max-width:700px;font-size:13px;line-height:1.7;color:#e9f5fb}
@@ -29,22 +32,39 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 @media(max-width:640px){.wrap{padding-left:12px;padding-right:12px}.hero{padding:22px 14px 16px;border-radius:22px}.randomPick{width:82px;height:82px;border-radius:21px}.randomPickFallback{font-size:46px}h1{font-size:32px}.lead{font-size:12px}.app{grid-template-columns:72px minmax(0,1fr) 18px;padding:12px 11px;gap:10px;border-radius:18px}.icon{width:72px;height:72px;border-radius:18px}.app b{font-size:16px}.app small{font-size:10px}.ver{font-size:10px;margin-top:6px}.arrow{font-size:20px}}
 </style>
 </head>
-<body><script>window.FRENDA_PORTAL_VERSION="1.2";</script><main class="wrap">
+<body><main class="wrap">
+<div class="testRibbon">🧪 テスト環境｜本番と同じ共通Portal資産を検証中</div>
 <section class="hero"><div class="homeUserHost headerTop" id="homeUserHost"></div><button type="button" class="randomPick" id="randomPickBtn" title="タップで別のピック" aria-label="ランダムピック。タップで変更"><span class="randomPickFallback" id="randomPickFallback">🎴</span><img id="randomPickImage" alt="" hidden></button><h1 id="adminRevealTarget">ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div><div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div></section>
 <section class="apps" id="apps">
-  <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver appVer" data-version-file="simulator.html" hidden></span></div><div class="arrow">›</div></a>
-  <a class="app dun" href="dungeon.html"><div class="icon"><img src="icon-dungeon.webp" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver appVer" data-version-file="dungeon.html" hidden></span></div><div class="arrow">›</div></a>
-  <a class="app exp" href="expedition.html"><div class="icon"><img src="icon-expedition.webp" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver appVer" data-version-file="expedition.html" hidden></span></div><div class="arrow">›</div></a>
+  <a class="app sim" href="simulator.html" data-portal-link="simulator"><div class="icon"><img src="icon-simulator.webp" data-portal-asset="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver appVer" data-version-file="simulator.html" hidden></span></div><div class="arrow">›</div></a>
+  <a class="app dun" href="dungeon.html" data-portal-link="dungeon"><div class="icon"><img src="icon-dungeon.webp" data-portal-asset="icon-dungeon.webp" alt="フレンダダンジョン"></div><div><b>フレンダダンジョン</b><small>育成しながらダンジョンを攻略</small><span class="ver appVer" data-version-file="dungeon.html" hidden></span></div><div class="arrow">›</div></a>
+  <a class="app exp" href="expedition.html" data-portal-link="expedition"><div class="icon"><img src="icon-expedition.webp" data-portal-asset="icon-expedition.webp" alt="おでかけ探索"></div><div><b>おでかけ探索</b><small>3体を派遣して放置探索</small><span class="ver appVer" data-version-file="expedition.html" hidden></span></div><div class="arrow">›</div></a>
 </section>
-<div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。<br>旧URLのショートカットもそのまま使える互換構成じゃ。</div><div class="adminWrap" id="adminWrap" hidden><a class="adminLink" href="admin.html">⚙️ 管理者メニュー</a><div class="adminRevealHint">管理者メニューを表示しました</div></div><div class="credit">背景画像と各モード画像は、このホーム画面用に新規作成したものです。</div>
+<div class="note">ダンジョンとおでかけ探索は、各画面から直接行き来できます。<br>旧URLのショートカットもそのまま使える互換構成じゃ。</div><div class="adminWrap" id="adminWrap" hidden><a class="adminLink" href="admin.html" id="portalAdminLink">⚙️ 管理者メニュー</a><div class="adminRevealHint">管理者メニューを表示しました</div></div><div class="credit">背景画像と各モード画像は、このホーム画面用に新規作成したものです。</div>
 </main>
 <script>
 (()=>{const target=document.getElementById("adminRevealTarget"),wrap=document.getElementById("adminWrap");if(!target||!wrap)return;let timer=null,started=0;const cancel=()=>{if(timer)clearTimeout(timer);timer=null;started=0};const start=e=>{cancel();started=Date.now();timer=setTimeout(()=>{wrap.hidden=false;timer=null;try{navigator.vibrate?.(60)}catch{}},5000)};target.addEventListener("pointerdown",start);["pointerup","pointercancel","pointerleave"].forEach(n=>target.addEventListener(n,cancel));target.addEventListener("contextmenu",e=>{if(Date.now()-started<5000)e.preventDefault()})})();
 </script>
-<script src="frenda-master.js?portal=1"></script>
-<script src="frenda-user.js?portal=1.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="frenda-cloud.js?portal=1.2"></script>
+<script>
+(()=>{
+  const t=!!window.FRENDA_PORTAL_TEST,b=window.FRENDA_PORTAL_BASE||"";
+  if(t)document.write(`<script src="frenda-test.js?portal=1.4"><\/script>`);
+  document.write(`<script src="${b}frenda-master.js?portal=1.4"><\/script>`);
+  document.write(`<script src="frenda-user.js?portal=1.4"><\/script>`);
+  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
+  document.write(`<script src="${t?"frenda-cloud-test.js":b+"frenda-cloud.js"}?portal=1.4"><\/script>`);
+})();
+</script>
+<script>
+(()=>{
+  const t=!!window.FRENDA_PORTAL_TEST,b=window.FRENDA_PORTAL_BASE||"";
+  document.querySelectorAll('[data-portal-asset]').forEach(el=>el.src=b+el.dataset.portalAsset);
+  const links={simulator:b+'simulator.html',dungeon:'dungeon.html',expedition:'expedition.html'};
+  document.querySelectorAll('[data-portal-link]').forEach(el=>{el.href=links[el.dataset.portalLink]||el.href});
+  const admin=document.getElementById('portalAdminLink');if(admin)admin.href=b+'admin.html';
+  document.querySelectorAll('[data-version-file]').forEach(el=>{const card=el.closest('[data-portal-link]');if(!card)return;el.dataset.versionFile=links[card.dataset.portalLink]||el.dataset.versionFile});
+})();
+</script>
 <script>
 (()=>{
   const btn=document.getElementById("randomPickBtn"),img=document.getElementById("randomPickImage"),fallback=document.getElementById("randomPickFallback");
@@ -57,7 +77,7 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
     last=String(r.master_id||"");fallback.hidden=true;img.hidden=false;img.alt=r.name_ja||"ランダムピック";btn.title=`${r.name_ja||"ピック"}｜タップで変更`;img.onerror=()=>{candidates.splice(candidates.indexOf(r),1);showRandom()};img.src=r.official_image;
   }
   btn?.addEventListener("click",showRandom);showRandom();
-  if(window.FrendaCloud)window.FrendaCloud.init({app:"home",label:"フレンダホーム",accountOnly:true,column:"dungeon_data"});
+  if(window.FrendaCloud)window.FrendaCloud.init(window.FRENDA_PORTAL_TEST?{app:"home",label:"テストポータル",accountOnly:true,unifiedEntryOnly:true}:{app:"home",label:"フレンダホーム",accountOnly:true,column:"dungeon_data"});
 })();
 </script>
 
@@ -117,6 +137,6 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 })();
 </script>
 
-</body><!-- Portal Ver1.1: 本番ポータルのユーザー・セーブ入口を現在ユーザー表示へ統一。旧💾/同期エラー入口は使用しない。Updated: 2026-10-11 10:33 JST -->
-<!-- PORTAL Ver1.2: production unified user UI; cache-bust frenda-user.js 1.1 / frenda-cloud.js 1.4. Updated: 2026-10-11 11:20 JST -->
+</body><!-- PORTAL Ver1.3 COMMON: root/testで同一ファイルを使用。パスから環境を自動判定し、環境依存JSだけ切替。Updated: 2026-10-11 11:45 JST -->
+<!-- Portal Ver1.4 foundation Phase2: frenda-user.js is same-directory shared asset in both root/test; test loads frenda-test.js first and frenda-cloud-test.js as environment adapter. Updated: 2026-10-11 12:00 JST -->
 </html>
