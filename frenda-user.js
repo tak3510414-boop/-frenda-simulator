@@ -1,7 +1,7 @@
-/* FRENDA_USER_VERSION: 1.0 / production local profiles + cloud-session volatile storage; local and cloud saves never synchronize */
+/* FRENDA_USER_VERSION: 1.1 / production local profiles + cloud-session volatile storage + unified-user account metadata; local and cloud saves never synchronize */
 (()=>{
 "use strict";
-const VERSION="1.0";
+const VERSION="1.1";
 const MODE_KEY="frenda:user:storage-mode:v1";
 const USER_KEY="frenda:user:cloud-user-id:v1";
 const CACHE_PREFIX="frenda:user:cloud-cache:";
@@ -10,6 +10,7 @@ const LOCAL_PREFIX_BASE="frenda:user:local:v1:";
 const LOCAL_PROFILE_KEY="frenda:user:active-local-profile:v1";
 const LOCAL_PROFILE_REGISTRY_KEY="frenda:user:local-profile-registry:v1";
 const LOCAL_MIGRATION_KEY="frenda:user:legacy-local-migrated:v1";
+const ACCOUNT_META_PREFIX="frenda:user:account-meta:v1:";
 const DEFAULT_LOCAL_PROFILES=Object.freeze([{id:"A",name:"ローカルA"},{id:"B",name:"ローカルB"}]);
 const DUNGEON_KEY="frenda:dungeon:v1";
 const EXPEDITION_KEY="frenda:expedition:v1";
@@ -85,6 +86,10 @@ function deleteLocalProfile(profile){
  }catch(e){console.error("FRENDA_USER_PROFILE_DELETE_FAILED",e);return null}
 }
 
+function accountMetaKey(name){return ACCOUNT_META_PREFIX+String(name||"").trim()}
+function accountGet(name){try{const k=accountMetaKey(name);return k?native.getItem.call(real,k):null}catch{return null}}
+function accountSet(name,value){try{const k=accountMetaKey(name);if(!k)return false;native.setItem.call(real,k,String(value));return true}catch(e){console.error("FRENDA_USER_ACCOUNT_META_WRITE_FAILED",e);return false}}
+function accountRemove(name){try{const k=accountMetaKey(name);if(k)native.removeItem.call(real,k);return true}catch{return false}}
 function sessionGet(k){try{return sessionStorage.getItem(k)}catch{return null}}
 function sessionSet(k,v){try{sessionStorage.setItem(k,String(v));return true}catch{return false}}
 function sessionRemove(k){try{sessionStorage.removeItem(k)}catch{}}
@@ -133,7 +138,7 @@ function snapshot(){return Object.fromEntries(mem)}
 window.FRENDA_USER=Object.freeze({
  version:VERSION,active:true,storage,
  get mode(){return currentMode()},get cloudUserId(){return cloudUserId()},get localProfileId(){return localProfileId()},get localProfileName(){return localProfileName()},get localProfiles(){return localProfiles().map(x=>({...x}))},
- readCloudCache,writeCloudCache,markCloudDirty,clearCloudDirty,cloudDirty,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,renameLocalProfile,deleteLocalProfile,snapshot
+ readCloudCache,writeCloudCache,markCloudDirty,clearCloudDirty,cloudDirty,activateCloud,updateCloudCache,deactivateCloud,clearCloudCache,switchLocalProfile,createLocalProfile,renameLocalProfile,deleteLocalProfile,accountGet,accountSet,accountRemove,snapshot
 });
 })();
-/* Ver1.0: 本番ローカル複数ユーザー基盤。既存ローカルデータは初回にローカルAへ安全コピーし、原本は残す。クラウドユーザーはlocalStorageへセーブせず、セッション内一時キャッシュのみ使用。Updated: 2026-10-11 01:20 JST */
+/* Ver1.1: 統合ユーザー一覧用の端末メタ領域APIを追加。クラウドユーザーの表示名・認証セッション情報をゲームセーブと分離して保持する。パスワードは保存しない。Updated: 2026-10-11 11:20 JST */

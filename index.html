@@ -1,8 +1,8 @@
 <!-- home lightweight assets 20260928_1745 -->
-<!-- FRENDA_PORTAL_VERSION: 1.1 -->
+<!-- FRENDA_PORTAL_VERSION: 1.2 -->
 <!-- app versions: auto-detected from simulator.html / dungeon.html / expedition.html; fixed 2026-10-02 19:50 JST -->
 <!doctype html>
-<html lang="ja" data-portal-version="1.1">
+<html lang="ja" data-portal-version="1.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -29,7 +29,7 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 @media(max-width:640px){.wrap{padding-left:12px;padding-right:12px}.hero{padding:22px 14px 16px;border-radius:22px}.randomPick{width:82px;height:82px;border-radius:21px}.randomPickFallback{font-size:46px}h1{font-size:32px}.lead{font-size:12px}.app{grid-template-columns:72px minmax(0,1fr) 18px;padding:12px 11px;gap:10px;border-radius:18px}.icon{width:72px;height:72px;border-radius:18px}.app b{font-size:16px}.app small{font-size:10px}.ver{font-size:10px;margin-top:6px}.arrow{font-size:20px}}
 </style>
 </head>
-<body><script>window.FRENDA_PORTAL_VERSION="1.1";</script><main class="wrap">
+<body><script>window.FRENDA_PORTAL_VERSION="1.2";</script><main class="wrap">
 <section class="hero"><div class="homeUserHost headerTop" id="homeUserHost"></div><button type="button" class="randomPick" id="randomPickBtn" title="タップで別のピック" aria-label="ランダムピック。タップで変更"><span class="randomPickFallback" id="randomPickFallback">🎴</span><img id="randomPickImage" alt="" hidden></button><h1 id="adminRevealTarget">ポケモンフレンダ</h1><div class="sub">家庭版 フレンダホーム</div><div class="lead">お気に入りの3つのモードへ、ここからすぐ出発。<br>背景とアイコンをファンタジー調にして、フレンダっぽい冒険感を強めたホーム画面じゃ。</div></section>
 <section class="apps" id="apps">
   <a class="app sim" href="simulator.html"><div class="icon"><img src="icon-simulator.webp" alt="シミュレーター"></div><div><b>シミュレーター</b><small>ピック管理・最強3体・バトル</small><span class="ver appVer" data-version-file="simulator.html" hidden></span></div><div class="arrow">›</div></a>
@@ -42,9 +42,9 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 (()=>{const target=document.getElementById("adminRevealTarget"),wrap=document.getElementById("adminWrap");if(!target||!wrap)return;let timer=null,started=0;const cancel=()=>{if(timer)clearTimeout(timer);timer=null;started=0};const start=e=>{cancel();started=Date.now();timer=setTimeout(()=>{wrap.hidden=false;timer=null;try{navigator.vibrate?.(60)}catch{}},5000)};target.addEventListener("pointerdown",start);["pointerup","pointercancel","pointerleave"].forEach(n=>target.addEventListener(n,cancel));target.addEventListener("contextmenu",e=>{if(Date.now()-started<5000)e.preventDefault()})})();
 </script>
 <script src="frenda-master.js?portal=1"></script>
-<script src="frenda-user.js?portal=1"></script>
+<script src="frenda-user.js?portal=1.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="frenda-cloud.js?portal=1"></script>
+<script src="frenda-cloud.js?portal=1.2"></script>
 <script>
 (()=>{
   const btn=document.getElementById("randomPickBtn"),img=document.getElementById("randomPickImage"),fallback=document.getElementById("randomPickFallback");
@@ -118,4 +118,5 @@ h1{font-size:clamp(30px,8vw,48px);margin:8px 0 4px;letter-spacing:.03em;text-sha
 </script>
 
 </body><!-- Portal Ver1.1: 本番ポータルのユーザー・セーブ入口を現在ユーザー表示へ統一。旧💾/同期エラー入口は使用しない。Updated: 2026-10-11 10:33 JST -->
+<!-- PORTAL Ver1.2: production unified user UI; cache-bust frenda-user.js 1.1 / frenda-cloud.js 1.4. Updated: 2026-10-11 11:20 JST -->
 </html>
