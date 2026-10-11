@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.70">
+<html lang="ja" data-test-center-version="2.72">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.71</title>
+<title>フレンダ 回帰テストセンター Ver2.72</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.71</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.72</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.71</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.72</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -516,5 +516,5 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.65: frenda-cloud-test.js Ver1.2に追従。名前変更✏️を全ローカル/クラウドユーザーへ表示し、使用中かどうかに関係なく表示名だけ変更可能なことを監査。Updated: 2026-10-11 08:55 JST -->
 <!-- Ver2.67: Portal（index.html）を正式なバージョン管理対象へ追加。本番Portal Ver1.0 / test Portal Ver1.1を本番-test比較表・対象ソース表示・総合バージョン監査へ追加。Updated: 2026-10-11 09:45 JST -->
 <!-- Ver2.69: 基盤共通化Phase1。Portal/Dungeon/Expeditionの本番-test実体SHA-256監査を追加。Dungeon/Expeditionは本番検証済みHTMLをそのままtestへコピーし、Portalはroot/test共通化候補Ver1.3をtestで先行検証。Updated: 2026-10-11 11:45 JST -->
-<!-- Ver2.71: Phase2監査条件を現行基盤へ修正。frenda-test.js Ver2.0を正としてテスト保存領域を監査し、ポータル単一入口は共通frenda-user.jsが所有、frenda-cloud-test.js Ver1.4はheadless providerとして旧認証ランチャーを起動しない構成を正として判定。Updated: 2026-10-11 12:20 JST -->
+<!-- Ver2.72: Phase2監査条件を現行基盤へ修正。frenda-test.js Ver2.0を正としてテスト保存領域を監査し、ポータル単一入口は共通frenda-user.jsが所有、frenda-cloud-test.js Ver1.4はheadless providerとして旧認証ランチャーを起動しない構成を正として判定。Updated: 2026-10-11 12:20 JST -->
 </html>
