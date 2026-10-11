@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.85</title>
+<title>フレンダ 回帰テストセンター Ver2.86</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -19,11 +19,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 </style>
 </head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.85</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.86</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.85</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.86</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -355,7 +355,7 @@ async function runAuto(){
   ["Test Center版表示",(()=>{const v=document.documentElement.dataset.testCenterVersion||"";return !!v&&document.getElementById("testCenterVersion")?.textContent.includes(v)})(),"画面上でTest Center自身のVerを確認可能"],
   ["HTML終端",/^\s*$/.test(d.slice(d.lastIndexOf("</html>")+7))&&/^\s*$/.test(e.slice(e.lastIndexOf("</html>")+7)),"</html> の後ろに実体コードがない"],
   ["インラインJS構文",compileInlineScripts(d).length===0&&compileInlineScripts(e).length===0,[...compileInlineScripts(d),...compileInlineScripts(e)].slice(0,2).join(" / ")],
-  ["テスト保存領域",/FRENDA_TEST_VERSION:\s*2\.0/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/seedLocalSandbox/.test(t)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/const inTestPath=/.test(t)&&/location\.pathname/.test(t),"/test/ はURLパラメータなしでも常時分離。ローカルはユーザー別localStorage、クラウドのゲームキャッシュはsessionStorage、ユーザー/認証メタはテスト専用メタ領域。本番セーブキーを書き換えない"],
+  ["テスト保存領域",/FRENDA_TEST_VERSION:\s*2\.1/.test(t)&&/MODE_KEY="frenda:test:storage-mode"/.test(t)&&/LOCAL_PREFIX_BASE="frenda:test:local:v2:"/.test(t)&&/LOCAL_PROFILE_REGISTRY_KEY="frenda:test:local-profile-registry:v1"/.test(t)&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/seedLocalSandbox/.test(t)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t)&&/const inTestPath=/.test(t)&&/location\.pathname/.test(t),"/test/ はURLパラメータなしでも常時分離。ローカルはユーザー別localStorage、クラウドのゲームキャッシュはsessionStorage、ユーザー/認証メタはテスト専用メタ領域。本番セーブキーを書き換えない"],
   ["隔離スクリプト読込順",isolationLoadOrderOK(d)&&isolationLoadOrderOK(e),"frenda-test.js → 共通frenda-user.js → その他共通JS の順で実行"],
   ["Simulator test-safe起動",htmlVersion(s)==="6.97"&&/const inTest=/.test(s)&&/location\.pathname/.test(s)&&/const base=inTest/.test(s)&&/frenda-test\.js\?app=/.test(s)&&/frenda-user\.js\?app=/.test(s)&&/frenda-cloud-test\.js\?app=/.test(s)&&/const simStorage=window\.FRENDA_USER\?\.storage\|\|window\.localStorage/.test(s),"Simulator Ver6.97 / test判定→Sandbox→User→ルート共通JS→test Cloud。保存先はsimStorage"],
   ["Simulator storage TDZ再発防止",!/const\s+storage\s*=/.test(s)&&/const simStorage=/.test(s),"トップレベル const storage を禁止し、simStorageを使用。frenda-user.js評価時のTDZ衝突を防止"],
@@ -374,7 +374,7 @@ async function runAuto(){
   ["クラウドユーザー切替確認",/async function switchCloud\(id\)/.test(tu)&&/に切り替えますか？/.test(tu)&&/activateProfile/.test(tu),"切替確認は共通frenda-user.js、認証実処理はCloud provider"],
   ["全ユーザー名前変更",/data-local-rename/.test(tu)&&/data-cloud-rename/.test(tu)&&/function renameLocal\(id\)/.test(tu)&&/function renameCloud\(id\)/.test(tu),"全ユーザーの表示名変更UIを共通frenda-user.jsへ集約"],
   ["クラウドユーザー端末削除",/data-cloud-delete/.test(tu)&&/function deleteCloud\(id\)/.test(tu)&&/deleteProfile/.test(tu),"端末登録削除UIは共通User、Supabaseアカウント/セーブは保持"],
-  ["統合ユーザー用メタ領域",testSandboxVersion(t)==="2.0"&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/accountGet/.test(t)&&/accountSet/.test(t),"frenda-test.js Ver2.0 / ゲームセーブと別の端末メタ領域"],
+  ["統合ユーザー用メタ領域",testSandboxVersion(t)==="2.1"&&/ACCOUNT_META_PREFIX="frenda:test:account:"/.test(t)&&/accountGet/.test(t)&&/accountSet/.test(t),"frenda-test.js Ver2.1 / ゲームセーブと別の端末メタ領域"],
   ["クラウドユーザー保存分離",/cloudOnly:true/.test(ct)&&/localCloudSync:false/.test(ct)&&/sharedUserUI:true/.test(ct)&&/registerCloudProvider/.test(tu)&&/activateCloud/.test(t)&&/deactivateCloud/.test(t),"User UIとCloud保存実装を分離。Cloud Testはheadless provider、ゲームセーブはSupabaseのみ"],
   ["旧テスト認証ランチャー廃止",/sharedUserUI:true/.test(ct)&&!/cfg\?\.unifiedEntryOnly\)ensureLauncher/.test(ct),"認証入口は共通User表示へ統一。Cloud側はheadless"],
   ["利用中ユーザー表示",/frendaActiveUserBadge/.test(tu)&&/function activeLabel\(\)/.test(tu)&&/function ensureBadge\(\)/.test(tu)&&/icon:"☁️"/.test(tu)&&/icon:"👤"/.test(tu)&&/el.onclick=openModal/.test(tu),"利用中ユーザー表示と入口は共通frenda-user.jsが所有"],
@@ -496,6 +496,7 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.8: mission status color distinction and status-priority ordering regression checks added. Updated: 2026-10-06 17:49 JST -->
 <!-- Ver2.9: progression/unlock state presets, SHOP tier presets, and expedition group progression regression routes added. Updated: 2026-10-06 19:31 JST -->
 <!-- Ver2.10: temporary administrator expedition unlock regression check and admin-temp manual preset added. Updated: 2026-10-06 20:58 JST -->
+<!-- Ver2.86: frenda-test.js Ver2.1追従。テスト保存領域/統合ユーザー用メタ領域の監査期待値を2.1へ更新。隔離キー構成・account meta分離条件は維持。Updated: 2026-10-11 17:05 JST -->
 </body><!-- Ver2.11: black-PC mission shortcut regression check, strict all-R1 expedition unlock, and legacy admin unlock cleanup checks added. Updated: 2026-10-06 21:21 JST -->
 <!-- Ver2.12: dungeon-only 95-105% damage variance and 5% Nice Attack regression checks/manual battle route added. Updated: 2026-10-06 21:35 JST -->
 <!-- Ver2.13: capture-result pre-disclosure regression check added; success/failure must first appear on result screen. Updated: 2026-10-06 21:50 JST -->
@@ -558,7 +559,7 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.76: Phase4監査修正。テスト専用Cloud監査の期待値をfrenda-cloud-test.js Ver1.5へ更新。Ver2.75ではPhase4本体を1.5へ更新済みなのに監査だけ1.4固定で赤×になる誤判定が残っていた。Updated: 2026-10-11 13:14 JST -->
 <!-- Ver2.77: Phase4 cloud initialization fix. frenda-cloud-test.js Ver1.6のsaveStorageNowはページgetDataではなくFRENDA_USER.storageを必ずシリアライズし、初期化直後に旧画面メモリを再アップロードする不具合を防止。Updated: 2026-10-11 13:24 JST -->
 <!-- Ver2.81: Phase5監査修正。「世代選択復元UI」が撤去済み旧infoAutoBackup296/infoAutoBackup083を要求して赤×になる誤判定を修正。autoBackupOpenManager/autoBackupRestore/data-auto-backup-restore/FRENDA_USER_SAVE_TOOLSで実装を監査。Updated: 2026-10-11 14:00 JST -->
-<!-- Ver2.85: Simulator test-safe起動の監査を現行Ver6.97実装に合わせて修正。共通バックアップ/共通User基盤の期待User Verを1.6へ更新。Updated: 2026-10-11 15:40 JST -->
+<!-- Ver2.86: Simulator test-safe起動の監査を現行Ver6.97実装に合わせて修正。共通バックアップ/共通User基盤の期待User Verを1.6へ更新。Updated: 2026-10-11 15:40 JST -->
 </html>
 
 <!-- Ver2.81: Phase6 Simulator統合監査を追加。test/simulator.htmlを取得しVer6.96を表示・比較。共通User/Data/Cloud配線、現在ユーザー保存、User Ver1.6のstorage全体バックアップを監査。Updated: 2026-10-11 14:25 JST -->
