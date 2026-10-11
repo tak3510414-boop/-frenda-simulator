@@ -1,9 +1,9 @@
-/* FRENDA_CLOUD_VERSION: 1.4 / production unified local+cloud user list + remembered cloud sessions + cloud-only save; local and cloud saves NEVER synchronize */
+/* FRENDA_CLOUD_VERSION: 1.5 / production unified local+cloud user list + remembered cloud sessions + cloud-only save; local and cloud saves NEVER synchronize */
 (()=>{
 "use strict";
 if(!window.FRENDA_USER?.active)return;
 
-const CLOUD_VERSION="1.4";
+const CLOUD_VERSION="1.5";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -198,7 +198,7 @@ function openModal(){
 async function ensureClient(){
   if(client)return client;if(!window.supabase?.createClient)throw new Error("認証ライブラリ未接続");
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
-  const listener=client.auth.onAuthStateChange((_event,newSession)=>{session=newSession||null;if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);updateUserBadge()});authUnsub=listener?.data?.subscription||null;return client;
+  const listener=client.auth.onAuthStateChange((_event,newSession)=>{session=newSession||null;if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);userApi()?.refreshUI?.()});authUnsub=listener?.data?.subscription||null;return client;
 }
 async function addOrReauthCloudProfile(displayName,email,password,profileId=""){
   if(regressionCaseActive()){setStatus("回帰テスト中はクラウドユーザーを追加できません。","error");return false}
@@ -221,6 +221,62 @@ async function switchCloudProfile(profileId){
   if(!sessionUsable(p)){showAddForm('cloud',p.id);setStatus("認証期限切れです。パスワードを入力して再ログインしてください。","error");return false}
   setStatus(`${p.name}に切り替えています…`);if(!await restoreCloudProfileSession(p)){showAddForm('cloud',p.id);setStatus("再ログインが必要です。パスワードを入力してください。","error");return false}
   setActiveAccount("cloud",p.id);const {data:row,error}=await rowForUser();if(error){setStatus("クラウドセーブ確認失敗："+error.message,"error");return false}activatePayload(row?.[columnName()]??null);closeModal();location.reload();return true;
+}
+async function leaveCloudDirect(){
+  try{
+    if(cloudMode())await pushNow(true);
+    if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+    userApi()?.deactivateCloud?.();
+    session=null;activeCloudProfileId="";
+    userApi()?.refreshUI?.();
+    return true;
+  }catch(e){console.error("FRENDA_CLOUD_LEAVE_FAILED",e);return false}
+}
+async function activateProfileDirect(profileId){
+  const p=cloudProfileById(profileId);if(!p)return {ok:false,message:"クラウドユーザーが見つかりません"};
+  if(session&&currentCloudProfile()?.id===p.id)return {ok:true,profileId:p.id};
+  if(cloudMode())await pushNow(true);
+  if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+  if(!sessionUsable(p))return {ok:false,needsAuth:true,profile:p};
+  if(!await restoreCloudProfileSession(p))return {ok:false,needsAuth:true,profile:p};
+  const {data:row,error}=await rowForUser();if(error)return {ok:false,message:"クラウドセーブ確認失敗："+error.message};
+  activatePayload(row?.[columnName()]??null);activeCloudProfileId=p.id;userApi()?.refreshUI?.();
+  return {ok:true,profileId:p.id};
+}
+async function authenticateProfileDirect({displayName,email,password,profileId=""}={}){
+  displayName=sanitizeName(displayName);email=String(email||"").trim();
+  if(!displayName||!email||!password)return {ok:false,message:"表示名・メールアドレス・パスワードを入力してください。"};
+  const existing=profileId?cloudProfileById(profileId):null,previous=activeCloudProfileId;
+  try{
+    await ensureClient();
+    if(cloudMode())await pushNow(true);
+    if(session&&previous)persistCloudProfileSession(previous,session);
+    activeCloudProfileId=existing?.id||"";
+    const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;
+    session=data.session||null;if(!session)throw new Error("ログインセッションを取得できません");
+    if(existing?.userId&&existing.userId!==session.user.id)throw new Error("登録済みユーザーと異なるアカウントです");
+    const p=persistCloudProfileSession(existing?.id||"",session,displayName);if(!p)throw new Error("端末へのユーザー登録に失敗しました");
+    activeCloudProfileId=p.id;
+    const {data:row,error:rowError}=await rowForUser();if(rowError)throw rowError;
+    activatePayload(row?.[columnName()]??null);userApi()?.refreshUI?.();
+    return {ok:true,profileId:p.id};
+  }catch(e){
+    activeCloudProfileId=previous;
+    console.error("FRENDA_CLOUD_PROVIDER_LOGIN_FAILED",e);
+    return {ok:false,message:"ログイン失敗："+(e?.message||e)};
+  }
+}
+async function renameProfileDirect(profileId,name){
+  const p=cloudProfileById(profileId);name=sanitizeName(name);if(!p||!name)return false;
+  if(allDisplayNames("cloud",p.id).includes(name))return false;
+  const ok=writeCloudProfiles(readCloudProfiles().map(x=>x.id===p.id?{...x,name}:x));if(ok)userApi()?.refreshUI?.();return ok;
+}
+async function deleteProfileDirect(profileId){
+  const p=cloudProfileById(profileId);if(!p)return false;
+  if(session&&currentCloudProfile()?.id===p.id)return false;
+  const ok=writeCloudProfiles(readCloudProfiles().filter(x=>x.id!==p.id));
+  if(ok){const a=readActiveAccount();if(a.type==="cloud"&&a.id===p.id)setActiveAccount("local",localProfileId());userApi()?.refreshUI?.()}
+  return ok;
 }
 async function rowForUser(){if(!session)return {data:null,error:new Error("not signed in")};return await client.from(TABLE).select(`user_id,${columnName()},updated_at`).eq("user_id",session.user.id).maybeSingle()}
 function cachePayload(payload){try{userApi()?.writeCloudCache?.(payload,session?.user?.id)}catch(e){console.warn("FRENDA_USER_CACHE_WRITE",e)}}
@@ -271,21 +327,28 @@ async function initializeCloudSession(){
   if(remote){const remoteStr=safeJSON(remote),currentStr=safeJSON(current),cachedStr=safeJSON(cached);if(remoteStr!==cachedStr){activatePayload(remote);lastUploaded=remoteStr;location.reload();return}if(currentStr!==remoteStr){await pushNow(true)}else{lastUploaded=remoteStr;cachePayload(remote)}}else{await pushNow(true)}subscribeStorage();setStatus(`${profile.name}・クラウド保存`);
 }
 async function init(options){
-  cfg=options||{};injectButton();try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}ensureUserBadge();updateUserBadge();await initializeCloudSession();updateUserBadge();
+  cfg=options||{};try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}await initializeCloudSession();userApi()?.refreshUI?.();
 }
+const provider={
+  version:CLOUD_VERSION,testMode:false,cloudOnly:true,localCloudSync:false,passwordStored:false,
+  getProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),
+  getActiveProfile:()=>{const p=currentCloudProfile();return p?{id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)}:null},
+  activateProfile:activateProfileDirect,authenticateProfile:authenticateProfileDirect,renameProfile:renameProfileDirect,deleteProfile:deleteProfileDirect,leaveCloud:leaveCloudDirect
+};
+userApi()?.registerCloudProvider?.(provider);
 window.FrendaCloud={
-  version:CLOUD_VERSION,profileMode:true,testMode:false,cloudOnly:true,localCloudSync:false,unifiedUsers:true,rememberedCloudProfiles:true,passwordStored:false,unifiedEntryOnlySupported:true,localProfiles:true,localProfileAdd:true,localProfileRename:true,localProfileDelete:true,cloudProfileRename:true,cloudProfileDelete:true,
-  init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,getCloudProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),open:openModal
+  version:CLOUD_VERSION,profileMode:true,testMode:false,cloudOnly:true,localCloudSync:false,sharedUserUI:true,rememberedCloudProfiles:true,passwordStored:false,unifiedEntryOnlySupported:true,
+  init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,getCloudProfiles:provider.getProfiles,open:()=>userApi()?.open?.(),provider
 };
 })();
-/* Ver1.4 production profile mode: ローカル/クラウドを同一ユーザー一覧へ統合。クラウドは任意表示名・端末に認証セッション記憶・パスワード非保存。ローカル/クラウドのセーブは同期しない。Updated: 2026-10-11 11:20 JST */
+/* Ver1.5 Foundation Phase2 hotfix: 共通frenda-user.js Ver1.2へUIを完全移管。Cloud本番はSupabase認証・保存だけを担うheadless providerとしてregisterCloudProviderする。パスワード非保存・ローカル/クラウド非同期を維持。Updated: 2026-10-11 12:40 JST */
 
 /* Legacy simulator cloud path: used only when FRENDA_USER is not active. */
 if(!window.FRENDA_USER?.active){
 (()=>{
 "use strict";
 
-const CLOUD_VERSION="1.4";
+const CLOUD_VERSION="1.5";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
