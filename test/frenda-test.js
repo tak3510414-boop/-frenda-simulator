@@ -1,7 +1,7 @@
-/* FRENDA_TEST_VERSION: 1.9 / dynamic isolated local profiles + unified account metadata store + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
+/* FRENDA_TEST_VERSION: 2.0 / dynamic isolated local profiles + unified account metadata store + cloud-session cache + regression ephemeral guard; load BEFORE all shared Frenda scripts */
 (()=>{
 "use strict";
-const VERSION="1.9";
+const VERSION="2.0";
 const params=new URLSearchParams(location.search);
 const inTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const requested=inTestPath||params.get("test")==="1"||params.get("selftest")==="1";
@@ -74,7 +74,7 @@ function createLocalProfile(name){
   seedLocalSandbox();notify("profiles",null,profile.id,old);return {...profile};
 }
 function renameLocalProfile(profile,newName){
-  if(regressionCaseActive()||currentMode()==="cloud")return null;
+  if(regressionCaseActive())return null;
   profile=normalizeProfileId(profile);newName=sanitizeProfileName(newName);
   if(!validLocalProfile(profile)||!newName)return null;
   const list=localProfiles(),current=list.find(x=>x.id===profile);if(!current)return null;
@@ -248,3 +248,5 @@ if(!isolated){document.addEventListener("DOMContentLoaded",()=>{document.body.in
 setInterval(()=>assertProductionStorageUnchanged(),1000);window.addEventListener("pagehide",()=>assertProductionStorageUnchanged());
 })();
 /* Ver1.9: 統合ユーザー一覧用の端末メタデータ領域を追加。クラウドユーザーの表示名・認証セッション情報を本番/テストのゲームセーブとは別領域に保持できる。パスワードは保存しない。Updated: 2026-10-11 08:25 JST */
+
+/* Ver2.0: 共通frenda-user.jsから利用するtest保存アダプタへ整理。ローカル表示名変更はクラウド利用中でも許可し、ゲームセーブ分離・回帰テスト永続保存禁止は維持。Updated: 2026-10-11 12:00 JST */

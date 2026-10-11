@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.66">
+<html lang="ja" data-app-version="3.67">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4458,7 +4458,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
  const base=inTest?"../":"";
  /* Ver TEST-SAFE: sandbox MUST load before every shared runtime. */
  if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
- else document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
+ document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
  for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js","frenda-parental.js"])
   document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
  /* /test/: cloud-only user save test. Local-user save and cloud-user save are fully separated. */
@@ -16162,4 +16162,5 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="home"] .homePlayGri
 <!-- Ver3.63: /test/ eye-rest overlay restores the hidden administrator shortcut. Long-press the eye-rest title for 5 seconds to open ../admin.html. Normal taps do nothing. Updated: 2026-10-10 22:26 JST -->
 <!-- PROD USER-MODE Dungeon Ver3.64: local profiles are isolated; logged-in users use cloud-only save; no local/cloud synchronization. frenda-user.js Ver1.0 / frenda-cloud.js Ver1.2 / frenda-data.js Ver1.5. Updated: 2026-10-11 01:20 JST -->
 <!-- PROD UNIFIED USERS Dungeon Ver3.66: frenda-user.js Ver1.1 / frenda-cloud.js Ver1.4. Local/cloud users share one user list; cloud sessions remembered without storing passwords; saves remain separated. Updated: 2026-10-11 11:20 JST -->
+<!-- Foundation Phase2 Dungeon Ver3.67: shared frenda-user.js loads in both root/test; test-only differences are frenda-test.js and frenda-cloud-test.js. Updated: 2026-10-11 12:00 JST -->
 </html>

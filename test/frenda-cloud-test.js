@@ -1,8 +1,8 @@
-/* FRENDA_CLOUD_TEST_VERSION: 1.3 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
+/* FRENDA_CLOUD_TEST_VERSION: 1.4 / unified local+cloud user list + remembered cloud sessions + cloud-only save + regression write guard; local and cloud saves NEVER synchronize */
 (()=>{
 "use strict";
 
-const CLOUD_TEST_VERSION="1.3";
+const CLOUD_TEST_VERSION="1.4";
 const SUPABASE_URL="https://rzacvrioutgsaimobins.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_H9HFETl_RY8B3Wgr_vYV0Q_a-JPngR4";
 const TABLE="frenda_saves";
@@ -14,15 +14,15 @@ const ACTIVE_ACCOUNT_META="active-user:v1";
 
 function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeJSON(v){try{return JSON.stringify(v??null)}catch{return ""}}
-function testApi(){return window.FRENDA_TEST}
-function cloudMode(){return !!session&&testApi()?.mode==="cloud"&&testApi()?.cloudUserId===session?.user?.id}
+function userApi(){return window.FRENDA_USER}
+function cloudMode(){return !!session&&userApi()?.mode==="cloud"&&userApi()?.cloudUserId===session?.user?.id}
 function columnName(){return cfg?.column||"simulator_data"}
 const REGRESSION_SAVE_BLOCK_TEXT="回帰テスト中：クラウド保存禁止";
 function regressionCaseActive(){try{return new URLSearchParams(location.search).has("case")}catch{return false}}
 function setStatus(text,kind=""){
   statusText=text;
   if(button){const prefix=kind==="error"?"⚠️":session?"☁️":"🧪";button.textContent=`${prefix} ${text}`;button.dataset.kind=kind;}
-  const s=modal?.querySelector("#frendaCloudStatus");if(s)s.textContent=text;
+  const s=modal?.querySelector("#frendaCloudStatus");if(s)s.textContent=text;userApi()?.setStatus?.(text,kind);
   updateUserBadge();
 }
 function injectStyles(){
@@ -46,15 +46,15 @@ function injectStyles(){
   .frendaUnifiedList{display:grid;gap:8px;margin:10px 0}.frendaUnifiedRow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:5px;min-width:0}.frendaUnifiedRow .frendaUnifiedSelect{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:11px!important;border-radius:11px!important;background:#f2f4f6!important;color:#31424f!important;border:1px solid #c7d0d6!important;font-weight:900!important;text-align:left!important}.frendaUnifiedRow .frendaUnifiedSelect.active{background:#dff3ff!important;color:#075a7a!important;border-color:#69bde4!important}.frendaUnifiedRow .frendaUnifiedSelect.needsAuth{background:#fff7df!important;color:#6a5100!important;border-color:#e4cf85!important}.frendaUnifiedEdit,.frendaUnifiedDelete{width:38px!important;padding:8px 6px!important;border-radius:10px!important;font-weight:900!important}.frendaUnifiedEdit{background:#fff7df!important;color:#6a5100!important;border:1px solid #e4cf85!important}.frendaUnifiedDelete{background:#fff0f0!important;color:#9b1c1c!important;border:1px solid #efb2b2!important}.frendaUnifiedAddChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.frendaUnifiedAddChoices button{padding:10px!important;border-radius:10px!important;font-weight:900!important}.frendaUnifiedForm{display:none;margin-top:10px;padding:10px;border:1px solid #d3dde3;border-radius:12px;background:#fafcfd}.frendaUnifiedForm.show{display:block}.frendaUnifiedMeta{display:block;font-size:10px;font-weight:700;opacity:.72;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.frendaUnifiedBack{margin-top:8px;background:#edf2f7!important;color:#243747!important}.frendaCloudInfo{font-size:12px;line-height:1.55;color:#64737e;background:#eef9ff;border:1px solid #b9ddeb;border-radius:10px;padding:10px;margin-top:10px}.frendaCloudUser{font-size:13px;font-weight:800;word-break:break-all;margin:6px 0}.frendaCloudStatus{margin-top:9px;font-size:12px;font-weight:800;color:#31566d;min-height:1.4em}
   `;document.head.appendChild(st);
 }
-function localProfileId(){return testApi()?.localProfileId||"A"}
-function localProfileName(){return testApi()?.localProfileName||"ローカルA"}
+function localProfileId(){return userApi()?.localProfileId||"A"}
+function localProfileName(){return userApi()?.localProfileName||"ローカルA"}
 function localProfiles(){
-  const list=testApi()?.localProfiles;
+  const list=userApi()?.localProfiles;
   return Array.isArray(list)&&list.length?list:[{id:"A",name:"ローカルA"},{id:"B",name:"ローカルB"}];
 }
 function sanitizeName(name){return String(name||"").trim().replace(/\s+/g," ").slice(0,20)}
-function metaGet(name){try{return testApi()?.accountGet?.(name)??null}catch{return null}}
-function metaSet(name,value){try{return !!testApi()?.accountSet?.(name,value)}catch{return false}}
+function metaGet(name){try{return userApi()?.accountGet?.(name)??null}catch{return null}}
+function metaSet(name,value){try{return !!userApi()?.accountSet?.(name,value)}catch{return false}}
 function readCloudProfiles(){
   try{
     const raw=metaGet(CLOUD_PROFILE_META);if(!raw)return [];
@@ -74,11 +74,8 @@ function cloudProfileByUserId(uid){uid=String(uid||"").trim();return readCloudPr
 function currentCloudProfile(){return cloudProfileById(activeCloudProfileId)||cloudProfileByUserId(session?.user?.id)||null}
 function allDisplayNames(excludeType="",excludeId=""){const names=[];for(const p of localProfiles())if(!(excludeType==="local"&&p.id===excludeId))names.push(p.name);for(const p of readCloudProfiles())if(!(excludeType==="cloud"&&p.id===excludeId))names.push(p.name);return names}
 function nextCloudProfileId(list=readCloudProfiles()){let max=0;for(const p of list){const m=/^C(\d+)$/.exec(p.id);if(m)max=Math.max(max,Number(m[1])||0)}return `C${max+1}`}
-function readActiveAccount(){
-  try{const x=JSON.parse(metaGet(ACTIVE_ACCOUNT_META)||"null");if(x?.type==="cloud"&&cloudProfileById(x.id))return {type:"cloud",id:String(x.id).toUpperCase()};if(x?.type==="local"&&localProfiles().some(p=>p.id===String(x.id).toUpperCase()))return {type:"local",id:String(x.id).toUpperCase()}}catch{}
-  return {type:"local",id:localProfileId()};
-}
-function setActiveAccount(type,id){return metaSet(ACTIVE_ACCOUNT_META,JSON.stringify({type,id:String(id||"").toUpperCase()}))}
+function readActiveAccount(){return userApi()?.getActiveAccount?.()||{type:"local",id:localProfileId()}}
+function setActiveAccount(type,id){return !!userApi()?.setActiveAccount?.(type,id)}
 function sessionUsable(p){return !!(p?.accessToken&&p?.refreshToken)}
 function persistCloudProfileSession(profileId,sess,displayName=""){
   if(!sess?.user?.id)return null;
@@ -111,20 +108,20 @@ async function leaveCloudForLocal(profile){
   if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを切り替えません。","error");return false}
   profile=String(profile||"").trim().toUpperCase();const info=localProfiles().find(x=>x.id===profile);if(!info)return false;if(!confirm(`${info.name}に切り替えますか？`))return false;
   if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
-  testApi()?.deactivateCloud?.();if(!testApi()?.switchLocalProfile?.(profile)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}setActiveAccount("local",profile);closeModal();location.reload();return true;
+  userApi()?.deactivateCloud?.();if(!userApi()?.switchLocalProfile?.(profile)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}setActiveAccount("local",profile);closeModal();location.reload();return true;
 }
 function switchLocalProfile(profile){
   profile=String(profile||"").trim().toUpperCase();if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを切り替えません。","error");return false}const info=localProfiles().find(x=>x.id===profile);if(!info){setStatus("ローカルユーザーが見つかりません。","error");return false}
-  if(session||cloudMode()){leaveCloudForLocal(profile);return true}if(profile===localProfileId()){setActiveAccount("local",profile);return true}if(!confirm(`${info.name}に切り替えますか？`))return false;if(!testApi()?.switchLocalProfile?.(profile)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}setActiveAccount("local",profile);closeModal();location.reload();return true;
+  if(session||cloudMode()){leaveCloudForLocal(profile);return true}if(profile===localProfileId()){setActiveAccount("local",profile);return true}if(!confirm(`${info.name}に切り替えますか？`))return false;if(!userApi()?.switchLocalProfile?.(profile)){setStatus("ローカルユーザー切替に失敗しました。","error");return false}setActiveAccount("local",profile);closeModal();location.reload();return true;
 }
 function createLocalProfile(name){
-  if(session||cloudMode()){setStatus("ローカルユーザーの追加はローカルユーザーに切り替えてから行ってください。","error");return false}if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを追加できません。","error");return false}name=sanitizeName(name);if(!name){setStatus("ユーザー名を入力してください。","error");return false}if(allDisplayNames().includes(name)){setStatus("同じ表示名のユーザーがあります。","error");return false}if(!confirm(`「${name}」を追加しますか？`))return false;const created=testApi()?.createLocalProfile?.(name);if(!created){setStatus("ローカルユーザーを追加できませんでした。","error");return false}setActiveAccount("local",created.id);closeModal();location.reload();return true;
+  if(session||cloudMode()){setStatus("ローカルユーザーの追加はローカルユーザーに切り替えてから行ってください。","error");return false}if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを追加できません。","error");return false}name=sanitizeName(name);if(!name){setStatus("ユーザー名を入力してください。","error");return false}if(allDisplayNames().includes(name)){setStatus("同じ表示名のユーザーがあります。","error");return false}if(!confirm(`「${name}」を追加しますか？`))return false;const created=userApi()?.createLocalProfile?.(name);if(!created){setStatus("ローカルユーザーを追加できませんでした。","error");return false}setActiveAccount("local",created.id);closeModal();location.reload();return true;
 }
 function renameLocalProfile(profile){
-  if(regressionCaseActive()){setStatus("回帰テスト中はユーザー名を変更できません。","error");return false}profile=String(profile||"").trim().toUpperCase();const info=localProfiles().find(x=>x.id===profile);if(!info)return false;const entered=prompt(`「${info.name}」の新しい名前を入力してください（20文字以内）`,info.name);if(entered===null)return false;const newName=sanitizeName(entered);if(!newName){setStatus("ユーザー名を入力してください。","error");return false}if(allDisplayNames("local",profile).includes(newName)){setStatus("同じ表示名のユーザーがあります。","error");return false}if(newName===info.name)return true;if(!confirm(`「${info.name}」を「${newName}」に変更しますか？\n\nセーブデータはそのままです。`))return false;const renamed=testApi()?.renameLocalProfile?.(profile,newName);if(!renamed){setStatus("ユーザー名を変更できませんでした。","error");return false}closeModal();location.reload();return true;
+  if(regressionCaseActive()){setStatus("回帰テスト中はユーザー名を変更できません。","error");return false}profile=String(profile||"").trim().toUpperCase();const info=localProfiles().find(x=>x.id===profile);if(!info)return false;const entered=prompt(`「${info.name}」の新しい名前を入力してください（20文字以内）`,info.name);if(entered===null)return false;const newName=sanitizeName(entered);if(!newName){setStatus("ユーザー名を入力してください。","error");return false}if(allDisplayNames("local",profile).includes(newName)){setStatus("同じ表示名のユーザーがあります。","error");return false}if(newName===info.name)return true;if(!confirm(`「${info.name}」を「${newName}」に変更しますか？\n\nセーブデータはそのままです。`))return false;const renamed=userApi()?.renameLocalProfile?.(profile,newName);if(!renamed){setStatus("ユーザー名を変更できませんでした。","error");return false}closeModal();location.reload();return true;
 }
 function deleteLocalProfile(profile){
-  profile=String(profile||"").toUpperCase();if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを削除できません。","error");return false}if(session||cloudMode()){setStatus("ローカルユーザーの削除はローカルユーザーに切り替えてから行ってください。","error");return false}const list=localProfiles(),info=list.find(x=>x.id===profile);if(!info)return false;if(list.length<=1){setStatus("ローカルユーザーは最低1人必要です。","error");return false}if(localProfileId()===profile){setStatus("現在使用中のユーザーは削除できません。","error");return false}if(!confirm(`「${info.name}」を削除しますか？\n\nこのユーザーのセーブデータも削除されます。`))return false;if(!confirm(`最終確認です。\n\n「${info.name}」とセーブデータを完全に削除します。\nこの操作は元に戻せません。`))return false;const deleted=testApi()?.deleteLocalProfile?.(profile);if(!deleted){setStatus("ユーザーを削除できませんでした。","error");return false}closeModal();location.reload();return true;
+  profile=String(profile||"").toUpperCase();if(regressionCaseActive()){setStatus("回帰テスト中はユーザーを削除できません。","error");return false}if(session||cloudMode()){setStatus("ローカルユーザーの削除はローカルユーザーに切り替えてから行ってください。","error");return false}const list=localProfiles(),info=list.find(x=>x.id===profile);if(!info)return false;if(list.length<=1){setStatus("ローカルユーザーは最低1人必要です。","error");return false}if(localProfileId()===profile){setStatus("現在使用中のユーザーは削除できません。","error");return false}if(!confirm(`「${info.name}」を削除しますか？\n\nこのユーザーのセーブデータも削除されます。`))return false;if(!confirm(`最終確認です。\n\n「${info.name}」とセーブデータを完全に削除します。\nこの操作は元に戻せません。`))return false;const deleted=userApi()?.deleteLocalProfile?.(profile);if(!deleted){setStatus("ユーザーを削除できませんでした。","error");return false}closeModal();location.reload();return true;
 }
 function userBadgeTarget(){
   if(document.getElementById("frendaDungeonTestBadge"))return document.querySelector(".careCluster")||document.querySelector(".headerTop")||document.querySelector("header");
@@ -216,11 +213,28 @@ async function switchCloudProfile(profileId){
   setStatus(`${p.name}に切り替えています…`);if(!await restoreCloudProfileSession(p)){showAddForm('cloud',p.id);setStatus("再ログインが必要です。パスワードを入力してください。","error");return false}
   setActiveAccount("cloud",p.id);const {data:row,error}=await rowForUser();if(error){setStatus("クラウドセーブ確認失敗："+error.message,"error");return false}activatePayload(row?.[columnName()]??null);closeModal();location.reload();return true;
 }
+async function leaveCloudDirect(){
+  if(regressionCaseActive())return false;
+  try{if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);userApi()?.deactivateCloud?.();session=null;activeCloudProfileId="";return true}catch(e){console.error("FRENDA_CLOUD_LEAVE_FAILED",e);return false}
+}
+async function activateProfileDirect(profileId){
+  if(regressionCaseActive())return {ok:false,message:"回帰テスト中は切り替えできません"};const p=cloudProfileById(profileId);if(!p)return {ok:false,message:"クラウドユーザーが見つかりません"};
+  if(session&&currentCloudProfile()?.id===p.id)return {ok:true,profileId:p.id};if(cloudMode())await pushNow(true);if(session&&activeCloudProfileId)persistCloudProfileSession(activeCloudProfileId,session);
+  if(!sessionUsable(p))return {ok:false,needsAuth:true,profile:p};if(!await restoreCloudProfileSession(p))return {ok:false,needsAuth:true,profile:p};
+  const {data:row,error}=await rowForUser();if(error)return {ok:false,message:"クラウドセーブ確認失敗："+error.message};activatePayload(row?.[columnName()]??null);activeCloudProfileId=p.id;return {ok:true,profileId:p.id};
+}
+async function authenticateProfileDirect({displayName,email,password,profileId=""}={}){
+  if(regressionCaseActive())return {ok:false,message:"回帰テスト中は追加できません"};displayName=sanitizeName(displayName);email=String(email||"").trim();if(!displayName||!email||!password)return {ok:false,message:"表示名・メールアドレス・パスワードを入力してください。"};
+  const existing=profileId?cloudProfileById(profileId):null,previous=activeCloudProfileId;try{await ensureClient();if(cloudMode())await pushNow(true);if(session&&previous)persistCloudProfileSession(previous,session);activeCloudProfileId=existing?.id||"";const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;session=data.session||null;if(!session)throw new Error("ログインセッションを取得できません");if(existing?.userId&&existing.userId!==session.user.id)throw new Error("登録済みユーザーと異なるアカウントです");const p=persistCloudProfileSession(existing?.id||"",session,displayName);if(!p)throw new Error("端末へのユーザー登録に失敗しました");activeCloudProfileId=p.id;const {data:row,error:rowError}=await rowForUser();if(rowError)throw rowError;activatePayload(row?.[columnName()]??null);return {ok:true,profileId:p.id}}catch(e){activeCloudProfileId=previous;return {ok:false,message:"ログイン失敗："+(e?.message||e)}}
+}
+async function renameProfileDirect(profileId,name){const p=cloudProfileById(profileId);name=sanitizeName(name);if(!p||!name||regressionCaseActive())return false;if(allDisplayNames("cloud",p.id).includes(name))return false;return writeCloudProfiles(readCloudProfiles().map(x=>x.id===p.id?{...x,name}:x))}
+async function deleteProfileDirect(profileId){const p=cloudProfileById(profileId);if(!p||regressionCaseActive())return false;if(session&&currentCloudProfile()?.id===p.id)return false;const ok=writeCloudProfiles(readCloudProfiles().filter(x=>x.id!==p.id));if(ok){const a=readActiveAccount();if(a.type==="cloud"&&a.id===p.id)setActiveAccount("local",localProfileId())}return ok}
+
 async function rowForUser(){if(!session)return {data:null,error:new Error("not signed in")};return await client.from(TABLE).select(`user_id,${columnName()},updated_at`).eq("user_id",session.user.id).maybeSingle()}
-function cachePayload(payload){try{testApi()?.writeCloudCache?.(payload,session?.user?.id)}catch(e){console.warn("FRENDA_TEST_CACHE_WRITE",e)}}
-function activatePayload(payload){testApi()?.activateCloud?.(session.user.id,payload??null)}
+function cachePayload(payload){try{userApi()?.writeCloudCache?.(payload,session?.user?.id)}catch(e){console.warn("FRENDA_TEST_CACHE_WRITE",e)}}
+function activatePayload(payload){userApi()?.activateCloud?.(session.user.id,payload??null)}
 function subscribeStorage(){
-  storageUnsub?.();storageUnsub=null;if(regressionCaseActive())return;const s=testApi()?.storage;if(!s?.subscribe)return;
+  storageUnsub?.();storageUnsub=null;if(regressionCaseActive())return;const s=userApi()?.storage;if(!s?.subscribe)return;
   storageUnsub=s.subscribe(ev=>{if(!cloudMode()||syncing)return;if(ev.type==="clear"||(ev.key&&cfg?.watchStorage?.(String(ev.key))))scheduleSync()});
 }
 function scheduleSync(){
@@ -251,24 +265,29 @@ async function pullNow(force=false){
 async function initializeCloudSession(){
   const active=readActiveAccount();
   if(active.type!=="cloud"){
-    activeCloudProfileId="";session=null;const wasCloud=testApi()?.mode==="cloud";testApi()?.deactivateCloud?.();setStatus(`${localProfileName()}・この端末に保存`);if(wasCloud){location.reload();return}return;
+    activeCloudProfileId="";session=null;const wasCloud=userApi()?.mode==="cloud";userApi()?.deactivateCloud?.();setStatus(`${localProfileName()}・この端末に保存`);if(wasCloud){location.reload();return}return;
   }
-  const profile=cloudProfileById(active.id);if(!profile){setActiveAccount("local",localProfileId());testApi()?.deactivateCloud?.();setStatus("クラウドユーザー情報が見つからないためローカルへ戻しました。","error");return}
+  const profile=cloudProfileById(active.id);if(!profile){setActiveAccount("local",localProfileId());userApi()?.deactivateCloud?.();setStatus("クラウドユーザー情報が見つからないためローカルへ戻しました。","error");return}
   if(!await restoreCloudProfileSession(profile)){
-    setActiveAccount("local",localProfileId());testApi()?.deactivateCloud?.();setStatus(`${profile.name}は再ログインが必要です。ユーザー一覧から選択してください。`,`error`);return;
+    setActiveAccount("local",localProfileId());userApi()?.deactivateCloud?.();setStatus(`${profile.name}は再ログインが必要です。ユーザー一覧から選択してください。`,`error`);return;
   }
   const uid=session.user.id;activeCloudProfileId=profile.id;
-  if(testApi()?.mode!=="cloud"||testApi()?.cloudUserId!==uid){const {data,error}=await rowForUser();if(error){setStatus("クラウドセーブ確認失敗","error");return}activatePayload(data?.[columnName()]??null);location.reload();return}
-  const {data,error}=await rowForUser();if(error){setStatus("クラウド読込エラー","error");return}const remote=data?.[columnName()]??null,current=cfg?.getData?.()??null,cached=testApi()?.readCloudCache?.(uid)??null;
+  if(userApi()?.mode!=="cloud"||userApi()?.cloudUserId!==uid){const {data,error}=await rowForUser();if(error){setStatus("クラウドセーブ確認失敗","error");return}activatePayload(data?.[columnName()]??null);location.reload();return}
+  const {data,error}=await rowForUser();if(error){setStatus("クラウド読込エラー","error");return}const remote=data?.[columnName()]??null,current=cfg?.getData?.()??null,cached=userApi()?.readCloudCache?.(uid)??null;
   if(regressionCaseActive()){const remoteStr=safeJSON(remote),cachedStr=safeJSON(cached);if(remote&&remoteStr!==cachedStr){activatePayload(remote);lastUploaded=remoteStr;location.reload();return}lastUploaded=remoteStr;storageUnsub?.();storageUnsub=null;setStatus(REGRESSION_SAVE_BLOCK_TEXT);return}
   if(remote){const remoteStr=safeJSON(remote),currentStr=safeJSON(current),cachedStr=safeJSON(cached);if(remoteStr!==cachedStr){activatePayload(remote);lastUploaded=remoteStr;location.reload();return}if(currentStr!==remoteStr){await pushNow(true)}else{lastUploaded=remoteStr;cachePayload(remote)}}else{await pushNow(true)}subscribeStorage();setStatus(`${profile.name}・クラウド保存`);
 }
 async function init(options){
-  cfg=options||{};injectButton();if(!cfg?.unifiedEntryOnly)ensureLauncher();try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}ensureUserBadge();updateUserBadge();await initializeCloudSession();updateUserBadge();
+  cfg=options||{};try{await ensureClient()}catch(e){setStatus(e?.message||"認証ライブラリ未接続","error");return}await initializeCloudSession();userApi()?.refreshUI?.();
 }
-window.FrendaCloud={
-  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,unifiedUsers:true,rememberedCloudProfiles:true,passwordStored:false,unifiedEntryOnlySupported:true,regressionSaveGuard:true,localProfiles:true,localProfileAdd:true,localProfileRename:true,localProfileDelete:true,cloudProfileRename:true,cloudProfileDelete:true,isRegressionCase:regressionCaseActive,
-  init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,getCloudProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),open:openModal
+const provider={
+  version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,passwordStored:false,regressionSaveGuard:true,
+  getProfiles:()=>readCloudProfiles().map(p=>({id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)})),getActiveProfile:()=>{const p=currentCloudProfile();return p?{id:p.id,userId:p.userId,email:p.email,name:p.name,remembered:sessionUsable(p)}:null},
+  activateProfile:activateProfileDirect,authenticateProfile:authenticateProfileDirect,renameProfile:renameProfileDirect,deleteProfile:deleteProfileDirect,leaveCloud:leaveCloudDirect
 };
+userApi()?.registerCloudProvider?.(provider);
+window.FrendaCloud={version:`test-${CLOUD_TEST_VERSION}`,testMode:true,cloudOnly:true,localCloudSync:false,sharedUserUI:true,passwordStored:false,regressionSaveGuard:true,init,scheduleSync,pushNow,pullNow,isLoggedIn:()=>!!session,getUser:()=>session?.user||null,getCloudProfiles:provider.getProfiles,open:()=>userApi()?.open?.(),provider};
 })();
 /* Ver1.3: ポータル用 unifiedEntryOnly を追加。現在ユーザー表示だけを入口として利用し、旧🧪認証ボタン/ランチャーを生成しない。統合ユーザー一覧・認証・保存仕様はVer1.2を維持。Updated: 2026-10-11 09:35 JST */
+
+/* Ver1.4: 共通frenda-user.jsへ統合ユーザーUIを移管。Cloud Testは認証・Supabase保存・回帰テスト保存禁止だけを担うheadless providerとして登録。旧UIコードは移行安全性のため未呼出しで残す。Updated: 2026-10-11 12:00 JST */
