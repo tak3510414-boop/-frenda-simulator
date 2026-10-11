@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.74">
+<html lang="ja" data-app-version="3.75">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -5369,7 +5369,7 @@ function challengeTierDefs(){const defs=[];const add=(group,icon,title,stat,targ
  add("expedition","🧭","探索隊","expeditionsCompleted",[10,50,100],[300,1000,2000],()=>missionExpeditionUnlocked());
  add("training","🏋️","育成名人","trainings",[10,50,100],[200,600,1200],()=>missionTrainingUnlocked());
  add("evolution","✨","進化研究家","evolutions",[5,20,50],[300,800,1500],()=>missionEvolutionUnlocked());
- [1,2,3,4,5].forEach((rank,i)=>defs.push({id:`challenge:master:r${rank}`,group:"master",icon:"🏆",title:`ダンジョンマスター R${rank}`,desc:`全10ダンジョンのランク${rank}を制覇`,progress:()=>THEME_ORDER.filter(did=>Number(state.stats?.[statKey(did,rank)]?.clears||0)>0).length,target:THEME_ORDER.length,reward:rank<5?missionRewardCoins([300,500,800,1200][i]):missionRewardItem("masterBall",1,"マスターボール ×1","🔮",2000),visible:()=>rank===1||missionAllRankCleared(rank-1)}));
+ [1,2,3,4,5].forEach((rank,i)=>defs.push({id:`challenge:master:r${rank}`,group:"master",icon:"🏆",title:`ダンジョンマスター R${rank}`,desc:`全10ダンジョンのランク${rank}を制覇`,progress:()=>THEME_ORDER.filter(did=>Number(state.stats?.[statKey(did,rank)]?.clears||0)>0).length,target:THEME_ORDER.length,reward:rank<5?missionRewardCoins([300,500,800,1200][i]):missionRewardItem("masterBall",1,"マスターボール ×1","🔮",10000),visible:()=>rank===1||missionAllRankCleared(rank-1)}));
  return defs}
 function missionVisibleDefs(tab=missionTab){if(tab==="daily")return dailyMissionDefs346();if(tab==="weekly")return weeklyMissionDefs347();return (tab==="challenge"?challengeTierDefs():firstMissionDefs()).filter(m=>!m.visible||m.visible())}
 function missionProgress(m){return Math.max(0,Math.floor(Number(m.progress?.())||0))}
