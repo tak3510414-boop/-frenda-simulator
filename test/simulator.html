@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.96 -->
-<html lang="ja" data-app-version="6.96"><head><meta charset="utf-8">
+<!-- FRENDA_SIMULATOR_VERSION: 6.95 -->
+<html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.96</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.95</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:600px){.simHeaderRow{gap:6px}.simHeaderTitle{font-size:12px}.simHomeLink{font-size:9px;padding:6px 7px}}
@@ -638,7 +638,7 @@ body.battleOverlayOpen{overflow:hidden}
 }
 
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.96</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.95</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
 <main>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -909,24 +909,16 @@ body.battleOverlayOpen{overflow:hidden}
 </div>
 <div id="fields" class="grid" style="margin-top:12px"></div>
 <div class="actions"><button id="ownedBtn" class="ghost">所持にする</button><button id="favoriteBtn" class="ghost">☆ お気に入りに追加</button><button id="editBtn">パラメータ編集</button><button id="saveBtn" class="hidden">修正を保存</button><button id="cancelBtn" class="secondary hidden">キャンセル</button><button id="resetBtn" class="ghost">マスター値に戻す</button></div>
-<p class="note">所持・お気に入り・修正値・写真は現在のユーザーに保存し、マスターDBは変更しません。</p>
+<p class="note">所持・お気に入り・修正値・写真はこの端末内に保存し、マスターDBは変更しません。</p>
 </section></div>
 </section>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(()=>{
- const inTest=location.pathname.includes("/test/");
- const v="20261011_phase6";
- if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
- document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
- document.write(`<script src="${inTest?"frenda-cloud-test.js":"frenda-cloud.js"}?app=${v}"><\/script>`);
-})();
-</script>
 <script src="frenda-master.js?b=20261001_2130_2148"></script>
 <script src="frenda-core.js?b=20260927_2148"></script>
 <script src="frenda-rules.js?b=20260927_2148"></script>
-<script src="frenda-data.js?b=20261011_phase6"></script>
+<script src="frenda-data.js?b=20260927_2148"></script>
 <script src="frenda-ui.js?b=20260927_2148"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="frenda-cloud.js?b=20260928_1925"></script>
 <script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -2790,5 +2782,3 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
   ・スマホでは 大=1列 / 中=2列 / 小=3列。
   ・ピック画像をタップして開く「ピック裏面データ」画面にも、そのピック画像を表示。
 -->
-
-<!-- Ver6.96: 共通FRENDA_USERをSimulatorへ接続。Userをfrenda-data.jsより先に読み込み、所持・お気に入り・修正値・写真を現在ユーザーの保存領域へ分離。/test/はfrenda-test.js + frenda-cloud-test.js、本番はfrenda-cloud.jsを使用。Updated: 2026-10-11 14:25 JST -->
