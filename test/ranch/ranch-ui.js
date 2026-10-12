@@ -14,6 +14,11 @@ function renderEnvironment(){
  const p=$("pasture");if(p){p.dataset.phase=e.phase;p.dataset.weather=e.weather;if(e.phase==="夜")p.style.filter="brightness(.78) saturate(.92)";else if(e.phase==="夕方")p.style.filter="sepia(.12) brightness(.96)";else p.style.filter="none"}
 }
 
+
+function renderOffline(s){
+ const box=$("offlineBox"),host=$("offlineList");if(!box||!host)return;const o=s?.offlineSummary;if(!o||Number(o.elapsedMinutes)<2){box.style.display="none";return}box.style.display="block";const m=Number(o.elapsedMinutes)||0;const label=m>=60?`${Math.floor(m/60)}時間${m%60?`${m%60}分`:""}`:`${m}分`;host.innerHTML="";for(const t of [`留守：約${label}`,`牧場時間：${Number(o.ranchDays||0).toFixed(2)}日`,`散歩 ${o.activity?.walk||0}・休憩 ${o.activity?.rest||0}・交流 ${o.activity?.social||0}`]){const d=document.createElement("span");d.className="relationChip";d.textContent=t;host.appendChild(d)}
+}
+
 async function render(){
  await Promise.resolve(window.RANCH_CLOUD_READY);
  if(!window.FRENDA_DATA||!window.FRENDA_MASTER){$("empty").textContent="共通データを読み込めませんでした。";$("saveState").textContent="NG";return}
@@ -23,10 +28,10 @@ async function render(){
  const aiItems=[];
  shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);p.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
  R.ai?.start?.(aiItems);
- renderRelations(s);renderEnvironment();setInterval(renderEnvironment,15000);
+ renderRelations(s);renderEnvironment();renderOffline(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
  const dd=window.FRENDA_DATA?.dungeon?.read?.();$("detail").textContent=`保存キー: ${R.saveKey()} ／ 本編参照: ${dd?.initialized?"Dungeon所持データ":"Simulator所持データ（フォールバック）"} ／ 進化履歴: ${s.evolutionHistory?.length||0} ／ 生活AI: ${R.ai?.enabled?"ON":"OFF"} ／ 交流: ON ／ 本編書込: なし`;
 }
 window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s)renderRelations(s)});
-window.addEventListener("DOMContentLoaded",render);
+window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
-// Updated: 2026-10-12 21:52 JST
+// Updated: 2026-10-12 21:59 JST

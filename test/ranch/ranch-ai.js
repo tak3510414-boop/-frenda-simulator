@@ -32,4 +32,4 @@ function stop(){for(const a of agents.values())clearAgent(a);timers.clear();fram
 function start(items){stop();const created=[];(items||[]).forEach((it,i)=>{const col=i%3,row=Math.floor(i/3),a={id:it.id,el:it.el,creature:it.creature,record:it.record,traits:traits(it.creature),x:10+col*30+(row%2)*5,y:38+row*30};a.x=clamp(a.x,4,86);a.y=clamp(a.y,34,78);agents.set(a.id,a);created.push(a);place(a);setState(a,"idle","起動直後");schedule(a,rand(250,1000))});if(created.length>=2){setTimeout(()=>{const a=created[0],b=created[1];if(!agents.has(a.id)||!agents.has(b.id)||a.socialBusy||b.socialBusy)return;a.socialBusy=b.socialBusy=true;clearAgent(a);clearAgent(b);const d={x:clamp(b.x+6,4,86),y:clamp(b.y+2,34,78)};move(a,d,1200,"起動確認の交流",()=>socialize(a,b))},3500)}}
 R.ai={enabled:true,start,stop,agents,engine:"weighted-life-social-v4-time-weather",phase:ranchPhase,weather:ranchWeather,environment,bondRank};window.addEventListener("pagehide",stop);
 })();
-// Updated: 2026-10-12 21:52 JST
+// Updated: 2026-10-12 21:59 JST

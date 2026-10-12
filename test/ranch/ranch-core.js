@@ -1,12 +1,25 @@
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const now=()=>new Date().toISOString();
-function freshSave(){return {schemaVersion:R.SCHEMA_VERSION,saveVersion:2,createdAt:now(),updatedAt:null,ranchName:"フレンダ牧場",creatures:[],previousOwnedIds:[],evolutionHistory:[],syncLog:[],social:{bonds:{},groups:[]}}}
+function freshSave(){return {schemaVersion:R.SCHEMA_VERSION,saveVersion:2,createdAt:now(),updatedAt:null,ranchName:"フレンダ牧場",creatures:[],previousOwnedIds:[],evolutionHistory:[],syncLog:[],social:{bonds:{},groups:[]},lastActiveAt:now(),offlineSummary:null}}
 function newCreature(id){return {ranchId:R.uid(),pickId:String(id),status:"resident",joinedAt:now(),departedAt:null,nickname:"",personality:{seed:Math.floor(Math.random()*1000000)},life:{days:0},relationships:{},memories:[],pickHistory:[{pickId:String(id),from:null,at:now(),reason:"joined"}]}}
 function directEvolution(index,fromId,toId){if(!index)return false;const a=index.entryByName?.(R.pickName(fromId)),b=index.entryByName?.(R.pickName(toId));if(!a||!b)return false;return Number(b.parent)===Number(a.no)}
+R.applyOfflineProgress=s=>{
+ const nowMs=Date.now(),lastMs=Date.parse(s.lastActiveAt||s.updatedAt||s.createdAt||new Date().toISOString());
+ const elapsedMs=Math.max(0,nowMs-(Number.isFinite(lastMs)?lastMs:nowMs)),elapsedMinutes=elapsedMs/60000,ranchDays=elapsedMinutes/60;
+ const residents=(s.creatures||[]).filter(c=>c&&c.status==="resident");
+ if(elapsedMinutes>=2){
+  for(const c of residents){c.life=c.life&&typeof c.life==="object"?c.life:{};c.life.days=(Number(c.life.days)||0)+ranchDays;c.life.offlineMinutes=(Number(c.life.offlineMinutes)||0)+elapsedMinutes}
+  const active=Math.max(0,Math.round(elapsedMinutes*(.34+Math.min(.18,residents.length*.02)))),rest=Math.max(0,Math.round(elapsedMinutes*.28)),social=residents.length>1?Math.max(0,Math.round(elapsedMinutes*(.05+Math.min(.08,residents.length*.01)))):0;
+  s.offlineSummary={from:new Date(lastMs).toISOString(),to:new Date(nowMs).toISOString(),elapsedMinutes:Math.round(elapsedMinutes),ranchDays:Number(ranchDays.toFixed(2)),residents:residents.length,activity:{walk:active,rest,social}};
+ }
+ s.lastActiveAt=new Date(nowMs).toISOString();return s
+};
+R.touchActive=()=>{const s=R.readSave?.();if(!s)return;const t=Date.now(),prev=Date.parse(s.lastActiveAt||0)||0;if(t-prev<15000)return;s.lastActiveAt=new Date(t).toISOString();R.writeSave?.(s)};
 R.reconcile=async ids=>{
  ids=[...new Set((ids||[]).map(String).filter(Boolean))];
  let s=R.readSave()||freshSave();
+ s=R.applyOfflineProgress(s);
  if(!Array.isArray(s.creatures))s.creatures=[];if(!Array.isArray(s.previousOwnedIds))s.previousOwnedIds=[];if(!Array.isArray(s.evolutionHistory))s.evolutionHistory=[];if(!Array.isArray(s.syncLog))s.syncLog=[];if(!s.social||typeof s.social!=="object")s.social={bonds:{},groups:[]};if(!s.social.bonds||typeof s.social.bonds!=="object")s.social.bonds={};if(!Array.isArray(s.social.groups))s.social.groups=[];
  const prev=[...new Set(s.previousOwnedIds.map(String))],prevSet=new Set(prev),curSet=new Set(ids);
  const removed=prev.filter(id=>!curSet.has(id)),added=ids.filter(id=>!prevSet.has(id));
@@ -33,4 +46,4 @@ R.reconcile=async ids=>{
  return R.writeSave(s)
 };
 })();
-// Updated: 2026-10-12 21:52 JST
+// Updated: 2026-10-12 21:59 JST
