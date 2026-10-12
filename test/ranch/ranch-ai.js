@@ -1,25 +1,28 @@
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const timers=new Map(),agents=new Map(),frames=new Map();
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const rand=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
 const TYPE_NIGHT=new Set(["ゴースト","あく"]);
-function seeded(seed,salt=0){let x=((Number(seed)||1)+salt*2654435761)>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967295}
-function traits(c){const s=c?.personality?.seed||1;return {activity:.25+seeded(s,1)*.75,calm:seeded(s,2),explore:seeded(s,3),nightOwl:seeded(s,4)}}
-function ranchPhase(){const origin=Date.parse(R.readSave?.()?.createdAt||new Date().toISOString())||Date.now();const m=((Date.now()-origin)/60000)%60;if(m<15)return"朝";if(m<35)return"昼";if(m<47.5)return"夕方";return"夜"}
-function typesOf(r){return [r?.type1,r?.type2].filter(Boolean)}
+function seeded(seed,salt=0){let x=((Number(seed)||1)+salt*2654435761)>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967295}
+function traits(c){const s=c?.personality?.seed||1;return{activity:.25+seeded(s,1)*.75,calm:seeded(s,2),explore:seeded(s,3),social:seeded(s,5),nightOwl:seeded(s,4)}}
+function ranchPhase(){const origin=Date.parse(R.readSave?.()?.createdAt||new Date().toISOString())||Date.now(),m=((Date.now()-origin)/60000)%60;if(m<15)return"朝";if(m<35)return"昼";if(m<47.5)return"夕方";return"夜"}
+function typesOf(r){return[r?.type1,r?.type2].filter(Boolean)}
 function farEnough(x,y,self){for(const a of agents.values()){if(a===self)continue;const dx=(a.x??-99)-x,dy=(a.y??-99)-y;if((dx*dx)/(14*14)+(dy*dy)/(18*18)<1)return false}return true}
 function destination(a){const spread=18+20*a.traits.explore;for(let i=0;i<24;i++){const x=clamp(a.x+rand(-spread,spread),4,86),y=clamp(a.y+rand(-spread*.65,spread*.65),34,78);if(farEnough(x,y,a)&&Math.hypot(x-a.x,y-a.y)>9)return{x,y}}return{x:clamp(a.x+rand(-22,22),4,86),y:clamp(a.y+rand(-14,14),34,78)}}
 function setState(a,state,reason=""){a.state=state;a.reason=reason;a.el.classList.remove("walking","idle","resting");a.el.classList.add(state==="walk"?"walking":state==="rest"?"resting":"idle");a.el.dataset.ranchState=state;a.el.dataset.aiReason=reason}
 function place(a){a.el.style.left=a.x+"%";a.el.style.top=a.y+"%"}
 function clearAgent(a){const t=timers.get(a.id);if(t)clearTimeout(t);timers.delete(a.id);const f=frames.get(a.id);if(f)cancelAnimationFrame(f);frames.delete(a.id)}
 function schedule(a,ms){const old=timers.get(a.id);if(old)clearTimeout(old);timers.set(a.id,setTimeout(()=>step(a),ms))}
-function move(a,d,ms,reason){const sx=a.x,sy=a.y,dx=d.x-sx,dy=d.y-sy,start=performance.now();setState(a,"walk",reason);function tick(now){if(!document.body.contains(a.el))return;const p=clamp((now-start)/ms,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;a.x=sx+dx*e;a.y=sy+dy*e;place(a);if(p<1)frames.set(a.id,requestAnimationFrame(tick));else{frames.delete(a.id);a.x=d.x;a.y=d.y;place(a);setState(a,"idle","移動後のひと休み");schedule(a,rand(650,1500))}}frames.set(a.id,requestAnimationFrame(tick))}
-function choose(a){const phase=ranchPhase(),types=typesOf(a.record),nightType=types.some(t=>TYPE_NIGHT.has(t));let walk=42+32*a.traits.activity+12*a.traits.explore,rest=20+25*a.traits.calm,idle=25;if(phase==="夜"){if(nightType||a.traits.nightOwl>.72){walk+=28;rest-=8}else{rest+=45;walk-=22}}else if(phase==="朝"){walk+=8}const total=Math.max(1,walk+rest+idle),r=Math.random()*total;if(r<walk)return{kind:"walk",reason:`${phase}・${nightType?"タイプ傾向＋":""}個体の活動傾向`};if(r<walk+rest)return{kind:"rest",reason:`${phase}・個体の休息傾向`};return{kind:"idle",reason:`${phase}・周囲を眺める`}}
-function step(a){if(!document.body.contains(a.el))return;const c=choose(a);if(c.kind==="walk"){const d=destination(a),dist=Math.hypot(d.x-a.x,d.y-a.y),speed=.82+.5*a.traits.activity+(Number(a.record?.speed_level)||3)*.035,ms=Math.round(clamp((1200+dist*48)/speed,1200,3900));move(a,d,ms,c.reason)}else if(c.kind==="rest"){setState(a,"rest",c.reason);schedule(a,rand(1800,4200)*(1+.35*a.traits.calm))}else{setState(a,"idle",c.reason);schedule(a,rand(800,2500))}}
+function bubble(a,text,ms=1800){a.el.querySelector(".social")?.remove();const d=document.createElement("span");d.className="social";d.textContent=text;a.el.appendChild(d);setTimeout(()=>d.remove(),ms)}
+function bondKey(a,b){return[a.id,b.id].sort().join("|")}
+function addBond(a,b,kind){const s=R.readSave?.();if(!s)return;const key=bondKey(a,b),old=s.social?.bonds?.[key]||{a:a.id,b:b.id,score:0,meetings:0};old.score=clamp((Number(old.score)||0)+(kind==="play"?3:2),-20,100);old.meetings=(Number(old.meetings)||0)+1;old.updatedAt=new Date().toISOString();s.social=s.social||{bonds:{},groups:[]};s.social.bonds=s.social.bonds||{};s.social.bonds[key]=old;R.writeSave?.(s)}
+function move(a,d,ms,reason,done){const sx=a.x,sy=a.y,dx=d.x-sx,dy=d.y-sy,start=performance.now();setState(a,"walk",reason);function tick(now){if(!document.body.contains(a.el))return;const p=clamp((now-start)/ms,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;a.x=sx+dx*e;a.y=sy+dy*e;place(a);if(p<1)frames.set(a.id,requestAnimationFrame(tick));else{frames.delete(a.id);a.x=d.x;a.y=d.y;place(a);if(done)done();else{setState(a,"idle","移動後のひと休み");schedule(a,rand(650,1500))}}}frames.set(a.id,requestAnimationFrame(tick))}
+function socialTarget(a){const list=[...agents.values()].filter(x=>x!==a&&x.state!=="social");if(!list.length)return null;return list[Math.floor(Math.random()*list.length)]}
+function socialize(a,b){if(!b||!document.body.contains(b.el)){schedule(a,500);return}a.state=b.state="social";setState(a,"idle","仲間と交流");setState(b,"idle","仲間と交流");const kind=Math.random()<.55?"play":"chat";bubble(a,kind==="play"?"♪ あそぼ！":"♪ こんにちは");bubble(b,kind==="play"?"♪ いいよ！":"♪ こんにちは");addBond(a,b,kind);schedule(a,rand(1800,3000));schedule(b,rand(1800,3000))}
+function choose(a){const phase=ranchPhase(),types=typesOf(a.record),nightType=types.some(t=>TYPE_NIGHT.has(t));let social=10+26*a.traits.social,walk=38+28*a.traits.activity+10*a.traits.explore,rest=20+25*a.traits.calm,idle=25;if(agents.size<2)social=0;if(phase==="夜"){if(nightType||a.traits.nightOwl>.72){walk+=28;rest-=8}else{rest+=45;walk-=22}}else if(phase==="朝")walk+=8;const total=Math.max(1,social+walk+rest+idle),r=Math.random()*total;if(r<social)return{kind:"social",reason:`${phase}・仲間と交流したい`};if(r<social+walk)return{kind:"walk",reason:`${phase}・${nightType?"タイプ傾向＋":""}個体の活動傾向`};if(r<social+walk+rest)return{kind:"rest",reason:`${phase}・個体の休息傾向`};return{kind:"idle",reason:`${phase}・周囲を眺める`}}
+function step(a){if(!document.body.contains(a.el))return;const c=choose(a);if(c.kind==="social"){const b=socialTarget(a);if(!b){schedule(a,700);return}const d={x:clamp(b.x+rand(-8,8),4,86),y:clamp(b.y+rand(-5,5),34,78)},dist=Math.hypot(d.x-a.x,d.y-a.y);move(a,d,clamp(900+dist*42,900,3000),c.reason,()=>socialize(a,b));return}if(c.kind==="walk"){const d=destination(a),dist=Math.hypot(d.x-a.x,d.y-a.y),speed=.82+.5*a.traits.activity+(Number(a.record?.speed_level)||3)*.035,ms=Math.round(clamp((1200+dist*48)/speed,1200,3900));move(a,d,ms,c.reason)}else if(c.kind==="rest"){setState(a,"rest",c.reason);schedule(a,rand(1800,4200)*(1+.35*a.traits.calm))}else{setState(a,"idle",c.reason);schedule(a,rand(800,2500))}}
 function stop(){for(const a of agents.values())clearAgent(a);timers.clear();frames.clear();agents.clear()}
 function start(items){stop();(items||[]).forEach((it,i)=>{const col=i%3,row=Math.floor(i/3),a={id:it.id,el:it.el,creature:it.creature,record:it.record,traits:traits(it.creature),x:10+col*30+(row%2)*5,y:38+row*30};a.x=clamp(a.x,4,86);a.y=clamp(a.y,34,78);agents.set(a.id,a);place(a);setState(a,"idle","起動直後");schedule(a,rand(250,1000))})}
-R.ai={enabled:true,start,stop,agents,engine:"weighted-life-v1",phase:ranchPhase};
-window.addEventListener("pagehide",stop);
+R.ai={enabled:true,start,stop,agents,engine:"weighted-life-social-v1",phase:ranchPhase};window.addEventListener("pagehide",stop);
 })();
-// Updated: 2026-10-12 20:50 JST
+// Updated: 2026-10-12 21:12 JST
