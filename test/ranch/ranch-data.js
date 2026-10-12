@@ -9,4 +9,4 @@ R.record=id=>R.masterMap().get(String(id))||null;
 R.pickName=id=>String(R.record(id)?.name_ja||"");
 R.loadEvolutionIndex=async()=>{try{return await window.FRENDA_DATA?.evolution?.loadIndex?.()||null}catch(e){console.warn("RANCH_EVOLUTION_LOAD",e);return null}};
 })();
-// Updated: 2026-10-12 21:12 JST
+// Updated: 2026-10-12 21:18 JST
