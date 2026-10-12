@@ -22,4 +22,4 @@ function start(items){stop();(items||[]).forEach((it,i)=>{const col=i%3,row=Math
 R.ai={enabled:true,start,stop,agents,engine:"weighted-life-v1",phase:ranchPhase};
 window.addEventListener("pagehide",stop);
 })();
-// Updated: 2026-10-12 20:45 JST
+// Updated: 2026-10-12 20:50 JST
