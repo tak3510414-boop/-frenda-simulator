@@ -24,4 +24,4 @@ async function render(){
 window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s)renderRelations(s)});
 window.addEventListener("DOMContentLoaded",render);
 })();
-// Updated: 2026-10-12 21:40 JST
+// Updated: 2026-10-12 21:46 JST
