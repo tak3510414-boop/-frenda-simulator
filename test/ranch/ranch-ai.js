@@ -1,6 +1,6 @@
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
-const timers=new Map(),agents=new Map(),frames=new Map();
+const timers=new Map(),agents=new Map(),frames=new Map(),facilitySlots=new Map();
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
 const TYPE_NIGHT=new Set(["ゴースト","あく"]);
 function seeded(seed,salt=0){let x=((Number(seed)||1)+salt*2654435761)>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967295}
@@ -51,4 +51,4 @@ function stop(){for(const a of agents.values()){clearAgent(a);releaseFacility(a)
 function start(items){stop();const created=[];(items||[]).forEach((it,i)=>{const col=i%3,row=Math.floor(i/3),a={id:it.id,el:it.el,creature:it.creature,record:it.record,traits:traits(it.creature),x:10+col*30+(row%2)*5,y:38+row*30};a.x=clamp(a.x,4,86);a.y=clamp(a.y,34,78);agents.set(a.id,a);created.push(a);place(a);setState(a,"idle","起動直後");schedule(a,rand(250,1000))});if(created.length>=2){setTimeout(()=>{const a=created[0],b=created[1];if(!agents.has(a.id)||!agents.has(b.id)||a.socialBusy||b.socialBusy)return;a.socialBusy=b.socialBusy=true;clearAgent(a);clearAgent(b);const d={x:clamp(b.x+6,4,86),y:clamp(b.y+2,34,78)};move(a,d,1200,"起動確認の交流",()=>socialize(a,b))},3500)}}
 R.ai={enabled:true,start,stop,agents,engine:"weighted-life-social-v6-facility-slots",phase:ranchPhase,weather:ranchWeather,environment,bondRank};window.addEventListener("pagehide",stop);
 })();
-// Updated: 2026-10-13 07:27 JST
+// Updated: 2026-10-13 07:40 JST

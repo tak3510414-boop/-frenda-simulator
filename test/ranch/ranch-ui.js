@@ -55,4 +55,4 @@ async function render(){
 window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderRelations(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
-// Updated: 2026-10-13 07:27 JST
+// Updated: 2026-10-13 07:40 JST
