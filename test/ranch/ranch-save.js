@@ -6,4 +6,4 @@ R.readSave=()=>{try{const x=JSON.parse(localStorage.getItem(R.saveKey())||"null"
 R.writeSave=x=>{localStorage.setItem(R.saveKey(),JSON.stringify(x));return x};
 R.uid=()=>`r_${Date.now().toString(36)}_${globalThis.crypto?.randomUUID?.().slice(0,8)||Math.random().toString(36).slice(2,10)}`;
 })();
-// Updated: 2026-10-12 21:46 JST
+// Updated: 2026-10-12 21:52 JST
