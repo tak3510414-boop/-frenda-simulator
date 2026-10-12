@@ -16,6 +16,13 @@ function renderEnvironment(){
 
 
 
+
+function renderDevelopment(s){
+ const host=$("developmentList"),facHost=$("facilityList");if(!host||!facHost)return;const d=R.updateDevelopment?.(s)||s?.development||{points:0,level:1,unlocked:["meadow"]};
+ const thresholds=[0,12,35,70,120],next=d.level<5?thresholds[d.level]:null;host.innerHTML="";for(const t of [`牧場Lv.${d.level}`,`発展P：${Math.floor(Number(d.points)||0)}`,next!=null?`次の施設まで：${Math.max(0,next-(Number(d.points)||0))}P`:"すべての施設が開放済み"]){const x=document.createElement("span");x.className="relationChip";x.textContent=t;host.appendChild(x)}
+ facHost.innerHTML="";for(const f of (R.FACILITIES||[])){const unlocked=(d.unlocked||[]).includes(f.id),x=document.createElement("div");x.className="facilityCard"+(unlocked?"":" locked");x.innerHTML=`<b>${f.icon} ${f.name}</b><span>${unlocked?f.desc:`牧場Lv.${f.level}で開放`}</span>`;facHost.appendChild(x)}
+}
+
 function renderDiary(s){
  const host=$("diaryList");if(!host)return;const diary=(s?.diary||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,12);
  if(!diary.length){host.innerHTML='<div class="diaryEmpty">まだ日記はありません。ポケモンたちの生活を見守ってみましょう。</div>';return}
@@ -35,10 +42,10 @@ async function render(){
  const aiItems=[];
  shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);p.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
  R.ai?.start?.(aiItems);
- renderRelations(s);renderEnvironment();renderOffline(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
+ renderRelations(s);renderEnvironment();renderOffline(s);renderDevelopment(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
  const dd=window.FRENDA_DATA?.dungeon?.read?.();$("detail").textContent=`保存キー: ${R.saveKey()} ／ 本編参照: ${dd?.initialized?"Dungeon所持データ":"Simulator所持データ（フォールバック）"} ／ 進化履歴: ${s.evolutionHistory?.length||0} ／ 生活AI: ${R.ai?.enabled?"ON":"OFF"} ／ 交流: ON ／ 本編書込: なし`;
 }
-window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderRelations(s);renderDiary(s)}});
+window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderRelations(s);renderDevelopment(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderDiary(s)}});
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
-// Updated: 2026-10-12 22:08 JST
+// Updated: 2026-10-13 07:14 JST
