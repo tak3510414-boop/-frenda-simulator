@@ -10,7 +10,7 @@
   7. Current device-specific and utility overrides
   Maintenance rule: do not reorder legacy CSS layers unless the affected screens are regression-tested.
 -->
-<html lang="ja" data-app-version="3.78">
+<html lang="ja" data-app-version="3.79">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4458,6 +4458,7 @@ html[data-view-profile="pc-compact"] body[data-dungeon-page="postrun"] .result6N
 .legendDexBar354{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border-radius:15px;background:linear-gradient(135deg,#f4edff,#fff7d8);border:1px solid #d9c574}.legendDexBar354 b{display:block;font-size:16px;color:#4d3c15}.legendDexBar354 span{display:block;margin-top:3px;font-size:10px;font-weight:900;color:#756331}.legendDexBar354 button{min-width:145px;background:linear-gradient(180deg,#6e51bf,#4b3493)}
 @media(max-width:700px){.dexCompactFilter354{grid-template-columns:1fr 1fr;gap:5px;padding:6px}.dexCompactFilter354 #dexSearch354{grid-column:1/-1}.dexCompactFilter354 input,.dexCompactFilter354 select,.dexCompactFilter354 button{font-size:9px;padding:8px 6px}.dexCompactCount354{display:none}.dexFilterPanel354{padding:10px}.dexFilterGrid354{grid-template-columns:1fr 1fr;gap:6px}.dexFilterGrid354 select{font-size:9px;padding:8px 6px}.legendDexBar354{grid-template-columns:1fr;gap:7px;padding:9px}.legendDexBar354 button{width:100%;min-width:0}}
 </style>
+<!-- Ver3.79: grass reaction motion variation; capture outcome logic unchanged. -->
 </head>
 <body>
 <header><div class="headrow"><div class="headerTop"><div class="brand"><b><span class="headerMainTitle" id="headerMainTitle" role="button" tabindex="0" aria-label="ダンジョンホーム">フレンダダンジョン</span> <span class="versionBadge" id="versionBadge"></span><button type="button" class="headerSoundStatus" id="headerSoundStatus" title="音量" aria-label="音量">🔊</button></b></div><div class="runHeaderInfo" id="runHeaderInfo" style="display:none"></div><div class="headerBtns"><button class="headerIconBtn homeCornerBtn ghost" id="homeBtn" title="ダンジョンホーム" aria-label="ダンジョンホーム">🏠</button><button class="danger" id="withdrawBtn" style="display:none">撤退</button></div></div><div class="careCluster"><div class="careCombo"><div class="eyeTimerBadge" id="eyeTimerBadge">👁 --:--</div><button type="button" class="manualRestBtn" id="manualRestBtn">🌿 休憩</button></div><div class="expeditionTimerBadge" id="expeditionTimerBadge">🧭 探索なし</div><span class="headerCoinBadge" id="headerCoinBadge">🪙 0</span><button type="button" class="headerEggBadge" id="headerEggBadge" data-run-egg-open aria-label="卵の詳細を表示" hidden>🥚 0/0</button></div></div></header>
@@ -5183,7 +5184,7 @@ let postRunFinishBusy=false;
 
 
 /* ===== MISSIONS Ver3.40 ===== */
-/* Ver3.78: Mission wording/readability audit. Conditions and rewards unchanged. */
+/* Ver3.79: Mission wording/readability audit. Conditions and rewards unchanged. */
 let missionTab="daily";
 let challengeStatusFilter377="all",challengeGroupFilter377="all";
 function ensureMissionState(target=state){
@@ -6599,6 +6600,25 @@ function grassLocationTitle(g){
  const th=THEMES[g?.dungeonId]||THEMES.forest;return `${th.icon} ${th.name} ランク${Number(g?.difficulty)||1}`
 }
 /* ===== GRASS TICKET / DUNGEON SELECT / TEAM SELECT ===== */
+/* Ver3.79: grass movement reflects the hidden Pokemon's base abilities.
+   This is presentation only and is intentionally independent of capture success/failure. */
+function grassMotionStyle379(r){
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const norm=(v,a,b)=>clamp((Number(v)-a)/(b-a),0,1);
+ const speed=clamp(Number(r?.speed_level)||3,1,5);
+ const atk=norm(Number(r?.atk)||0,40,220);
+ const def=norm(Number(r?.def)||0,40,220);
+ const hp=norm(Number(r?.hp)||0,40,260);
+ const ene=norm(Number(r?.poke_ene)||0,40,250);
+ const sway=6+atk*27;                 // attack: width/force of the swing
+ const shift=2.5+def*8.5;             // defense: heavy whole-tuft displacement
+ const duration=1.12-(speed-1)*.17;   // speed: tempo
+ const weight=1+def*4.5;              // defense: downward/heavy motion
+ const stretch=1.015+hp*.105;         // HP: lingering/breathing depth
+ const power=.98+ene*.12;             // Poke Ene: overall presence
+ const delay=-((Number(r?.master_id?.replace(/\D/g,""))||0)%17)*.037;
+ return `--grass-sway:${sway.toFixed(1)}deg;--grass-shift:${shift.toFixed(1)}px;--grass-speed:${duration.toFixed(2)}s;--grass-weight:${weight.toFixed(1)}px;--grass-stretch:${stretch.toFixed(3)};--grass-power:${power.toFixed(3)};--grass-delay:${delay.toFixed(3)}s`;
+}
 function renderGrass(){if(!featureGrassUnlocked341()){renderLockedFeature341("🌿","草むらゲット","grass");return}
  const g=state.grassSession,qty=grassTicketQty();
  if(!g){
@@ -6625,7 +6645,7 @@ function renderGrass(){if(!featureGrassUnlocked341()){renderLockedFeature341("�
  if(g.stage==="react"){
   app.innerHTML=`<div class="card grassScreen grassReactScreen"><div class="grassTitleRow"><div><div class="kicker">REACTION!</div><div class="sectionTitle">${grassLocationTitle(g)}</div><small>反応を見て、投げたい草むらを1つ選ぼう。</small></div><span class="grassTicketBadge">残り 🌿 ${qty}</span></div>
    <div class="grassReactionLegend"><span>…？ 気配</span><span>？ 反応あり</span><span>！ 強い気配</span><span>！？ レアな気配</span></div>
-   <div class="grassField reactions">${g.spots.map((s,i)=>`<button type="button" class="grassPatch grassActive ${s.reaction==="！？"?"ultra":s.reaction==="！"?"strong":""}" data-grass-patch="${i}" style="--grass-sway:${[0,0,5,12,22,34][Math.min(5,effectiveDungeonGrade(rec(s.id)))]||5}deg;--grass-shift:${Math.max(2,effectiveDungeonGrade(rec(s.id))*3)}px;--grass-speed:${Math.max(.35,1.2-effectiveDungeonGrade(rec(s.id))*.14)}s"><div class="grassReaction">${esc(s.reaction)}</div><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></button>`).join("")}</div>
+   <div class="grassField reactions">${g.spots.map((s,i)=>`<button type="button" class="grassPatch grassActive ${s.reaction==="！？"?"ultra":s.reaction==="！"?"strong":""}" data-grass-patch="${i}" style="${grassMotionStyle379(rec(s.id))}"><div class="grassReaction">${esc(s.reaction)}</div><div class="grassTuft">🌿</div><small>草むら ${i+1}</small></button>`).join("")}</div>
    <div class="grassHint">選べるのは1か所だけです。</div>
   </div>`;
   app.querySelectorAll("[data-grass-patch]").forEach(b=>b.onclick=()=>chooseGrassPatch(b.dataset.grassPatch));
@@ -14911,8 +14931,12 @@ html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .blackRunSta
 </style>
 
 <style id="v286-black-pc-details-and-grass">
-.grassRankTable{width:100%;border-collapse:separate;border-spacing:4px}.grassRankTable th{text-align:left}.grassRankTable button{width:100%;padding:8px}.grassRankTableWrap{overflow:auto}.grassActions{grid-template-columns:repeat(3,minmax(0,1fr))}.grassActive .grassTuft{animation:grassRaritySway var(--grass-speed,1s) ease-in-out infinite;transform-origin:50% 90%}
-@keyframes grassRaritySway{0%,100%{transform:translateX(calc(-1 * var(--grass-shift,2px))) rotate(calc(-1 * var(--grass-sway,5deg)))}50%{transform:translateX(var(--grass-shift,2px)) rotate(var(--grass-sway,5deg))}}
+.grassRankTable{width:100%;border-collapse:separate;border-spacing:4px}.grassRankTable th{text-align:left}.grassRankTable button{width:100%;padding:8px}.grassRankTableWrap{overflow:auto}.grassActions{grid-template-columns:repeat(3,minmax(0,1fr))}.grassActive .grassTuft{animation:grassAbilitySway379 var(--grass-speed,1s) cubic-bezier(.42,0,.58,1) infinite;animation-delay:var(--grass-delay,0s);transform-origin:50% 90%;will-change:transform}
+@keyframes grassAbilitySway379{
+ 0%,100%{transform:translateX(calc(-1 * var(--grass-shift,2px))) translateY(var(--grass-weight,1px)) rotate(calc(-1 * var(--grass-sway,5deg))) scale(var(--grass-power,1),var(--grass-stretch,1))}
+ 48%{transform:translateX(var(--grass-shift,2px)) translateY(0) rotate(var(--grass-sway,5deg)) scale(var(--grass-power,1),1)}
+ 72%{transform:translateX(calc(var(--grass-shift,2px) * -.18)) translateY(calc(var(--grass-weight,1px) * .45)) rotate(calc(var(--grass-sway,5deg) * -.24)) scale(var(--grass-power,1),var(--grass-stretch,1))}
+}
 @media(min-width:1280px) and (min-height:600px) and (max-height:840px){
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedFrontCardV190 .ownedV190Meta{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;grid-template-rows:30px 28px!important;gap:4px!important;align-items:center!important;min-height:62px!important}
 html[data-view-profile="pc-compact"] body.blackPcOptimized #app#app .ownedV190Meta .starStrong{grid-column:1!important;grid-row:1!important}
