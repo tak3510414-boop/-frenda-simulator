@@ -1,0 +1,5 @@
+(()=>{"use strict";
+const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
+R.reconcile=ids=>{let s=R.readSave()||{schemaVersion:R.SCHEMA_VERSION,saveVersion:1,createdAt:new Date().toISOString(),updatedAt:null,ranchName:"フレンダ牧場",creatures:[],previousOwnedIds:[],evolutionHistory:[]};if(!Array.isArray(s.creatures))s.creatures=[];const activeByPick=new Map(s.creatures.filter(c=>c&&c.status!=="departed").map(c=>[String(c.pickId),c]));for(const id of ids){if(!activeByPick.has(id)){s.creatures.push({ranchId:R.uid(),pickId:id,status:"resident",joinedAt:new Date().toISOString(),nickname:"",personality:{seed:Math.floor(Math.random()*1000000)},life:{days:0},relationships:{},memories:[]});activeByPick.set(id,s.creatures.at(-1))}}for(const c of s.creatures){if(c?.status!=="departed"&&!ids.includes(String(c.pickId)))c.status="missing";else if(ids.includes(String(c.pickId)))c.status="resident"}s.previousOwnedIds=ids.slice();s.updatedAt=new Date().toISOString();return R.writeSave(s)};
+})();
+// Updated: 2026-10-12 20:00 JST
