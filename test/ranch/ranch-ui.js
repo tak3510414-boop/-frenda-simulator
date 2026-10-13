@@ -14,6 +14,25 @@ function renderIndividuals(s){
  const host=$("individualList");if(!host)return;host.innerHTML="";
  for(const c of (s?.creatures||[]).filter(x=>x.status==="resident").slice(0,R.MAX_INITIAL)){const t=R.ai?.traits?.(c)||{},e=c.life?.experience||{},d=document.createElement("div");d.className="groupCard";const name=R.pickName(c.pickId)||c.pickId,label=R.ai?.personalityLabel?.(c)||"-";const tendency=t.social>.68?"交流好き":t.explore>.68?"探索好き":t.calm>.68?"のんびり":t.activity>.68?"活発":"マイペース";d.innerHTML=`<b>🐾 ${name}：${label}</b><span>${tendency} ／ 散歩 ${Math.floor(Number(e.walk)||0)}・交流 ${Math.floor(Number(e.social)||0)}・休憩 ${Math.floor(Number(e.rest)||0)}</span>`;host.appendChild(d)}
 }
+
+function renderProfiles(s){
+ const host=$("profileList");if(!host)return;host.innerHTML="";
+ const bonds=Object.values(s?.social?.bonds||{}).filter(Boolean);
+ const names=new Map((s?.creatures||[]).map(c=>[String(c.ranchId),R.pickName(c.pickId)||c.pickId]));
+ const byId=R.masterMap?.()||new Map();
+ for(const c of (s?.creatures||[]).filter(x=>x.status==="resident").slice(0,R.MAX_INITIAL)){
+  const card=document.createElement("div");card.className="profileCard";
+  const m=byId.get(String(c.pickId))||{}, name=R.pickName(c.pickId)||c.pickId, label=R.ai?.personalityLabel?.(c)||"-", e=c.life?.experience||{};
+  const mine=bonds.filter(b=>String(b.a)===String(c.ranchId)||String(b.b)===String(c.ranchId));
+  const best=mine.slice().sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))[0];
+  const other=best?String(best.a)===String(c.ranchId)?best.b:best.a:null;
+  const relation=best?`${names.get(String(other))||"?"}：${R.ai?.relationLabel?.(best)||R.ai?.bondRank?.(best.score)?.label||"顔見知り"}`:"まだ特別な仲間はいません";
+  const mem=(Array.isArray(c.memories)?c.memories:[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,5);
+  card.innerHTML=`<div class="profileHead">${m.official_image?`<img src="${m.official_image}" alt="">`:""}<div><b>🐾 ${name}</b><div class="profileMeta"><span class="profileChip">性格：${label}</span><span class="profileChip">牧場生活：${Number(c.life?.days||0).toFixed(2)}日</span><span class="profileChip">散歩 ${Math.floor(Number(e.walk)||0)}</span><span class="profileChip">交流 ${Math.floor(Number(e.social)||0)}</span><span class="profileChip">休憩 ${Math.floor(Number(e.rest)||0)}</span></div><div style="margin-top:7px;font-size:12px">🤝 ${relation}</div></div></div><div class="memoryList">${mem.length?mem.map(x=>{const dt=new Date(x.at),time=Number.isNaN(dt.getTime())?"":`${dt.getMonth()+1}/${dt.getDate()}`;return `<div class="memoryItem${x.important?" important":""}"><small>${time}</small><b>${x.important?"⭐ ":""}${x.title||"思い出"}</b><div>${x.text||""}</div></div>`}).join(""):'<div class="memoryItem">まだ思い出はありません。</div>'}</div>`;
+  host.appendChild(card);
+ }
+}
+
 function renderRelations(s){
  const host=$("relationList");if(!host)return;const bonds=Object.values(s?.social?.bonds||{}).filter(Boolean).sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0));
  if(!bonds.length){host.textContent="まだ交流記録はありません。";return}
@@ -61,10 +80,10 @@ async function render(){
  const aiItems=[];
  shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);p.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
  R.ai?.start?.(aiItems);
- renderIndividuals(s);renderRelations(s);renderGroups(s);renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
+ renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
  const dd=window.FRENDA_DATA?.dungeon?.read?.();$("detail").textContent=`保存キー: ${R.saveKey()} ／ 本編参照: ${dd?.initialized?"Dungeon所持データ":"Simulator所持データ（フォールバック）"} ／ 進化履歴: ${s.evolutionHistory?.length||0} ／ 生活AI: ${R.ai?.enabled?"ON":"OFF"} ／ 交流: ON ／ 本編書込: なし`;
 }
-window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderRelations(s);renderGroups(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});
+window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
-// Updated: 2026-10-13 12:59 JST
+// Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
