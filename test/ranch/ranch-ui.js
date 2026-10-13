@@ -40,6 +40,7 @@ function renderRelations(s){
  for(const b of bonds.slice(0,12)){const d=document.createElement("span");d.className="relationChip";const rank=R.ai?.bondRank?.(b.score)||{label:b.rankLabel||"顔見知り"},label=R.ai?.relationLabel?.(b)||rank.label;const extra=label==="ライバル"?`・意識 ${Number(b.rivalry)||0}`:(Number(b.quarrels)||0)>0?`・ケンカ ${Number(b.quarrels)||0}回`:"";d.textContent=`${names.get(String(b.a))||"?"} × ${names.get(String(b.b))||"?"}：${label} ${Number(b.score)||0}${extra}`;host.appendChild(d)}
 }
 
+function renderEvolutionAudit(s){const h=$("evolutionAuditList");if(!h)return;const a=R.evolutionAudit?.(s)||{};h.innerHTML="";for(const x of [`進化履歴：${a.evolutions||0}件`,`現役：${a.residents||0}・退牧：${a.departed||0}`,`個体ID重複：${a.duplicateRanchIds||0}`,`履歴整合：${a.historyIntegrity===false?"NG":"OK"}`]){const d=document.createElement("span");d.className="relationChip";d.textContent=x;h.appendChild(d)}}
 function renderEnvironment(){
  const host=$("environmentList");if(!host)return;const e=R.ai?.environment?.()||{phase:"-",weather:"-"};host.innerHTML="";for(const t of [`時間帯：${e.phase}`,`天気：${e.weather}`,"牧場の1日：約1時間"]){const d=document.createElement("span");d.className="relationChip";d.textContent=t;host.appendChild(d)}
  const p=$("pasture");if(p){p.dataset.phase=e.phase;p.dataset.weather=e.weather;if(e.phase==="夜")p.style.filter="brightness(.78) saturate(.92)";else if(e.phase==="夕方")p.style.filter="sepia(.12) brightness(.96)";else p.style.filter="none"}
@@ -80,10 +81,10 @@ async function render(){
  const aiItems=[];
  shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);p.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
  R.ai?.start?.(aiItems);
- renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
+ renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
  const dd=window.FRENDA_DATA?.dungeon?.read?.();$("detail").textContent=`保存キー: ${R.saveKey()} ／ 本編参照: ${dd?.initialized?"Dungeon所持データ":"Simulator所持データ（フォールバック）"} ／ 進化履歴: ${s.evolutionHistory?.length||0} ／ 生活AI: ${R.ai?.enabled?"ON":"OFF"} ／ 交流: ON ／ 本編書込: なし`;
 }
-window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});
+window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
 // Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
