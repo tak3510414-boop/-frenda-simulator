@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-test-center-version="2.95">
+<html lang="ja" data-test-center-version="2.96">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ 回帰テストセンター Ver2.95</title>
+<title>フレンダ 回帰テストセンター Ver2.96</title>
 <style>
 :root{color-scheme:light;--bg:#eef4f8;--card:#fff;--ink:#193244;--sub:#607785;--line:#cfdae1;--ok:#1b8d4e;--ng:#b63838;--warn:#9b6a00;--blue:#236faf}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;background:var(--bg);color:var(--ink)}
@@ -31,11 +31,11 @@ body.tc-problem-only .result.ok{display:none}
 @media(max-width:520px){.tc-summary{grid-template-columns:repeat(4,1fr)}.tc-sum b{font-size:20px}.tc-sum span{font-size:11px}}
 </style></head>
 <body>
-<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.95</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
+<header><b>🧪 フレンダ 回帰テストセンター <span class="tcVer">Ver2.96</span></b><small>自動チェック＋構成監査＋黒PC／白PC／iPhoneの固定確認項目</small></header>
 <main>
 <section class="card">
  <div class="topgrid">
-  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.95</b><small>このテストセンター自体のバージョン</small></div>
+  <div class="metric"><small>Test Center</small><b id="testCenterVersion">Ver2.96</b><small>このテストセンター自体のバージョン</small></div>
   <div class="metric"><small>現在の表示</small><b id="viewportNow">--</b><small id="profileGuess">--</small></div>
   <div class="metric"><small>対象ソース</small><b id="sourceVersions">読込前</b><small>test/ と本番ルートの整合も確認</small></div>
  </div>
@@ -563,33 +563,51 @@ setProfile(currentProfile);runAuto();
 <!-- Ver2.89: ヘッダー固定表示を含むTest Center全バージョン表記を統一。dataset/title/header/metric/自己監査をVer2.89へ同期。Updated: 2026-10-11 18:31 JST -->
 <!-- Ver2.93: Dungeon Ver3.72のAUTO先制ルーレット旧速度定数残存を監査対象化。5段階速度係数への統合を確認。Updated: 2026-10-11 19:18 JST -->
 <!-- Ver2.93: Dungeon Ver3.72 AUTO戦闘テンポ調整を監査対象へ更新。Updated: 2026-10-11 19:32 JST -->
+<!-- Ver2.96: Ver2.95の集計/フィルタ連携不具合を修正。既存resultCard/resultOk/resultNg DOMに対応し、OK項目を初期非表示。Updated: 2026-10-14 07:55 JST -->
 <!-- Ver2.95: 総合結果、NG・要確認優先表示、自動監査詳細折りたたみを追加。既存監査ロジックは維持。Updated: 2026-10-14 07:48 JST -->
 <!-- Ver2.94: フレンダ牧場 Ver0.38監査を追加。6ファイル・本編読取専用・独立保存・進化A/再入手・回帰UI非表示・本番UI6メニュー・思い出見出しを監査。Updated: 2026-10-14 07:40 JST -->
+<style>
+body.tc-problem-only #autoResults .resultCard.resultOk,
+body.tc-problem-only #results .resultCard.resultOk{display:none!important}
+</style>
 <script>
 (function(){
- function updateSummary(){
-   var root=document.getElementById("autoResults")||document.getElementById("results");
-   if(!root)return;
-   var rows=[].slice.call(root.querySelectorAll(".result"));
-   var ok=rows.filter(function(x){return x.classList.contains("ok")}).length;
-   var ng=rows.filter(function(x){return x.classList.contains("ng")}).length;
-   var warn=rows.length-ok-ng;
-   var set=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v};
-   set("tcTotal",rows.length);set("tcOk",ok);set("tcNg",ng);set("tcWarn",warn);
+ function getRoot(){return document.getElementById("autoResults")||document.getElementById("results")}
+ function rows(){
+   var r=getRoot(); if(!r)return [];
+   var a=[].slice.call(r.querySelectorAll(".resultCard"));
+   if(!a.length)a=[].slice.call(r.children).filter(function(x){return x.nodeType===1});
+   return a;
+ }
+ function kind(x){
+   var c=x.className||"";
+   var t=(x.textContent||"").trim();
+   if(/resultOk|\bok\b/i.test(c)||/^✓/.test(t)||/^✔/.test(t))return "ok";
+   if(/resultNg|\bng\b/i.test(c)||/^✕/.test(t)||/^×/.test(t)||/^❌/.test(t))return "ng";
+   return "warn";
+ }
+ function update(){
+   var a=rows(),ok=0,ng=0,warn=0;
+   a.forEach(function(x){
+     var k=kind(x);x.dataset.tcKind=k;
+     if(k==="ok")ok++;else if(k==="ng")ng++;else warn++;
+     if(document.body.classList.contains("tc-problem-only"))x.style.display=(k==="ok"?"none":"");
+     else x.style.display="";
+   });
+   [["tcTotal",a.length],["tcOk",ok],["tcNg",ng],["tcWarn",warn]].forEach(function(v){var e=document.getElementById(v[0]);if(e)e.textContent=v[1]});
+ }
+ function filter(problem){
+   document.body.classList.toggle("tc-problem-only",problem);
+   document.querySelectorAll("[data-tc-filter]").forEach(function(x){x.classList.toggle("active",(x.dataset.tcFilter==="problem")===problem)});
+   update();
  }
  function init(){
-   document.querySelectorAll("[data-tc-filter]").forEach(function(b){
-     b.onclick=function(){
-       var problem=b.dataset.tcFilter==="problem";
-       document.body.classList.toggle("tc-problem-only",problem);
-       document.querySelectorAll("[data-tc-filter]").forEach(function(x){x.classList.remove("active")});
-       b.classList.add("active");
-     };
-   });
-   var p=document.querySelector('[data-tc-filter="problem"]'); if(p){p.click()}
-   updateSummary();
-   var root=document.getElementById("autoResults")||document.getElementById("results");
-   if(root)new MutationObserver(updateSummary).observe(root,{childList:true,subtree:true,attributes:true});
+   document.querySelectorAll("[data-tc-filter]").forEach(function(b){b.onclick=function(){filter(b.dataset.tcFilter==="problem")}});
+   filter(true);
+   var r=getRoot();
+   if(r)new MutationObserver(function(){update()}).observe(r,{childList:true,subtree:true,classList:true});
+   // addResult may run async after fetches
+   [100,300,700,1500,3000].forEach(function(ms){setTimeout(update,ms)});
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
