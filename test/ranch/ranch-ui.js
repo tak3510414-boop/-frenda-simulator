@@ -27,7 +27,7 @@ function renderProfiles(s){
   const best=mine.slice().sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))[0];
   const other=best?String(best.a)===String(c.ranchId)?best.b:best.a:null;
   const relation=best?`${names.get(String(other))||"?"}：${R.ai?.relationLabel?.(best)||R.ai?.bondRank?.(best.score)?.label||"顔見知り"}`:"まだ特別な仲間はいません";
-  const mem=(Array.isArray(c.memories)?c.memories:[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,5);
+  const allMem=(Array.isArray(c.memories)?c.memories:[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));const important=allMem.filter(x=>x.important).slice(0,3),normal=allMem.filter(x=>!x.important).slice(0,Math.max(0,5-important.length));const mem=[...important,...normal];
   card.innerHTML=`<div class="profileHead">${m.official_image?`<img src="${m.official_image}" alt="">`:""}<div><b>🐾 ${name}</b><div class="profileMeta"><span class="profileChip">性格：${label}</span><span class="profileChip">牧場生活：${Number(c.life?.days||0).toFixed(2)}日</span><span class="profileChip">散歩 ${Math.floor(Number(e.walk)||0)}</span><span class="profileChip">交流 ${Math.floor(Number(e.social)||0)}</span><span class="profileChip">休憩 ${Math.floor(Number(e.rest)||0)}</span></div><div style="margin-top:7px;font-size:12px">🤝 ${relation}</div></div></div><div class="memoryList">${mem.length?mem.map(x=>{const dt=new Date(x.at),time=Number.isNaN(dt.getTime())?"":`${dt.getMonth()+1}/${dt.getDate()}`;return `<div class="memoryItem${x.important?" important":""}"><small>${time}</small><b>${x.important?"⭐ ":""}${x.title||"思い出"}</b><div>${x.text||""}</div></div>`}).join(""):'<div class="memoryItem">まだ思い出はありません。</div>'}</div>`;
   host.appendChild(card);
  }
@@ -74,7 +74,7 @@ function renderOffline(s){
 async function render(){
  await Promise.resolve(window.RANCH_CLOUD_READY);
  if(!window.FRENDA_DATA||!window.FRENDA_MASTER){$("empty").textContent="共通データを読み込めませんでした。";$("saveState").textContent="NG";return}
- const ids=R.ownedIds(),s=await R.reconcile(ids),active=s.creatures.filter(c=>c.status==="resident"),shown=active.slice(0,R.MAX_INITIAL),byId=R.masterMap();
+ const ids=R.ownedIds(),s=await R.reconcile(ids);R.compactMemories?.(s);R.writeSave?.(s);const active=s.creatures.filter(c=>c.status==="resident"),shown=active.slice(0,R.MAX_INITIAL),byId=R.masterMap();
  $("ownedCount").textContent=ids.length;$("registryCount").textContent=s.creatures.length;$("residentCount").textContent=shown.length;$("saveState").textContent="OK";
  const p=$("pasture"),empty=$("empty");R.ai?.stop?.();p.querySelectorAll(".mon").forEach(x=>x.remove());empty.style.display=shown.length?"none":"grid";if(!shown.length)empty.textContent="本編の所持ピックがありません。";
  const aiItems=[];
