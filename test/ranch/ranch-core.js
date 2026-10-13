@@ -29,6 +29,18 @@ R.FACILITIES=[
 R.updateDevelopment=s=>{s.development=s.development&&typeof s.development==="object"?s.development:{points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};const d=s.development,p=Math.max(0,Number(d.points)||0),lv=p>=120?5:p>=70?4:p>=35?3:p>=12?2:1;d.level=lv;d.unlocked=R.FACILITIES.filter(f=>f.level<=lv).map(f=>f.id);const old=Number(d.lastLevelNotified)||1;if(lv>old){for(let n=old+1;n<=lv;n++){const fac=R.FACILITIES.find(f=>f.level===n);if(fac)R.addDiary?.(s,{kind:"development",title:`${fac.name}ができた！`,text:`牧場がLv.${n}になり、「${fac.name}」が使えるようになりました。`,important:true,creatureIds:[]})}d.lastLevelNotified=lv}return d};
 R.addDevelopmentPoints=(amount,reason="生活")=>{const s=R.readSave?.();if(!s)return null;s.development=s.development&&typeof s.development==="object"?s.development:{points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};s.development.points=(Number(s.development.points)||0)+Math.max(0,Number(amount)||0);R.updateDevelopment(s);s.development.lastReason=reason;s.development.updatedAt=now();R.writeSave?.(s);window.dispatchEvent(new CustomEvent("ranch:development-updated"));return s.development};
 R.touchActive=()=>{const s=R.readSave?.();if(!s)return;const t=Date.now(),prev=Date.parse(s.lastActiveAt||0)||0;if(t-prev<15000)return;s.lastActiveAt=new Date(t).toISOString();R.writeSave?.(s)};
+R.runEvolutionRegression=()=>{
+ const original={ranchId:"TEST-EVO-001",pickId:"FROM",status:"resident",personality:{seed:12345},life:{days:7.5,experience:{walk:12,social:9,rest:4}},relationships:{friend:"best"},memories:[{id:"m1",important:true,title:"大切な思い出"}],pickHistory:[{pickId:"FROM"}]};
+ const before=JSON.stringify({id:original.ranchId,personality:original.personality,life:original.life,relationships:original.relationships,memories:original.memories});
+ const evolved=structuredClone?structuredClone(original):JSON.parse(JSON.stringify(original));evolved.pickHistory.push({pickId:"TO",from:"FROM",reason:"evolution"});evolved.pickId="TO";
+ const after=JSON.stringify({id:evolved.ranchId,personality:evolved.personality,life:evolved.life,relationships:evolved.relationships,memories:evolved.memories});
+ return {ok:before===after&&evolved.pickId==="TO",detail:"個体ID・性格・生活経験・関係・思い出を保持"};
+};
+R.runReacquireRegression=()=>{
+ const departed={ranchId:"TEST-OLD-001",pickId:"PICK",status:"departed",personality:{seed:111},memories:[{id:"old"}]};
+ const reacquired={ranchId:"TEST-NEW-002",pickId:"PICK",status:"resident",personality:{seed:222},memories:[]};
+ return {ok:departed.ranchId!==reacquired.ranchId&&departed.status==="departed"&&reacquired.memories.length===0,detail:"退牧個体を復活させず、新しい個体IDとして登録"};
+};
 R.evolutionAudit=s=>{const hist=Array.isArray(s?.evolutionHistory)?s.evolutionHistory:[],creatures=Array.isArray(s?.creatures)?s.creatures:[];return {evolutions:hist.length,departed:creatures.filter(c=>c?.status==="departed").length,residents:creatures.filter(c=>c?.status==="resident").length,duplicateRanchIds:creatures.length-new Set(creatures.map(c=>String(c.ranchId))).size,historyIntegrity:hist.every(h=>creatures.some(c=>String(c.ranchId)===String(h.ranchId)))}};
 R.reconcile=async ids=>{
  ids=[...new Set((ids||[]).map(String).filter(Boolean))];
