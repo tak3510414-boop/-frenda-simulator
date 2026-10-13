@@ -95,3 +95,12 @@ window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s)
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
 // Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
+
+function bindRegressionButtons034(){
+ const out=document.getElementById("regressionResult"),e=document.getElementById("testEvolutionBtn"),r=document.getElementById("testReacquireBtn");
+ if(e&&!e.dataset.b34){e.dataset.b34="1";e.onclick=()=>{const x=R.runEvolutionRegression?.();if(out)out.textContent=`進化テスト：${x?.ok?"PASS":"FAIL"} ／ ${x?.detail||""}`}}
+ if(r&&!r.dataset.b34){r.dataset.b34="1";r.onclick=()=>{const x=R.runReacquireRegression?.();if(out)out.textContent=`再入手テスト：${x?.ok?"PASS":"FAIL"} ／ ${x?.detail||""}`}}
+}
+document.addEventListener("DOMContentLoaded",bindRegressionButtons034);
+setTimeout(bindRegressionButtons034,500);
+setTimeout(bindRegressionButtons034,1500);
