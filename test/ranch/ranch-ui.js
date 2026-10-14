@@ -87,7 +87,7 @@ const MAP_AREAS={
  play:{name:"遊び場",icon:"⚽",x:.23,y:.74},
  hut:{name:"小屋",icon:"🏡",x:.77,y:.73}
 };
-let mapBound=false,mapRenderedLevel=0;
+let mapRenderedLevel=0;
 let mapScale=1,mapBound=false;
 const MAP_SCALE_MIN=.34,MAP_SCALE_MAX=1.65;
 function mapEls(){return{p:$("pasture"),w:$("ranchWorld")}}
