@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.42">
+<html lang="ja" data-app-version="0.43">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -31,16 +31,103 @@ html{scroll-behavior:smooth}
 .mon{z-index:6!important}
 .socialLayer{z-index:20!important}
 .empty{z-index:10!important}
+
+</style>
+<style id="ranch-v043-map">
+/* Ver0.43: large ranch world + discovery fog */
+.pasture{
+  height:min(62vh,560px)!important;
+  min-height:440px!important;
+  overflow:auto!important;
+  background:#dbead8!important;
+  scroll-behavior:smooth;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  cursor:grab;
+}
+.pasture.dragging{cursor:grabbing;scroll-behavior:auto}
+.ranchWorld{
+  position:relative;
+  width:1800px;
+  height:900px;
+  min-width:1800px;
+  min-height:900px;
+  overflow:hidden;
+  isolation:isolate;
+  background:#8dce78;
+}
+.ranchScenery{position:absolute;inset:0;z-index:0;pointer-events:none}
+.ranchScenerySvg{display:block;width:100%!important;height:100%!important;min-width:0!important;transform:none!important}
+#facilityLayer{position:absolute;inset:0;z-index:5;pointer-events:none}
+.socialLayer{position:absolute;inset:0;z-index:30;pointer-events:none}
+.mon{z-index:12!important}
+.empty{z-index:18!important}
+.mapHud{
+  position:sticky;left:10px;top:10px;z-index:60;
+  width:max-content;max-width:calc(100% - 20px);
+  margin:10px 0 -58px 10px;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  padding:7px 9px;border-radius:14px;
+  background:#173f2ed9;color:#fff;
+  border:1px solid #ffffff55;
+  box-shadow:0 5px 16px #173f2e33;
+  backdrop-filter:blur(7px);
+}
+.mapHudTitle{font-size:11px;font-weight:900;white-space:nowrap}
+.mapJump{display:flex;gap:5px;flex-wrap:wrap}
+.mapJump button{
+  appearance:none;border:1px solid #ffffff66;background:#ffffff20;color:#fff;
+  border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;cursor:pointer
+}
+.mapJump button:hover,.mapJump button:focus{background:#ffffff38}
+.fogZone{
+  position:absolute;z-index:9;pointer-events:none;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 30% 35%,#ffffffee 0 8%,transparent 24%),
+    radial-gradient(circle at 72% 62%,#effff7e8 0 10%,transparent 30%),
+    linear-gradient(135deg,#f4fff9e8,#e9f8f0df);
+  backdrop-filter:blur(7px) saturate(.72);
+  opacity:.96;
+  transition:opacity 1.8s ease,filter 1.8s ease,visibility 1.8s;
+}
+.fogZone span{
+  padding:8px 12px;border-radius:999px;background:#ffffffbb;color:#688175;
+  border:1px solid #d7e9dd;font-size:12px;font-weight:900;
+  box-shadow:0 3px 12px #2f5c3a18
+}
+.fogZone.revealed{opacity:0;filter:blur(12px);visibility:hidden}
+.fogShade{left:0;top:0;width:45%;height:55%}
+.fogPond{right:0;top:0;width:45%;height:55%}
+.fogPlay{left:0;bottom:0;width:45%;height:45%}
+.fogHut{right:0;bottom:0;width:45%;height:45%}
+.discoverToast{
+  position:absolute;z-index:70;left:50%;top:48%;transform:translate(-50%,-50%) scale(.95);
+  opacity:0;pointer-events:none;
+  padding:13px 18px;border-radius:18px;background:#fffdf0ee;color:#254a32;
+  border:2px solid #e7d77a;box-shadow:0 10px 30px #173f2e33;
+  font-weight:1000;font-size:17px;transition:.35s ease
+}
+.discoverToast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media(max-width:700px){
-  .ranchScenerySvg{min-width:760px;transform:translateX(-12%);width:124%}
+  .pasture{height:55vh!important;min-height:390px!important}
+  .ranchWorld{width:1500px;min-width:1500px;height:780px;min-height:780px}
+  .mapHud{margin-bottom:-54px}
+  .mapHudTitle{display:none}
+  .mapJump button{padding:5px 7px}
 }
 </style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.42 / 牧場フロア ビジュアル再構築</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.43 / 段階開放マップ・霧</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
 <section class="pasture" id="pasture">
+<div class="mapHud" id="mapHud">
+  <span class="mapHudTitle">🗺️ 牧場マップ</span>
+  <div class="mapJump" id="mapJump"></div>
+</div>
+<div class="ranchWorld" id="ranchWorld" data-map-level="1">
 <div class="ranchScenery" aria-hidden="true">
 <svg class="ranchScenerySvg" viewBox="0 0 1100 480" preserveAspectRatio="none">
   <defs>
@@ -146,7 +233,17 @@ html{scroll-behavior:smooth}
     <text x="80" y="27" text-anchor="middle" font-size="15" font-weight="900" fill="#fff4d7" font-family="sans-serif">FRENDA RANCH</text>
   </g>
 </svg>
-</div><div id="facilityLayer"></div><div class="socialLayer" id="socialLayer"></div><div class="empty" id="empty">本編データを確認しています…</div></section>
+</div>
+<div class="fogZone fogShade" data-area="shade"><span>まだ見ぬ木陰</span></div>
+<div class="fogZone fogPond" data-area="pond"><span>霧の向こうに何かある…</span></div>
+<div class="fogZone fogPlay" data-area="play"><span>まだ見ぬ場所</span></div>
+<div class="fogZone fogHut" data-area="hut"><span>霧の向こうに何かある…</span></div>
+<div id="facilityLayer"></div>
+<div class="socialLayer" id="socialLayer"></div>
+<div class="empty" id="empty">本編データを確認しています…</div>
+<div class="discoverToast" id="discoverToast" aria-live="polite"></div>
+</div>
+</section>
 <nav class="ranch-quick-nav" aria-label="牧場メニュー"><button type="button" data-panel="development">🌱発展</button><button type="button" data-panel="diary">📖日記</button><button type="button" data-panel="individuals">🐾個性</button><button type="button" data-panel="profiles">📚思い出</button><button type="button" data-panel="groups">👥仲間</button><button type="button" data-panel="relations">🤝関係</button></nav><section class="relations"><h3>🕒 牧場環境</h3><div class="relationList" id="environmentList">読み込み中…</div></section><section class="relations" hidden data-test-only="regression"><h3>🧬 進化・再入手 回帰テスト</h3><div class="relationList" id="evolutionAuditList">読み込み中…</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button id="testEvolutionBtn" type="button">🧬 進化テスト</button><button id="testReacquireBtn" type="button">🔁 再入手テスト</button></div><div id="regressionResult" style="margin-top:10px;font-weight:800">回帰テスト：未実行</div></section>
 <section class="relations" id="offlineBox" style="display:none"><h3>🏡 留守中のようす</h3><div class="relationList" id="offlineList"></div></section>
 <section class="relations ranch-detail-panel" id="development"><h3>🌱 牧場の発展</h3><div class="relationList" id="developmentList">読み込み中…</div><div class="facilityGrid" id="facilityList"></div></section>

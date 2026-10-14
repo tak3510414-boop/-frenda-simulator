@@ -52,14 +52,14 @@ function renderEnvironment(){
 
 function renderFacilitySpots(s){
  const layer=$("facilityLayer");if(!layer)return;const d=R.updateDevelopment?.(s)||s?.development||{};layer.innerHTML="";
- const spots={shade:["🌳","木陰"],pond:["💧","水辺"],play:["⚽","遊び場"],hut:["🏡","小屋"]};
- for(const f of (R.FACILITIES||[])){if(f.id==="meadow"||!(d.unlocked||[]).includes(f.id)||!spots[f.id])continue;const x=document.createElement("div");x.className="facilitySpot";x.dataset.facility=f.id;x.innerHTML=`<span class="ico">${spots[f.id][0]}</span><span>${spots[f.id][1]}</span>`;layer.appendChild(x)}
+ const spots={shade:["🌳","木陰"],pond:["💧","水辺"],play:["⚽","遊び場"],hut:["🏡","おやすみ小屋"]};
+ const pos={shade:[20,28],pond:[76,31],play:[22,73],hut:[77,73]};for(const f of (R.FACILITIES||[])){if(f.id==="meadow"||!(d.unlocked||[]).includes(f.id)||!spots[f.id])continue;const x=document.createElement("div");x.className="facilitySpot";x.dataset.facility=f.id;x.innerHTML=`<span class="ico">${spots[f.id][0]}</span><span>${spots[f.id][1]}</span>`;const q=pos[f.id];if(q){x.style.left=q[0]+"%";x.style.top=q[1]+"%";x.style.right="auto";x.style.bottom="auto";x.style.transform="translate(-50%,-50%)"}layer.appendChild(x)}
 }
 
 function renderDevelopment(s){
  const host=$("developmentList"),facHost=$("facilityList");if(!host||!facHost)return;const d=R.updateDevelopment?.(s)||s?.development||{points:0,level:1,unlocked:["meadow"]};
- const thresholds=[0,12,35,70,120],next=d.level<5?thresholds[d.level]:null;host.innerHTML="";for(const t of [`牧場Lv.${d.level}`,`発展P：${Math.floor(Number(d.points)||0)}`,next!=null?`次の施設まで：${Math.max(0,next-(Number(d.points)||0))}P`:"すべての施設が開放済み"]){const x=document.createElement("span");x.className="relationChip";x.textContent=t;host.appendChild(x)}
- facHost.innerHTML="";for(const f of (R.FACILITIES||[])){const unlocked=(d.unlocked||[]).includes(f.id),x=document.createElement("div");x.className="facilityCard"+(unlocked?"":" locked");x.innerHTML=`<b>${f.icon} ${f.name}</b><span>${unlocked?f.desc:`牧場Lv.${f.level}で開放`}</span>`;facHost.appendChild(x)}
+ const thresholds=[0,12,35,70,120],next=d.level<5?thresholds[d.level]:null;host.innerHTML="";for(const t of [`牧場Lv.${d.level}`,`発展P：${Math.floor(Number(d.points)||0)}`,next!=null?`次の発見まで：${Math.max(0,next-(Number(d.points)||0))}P`:"すべての施設が開放済み"]){const x=document.createElement("span");x.className="relationChip";x.textContent=t;host.appendChild(x)}
+ facHost.innerHTML="";for(const f of (R.FACILITIES||[])){const unlocked=(d.unlocked||[]).includes(f.id),x=document.createElement("div");x.className="facilityCard"+(unlocked?"":" locked");x.innerHTML=`<b>${f.icon} ${f.name}</b><span>${unlocked?f.desc:`牧場Lv.${f.level}で発見`}</span>`;facHost.appendChild(x)}
 }
 
 function renderDiary(s){
@@ -79,19 +79,56 @@ function wireRegressionTests(){
  if(r)r.onclick=()=>{const x=R.runReacquireRegression?.();out.textContent=`再入手テスト：${x?.ok?"PASS":"FAIL"} ／ ${x?.detail||""}`};
 }
 
+
+const MAP_AREAS={
+ meadow:{name:"ひろば",icon:"🌿",x:.50,y:.53},
+ shade:{name:"木陰",icon:"🌳",x:.22,y:.29},
+ pond:{name:"水辺",icon:"💧",x:.77,y:.32},
+ play:{name:"遊び場",icon:"⚽",x:.23,y:.74},
+ hut:{name:"小屋",icon:"🏡",x:.77,y:.73}
+};
+let mapBound=false,mapRenderedLevel=0;
+function focusMapArea(id,behavior="smooth"){
+ const p=$("pasture"),w=$("ranchWorld"),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
+ const left=Math.max(0,Math.min(w.clientWidth-p.clientWidth,w.clientWidth*a.x-p.clientWidth/2));
+ const top=Math.max(0,Math.min(w.clientHeight-p.clientHeight,w.clientHeight*a.y-p.clientHeight/2));
+ p.scrollTo({left,top,behavior});
+}
+function bindMapPan(){
+ if(mapBound)return;mapBound=true;const p=$("pasture");if(!p)return;
+ let down=false,sx=0,sy=0,sl=0,st=0;
+ p.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"||e.button!==0||e.target.closest("button"))return;down=true;sx=e.clientX;sy=e.clientY;sl=p.scrollLeft;st=p.scrollTop;p.classList.add("dragging");p.setPointerCapture?.(e.pointerId)});
+ p.addEventListener("pointermove",e=>{if(!down)return;p.scrollLeft=sl-(e.clientX-sx);p.scrollTop=st-(e.clientY-sy)});
+ const end=()=>{down=false;p.classList.remove("dragging")};p.addEventListener("pointerup",end);p.addEventListener("pointercancel",end);
+}
+function renderMap(s){
+ const d=R.updateDevelopment?.(s)||s?.development||{level:1,unlocked:["meadow"]},lv=Math.max(1,Math.min(5,Number(d.level)||1));
+ const unlocked=new Set(d.unlocked||["meadow"]),w=$("ranchWorld"),jump=$("mapJump");if(!w||!jump)return;
+ const previous=mapRenderedLevel;w.dataset.mapLevel=String(lv);
+ document.querySelectorAll(".fogZone").forEach(z=>z.classList.toggle("revealed",unlocked.has(z.dataset.area)));
+ jump.innerHTML="";
+ for(const f of (R.FACILITIES||[])){if(!unlocked.has(f.id))continue;const b=document.createElement("button");b.type="button";b.dataset.mapTarget=f.id;b.textContent=`${f.icon}${f.name}`;b.onclick=()=>focusMapArea(f.id);jump.appendChild(b)}
+ bindMapPan();
+ if(!previous){requestAnimationFrame(()=>focusMapArea("meadow","auto"))}
+ else if(lv>previous){
+   const fac=(R.FACILITIES||[]).find(f=>f.level===lv);if(fac){setTimeout(()=>focusMapArea(fac.id),250);const toast=$("discoverToast");if(toast){toast.textContent=`✨ ${fac.name}を発見！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2500)}}
+ }
+ mapRenderedLevel=lv;
+}
+
 async function render(){
  await Promise.resolve(window.RANCH_CLOUD_READY);
  if(!window.FRENDA_DATA||!window.FRENDA_MASTER){$("empty").textContent="共通データを読み込めませんでした。";$("saveState").textContent="NG";return}
  const ids=R.ownedIds(),s=await R.reconcile(ids);R.compactMemories?.(s);R.writeSave?.(s);const active=s.creatures.filter(c=>c.status==="resident"),shown=active.slice(0,R.MAX_INITIAL),byId=R.masterMap();
  $("ownedCount").textContent=ids.length;$("registryCount").textContent=s.creatures.length;$("residentCount").textContent=shown.length;$("saveState").textContent="OK";
- const p=$("pasture"),empty=$("empty");R.ai?.stop?.();p.querySelectorAll(".mon").forEach(x=>x.remove());empty.style.display=shown.length?"none":"grid";if(!shown.length)empty.textContent="本編の所持ピックがありません。";
+ const p=$("pasture"),world=$("ranchWorld")||p,empty=$("empty");R.ai?.stop?.();world.querySelectorAll(".mon").forEach(x=>x.remove());empty.style.display=shown.length?"none":"grid";if(!shown.length)empty.textContent="本編の所持ピックがありません。";
  const aiItems=[];
- shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);p.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
+ shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);world.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
  R.ai?.start?.(aiItems);
- renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);wireRegressionTests();renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
+ renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);wireRegressionTests();renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderMap(s);renderDiary(s);setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
  const dd=window.FRENDA_DATA?.dungeon?.read?.();$("detail").textContent=`保存キー: ${R.saveKey()} ／ 本編参照: ${dd?.initialized?"Dungeon所持データ":"Simulator所持データ（フォールバック）"} ／ 進化履歴: ${s.evolutionHistory?.length||0} ／ 生活AI: ${R.ai?.enabled?"ON":"OFF"} ／ 交流: ON ／ 本編書込: なし`;
 }
-window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});
+window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderMap(s);renderDiary(s)}});
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 })();
 // Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
