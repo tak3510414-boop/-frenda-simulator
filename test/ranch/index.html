@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.45">
+<html lang="ja" data-app-version="0.46">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.45: large ranch world + discovery fog */
+/* Ver0.46: large ranch world + discovery fog */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -123,9 +123,14 @@ html{scroll-behavior:smooth}
 .mapZoom button{appearance:none;border:1px solid #ffffff66;background:#ffffff20;color:#fff;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;cursor:pointer}
 #zoomPct{min-width:38px;text-align:center;font-size:10px;font-weight:900}
 @media(max-width:700px){.mapHud{right:10px;width:auto;max-width:none}.mapJump{max-width:100%;overflow-x:auto;flex-wrap:nowrap}.mapZoom{width:100%;justify-content:flex-end}.mapZoom button{padding:5px 9px}}
+</style><style id="ranch-v046-performance">
+.pasture{contain:layout paint;scroll-behavior:auto!important;-webkit-overflow-scrolling:touch}
+.ranchWorld{backface-visibility:hidden;transform-origin:0 0;will-change:transform}
+.pasture.gesture-active .ranchWorld{will-change:transform}
+.pasture.gesture-active .socialLayer{pointer-events:none}
 </style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.45 / 起動停止修正</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.46 / ピンチ・ドラッグ滑らか化</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>

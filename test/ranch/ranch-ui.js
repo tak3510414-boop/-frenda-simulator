@@ -92,16 +92,22 @@ let mapScale=1,mapBound=false;
 const MAP_SCALE_MIN=.34,MAP_SCALE_MAX=1.65;
 function mapEls(){return{p:$("pasture"),w:$("ranchWorld")}}
 function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight*mapScale}}
-function applyMapScale(scale,cx,cy){
+let zoomRaf=0,pendingZoom=null;
+function commitMapScale(scale,cx,cy){
  const {p,w}=mapEls();if(!p||!w)return;
  const old=mapScale,rect=p.getBoundingClientRect();
  cx=cx??rect.left+p.clientWidth/2;cy=cy??rect.top+p.clientHeight/2;
  const wx=(p.scrollLeft+(cx-rect.left))/old,wy=(p.scrollTop+(cy-rect.top))/old;
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(MAP_SCALE_MAX,scale));
- w.style.transform=`scale(${mapScale})`;
- const sz=scaledSize(w);p.style.setProperty("--world-w",sz.width+"px");p.style.setProperty("--world-h",sz.height+"px");
- w.parentElement?.style?.setProperty?.("--map-scale",mapScale);
- requestAnimationFrame(()=>{p.scrollLeft=Math.max(0,wx*mapScale-(cx-rect.left));p.scrollTop=Math.max(0,wy*mapScale-(cy-rect.top));const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%"});
+ w.style.transform=`translateZ(0) scale(${mapScale})`;
+ p.scrollLeft=Math.max(0,wx*mapScale-(cx-rect.left));
+ p.scrollTop=Math.max(0,wy*mapScale-(cy-rect.top));
+ const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
+}
+function applyMapScale(scale,cx,cy){
+ pendingZoom={scale,cx,cy};
+ if(zoomRaf)return;
+ zoomRaf=requestAnimationFrame(()=>{zoomRaf=0;const q=pendingZoom;pendingZoom=null;if(q)commitMapScale(q.scale,q.cx,q.cy)});
 }
 function fitMap(){
  const {p,w}=mapEls();if(!p||!w)return;
@@ -119,17 +125,21 @@ function bindMapPan(){
  if(mapBound)return;mapBound=true;const {p}=mapEls();if(!p)return;
  let pts=new Map(),drag=null,pinch=null;
  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
- p.addEventListener("pointerdown",e=>{
+ p.addEventListener("pointerdown",e=>{p.classList.add("gesture-active");
    if(e.target.closest("button"))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});p.setPointerCapture?.(e.pointerId);
    if(pts.size===1){drag={id:e.pointerId,x:e.clientX,y:e.clientY,sl:p.scrollLeft,st:p.scrollTop};p.classList.add("dragging")}
    if(pts.size===2){const a=[...pts.values()],m=mid(a[0],a[1]);pinch={d:dist(a[0],a[1]),scale:mapScale,cx:m.x,cy:m.y};drag=null}
  });
+ let moveRaf=0,lastMove=null;
  p.addEventListener("pointermove",e=>{
-   if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-   if(pts.size>=2&&pinch){const a=[...pts.values()],d=dist(a[0],a[1]),m=mid(a[0],a[1]);applyMapScale(pinch.scale*(d/pinch.d),m.x,m.y);return}
-   if(drag&&drag.id===e.pointerId){p.scrollLeft=drag.sl-(e.clientX-drag.x);p.scrollTop=drag.st-(e.clientY-drag.y)}
+   if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});lastMove=e;
+   if(moveRaf)return;
+   moveRaf=requestAnimationFrame(()=>{moveRaf=0;const ev=lastMove;if(!ev)return;
+     if(pts.size>=2&&pinch){const a=[...pts.values()],d=dist(a[0],a[1]),m=mid(a[0],a[1]);applyMapScale(pinch.scale*(d/pinch.d),m.x,m.y);return}
+     if(drag&&drag.id===ev.pointerId){p.scrollLeft=drag.sl-(ev.clientX-drag.x);p.scrollTop=drag.st-(ev.clientY-drag.y)}
+   });
  });
- const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!pts.size){drag=null;p.classList.remove("dragging")}else{const [a]=pts.entries();drag={id:a[0],x:a[1].x,y:a[1].y,sl:p.scrollLeft,st:p.scrollTop}}};
+ const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!pts.size){drag=null;p.classList.remove("dragging");p.classList.remove("gesture-active")}else{const [a]=pts.entries();drag={id:a[0],x:a[1].x,y:a[1].y,sl:p.scrollLeft,st:p.scrollTop}}};
  p.addEventListener("pointerup",up);p.addEventListener("pointercancel",up);
  p.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();applyMapScale(mapScale*(e.deltaY<0?1.12:.89),e.clientX,e.clientY)},{passive:false});
  $("zoomIn")?.addEventListener("click",()=>applyMapScale(mapScale*1.2));
