@@ -90,18 +90,31 @@ const MAP_AREAS={
 let mapRenderedLevel=0;
 let mapScale=1,mapBound=false;
 const MAP_SCALE_MIN=.12,MAP_SCALE_MAX=1.65;
-function mapEls(){return{p:$("pasture"),w:$("ranchWorld")}}
+function mapEls(){return{p:$("pasture"),w:$("ranchWorld"),stage:$("ranchStage")}}
 function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight*mapScale}}
+function syncMapStage(){
+ const {w,stage}=mapEls();if(!w||!stage)return;
+ const sw=Math.max(1,w.offsetWidth*mapScale),sh=Math.max(1,w.offsetHeight*mapScale);
+ stage.style.width=`${sw}px`;stage.style.height=`${sh}px`;
+}
+function setFitMode(on){
+ const {p}=mapEls();if(!p)return;
+ p.classList.toggle("fit-mode",!!on);
+}
 let zoomRaf=0,pendingZoom=null;
 function commitMapScale(scale,cx,cy){
- const {p,w}=mapEls();if(!p||!w)return;
- const old=mapScale,rect=p.getBoundingClientRect();
+ const {p,w,stage}=mapEls();if(!p||!w||!stage)return;
+ // 手動ズーム時は固定ビューポートへ戻す。全体表示時だけ高さを内容に合わせる。
+ setFitMode(false);
+ const old=mapScale,rect=p.getBoundingClientRect(),sr=stage.getBoundingClientRect();
  cx=cx??rect.left+p.clientWidth/2;cy=cy??rect.top+p.clientHeight/2;
- const wx=(p.scrollLeft+(cx-rect.left))/old,wy=(p.scrollTop+(cy-rect.top))/old;
+ const wx=(cx-sr.left)/Math.max(.001,old),wy=(cy-sr.top)/Math.max(.001,old);
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(MAP_SCALE_MAX,scale));
  w.style.transform=`translateZ(0) scale(${mapScale})`;
- p.scrollLeft=Math.max(0,wx*mapScale-(cx-rect.left));
- p.scrollTop=Math.max(0,wy*mapScale-(cy-rect.top));
+ syncMapStage();
+ const sr2=stage.getBoundingClientRect();
+ p.scrollLeft=Math.max(0,p.scrollLeft+(sr2.left+wx*mapScale-cx));
+ p.scrollTop=Math.max(0,p.scrollTop+(sr2.top+wy*mapScale-cy));
  const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
 }
 function applyMapScale(scale,cx,cy){
@@ -110,14 +123,21 @@ function applyMapScale(scale,cx,cy){
  zoomRaf=requestAnimationFrame(()=>{zoomRaf=0;const q=pendingZoom;pendingZoom=null;if(q)commitMapScale(q.scale,q.cx,q.cy)});
 }
 function fitMap(){
- const {p,w}=mapEls();if(!p||!w)return;
- // 「全体」は現在の表示領域へ牧場全域を必ず収める。
- // transform前のワールド実寸に対して幅・高さ双方から倍率を求める。
- const ww=w.offsetWidth||1800,wh=w.offsetHeight||900;
- const pad=8,availW=Math.max(1,p.clientWidth-pad*2),availH=Math.max(1,p.clientHeight-pad*2);
- const scale=Math.min(1,availW/ww,availH/wh);
- commitMapScale(Math.max(MAP_SCALE_MIN,scale),p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2);
- requestAnimationFrame(()=>{p.scrollLeft=0;p.scrollTop=0});
+ const {p,w,stage}=mapEls();if(!p||!w||!stage)return;
+ // 「全体」は横幅に牧場全域を合わせ、表示枠の高さ自体も縮小後の牧場へ追従させる。
+ // これにより transform だけ縮小した時に残っていた下側の大きな空白を作らない。
+ setFitMode(true);
+ const ww=w.offsetWidth||1800;
+ const pad=12,availW=Math.max(1,p.clientWidth-pad*2);
+ mapScale=Math.max(MAP_SCALE_MIN,Math.min(1,availW/ww));
+ w.style.transform=`translateZ(0) scale(${mapScale})`;
+ syncMapStage();
+ p.scrollLeft=0;p.scrollTop=0;
+ const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
+ requestAnimationFrame(()=>{
+   // stage を中央配置した状態で、スクロール残りを完全に消す。
+   p.scrollLeft=0;p.scrollTop=0;
+ });
 }
 function focusMapArea(id,behavior="smooth"){
  const {p,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
@@ -158,7 +178,7 @@ function renderMap(s){
  document.querySelectorAll(".fogZone").forEach(z=>z.classList.toggle("revealed",unlocked.has(z.dataset.area)));
  jump.innerHTML="";
  for(const f of (R.FACILITIES||[])){if(!unlocked.has(f.id))continue;const b=document.createElement("button");b.type="button";b.dataset.mapTarget=f.id;b.textContent=`${f.icon}${f.name}`;b.onclick=()=>focusMapArea(f.id);jump.appendChild(b)}
- bindMapPan();
+ bindMapPan();syncMapStage();
  if(!previous){requestAnimationFrame(()=>{const p=$("pasture"),w=$("ranchWorld");if(!p||!w)return;const base=Math.min(1,Math.max(.42,p.clientWidth/(w.offsetWidth*.72)));applyMapScale(base);setTimeout(()=>focusMapArea("meadow","auto"),30)})}
  else if(lv>previous){
    const fac=(R.FACILITIES||[]).find(f=>f.level===lv);if(fac){setTimeout(()=>focusMapArea(fac.id),250);const toast=$("discoverToast");if(toast){toast.textContent=`✨ ${fac.name}を発見！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2500)}}
