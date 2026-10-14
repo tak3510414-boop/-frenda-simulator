@@ -23,7 +23,25 @@ function setState(a,state,reason=""){a.state=state;a.reason=reason;a.el.classLis
 function place(a){a.el.style.left=a.x+"%";a.el.style.top=a.y+"%"}
 function clearAgent(a){const t=timers.get(a.id);if(t)clearTimeout(t);timers.delete(a.id);const f=frames.get(a.id);if(f)cancelAnimationFrame(f);frames.delete(a.id)}
 function schedule(a,ms){const old=timers.get(a.id);if(old)clearTimeout(old);timers.set(a.id,setTimeout(()=>step(a),ms))}
-function bubble(a,text,ms=3000,side=0){const layer=document.getElementById("socialLayer"),pasture=document.getElementById("ranchWorld")||document.getElementById("pasture");if(!layer||!pasture||!a?.el)return;layer.querySelector(`[data-bubble-for="${CSS.escape(String(a.id))}"]`)?.remove();const d=document.createElement("div");d.className="socialBubble";d.dataset.bubbleFor=String(a.id);d.textContent=text;layer.appendChild(d);const follow=()=>{if(!d.isConnected||!a.el.isConnected)return;const pr=pasture.getBoundingClientRect(),er=a.el.getBoundingClientRect();const speakerX=er.left-pr.left+er.width/2,speakerTop=er.top-pr.top;const bw=Math.max(72,d.offsetWidth||72),bh=Math.max(30,d.offsetHeight||30);const desired=speakerX+(side<0?-Math.max(42,bw*.55):side>0?Math.max(42,bw*.55):0);const half=bw/2+8,centerX=Math.max(half,Math.min(pr.width-half,desired));const topY=Math.max(bh+16,speakerTop-10);const tailPx=Math.max(12,Math.min(bw-12,bw/2+(speakerX-centerX)));d.style.left=`${centerX}px`;d.style.top=`${topY}px`;d.style.setProperty("--tail-x",`${tailPx}px`);d._raf=requestAnimationFrame(follow)};follow();setTimeout(()=>{if(d._raf)cancelAnimationFrame(d._raf);d.remove()},ms)}
+function bubble(a,text,ms=3000,side=0){
+ const layer=document.getElementById("socialLayer"),world=document.getElementById("ranchWorld")||document.getElementById("pasture");
+ if(!layer||!world||!a?.el)return;
+ layer.querySelector(`[data-bubble-for="${CSS.escape(String(a.id))}"]`)?.remove();
+ const d=document.createElement("div");d.className="socialBubble";d.dataset.bubbleFor=String(a.id);d.textContent=text;layer.appendChild(d);
+ const follow=()=>{
+  if(!d.isConnected||!a.el.isConnected)return;
+  const wr=world.getBoundingClientRect(),er=a.el.getBoundingClientRect();
+  const scaleX=wr.width/world.offsetWidth||1,scaleY=wr.height/world.offsetHeight||scaleX||1;
+  const speakerX=(er.left-wr.left+er.width/2)/scaleX,speakerTop=(er.top-wr.top)/scaleY;
+  const bw=Math.max(72,d.offsetWidth||72),bh=Math.max(30,d.offsetHeight||30),worldW=world.offsetWidth;
+  const desired=speakerX+(side<0?-Math.max(42,bw*.55):side>0?Math.max(42,bw*.55):0);
+  const half=bw/2+8,centerX=Math.max(half,Math.min(worldW-half,desired)),topY=Math.max(bh+16,speakerTop-10);
+  const tailPx=Math.max(12,Math.min(bw-12,bw/2+(speakerX-centerX)));
+  d.style.left=`${centerX}px`;d.style.top=`${topY}px`;d.style.setProperty("--tail-x",`${tailPx}px`);
+  d._raf=requestAnimationFrame(follow)
+ };
+ follow();setTimeout(()=>{if(d._raf)cancelAnimationFrame(d._raf);d.remove()},ms)
+}
 function bondKey(a,b){return[a.id,b.id].sort().join("|")}
 function bondRank(score){score=Number(score)||0;if(score>=25)return{key:"best",label:"大親友"};if(score>=12)return{key:"close",label:"仲良し"};if(score>=5)return{key:"friend",label:"友達"};return{key:"known",label:"顔見知り"}}
 function bondOf(a,b){return R.readSave?.()?.social?.bonds?.[bondKey(a,b)]||null}
