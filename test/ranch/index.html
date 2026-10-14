@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.41">
+<html lang="ja" data-app-version="0.42">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ牧場 Ver0.41</title>
+<title>フレンダ牧場 Ver0.42</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -15,53 +15,138 @@
 <style>.ranch-quick-nav{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;white-space:nowrap;-webkit-overflow-scrolling:touch}.ranch-quick-nav a{display:inline-block;padding:7px 11px;border:1px solid #cbdccf;border-radius:999px;background:#fff;color:#173d2b;text-decoration:none;font-weight:700;font-size:14px}.ranch-quick-nav a:active{transform:scale(.98)}</style><style>
 #development,#diary,#individuals,#profiles,#groups,#relations{scroll-margin-top:82px}
 html{scroll-behavior:smooth}
-</style><style>.ranch-quick-nav button{padding:8px 12px;border:1px solid #cbdccf;border-radius:999px;background:#fff;color:#173d2b;font-weight:700;font-size:14px;white-space:nowrap}.ranch-quick-nav button[aria-expanded="true"]{background:#e4f3e8}.ranch-detail-panel{display:none}.ranch-detail-panel.is-open{display:block}</style><style id="ranch-v041-visual">
-/* Ver0.41: scenery is drawn on the existing field itself, so ranch-ui re-render cannot erase it. */
-#ranchField{
- position:relative!important;overflow:hidden!important;isolation:isolate;
- background:
- radial-gradient(ellipse at 78% 76%,#75cde1 0 5%,#4ca9c6 6% 10%,transparent 10.5%),
- radial-gradient(ellipse at 15% 86%,#69b95d 0 15%,transparent 15.5%),
- radial-gradient(ellipse at 72% 88%,#70bd60 0 14%,transparent 14.5%),
- linear-gradient(166deg,transparent 0 61%,#d9bd82 61.5% 65%,transparent 65.5%),
- linear-gradient(180deg,#a9e4f5 0 27%,#78b86c 27.5% 34%,#91d17d 34.5% 100%)!important;
- box-shadow:inset 0 -35px 55px #356b3820!important;
+</style><style>.ranch-quick-nav button{padding:8px 12px;border:1px solid #cbdccf;border-radius:999px;background:#fff;color:#173d2b;font-weight:700;font-size:14px;white-space:nowrap}.ranch-quick-nav button[aria-expanded="true"]{background:#e4f3e8}.ranch-detail-panel{display:none}.ranch-detail-panel.is-open{display:block}</style>
+<style id="ranch-v042-visual">
+.pasture{
+  background:#8dce78!important;
+  isolation:isolate;
 }
-#ranchField:before{
- content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
- background:
- radial-gradient(circle at 82% 11%,#fff7b1 0 3.2%,#fff5aa88 3.4% 7%,transparent 7.3%),
- radial-gradient(ellipse at 15% 27%,#77b96b 0 14%,transparent 14.5%),
- radial-gradient(ellipse at 48% 29%,#68aa61 0 20%,transparent 20.5%),
- radial-gradient(ellipse at 83% 28%,#7cbd70 0 16%,transparent 16.5%);
- opacity:.98
+.ranchScenery{
+  position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
 }
-#ranchField:after{
- content:"🌳　🌼　　🌲　　　　　　🌷　　　🌳　　　　　🌼　　🌲";
- position:absolute;left:2%;right:2%;top:31%;z-index:1;pointer-events:none;
- font-size:clamp(24px,3.6vw,50px);letter-spacing:.08em;
- filter:drop-shadow(0 6px 3px #274b2c35);
- white-space:nowrap;overflow:hidden
-}
-#ranchField .ranchPokemon,#ranchField .pokemon,#ranchField [class*="pokemon"],
-#ranchField .facility,#ranchField [class*="facility"],#ranchField .speech-bubble,#ranchField [class*="bubble"]{z-index:5!important}
-#ranchField .facility,#ranchField [class*="facility"]{
- backdrop-filter:blur(3px);box-shadow:0 5px 12px #365b3825!important
-}
-@media(max-width:520px){
- #ranchField{min-height:360px!important;background:
- radial-gradient(ellipse at 79% 78%,#70cade 0 7%,#4ba5c0 7.5% 13%,transparent 13.5%),
- linear-gradient(164deg,transparent 0 61%,#d8bd83 61.5% 66%,transparent 66.5%),
- linear-gradient(180deg,#a9e4f5 0 27%,#77b76b 27.5% 34%,#91d17d 34.5% 100%)!important}
- #ranchField:after{font-size:28px;top:32%}
+.ranchScenerySvg{display:block;width:100%;height:100%}
+.pasture:after{display:none!important}
+#facilityLayer{position:absolute;inset:0;z-index:3;pointer-events:none}
+.facilitySpot{z-index:3!important;backdrop-filter:blur(3px);box-shadow:0 5px 14px #244b2b2b!important}
+.mon{z-index:6!important}
+.socialLayer{z-index:20!important}
+.empty{z-index:10!important}
+@media(max-width:700px){
+  .ranchScenerySvg{min-width:760px;transform:translateX(-12%);width:124%}
 }
 </style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.41 / 牧場フロア 景観レイヤー修正</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.42 / 牧場フロア ビジュアル再構築</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
-<section class="pasture" id="pasture"><div id="facilityLayer"></div><div class="socialLayer" id="socialLayer"></div><div class="empty" id="empty">本編データを確認しています…</div></section>
+<section class="pasture" id="pasture">
+<div class="ranchScenery" aria-hidden="true">
+<svg class="ranchScenerySvg" viewBox="0 0 1100 480" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9ddcf3"/>
+      <stop offset=".75" stop-color="#d9f3fb"/>
+      <stop offset="1" stop-color="#ecfaf9"/>
+    </linearGradient>
+    <linearGradient id="grassG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9bd979"/>
+      <stop offset="1" stop-color="#72bb62"/>
+    </linearGradient>
+    <linearGradient id="pondG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#baf3f2"/>
+      <stop offset=".55" stop-color="#66c7dc"/>
+      <stop offset="1" stop-color="#3696bd"/>
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#285936" flood-opacity=".22"/>
+    </filter>
+  </defs>
+
+  <!-- sky -->
+  <rect width="1100" height="175" fill="url(#skyG)"/>
+  <circle cx="910" cy="62" r="30" fill="#fff4a8"/>
+  <circle cx="910" cy="62" r="47" fill="#fff4a8" opacity=".22"/>
+
+  <!-- clouds -->
+  <g fill="#fff" opacity=".78">
+    <ellipse cx="145" cy="64" rx="58" ry="17"/><ellipse cx="112" cy="62" rx="27" ry="23"/><ellipse cx="165" cy="55" rx="30" ry="26"/>
+    <ellipse cx="530" cy="87" rx="65" ry="17"/><ellipse cx="500" cy="83" rx="27" ry="23"/><ellipse cx="555" cy="78" rx="31" ry="27"/>
+  </g>
+
+  <!-- distant hills -->
+  <path d="M0 184 Q100 108 220 175 Q335 92 465 176 Q585 110 710 180 Q840 95 1100 177 L1100 235 L0 235Z" fill="#78b96c"/>
+  <path d="M0 205 Q180 145 340 205 Q520 142 700 205 Q890 138 1100 205 L1100 252 L0 252Z" fill="#68aa60" opacity=".72"/>
+
+  <!-- main grass -->
+  <rect y="175" width="1100" height="305" fill="url(#grassG)"/>
+
+  <!-- path -->
+  <path d="M510 175 C520 235 468 280 440 330 C415 375 428 432 475 480 L690 480 C632 426 614 384 630 344 C649 294 735 244 770 175Z"
+        fill="#d8bb7d" opacity=".94"/>
+  <path d="M527 175 C542 233 500 277 474 326 C451 369 458 422 505 480"
+        fill="none" stroke="#ead39b" stroke-width="7" opacity=".55"/>
+
+  <!-- pond -->
+  <ellipse cx="875" cy="365" rx="145" ry="72" fill="#4f985d" opacity=".32"/>
+  <ellipse cx="875" cy="348" rx="132" ry="62" fill="url(#pondG)" stroke="#6b9e67" stroke-width="8"/>
+  <path d="M780 342 Q835 326 900 342 T980 340" fill="none" stroke="#d7ffff" stroke-width="4" opacity=".65"/>
+  <path d="M816 370 Q860 358 906 370 T960 367" fill="none" stroke="#d7ffff" stroke-width="3" opacity=".45"/>
+  <g fill="#6fb459">
+    <ellipse cx="792" cy="325" rx="17" ry="7"/><ellipse cx="950" cy="380" rx="20" ry="8"/>
+  </g>
+
+  <!-- fence -->
+  <g stroke="#aa7448" stroke-width="8" stroke-linecap="round" opacity=".92">
+    <path d="M24 230 L312 225"/><path d="M24 263 L312 258"/>
+    <path d="M790 224 L1076 232"/><path d="M790 257 L1076 265"/>
+  </g>
+  <g stroke="#8d5d3b" stroke-width="10" stroke-linecap="round">
+    <path d="M50 214 L50 280"/><path d="M140 211 L140 276"/><path d="M230 210 L230 274"/><path d="M312 210 L312 270"/>
+    <path d="M800 210 L800 274"/><path d="M890 213 L890 279"/><path d="M980 216 L980 283"/><path d="M1060 218 L1060 286"/>
+  </g>
+
+  <!-- trees -->
+  <g filter="url(#softShadow)">
+    <g transform="translate(70 200)">
+      <rect x="29" y="54" width="19" height="60" rx="8" fill="#8a5c3d"/>
+      <circle cx="38" cy="40" r="44" fill="#3d9851"/><circle cx="17" cy="53" r="30" fill="#55ad5d"/><circle cx="60" cy="56" r="31" fill="#4aa455"/>
+    </g>
+    <g transform="translate(1000 207)">
+      <rect x="27" y="50" width="18" height="58" rx="8" fill="#8a5c3d"/>
+      <circle cx="36" cy="37" r="41" fill="#3c914c"/><circle cx="13" cy="53" r="29" fill="#51a85a"/><circle cx="59" cy="53" r="28" fill="#469f52"/>
+    </g>
+  </g>
+
+  <!-- bushes / flowers -->
+  <g fill="#4fa65a">
+    <circle cx="170" cy="412" r="28"/><circle cx="202" cy="417" r="23"/><circle cx="238" cy="410" r="27"/>
+    <circle cx="670" cy="428" r="22"/><circle cx="700" cy="422" r="28"/>
+  </g>
+  <g font-size="24">
+    <text x="145" y="405">🌼</text><text x="186" y="430">🌷</text><text x="225" y="401">🌼</text>
+    <text x="655" y="422">🌸</text><text x="695" y="439">🌼</text>
+  </g>
+
+  <!-- scattered grass and stones -->
+  <g stroke="#4d9c4f" stroke-width="3" stroke-linecap="round" opacity=".65">
+    <path d="M340 290 l-5 -14 M340 290 l5 -15 M340 290 l12 -10"/>
+    <path d="M360 410 l-5 -14 M360 410 l5 -15 M360 410 l12 -10"/>
+    <path d="M735 275 l-4 -12 M735 275 l5 -13 M735 275 l11 -8"/>
+  </g>
+  <g fill="#b8b79c" opacity=".8">
+    <ellipse cx="318" cy="379" rx="17" ry="8"/><ellipse cx="736" cy="413" rx="14" ry="7"/>
+  </g>
+
+  <!-- ranch sign -->
+  <g transform="translate(470 196)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="160" height="42" rx="9" fill="#b97740" stroke="#794c2b" stroke-width="4"/>
+    <rect x="19" y="39" width="12" height="35" rx="4" fill="#865735"/>
+    <rect x="129" y="39" width="12" height="35" rx="4" fill="#865735"/>
+    <text x="80" y="27" text-anchor="middle" font-size="15" font-weight="900" fill="#fff4d7" font-family="sans-serif">FRENDA RANCH</text>
+  </g>
+</svg>
+</div><div id="facilityLayer"></div><div class="socialLayer" id="socialLayer"></div><div class="empty" id="empty">本編データを確認しています…</div></section>
 <nav class="ranch-quick-nav" aria-label="牧場メニュー"><button type="button" data-panel="development">🌱発展</button><button type="button" data-panel="diary">📖日記</button><button type="button" data-panel="individuals">🐾個性</button><button type="button" data-panel="profiles">📚思い出</button><button type="button" data-panel="groups">👥仲間</button><button type="button" data-panel="relations">🤝関係</button></nav><section class="relations"><h3>🕒 牧場環境</h3><div class="relationList" id="environmentList">読み込み中…</div></section><section class="relations" hidden data-test-only="regression"><h3>🧬 進化・再入手 回帰テスト</h3><div class="relationList" id="evolutionAuditList">読み込み中…</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button id="testEvolutionBtn" type="button">🧬 進化テスト</button><button id="testReacquireBtn" type="button">🔁 再入手テスト</button></div><div id="regressionResult" style="margin-top:10px;font-weight:800">回帰テスト：未実行</div></section>
 <section class="relations" id="offlineBox" style="display:none"><h3>🏡 留守中のようす</h3><div class="relationList" id="offlineList"></div></section>
 <section class="relations ranch-detail-panel" id="development"><h3>🌱 牧場の発展</h3><div class="relationList" id="developmentList">読み込み中…</div><div class="facilityGrid" id="facilityList"></div></section>
