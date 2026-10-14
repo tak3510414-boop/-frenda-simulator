@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.54">
+<html lang="ja" data-app-version="0.55">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ牧場 Ver0.54</title>
+<title>フレンダ牧場 Ver0.55</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.54: large ranch world + discovery fog + scaled stage */
+/* Ver0.55: large ranch world + discovery fog + scaled stage */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -48,10 +48,10 @@ html{scroll-behavior:smooth}
 .pasture.dragging{cursor:grabbing;scroll-behavior:auto}
 .ranchWorld{
   position:relative;
-  width:1800px;
-  height:900px;
-  min-width:1800px;
-  min-height:900px;
+  width:5400px;
+  height:2700px;
+  min-width:5400px;
+  min-height:2700px;
   overflow:hidden;
   isolation:isolate;
   background:#8dce78;
@@ -111,7 +111,7 @@ html{scroll-behavior:smooth}
 .discoverToast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media(max-width:700px){
   .pasture{height:55vh!important;min-height:390px!important}
-  .ranchWorld{width:1500px;min-width:1500px;height:780px;min-height:780px}
+  .ranchWorld{width:5400px;min-width:5400px;height:2700px;min-height:780px}
   .mapHud{margin-bottom:-54px}
   .mapHudTitle{display:none}
   .mapJump button{padding:5px 7px}
@@ -133,8 +133,8 @@ html{scroll-behavior:smooth}
 /* transform は見た目だけを縮小するため、スクロール領域は ranchStage が担当する */
 .ranchStage{
   position:relative;
-  width:1800px;
-  height:900px;
+  width:5400px;
+  height:2700px;
   min-width:0;
   min-height:0;
   overflow:hidden;
@@ -163,8 +163,8 @@ html{scroll-behavior:smooth}
 }
 @media(max-width:700px){
   .ranchStage{
-    width:1500px;
-    height:780px;
+    width:5400px;
+    height:2700px;
   }
 }
 </style>
@@ -182,9 +182,20 @@ html{scroll-behavior:smooth}
 #growthVeil rect{transition:opacity 1.4s ease}
 @media(max-width:700px){.ranch-time-test{padding:9px}.timeTestRow button{padding:6px 9px}.timeTestRow span{width:100%}}
 </style>
+
+<style id="ranch-v055-mega">
+.ranchWorld,.ranchStage{width:5400px!important;height:2700px!important;min-width:5400px!important;min-height:2700px!important}
+.ranchScenerySvg{width:5400px!important;height:2700px!important}
+.megaFog{width:33.3334%!important;height:33.3334%!important;right:auto!important;bottom:auto!important}
+.fogNW{left:0!important;top:0!important}.fogN{left:33.3333%!important;top:0!important}.fogNE{left:66.6666%!important;top:0!important}
+.fogW{left:0!important;top:33.3333%!important}.fogE{left:66.6666%!important;top:33.3333%!important}
+.fogSW{left:0!important;top:66.6666%!important}.fogS{left:33.3333%!important;top:66.6666%!important}.fogSE{left:66.6666%!important;top:66.6666%!important}
+.megaFog span{font-size:24px;padding:16px 24px}
+@media(max-width:700px){.ranchWorld,.ranchStage{width:5400px!important;height:2700px!important}.ranchScenerySvg{width:5400px!important;height:2700px!important}.megaFog span{font-size:18px}}
+</style>
 </head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.54 / 牧場時間 ×1 / ×10・成長する景観</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.55 / 巨大牧場ワールド</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
@@ -196,8 +207,63 @@ html{scroll-behavior:smooth}
 <div class="ranchStage" id="ranchStage">
 <div class="ranchWorld" id="ranchWorld" data-map-level="1">
 <div class="ranchScenery" aria-hidden="true">
-<svg class="ranchScenerySvg" viewBox="0 0 1800 900" preserveAspectRatio="none">
+<svg class="ranchScenerySvg" viewBox="0 0 5400 2700" preserveAspectRatio="none">
 <defs><linearGradient id="s" x2="0" y2="1"><stop stop-color="#a9def4"/><stop offset=".55" stop-color="#e8f7e5"/><stop offset=".56" stop-color="#9bd66f"/><stop offset="1" stop-color="#66ae57"/></linearGradient><linearGradient id="w" x2="1" y2="1"><stop stop-color="#91e0ee"/><stop offset="1" stop-color="#42a9c7"/></linearGradient><filter id="ds"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-opacity=".18"/></filter></defs>
+<!-- Huge ranch world: the former entire ranch is now the center 1/9 tile. -->
+<rect width="5400" height="2700" fill="#86c96d"/>
+<!-- shared distant sky/terrain -->
+<rect width="5400" height="560" fill="#b9e6f2"/>
+<path d="M0 560 Q450 220 900 550 Q1350 160 1800 550 Q2250 230 2700 550 Q3150 170 3600 550 Q4050 230 4500 550 Q4950 190 5400 550 V780 H0Z" fill="#6fab65"/>
+<path d="M0 650 Q500 350 1000 640 Q1500 300 2000 650 Q2500 350 3000 640 Q3500 300 4000 650 Q4500 370 5400 630 V820 H0Z" fill="#82bd6c"/>
+
+<!-- NW: deep shade forest -->
+<g id="zoneShadeNorthWest">
+ <rect x="0" y="0" width="1800" height="900" fill="#76b86b" opacity=".28"/>
+ <g fill="#367d48" stroke="#6d472e" stroke-width="18">
+  <path d="M160 690v150M390 630v190M650 665v160M900 600v210M1190 650v175M1460 610v205"/>
+ </g>
+ <g fill="#3f8e50"><circle cx="160" cy="620" r="150"/><circle cx="360" cy="560" r="180"/><circle cx="620" cy="600" r="170"/><circle cx="890" cy="525" r="190"/><circle cx="1180" cy="590" r="175"/><circle cx="1490" cy="540" r="190"/></g>
+ <g fill="#64ad58"><circle cx="250" cy="485" r="95"/><circle cx="760" cy="450" r="100"/><circle cx="1330" cy="440" r="105"/></g>
+ <path d="M220 850 C520 760 770 770 1030 835 C1260 890 1490 820 1690 730" fill="none" stroke="#d9bd78" stroke-width="85" stroke-linecap="round"/>
+ <g fill="#f5d66d"><circle cx="510" cy="765" r="10"/><circle cx="540" cy="780" r="9"/><circle cx="1230" cy="815" r="10"/></g>
+</g>
+
+<!-- N: rolling highland / flower ridge -->
+<g id="zoneNorth">
+ <rect x="1800" y="0" width="1800" height="900" fill="#8bce72" opacity=".18"/>
+ <path d="M1880 760 Q2200 520 2520 740 Q2850 470 3180 735 Q3440 570 3560 710" fill="#8bca6d"/>
+ <path d="M1900 810 Q2250 610 2600 795 Q2950 600 3500 790" fill="#70b65d"/>
+ <g fill="#fff3a6"><circle cx="2180" cy="690" r="11"/><circle cx="2240" cy="720" r="9"/><circle cx="2940" cy="665" r="10"/><circle cx="3050" cy="710" r="9"/></g>
+ <g fill="#ef8396"><circle cx="2300" cy="745" r="9"/><circle cx="2380" cy="710" r="8"/><circle cx="3260" cy="735" r="9"/></g>
+ <path d="M2700 900 C2670 760 2750 660 2700 545" fill="none" stroke="#e1c37d" stroke-width="95"/>
+</g>
+
+<!-- NE: large lake -->
+<g id="zonePondNorthEast">
+ <rect x="3600" y="0" width="1800" height="900" fill="#78bd68" opacity=".18"/>
+ <path d="M3820 270 C4200 80 4920 120 5220 350 C5480 550 5180 790 4670 820 C4200 845 3790 690 3745 470 C3720 380 3740 320 3820 270Z" fill="#57b9d4" stroke="#dbeab5" stroke-width="34"/>
+ <g stroke="#efffff" stroke-width="16" fill="none" opacity=".5"><path d="M4000 420q330-130 650 15"/><path d="M4380 660q380-110 700 10"/></g>
+ <g transform="translate(3710 610) rotate(-7)"><rect width="470" height="115" rx="16" fill="#a87343"/><path d="M25 25h420M25 55h420M25 85h420" stroke="#d7aa70" stroke-width="10"/></g>
+ <g stroke="#4f8d4b" stroke-width="14"><path d="M3860 690l-30-190m70 180 25-220m1110 270-5-210m65 190 40-180"/></g>
+</g>
+
+<!-- W: orchard / grove -->
+<g id="zoneWest">
+ <rect x="0" y="900" width="1800" height="900" fill="#78bd61"/>
+ <g stroke="#735038" stroke-width="22" fill="#4f9c51">
+  <g transform="translate(220 1080)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
+  <g transform="translate(600 1250)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
+  <g transform="translate(1050 1080)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
+  <g transform="translate(1460 1280)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
+ </g>
+ <path d="M90 1700 C450 1510 870 1580 1160 1680 C1390 1760 1580 1680 1730 1540" fill="none" stroke="#d9bd78" stroke-width="90"/>
+ <g fill="#e8c158"><circle cx="210" cy="1120" r="12"/><circle cx="610" cy="1290" r="12"/><circle cx="1060" cy="1120" r="12"/><circle cx="1470" cy="1320" r="12"/></g>
+</g>
+
+<!-- CENTER: former full ranch, now only the starting meadow district -->
+<g id="zoneMeadow" transform="translate(1800 900)">
+
+
 <rect width="1800" height="900" fill="url(#s)"/><circle cx="1510" cy="100" r="62" fill="#ffe58b"/>
 <g fill="#fff" opacity=".8"><ellipse cx="260" cy="110" rx="90" ry="26"/><ellipse cx="335" cy="115" rx="62" ry="20"/><ellipse cx="1170" cy="90" rx="85" ry="24"/></g>
 <path d="M0 310Q180 120 370 300Q550 105 760 300Q940 130 1120 300Q1340 95 1530 300Q1670 160 1800 285V410H0Z" fill="#70ad68"/>
@@ -219,7 +285,7 @@ html{scroll-behavior:smooth}
 <!-- sign -->
 <g transform="translate(1000 390)" filter="url(#ds)"><rect width="290" height="82" rx="18" fill="#8c5935" stroke="#d6a66a" stroke-width="8"/><text x="145" y="52" text-anchor="middle" font-size="34" font-weight="800" fill="#fff7dd">FRENDA RANCH</text><path d="M35 82v80M255 82v80" stroke="#6f472e" stroke-width="18"/></g>
 
-<!-- Ver0.54: progressive ranch growth. The veil fades while details appear in ten small steps. -->
+<!-- Ver0.55: progressive ranch growth. The veil fades while details appear in ten small steps. -->
 <g id="growthVeil">
   <rect id="starterSkyVeil" x="0" y="0" width="1800" height="365" fill="#d7ebe2" opacity=".62"/>
   <rect id="starterGroundVeil" x="0" y="345" width="1800" height="555" fill="#8fca73" opacity=".82"/>
@@ -237,15 +303,65 @@ html{scroll-behavior:smooth}
   <g data-grow-step="10" class="growthStep" fill="#fff1a6"><circle cx="760" cy="520" r="7"/><circle cx="820" cy="480" r="6"/><circle cx="1180" cy="520" r="7"/><circle cx="1220" cy="470" r="6"/><circle cx="980" cy="580" r="6"/></g>
 </g>
 
+
+</g>
+
+<!-- E: river / wetland -->
+<g id="zoneEast">
+ <rect x="3600" y="900" width="1800" height="900" fill="#7dc46a"/>
+ <path d="M3650 1030 C4020 1170 3970 1410 4280 1490 C4610 1575 4690 1310 5050 1400 C5250 1450 5340 1560 5400 1680" fill="none" stroke="#65bed3" stroke-width="180" stroke-linecap="round"/>
+ <path d="M3650 1030 C4020 1170 3970 1410 4280 1490 C4610 1575 4690 1310 5050 1400 C5250 1450 5340 1560 5400 1680" fill="none" stroke="#9be1e9" stroke-width="110" stroke-linecap="round" opacity=".5"/>
+ <g fill="#d8e7b0"><ellipse cx="3990" cy="1280" rx="62" ry="25"/><ellipse cx="4520" cy="1490" rx="70" ry="28"/><ellipse cx="5000" cy="1420" rx="55" ry="22"/></g>
+</g>
+
+<!-- SW: giant play meadow -->
+<g id="zonePlaySouthWest">
+ <rect x="0" y="1800" width="1800" height="900" fill="#79c867"/>
+ <ellipse cx="850" cy="2260" rx="690" ry="310" fill="#88d36e"/>
+ <g transform="translate(360 2110)"><path d="M0 260L150 0l150 260M75 125h150" stroke="#845731" stroke-width="36" fill="none"/><path d="M105 125v180m90-180v180" stroke="#6b4b35" stroke-width="13"/><rect x="80" y="285" width="145" height="28" rx="12" fill="#d17a4e"/></g>
+ <g transform="translate(980 2140)"><circle cx="120" cy="120" r="110" fill="#f1d55e"/><circle cx="120" cy="120" r="65" fill="#fff1a2"/></g>
+ <g fill="#f0788d"><circle cx="270" cy="2460" r="13"/><circle cx="330" cy="2490" r="12"/><circle cx="1420" cy="2380" r="13"/><circle cx="1510" cy="2430" r="11"/></g>
+</g>
+
+<!-- S: long ranch road / fields -->
+<g id="zoneSouth">
+ <rect x="1800" y="1800" width="1800" height="900" fill="#83c86d"/>
+ <path d="M2700 1800 C2550 2040 2940 2180 2740 2420 C2620 2560 2650 2660 2700 2700" fill="none" stroke="#d9bd78" stroke-width="180" stroke-linecap="round"/>
+ <path d="M2700 1800 C2550 2040 2940 2180 2740 2420 C2620 2560 2650 2660 2700 2700" fill="none" stroke="#ecd391" stroke-width="125" stroke-linecap="round"/>
+ <g stroke="#96613a" stroke-width="24" stroke-linecap="round"><path d="M1950 2050h500M1950 2130h500M3000 2340h470M3000 2420h470"/><path d="M2020 2000v190M2240 2000v190M2390 2000v190M3070 2280v200M3280 2280v200M3440 2280v200"/></g>
+</g>
+
+<!-- SE: cottage district -->
+<g id="zoneHutSouthEast">
+ <rect x="3600" y="1800" width="1800" height="900" fill="#78be66"/>
+ <g transform="translate(4050 2040)">
+  <rect x="60" y="170" width="700" height="390" rx="28" fill="#f4dfad"/>
+  <path d="M0 210L410 0l410 210z" fill="#b95f45"/>
+  <rect x="150" y="300" width="170" height="150" rx="14" fill="#8ed0df" stroke="#fff3d0" stroke-width="22"/>
+  <rect x="520" y="280" width="150" height="280" rx="18" fill="#9b6743"/>
+  <circle cx="625" cy="420" r="13" fill="#f4d66f"/>
+ </g>
+ <g fill="#4d9850"><circle cx="3900" cy="2380" r="120"/><circle cx="4950" cy="2250" r="130"/><circle cx="5200" cy="2430" r="110"/></g>
+ <g fill="#f4d45c"><circle cx="3820" cy="2550" r="12"/><circle cx="3880" cy="2580" r="11"/><circle cx="5010" cy="2580" r="12"/></g>
+</g>
+
+<!-- paths linking all nine districts -->
+<g fill="none" stroke-linecap="round" opacity=".8">
+ <path d="M2700 1350 C2200 1350 1600 1300 900 1350" stroke="#d9bd78" stroke-width="70"/>
+ <path d="M2700 1350 C3200 1350 3900 1300 4500 1350" stroke="#d9bd78" stroke-width="70"/>
+ <path d="M2700 1350 C2700 980 2700 650 2700 380" stroke="#d9bd78" stroke-width="70"/>
+ <path d="M2700 1350 C2700 1750 2700 2150 2700 2480" stroke="#d9bd78" stroke-width="70"/>
+</g>
 </svg>
 </div>
-<div class="fogZone fogShade" data-area="shade"><span>まだ見ぬ木陰</span></div>
-<div class="fogZone fogPond" data-area="pond"><span>霧の向こうに何かある…</span></div>
-<div class="fogZone fogPlay" data-area="play"><span>まだ見ぬ場所</span></div>
-<div class="fogZone fogHut" data-area="hut"><span>霧の向こうに何かある…</span></div>
-<div id="facilityLayer"></div>
-<div class="socialLayer" id="socialLayer"></div>
-<div class="empty" id="empty">本編データを確認しています…</div>
+<div class="fogZone megaFog fogNW" data-area="shade"><span>🌫️ 深い森の向こうに何かある…</span></div>
+<div class="fogZone megaFog fogW" data-area="shade"><span>🌫️ 木々の向こうへ道が続いている…</span></div>
+<div class="fogZone megaFog fogNE" data-area="pond"><span>🌫️ 遠くから水の音がする…</span></div>
+<div class="fogZone megaFog fogE" data-area="pond"><span>🌫️ 川の向こうに何か見える…</span></div>
+<div class="fogZone megaFog fogSW" data-area="play"><span>🌫️ 広い草原が続いている…</span></div>
+<div class="fogZone megaFog fogS" data-area="play"><span>🌫️ 道はまだ先へ続いている…</span></div>
+<div class="fogZone megaFog fogSE" data-area="hut"><span>🌫️ 建物のような影が見える…</span></div>
+<div class="fogZone megaFog fogN" data-area="hut"><span>🌫️ 丘の向こうはまだ知らない場所…</span></div>
 <div class="discoverToast" id="discoverToast" aria-live="polite"></div>
 </div>
 </div>

@@ -14,7 +14,13 @@ function environment(){return{phase:ranchPhase(),weather:ranchWeather(),minute:r
 function typesOf(r){return[r?.type1,r?.type2].filter(Boolean)}
 function spacing(self,other){const pasture=document.getElementById("ranchWorld")||document.getElementById("pasture");const pw=Math.max(1,pasture?.clientWidth||390),ph=Math.max(1,pasture?.clientHeight||520);const sw=Math.max(58,self?.el?.offsetWidth||74),ow=Math.max(58,other?.el?.offsetWidth||74);const sh=Math.max(96,self?.el?.offsetHeight||110),oh=Math.max(96,other?.el?.offsetHeight||110);return{x:Math.max(14,((sw+ow)/2+10)/pw*100),y:Math.max(15,((sh+oh)/2-10)/ph*100)}}
 function farEnough(x,y,self){for(const a of agents.values()){if(a===self)continue;const sp=spacing(self,a),dx=(a.x??-99)-x,dy=(a.y??-99)-y;if(Math.abs(dx)<sp.x&&Math.abs(dy)<sp.y)return false}return true}
-function movementBounds(){const lv=Math.max(1,Math.min(5,Number(R.readSave?.()?.development?.level)||1));if(lv===1)return{x1:39,x2:61,y1:37,y2:69};if(lv===2)return{x1:15,x2:63,y1:16,y2:69};if(lv===3)return{x1:15,x2:86,y1:16,y2:69};if(lv===4)return{x1:13,x2:87,y1:16,y2:88};return{x1:5,x2:94,y1:12,y2:90}}
+function movementBounds(){const lv=Math.max(1,Math.min(5,Number(R.readSave?.()?.development?.level)||1));
+ if(lv===1)return{x1:36,x2:64,y1:35,y2:65};          // center district only
+ if(lv===2)return{x1:5,x2:64,y1:5,y2:65};            // west + north-west
+ if(lv===3)return{x1:5,x2:95,y1:5,y2:65};            // east / lake joins
+ if(lv===4)return{x1:5,x2:95,y1:5,y2:95};            // south / play meadow
+ return{x1:4,x2:96,y1:4,y2:96}                       // whole ranch
+}
 function avoidPoint(a,x,y){const b=movementBounds();x=clamp(x,b.x1,b.x2);y=clamp(y,b.y1,b.y2);if(farEnough(x,y,a))return{x,y};for(let ring=1;ring<=5;ring++){for(let i=0;i<16;i++){const ang=Math.PI*2*i/16+(a.traits.explore*.35),r=ring*3.4,nx=clamp(x+Math.cos(ang)*r,b.x1,b.x2),ny=clamp(y+Math.sin(ang)*r*.82,b.y1,b.y2);if(farEnough(nx,ny,a))return{x:nx,y:ny}}}return{x:a.x,y:a.y}}
 function pairGap(a,b){const sp=spacing(a,b);return Math.max(6,sp.x+1)}
 function safePoint(a,x,y,min=7){const z=movementBounds();x=clamp(x,z.x1,z.x2);y=clamp(y,z.y1,z.y2);if(farEnough(x,y,a))return{x,y};for(let ring=1;ring<=4;ring++){for(let i=0;i<12;i++){const ang=(Math.PI*2*i/12)+(a.traits.explore*.7),r=min*ring*.72,nx=clamp(x+Math.cos(ang)*r,z.x1,z.x2),ny=clamp(y+Math.sin(ang)*r*.72,z.y1,z.y2);if(farEnough(nx,ny,a))return{x:nx,y:ny}}}return{x,y}}
@@ -108,20 +114,20 @@ function facilityAction(a){
  if(!farEnough(d.x,d.y,a)){releaseFacility(a);return false}const dist=Math.hypot(d.x-a.x,d.y-a.y);move(a,d,clamp(900+dist*42,900,3000),c.reason,()=>{setState(a,c.state,c.reason);bubble(a,c.text,1900,0);schedule(a,rand(2600,4400))});return true
 }
 const AREA_LIFE={
- plaza:{label:"ひろば",x:50,y:53,lines:["いっしょにいよう！","のんびりしよう","だれかいるかな？"]},
- shade:{label:"木陰",x:22,y:29,lines:["ひとやすみ","木陰はすずしいね","ここ、落ち着くなあ"]},
- pond:{label:"水辺",x:77,y:32,lines:["みずべ、きもちいい！","水がきらきらしてる","ちょっと見ていこう"]},
- play:{label:"遊び場",x:23,y:74,lines:["あそぼう！","もういっかい！","たのしい！"]},
- hut:{label:"おやすみ小屋",x:77,y:73,lines:["ちょっとおやすみ","ここで休もう","のんびり……"]}
+ plaza:{label:"ひろば",x:50,y:50,lines:["いっしょにいよう！","のんびりしよう","だれかいるかな？"]},
+ shade:{label:"木陰",x:16.5,y:22,lines:["ひとやすみ","木陰はすずしいね","ここ、落ち着くなあ"]},
+ pond:{label:"水辺",x:83.5,y:22,lines:["みずべ、きもちいい！","水がきらきらしてる","ちょっと見ていこう"]},
+ play:{label:"遊び場",x:16.5,y:81,lines:["あそぼう！","もういっかい！","たのしい！"]},
+ hut:{label:"おやすみ小屋",x:83.5,y:80,lines:["ちょっとおやすみ","ここで休もう","のんびり……"]}
 };
 function unlockedAreas(){const lv=Math.max(1,Math.min(5,Number(R.readSave?.()?.development?.level)||1)),a=["plaza"];if(lv>=2)a.push("shade");if(lv>=3)a.push("pond");if(lv>=4)a.push("play");if(lv>=5)a.push("hut");return a}
 function chooseLifeArea(a){const pool=unlockedAreas(),c=a.traits?.calm||.5,e=a.traits?.explore||.5,w=[...pool];if(pool.includes("shade")&&c>.55)w.push("shade","shade");if(pool.includes("hut")&&c>.7)w.push("hut");if(pool.includes("play")&&e>.55)w.push("play","play");if(pool.includes("pond")&&e>.45)w.push("pond");return w[Math.floor(Math.random()*w.length)]||"plaza"}
-function areaDestination(key){const z=AREA_LIFE[key]||AREA_LIFE.plaza;return{x:z.x+rand(-5.5,5.5),y:z.y+rand(-4.2,4.2)}}
+function areaDestination(key){const z=AREA_LIFE[key]||AREA_LIFE.plaza;return{x:z.x+rand(-3.2,3.2),y:z.y+rand(-2.8,2.8)}}
 function areaStay(a,key){const z=AREA_LIFE[key]||AREA_LIFE.plaza,line=z.lines[Math.floor(Math.random()*z.lines.length)];a.lifeArea=key;setState(a,key==="play"?"play":"rest",`${z.label}で過ごしている`);bubble(a,line,rand(2600,4200));lifeExp(a,key==="play"?"play":"rest",.25);schedule(a,key==="hut"?rand(9000,15000):key==="shade"?rand(7000,12000):rand(5500,10000))}
-function goToLifeArea(a,key){const z=AREA_LIFE[key]||AREA_LIFE.plaza,d=areaDestination(key),dist=Math.hypot(d.x-a.x,d.y-a.y),ms=Math.round(clamp(2200+dist*92,2400,9500));a.lifeArea=key;move(a,d,ms,`${z.label}へ向かっている`,()=>areaStay(a,key))}
+function goToLifeArea(a,key){const z=AREA_LIFE[key]||AREA_LIFE.plaza,d=areaDestination(key),dist=Math.hypot(d.x-a.x,d.y-a.y),ms=Math.round(clamp(2600+dist*230,2800,22000));a.lifeArea=key;move(a,d,ms,`${z.label}へ向かっている`,()=>areaStay(a,key))}
 function step(a){if(!a||!a.el)return;if(Math.random()<0.46){goToLifeArea(a,chooseLifeArea(a));return}if(!document.body.contains(a.el))return;releaseFacility(a);if(!a.socialBusy&&facilityAction(a))return;if(!a.socialBusy&&Math.random()<.34&&companionAction(a))return;const c=choose(a);if(c.kind==="social"){const b=socialTarget(a);if(!b){schedule(a,700);return}a.socialBusy=b.socialBusy=true;clearAgent(b);const side=a.x<=b.x?-1:1;const d=safePoint(a,b.x+side*pairGap(a,b),b.y+rand(-3,3)),dist=Math.hypot(d.x-a.x,d.y-a.y);move(a,d,clamp(900+dist*42,900,3000),c.reason,()=>socialize(a,b));return}if(c.kind==="walk"){const d=destination(a),dist=Math.hypot(d.x-a.x,d.y-a.y),speed=.82+.5*a.traits.activity+(Number(a.record?.speed_level)||3)*.035,ms=Math.round(clamp((1200+dist*48)/speed,1200,3900));move(a,d,ms,c.reason)}else if(c.kind==="rest"){lifeExp(a,"rest");setState(a,"rest",c.reason);schedule(a,rand(4200,9000)*(1+.35*a.traits.calm))}else{setState(a,"idle",c.reason);schedule(a,rand(2600,6200))}}
 function stop(){for(const a of agents.values()){clearAgent(a);releaseFacility(a)}timers.clear();frames.clear();agents.clear();facilitySlots.clear()}
 function start(items){stop();const created=[];(items||[]).forEach((it,i)=>{const col=i%3,row=Math.floor(i/3),a={id:it.id,el:it.el,creature:it.creature,record:it.record,traits:traits(it.creature),x:44+col*6+(row%2)*2,y:45+row*13};const b=movementBounds();a.x=clamp(a.x,b.x1,b.x2);a.y=clamp(a.y,b.y1,b.y2);agents.set(a.id,a);created.push(a);place(a);setState(a,"idle","起動直後");schedule(a,rand(900,2200))});if(created.length>=2){setTimeout(()=>{const a=created[0],b=created[1];if(!agents.has(a.id)||!agents.has(b.id)||a.socialBusy||b.socialBusy)return;a.socialBusy=b.socialBusy=true;clearAgent(a);clearAgent(b);const d=safePoint(a,b.x+pairGap(a,b),b.y+2);move(a,d,1200,"起動確認の交流",()=>socialize(a,b))},3500)}}
-R.ai={enabled:true,start,stop,agents,engine:"weighted-life-social-v16-test-clock-growth",phase:ranchPhase,weather:ranchWeather,environment,bondRank,relationLabel,traits,personalityLabel};window.addEventListener("pagehide",stop);
+R.ai={enabled:true,start,stop,agents,engine:"weighted-life-social-v17-mega-ranch",phase:ranchPhase,weather:ranchWeather,environment,bondRank,relationLabel,traits,personalityLabel};window.addEventListener("pagehide",stop);
 })();
 // Updated: 2026-10-13 12:59 JST

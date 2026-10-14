@@ -53,7 +53,7 @@ function renderEnvironment(){
 function renderFacilitySpots(s){
  const layer=$("facilityLayer");if(!layer)return;const d=R.updateDevelopment?.(s)||s?.development||{};layer.innerHTML="";
  const spots={shade:["🌳","木陰"],pond:["💧","水辺"],play:["⚽","遊び場"],hut:["🏡","おやすみ小屋"]};
- const pos={shade:[20,28],pond:[76,31],play:[22,73],hut:[77,73]};for(const f of (R.FACILITIES||[])){if(f.id==="meadow"||!(d.unlocked||[]).includes(f.id)||!spots[f.id])continue;const x=document.createElement("div");x.className="facilitySpot";x.dataset.facility=f.id;x.innerHTML=`<span class="ico">${spots[f.id][0]}</span><span>${spots[f.id][1]}</span>`;const q=pos[f.id];if(q){x.style.left=q[0]+"%";x.style.top=q[1]+"%";x.style.right="auto";x.style.bottom="auto";x.style.transform="translate(-50%,-50%)"}layer.appendChild(x)}
+ const pos={shade:[16.5,22],pond:[83.5,22],play:[16.5,81],hut:[83.5,80]};for(const f of (R.FACILITIES||[])){if(f.id==="meadow"||!(d.unlocked||[]).includes(f.id)||!spots[f.id])continue;const x=document.createElement("div");x.className="facilitySpot";x.dataset.facility=f.id;x.innerHTML=`<span class="ico">${spots[f.id][0]}</span><span>${spots[f.id][1]}</span>`;const q=pos[f.id];if(q){x.style.left=q[0]+"%";x.style.top=q[1]+"%";x.style.right="auto";x.style.bottom="auto";x.style.transform="translate(-50%,-50%)"}layer.appendChild(x)}
 }
 
 function renderDevelopment(s){
@@ -103,15 +103,15 @@ function applyGrowthVisuals(d){
  growthStageRendered=stage
 }
 const MAP_AREAS={
- meadow:{name:"ひろば",icon:"🌿",x:.50,y:.53},
- shade:{name:"木陰",icon:"🌳",x:.22,y:.29},
- pond:{name:"水辺",icon:"💧",x:.77,y:.32},
- play:{name:"遊び場",icon:"⚽",x:.23,y:.74},
- hut:{name:"小屋",icon:"🏡",x:.77,y:.73}
+ meadow:{name:"ひろば",icon:"🌿",x:.50,y:.50},
+ shade:{name:"木陰",icon:"🌳",x:.165,y:.22},
+ pond:{name:"水辺",icon:"💧",x:.835,y:.22},
+ play:{name:"遊び場",icon:"⚽",x:.165,y:.81},
+ hut:{name:"小屋",icon:"🏡",x:.835,y:.80}
 };
 let mapRenderedLevel=0;
 let mapScale=1,mapBound=false;
-const MAP_SCALE_MIN=.12,MAP_SCALE_MAX=1.65;
+const MAP_SCALE_MIN=.045,MAP_SCALE_MAX=1.65;
 function mapEls(){return{p:$("pasture"),w:$("ranchWorld"),stage:$("ranchStage")}}
 function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight*mapScale}}
 function syncMapStage(){
@@ -149,7 +149,7 @@ function fitMap(){
  // 「全体」は横幅に牧場全域を合わせ、表示枠の高さ自体も縮小後の牧場へ追従させる。
  // これにより transform だけ縮小した時に残っていた下側の大きな空白を作らない。
  setFitMode(true);
- const ww=w.offsetWidth||1800;
+ const ww=w.offsetWidth||5400;
  const pad=12,availW=Math.max(1,p.clientWidth-pad*2);
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(1,availW/ww));
  w.style.transform=`translateZ(0) scale(${mapScale})`;
