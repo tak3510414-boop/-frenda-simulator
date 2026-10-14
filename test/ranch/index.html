@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.53">
+<html lang="ja" data-app-version="0.54">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ牧場 Ver0.53</title>
+<title>フレンダ牧場 Ver0.54</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.53: large ranch world + discovery fog + scaled stage */
+/* Ver0.54: large ranch world + discovery fog + scaled stage */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -168,9 +168,23 @@ html{scroll-behavior:smooth}
   }
 }
 </style>
-<style id="ranch-v053-life">.ranchWorld::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(circle at 23% 57%,rgba(255,245,176,.13),transparent 11%),radial-gradient(circle at 81% 53%,rgba(168,235,255,.13),transparent 12%),radial-gradient(circle at 27% 82%,rgba(255,225,123,.12),transparent 10%),radial-gradient(circle at 82% 81%,rgba(255,221,174,.11),transparent 11%)}</style></head>
+<style id="ranch-v053-life">.ranchWorld::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(circle at 23% 57%,rgba(255,245,176,.13),transparent 11%),radial-gradient(circle at 81% 53%,rgba(168,235,255,.13),transparent 12%),radial-gradient(circle at 27% 82%,rgba(255,225,123,.12),transparent 10%),radial-gradient(circle at 82% 81%,rgba(255,221,174,.11),transparent 11%)}</style>
+<style id="ranch-v054-time-growth">
+.ranch-time-test{border:2px solid #b8d7bd;background:linear-gradient(135deg,#f7fff7,#eff9f1)}
+.timeTestRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.timeTestRow.sub{margin-top:8px;padding-top:8px;border-top:1px dashed #c8ddcc}
+.timeTestRow button{border:1px solid #a8c8ad;background:#fff;color:#245137;border-radius:999px;padding:7px 11px;font-weight:900}
+.timeTestRow button.active{background:#174b32;color:#fff;border-color:#174b32;box-shadow:0 2px 8px #174b3230}
+.timeTestRow button:disabled{opacity:.45}
+.timeTestRow span{font-size:11px;color:#56705e;font-weight:700}
+.growthStep{opacity:0;transition:opacity 1.2s ease,transform 1.2s ease;transform-origin:center}
+.growthStep.shown{opacity:1}
+#growthVeil rect{transition:opacity 1.4s ease}
+@media(max-width:700px){.ranch-time-test{padding:9px}.timeTestRow button{padding:6px 9px}.timeTestRow span{width:100%}}
+</style>
+</head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.53 / 景観 × 生活AI強化</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.54 / 牧場時間 ×1 / ×10・成長する景観</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
@@ -204,6 +218,25 @@ html{scroll-behavior:smooth}
 <g fill="#f6ce4d"><circle cx="165" cy="735" r="11"/><circle cx="200" cy="760" r="10"/><circle cx="720" cy="650" r="11"/><circle cx="760" cy="670" r="9"/><circle cx="1130" cy="545" r="10"/></g><g fill="#e86f84"><circle cx="182" cy="752" r="9"/><circle cx="740" cy="665" r="9"/><circle cx="1160" cy="560" r="8"/></g><g fill="#91a987"><ellipse cx="700" cy="800" rx="38" ry="18"/><ellipse cx="1050" cy="620" rx="32" ry="14"/></g>
 <!-- sign -->
 <g transform="translate(1000 390)" filter="url(#ds)"><rect width="290" height="82" rx="18" fill="#8c5935" stroke="#d6a66a" stroke-width="8"/><text x="145" y="52" text-anchor="middle" font-size="34" font-weight="800" fill="#fff7dd">FRENDA RANCH</text><path d="M35 82v80M255 82v80" stroke="#6f472e" stroke-width="18"/></g>
+
+<!-- Ver0.54: progressive ranch growth. The veil fades while details appear in ten small steps. -->
+<g id="growthVeil">
+  <rect id="starterSkyVeil" x="0" y="0" width="1800" height="365" fill="#d7ebe2" opacity=".62"/>
+  <rect id="starterGroundVeil" x="0" y="345" width="1800" height="555" fill="#8fca73" opacity=".82"/>
+</g>
+<g id="growthExtras">
+  <g data-grow-step="1" class="growthStep" fill="#f3d35b"><circle cx="850" cy="640" r="8"/><circle cx="890" cy="655" r="7"/><circle cx="930" cy="635" r="8"/></g>
+  <g data-grow-step="2" class="growthStep" fill="#a7b39a"><ellipse cx="790" cy="700" rx="26" ry="11"/><ellipse cx="840" cy="680" rx="22" ry="9"/><ellipse cx="900" cy="705" rx="25" ry="10"/></g>
+  <g data-grow-step="3" class="growthStep" fill="#5a9d52"><circle cx="690" cy="570" r="25"/><circle cx="730" cy="585" r="22"/><circle cx="1100" cy="600" r="24"/></g>
+  <g data-grow-step="4" class="growthStep" stroke="#9a673f" stroke-width="13" stroke-linecap="round"><path d="M760 785h250"/><path d="M790 750v70M900 750v70M1010 750v70"/></g>
+  <g data-grow-step="5" class="growthStep" stroke="#4d8c51" stroke-width="7"><path d="M1310 520l-12-75m35 80 12-86m255 95-8-88m32 80 18-75"/></g>
+  <g data-grow-step="6" class="growthStep"><g fill="#5da657"><circle cx="690" cy="430" r="45"/><circle cx="1120" cy="445" r="42"/></g><g stroke="#765034" stroke-width="15"><path d="M690 455v82"/><path d="M1120 470v76"/></g></g>
+  <g data-grow-step="7" class="growthStep"><rect x="1015" y="650" width="150" height="95" rx="18" fill="#f4d58d" opacity=".86"/><path d="M1015 697h150M1090 650v95" stroke="#fff1bd" stroke-width="8"/></g>
+  <g data-grow-step="8" class="growthStep"><path d="M225 640 Q420 585 630 642" fill="none" stroke="#fff" stroke-width="4"/><g fill="#f39a70"><path d="M290 622l22 38 22-47z"/><path d="M390 604l22 38 22-47z"/><path d="M500 608l22 38 22-47z"/></g></g>
+  <g data-grow-step="9" class="growthStep"><path d="M1490 620q-25-38 8-65q18-15 2-40" fill="none" stroke="#fff" stroke-width="18" opacity=".58"/><g fill="#f07991"><circle cx="1360" cy="800" r="9"/><circle cx="1390" cy="812" r="8"/><circle cx="1420" cy="800" r="9"/></g></g>
+  <g data-grow-step="10" class="growthStep" fill="#fff1a6"><circle cx="760" cy="520" r="7"/><circle cx="820" cy="480" r="6"/><circle cx="1180" cy="520" r="7"/><circle cx="1220" cy="470" r="6"/><circle cx="980" cy="580" r="6"/></g>
+</g>
+
 </svg>
 </div>
 <div class="fogZone fogShade" data-area="shade"><span>まだ見ぬ木陰</span></div>
@@ -215,6 +248,19 @@ html{scroll-behavior:smooth}
 <div class="empty" id="empty">本編データを確認しています…</div>
 <div class="discoverToast" id="discoverToast" aria-live="polite"></div>
 </div>
+</div>
+</section>
+<section class="relations ranch-time-test" data-test-only="time">
+<h3>⏩ 牧場時間（テスト）</h3>
+<div class="timeTestRow">
+  <button type="button" id="timeScale1">×1 等倍</button>
+  <button type="button" id="timeScale10">×10</button>
+  <span id="timeScaleNote">歩く速さは変えず、牧場時間・生活経験・発展だけを加速します。</span>
+</div>
+<div class="timeTestRow sub">
+  <button type="button" id="growthTestStart">🌱 発展だけLv1から見る</button>
+  <button type="button" id="growthTestRestore">↩ 発展状態を元に戻す</button>
+  <span>個体・性格・仲間・思い出・本編データは変更しません。</span>
 </div>
 </section>
 <nav class="ranch-quick-nav" aria-label="牧場メニュー"><button type="button" data-panel="development">🌱発展</button><button type="button" data-panel="diary">📖日記</button><button type="button" data-panel="individuals">🐾個性</button><button type="button" data-panel="profiles">📚思い出</button><button type="button" data-panel="groups">👥仲間</button><button type="button" data-panel="relations">🤝関係</button></nav><section class="relations"><h3>🕒 牧場環境</h3><div class="relationList" id="environmentList">読み込み中…</div></section><section class="relations" hidden data-test-only="regression"><h3>🧬 進化・再入手 回帰テスト</h3><div class="relationList" id="evolutionAuditList">読み込み中…</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button id="testEvolutionBtn" type="button">🧬 進化テスト</button><button id="testReacquireBtn" type="button">🔁 再入手テスト</button></div><div id="regressionResult" style="margin-top:10px;font-weight:800">回帰テスト：未実行</div></section>
