@@ -89,7 +89,7 @@ const MAP_AREAS={
 };
 let mapRenderedLevel=0;
 let mapScale=1,mapBound=false;
-const MAP_SCALE_MIN=.34,MAP_SCALE_MAX=1.65;
+const MAP_SCALE_MIN=.12,MAP_SCALE_MAX=1.65;
 function mapEls(){return{p:$("pasture"),w:$("ranchWorld")}}
 function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight*mapScale}}
 let zoomRaf=0,pendingZoom=null;
@@ -111,8 +111,13 @@ function applyMapScale(scale,cx,cy){
 }
 function fitMap(){
  const {p,w}=mapEls();if(!p||!w)return;
- const scale=Math.min(p.clientWidth/w.offsetWidth,p.clientHeight/w.offsetHeight)*.98;
- applyMapScale(scale);requestAnimationFrame(()=>{p.scrollLeft=0;p.scrollTop=0})
+ // 「全体」は現在の表示領域へ牧場全域を必ず収める。
+ // transform前のワールド実寸に対して幅・高さ双方から倍率を求める。
+ const ww=w.offsetWidth||1800,wh=w.offsetHeight||900;
+ const pad=8,availW=Math.max(1,p.clientWidth-pad*2),availH=Math.max(1,p.clientHeight-pad*2);
+ const scale=Math.min(1,availW/ww,availH/wh);
+ commitMapScale(Math.max(MAP_SCALE_MIN,scale),p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2);
+ requestAnimationFrame(()=>{p.scrollLeft=0;p.scrollTop=0});
 }
 function focusMapArea(id,behavior="smooth"){
  const {p,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
