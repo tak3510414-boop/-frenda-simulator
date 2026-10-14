@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.40">
+<html lang="ja" data-app-version="0.41">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ牧場 Ver0.40</title>
+<title>フレンダ牧場 Ver0.41</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -15,9 +15,49 @@
 <style>.ranch-quick-nav{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;white-space:nowrap;-webkit-overflow-scrolling:touch}.ranch-quick-nav a{display:inline-block;padding:7px 11px;border:1px solid #cbdccf;border-radius:999px;background:#fff;color:#173d2b;text-decoration:none;font-weight:700;font-size:14px}.ranch-quick-nav a:active{transform:scale(.98)}</style><style>
 #development,#diary,#individuals,#profiles,#groups,#relations{scroll-margin-top:82px}
 html{scroll-behavior:smooth}
-</style><style>.ranch-quick-nav button{padding:8px 12px;border:1px solid #cbdccf;border-radius:999px;background:#fff;color:#173d2b;font-weight:700;font-size:14px;white-space:nowrap}.ranch-quick-nav button[aria-expanded="true"]{background:#e4f3e8}.ranch-detail-panel{display:none}.ranch-detail-panel.is-open{display:block}</style><style>#ranchField{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(#a9e0f1 0 29%,#8ed17b 29% 100%)!important;box-shadow:inset 0 -35px 55px #477b4a22}#ranchField>*:not(.ranch-scenery){position:relative;z-index:4}.ranch-scenery{position:absolute!important;inset:0;z-index:0!important;pointer-events:none}.sun{position:absolute;right:12%;top:7%;width:55px;height:55px;border-radius:50%;background:#fff5a8;box-shadow:0 0 35px #fff4a8}.hills{position:absolute;left:-5%;right:-5%;top:20%;height:28%;background:linear-gradient(150deg,transparent 0 10%,#75b66a 10% 30%,transparent 30% 36%,#69aa62 36% 62%,transparent 62% 68%,#7cbb70 68% 88%,transparent 88%);opacity:.8}.pond{position:absolute;right:5%;bottom:8%;width:31%;height:24%;border-radius:50%;background:radial-gradient(ellipse at 40% 30%,#c9f5f5,#69c8da 45%,#429db8 75%);border:5px solid #54865b55;box-shadow:inset 0 3px 8px #ffffffaa}.path{position:absolute;left:25%;bottom:10%;width:52%;height:13%;border-radius:50%;background:#d9bd84cc;transform:rotate(-6deg)}.tree{position:absolute;top:32%;font-size:clamp(42px,7vw,78px);filter:drop-shadow(0 8px 4px #28482e44)}.t1{left:3%}.t2{right:4%}.flowers{position:absolute;left:7%;bottom:7%;font-size:clamp(18px,3vw,34px)}.sign{position:absolute;left:50%;top:31%;transform:translate(-50%,-50%);padding:6px 13px;border-radius:7px;background:#b87942;color:#fff4d6;border:3px solid #80502d;box-shadow:0 4px 0 #47321e33;font-weight:900;font-size:clamp(10px,1.8vw,17px)}@media(max-width:520px){#ranchField{min-height:360px}.pond{width:35%;height:20%;right:3%}.tree{font-size:42px}}</style></head>
+</style><style>.ranch-quick-nav button{padding:8px 12px;border:1px solid #cbdccf;border-radius:999px;background:#fff;color:#173d2b;font-weight:700;font-size:14px;white-space:nowrap}.ranch-quick-nav button[aria-expanded="true"]{background:#e4f3e8}.ranch-detail-panel{display:none}.ranch-detail-panel.is-open{display:block}</style><style id="ranch-v041-visual">
+/* Ver0.41: scenery is drawn on the existing field itself, so ranch-ui re-render cannot erase it. */
+#ranchField{
+ position:relative!important;overflow:hidden!important;isolation:isolate;
+ background:
+ radial-gradient(ellipse at 78% 76%,#75cde1 0 5%,#4ca9c6 6% 10%,transparent 10.5%),
+ radial-gradient(ellipse at 15% 86%,#69b95d 0 15%,transparent 15.5%),
+ radial-gradient(ellipse at 72% 88%,#70bd60 0 14%,transparent 14.5%),
+ linear-gradient(166deg,transparent 0 61%,#d9bd82 61.5% 65%,transparent 65.5%),
+ linear-gradient(180deg,#a9e4f5 0 27%,#78b86c 27.5% 34%,#91d17d 34.5% 100%)!important;
+ box-shadow:inset 0 -35px 55px #356b3820!important;
+}
+#ranchField:before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:
+ radial-gradient(circle at 82% 11%,#fff7b1 0 3.2%,#fff5aa88 3.4% 7%,transparent 7.3%),
+ radial-gradient(ellipse at 15% 27%,#77b96b 0 14%,transparent 14.5%),
+ radial-gradient(ellipse at 48% 29%,#68aa61 0 20%,transparent 20.5%),
+ radial-gradient(ellipse at 83% 28%,#7cbd70 0 16%,transparent 16.5%);
+ opacity:.98
+}
+#ranchField:after{
+ content:"🌳　🌼　　🌲　　　　　　🌷　　　🌳　　　　　🌼　　🌲";
+ position:absolute;left:2%;right:2%;top:31%;z-index:1;pointer-events:none;
+ font-size:clamp(24px,3.6vw,50px);letter-spacing:.08em;
+ filter:drop-shadow(0 6px 3px #274b2c35);
+ white-space:nowrap;overflow:hidden
+}
+#ranchField .ranchPokemon,#ranchField .pokemon,#ranchField [class*="pokemon"],
+#ranchField .facility,#ranchField [class*="facility"],#ranchField .speech-bubble,#ranchField [class*="bubble"]{z-index:5!important}
+#ranchField .facility,#ranchField [class*="facility"]{
+ backdrop-filter:blur(3px);box-shadow:0 5px 12px #365b3825!important
+}
+@media(max-width:520px){
+ #ranchField{min-height:360px!important;background:
+ radial-gradient(ellipse at 79% 78%,#70cade 0 7%,#4ba5c0 7.5% 13%,transparent 13.5%),
+ linear-gradient(164deg,transparent 0 61%,#d8bd83 61.5% 66%,transparent 66.5%),
+ linear-gradient(180deg,#a9e4f5 0 27%,#77b76b 27.5% 34%,#91d17d 34.5% 100%)!important}
+ #ranchField:after{font-size:28px;top:32%}
+}
+</style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.40 / 牧場フロア ビジュアル強化</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.41 / 牧場フロア 景観レイヤー修正</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
