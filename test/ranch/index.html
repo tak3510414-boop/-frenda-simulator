@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.43">
+<html lang="ja" data-app-version="0.44">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.43: large ranch world + discovery fog */
+/* Ver0.44: large ranch world + discovery fog */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -116,16 +116,23 @@ html{scroll-behavior:smooth}
   .mapHudTitle{display:none}
   .mapJump button{padding:5px 7px}
 }
+</style><style id="ranch-v044-zoom">
+.pasture{touch-action:none!important}
+.ranchWorld{transform-origin:0 0;will-change:transform}
+.mapZoom{display:flex;gap:4px;align-items:center}
+.mapZoom button{appearance:none;border:1px solid #ffffff66;background:#ffffff20;color:#fff;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;cursor:pointer}
+#zoomPct{min-width:38px;text-align:center;font-size:10px;font-weight:900}
+@media(max-width:700px){.mapHud{right:10px;width:auto;max-width:none}.mapJump{max-width:100%;overflow-x:auto;flex-wrap:nowrap}.mapZoom{width:100%;justify-content:flex-end}.mapZoom button{padding:5px 9px}}
 </style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.43 / 段階開放マップ・霧</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.44 / ピンチズーム・カメラ</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
 <section class="pasture" id="pasture">
 <div class="mapHud" id="mapHud">
   <span class="mapHudTitle">🗺️ 牧場マップ</span>
-  <div class="mapJump" id="mapJump"></div>
+  <div class="mapJump" id="mapJump"></div><div class="mapZoom"><button type="button" id="zoomOut" aria-label="縮小">−</button><button type="button" id="zoomFit">全体</button><button type="button" id="zoomIn" aria-label="拡大">＋</button><span id="zoomPct">100%</span></div>
 </div>
 <div class="ranchWorld" id="ranchWorld" data-map-level="1">
 <div class="ranchScenery" aria-hidden="true">

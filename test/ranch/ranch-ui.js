@@ -88,18 +88,53 @@ const MAP_AREAS={
  hut:{name:"小屋",icon:"🏡",x:.77,y:.73}
 };
 let mapBound=false,mapRenderedLevel=0;
+let mapScale=1,mapBound=false;
+const MAP_SCALE_MIN=.34,MAP_SCALE_MAX=1.65;
+function mapEls(){return{p:$("pasture"),w:$("ranchWorld")}}
+function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight*mapScale}}
+function applyMapScale(scale,cx,cy){
+ const {p,w}=mapEls();if(!p||!w)return;
+ const old=mapScale,rect=p.getBoundingClientRect();
+ cx=cx??rect.left+p.clientWidth/2;cy=cy??rect.top+p.clientHeight/2;
+ const wx=(p.scrollLeft+(cx-rect.left))/old,wy=(p.scrollTop+(cy-rect.top))/old;
+ mapScale=Math.max(MAP_SCALE_MIN,Math.min(MAP_SCALE_MAX,scale));
+ w.style.transform=`scale(${mapScale})`;
+ const sz=scaledSize(w);p.style.setProperty("--world-w",sz.width+"px");p.style.setProperty("--world-h",sz.height+"px");
+ w.parentElement?.style?.setProperty?.("--map-scale",mapScale);
+ requestAnimationFrame(()=>{p.scrollLeft=Math.max(0,wx*mapScale-(cx-rect.left));p.scrollTop=Math.max(0,wy*mapScale-(cy-rect.top));const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%"});
+}
+function fitMap(){
+ const {p,w}=mapEls();if(!p||!w)return;
+ const scale=Math.min(p.clientWidth/w.offsetWidth,p.clientHeight/w.offsetHeight)*.98;
+ applyMapScale(scale);requestAnimationFrame(()=>{p.scrollLeft=0;p.scrollTop=0})
+}
 function focusMapArea(id,behavior="smooth"){
- const p=$("pasture"),w=$("ranchWorld"),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
- const left=Math.max(0,Math.min(w.clientWidth-p.clientWidth,w.clientWidth*a.x-p.clientWidth/2));
- const top=Math.max(0,Math.min(w.clientHeight-p.clientHeight,w.clientHeight*a.y-p.clientHeight/2));
+ const {p,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
+ const ww=w.offsetWidth*mapScale,wh=w.offsetHeight*mapScale;
+ const left=Math.max(0,Math.min(Math.max(0,ww-p.clientWidth),ww*a.x-p.clientWidth/2));
+ const top=Math.max(0,Math.min(Math.max(0,wh-p.clientHeight),wh*a.y-p.clientHeight/2));
  p.scrollTo({left,top,behavior});
 }
 function bindMapPan(){
- if(mapBound)return;mapBound=true;const p=$("pasture");if(!p)return;
- let down=false,sx=0,sy=0,sl=0,st=0;
- p.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"||e.button!==0||e.target.closest("button"))return;down=true;sx=e.clientX;sy=e.clientY;sl=p.scrollLeft;st=p.scrollTop;p.classList.add("dragging");p.setPointerCapture?.(e.pointerId)});
- p.addEventListener("pointermove",e=>{if(!down)return;p.scrollLeft=sl-(e.clientX-sx);p.scrollTop=st-(e.clientY-sy)});
- const end=()=>{down=false;p.classList.remove("dragging")};p.addEventListener("pointerup",end);p.addEventListener("pointercancel",end);
+ if(mapBound)return;mapBound=true;const {p}=mapEls();if(!p)return;
+ let pts=new Map(),drag=null,pinch=null;
+ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+ p.addEventListener("pointerdown",e=>{
+   if(e.target.closest("button"))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});p.setPointerCapture?.(e.pointerId);
+   if(pts.size===1){drag={id:e.pointerId,x:e.clientX,y:e.clientY,sl:p.scrollLeft,st:p.scrollTop};p.classList.add("dragging")}
+   if(pts.size===2){const a=[...pts.values()],m=mid(a[0],a[1]);pinch={d:dist(a[0],a[1]),scale:mapScale,cx:m.x,cy:m.y};drag=null}
+ });
+ p.addEventListener("pointermove",e=>{
+   if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(pts.size>=2&&pinch){const a=[...pts.values()],d=dist(a[0],a[1]),m=mid(a[0],a[1]);applyMapScale(pinch.scale*(d/pinch.d),m.x,m.y);return}
+   if(drag&&drag.id===e.pointerId){p.scrollLeft=drag.sl-(e.clientX-drag.x);p.scrollTop=drag.st-(e.clientY-drag.y)}
+ });
+ const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!pts.size){drag=null;p.classList.remove("dragging")}else{const [a]=pts.entries();drag={id:a[0],x:a[1].x,y:a[1].y,sl:p.scrollLeft,st:p.scrollTop}}};
+ p.addEventListener("pointerup",up);p.addEventListener("pointercancel",up);
+ p.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();applyMapScale(mapScale*(e.deltaY<0?1.12:.89),e.clientX,e.clientY)},{passive:false});
+ $("zoomIn")?.addEventListener("click",()=>applyMapScale(mapScale*1.2));
+ $("zoomOut")?.addEventListener("click",()=>applyMapScale(mapScale/1.2));
+ $("zoomFit")?.addEventListener("click",fitMap);
 }
 function renderMap(s){
  const d=R.updateDevelopment?.(s)||s?.development||{level:1,unlocked:["meadow"]},lv=Math.max(1,Math.min(5,Number(d.level)||1));
@@ -109,7 +144,7 @@ function renderMap(s){
  jump.innerHTML="";
  for(const f of (R.FACILITIES||[])){if(!unlocked.has(f.id))continue;const b=document.createElement("button");b.type="button";b.dataset.mapTarget=f.id;b.textContent=`${f.icon}${f.name}`;b.onclick=()=>focusMapArea(f.id);jump.appendChild(b)}
  bindMapPan();
- if(!previous){requestAnimationFrame(()=>focusMapArea("meadow","auto"))}
+ if(!previous){requestAnimationFrame(()=>{const p=$("pasture"),w=$("ranchWorld");if(!p||!w)return;const base=Math.min(1,Math.max(.42,p.clientWidth/(w.offsetWidth*.72)));applyMapScale(base);setTimeout(()=>focusMapArea("meadow","auto"),30)})}
  else if(lv>previous){
    const fac=(R.FACILITIES||[]).find(f=>f.level===lv);if(fac){setTimeout(()=>focusMapArea(fac.id),250);const toast=$("discoverToast");if(toast){toast.textContent=`✨ ${fac.name}を発見！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2500)}}
  }
