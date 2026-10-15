@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.58">
+<html lang="ja" data-app-version="0.59">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダワールド Ver0.58</title>
+<title>フレンダワールド Ver0.59</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.58: large ranch world + discovery fog + scaled stage */
+/* Ver0.59: large ranch world + discovery fog + scaled stage */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -202,9 +202,9 @@ html{scroll-behavior:smooth}
 .worldLegend{position:absolute;left:1.2%;bottom:1.5%;z-index:4;display:flex;gap:12px;flex-wrap:wrap;max-width:70%;pointer-events:none}
 .worldLegend span{background:rgba(20,58,43,.84);color:#fff;border:2px solid rgba(255,255,255,.55);border-radius:999px;padding:10px 18px;font-weight:800;font-size:22px;box-shadow:0 8px 20px #0002}
 @media(max-width:700px){.worldLegend span{font-size:15px;padding:7px 11px}.worldLegend{max-width:86%}}
-</style></head>
+</style><style id="fw-v059">.worldDiscovery{margin:14px 16px;padding:16px;border:2px solid #b9d7c0;border-radius:20px;background:rgba(255,255,255,.95)}.worldDiscovery h3{margin:0 0 8px;color:#174f38}.discoveryCards{display:flex;gap:8px;overflow:auto}.discoveryCard{flex:0 0 auto;border:1px solid #b7ccb9;border-radius:14px;padding:10px 13px;background:#f7fff8;font-weight:800}.discoveryCard.locked{filter:grayscale(.8);opacity:.55}.discoveryCard.new{box-shadow:0 0 0 3px #f4d36a inset;background:#fffbe9}#ranchWorld[data-map-level="1"] .oneWorldScenery{clip-path:inset(31% 31% 31% 31% round 90px)}#ranchWorld[data-map-level="2"] .oneWorldScenery{clip-path:inset(16% 31% 16% 16% round 70px)}#ranchWorld[data-map-level="3"] .oneWorldScenery{clip-path:inset(8% 8% 8% 8% round 55px)}#ranchWorld[data-map-level="4"] .oneWorldScenery,#ranchWorld[data-map-level="5"] .oneWorldScenery{clip-path:none}</style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダワールド</span> <span class="ver">Ver0.58 / 世界のはじまり</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダワールド</span> <span class="ver">Ver0.59 / 最初の発見</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
@@ -230,7 +230,7 @@ html{scroll-behavior:smooth}
 <!-- orchard -->
 <g stroke="#724c34" stroke-width="22" fill="#579f50"><g transform="translate(420 1230)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(760 1390)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(1150 1240)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(1490 1450)"><path d="M0 90v180"/><circle cy="35" r="105"/></g></g>
 <!-- central landmark -->
-<g transform="translate(2440 1130)" filter="url(#sh57)"><rect width="520" height="125" rx="25" fill="#895735" stroke="#d8aa6d" stroke-width="12"/><text x="260" y="79" text-anchor="middle" font-size="54" font-weight="900" fill="#fff7dd">FRENDA RANCH</text><path d="M70 125v190M450 125v190" stroke="#6e472e" stroke-width="30"/></g>
+<g transform="translate(2440 1130)" filter="url(#sh57)"><rect width="520" height="125" rx="25" fill="#895735" stroke="#d8aa6d" stroke-width="12"/><text x="260" y="79" text-anchor="middle" font-size="54" font-weight="900" fill="#fff7dd">はじまりの広場</text><path d="M70 125v190M450 125v190" stroke="#6e472e" stroke-width="30"/></g>
 <!-- play meadow -->
 <ellipse cx="900" cy="2230" rx="690" ry="340" fill="#8bd472"/><g transform="translate(470 2040)"><path d="M0 300L175 0l175 300M85 140h180" stroke="#82532f" stroke-width="42" fill="none"/><path d="M120 140v205m110-205v205" stroke="#684831" stroke-width="14"/><rect x="95" y="325" width="160" height="32" rx="13" fill="#d77d50"/></g><circle cx="1320" cy="2240" r="115" fill="#f2d65d"/><circle cx="1320" cy="2240" r="67" fill="#fff1a2"/>
 <!-- cottage -->
@@ -317,9 +317,9 @@ html{scroll-behavior:smooth}
 <g stroke="#96613a" stroke-width="15" stroke-linecap="round"><path d="M55 545H720M55 595H700"/><path d="M75 515v115M255 515v115M440 515v115M625 515v115"/></g>
 <g fill="#f6ce4d"><circle cx="165" cy="735" r="11"/><circle cx="200" cy="760" r="10"/><circle cx="720" cy="650" r="11"/><circle cx="760" cy="670" r="9"/><circle cx="1130" cy="545" r="10"/></g><g fill="#e86f84"><circle cx="182" cy="752" r="9"/><circle cx="740" cy="665" r="9"/><circle cx="1160" cy="560" r="8"/></g><g fill="#91a987"><ellipse cx="700" cy="800" rx="38" ry="18"/><ellipse cx="1050" cy="620" rx="32" ry="14"/></g>
 <!-- sign -->
-<g transform="translate(1000 390)" filter="url(#ds)"><rect width="290" height="82" rx="18" fill="#8c5935" stroke="#d6a66a" stroke-width="8"/><text x="145" y="52" text-anchor="middle" font-size="34" font-weight="800" fill="#fff7dd">FRENDA RANCH</text><path d="M35 82v80M255 82v80" stroke="#6f472e" stroke-width="18"/></g>
+<g transform="translate(1000 390)" filter="url(#ds)"><rect width="290" height="82" rx="18" fill="#8c5935" stroke="#d6a66a" stroke-width="8"/><text x="145" y="52" text-anchor="middle" font-size="34" font-weight="800" fill="#fff7dd">はじまりの広場</text><path d="M35 82v80M255 82v80" stroke="#6f472e" stroke-width="18"/></g>
 
-<!-- Ver0.58: progressive ranch growth. The veil fades while details appear in ten small steps. -->
+<!-- Ver0.59: progressive ranch growth. The veil fades while details appear in ten small steps. -->
 <g id="growthVeil">
   <rect id="starterSkyVeil" x="0" y="0" width="1800" height="365" fill="#d7ebe2" opacity=".62"/>
   <rect id="starterGroundVeil" x="0" y="345" width="1800" height="555" fill="#8fca73" opacity=".82"/>
@@ -403,7 +403,7 @@ html{scroll-behavior:smooth}
 </div>
 </div>
 </section>
-<section class="relations ranch-time-test" data-test-only="time">
+<section class="worldDiscovery" id="worldDiscovery"><h3>🧭 世界の発見</h3><p id="discoveryLead">ポケモンたちは、まだ知らない場所の気配を感じています。</p><div class="discoveryCards" id="discoveryCards"></div></section><section class="relations ranch-time-test" data-test-only="time">
 <h3>⏩ 牧場時間（テスト）</h3>
 <div class="timeTestRow">
   <button type="button" id="timeScale1">×1 等倍</button>

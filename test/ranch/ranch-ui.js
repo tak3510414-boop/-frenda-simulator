@@ -220,6 +220,9 @@ async function render(){
 window.addEventListener("ranch:time-scale-changed",()=>{renderTimeTestControls();renderEnvironment()});
 window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s){renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);renderDevelopment(s);renderFacilitySpots(s);renderDiary(s)}});window.addEventListener("ranch:development-updated",()=>{const s=R.readSave?.();if(s){renderDevelopment(s);renderFacilitySpots(s);renderMap(s);renderDiary(s)}});
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
+
+function renderWorldDiscovery(s){const box=document.getElementById("discoveryCards"),lead=document.getElementById("discoveryLead");if(!box)return;const lv=Math.max(1,Number(s?.development?.level)||1),steps=R.DISCOVERY_STEPS||[];box.innerHTML=steps.map(x=>`<div class="discoveryCard ${x.level>lv?"locked":x.level===lv&&lv>1?"new":""}">${x.level<=lv?x.name:"🔒 未知の場所"}<br><small>${x.level<=lv?x.hint:"ポケモンが見つけるまで分かりません。"}</small></div>`).join("");const cur=steps.filter(x=>x.level<=lv).slice(-1)[0];if(lead&&cur)lead.textContent=lv===1?"ポケモンたちが牧場の外を気にしています。どこへ行くのでしょう？":`${cur.name}まで世界が広がりました。`}
+const _renderWorldBase=render;render=function(){const r=_renderWorldBase.apply(this,arguments);try{renderWorldDiscovery(R.readSave?.())}catch(e){}return r};
 })();
 // Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
 

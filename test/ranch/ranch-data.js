@@ -1,7 +1,7 @@
 (()=>{"use strict";
 window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const R=window.FRENDA_RANCH;
-R.VERSION="0.58";R.SCHEMA_VERSION=4;R.MAX_INITIAL=6;
+R.VERSION="0.59";R.SCHEMA_VERSION=4;R.MAX_INITIAL=6;
 R.masterRecords=()=>Array.isArray(window.FRENDA_MASTER?.records)?window.FRENDA_MASTER.records:[];
 R.masterMap=()=>new Map(R.masterRecords().map(x=>[String(x.master_id),x]));
 R.ownedIds=()=>{const D=window.FRENDA_DATA;const d=D?.dungeon?.read?.();if(d?.initialized&&Array.isArray(d.owned))return [...new Set(d.owned.map(x=>String(x?.id||"")).filter(Boolean))];const a=D?.readList?.(D?.KEYS?.simulator?.owned)||[];return [...new Set(a.map(String).filter(Boolean))]};
@@ -22,5 +22,7 @@ R.WORLD_AREAS=Object.freeze([
 {id:"ruins",name:"天空遺跡",realm:"sky",unlock:9},
 {id:"dark_castle",name:"闇の城",realm:"unknown",unlock:10}
 ]);
+
+R.DISCOVERY_STEPS=Object.freeze([{id:"ranch",name:"🌿 フレンダ牧場",level:1,hint:"ここが世界の出発点。"},{id:"forest",name:"🌳 木陰の森",level:2,hint:"草むらの先から木々のざわめきが聞こえる。"},{id:"lake",name:"💧 水辺",level:3,hint:"遠くから水の音がする。"},{id:"mine",name:"⛏️ ひかり石の鉱山",level:4,hint:"岩陰から不思議な光が漏れている。"},{id:"beyond",name:"❓ さらに遠く",level:5,hint:"世界はここで終わっていない。"}]);
 })();
 // Updated: 2026-10-13 12:45 JST
