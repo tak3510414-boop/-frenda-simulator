@@ -223,6 +223,9 @@ window.addEventListener("DOMContentLoaded",render);window.addEventListener("page
 
 function renderWorldDiscovery(s){const box=document.getElementById("discoveryCards"),lead=document.getElementById("discoveryLead");if(!box)return;const lv=Math.max(1,Number(s?.development?.level)||1),steps=R.DISCOVERY_STEPS||[];box.innerHTML=steps.map(x=>`<div class="discoveryCard ${x.level>lv?"locked":x.level===lv&&lv>1?"new":""}">${x.level<=lv?x.name:"🔒 未知の場所"}<br><small>${x.level<=lv?x.hint:"ポケモンが見つけるまで分かりません。"}</small></div>`).join("");const cur=steps.filter(x=>x.level<=lv).slice(-1)[0];if(lead&&cur)lead.textContent=lv===1?"ポケモンたちが牧場の外を気にしています。どこへ行くのでしょう？":`${cur.name}まで世界が広がりました。`}
 const _renderWorldBase=render;render=function(){const r=_renderWorldBase.apply(this,arguments);try{renderWorldDiscovery(R.readSave?.())}catch(e){}return r};
+
+function worldDiscoveryCeremony(s){const lv=Math.max(1,Number(s?.development?.level)||1),cue=document.getElementById("discoveryCue"),key="frendaWorldShownLevel",prev=Math.max(1,Number(localStorage.getItem(key)||1));if(lv<=prev||!cue){localStorage.setItem(key,String(Math.max(prev,lv)));return}const ev=R.DISCOVERY_EVENTS?.[lv],who=(s?.individuals||[])[0]?.name||"ポケモン";if(!ev){localStorage.setItem(key,String(lv));return}cue.textContent=`${who}${ev.pre}`;cue.classList.add("show");setTimeout(()=>cue.textContent=`${who}${ev.wait}`,1400);setTimeout(()=>cue.textContent="！",3000);setTimeout(()=>cue.textContent=ev.found,3650);setTimeout(()=>{cue.classList.remove("show");localStorage.setItem(key,String(lv));try{render()}catch(e){}},5900)}
+const _fwRender060=render;render=function(){const r=_fwRender060.apply(this,arguments);try{const s=R.readSave?.();renderWorldDiscovery(s);worldDiscoveryCeremony(s)}catch(e){}return r};
 })();
 // Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
 
