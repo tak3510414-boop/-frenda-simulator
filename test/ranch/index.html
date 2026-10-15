@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.56">
+<html lang="ja" data-app-version="0.57">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダ牧場 Ver0.56</title>
+<title>フレンダ牧場 Ver0.57</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.56: large ranch world + discovery fog + scaled stage */
+/* Ver0.57: large ranch world + discovery fog + scaled stage */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -193,9 +193,14 @@ html{scroll-behavior:smooth}
 .megaFog span{font-size:24px;padding:16px 24px}
 @media(max-width:700px){.ranchWorld,.ranchStage{width:5400px!important;height:2700px!important}.ranchScenerySvg{width:5400px!important;height:2700px!important}.megaFog span{font-size:18px}}
 </style>
-</head>
+<style id="ranch-v057-oneworld">
+.ranchScenerySvg{opacity:0!important}.ranchWorld{background:linear-gradient(to bottom,#b8e5f0 0 18%,#8dc96e 18% 100%)!important;overflow:hidden}
+.ranchWorld:before{content:"";position:absolute;z-index:0;left:-3%;right:-3%;top:10%;height:23%;pointer-events:none;background:radial-gradient(ellipse at 8% 100%,#6eae64 0 38%,transparent 38.5%),radial-gradient(ellipse at 25% 100%,#82bd69 0 43%,transparent 43.5%),radial-gradient(ellipse at 43% 100%,#70b064 0 40%,transparent 40.5%),radial-gradient(ellipse at 62% 100%,#86c56e 0 45%,transparent 45.5%),radial-gradient(ellipse at 82% 100%,#6faf63 0 41%,transparent 41.5%)}
+.oneWorldScenery{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}.oneWorldScenery text{font-family:system-ui,-apple-system,sans-serif}
+#facilityLayer,#socialLayer,.empty,.discoverToast{z-index:6!important}.fogZone{z-index:5!important}
+</style></head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.56 / 巨大牧場 起動修正</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌿 フレンダ牧場</span> <span class="ver">Ver0.57 / 巨大牧場・一枚世界化</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
 <section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
@@ -205,7 +210,32 @@ html{scroll-behavior:smooth}
   <div class="mapJump" id="mapJump"></div><div class="mapZoom"><button type="button" id="zoomOut" aria-label="縮小">−</button><button type="button" id="zoomFit">全体</button><button type="button" id="zoomIn" aria-label="拡大">＋</button><span id="zoomPct">100%</span></div>
 </div>
 <div class="ranchStage" id="ranchStage">
-<div class="ranchWorld" id="ranchWorld" data-map-level="1">
+<div class="ranchWorld" id="ranchWorld" data-map-level="1"><svg class="oneWorldScenery" viewBox="0 0 5400 2700" preserveAspectRatio="none" aria-hidden="true">
+<defs><linearGradient id="rd57" x2="1" y2="1"><stop stop-color="#efd89b"/><stop offset="1" stop-color="#d7b66f"/></linearGradient><linearGradient id="rv57" x2="1" y2="1"><stop stop-color="#9de3eb"/><stop offset="1" stop-color="#53b5d0"/></linearGradient><filter id="sh57"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-opacity=".18"/></filter></defs>
+<!-- one continuous road network -->
+<path d="M260 620C820 500 1210 760 1700 980C2140 1180 2350 1170 2700 1350C3060 1530 3380 1480 3760 1720C4200 1990 4580 2160 5160 2390" fill="none" stroke="#c9a75f" stroke-width="190" stroke-linecap="round"/>
+<path d="M260 620C820 500 1210 760 1700 980C2140 1180 2350 1170 2700 1350C3060 1530 3380 1480 3760 1720C4200 1990 4580 2160 5160 2390" fill="none" stroke="url(#rd57)" stroke-width="135" stroke-linecap="round"/>
+<g fill="none" stroke="#dec27d" stroke-width="92" stroke-linecap="round"><path d="M2660 1320C2460 1010 2350 650 2500 310"/><path d="M2910 1450C3330 1190 3820 870 4370 610"/><path d="M2470 1260C2020 1470 1540 1790 1050 2160"/><path d="M3200 1560C3470 1890 3770 2200 4140 2420"/></g>
+<!-- continuous river + lake -->
+<path d="M4750 420C4500 690 4280 820 4070 1050C3850 1290 3650 1260 3440 1450C3220 1650 2990 1580 2820 1490C2600 1370 2420 1480 2250 1680" fill="none" stroke="#d8ecb5" stroke-width="245" stroke-linecap="round"/>
+<path d="M4750 420C4500 690 4280 820 4070 1050C3850 1290 3650 1260 3440 1450C3220 1650 2990 1580 2820 1490C2600 1370 2420 1480 2250 1680" fill="none" stroke="url(#rv57)" stroke-width="185" stroke-linecap="round"/>
+<path d="M4090 230C4400 65 5020 110 5220 365C5410 605 5120 850 4660 830C4230 812 3940 610 3990 405C4010 325 4045 265 4090 230Z" fill="#62bdd5" stroke="#dcebb8" stroke-width="38"/>
+<g stroke="#eaffff" stroke-width="18" fill="none" opacity=".55"><path d="M4240 390q330-120 650 5"/><path d="M4470 650q330-95 610 0"/></g>
+<!-- large forest -->
+<g filter="url(#sh57)"><g stroke="#704a30" stroke-width="30"><path d="M430 650v300"/><path d="M760 570v350"/><path d="M1100 650v310"/><path d="M1420 580v350"/></g><g fill="#3e8d4d"><circle cx="420" cy="540" r="210"/><circle cx="710" cy="450" r="245"/><circle cx="1030" cy="535" r="225"/><circle cx="1360" cy="465" r="245"/></g><g fill="#62aa56"><circle cx="550" cy="365" r="120"/><circle cx="930" cy="345" r="130"/><circle cx="1510" cy="390" r="115"/></g></g>
+<!-- orchard -->
+<g stroke="#724c34" stroke-width="22" fill="#579f50"><g transform="translate(420 1230)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(760 1390)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(1150 1240)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(1490 1450)"><path d="M0 90v180"/><circle cy="35" r="105"/></g></g>
+<!-- central landmark -->
+<g transform="translate(2440 1130)" filter="url(#sh57)"><rect width="520" height="125" rx="25" fill="#895735" stroke="#d8aa6d" stroke-width="12"/><text x="260" y="79" text-anchor="middle" font-size="54" font-weight="900" fill="#fff7dd">FRENDA RANCH</text><path d="M70 125v190M450 125v190" stroke="#6e472e" stroke-width="30"/></g>
+<!-- play meadow -->
+<ellipse cx="900" cy="2230" rx="690" ry="340" fill="#8bd472"/><g transform="translate(470 2040)"><path d="M0 300L175 0l175 300M85 140h180" stroke="#82532f" stroke-width="42" fill="none"/><path d="M120 140v205m110-205v205" stroke="#684831" stroke-width="14"/><rect x="95" y="325" width="160" height="32" rx="13" fill="#d77d50"/></g><circle cx="1320" cy="2240" r="115" fill="#f2d65d"/><circle cx="1320" cy="2240" r="67" fill="#fff1a2"/>
+<!-- cottage -->
+<g transform="translate(4140 2010)" filter="url(#sh57)"><rect x="60" y="180" width="720" height="410" rx="30" fill="#f4dfad"/><path d="M0 220L420 0l420 220z" fill="#b95f45"/><rect x="160" y="315" width="180" height="165" rx="16" fill="#8ed0df" stroke="#fff3d0" stroke-width="24"/><rect x="545" y="290" width="155" height="300" rx="18" fill="#996541"/><circle cx="650" cy="445" r="14" fill="#f4d66f"/></g>
+<!-- continuous fences, bushes, flowers -->
+<g stroke="#956039" stroke-width="25" stroke-linecap="round"><path d="M1550 1860h820M1550 1950h820"/><path d="M1640 1800v220M1900 1800v220M2160 1800v220"/><path d="M3350 2180h620M3350 2270h620"/><path d="M3440 2120v220M3690 2120v220M3900 2120v220"/></g>
+<g fill="#559c50"><circle cx="1900" cy="720" r="100"/><circle cx="2040" cy="780" r="85"/><circle cx="3500" cy="620" r="105"/><circle cx="3700" cy="700" r="90"/><circle cx="4930" cy="1980" r="115"/></g>
+<g fill="#f5cf4e"><circle cx="1760" cy="1020" r="15"/><circle cx="1840" cy="1060" r="13"/><circle cx="2050" cy="2080" r="15"/><circle cx="3140" cy="2050" r="14"/><circle cx="3620" cy="820" r="14"/></g>
+</svg>
 <div class="ranchScenery" aria-hidden="true">
 <svg class="ranchScenerySvg" viewBox="0 0 5400 2700" preserveAspectRatio="none">
 <defs><linearGradient id="s" x2="0" y2="1"><stop stop-color="#a9def4"/><stop offset=".55" stop-color="#e8f7e5"/><stop offset=".56" stop-color="#9bd66f"/><stop offset="1" stop-color="#66ae57"/></linearGradient><linearGradient id="w" x2="1" y2="1"><stop stop-color="#91e0ee"/><stop offset="1" stop-color="#42a9c7"/></linearGradient><filter id="ds"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-opacity=".18"/></filter></defs>
@@ -285,7 +315,7 @@ html{scroll-behavior:smooth}
 <!-- sign -->
 <g transform="translate(1000 390)" filter="url(#ds)"><rect width="290" height="82" rx="18" fill="#8c5935" stroke="#d6a66a" stroke-width="8"/><text x="145" y="52" text-anchor="middle" font-size="34" font-weight="800" fill="#fff7dd">FRENDA RANCH</text><path d="M35 82v80M255 82v80" stroke="#6f472e" stroke-width="18"/></g>
 
-<!-- Ver0.56: progressive ranch growth. The veil fades while details appear in ten small steps. -->
+<!-- Ver0.57: progressive ranch growth. The veil fades while details appear in ten small steps. -->
 <g id="growthVeil">
   <rect id="starterSkyVeil" x="0" y="0" width="1800" height="365" fill="#d7ebe2" opacity=".62"/>
   <rect id="starterGroundVeil" x="0" y="345" width="1800" height="555" fill="#8fca73" opacity=".82"/>

@@ -117,7 +117,7 @@ function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight
 function syncMapStage(){
  const {w,stage}=mapEls();if(!w||!stage)return;
  const sw=Math.max(1,w.offsetWidth*mapScale),sh=Math.max(1,w.offsetHeight*mapScale);
- stage.style.width=`${sw}px`;stage.style.height=`${sh}px`;
+ stage.style.width=`${sw}px`;stage.style.height=`${sh}px`;stage.style.minWidth=`${sw}px`;stage.style.minHeight=`${sh}px`;
 }
 function setFitMode(on){
  const {p}=mapEls();if(!p)return;
@@ -127,7 +127,7 @@ let zoomRaf=0,pendingZoom=null;
 function commitMapScale(scale,cx,cy){
  const {p,w,stage}=mapEls();if(!p||!w||!stage)return;
  // 手動ズーム時は固定ビューポートへ戻す。全体表示時だけ高さを内容に合わせる。
- setFitMode(false);
+ setFitMode(false);p.style.height="";
  const old=mapScale,rect=p.getBoundingClientRect(),sr=stage.getBoundingClientRect();
  cx=cx??rect.left+p.clientWidth/2;cy=cy??rect.top+p.clientHeight/2;
  const wx=(cx-sr.left)/Math.max(.001,old),wy=(cy-sr.top)/Math.max(.001,old);
@@ -156,10 +156,7 @@ function fitMap(){
  syncMapStage();
  p.scrollLeft=0;p.scrollTop=0;
  const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
- requestAnimationFrame(()=>{
-   // stage を中央配置した状態で、スクロール残りを完全に消す。
-   p.scrollLeft=0;p.scrollTop=0;
- });
+ requestAnimationFrame(()=>{p.scrollLeft=0;p.scrollTop=0;const hud=p.querySelector(".mapHud"),h=(hud?.offsetHeight||0)+stage.offsetHeight+20;p.style.height=`${Math.ceil(h)}px`;});
 }
 function focusMapArea(id,behavior="smooth"){
  const {p,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
