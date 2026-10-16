@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダワールド Ver0.74</title>
+<title>フレンダワールド Ver0.75</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -370,9 +370,18 @@ main> *:not(#world71App){display:none!important}
 .world71SceneCard h2{margin:0 0 6px;font-size:23px}.world71SceneCard p{margin:0;font-size:13px;line-height:1.55}.world71ResidentLine{margin-top:10px;padding-top:9px;border-top:1px solid #ffffff38;font-size:12px;font-weight:800}
 @media(max-width:700px){main{padding:8px 8px 24px!important}#world71App{padding:0!important}.world71Map{height:calc(100svh - 140px);aspect-ratio:auto;max-height:none}.world71Hero b{font-size:23px}.world71Spot{font-size:10px;padding:7px 9px}.world71Whisper{font-size:10px}.world71Scene{height:calc(100svh - 140px);min-height:0}}
 </style>
+
+<style id="world75Style">
+.world74Grid{display:none!important}.world74LifeTitle{display:none!important}.world74Event{display:none!important}
+.world75SceneLayer{position:absolute;inset:62px 14px 190px;z-index:3;pointer-events:none}
+.world75Actor{position:absolute;transform:translate(-50%,-50%);min-width:92px;max-width:145px;padding:7px 9px;border-radius:15px;background:rgba(5,28,20,.82);border:1px solid #ffffff66;box-shadow:0 6px 16px #0005;color:#fff;backdrop-filter:blur(5px);pointer-events:auto;text-align:center}
+.world75Actor b{display:block;font-size:12px}.world75Actor small{display:block;font-size:9px;line-height:1.3;opacity:.9;margin-top:2px}.world75Actor .mood{font-size:17px;line-height:1}.world75Together{outline:2px solid #ffd96a99}.world75Together:after{content:'♪';position:absolute;right:-5px;top:-9px;background:#fff4c7;color:#5c4500;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-weight:900}
+.world75Story{margin-top:9px;padding:9px 10px;border-radius:13px;background:#ffffff12;border:1px solid #ffffff28;font-size:11px;line-height:1.5}.world75Story b{display:block;font-size:12px;margin-bottom:3px}.world75Tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.world75Tag{font-size:9px;padding:3px 7px;border-radius:999px;background:#ffffff16}
+@media(max-width:600px){.world75SceneLayer{inset:58px 8px 220px}.world75Actor{min-width:78px;max-width:112px;padding:6px}.world75Actor b{font-size:11px}.world75Actor small{font-size:8px}}
+</style>
 </head>
 <body>
-<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.74 / 生活スポット</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.75 / 生活スポット</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <section id="world71App" class="world71App" aria-label="フレンダワールド">
   <div id="world71Map" class="world71Map">
@@ -843,5 +852,37 @@ window.addEventListener('load',()=>{
 </script>
 
 
+
+<script id="world75LifeScenes">
+(()=>{
+const POS={
+ meadow:[['広場',27,58],['花畑',66,57],['大きな木の下',78,35],['里の小道',46,72],['噴水のそば',53,49],['屋根の上',33,29],['広場の上空',57,22]],
+ shade:[['森の小道',48,63],['倒木のそば',67,54],['大きな木の下',25,45],['小川',76,72],['湿った岩場',62,68],['木の枝',35,30],['林冠の近く',66,25]],
+ pond:[['岸辺',25,68],['湖畔の岩場',69,68],['木陰',82,48],['浅瀬',48,70],['水面',63,57],['滝つぼの近く',35,45],['湖畔の上空',62,24],['湖畔の岩',78,54]],
+ play:[['入口前',35,68],['岩陰',68,64],['岩棚',58,44],['坑道入口',48,57],['薄暗い坑道',60,50],['入口上の崖',72,30]]
+};
+function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function name(R,c){return R.pickName?.(c.pickId)||c.pickId||'ポケモン'}
+function mood(c){const a=String(c.world2?.action||'');if(/休|眠|のんびり/.test(a))return '💤';if(/泳|水/.test(a))return '💧';if(/飛|上空|枝/.test(a))return '🪽';if(/調べ|気に|見回/.test(a))return '👀';return '🐾'}
+function personality(R,c){try{return R.ai?.personalityLabel?.(c)||'その子らしく'}catch(e){return 'その子らしく'}}
+function bondPairs(s,list){const ids=new Set(list.map(c=>String(c.ranchId))), out=[];for(const b of Object.values(s.social?.bonds||{})){if(!b||Number(b.score)<5)continue;if(ids.has(String(b.a))&&ids.has(String(b.b)))out.push(b)}return out.sort((a,b)=>Number(b.score)-Number(a.score))}
+function pos(area,spot,i){const arr=POS[area]||POS.meadow;let p=arr.find(x=>x[0]===spot)||arr[i%arr.length];return {x:p[1],y:p[2]}}
+function render75(area){
+ const R=window.FRENDA_RANCH,s=R?.readSave?.();const scene=document.getElementById('world71Scene');if(!R||!s||!scene||scene.hidden)return;
+ const list=(s.creatures||[]).filter(c=>c?.status==='resident'&&c.world2?.currentArea===area).slice(0,6);
+ let layer=scene.querySelector('.world75SceneLayer');if(!layer){layer=document.createElement('div');layer.className='world75SceneLayer';scene.appendChild(layer)}
+ const pairs=bondPairs(s,list), together=new Set();if(pairs[0]){together.add(String(pairs[0].a));together.add(String(pairs[0].b))}
+ layer.innerHTML=list.map((c,i)=>{const p=pos(area,c.world2?.spot,i),is=together.has(String(c.ranchId));return `<div class="world75Actor${is?' world75Together':''}" style="left:${p.x}%;top:${p.y}%"><div class="mood">${mood(c)}</div><b>${esc(name(R,c))}</b><small>${esc(c.world2?.action||'のんびり過ごしている')}</small></div>`}).join('');
+ const host=scene.querySelector('.world74Life');if(!host)return;let story=host.querySelector('.world75Story');if(!story){story=document.createElement('div');story.className='world75Story';host.appendChild(story)}
+ let text='今は静かな時間が流れています。';let title='今日のひとコマ';let tags=[];
+ if(pairs[0]){const a=list.find(c=>String(c.ranchId)===String(pairs[0].a)),b=list.find(c=>String(c.ranchId)===String(pairs[0].b));if(a&&b){const lab=R.ai?.relationLabel?.(pairs[0])||pairs[0].rankLabel||'仲良し';text=`${name(R,a)}と${name(R,b)}が近くで過ごしています。二匹の関係は「${lab}」。`;tags.push('🤝 '+lab)}}
+ else if(list.length){const c=list[0];text=`${name(R,c)}は${c.world2?.spot||'この場所'}で${c.world2?.action||'のんびり過ごしている'}ようです。`;tags.push('性格：'+personality(R,c))}
+ const off=s.offlineSummary;if(off&&Number(off.elapsedMinutes)>=10){const m=Number(off.elapsedMinutes)||0;tags.push(`留守中 ${m>=60?Math.floor(m/60)+'時間':Math.floor(m)+'分'}`)}
+ story.innerHTML=`<b>${title}</b>${esc(text)}<div class="world75Tags">${tags.map(x=>`<span class="world75Tag">${esc(x)}</span>`).join('')}</div>`;
+}
+function currentArea(){return window.__FW74_AREA||'meadow'}
+window.addEventListener('load',()=>{document.querySelectorAll('[data-w71]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>render75(b.dataset.w71),60)));setInterval(()=>{const sc=document.getElementById('world71Scene');if(sc&&!sc.hidden)render75(currentArea())},5000)});
+})();
+</script>
 </body>
 </html>
