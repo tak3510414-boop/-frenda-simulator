@@ -1,3 +1,4 @@
+// Frenda World Ver0.67 - World Generation 2 prototype
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 R.accountKey=()=>{const U=window.FRENDA_USER;if(U?.mode==="cloud"&&U.cloudUserId)return `cloud:${U.cloudUserId}`;return `local:${U?.localProfileId||"A"}`};

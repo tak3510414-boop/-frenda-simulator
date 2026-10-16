@@ -1,3 +1,4 @@
+// Frenda World Ver0.67 - World Generation 2 prototype
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const timers=new Map(),agents=new Map(),frames=new Map(),facilitySlots=new Map();

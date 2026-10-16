@@ -1,3 +1,4 @@
+// Frenda World Ver0.67 - World Generation 2 prototype
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const now=()=>new Date().toISOString();
