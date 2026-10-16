@@ -158,20 +158,25 @@ function applyMapScale(scale,cx,cy){
 function fitMap(){
  const {p,stage}=mapEls();if(!p||!stage)return;
  const b=currentWorldBounds(),pad=12,availW=Math.max(1,p.clientWidth-pad*2);
- setFitMode(true);
+ setFitMode(true);p.style.height="";p.style.maxHeight="";p.style.minHeight="0px";
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(1,availW/b.w));
  syncMapStage();
  p.scrollLeft=0;p.scrollTop=0;
  const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
  requestAnimationFrame(()=>{
    p.scrollLeft=0;p.scrollTop=0;
-   const hud=p.querySelector(".mapHud"),h=(hud?.offsetHeight||0)+stage.offsetHeight+20;
-   p.style.height=`${Math.ceil(h)}px`
+   const hud=p.querySelector(".mapHud"),hudH=(hud?.offsetHeight||0);
+   const stageH=Math.ceil(b.h*mapScale);
+   p.style.height=`${Math.ceil(hudH+stageH+20)}px`;
+   p.style.minHeight="0px";p.style.maxHeight=`${Math.ceil(hudH+stageH+20)}px`
  })
 }
 function focusMapArea(id,behavior="smooth"){
  const {p,stage}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
  const worldX=5400*a.x,worldY=2700*a.y;
+ const targetScale=Math.max(mapScale,Math.min(.62,p.clientWidth/1450));
+ if(targetScale>mapScale*1.12){commitMapScale(targetScale,p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2)}
+ setFitMode(false);p.style.height="";p.style.maxHeight="";
  const lx=(worldX-b.x)*mapScale,ly=(worldY-b.y)*mapScale;
  const left=Math.max(0,Math.min(Math.max(0,stage.scrollWidth-p.clientWidth),stage.offsetLeft+lx-p.clientWidth/2));
  const top=Math.max(0,Math.min(Math.max(0,stage.scrollHeight-p.clientHeight),stage.offsetTop+ly-p.clientHeight/2));
@@ -221,7 +226,7 @@ function renderMap(s){
  }else if(lv>previous){
    requestAnimationFrame(()=>fitMap());
    const a=Object.values(MAP_AREAS).find(x=>x.level===lv),toast=$("discoverToast");
-   if(a&&toast){toast.textContent=`✨ ${a.name}まで世界が広がった！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2600)}
+   if(a&&toast){toast.textContent=`✨ ${a.name}への道がひらけた！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2600)}
  }
 }
 
