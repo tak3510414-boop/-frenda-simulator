@@ -124,7 +124,13 @@ function currentWorldBounds(){
 function syncMapStage(){
  const {w,stage}=mapEls();if(!w||!stage)return;
  const b=currentWorldBounds(),sw=Math.max(1,b.w*mapScale),sh=Math.max(1,b.h*mapScale);
- stage.style.width=`${sw}px`;stage.style.height=`${sh}px`;stage.style.minWidth=`${sw}px`;stage.style.minHeight=`${sh}px`;
+ // CSS変数 + important で、旧バージョンの固定5400x2700指定を確実に上書きする。
+ stage.style.setProperty("--stage-w",`${sw}px`);
+ stage.style.setProperty("--stage-h",`${sh}px`);
+ stage.style.setProperty("width",`${sw}px`,"important");
+ stage.style.setProperty("height",`${sh}px`,"important");
+ stage.style.setProperty("min-width","0px","important");
+ stage.style.setProperty("min-height","0px","important");
  w.style.transform=`translate3d(${-b.x*mapScale}px,${-b.y*mapScale}px,0) scale(${mapScale})`;
 }
 function setFitMode(on){
@@ -140,7 +146,9 @@ let zoomRaf=0,pendingZoom=null;
 function commitMapScale(scale,cx,cy){
  const {p,stage}=mapEls();if(!p||!stage)return;
  const pr=p.getBoundingClientRect(),px=cx??(pr.left+p.clientWidth/2),py=cy??(pr.top+p.clientHeight/2),worldPt=screenToWorld(px,py),b=currentWorldBounds();
- setFitMode(false);p.style.height="";
+ setFitMode(false);
+ p.style.removeProperty("--fit-height");
+ p.style.removeProperty("height");p.style.removeProperty("max-height");p.style.removeProperty("min-height");
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(MAP_SCALE_MAX,scale));
  syncMapStage();
  requestAnimationFrame(()=>{
@@ -158,25 +166,31 @@ function applyMapScale(scale,cx,cy){
 function fitMap(){
  const {p,stage}=mapEls();if(!p||!stage)return;
  const b=currentWorldBounds(),pad=12,availW=Math.max(1,p.clientWidth-pad*2);
- setFitMode(true);p.style.height="";p.style.maxHeight="";p.style.minHeight="0px";
+ setFitMode(true);
+ p.style.removeProperty("height");p.style.removeProperty("max-height");p.style.removeProperty("min-height");
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(1,availW/b.w));
  syncMapStage();
  p.scrollLeft=0;p.scrollTop=0;
  const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
  requestAnimationFrame(()=>{
    p.scrollLeft=0;p.scrollTop=0;
-   const hud=p.querySelector(".mapHud"),hudH=(hud?.offsetHeight||0);
+   const hud=p.querySelector(".mapHud"),hudH=Math.ceil(hud?.getBoundingClientRect().height||0);
    const stageH=Math.ceil(b.h*mapScale);
-   p.style.height=`${Math.ceil(hudH+stageH+20)}px`;
-   p.style.minHeight="0px";p.style.maxHeight=`${Math.ceil(hudH+stageH+20)}px`
- })
+   const fitH=Math.max(1,hudH+stageH+26);
+   p.style.setProperty("--fit-height",`${fitH}px`);
+   p.style.setProperty("height",`${fitH}px`,"important");
+   p.style.setProperty("min-height","0px","important");
+   p.style.setProperty("max-height",`${fitH}px`,"important");
+ });
 }
 function focusMapArea(id,behavior="smooth"){
  const {p,stage}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
  const worldX=5400*a.x,worldY=2700*a.y;
  const targetScale=Math.max(mapScale,Math.min(.62,p.clientWidth/1450));
  if(targetScale>mapScale*1.12){commitMapScale(targetScale,p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2)}
- setFitMode(false);p.style.height="";p.style.maxHeight="";
+ setFitMode(false);
+ p.style.removeProperty("--fit-height");
+ p.style.removeProperty("height");p.style.removeProperty("max-height");p.style.removeProperty("min-height");
  const lx=(worldX-b.x)*mapScale,ly=(worldY-b.y)*mapScale;
  const left=Math.max(0,Math.min(Math.max(0,stage.scrollWidth-p.clientWidth),stage.offsetLeft+lx-p.clientWidth/2));
  const top=Math.max(0,Math.min(Math.max(0,stage.scrollHeight-p.clientHeight),stage.offsetTop+ly-p.clientHeight/2));
