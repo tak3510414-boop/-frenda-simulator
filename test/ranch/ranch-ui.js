@@ -164,7 +164,8 @@ function applyMapScale(scale,cx,cy){
  zoomRaf=requestAnimationFrame(()=>{zoomRaf=0;const q=pendingZoom;pendingZoom=null;if(q)commitMapScale(q.scale,q.cx,q.cy)})
 }
 function fitMap(){
- const {p,stage}=mapEls();if(!p||!stage)return;
+ const {p,stage,w}=mapEls();if(!p||!stage)return;
+ if(w)delete w.dataset.activeArea;
  const b=currentWorldBounds(),pad=12,availW=Math.max(1,p.clientWidth-pad*2);
  setFitMode(true);
  p.style.removeProperty("height");p.style.removeProperty("max-height");p.style.removeProperty("min-height");
@@ -184,7 +185,8 @@ function fitMap(){
  });
 }
 function focusMapArea(id,behavior="smooth"){
- const {p,stage}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
+ const {p,stage,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
+ if(w)w.dataset.activeArea=id;
  const worldX=5400*a.x,worldY=2700*a.y;
  const targetScale=Math.max(mapScale,Math.min(.62,p.clientWidth/1450));
  if(targetScale>mapScale*1.12){commitMapScale(targetScale,p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2)}
