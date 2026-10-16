@@ -1,8 +1,8 @@
-// Frenda World Ver0.73 - World Generation 2 life AI
+// Frenda World Ver0.74 - World Generation 2 life AI
 (()=>{"use strict";
 window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const R=window.FRENDA_RANCH;
-R.VERSION="0.68";R.SCHEMA_VERSION=4;R.MAX_INITIAL=6;
+R.VERSION="0.74";R.SCHEMA_VERSION=4;R.MAX_INITIAL=6;
 R.masterRecords=()=>Array.isArray(window.FRENDA_MASTER?.records)?window.FRENDA_MASTER.records:[];
 R.masterMap=()=>new Map(R.masterRecords().map(x=>[String(x.master_id),x]));
 R.ownedIds=()=>{const D=window.FRENDA_DATA;const d=D?.dungeon?.read?.();if(d?.initialized&&Array.isArray(d.owned))return [...new Set(d.owned.map(x=>String(x?.id||"")).filter(Boolean))];const a=D?.readList?.(D?.KEYS?.simulator?.owned)||[];return [...new Set(a.map(String).filter(Boolean))]};
@@ -12,7 +12,7 @@ R.loadEvolutionIndex=async()=>{try{return await window.FRENDA_DATA?.evolution?.l
 
 /* Ver0.58 Frenda World: discovery catalog. World definitions only; no main-game writes. */
 R.WORLD_AREAS=Object.freeze([
-{id:"ranch",name:"フレンダ牧場",realm:"ground",unlock:1},
+{id:"ranch",name:"はじまりの里",realm:"ground",unlock:1},
 {id:"forest",name:"木陰の森",realm:"ground",unlock:2},
 {id:"lake",name:"水辺",realm:"ground",unlock:3},
 {id:"mine",name:"ひかり石の鉱山",realm:"underground",unlock:4},
@@ -24,7 +24,7 @@ R.WORLD_AREAS=Object.freeze([
 {id:"dark_castle",name:"闇の城",realm:"unknown",unlock:10}
 ]);
 
-R.DISCOVERY_STEPS=Object.freeze([{id:"ranch",name:"🌿 フレンダ牧場",level:1,hint:"ここが世界の出発点。"},{id:"forest",name:"🌳 木陰の森",level:2,hint:"草むらの先から木々のざわめきが聞こえる。"},{id:"lake",name:"💧 水辺",level:3,hint:"遠くから水の音がする。"},{id:"mine",name:"⛏️ ひかり石の鉱山",level:4,hint:"岩陰から不思議な光が漏れている。"},{id:"beyond",name:"❓ さらに遠く",level:5,hint:"世界はここで終わっていない。"}]);
+R.DISCOVERY_STEPS=Object.freeze([{id:"ranch",name:"🌱 はじまりの里",level:1,hint:"ここが世界の出発点。"},{id:"forest",name:"🌳 木陰の森",level:2,hint:"草むらの先から木々のざわめきが聞こえる。"},{id:"lake",name:"💧 水辺",level:3,hint:"遠くから水の音がする。"},{id:"mine",name:"⛏️ ひかり石の鉱山",level:4,hint:"岩陰から不思議な光が漏れている。"},{id:"beyond",name:"❓ さらに遠く",level:5,hint:"世界はここで終わっていない。"}]);
 
 R.DISCOVERY_EVENTS=Object.freeze({2:{pre:"が草むらの奥をじっと見ています……",wait:"が草むらの奥へ入っていった……",found:"🌳 木陰の森を発見！"},3:{pre:"が遠くの水音に気づきました……",wait:"が音のする方へ走っていった……",found:"💧 水辺を発見！"},4:{pre:"が岩陰の光を見つけました……",wait:"が暗い裂け目をのぞき込んでいます……",found:"⛏️ ひかり石の鉱山を発見！"},5:{pre:"が、さらに遠くから何かを感じています……",wait:"がまだ見ぬ世界へ向かいました……",found:"✨ 世界の境界がさらに広がった！"}});
 

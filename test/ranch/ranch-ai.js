@@ -1,4 +1,4 @@
-// Frenda World Ver0.73 - World Generation 2 life AI
+// Frenda World Ver0.74 - World Generation 2 life AI
 (()=>{"use strict";
 const R=window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const timers=new Map(),agents=new Map(),frames=new Map(),facilitySlots=new Map();
