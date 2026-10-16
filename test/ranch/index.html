@@ -372,7 +372,7 @@ main> *:not(#world71App){display:none!important}
 </style>
 </head>
 <body>
-<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.72 / 発見と生活</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.73 / 生活AI第2世代</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <section id="world71App" class="world71App" aria-label="フレンダワールド">
   <div id="world71Map" class="world71Map">
@@ -669,5 +669,26 @@ function back(){q('world71Scene').hidden=true;q('world71Map').hidden=false;windo
 window.addEventListener('load',()=>{document.querySelectorAll('[data-w71]').forEach(b=>b.addEventListener('click',()=>openScene(b.dataset.w71)));q('world71Back')?.addEventListener('click',back);});
 })();
 </script>
+
+<style id="world-v073-css">
+.world73Life{margin-top:12px;border-top:1px solid #ffffff38;padding-top:11px}.world73LifeTitle{font-weight:900;font-size:12px;margin-bottom:8px}.world73Grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.world73Resident{background:#ffffff14;border:1px solid #ffffff2e;border-radius:13px;padding:9px;color:#fff;min-width:0}.world73Resident b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.world73Resident span{display:block;font-size:10px;opacity:.86;margin-top:3px;line-height:1.35}.world73Empty{font-size:11px;opacity:.85}.world73Rule{font-size:10px;opacity:.78;margin-top:8px;line-height:1.45}.world73Badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 7px;background:#ffffff18;margin-right:4px}.world71ResidentLine{display:none!important}
+</style>
+<script id="world-v073-js">
+(()=>{'use strict';
+const AREA={meadow:{name:'はじまりの里',icon:'🌱'},shade:{name:'木陰の森',icon:'🌳'},pond:{name:'水辺',icon:'💧'},play:{name:'鉱山',icon:'⛏️'},hut:{name:'世界の境界',icon:'✨'}};
+const WATER=new Set(['みず','water']),FLY=new Set(['ひこう','flying']),DARK=new Set(['ゴースト','あく','ghost','dark']),ROCK=new Set(['いわ','じめん','はがね','rock','ground','steel']);
+function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rec(R,c){return R?.record?.(c.pickId)||R?.masterMap?.().get?.(String(c.pickId))||{}}
+function types(r){return [r?.type1,r?.type2].filter(Boolean).map(x=>String(x).toLowerCase())}
+function eligible(area,t){if(area==='pond')return t.some(x=>WATER.has(x))||true;if(area==='play')return t.some(x=>ROCK.has(x))||true;return true}
+function chooseArea(R,c,slot){const r=rec(R,c),t=types(r),seed=hash(String(c.ranchId)+'|'+slot);if(t.some(x=>WATER.has(x)) && seed%100<72)return 'pond';if(t.some(x=>ROCK.has(x)) && seed%100<58)return 'play';if(t.some(x=>DARK.has(x)) && seed%100<62)return 'shade';const a=['meadow','shade','meadow','shade','pond','meadow'];return a[seed%a.length]}
+function actionFor(area,t,seed){if(area==='pond'&&t.some(x=>WATER.has(x)))return ['水面で遊んでいる','浅瀬を泳いでいる','水辺で休んでいる'][seed%3];if(area==='play')return ['坑道の入口を眺めている','岩陰を調べている','冷たい風を感じている'][seed%3];if(area==='shade')return ['木陰で休んでいる','小道を散歩している','森の音を聞いている'][seed%3];return ['里の道を散歩している','草の上で休んでいる','仲間の帰りを待っている'][seed%3]}
+function mode(t,seed){if(t.some(x=>FLY.has(x))&&seed%100<38)return '🪽 空を飛べる';if(t.some(x=>WATER.has(x)))return '💧 水辺適性';return '🐾 地上生活'}
+function sync(){const R=window.FRENDA_RANCH,s=R?.readSave?.();if(!R||!s)return null;const slot=Math.floor((Number(s.testClockMinutes)||0)/120);let changed=false;for(const c of (s.creatures||[]).filter(x=>x?.status==='resident')){c.world2=c.world2&&typeof c.world2==='object'?c.world2:{};if(c.world2.slot!==slot){c.world2.slot=slot;c.world2.currentArea=chooseArea(R,c,slot);changed=true}}if(changed)R.writeSave?.(s);return s}
+function render(area){const R=window.FRENDA_RANCH,s=sync();const body=document.querySelector('.world71SceneCard');if(!body||!R||!s)return;let host=body.querySelector('.world73Life');if(!host){host=document.createElement('div');host.className='world73Life';body.appendChild(host)}const list=(s.creatures||[]).filter(c=>c?.status==='resident'&&c.world2?.currentArea===area).slice(0,6);const cards=list.map(c=>{const r=rec(R,c),n=R.pickName?.(c.pickId)||c.pickId||'ポケモン',t=types(r),sd=hash(String(c.ranchId)+'|'+String(c.world2?.slot));return `<div class="world73Resident"><b>🐾 ${String(n).replace(/[<>&]/g,'')}</b><span>${actionFor(area,t,sd)}</span><span class="world73Badge">${mode(t,sd)}</span></div>`}).join('');host.innerHTML=`<div class="world73LifeTitle">今、この場所にいる仲間</div><div class="world73Grid">${cards||'<div class="world73Empty">今は誰もいないようです。</div>'}</div><div class="world73Rule">地上・水辺・飛行などの適性に応じて居場所と行動を決定します。自由座標移動は行いません。</div>`}
+window.addEventListener('load',()=>{document.querySelectorAll('[data-w71]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>render(b.dataset.w71),0)));setInterval(()=>{if(!document.getElementById('world71Scene')?.hidden){const title=document.getElementById('world71SceneTitle')?.textContent||'';const area=Object.keys(AREA).find(k=>AREA[k].name===title);if(area)render(area)}},5000)});
+})();
+</script>
+
 </body>
 </html>

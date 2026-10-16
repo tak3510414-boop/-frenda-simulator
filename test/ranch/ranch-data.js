@@ -1,4 +1,4 @@
-// Frenda World Ver0.68 - World Generation 2 prototype
+// Frenda World Ver0.73 - World Generation 2 life AI
 (()=>{"use strict";
 window.FRENDA_RANCH=window.FRENDA_RANCH||{};
 const R=window.FRENDA_RANCH;
