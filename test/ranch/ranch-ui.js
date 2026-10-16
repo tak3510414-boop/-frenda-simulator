@@ -188,7 +188,7 @@ function focusMapArea(id,behavior="smooth"){
  const {p,stage,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
  if(w)w.dataset.activeArea=id;
  const worldX=5400*a.x,worldY=2700*a.y;
- const targetScale=Math.max(mapScale,Math.min(.62,p.clientWidth/1450));
+ const targetScale=Math.max(mapScale,Math.min(.72,p.clientWidth/1100));
  if(targetScale>mapScale*1.12){commitMapScale(targetScale,p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2)}
  setFitMode(false);
  p.style.removeProperty("--fit-height");
