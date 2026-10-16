@@ -8,7 +8,7 @@ R.getTimeScale=()=>Number(localStorage.getItem(TEST_SCALE_KEY))===10?10:1;
 R.setTimeScale=v=>{const n=Number(v)===10?10:1;localStorage.setItem(TEST_SCALE_KEY,String(n));window.dispatchEvent(new CustomEvent("ranch:time-scale-changed",{detail:{scale:n}}));return n};
 R.growthBackupKey=()=>`${R.saveKey()}:development-backup`;
 R.hasGrowthBackup=()=>!!localStorage.getItem(R.growthBackupKey());
-R.beginGrowthTest=()=>{const s=R.readSave?.();if(!s)return false;if(!R.hasGrowthBackup())localStorage.setItem(R.growthBackupKey(),JSON.stringify({development:s.development||null,testClockMinutes:Number(s.testClockMinutes)||0}));s.development={points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};s.testClockMinutes=0;R.writeSave?.(s);window.dispatchEvent(new CustomEvent("ranch:development-updated"));return true};
+R.beginGrowthTest=()=>{const s=R.readSave?.();if(!s)return false;localStorage.setItem("frendaWorldShownLevel","1");if(!R.hasGrowthBackup())localStorage.setItem(R.growthBackupKey(),JSON.stringify({development:s.development||null,testClockMinutes:Number(s.testClockMinutes)||0}));s.development={points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};s.testClockMinutes=0;R.writeSave?.(s);window.dispatchEvent(new CustomEvent("ranch:development-updated"));return true};
 R.restoreGrowthTest=()=>{const raw=localStorage.getItem(R.growthBackupKey());if(!raw)return false;const s=R.readSave?.();if(!s)return false;try{const b=JSON.parse(raw);s.development=b.development||{points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};s.testClockMinutes=Number(b.testClockMinutes)||0;R.writeSave?.(s);localStorage.removeItem(R.growthBackupKey());window.dispatchEvent(new CustomEvent("ranch:development-updated"));return true}catch{return false}};
 let liveGrowthTimer=0;
 R.startLiveGrowthClock=()=>{if(liveGrowthTimer)return;liveGrowthTimer=setInterval(()=>{if(document.hidden)return;const s=R.readSave?.();if(!s)return;const residents=(s.creatures||[]).filter(c=>c&&c.status==="resident");if(!residents.length)return;const scale=R.getTimeScale(),realSeconds=3,virtualMinutes=realSeconds/60*scale;s.testClockMinutes=(Number(s.testClockMinutes)||0)+virtualMinutes;s.development=s.development&&typeof s.development==="object"?s.development:{points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};s.development.points=(Number(s.development.points)||0)+0.1*scale;for(const c of residents){c.life=c.life&&typeof c.life==="object"?c.life:{};c.life.days=(Number(c.life.days)||0)+virtualMinutes/60}R.updateDevelopment?.(s);R.writeSave?.(s);window.dispatchEvent(new CustomEvent("ranch:development-updated"))},3000)};
@@ -30,11 +30,11 @@ R.applyOfflineProgress=s=>{
  s.lastActiveAt=new Date(nowMs).toISOString();return s
 };
 R.FACILITIES=[
- {id:"meadow",level:1,icon:"🌿",name:"ひろば",desc:"みんなが自由に過ごす牧場の中心"},
- {id:"shade",level:2,icon:"🌳",name:"木陰",desc:"休憩しやすい落ち着いた場所"},
- {id:"pond",level:3,icon:"💧",name:"水辺",desc:"みずタイプなどが立ち寄りやすい場所"},
- {id:"play",level:4,icon:"⚽",name:"遊び場",desc:"仲間どうしで遊びやすくなる場所"},
- {id:"hut",level:5,icon:"🏡",name:"おやすみ小屋",desc:"夜や雨の日に休みやすい場所"}
+ {id:"meadow",level:1,icon:"🌿",name:"はじまりの草原",desc:"世界の出発点。まだ小さな自然だけが広がる。"},
+ {id:"shade",level:2,icon:"🌳",name:"木陰の森",desc:"草原の外で最初に見つかる深い森。"},
+ {id:"pond",level:3,icon:"💧",name:"水辺",desc:"森を抜けた先に開ける水の景色。"},
+ {id:"play",level:4,icon:"⛏️",name:"ひかり石の鉱山",desc:"岩壁の奥で不思議な光を放つ鉱山。"},
+ {id:"hut",level:5,icon:"✨",name:"世界の境界",desc:"さらに遠い世界の存在を感じる場所。"}
 ];
 R.updateDevelopment=s=>{s.development=s.development&&typeof s.development==="object"?s.development:{points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};const d=s.development,p=Math.max(0,Number(d.points)||0),lv=p>=120?5:p>=70?4:p>=35?3:p>=12?2:1;d.level=lv;d.unlocked=R.FACILITIES.filter(f=>f.level<=lv).map(f=>f.id);const old=Number(d.lastLevelNotified)||1;if(lv>old){for(let n=old+1;n<=lv;n++){const fac=R.FACILITIES.find(f=>f.level===n);if(fac)R.addDiary?.(s,{kind:"development",title:`${fac.name}を発見！`,text:`牧場がLv.${n}になり、霧が晴れて「${fac.name}」エリアを発見しました。`,important:true,creatureIds:[]})}d.lastLevelNotified=lv}return d};
 R.addDevelopmentPoints=(amount,reason="生活")=>{const s=R.readSave?.();if(!s)return null;s.development=s.development&&typeof s.development==="object"?s.development:{points:0,level:1,unlocked:["meadow"],lastLevelNotified:1};s.development.points=(Number(s.development.points)||0)+Math.max(0,Number(amount)||0);R.updateDevelopment(s);s.development.lastReason=reason;s.development.updatedAt=now();R.writeSave?.(s);window.dispatchEvent(new CustomEvent("ranch:development-updated"));return s.development};

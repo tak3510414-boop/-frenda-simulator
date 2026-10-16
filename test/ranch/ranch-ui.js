@@ -42,7 +42,7 @@ function renderRelations(s){
 
 function renderEvolutionAudit(s){const h=$("evolutionAuditList");if(!h)return;const a=R.evolutionAudit?.(s)||{};h.innerHTML="";for(const x of [`進化履歴：${a.evolutions||0}件`,`現役：${a.residents||0}・退牧：${a.departed||0}`,`個体ID重複：${a.duplicateRanchIds||0}`,`履歴整合：${a.historyIntegrity===false?"NG":"OK"}`]){const d=document.createElement("span");d.className="relationChip";d.textContent=x;h.appendChild(d)}}
 function renderEnvironment(){
- const host=$("environmentList");if(!host)return;const e=R.ai?.environment?.()||{phase:"-",weather:"-"},scale=R.getTimeScale?.()||1,dayLabel=scale===10?"約6分":"約1時間";host.innerHTML="";for(const t of [`時間帯：${e.phase}`,`天気：${e.weather}`,`牧場時間：×${scale}`,`牧場の1日：${dayLabel}`]){const d=document.createElement("span");d.className="relationChip";d.textContent=t;host.appendChild(d)}
+ const host=$("environmentList");if(!host)return;const e=R.ai?.environment?.()||{phase:"-",weather:"-"},scale=R.getTimeScale?.()||1,dayLabel=scale===10?"約6分":"約1時間";host.innerHTML="";for(const t of [`時間帯：${e.phase}`,`天気：${e.weather}`,`ワールド時間：×${scale}`,`ワールドの1日：${dayLabel}`]){const d=document.createElement("span");d.className="relationChip";d.textContent=t;host.appendChild(d)}
  const p=$("pasture");if(p){p.dataset.phase=e.phase;p.dataset.weather=e.weather;if(e.phase==="夜")p.style.filter="brightness(.78) saturate(.92)";else if(e.phase==="夕方")p.style.filter="sepia(.12) brightness(.96)";else p.style.filter="none"}
 }
 
@@ -52,8 +52,8 @@ function renderEnvironment(){
 
 function renderFacilitySpots(s){
  const layer=$("facilityLayer");if(!layer)return;const d=R.updateDevelopment?.(s)||s?.development||{};layer.innerHTML="";
- const spots={shade:["🌳","木陰"],pond:["💧","水辺"],play:["⚽","遊び場"],hut:["🏡","おやすみ小屋"]};
- const pos={shade:[16.5,22],pond:[83.5,22],play:[16.5,81],hut:[83.5,80]};for(const f of (R.FACILITIES||[])){if(f.id==="meadow"||!(d.unlocked||[]).includes(f.id)||!spots[f.id])continue;const x=document.createElement("div");x.className="facilitySpot";x.dataset.facility=f.id;x.innerHTML=`<span class="ico">${spots[f.id][0]}</span><span>${spots[f.id][1]}</span>`;const q=pos[f.id];if(q){x.style.left=q[0]+"%";x.style.top=q[1]+"%";x.style.right="auto";x.style.bottom="auto";x.style.transform="translate(-50%,-50%)"}layer.appendChild(x)}
+ const spots={shade:["🌳","木陰の森"],pond:["💧","水辺"],play:["⛏️","鉱山入口"],hut:["✨","世界の境界"]};
+ const pos={shade:[28,39],pond:[74,46],play:[19,34],hut:[82,72]};for(const f of (R.FACILITIES||[])){if(f.id==="meadow"||!(d.unlocked||[]).includes(f.id)||!spots[f.id])continue;const x=document.createElement("div");x.className="facilitySpot";x.dataset.facility=f.id;x.innerHTML=`<span class="ico">${spots[f.id][0]}</span><span>${spots[f.id][1]}</span>`;const q=pos[f.id];if(q){x.style.left=q[0]+"%";x.style.top=q[1]+"%";x.style.right="auto";x.style.bottom="auto";x.style.transform="translate(-50%,-50%)"}layer.appendChild(x)}
 }
 
 function renderDevelopment(s){
@@ -92,78 +92,90 @@ function wireTimeTestControls(){
  if(restore&&!restore.dataset.bound){restore.dataset.bound="1";restore.onclick=()=>{if(R.restoreGrowthTest?.())location.reload()}}
  renderTimeTestControls()
 }
-const GROWTH_LABELS=["","小さな花が咲きました","踏み石が増えました","低木が育ちました","柵が整いました","水辺に草が増えました","若木が育ちました","休憩スペースができました","遊び場がにぎやかになりました","小屋のまわりが華やぎました","牧場がすっかり育ちました"];
+const GROWTH_LABELS=[];
 let growthStageRendered=-1;
 function applyGrowthVisuals(d){
- const w=$("ranchWorld");if(!w)return;const points=Math.max(0,Number(d?.points)||0),ratio=Math.max(0,Math.min(1,points/120)),stage=Math.max(0,Math.min(10,Math.floor(points/12)));
- w.dataset.growthStage=String(stage);w.style.setProperty("--growth-ratio",String(ratio));
- const sky=$("starterSkyVeil"),ground=$("starterGroundVeil");if(sky)sky.style.opacity=String(.62*(1-ratio));if(ground)ground.style.opacity=String(.82*(1-ratio));
- w.querySelectorAll("[data-grow-step]").forEach(x=>x.classList.toggle("shown",Number(x.dataset.growStep)<=stage));
- if(growthStageRendered>=0&&stage>growthStageRendered){const toast=$("discoverToast");if(toast){toast.textContent=`🌱 ${GROWTH_LABELS[stage]||"牧場が育ちました"}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2600)}}
- growthStageRendered=stage
+ const w=$("ranchWorld");if(!w)return;
+ const points=Math.max(0,Number(d?.points)||0);
+ w.dataset.growthStage=String(Math.max(0,Math.min(10,Math.floor(points/12))));
 }
 const MAP_AREAS={
- meadow:{name:"ひろば",icon:"🌿",x:.50,y:.50},
- shade:{name:"木陰",icon:"🌳",x:.165,y:.22},
- pond:{name:"水辺",icon:"💧",x:.835,y:.22},
- play:{name:"遊び場",icon:"⚽",x:.165,y:.81},
- hut:{name:"小屋",icon:"🏡",x:.835,y:.80}
+ meadow:{name:"はじまり",icon:"🌿",x:.50,y:.52,level:1},
+ shade:{name:"木陰の森",icon:"🌳",x:.28,y:.39,level:2},
+ pond:{name:"水辺",icon:"💧",x:.74,y:.46,level:3},
+ play:{name:"鉱山",icon:"⛏️",x:.19,y:.34,level:4},
+ hut:{name:"世界の境界",icon:"✨",x:.82,y:.72,level:5}
+};
+const WORLD_BOUNDS={
+ 1:{x:1950,y:900,w:1500,h:900},
+ 2:{x:900,y:500,w:3000,h:1500},
+ 3:{x:650,y:350,w:4100,h:1900},
+ 4:{x:300,y:150,w:4800,h:2300},
+ 5:{x:0,y:0,w:5400,h:2700}
 };
 let mapRenderedLevel=0;
 let mapScale=1,mapBound=false;
 const MAP_SCALE_MIN=.045,MAP_SCALE_MAX=1.65;
 function mapEls(){return{p:$("pasture"),w:$("ranchWorld"),stage:$("ranchStage")}}
-function scaledSize(w){return{width:w.offsetWidth*mapScale,height:w.offsetHeight*mapScale}}
+function currentWorldBounds(){
+ const {w}=mapEls(),lv=Math.max(1,Math.min(5,Number(w?.dataset?.mapLevel)||mapRenderedLevel||1));
+ return WORLD_BOUNDS[lv]||WORLD_BOUNDS[1]
+}
 function syncMapStage(){
  const {w,stage}=mapEls();if(!w||!stage)return;
- const sw=Math.max(1,w.offsetWidth*mapScale),sh=Math.max(1,w.offsetHeight*mapScale);
+ const b=currentWorldBounds(),sw=Math.max(1,b.w*mapScale),sh=Math.max(1,b.h*mapScale);
  stage.style.width=`${sw}px`;stage.style.height=`${sh}px`;stage.style.minWidth=`${sw}px`;stage.style.minHeight=`${sh}px`;
+ w.style.transform=`translate3d(${-b.x*mapScale}px,${-b.y*mapScale}px,0) scale(${mapScale})`;
 }
 function setFitMode(on){
  const {p}=mapEls();if(!p)return;
- p.classList.toggle("fit-mode",!!on);
+ p.classList.toggle("fit-mode",!!on)
+}
+function screenToWorld(cx,cy){
+ const {p,stage}=mapEls(),b=currentWorldBounds();if(!p||!stage)return{x:b.x+b.w/2,y:b.y+b.h/2};
+ const sr=stage.getBoundingClientRect();
+ return{x:b.x+(cx-sr.left)/Math.max(.001,mapScale),y:b.y+(cy-sr.top)/Math.max(.001,mapScale)}
 }
 let zoomRaf=0,pendingZoom=null;
 function commitMapScale(scale,cx,cy){
- const {p,w,stage}=mapEls();if(!p||!w||!stage)return;
- // 手動ズーム時は固定ビューポートへ戻す。全体表示時だけ高さを内容に合わせる。
+ const {p,stage}=mapEls();if(!p||!stage)return;
+ const pr=p.getBoundingClientRect(),px=cx??(pr.left+p.clientWidth/2),py=cy??(pr.top+p.clientHeight/2),worldPt=screenToWorld(px,py),b=currentWorldBounds();
  setFitMode(false);p.style.height="";
- const old=mapScale,rect=p.getBoundingClientRect(),sr=stage.getBoundingClientRect();
- cx=cx??rect.left+p.clientWidth/2;cy=cy??rect.top+p.clientHeight/2;
- const wx=(cx-sr.left)/Math.max(.001,old),wy=(cy-sr.top)/Math.max(.001,old);
  mapScale=Math.max(MAP_SCALE_MIN,Math.min(MAP_SCALE_MAX,scale));
- w.style.transform=`translateZ(0) scale(${mapScale})`;
  syncMapStage();
- const sr2=stage.getBoundingClientRect();
- p.scrollLeft=Math.max(0,p.scrollLeft+(sr2.left+wx*mapScale-cx));
- p.scrollTop=Math.max(0,p.scrollTop+(sr2.top+wy*mapScale-cy));
- const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
+ requestAnimationFrame(()=>{
+   const lx=(worldPt.x-b.x)*mapScale,ly=(worldPt.y-b.y)*mapScale;
+   p.scrollLeft=Math.max(0,stage.offsetLeft+lx-(px-pr.left));
+   p.scrollTop=Math.max(0,stage.offsetTop+ly-(py-pr.top));
+ });
+ const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%"
 }
 function applyMapScale(scale,cx,cy){
  pendingZoom={scale,cx,cy};
  if(zoomRaf)return;
- zoomRaf=requestAnimationFrame(()=>{zoomRaf=0;const q=pendingZoom;pendingZoom=null;if(q)commitMapScale(q.scale,q.cx,q.cy)});
+ zoomRaf=requestAnimationFrame(()=>{zoomRaf=0;const q=pendingZoom;pendingZoom=null;if(q)commitMapScale(q.scale,q.cx,q.cy)})
 }
 function fitMap(){
- const {p,w,stage}=mapEls();if(!p||!w||!stage)return;
- // 「全体」は横幅に牧場全域を合わせ、表示枠の高さ自体も縮小後の牧場へ追従させる。
- // これにより transform だけ縮小した時に残っていた下側の大きな空白を作らない。
+ const {p,stage}=mapEls();if(!p||!stage)return;
+ const b=currentWorldBounds(),pad=12,availW=Math.max(1,p.clientWidth-pad*2);
  setFitMode(true);
- const ww=w.offsetWidth||5400;
- const pad=12,availW=Math.max(1,p.clientWidth-pad*2);
- mapScale=Math.max(MAP_SCALE_MIN,Math.min(1,availW/ww));
- w.style.transform=`translateZ(0) scale(${mapScale})`;
+ mapScale=Math.max(MAP_SCALE_MIN,Math.min(1,availW/b.w));
  syncMapStage();
  p.scrollLeft=0;p.scrollTop=0;
  const z=$("zoomPct");if(z)z.textContent=Math.round(mapScale*100)+"%";
- requestAnimationFrame(()=>{p.scrollLeft=0;p.scrollTop=0;const hud=p.querySelector(".mapHud"),h=(hud?.offsetHeight||0)+stage.offsetHeight+20;p.style.height=`${Math.ceil(h)}px`;});
+ requestAnimationFrame(()=>{
+   p.scrollLeft=0;p.scrollTop=0;
+   const hud=p.querySelector(".mapHud"),h=(hud?.offsetHeight||0)+stage.offsetHeight+20;
+   p.style.height=`${Math.ceil(h)}px`
+ })
 }
 function focusMapArea(id,behavior="smooth"){
- const {p,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow;if(!p||!w)return;
- const ww=w.offsetWidth*mapScale,wh=w.offsetHeight*mapScale;
- const left=Math.max(0,Math.min(Math.max(0,ww-p.clientWidth),ww*a.x-p.clientWidth/2));
- const top=Math.max(0,Math.min(Math.max(0,wh-p.clientHeight),wh*a.y-p.clientHeight/2));
- p.scrollTo({left,top,behavior});
+ const {p,stage}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
+ const worldX=5400*a.x,worldY=2700*a.y;
+ const lx=(worldX-b.x)*mapScale,ly=(worldY-b.y)*mapScale;
+ const left=Math.max(0,Math.min(Math.max(0,stage.scrollWidth-p.clientWidth),stage.offsetLeft+lx-p.clientWidth/2));
+ const top=Math.max(0,Math.min(Math.max(0,stage.scrollHeight-p.clientHeight),stage.offsetTop+ly-p.clientHeight/2));
+ p.scrollTo({left,top,behavior})
 }
 function bindMapPan(){
  if(mapBound)return;mapBound=true;const {p}=mapEls();if(!p)return;
@@ -192,17 +204,25 @@ function bindMapPan(){
 }
 function renderMap(s){
  const d=R.updateDevelopment?.(s)||s?.development||{level:1,unlocked:["meadow"]},lv=Math.max(1,Math.min(5,Number(d.level)||1));
- const unlocked=new Set(d.unlocked||["meadow"]),w=$("ranchWorld"),jump=$("mapJump");if(!w||!jump)return;
- const previous=mapRenderedLevel;w.dataset.mapLevel=String(lv);applyGrowthVisuals(d);
- document.querySelectorAll(".fogZone").forEach(z=>z.classList.toggle("revealed",unlocked.has(z.dataset.area)));
+ const w=$("ranchWorld"),jump=$("mapJump");if(!w||!jump)return;
+ const previous=mapRenderedLevel;
+ w.dataset.mapLevel=String(lv);
+ applyGrowthVisuals(d);
  jump.innerHTML="";
- for(const f of (R.FACILITIES||[])){if(!unlocked.has(f.id))continue;const b=document.createElement("button");b.type="button";b.dataset.mapTarget=f.id;b.textContent=`${f.icon}${f.name}`;b.onclick=()=>focusMapArea(f.id);jump.appendChild(b)}
- bindMapPan();syncMapStage();
- if(!previous){requestAnimationFrame(()=>{const p=$("pasture"),w=$("ranchWorld");if(!p||!w)return;const base=Math.min(1,Math.max(.42,p.clientWidth/(w.offsetWidth*.72)));applyMapScale(base);setTimeout(()=>focusMapArea("meadow","auto"),30)})}
- else if(lv>previous){
-   const fac=(R.FACILITIES||[]).find(f=>f.level===lv);if(fac){setTimeout(()=>focusMapArea(fac.id),250);const toast=$("discoverToast");if(toast){toast.textContent=`✨ ${fac.name}を発見！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2500)}}
+ for(const [id,a] of Object.entries(MAP_AREAS)){
+   if(a.level>lv)continue;
+   const btn=document.createElement("button");btn.type="button";btn.dataset.mapTarget=id;btn.textContent=`${a.icon}${a.name}`;btn.onclick=()=>focusMapArea(id);jump.appendChild(btn)
  }
  mapRenderedLevel=lv;
+ bindMapPan();
+ syncMapStage();
+ if(!previous){
+   requestAnimationFrame(()=>fitMap())
+ }else if(lv>previous){
+   requestAnimationFrame(()=>fitMap());
+   const a=Object.values(MAP_AREAS).find(x=>x.level===lv),toast=$("discoverToast");
+   if(a&&toast){toast.textContent=`✨ ${a.name}まで世界が広がった！`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2600)}
+ }
 }
 
 async function render(){
@@ -214,7 +234,7 @@ async function render(){
  const aiItems=[];
  shown.forEach((c,i)=>{const m=byId.get(String(c.pickId));if(!m)return;const d=document.createElement("div");d.className="mon idle";d.dataset.ranchId=c.ranchId;const im=document.createElement("img");im.src=imageOf(m);im.alt=m.name_ja||"";const b=document.createElement("b");b.textContent=m.name_ja||c.pickId;d.append(im,b);world.appendChild(d);aiItems.push({id:c.ranchId,el:d,creature:c,record:m})});
  R.ai?.start?.(aiItems);
- renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);wireRegressionTests();wireTimeTestControls();renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderMap(s);renderDiary(s);R.startLiveGrowthClock?.();setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
+ renderIndividuals(s);renderProfiles(s);renderRelations(s);renderGroups(s);renderEvolutionAudit(s);wireRegressionTests();wireTimeTestControls();renderEnvironment();renderOffline(s);renderDevelopment(s);renderFacilitySpots(s);renderMap(s);renderDiary(s);renderWorldDiscovery(s);worldDiscoveryCeremony(s);R.startLiveGrowthClock?.();setInterval(renderEnvironment,15000);setInterval(()=>R.touchActive?.(),15000);
  const dd=window.FRENDA_DATA?.dungeon?.read?.();$("detail").textContent=`保存キー: ${R.saveKey()} ／ 本編参照: ${dd?.initialized?"Dungeon所持データ":"Simulator所持データ（フォールバック）"} ／ 進化履歴: ${s.evolutionHistory?.length||0} ／ 生活AI: ${R.ai?.enabled?"ON":"OFF"} ／ 交流: ON ／ 本編書込: なし`;
 }
 window.addEventListener("ranch:time-scale-changed",()=>{renderTimeTestControls();renderEnvironment()});
@@ -222,10 +242,21 @@ window.addEventListener("ranch:social-updated",()=>{const s=R.readSave?.();if(s)
 window.addEventListener("DOMContentLoaded",render);window.addEventListener("pagehide",()=>R.touchActive?.());document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")R.touchActive?.()});
 
 function renderWorldDiscovery(s){const box=document.getElementById("discoveryCards"),lead=document.getElementById("discoveryLead");if(!box)return;const lv=Math.max(1,Number(s?.development?.level)||1),steps=R.DISCOVERY_STEPS||[];box.innerHTML=steps.map(x=>`<div class="discoveryCard ${x.level>lv?"locked":x.level===lv&&lv>1?"new":""}">${x.level<=lv?x.name:"🔒 未知の場所"}<br><small>${x.level<=lv?x.hint:"ポケモンが見つけるまで分かりません。"}</small></div>`).join("");const cur=steps.filter(x=>x.level<=lv).slice(-1)[0];if(lead&&cur)lead.textContent=lv===1?"ポケモンたちが牧場の外を気にしています。どこへ行くのでしょう？":`${cur.name}まで世界が広がりました。`}
-const _renderWorldBase=render;render=function(){const r=_renderWorldBase.apply(this,arguments);try{renderWorldDiscovery(R.readSave?.())}catch(e){}return r};
 
-function worldDiscoveryCeremony(s){const lv=Math.max(1,Number(s?.development?.level)||1),cue=document.getElementById("discoveryCue"),key="frendaWorldShownLevel",prev=Math.max(1,Number(localStorage.getItem(key)||1));if(lv<=prev||!cue){localStorage.setItem(key,String(Math.max(prev,lv)));return}const ev=R.DISCOVERY_EVENTS?.[lv],who=(s?.individuals||[])[0]?.name||"ポケモン";if(!ev){localStorage.setItem(key,String(lv));return}cue.textContent=`${who}${ev.pre}`;cue.classList.add("show");setTimeout(()=>cue.textContent=`${who}${ev.wait}`,1400);setTimeout(()=>cue.textContent="！",3000);setTimeout(()=>cue.textContent=ev.found,3650);setTimeout(()=>{cue.classList.remove("show");localStorage.setItem(key,String(lv));try{render()}catch(e){}},5900)}
-const _fwRender060=render;render=function(){const r=_fwRender060.apply(this,arguments);try{const s=R.readSave?.();renderWorldDiscovery(s);worldDiscoveryCeremony(s)}catch(e){}return r};
+function worldDiscoveryCeremony(s){
+ const lv=Math.max(1,Number(s?.development?.level)||1),cue=document.getElementById("discoveryCue"),key="frendaWorldShownLevel";
+ let prev=Math.max(1,Number(localStorage.getItem(key)||1));
+ if(lv<prev){localStorage.setItem(key,String(lv));prev=lv}
+ if(lv<=prev||!cue)return;
+ const ev=R.DISCOVERY_EVENTS?.[lv];
+ const c=(s?.creatures||[]).find(x=>x?.status==="resident"),rec=c?R.masterMap?.().get(String(c.pickId)):null,who=rec?.name_ja||"ポケモン";
+ if(!ev){localStorage.setItem(key,String(lv));return}
+ cue.textContent=`${who}${ev.pre}`;cue.classList.add("show");
+ setTimeout(()=>{cue.textContent=`${who}${ev.wait}`},1400);
+ setTimeout(()=>{cue.textContent="！"},3000);
+ setTimeout(()=>{cue.textContent=ev.found},3650);
+ setTimeout(()=>{cue.classList.remove("show");localStorage.setItem(key,String(lv));fitMap()},5900)
+}
 })();
 // Updated: 2026-10-13 13:55 JST / Ver0.30 profile-memory album
 

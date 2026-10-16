@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.60">
+<html lang="ja" data-app-version="0.61">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>フレンダワールド Ver0.60</title>
+<title>フレンダワールド Ver0.61</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#edf7ee;color:#183526}header{position:sticky;top:0;z-index:5;background:#174b32;color:#fff;padding:10px 14px;box-shadow:0 2px 10px #0002}.head{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.title{font-size:20px;font-weight:900}.ver{font-size:11px;opacity:.8}.userHost{min-height:28px}main{max-width:1100px;margin:auto;padding:14px}.notice{padding:10px 12px;border-radius:12px;background:#fff7d8;border:1px solid #e2c86e;font-size:12px;font-weight:700;margin-bottom:12px}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px}.stat small{display:block;color:#678071;font-weight:800}.stat b{font-size:20px}.pasture{position:relative;min-height:480px;border-radius:22px;overflow:hidden;border:2px solid #8fbe91;background:linear-gradient(#bfe7f4 0 30%,#8dce78 30% 100%);box-shadow:0 10px 28px #244b2b22}.facilitySpot{position:absolute;z-index:1;display:grid;place-items:center;text-align:center;width:78px;height:52px;border-radius:18px;background:#ffffffb8;border:2px solid #ffffffd9;box-shadow:0 4px 12px #244b2b22;font-size:11px;font-weight:900;color:#274d34;pointer-events:none}.facilitySpot .ico{font-size:24px;line-height:1}.facilitySpot[data-facility="shade"]{left:8%;top:44%}.facilitySpot[data-facility="pond"]{right:7%;top:55%;background:#dff7ffcc}.facilitySpot[data-facility="play"]{left:9%;bottom:8%;background:#fff8d9cc}.facilitySpot[data-facility="hut"]{right:7%;bottom:7%;background:#fff0dfcc}.pasture:after{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:radial-gradient(ellipse at 20% 80%,#6eaf5e 0 18%,transparent 19%),radial-gradient(ellipse at 80% 90%,#73b861 0 22%,transparent 23%);opacity:.65}.mon{position:absolute;width:96px;text-align:center;z-index:2;transform:translateZ(0);transition:none}.mon.walking img{animation:ranchWalk .55s ease-in-out infinite alternate}.mon.resting img{animation:ranchRest 1.8s ease-in-out infinite}.mon.idle img{animation:none}@keyframes ranchWalk{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-4px) rotate(1.5deg)}}@keyframes ranchRest{0%,100%{transform:translateY(0)}50%{transform:translateY(2px) scale(.985)}}.mon img{width:70px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 4px #0003)}.socialLayer{position:absolute;inset:0;z-index:20;pointer-events:none}.socialBubble{position:absolute;transform:translate(-50%,-100%);min-width:72px;padding:7px 10px;border-radius:14px;background:#fff;border:2px solid #d7e7da;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:0 4px 12px #0003;color:#183526}.socialBubble:after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 2px 0 #d7e7da)}.mon b{position:relative;z-index:3;display:block;background:#ffffffdd;border-radius:999px;padding:3px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:900;color:#365c40;padding:30px}.relations{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.relations h3{margin:0 0 6px;font-size:13px}.relationList{display:flex;flex-wrap:wrap;gap:6px}.relationChip{font-size:11px;font-weight:800;background:#f3f8f4;border:1px solid #d7e7da;border-radius:999px;padding:5px 8px}.groupList{display:grid;gap:7px}.groupCard{padding:9px 10px;border-radius:12px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.groupCard b{display:block;font-size:12px;margin-bottom:3px}.groupCard span{color:#486454}.facilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-top:8px}.facilityCard{padding:8px;border-radius:11px;border:1px solid #d7e7da;background:#f7faf7;font-size:11px}.facilityCard.locked{opacity:.55;filter:grayscale(.4)}.facilityCard b{display:block;font-size:12px;margin-bottom:2px}.diary{margin-top:10px;background:#fff;border:1px solid #cfe1d3;border-radius:14px;padding:10px 12px}.diary h3{margin:0 0 8px;font-size:13px}.diaryList{display:grid;gap:7px}.diaryEntry{background:#f7faf7;border:1px solid #dfeae1;border-radius:11px;padding:8px 10px;font-size:11px;line-height:1.5}.diaryEntry.important{background:#fff9df;border-color:#e8d88a}.diaryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.diaryHead small{color:#708176;white-space:nowrap}.diaryEmpty{font-size:11px;color:#708176}.foot{margin-top:10px;font-size:11px;color:#607468;line-height:1.6}@media(max-width:700px){main{padding:8px}.status{grid-template-columns:1fr 1fr}.pasture{min-height:520px;border-radius:16px}.mon{width:74px}.mon img{width:58px;height:82px}.title{font-size:17px}}
 
@@ -34,7 +34,7 @@ html{scroll-behavior:smooth}
 
 </style>
 <style id="ranch-v043-map">
-/* Ver0.60: large ranch world + discovery fog + scaled stage */
+/* Ver0.61: large ranch world + discovery fog + scaled stage */
 .pasture{
   height:min(62vh,560px)!important;
   min-height:440px!important;
@@ -207,217 +207,177 @@ html{scroll-behavior:smooth}
 #ranchWorld[data-map-level="1"] .oneWorldScenery{opacity:.18!important;clip-path:inset(29% 29% 29% 29% round 120px);filter:saturate(.6) brightness(.85)}
 .startNature{display:none;position:absolute;inset:0;z-index:2;pointer-events:none}#ranchWorld[data-map-level="1"] .startNature{display:block}
 .startNature .mist{filter:blur(10px)}.discoveryCue{position:absolute;z-index:7;display:none;left:50%;top:48%;transform:translate(-50%,-50%);padding:18px 24px;border-radius:22px;background:rgba(12,35,25,.88);color:#fff;font-weight:900;font-size:28px;box-shadow:0 15px 45px #0007;pointer-events:none}.discoveryCue.show{display:block;animation:cuePop .45s ease-out}@keyframes cuePop{from{transform:translate(-50%,-50%) scale(.72);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}.discoveryCard.new{animation:newPulse 1.7s ease-in-out infinite}@keyframes newPulse{50%{transform:translateY(-2px);box-shadow:0 0 0 4px #f4d36a inset,0 8px 18px #d6b94d55}}
-</style></head>
+</style>
+<style id="fw-v061-clean-world">
+.ranchScenery,.ranchScenerySvg,.oneWorldScenery,.startNature,.fogZone,.worldLegend{display:none!important}
+.worldScene61{position:absolute;inset:0;width:5400px;height:2700px;z-index:1;pointer-events:none}
+.worldZone{opacity:0;transition:opacity 1.6s ease}
+.worldZone.zone1{opacity:1}
+#ranchWorld[data-map-level="2"] .zone2,
+#ranchWorld[data-map-level="3"] .zone2,#ranchWorld[data-map-level="3"] .zone3,
+#ranchWorld[data-map-level="4"] .zone2,#ranchWorld[data-map-level="4"] .zone3,#ranchWorld[data-map-level="4"] .zone4,
+#ranchWorld[data-map-level="5"] .zone2,#ranchWorld[data-map-level="5"] .zone3,#ranchWorld[data-map-level="5"] .zone4,#ranchWorld[data-map-level="5"] .zone5{opacity:1}
+#ranchWorld{background:#456d40!important}
+#facilityLayer{display:none!important}
+.mapHudTitle{font-weight:900}
+@media(max-width:700px){
+ .head>div:first-child{min-width:0}
+ .title{white-space:nowrap}
+ .ver{display:block;white-space:nowrap;margin-top:2px;font-size:10px}
+}
+</style>
+</head>
 <body>
-<header><div class="head"><div><span class="title">🌿 フレンダワールド</span> <span class="ver">Ver0.60 / 世界発見システム</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.61 / 発見済み世界ビュー</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <div class="notice">🧪 独立テスト版です。本編データは読み取り専用で、Dungeon / Expedition / Simulator へ書き込みません。</div>
-<section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>牧場登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
+<section class="status"><div class="stat"><small>本編所持</small><b id="ownedCount">-</b></div><div class="stat"><small>ワールド登録</small><b id="registryCount">-</b></div><div class="stat"><small>表示中</small><b id="residentCount">-</b></div><div class="stat"><small>保存</small><b id="saveState">-</b></div></section>
 <section class="pasture" id="pasture">
 <div class="mapHud" id="mapHud">
-  <span class="mapHudTitle">🗺️ 牧場マップ</span>
+  <span class="mapHudTitle">🗺️ 発見済み世界</span>
   <div class="mapJump" id="mapJump"></div><div class="mapZoom"><button type="button" id="zoomOut" aria-label="縮小">−</button><button type="button" id="zoomFit">全体</button><button type="button" id="zoomIn" aria-label="拡大">＋</button><span id="zoomPct">100%</span></div>
 </div>
 <div class="ranchStage" id="ranchStage">
-<div class="ranchWorld" id="ranchWorld" data-map-level="1"><svg class="startNature" viewBox="0 0 5400 2700" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sky60" x2="0" y2="1"><stop stop-color="#d6e9e6"/><stop offset=".65" stop-color="#a5c5b4"/><stop offset="1" stop-color="#708d60"/></linearGradient><linearGradient id="grass60" x2="0" y2="1"><stop stop-color="#769b5c"/><stop offset="1" stop-color="#42693c"/></linearGradient><radialGradient id="sun60"><stop stop-color="#fff8cc" stop-opacity=".95"/><stop offset="1" stop-color="#fff8cc" stop-opacity="0"/></radialGradient></defs><rect width="5400" height="2700" fill="url(#sky60)"/><circle cx="3540" cy="390" r="560" fill="url(#sun60)"/><path d="M0 1030Q620 520 1250 930T2550 870T3820 900T5400 760V1600H0Z" fill="#77966d"/><path d="M0 1240Q720 720 1480 1110T2940 1010T4350 1080T5400 980V1680H0Z" fill="#63865b"/><path d="M0 1320Q1100 1180 2150 1350T4200 1300T5400 1380V2700H0Z" fill="url(#grass60)"/><path d="M2550 2700C2460 2300 2690 2070 2770 1780C2830 1560 2780 1430 2710 1280" fill="none" stroke="#d2bc86" stroke-width="90" opacity=".55" stroke-linecap="round"/><g class="mist" opacity=".94"><path d="M0 1050Q450 760 930 920T1720 1030V2700H0Z" fill="#214d35"/><path d="M5400 980Q4900 720 4450 930T3820 1060V2700H5400Z" fill="#214d35"/></g><g fill="#285b39"><circle cx="450" cy="1250" r="330"/><circle cx="850" cy="1150" r="390"/><circle cx="4720" cy="1170" r="390"/><circle cx="5150" cy="1280" r="350"/></g><g stroke="#315e37" stroke-width="15" opacity=".78"><path d="M900 2200q-80-170-130-230m130 230q30-190 110-270m-110 270q120-140 210-160"/><path d="M4200 2250q-80-190-130-250m130 250q40-210 120-285m-120 285q120-145 220-175"/></g><g fill="#e7d96c"><circle cx="2050" cy="1900" r="22"/><circle cx="2200" cy="1980" r="18"/><circle cx="3300" cy="1870" r="20"/></g></svg><div class="discoveryCue" id="discoveryCue">！</div><svg class="oneWorldScenery" viewBox="0 0 5400 2700" preserveAspectRatio="none" aria-hidden="true">
-<defs><linearGradient id="rd57" x2="1" y2="1"><stop stop-color="#efd89b"/><stop offset="1" stop-color="#d7b66f"/></linearGradient><linearGradient id="rv57" x2="1" y2="1"><stop stop-color="#9de3eb"/><stop offset="1" stop-color="#53b5d0"/></linearGradient><filter id="sh57"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-opacity=".18"/></filter></defs>
-<!-- one continuous road network -->
-<path d="M260 620C820 500 1210 760 1700 980C2140 1180 2350 1170 2700 1350C3060 1530 3380 1480 3760 1720C4200 1990 4580 2160 5160 2390" fill="none" stroke="#c9a75f" stroke-width="190" stroke-linecap="round"/>
-<path d="M260 620C820 500 1210 760 1700 980C2140 1180 2350 1170 2700 1350C3060 1530 3380 1480 3760 1720C4200 1990 4580 2160 5160 2390" fill="none" stroke="url(#rd57)" stroke-width="135" stroke-linecap="round"/>
-<g fill="none" stroke="#dec27d" stroke-width="92" stroke-linecap="round"><path d="M2660 1320C2460 1010 2350 650 2500 310"/><path d="M2910 1450C3330 1190 3820 870 4370 610"/><path d="M2470 1260C2020 1470 1540 1790 1050 2160"/><path d="M3200 1560C3470 1890 3770 2200 4140 2420"/></g>
-<!-- continuous river + lake -->
-<path d="M4750 420C4500 690 4280 820 4070 1050C3850 1290 3650 1260 3440 1450C3220 1650 2990 1580 2820 1490C2600 1370 2420 1480 2250 1680" fill="none" stroke="#d8ecb5" stroke-width="245" stroke-linecap="round"/>
-<path d="M4750 420C4500 690 4280 820 4070 1050C3850 1290 3650 1260 3440 1450C3220 1650 2990 1580 2820 1490C2600 1370 2420 1480 2250 1680" fill="none" stroke="url(#rv57)" stroke-width="185" stroke-linecap="round"/>
-<path d="M4090 230C4400 65 5020 110 5220 365C5410 605 5120 850 4660 830C4230 812 3940 610 3990 405C4010 325 4045 265 4090 230Z" fill="#62bdd5" stroke="#dcebb8" stroke-width="38"/>
-<g stroke="#eaffff" stroke-width="18" fill="none" opacity=".55"><path d="M4240 390q330-120 650 5"/><path d="M4470 650q330-95 610 0"/></g>
-<!-- large forest -->
-<g filter="url(#sh57)"><g stroke="#704a30" stroke-width="30"><path d="M430 650v300"/><path d="M760 570v350"/><path d="M1100 650v310"/><path d="M1420 580v350"/></g><g fill="#3e8d4d"><circle cx="420" cy="540" r="210"/><circle cx="710" cy="450" r="245"/><circle cx="1030" cy="535" r="225"/><circle cx="1360" cy="465" r="245"/></g><g fill="#62aa56"><circle cx="550" cy="365" r="120"/><circle cx="930" cy="345" r="130"/><circle cx="1510" cy="390" r="115"/></g></g>
-<!-- orchard -->
-<g stroke="#724c34" stroke-width="22" fill="#579f50"><g transform="translate(420 1230)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(760 1390)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(1150 1240)"><path d="M0 90v180"/><circle cy="35" r="105"/></g><g transform="translate(1490 1450)"><path d="M0 90v180"/><circle cy="35" r="105"/></g></g>
-<!-- central landmark -->
-<g transform="translate(2440 1130)" filter="url(#sh57)"><rect width="520" height="125" rx="25" fill="#895735" stroke="#d8aa6d" stroke-width="12"/><text x="260" y="79" text-anchor="middle" font-size="54" font-weight="900" fill="#fff7dd">はじまりの広場</text><path d="M70 125v190M450 125v190" stroke="#6e472e" stroke-width="30"/></g>
-<!-- play meadow -->
-<ellipse cx="900" cy="2230" rx="690" ry="340" fill="#8bd472"/><g transform="translate(470 2040)"><path d="M0 300L175 0l175 300M85 140h180" stroke="#82532f" stroke-width="42" fill="none"/><path d="M120 140v205m110-205v205" stroke="#684831" stroke-width="14"/><rect x="95" y="325" width="160" height="32" rx="13" fill="#d77d50"/></g><circle cx="1320" cy="2240" r="115" fill="#f2d65d"/><circle cx="1320" cy="2240" r="67" fill="#fff1a2"/>
-<!-- cottage -->
-<g transform="translate(4140 2010)" filter="url(#sh57)"><rect x="60" y="180" width="720" height="410" rx="30" fill="#f4dfad"/><path d="M0 220L420 0l420 220z" fill="#b95f45"/><rect x="160" y="315" width="180" height="165" rx="16" fill="#8ed0df" stroke="#fff3d0" stroke-width="24"/><rect x="545" y="290" width="155" height="300" rx="18" fill="#996541"/><circle cx="650" cy="445" r="14" fill="#f4d66f"/></g>
-<!-- continuous fences, bushes, flowers -->
-<g stroke="#956039" stroke-width="25" stroke-linecap="round"><path d="M1550 1860h820M1550 1950h820"/><path d="M1640 1800v220M1900 1800v220M2160 1800v220"/><path d="M3350 2180h620M3350 2270h620"/><path d="M3440 2120v220M3690 2120v220M3900 2120v220"/></g>
-<g fill="#559c50"><circle cx="1900" cy="720" r="100"/><circle cx="2040" cy="780" r="85"/><circle cx="3500" cy="620" r="105"/><circle cx="3700" cy="700" r="90"/><circle cx="4930" cy="1980" r="115"/></g>
-<g fill="#f5cf4e"><circle cx="1760" cy="1020" r="15"/><circle cx="1840" cy="1060" r="13"/><circle cx="2050" cy="2080" r="15"/><circle cx="3140" cy="2050" r="14"/><circle cx="3620" cy="820" r="14"/></g>
-</svg>
-<div class="ranchScenery" aria-hidden="true">
-<svg class="ranchScenerySvg" viewBox="0 0 5400 2700" preserveAspectRatio="none">
-<defs><linearGradient id="s" x2="0" y2="1"><stop stop-color="#a9def4"/><stop offset=".55" stop-color="#e8f7e5"/><stop offset=".56" stop-color="#9bd66f"/><stop offset="1" stop-color="#66ae57"/></linearGradient><linearGradient id="w" x2="1" y2="1"><stop stop-color="#91e0ee"/><stop offset="1" stop-color="#42a9c7"/></linearGradient><filter id="ds"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-opacity=".18"/></filter></defs>
-<!-- Huge ranch world: the former entire ranch is now the center 1/9 tile. -->
-<rect width="5400" height="2700" fill="#86c96d"/>
-<!-- shared distant sky/terrain -->
-<rect width="5400" height="560" fill="#b9e6f2"/>
-<path d="M0 560 Q450 220 900 550 Q1350 160 1800 550 Q2250 230 2700 550 Q3150 170 3600 550 Q4050 230 4500 550 Q4950 190 5400 550 V780 H0Z" fill="#6fab65"/>
-<path d="M0 650 Q500 350 1000 640 Q1500 300 2000 650 Q2500 350 3000 640 Q3500 300 4000 650 Q4500 370 5400 630 V820 H0Z" fill="#82bd6c"/>
+<div class="ranchWorld" id="ranchWorld" data-map-level="1">
 
-<!-- NW: deep shade forest -->
-<g id="zoneShadeNorthWest">
- <rect x="0" y="0" width="1800" height="900" fill="#76b86b" opacity=".28"/>
- <g fill="#367d48" stroke="#6d472e" stroke-width="18">
-  <path d="M160 690v150M390 630v190M650 665v160M900 600v210M1190 650v175M1460 610v205"/>
- </g>
- <g fill="#3f8e50"><circle cx="160" cy="620" r="150"/><circle cx="360" cy="560" r="180"/><circle cx="620" cy="600" r="170"/><circle cx="890" cy="525" r="190"/><circle cx="1180" cy="590" r="175"/><circle cx="1490" cy="540" r="190"/></g>
- <g fill="#64ad58"><circle cx="250" cy="485" r="95"/><circle cx="760" cy="450" r="100"/><circle cx="1330" cy="440" r="105"/></g>
- <path d="M220 850 C520 760 770 770 1030 835 C1260 890 1490 820 1690 730" fill="none" stroke="#d9bd78" stroke-width="85" stroke-linecap="round"/>
- <g fill="#f5d66d"><circle cx="510" cy="765" r="10"/><circle cx="540" cy="780" r="9"/><circle cx="1230" cy="815" r="10"/></g>
+<svg class="worldScene61" viewBox="0 0 5400 2700" preserveAspectRatio="none" aria-hidden="true">
+<defs>
+  <linearGradient id="sky61" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe8ed"/><stop offset=".5" stop-color="#b8d9d1"/><stop offset="1" stop-color="#78966d"/>
+  </linearGradient>
+  <linearGradient id="meadow61" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#789c5c"/><stop offset=".55" stop-color="#638b4e"/><stop offset="1" stop-color="#456d40"/>
+  </linearGradient>
+  <linearGradient id="water61" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#91d9df"/><stop offset=".55" stop-color="#56b8ca"/><stop offset="1" stop-color="#2e8fa9"/>
+  </linearGradient>
+  <linearGradient id="rock61" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#77766d"/><stop offset=".55" stop-color="#585a54"/><stop offset="1" stop-color="#3d423e"/>
+  </linearGradient>
+  <pattern id="grass61" width="42" height="42" patternUnits="userSpaceOnUse">
+    <path d="M7 35l6-14M18 39l2-17M30 36l-5-12M37 40l2-13" stroke="#355f38" stroke-width="3" opacity=".22"/>
+    <circle cx="11" cy="10" r="2" fill="#a9c875" opacity=".35"/>
+  </pattern>
+  <pattern id="stone61" width="70" height="60" patternUnits="userSpaceOnUse">
+    <circle cx="12" cy="18" r="4" fill="#a4a69d" opacity=".35"/><circle cx="51" cy="42" r="6" fill="#373b38" opacity=".22"/>
+  </pattern>
+  <radialGradient id="sun61"><stop offset="0" stop-color="#fffbdc" stop-opacity=".9"/><stop offset="1" stop-color="#fffbdc" stop-opacity="0"/></radialGradient>
+  <filter id="shadow61"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-opacity=".22"/></filter>
+</defs>
+
+<!-- 世界全体の空気と遠景 -->
+<rect width="5400" height="2700" fill="url(#sky61)"/>
+<circle cx="3500" cy="330" r="620" fill="url(#sun61)"/>
+<path d="M0 930 Q520 430 1100 850 T2240 810 T3450 820 T4550 760 T5400 720 V1540 H0Z" fill="#789678"/>
+<path d="M0 1130 Q680 680 1450 1040 T2940 970 T4300 1020 T5400 950 V1640 H0Z" fill="#607e5d"/>
+<path d="M0 1290 Q1000 1130 2050 1280 T4100 1240 T5400 1300 V2700 H0Z" fill="url(#meadow61)"/>
+<rect y="1240" width="5400" height="1460" fill="url(#grass61)" opacity=".62"/>
+
+<!-- Lv1: はじまりの草原。外縁は密林・岩壁で自然に閉じる -->
+<g class="worldZone zone1">
+  <path d="M2460 2700 C2410 2340 2580 2180 2690 1950 C2790 1740 2770 1570 2700 1390"
+        fill="none" stroke="#9d835b" stroke-width="145" opacity=".45" stroke-linecap="round"/>
+  <path d="M2460 2700 C2410 2340 2580 2180 2690 1950 C2790 1740 2770 1570 2700 1390"
+        fill="none" stroke="#cfb985" stroke-width="82" opacity=".62" stroke-linecap="round"/>
+
+  <!-- 左右の深い木立：Lv1では「先がある」ことだけ感じる -->
+  <g filter="url(#shadow61)">
+    <g stroke="#60452f" stroke-width="28">
+      <path d="M1770 1250v460"/><path d="M1980 1190v480"/><path d="M2170 1280v420"/>
+      <path d="M3230 1240v460"/><path d="M3430 1180v490"/><path d="M3620 1260v440"/>
+    </g>
+    <g fill="#244e34">
+      <circle cx="1730" cy="1170" r="260"/><circle cx="1990" cy="1080" r="310"/><circle cx="2220" cy="1190" r="250"/>
+      <circle cx="3190" cy="1160" r="260"/><circle cx="3440" cy="1070" r="310"/><circle cx="3670" cy="1180" r="255"/>
+    </g>
+    <g fill="#376846">
+      <circle cx="1870" cy="940" r="170"/><circle cx="2120" cy="980" r="150"/>
+      <circle cx="3320" cy="930" r="170"/><circle cx="3560" cy="970" r="155"/>
+    </g>
+  </g>
+
+  <!-- 草原の細部 -->
+  <g fill="#cbc59c" opacity=".7">
+    <ellipse cx="2380" cy="2010" rx="50" ry="22"/><ellipse cx="3020" cy="1880" rx="42" ry="18"/><ellipse cx="2860" cy="2240" rx="34" ry="15"/>
+  </g>
+  <g fill="#eadc76"><circle cx="2350" cy="1820" r="14"/><circle cx="2425" cy="1850" r="11"/><circle cx="3080" cy="1770" r="13"/></g>
+  <g fill="#d9909f"><circle cx="2390" cy="1840" r="10"/><circle cx="3130" cy="1805" r="10"/></g>
 </g>
 
-<!-- N: rolling highland / flower ridge -->
-<g id="zoneNorth">
- <rect x="1800" y="0" width="1800" height="900" fill="#8bce72" opacity=".18"/>
- <path d="M1880 760 Q2200 520 2520 740 Q2850 470 3180 735 Q3440 570 3560 710" fill="#8bca6d"/>
- <path d="M1900 810 Q2250 610 2600 795 Q2950 600 3500 790" fill="#70b65d"/>
- <g fill="#fff3a6"><circle cx="2180" cy="690" r="11"/><circle cx="2240" cy="720" r="9"/><circle cx="2940" cy="665" r="10"/><circle cx="3050" cy="710" r="9"/></g>
- <g fill="#ef8396"><circle cx="2300" cy="745" r="9"/><circle cx="2380" cy="710" r="8"/><circle cx="3260" cy="735" r="9"/></g>
- <path d="M2700 900 C2670 760 2750 660 2700 545" fill="none" stroke="#e1c37d" stroke-width="95"/>
+<!-- Lv2: 木陰の森。既存世界の西側へ自然に拡張 -->
+<g class="worldZone zone2">
+  <path d="M930 1570 C1220 1370 1530 1300 1920 1420 C2180 1500 2350 1430 2510 1340"
+        fill="none" stroke="#c4aa73" stroke-width="100" opacity=".58" stroke-linecap="round"/>
+  <g filter="url(#shadow61)">
+    <g stroke="#59422f" stroke-width="34">
+      <path d="M760 1110v530"/><path d="M1080 980v600"/><path d="M1410 1090v550"/><path d="M1670 960v620"/>
+    </g>
+    <g fill="#1f4930">
+      <circle cx="720" cy="960" r="330"/><circle cx="1040" cy="820" r="380"/><circle cx="1390" cy="930" r="350"/><circle cx="1710" cy="800" r="385"/>
+    </g>
+    <g fill="#3a7047">
+      <circle cx="870" cy="650" r="190"/><circle cx="1270" cy="610" r="205"/><circle cx="1580" cy="610" r="175"/>
+    </g>
+  </g>
+  <path d="M820 1710 C1150 1600 1540 1630 1920 1740" fill="none" stroke="#52745a" stroke-width="65" opacity=".65"/>
+  <g fill="#d9c676"><circle cx="1170" cy="1530" r="13"/><circle cx="1230" cy="1570" r="11"/><circle cx="1510" cy="1500" r="12"/></g>
 </g>
 
-<!-- NE: large lake -->
-<g id="zonePondNorthEast">
- <rect x="3600" y="0" width="1800" height="900" fill="#78bd68" opacity=".18"/>
- <path d="M3820 270 C4200 80 4920 120 5220 350 C5480 550 5180 790 4670 820 C4200 845 3790 690 3745 470 C3720 380 3740 320 3820 270Z" fill="#57b9d4" stroke="#dbeab5" stroke-width="34"/>
- <g stroke="#efffff" stroke-width="16" fill="none" opacity=".5"><path d="M4000 420q330-130 650 15"/><path d="M4380 660q380-110 700 10"/></g>
- <g transform="translate(3710 610) rotate(-7)"><rect width="470" height="115" rx="16" fill="#a87343"/><path d="M25 25h420M25 55h420M25 85h420" stroke="#d7aa70" stroke-width="10"/></g>
- <g stroke="#4f8d4b" stroke-width="14"><path d="M3860 690l-30-190m70 180 25-220m1110 270-5-210m65 190 40-180"/></g>
+<!-- Lv3: 水辺。森を抜けた先に光が開ける -->
+<g class="worldZone zone3">
+  <path d="M3400 1430 C3650 1220 3920 1100 4240 1040 C4580 980 4920 1090 5050 1320
+           C5170 1530 4960 1740 4590 1770 C4170 1800 3790 1650 3500 1510Z"
+        fill="url(#water61)" stroke="#b7d5a5" stroke-width="42"/>
+  <g stroke="#eafcff" stroke-width="18" fill="none" opacity=".5">
+    <path d="M3830 1280q300-95 570 5"/><path d="M4200 1540q310-85 590 10"/>
+  </g>
+  <path d="M3390 1440 C3230 1570 3120 1670 2980 1750" fill="none" stroke="#d7e3b2" stroke-width="230" stroke-linecap="round"/>
+  <path d="M3390 1440 C3230 1570 3120 1670 2980 1750" fill="none" stroke="url(#water61)" stroke-width="170" stroke-linecap="round"/>
+  <g stroke="#3f7740" stroke-width="14"><path d="M3610 1640l-25-170m70 165 20-190m1160 130-10-185m60 175 35-170"/></g>
+  <g fill="#676e64"><ellipse cx="3480" cy="1730" rx="80" ry="31"/><ellipse cx="4920" cy="1690" rx="70" ry="28"/></g>
 </g>
 
-<!-- W: orchard / grove -->
-<g id="zoneWest">
- <rect x="0" y="900" width="1800" height="900" fill="#78bd61"/>
- <g stroke="#735038" stroke-width="22" fill="#4f9c51">
-  <g transform="translate(220 1080)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
-  <g transform="translate(600 1250)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
-  <g transform="translate(1050 1080)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
-  <g transform="translate(1460 1280)"><path d="M0 130v210"/><circle cy="70" r="120"/></g>
- </g>
- <path d="M90 1700 C450 1510 870 1580 1160 1680 C1390 1760 1580 1680 1730 1540" fill="none" stroke="#d9bd78" stroke-width="90"/>
- <g fill="#e8c158"><circle cx="210" cy="1120" r="12"/><circle cx="610" cy="1290" r="12"/><circle cx="1060" cy="1120" r="12"/><circle cx="1470" cy="1320" r="12"/></g>
+<!-- Lv4: 鉱山。自然景観の中に初めて明確な「未知」を置く -->
+<g class="worldZone zone4">
+  <path d="M260 1350 L620 620 L1040 360 L1450 720 L1710 1320 Z" fill="url(#rock61)" filter="url(#shadow61)"/>
+  <path d="M260 1350 L620 620 L1040 360 L1450 720 L1710 1320 Z" fill="url(#stone61)" opacity=".65"/>
+  <path d="M710 1370 Q820 1050 1060 1020 Q1310 1010 1420 1370 Z" fill="#1d2623"/>
+  <ellipse cx="1060" cy="1160" rx="210" ry="145" fill="#111916"/>
+  <g fill="#79d4c4" opacity=".85" filter="url(#shadow61)">
+    <path d="M900 1160l45-120 50 118-48 110z"/><path d="M1200 1200l38-105 48 95-42 100z"/>
+  </g>
+  <path d="M1450 1470 C1700 1500 1930 1510 2160 1450" fill="none" stroke="#ab8c60" stroke-width="90" opacity=".65"/>
 </g>
 
-<!-- CENTER: former full ranch, now only the starting meadow district -->
-<g id="zoneMeadow" transform="translate(1800 900)">
-
-
-<rect width="1800" height="900" fill="url(#s)"/><circle cx="1510" cy="100" r="62" fill="#ffe58b"/>
-<g fill="#fff" opacity=".8"><ellipse cx="260" cy="110" rx="90" ry="26"/><ellipse cx="335" cy="115" rx="62" ry="20"/><ellipse cx="1170" cy="90" rx="85" ry="24"/></g>
-<path d="M0 310Q180 120 370 300Q550 105 760 300Q940 130 1120 300Q1340 95 1530 300Q1670 160 1800 285V410H0Z" fill="#70ad68"/>
-<path d="M0 350Q230 205 450 345Q690 185 920 345Q1190 180 1430 345Q1620 220 1800 335V430H0Z" fill="#84bf6b"/>
-<path d="M865 900C820 760 1010 690 935 570C870 465 1000 405 1110 350C1230 292 1345 300 1460 245" fill="none" stroke="#d9bd78" stroke-width="132" stroke-linecap="round"/><path d="M865 900C820 760 1010 690 935 570C870 465 1000 405 1110 350C1230 292 1345 300 1460 245" fill="none" stroke="#efd697" stroke-width="88" stroke-linecap="round"/>
-<!-- shade grove -->
-<g filter="url(#ds)" stroke-linecap="round"><g stroke="#704b2d" stroke-width="25"><path d="M245 455v180"/><path d="M410 420v190"/><path d="M575 465v150"/></g><g fill="#3f8f50"><circle cx="205" cy="430" r="86"/><circle cx="275" cy="398" r="102"/><circle cx="355" cy="438" r="80"/><circle cx="420" cy="375" r="105"/><circle cx="500" cy="415" r="82"/><circle cx="570" cy="440" r="92"/></g><g fill="#66ad59"><circle cx="240" cy="370" r="58"/><circle cx="445" cy="330" r="62"/><circle cx="600" cy="400" r="48"/></g></g>
-<g transform="translate(300 620)" filter="url(#ds)"><rect width="210" height="28" rx="10" fill="#a76f3d"/><rect x="18" y="27" width="18" height="55" fill="#70472b"/><rect x="175" y="27" width="18" height="55" fill="#70472b"/></g>
-<!-- pond -->
-<path d="M1300 345C1410 295 1615 310 1685 392C1750 470 1670 555 1540 568C1390 580 1270 520 1265 440C1262 398 1275 370 1300 345Z" fill="url(#w)" stroke="#d9e7b1" stroke-width="18"/><g stroke="#efffff" stroke-width="8" fill="none" opacity=".55"><path d="M1360 410q85-38 175 0"/><path d="M1450 495q90-30 165 5"/></g>
-<g transform="translate(1250 480) rotate(-10)" filter="url(#ds)"><rect width="190" height="65" rx="8" fill="#a87343"/><path d="M15 15h160M15 34h160M15 53h160" stroke="#d6a66d" stroke-width="5"/></g>
-<!-- play area -->
-<ellipse cx="470" cy="735" rx="315" ry="120" fill="#79c866" opacity=".62"/><g transform="translate(300 675)" filter="url(#ds)"><path d="M0 110L70 0l70 110M38 55h65" stroke="#855631" stroke-width="18" fill="none"/><path d="M53 55v72m35-72v72" stroke="#6b4b35" stroke-width="5"/><rect x="45" y="122" width="52" height="13" rx="6" fill="#d17a4e"/></g><circle cx="565" cy="745" r="48" fill="#f1d55e"/><circle cx="565" cy="745" r="27" fill="#fff1a2"/>
-<!-- cottage -->
-<g transform="translate(1320 625)" filter="url(#ds)"><rect x="30" y="92" width="310" height="190" rx="18" fill="#f4dfad"/><path d="M0 110L185 0l185 110z" fill="#b95f45"/><rect x="70" y="155" width="78" height="78" rx="8" fill="#8ed0df" stroke="#fff3d0" stroke-width="12"/><rect x="225" y="145" width="72" height="137" rx="10" fill="#9b6743"/><circle cx="280" cy="214" r="6" fill="#f4d66f"/></g>
-<!-- fences / flowers / stones -->
-<g stroke="#96613a" stroke-width="15" stroke-linecap="round"><path d="M55 545H720M55 595H700"/><path d="M75 515v115M255 515v115M440 515v115M625 515v115"/></g>
-<g fill="#f6ce4d"><circle cx="165" cy="735" r="11"/><circle cx="200" cy="760" r="10"/><circle cx="720" cy="650" r="11"/><circle cx="760" cy="670" r="9"/><circle cx="1130" cy="545" r="10"/></g><g fill="#e86f84"><circle cx="182" cy="752" r="9"/><circle cx="740" cy="665" r="9"/><circle cx="1160" cy="560" r="8"/></g><g fill="#91a987"><ellipse cx="700" cy="800" rx="38" ry="18"/><ellipse cx="1050" cy="620" rx="32" ry="14"/></g>
-<!-- sign -->
-<g transform="translate(1000 390)" filter="url(#ds)"><rect width="290" height="82" rx="18" fill="#8c5935" stroke="#d6a66a" stroke-width="8"/><text x="145" y="52" text-anchor="middle" font-size="34" font-weight="800" fill="#fff7dd">はじまりの広場</text><path d="M35 82v80M255 82v80" stroke="#6f472e" stroke-width="18"/></g>
-
-<!-- Ver0.60: progressive ranch growth. The veil fades while details appear in ten small steps. -->
-<g id="growthVeil">
-  <rect id="starterSkyVeil" x="0" y="0" width="1800" height="365" fill="#d7ebe2" opacity=".62"/>
-  <rect id="starterGroundVeil" x="0" y="345" width="1800" height="555" fill="#8fca73" opacity=".82"/>
-</g>
-<g id="growthExtras">
-  <g data-grow-step="1" class="growthStep" fill="#f3d35b"><circle cx="850" cy="640" r="8"/><circle cx="890" cy="655" r="7"/><circle cx="930" cy="635" r="8"/></g>
-  <g data-grow-step="2" class="growthStep" fill="#a7b39a"><ellipse cx="790" cy="700" rx="26" ry="11"/><ellipse cx="840" cy="680" rx="22" ry="9"/><ellipse cx="900" cy="705" rx="25" ry="10"/></g>
-  <g data-grow-step="3" class="growthStep" fill="#5a9d52"><circle cx="690" cy="570" r="25"/><circle cx="730" cy="585" r="22"/><circle cx="1100" cy="600" r="24"/></g>
-  <g data-grow-step="4" class="growthStep" stroke="#9a673f" stroke-width="13" stroke-linecap="round"><path d="M760 785h250"/><path d="M790 750v70M900 750v70M1010 750v70"/></g>
-  <g data-grow-step="5" class="growthStep" stroke="#4d8c51" stroke-width="7"><path d="M1310 520l-12-75m35 80 12-86m255 95-8-88m32 80 18-75"/></g>
-  <g data-grow-step="6" class="growthStep"><g fill="#5da657"><circle cx="690" cy="430" r="45"/><circle cx="1120" cy="445" r="42"/></g><g stroke="#765034" stroke-width="15"><path d="M690 455v82"/><path d="M1120 470v76"/></g></g>
-  <g data-grow-step="7" class="growthStep"><rect x="1015" y="650" width="150" height="95" rx="18" fill="#f4d58d" opacity=".86"/><path d="M1015 697h150M1090 650v95" stroke="#fff1bd" stroke-width="8"/></g>
-  <g data-grow-step="8" class="growthStep"><path d="M225 640 Q420 585 630 642" fill="none" stroke="#fff" stroke-width="4"/><g fill="#f39a70"><path d="M290 622l22 38 22-47z"/><path d="M390 604l22 38 22-47z"/><path d="M500 608l22 38 22-47z"/></g></g>
-  <g data-grow-step="9" class="growthStep"><path d="M1490 620q-25-38 8-65q18-15 2-40" fill="none" stroke="#fff" stroke-width="18" opacity=".58"/><g fill="#f07991"><circle cx="1360" cy="800" r="9"/><circle cx="1390" cy="812" r="8"/><circle cx="1420" cy="800" r="9"/></g></g>
-  <g data-grow-step="10" class="growthStep" fill="#fff1a6"><circle cx="760" cy="520" r="7"/><circle cx="820" cy="480" r="6"/><circle cx="1180" cy="520" r="7"/><circle cx="1220" cy="470" r="6"/><circle cx="980" cy="580" r="6"/></g>
-</g>
-
-
-</g>
-
-<!-- E: river / wetland -->
-<g id="zoneEast">
- <rect x="3600" y="900" width="1800" height="900" fill="#7dc46a"/>
- <path d="M3650 1030 C4020 1170 3970 1410 4280 1490 C4610 1575 4690 1310 5050 1400 C5250 1450 5340 1560 5400 1680" fill="none" stroke="#65bed3" stroke-width="180" stroke-linecap="round"/>
- <path d="M3650 1030 C4020 1170 3970 1410 4280 1490 C4610 1575 4690 1310 5050 1400 C5250 1450 5340 1560 5400 1680" fill="none" stroke="#9be1e9" stroke-width="110" stroke-linecap="round" opacity=".5"/>
- <g fill="#d8e7b0"><ellipse cx="3990" cy="1280" rx="62" ry="25"/><ellipse cx="4520" cy="1490" rx="70" ry="28"/><ellipse cx="5000" cy="1420" rx="55" ry="22"/></g>
-</g>
-
-<!-- SW: giant play meadow -->
-<g id="zonePlaySouthWest">
- <rect x="0" y="1800" width="1800" height="900" fill="#79c867"/>
- <ellipse cx="850" cy="2260" rx="690" ry="310" fill="#88d36e"/>
- <g transform="translate(360 2110)"><path d="M0 260L150 0l150 260M75 125h150" stroke="#845731" stroke-width="36" fill="none"/><path d="M105 125v180m90-180v180" stroke="#6b4b35" stroke-width="13"/><rect x="80" y="285" width="145" height="28" rx="12" fill="#d17a4e"/></g>
- <g transform="translate(980 2140)"><circle cx="120" cy="120" r="110" fill="#f1d55e"/><circle cx="120" cy="120" r="65" fill="#fff1a2"/></g>
- <g fill="#f0788d"><circle cx="270" cy="2460" r="13"/><circle cx="330" cy="2490" r="12"/><circle cx="1420" cy="2380" r="13"/><circle cx="1510" cy="2430" r="11"/></g>
-</g>
-
-<!-- S: long ranch road / fields -->
-<g id="zoneSouth">
- <rect x="1800" y="1800" width="1800" height="900" fill="#83c86d"/>
- <path d="M2700 1800 C2550 2040 2940 2180 2740 2420 C2620 2560 2650 2660 2700 2700" fill="none" stroke="#d9bd78" stroke-width="180" stroke-linecap="round"/>
- <path d="M2700 1800 C2550 2040 2940 2180 2740 2420 C2620 2560 2650 2660 2700 2700" fill="none" stroke="#ecd391" stroke-width="125" stroke-linecap="round"/>
- <g stroke="#96613a" stroke-width="24" stroke-linecap="round"><path d="M1950 2050h500M1950 2130h500M3000 2340h470M3000 2420h470"/><path d="M2020 2000v190M2240 2000v190M2390 2000v190M3070 2280v200M3280 2280v200M3440 2280v200"/></g>
-</g>
-
-<!-- SE: cottage district -->
-<g id="zoneHutSouthEast">
- <rect x="3600" y="1800" width="1800" height="900" fill="#78be66"/>
- <g transform="translate(4050 2040)">
-  <rect x="60" y="170" width="700" height="390" rx="28" fill="#f4dfad"/>
-  <path d="M0 210L410 0l410 210z" fill="#b95f45"/>
-  <rect x="150" y="300" width="170" height="150" rx="14" fill="#8ed0df" stroke="#fff3d0" stroke-width="22"/>
-  <rect x="520" y="280" width="150" height="280" rx="18" fill="#9b6743"/>
-  <circle cx="625" cy="420" r="13" fill="#f4d66f"/>
- </g>
- <g fill="#4d9850"><circle cx="3900" cy="2380" r="120"/><circle cx="4950" cy="2250" r="130"/><circle cx="5200" cy="2430" r="110"/></g>
- <g fill="#f4d45c"><circle cx="3820" cy="2550" r="12"/><circle cx="3880" cy="2580" r="11"/><circle cx="5010" cy="2580" r="12"/></g>
-</g>
-
-<!-- paths linking all nine districts -->
-<g fill="none" stroke-linecap="round" opacity=".8">
- <path d="M2700 1350 C2200 1350 1600 1300 900 1350" stroke="#d9bd78" stroke-width="70"/>
- <path d="M2700 1350 C3200 1350 3900 1300 4500 1350" stroke="#d9bd78" stroke-width="70"/>
- <path d="M2700 1350 C2700 980 2700 650 2700 380" stroke="#d9bd78" stroke-width="70"/>
- <path d="M2700 1350 C2700 1750 2700 2150 2700 2480" stroke="#d9bd78" stroke-width="70"/>
+<!-- Lv5: 世界の境界。遠くに山影と雲海だけ見せ、まだ答えは出さない -->
+<g class="worldZone zone5">
+  <path d="M0 410 Q500 80 980 420 T1940 390" fill="none" stroke="#536765" stroke-width="260" opacity=".9"/>
+  <path d="M3720 420 Q4210 90 4680 420 T5400 380" fill="none" stroke="#536765" stroke-width="260" opacity=".9"/>
+  <g fill="#eef4f0" opacity=".68">
+    <ellipse cx="550" cy="540" rx="380" ry="120"/><ellipse cx="1140" cy="500" rx="430" ry="130"/>
+    <ellipse cx="4270" cy="510" rx="420" ry="130"/><ellipse cx="4920" cy="540" rx="390" ry="120"/>
+  </g>
 </g>
 </svg>
-</div>
-<div class="fogZone megaFog fogNW" data-area="shade"><span>🌫️ 深い森の向こうに何かある…</span></div>
-<div class="fogZone megaFog fogW" data-area="shade"><span>🌫️ 木々の向こうへ道が続いている…</span></div>
-<div class="fogZone megaFog fogNE" data-area="pond"><span>🌫️ 遠くから水の音がする…</span></div>
-<div class="fogZone megaFog fogE" data-area="pond"><span>🌫️ 川の向こうに何か見える…</span></div>
-<div class="fogZone megaFog fogSW" data-area="play"><span>🌫️ 広い草原が続いている…</span></div>
-<div class="fogZone megaFog fogS" data-area="play"><span>🌫️ 道はまだ先へ続いている…</span></div>
-<div class="fogZone megaFog fogSE" data-area="hut"><span>🌫️ 建物のような影が見える…</span></div>
-<div class="fogZone megaFog fogN" data-area="hut"><span>🌫️ 丘の向こうはまだ知らない場所…</span></div>
+<div class="discoveryCue" id="discoveryCue">！</div>
+
 <div id="facilityLayer"></div>
 <div class="socialLayer" id="socialLayer"></div>
 <div class="empty" id="empty">本編データを確認しています…</div>
-<div class="worldLegend" aria-hidden="true"><span>⛏️ 未知の鉱山</span><span>🌊 海の向こう</span><span>🐋 海中世界</span><span>☁️ 空の彼方</span><span>🏰 闇の城</span></div><div class="discoverToast" id="discoverToast" aria-live="polite"></div>
+<div class="discoverToast" id="discoverToast" aria-live="polite"></div>
 </div>
 </div>
 </section>
 <section class="worldDiscovery" id="worldDiscovery"><h3>🧭 世界の発見</h3><p id="discoveryLead">ポケモンたちは、まだ知らない場所の気配を感じています。</p><div class="discoveryCards" id="discoveryCards"></div></section><section class="relations ranch-time-test" data-test-only="time">
-<h3>⏩ 牧場時間（テスト）</h3>
+<h3>⏩ ワールド時間（テスト）</h3>
 <div class="timeTestRow">
   <button type="button" id="timeScale1">×1 等倍</button>
   <button type="button" id="timeScale10">×10</button>
-  <span id="timeScaleNote">歩く速さは変えず、牧場時間・生活経験・発展だけを加速します。</span>
+  <span id="timeScaleNote">歩く速さは変えず、ワールド時間・生活経験・発見だけを加速します。</span>
 </div>
 <div class="timeTestRow sub">
-  <button type="button" id="growthTestStart">🌱 発展だけLv1から見る</button>
-  <button type="button" id="growthTestRestore">↩ 発展状態を元に戻す</button>
+  <button type="button" id="growthTestStart">🌱 世界発見をLv1から見る</button>
+  <button type="button" id="growthTestRestore">↩ 世界状態を元に戻す</button>
   <span>個体・性格・仲間・思い出・本編データは変更しません。</span>
 </div>
 </section>
