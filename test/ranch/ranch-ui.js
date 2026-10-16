@@ -166,6 +166,7 @@ function applyMapScale(scale,cx,cy){
 function fitMap(){
  const {p,stage,w}=mapEls();if(!p||!stage)return;
  if(w)delete w.dataset.activeArea;
+ const badge=document.getElementById("areaModeBadge66");if(badge)badge.textContent="";
  const b=currentWorldBounds(),pad=12,availW=Math.max(1,p.clientWidth-pad*2);
  setFitMode(true);
  p.style.removeProperty("height");p.style.removeProperty("max-height");p.style.removeProperty("min-height");
@@ -187,8 +188,9 @@ function fitMap(){
 function focusMapArea(id,behavior="smooth"){
  const {p,stage,w}=mapEls(),a=MAP_AREAS[id]||MAP_AREAS.meadow,b=currentWorldBounds();if(!p||!stage)return;
  if(w)w.dataset.activeArea=id;
+ const badge=document.getElementById("areaModeBadge66");if(badge)badge.textContent=`${a.icon} ${a.name}`;
  const worldX=5400*a.x,worldY=2700*a.y;
- const targetScale=Math.max(mapScale,Math.min(.72,p.clientWidth/1100));
+ const targetScale=Math.max(mapScale,Math.min(.82,p.clientWidth/980));
  if(targetScale>mapScale*1.12){commitMapScale(targetScale,p.getBoundingClientRect().left+p.clientWidth/2,p.getBoundingClientRect().top+p.clientHeight/2)}
  setFitMode(false);
  p.style.removeProperty("--fit-height");
