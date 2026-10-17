@@ -1,4 +1,4 @@
-# Frenda Frontier Ver0.01（TEST）
+# Frenda Frontier Ver0.02（TEST）
 
 配置先: `/test/frontier/`
 
@@ -28,3 +28,9 @@
 
 ## 注意
 World `/test/ranch/` には一切変更を加えていません。
+
+
+## Ver0.02 changes
+- 町・店・自宅を、屋根を外して内部が見える見下ろし2Dフィールド型へ変更。
+- TEST環境は本番所持データと分離されるため、★3以下のTEST所持ピックが0件の場合のみ体験用相棒を表示。所持登録は変更しない。
+- 既存Simulator / Dungeon / Expedition / Worldのファイルは変更しない。
