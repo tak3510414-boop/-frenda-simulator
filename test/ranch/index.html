@@ -388,7 +388,7 @@ main> *:not(#world71App){display:none!important}
 </style>
 </head>
 <body>
-<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.79 / 表示安定化</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.80 / 景色の中の仲間</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <section id="world71App" class="world71App" aria-label="フレンダワールド">
   <div id="world71Map" class="world71Map">
@@ -914,7 +914,7 @@ function eventFor(R,s,list,area){const P=period(),pair=pairFor(s,list);let title
 })();
 </script>
 
-\n<script id="world77CameraResidents">
+<script id="world77CameraResidents">
 (()=>{
 const esc=x=>String(x??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
 function rec(R,c){return R?.record?.(c.pickId)||R?.masterMap?.().get?.(String(c.pickId))||{}}
@@ -929,7 +929,7 @@ let badge=scene.querySelector('.world77More');if(!badge){badge=document.createEl
 function open(c,R){const scene=document.getElementById('world71Scene');let m=scene.querySelector('.world77Modal');if(!m){m=document.createElement('div');m.className='world77Modal';m.hidden=true;scene.appendChild(m)}const img=imageOf(R,c), n=nm(R,c);m.innerHTML=`<div class="world77Card"><button class="world77Close">閉じる</button><div class="world77CardTop">${img?`<img src="${esc(img)}" alt="">`:''}<div><h3>${esc(n)}</h3><p>${esc(c.world2?.action||'のんびり過ごしている')}</p><p>📍 ${esc(c.world2?.spot||'この場所')}</p><p>${esc(c.world2?.mode||'')}</p></div></div><div class="world77Hint">この子のピック情報・性格・思い出は、ここから詳しく見られる形へ発展させます。</div></div>`;m.hidden=false;m.querySelector('.world77Close').onclick=()=>m.hidden=true;m.onclick=e=>{if(e.target===m)m.hidden=true}}
 window.renderWorld77=patch;window.addEventListener('load',()=>setTimeout(patch,500));document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(patch,350)});setInterval(patch,2000);
 })();
-</script>\n
+</script>
 <style id="world78Style">
 .world77Card{max-height:78%;overflow:auto}.world78Meta{display:flex;gap:5px;flex-wrap:wrap;margin:9px 0}.world78Chip{padding:4px 8px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff22;font-size:9px}.world78Section{margin-top:10px;padding-top:9px;border-top:1px solid #ffffff22}.world78Section b{display:block;font-size:11px;margin-bottom:5px}.world78Memory{font-size:10px;line-height:1.5;padding:6px 8px;border-radius:10px;background:#ffffff0d;margin-top:4px}.world78Relation{font-size:10px;line-height:1.5}.world78Seen{position:absolute;left:12px;top:62px;z-index:5;padding:6px 9px;border-radius:999px;background:#082b20cc;color:#fff;border:1px solid #ffffff55;font-size:9px;font-weight:800}.world78Time{opacity:.75}
 </style>
@@ -952,6 +952,45 @@ window.addEventListener('load',()=>setTimeout(()=>{patchModal();seenBadge()},700
 let queued=false;
 function bind(){const layer=document.querySelector('#world71Scene .world75SceneLayer');if(!layer||layer.dataset.w79==='1')return;layer.dataset.w79='1';const mo=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;window.renderWorld77?.()})});mo.observe(layer,{childList:true,subtree:false})}
 window.addEventListener('load',()=>setTimeout(bind,700));document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(bind,250)});setInterval(bind,3000);
+})();
+</script>
+
+
+<style id="world80Style">
+/* Ver0.80: ピック全体ではなくキャラクター部分を生活シーン用に見せる */
+.world75Actor{background:transparent!important;border:0!important;box-shadow:none!important;min-width:0!important;padding:0!important;overflow:visible!important;transform:translate(-50%,-82%)!important}
+.world75Actor .mood,.world75Actor>b,.world75Actor>small{display:none!important}
+.world80Mon{position:relative;width:76px;height:76px;display:block;filter:drop-shadow(0 6px 5px #0007);transition:transform .18s ease;transform-origin:50% 100%}
+.world80Mon:active{transform:scale(.94)}
+.world80Crop{position:absolute;inset:0;border-radius:46% 46% 42% 42%;overflow:hidden;background:transparent}
+.world80Crop img{position:absolute;width:150%;height:auto;left:50%;top:48%;transform:translate(-50%,-50%);clip-path:inset(3% 12% 19% 12% round 32%);}
+.world80Shadow{position:absolute;left:18%;right:18%;bottom:-3px;height:9px;border-radius:50%;background:#0005;filter:blur(3px);z-index:-1}
+.world80Mood{position:absolute;right:-5px;top:-9px;min-width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:#10382ddd;border:1px solid #fff8;font-size:13px;box-shadow:0 2px 5px #0005}
+.world80DepthNear{width:88px;height:88px}.world80DepthFar{width:62px;height:62px;opacity:.94}
+.world77More{z-index:7}
+.world77Modal{z-index:30}
+</style>
+<script id="world80PokemonFigures">
+(()=>{
+const esc=x=>String(x??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
+function rec(R,c){return R?.record?.(c.pickId)||R?.masterMap?.().get?.(String(c.pickId))||{}}
+function nm(R,c){return R.pickName?.(c.pickId)||c.name||c.pickId||'ポケモン'}
+function imageOf(R,c){const r=rec(R,c);return r.official_image||r.image||r.image_url||''}
+function mood(c){const a=String(c.world2?.action||'');if(/休|眠|のんびり/.test(a))return '💤';if(/泳|水/.test(a))return '💧';if(/飛|上空|枝/.test(a))return '🪽';if(/調べ|気に|見回/.test(a))return '👀';return '🐾'}
+function enhance(){
+ const scene=document.getElementById('world71Scene'),R=window.FRENDA_RANCH,s=R?.readSave?.();if(!scene||scene.hidden||!R||!s)return;
+ const byId=new Map((s.creatures||[]).map(c=>[String(c.ranchId),c]));
+ scene.querySelectorAll('.world75Actor').forEach((a,i)=>{
+   const c=byId.get(String(a.dataset.rid||''));if(!c)return;
+   const img=imageOf(R,c);if(!img)return;
+   const depth=(parseFloat(a.style.top)||50)<45?'world80DepthFar':'world80DepthNear';
+   a.innerHTML=`<div class="world80Mon ${depth}" role="button" aria-label="${esc(nm(R,c))}"><span class="world80Shadow"></span><span class="world80Crop"><img src="${esc(img)}" alt="${esc(nm(R,c))}"></span><span class="world80Mood">${mood(c)}</span></div>`;
+ });
+}
+window.renderWorld80=enhance;
+window.addEventListener('load',()=>setTimeout(enhance,850));
+document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(enhance,650)});
+setInterval(enhance,2200);
 })();
 </script>
 
