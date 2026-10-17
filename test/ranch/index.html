@@ -388,7 +388,7 @@ main> *:not(#world71App){display:none!important}
 </style>
 </head>
 <body>
-<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.78 / 個体プロフィールと記憶</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.79 / 表示安定化</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <section id="world71App" class="world71App" aria-label="フレンダワールド">
   <div id="world71Map" class="world71Map">
@@ -888,7 +888,7 @@ function render75(area){
  story.innerHTML=`<b>${title}</b>${esc(text)}<div class="world75Tags">${tags.map(x=>`<span class="world75Tag">${esc(x)}</span>`).join('')}</div>`;
 }
 function currentArea(){return window.__FW74_AREA||'meadow'}
-window.addEventListener('load',()=>{document.querySelectorAll('[data-w71]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>render75(b.dataset.w71),60)));setInterval(()=>{const sc=document.getElementById('world71Scene');if(sc&&!sc.hidden)render75(currentArea())},5000)});
+window.addEventListener('load',()=>{document.querySelectorAll('[data-w71]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>{render75(b.dataset.w71);setTimeout(()=>window.renderWorld77?.(),0)},60)));setInterval(()=>{const sc=document.getElementById('world71Scene');if(sc&&!sc.hidden){render75(currentArea());setTimeout(()=>window.renderWorld77?.(),0)}},5000)});
 })();
 </script>
 
@@ -927,7 +927,7 @@ if(show.length>actors.length){/* next base refresh will position extras */}
 let badge=scene.querySelector('.world77More');if(!badge){badge=document.createElement('div');badge.className='world77More';scene.appendChild(badge)}badge.textContent=all.length>show.length?`この場所に ${all.length}匹・今見える ${show.length}匹`:`今見える仲間 ${show.length}匹`;
 }
 function open(c,R){const scene=document.getElementById('world71Scene');let m=scene.querySelector('.world77Modal');if(!m){m=document.createElement('div');m.className='world77Modal';m.hidden=true;scene.appendChild(m)}const img=imageOf(R,c), n=nm(R,c);m.innerHTML=`<div class="world77Card"><button class="world77Close">閉じる</button><div class="world77CardTop">${img?`<img src="${esc(img)}" alt="">`:''}<div><h3>${esc(n)}</h3><p>${esc(c.world2?.action||'のんびり過ごしている')}</p><p>📍 ${esc(c.world2?.spot||'この場所')}</p><p>${esc(c.world2?.mode||'')}</p></div></div><div class="world77Hint">この子のピック情報・性格・思い出は、ここから詳しく見られる形へ発展させます。</div></div>`;m.hidden=false;m.querySelector('.world77Close').onclick=()=>m.hidden=true;m.onclick=e=>{if(e.target===m)m.hidden=true}}
-window.addEventListener('load',()=>setTimeout(patch,500));document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(patch,350)});setInterval(patch,5000);
+window.renderWorld77=patch;window.addEventListener('load',()=>setTimeout(patch,500));document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(patch,350)});setInterval(patch,2000);
 })();
 </script>\n
 <style id="world78Style">
@@ -944,6 +944,14 @@ function patchModal(){const scene=document.getElementById('world71Scene');if(!sc
 function enhance(rid){const scene=document.getElementById('world71Scene'),R=window.FRENDA_RANCH,s=R?.readSave?.();if(!scene||!R||!s)return;const c=(s.creatures||[]).find(x=>String(x.ranchId)===String(rid));const card=scene.querySelector('.world77Card');if(!c||!card)return;card.querySelector('.world77Hint')?.remove();const mem=memories(c), rel=relations(R,s,c);const div=document.createElement('div');div.className='world78Details';div.innerHTML=`<div class="world78Meta"><span class="world78Chip">性格：${esc(nature(R,c))}</span><span class="world78Chip">個体ID：${esc(c.ranchId||'-')}</span></div><div class="world78Section"><b>🤝 この子の関係</b><div class="world78Relation">${rel.length?rel.map(esc).join('<br>'):'まだ特別な関係は記録されていません。'}</div></div><div class="world78Section"><b>📖 最近の思い出</b>${mem.length?mem.map(x=>`<div class="world78Memory">${esc(x)}</div>`).join(''):'<div class="world78Memory">これから、この世界での出来事が残っていきます。</div>'}</div>`;card.appendChild(div)}
 function seenBadge(){const scene=document.getElementById('world71Scene');if(!scene||scene.hidden)return;let b=scene.querySelector('.world78Seen');if(!b){b=document.createElement('div');b.className='world78Seen';scene.appendChild(b)}const h=new Date().getHours(),p=h<5?'深夜':h<10?'朝':h<17?'昼':h<20?'夕方':'夜';b.innerHTML=`👀 今の景色 <span class="world78Time">・${p}</span>`}
 window.addEventListener('load',()=>setTimeout(()=>{patchModal();seenBadge()},700));document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(()=>{patchModal();seenBadge()},500)});setInterval(()=>{patchModal();seenBadge()},5000);
+})();
+</script>
+
+<script id="world79ResidentStability">
+(()=>{
+let queued=false;
+function bind(){const layer=document.querySelector('#world71Scene .world75SceneLayer');if(!layer||layer.dataset.w79==='1')return;layer.dataset.w79='1';const mo=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;window.renderWorld77?.()})});mo.observe(layer,{childList:true,subtree:false})}
+window.addEventListener('load',()=>setTimeout(bind,700));document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(bind,250)});setInterval(bind,3000);
 })();
 </script>
 
