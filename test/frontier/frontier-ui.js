@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.05 / image-style single-screen UI */
+/* Frenda Frontier Ver0.06 / image-style single-screen UI */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,$=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let currentView="home", homeMode="town", talkIndex=0, storeBusy=false;
@@ -7,19 +7,17 @@ const rec=id=>F.pickRecord(id);
 const talkLines=[
   'この先の森には、めずらしい素材があるらしいよ。',
   '店の商品が増えてくると、お客さんも少しずつ増えるみたい。',
-  '相棒ポケモンと一緒なら、はじめての冒険でも心強いね。'
+  '町の評判が上がると、新しい旅人も来るようになるよ。'
 ];
 function toast(t){const e=$("toast");if(!e)return;e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),1700)}
 function ensureModal(){let m=document.getElementById("frontierModal");if(m)return m;m=document.createElement("div");m.id="frontierModal";m.className="modal hidden";m.innerHTML='<div class="modalPanel"><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.addEventListener("click",e=>{if(e.target===m)closeModal()});return m}
 function modal(html,actions=[]){ensureModal();const m=$("frontierModal");$("frontierModalBody").innerHTML=html;const a=$("frontierModalActions");a.innerHTML="";actions.forEach(x=>{const b=document.createElement("button");b.className=x.className||"cmdBtn";b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)});m.classList.remove("hidden")}
 function closeModal(){const m=$("frontierModal");if(m)m.classList.add("hidden")}
 function setView(v){currentView=v;document.querySelectorAll("#mainNav button").forEach(b=>b.classList.toggle("on",b.dataset.view===v));renderAll()}
-function human(color='blue',label=''){return `<div class="pxHuman ${color}"><span class="sh"></span><span class="hat"></span><span class="hd"></span><span class="face"></span><span class="arm l"></span><span class="arm r"></span><span class="bd"></span><span class="lg"></span></div>${label?`<div class="tag" style="position:absolute;left:-8px;top:-14px;">${esc(label)}</div>`:''}`}
+function human(color='blue', size='adult'){return `<div class="pxHuman ${color} ${size==='kid'?'npcKid':'npcAdult'}"><span class="shadow"></span><span class="hatTop"></span><span class="hatBrim"></span><span class="hair"></span><span class="head"></span><span class="eye l"></span><span class="eye r"></span><span class="arm l"></span><span class="arm r"></span><span class="body"></span><span class="belt"></span><span class="leg l"></span><span class="leg r"></span><span class="shoe l"></span><span class="shoe r"></span></div>`}
 function header(s){const st=F.stageInfo(s.development.stage);$("headStats").innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'};const sub={home:homeMode==='house'?'家の中':'町の全体イメージ',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:'店の中（販売中）'};$("viewTitle").textContent=title[currentView]||'Frenda Frontier';$("viewSubtitle").textContent=sub[currentView]||'';$("viewMeta").textContent=`現在地：${esc(st.caption)}`}
-function homeDialog(s){if(homeMode==='house'){const p=rec(s.partnerId);return p?`相棒ポケモン
-「${p.name_ja}と いっしょに がんばろう！」`:'まずは相棒を決めよう。'}
- if(talkIndex>0)return `町の人
-「${talkLines[(talkIndex-1)%talkLines.length]}」`;
+function homeDialog(s){if(homeMode==='house'){const p=rec(s.partnerId);return p?`相棒ポケモン\n「${p.name_ja}と いっしょに がんばろう！」`:'まずは相棒を決めよう。'}
+ if(talkIndex>0)return `町の人\n「${talkLines[(talkIndex-1)%talkLines.length]}」`;
  return F.goal(s).text.replace(/！/g,'！\n');
 }
 function homeCommands(s){if(homeMode==='house'){return [
@@ -44,37 +42,43 @@ function homeScene(s){const st=F.stageInfo(s.development.stage), p=rec(s.partner
   <div class="sceneHud"><div class="miniTags"><span class="tag">家の中</span>${p?`<span class="tag">相棒：${esc(p.name_ja)}</span>`:''}</div></div>
   <div class="wallPanel"></div>
   <div class="bedBig"></div>
-  <div class="bookShelf" style="left:61%;top:16%;width:17%;height:16%;"></div>
-  <div class="bookShelf" style="left:11%;bottom:13%;width:14%;height:10%;"></div>
-  <div class="rugRect" style="left:34%;top:26%;width:32%;height:30%;"></div>
-  <div class="tableSmall" style="left:43%;top:43%;width:10%;height:10%;"></div>
+  <div class="windowHouse" style="left:60%;top:17%;width:15%;height:17%;"></div>
+  <div class="bookShelf" style="left:79%;top:17%;width:10%;height:17%;"></div>
+  <div class="rugRect" style="left:35%;top:28%;width:30%;height:34%;"></div>
+  <div class="tableOval" style="left:43%;top:47%;width:10%;height:10%;"></div>
+  <div class="tableLong" style="left:75%;bottom:20%;width:12%;height:8%;"></div>
   <div class="kitchen"></div>
-  <div class="stove"></div>
-  <div style="position:absolute;left:41%;top:52%;">${human('blue')}</div>
-  ${p?`<div class="partnerSprite" style="left:51%;top:40%;"><img src="${esc(image(p))}" alt=""></div>`:''}
+  <div class="sink"></div>
+  <div class="bookShelf" style="left:8%;bottom:11%;width:13%;height:11%;"></div>
+  <div class="chest" style="left:28%;bottom:13%;width:14%;height:10%;"></div>
+  <div class="potPlant" style="left:12%;bottom:14%;"></div>
+  <div style="position:absolute;left:43%;top:56%;">${human('blue','adult')}</div>
+  ${p?`<div class="partnerSprite" style="left:51%;top:46%;"><img src="${esc(image(p))}" alt=""></div>`:''}
   <div class="dialogBox"><h3>家の中</h3><p>${esc(homeDialog(s))}</p></div>
   <div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="cmdHome"></div></div>
  </div>`;
  return `
  <div class="townScene gameScene">
   <div class="sceneHud"><div class="miniTags"><span class="tag">${esc(st.name)}</span><span class="tag">発展 ${s.development.points}pt</span>${p?`<span class="tag">相棒：${esc(p.name_ja)}</span>`:''}</div></div>
-  <div class="tree" style="left:7%;top:15%;"></div>
-  <div class="tree" style="left:83%;top:17%;"></div>
-  <div class="tree" style="left:8%;top:72%;"></div>
-  <div class="tree" style="left:84%;top:72%;"></div>
-  <div class="flower" style="left:30%;top:26%;"></div><div class="flower" style="left:73%;top:27%;"></div>
-  <div class="townRoadV"></div><div class="townRoadH"></div>
-  <div class="shopExt" style="left:7%;top:22%;width:23%;height:22%;"><div class="roofRed"></div><div class="sign" style="left:10%;top:56%;">SHOP</div><div class="door" style="left:39%;bottom:4%;width:22%;height:32%;"></div><div class="win" style="left:8%;top:22%;width:18%;height:18%;"></div><div class="win" style="right:8%;top:22%;width:18%;height:18%;"></div></div>
-  <div class="houseExt" style="left:57%;top:21%;width:21%;height:23%;"><div class="roofBlue"></div><div class="sign" style="left:33%;top:52%;">家</div><div class="door" style="left:37%;bottom:4%;width:24%;height:34%;"></div><div class="win" style="left:12%;top:24%;width:16%;height:16%;"></div><div class="win" style="right:12%;top:24%;width:16%;height:16%;"></div></div>
-  <div class="smithExt" style="left:9%;top:66%;width:17%;height:16%;"><div class="roofBrown"></div><div class="sign" style="left:10%;top:54%;">鍛冶屋</div></div>
-  <div class="whExt" style="left:68%;top:66%;width:17%;height:16%;"><div class="roofGold"></div><div class="sign" style="left:17%;top:54%;">倉庫</div></div>
+  <div class="skyCloud" style="left:11%;top:11%;"></div>
+  <div class="skyCloud" style="right:14%;top:14%;transform:scale(.8);"></div>
+  <div class="townGround"></div>
+  <div class="plazaPathV"></div><div class="plazaPathL"></div><div class="plazaPathR"></div><div class="stonePlaza"></div>
+  <div class="shopExt" style="left:7%;top:18%;width:22%;height:22%;"><div class="roofRed"></div><div class="awning" style="left:8%;top:38%;width:34%;"></div><div class="sign" style="left:47%;top:48%;">SHOP</div><div class="door" style="left:40%;bottom:5%;width:20%;height:29%;"></div><div class="win" style="left:8%;top:20%;width:16%;height:18%;"></div><div class="win" style="right:8%;top:20%;width:16%;height:18%;"></div></div>
+  <div class="homeExt" style="left:56%;top:18%;width:20%;height:22%;"><div class="roofBlue"></div><div class="sign" style="left:35%;top:46%;">家</div><div class="door" style="left:39%;bottom:5%;width:22%;height:30%;"></div><div class="win" style="left:12%;top:20%;width:14%;height:18%;"></div><div class="win" style="right:12%;top:20%;width:14%;height:18%;"></div></div>
+  <div class="smithExt" style="left:7%;bottom:7%;width:18%;height:15%;"><div class="roofBrown"></div><div class="sign" style="left:10%;top:50%;">鍛冶屋</div></div>
+  <div class="whExt" style="right:8%;bottom:7%;width:18%;height:15%;"><div class="roofGold"></div><div class="sign" style="left:19%;top:50%;">倉庫</div></div>
+  <div class="tree" style="left:3%;top:25%;"></div><div class="tree" style="right:5%;top:25%;"></div>
   <div class="fountain"></div>
-  <div style="position:absolute;left:19%;top:58%;">${human('blue')}</div>
-  <div style="position:absolute;left:31%;top:51%;">${human('orange')}</div>
-  <div style="position:absolute;left:58%;top:58%;">${human('purple')}</div>
-  <div style="position:absolute;left:80%;top:75%;">${human('green')}</div>
-  <div style="position:absolute;left:42%;top:60%;">${human('blue')}</div>
-  ${p?`<div class="partnerSprite" style="left:47%;top:60%;"><img src="${esc(image(p))}" alt=""></div>`:''}
+  <div class="boardSign" style="left:62%;top:54%;"></div>
+  <div class="flowerPatch" style="left:27%;top:35%;"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="flowerPatch" style="left:75%;top:35%;"><span></span><span></span><span></span><span></span><span></span></div>
+  <div style="position:absolute;left:17%;top:50%;">${human('blue','adult')}</div>
+  <div style="position:absolute;left:31%;top:62%;">${human('orange','adult')}</div>
+  <div style="position:absolute;left:59%;top:50%;">${human('purple','adult')}</div>
+  <div style="position:absolute;left:76%;top:69%;">${human('green','adult')}</div>
+  <div style="position:absolute;left:43%;top:67%;">${human('blue','adult')}</div>
+  ${p?`<div class="partnerSprite" style="left:50%;top:66%;"><img src="${esc(image(p))}" alt=""></div>`:''}
   <div class="dialogBox"><h3>町の人との会話</h3><p>${esc(homeDialog(s))}</p></div>
   <div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="cmdHome"></div></div>
  </div>`;
@@ -85,24 +89,27 @@ function showStory(){const s=F.readSave(),step=F.storyStep(s);let html='<h2>📖
 function stockChooser(slot){const s=F.readSave();const e=Object.entries(s.warehouse).filter(([id,n])=>Number(n)>0&&F.item(id));if(!e.length){toast('倉庫に商品がありません');return}let html=`<h2>棚${slot+1}に並べる</h2><div class="choiceGrid">`;e.forEach(([id,n])=>{const it=F.item(id);html+=`<button class="choiceCard" data-stock-item="${esc(id)}"><div style="width:52px;height:72px;display:grid;place-items:center;font-size:32px;background:#f2f6f3;border-radius:7px">${it.icon}</div><span><b>${esc(it.name)}</b><small>相場 ${it.base}G / 倉庫×${n}</small></span></button>`});html+='</div>';modal(html,[{label:'閉じる'}]);document.querySelectorAll('[data-stock-item]').forEach(b=>b.onclick=()=>{const id=b.dataset.stockItem,it=F.item(id);closeModal();modal(`<h2>${it.icon} ${esc(it.name)}</h2><p>相場：<b>${it.base}G</b></p><label>販売価格 <input id="stockPrice" type="number" value="${it.base}" min="10" max="${it.base*3}" style="width:110px;padding:6px;border:1px solid #cbd9ce;border-radius:8px;text-align:right"> G</label>`,[{label:'棚に並べる',className:'cmdBtn primary',fn:()=>{try{F.stockShelf(slot,id,$('stockPrice')?.value||it.base);toast('商品を並べました');renderAll()}catch(e){toast(e.message)}}},{label:'戻る'}])})}
 function chooseShelfForPrice(){const s=F.readSave();const list=s.shelves.map((sh,i)=>sh?{...sh,slot:i}:null).filter(Boolean);if(!list.length){toast('棚に商品がありません');return}let html='<h2>値段を変える</h2><div class="choiceGrid">';list.forEach(sh=>{const it=F.item(sh.itemId);html+=`<button class="choiceCard" data-price-slot="${sh.slot}"><div style="width:52px;height:72px;display:grid;place-items:center;font-size:32px;background:#f2f6f3;border-radius:7px">${it.icon}</div><span><b>${esc(it.name)}</b><small>現在 ${sh.price}G / 相場 ${it.base}G</small></span></button>`});html+='</div>';modal(html,[{label:'閉じる'}]);document.querySelectorAll('[data-price-slot]').forEach(b=>b.onclick=()=>{const slot=Number(b.dataset.priceSlot);const sh=F.readSave().shelves[slot],it=F.item(sh.itemId);closeModal();modal(`<h2>${esc(it.name)}の値段</h2><p>相場：${it.base}G</p><label>販売価格 <input id="editPrice" type="number" value="${sh.price}" min="10" max="${it.base*3}" style="width:110px;padding:6px;border:1px solid #cbd9ce;border-radius:8px;text-align:right"> G</label>`,[{label:'変更する',className:'cmdBtn primary',fn:()=>{F.changePrice(slot,$('editPrice').value);toast('値段を変更しました');renderAll()}},{label:'棚から戻す',fn:()=>{F.unstockShelf(slot);toast('倉庫へ戻しました');renderAll()}},{label:'閉じる'}])})}
 async function runStore(){if(storeBusy)return;const s=F.readSave();if(!s.shelves.some(Boolean)){toast('棚に商品がありません');return}storeBusy=true;let lines=['お店を開きました。'];for(let n=0;n<4;n++){const r=F.simulateCustomer();if(r.bought){F.applySale(r);lines=[`✅ ${r.customer.name}が ${r.choice.item.name} を${r.choice.price}Gで買いました。`,`${r.customer.name}「${r.customer.line}」`]} else {lines=[`…${r.customer.name}は「${r.reason}」で帰りました。`,`${r.customer.name}「また見にくるよ。」`]}const log=$('storeDialogText');if(log)log.textContent=lines.join('\n');await new Promise(res=>setTimeout(res,520));renderAll()}F.mutateSave(x=>x.day++);storeBusy=false;renderAll();toast('今日の営業を終えました')}
-function storeScene(s){const shelves=s.shelves;const items=s.shelves.filter(Boolean).map(sh=>F.item(sh.itemId)?.name||'');const msg=items.length?`店員\n「いらっしゃいませ！ ${items[0]} などをご用意しています。」`:'店員\n「まずは倉庫から商品を並べてみましょう。」';return `
+function storeScene(s){const shelves=s.shelves;const msg=s.shelves.some(Boolean)?'店員\n「いらっしゃいませ！ どの商品を見ていきますか？」':'店員\n「まずは倉庫から商品を並べてみましょう。」';return `
  <div class="storeScene gameScene">
   <div class="sceneHud"><div class="miniTags"><span class="tag">棚 ${s.shelves.filter(Boolean).length}/3</span><span class="tag">売上 ${Number(s.sales.revenue||0)}G</span><span class="tag">来店 ${s.sales.customers}人</span></div></div>
-  <div class="shelfWall" style="left:11%;top:12%;width:18%;height:24%;"><div class="goods">${Array.from({length:8},(_,i)=>`<span class="good" style="opacity:${shelves[0]?1:.2}"></span>`).join('')}</div></div>
-  <div class="shelfWall" style="left:40%;top:12%;width:18%;height:24%;"><div class="goods">${Array.from({length:8},(_,i)=>`<span class="good" style="opacity:${shelves[1]?1:.2}"></span>`).join('')}</div></div>
-  <div class="shelfWall" style="left:69%;top:12%;width:18%;height:24%;"><div class="goods">${Array.from({length:8},(_,i)=>`<span class="good" style="opacity:${shelves[2]?1:.2}"></span>`).join('')}</div></div>
-  <div class="crate" style="left:10%;top:43%;width:12%;height:14%;"></div>
-  <div class="crate" style="left:24%;top:43%;width:12%;height:14%;"></div>
+  <div class="shelfWall" style="left:9%;top:12%;width:16%;height:25%;"><div class="goods">${Array.from({length:8},()=>`<span class="good" style="opacity:${shelves[0]?1:.2}"></span>`).join('')}</div></div>
+  <div class="shelfWall" style="left:41%;top:10%;width:18%;height:22%;"><div class="goods">${Array.from({length:8},()=>`<span class="good" style="opacity:${shelves[1]?1:.2}"></span>`).join('')}</div></div>
+  <div class="shelfWall" style="left:64%;top:12%;width:16%;height:25%;"><div class="goods">${Array.from({length:8},()=>`<span class="good" style="opacity:${shelves[2]?1:.2}"></span>`).join('')}</div></div>
+  <div class="crate" style="left:8%;bottom:35%;width:12%;height:16%;"></div>
+  <div class="crate" style="left:21%;bottom:35%;width:12%;height:16%;"></div>
   <div class="counter"></div>
-  <div class="cashierBox" style="left:48%;top:31%;width:7%;height:7%;"></div>
-  <div class="plant" style="left:89%;top:33%;"></div>
-  <div style="position:absolute;left:47%;top:28%;">${human('orange')}</div>
-  <div style="position:absolute;left:73%;top:48%;">${human('purple')}</div>
-  <div style="position:absolute;left:18%;top:55%;">${human('blue')}</div>
+  <div class="cashierBox" style="left:46%;top:30%;width:7%;height:7%;"></div>
+  <div class="rugStore" style="left:39%;top:59%;width:23%;height:10%;"></div>
+  <div class="stool" style="left:72%;top:43%;"></div><div class="stool" style="left:79%;top:43%;"></div>
+  <div class="plant" style="right:7%;top:29%;"></div>
+  <div style="position:absolute;left:46%;top:26%;">${human('orange','adult')}</div>
+  <div style="position:absolute;left:66%;top:45%;">${human('blue','adult')}</div>
+  <div style="position:absolute;left:73%;top:54%;">${human('purple','adult')}</div>
+  <div style="position:absolute;left:18%;top:60%;">${human('green','adult')}</div>
   <div class="dialogBox"><h3>店の中（販売中）</h3><p id="storeDialogText">${esc(msg)}</p></div>
   <div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="cmdStore"></div></div>
  </div>`}
-function boardTile(run,x,y){const t=run.map[y][x];let inner='';if(t==='gather')inner+='<span class="leaf"></span>';if(t==='stairs')inner+='<span class="stairsIcon"></span>';const e=run.enemies.find(q=>q.hp>0&&q.x===x&&q.y===y);if(e){const er=rec(e.recordId);inner+=`<div class="enemySprite" style="left:50%;top:50%;transform:translate(-50%,-50%);">${image(er)?`<img src="${esc(image(er))}" alt="">`:''}<span class="enemyLabel">${esc(e.name)} HP${e.hp}</span></div>`}if(run.partnerHp>0&&run.partner.x===x&&run.partner.y===y){const p=rec(F.readSave().partnerId);inner+=`<div class="partnerSprite" style="left:50%;top:50%;transform:translate(-50%,-50%);">${image(p)?`<img src="${esc(image(p))}" alt="">`:''}</div>`}if(run.player.x===x&&run.player.y===y){inner+=`<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">${human('blue')}</div>`}return `<div class="tile ${t}" data-x="${x}" data-y="${y}">${inner}</div>`}
+function boardTile(run,x,y){const t=run.map[y][x];let inner='';if(t==='gather')inner+='<span class="leaf"></span>';if(t==='stairs')inner+='<span class="stairsIcon"></span>';const e=run.enemies.find(q=>q.hp>0&&q.x===x&&q.y===y);if(e){const er=rec(e.recordId);inner+=`<div class="enemySprite" style="left:50%;top:50%;transform:translate(-50%,-50%);">${image(er)?`<img src="${esc(image(er))}" alt="">`:''}<span class="enemyLabel">${esc(e.name)} HP${e.hp}</span></div>`}if(run.partnerHp>0&&run.partner.x===x&&run.partner.y===y){const p=rec(F.readSave().partnerId);inner+=`<div class="partnerSprite" style="left:50%;top:50%;transform:translate(-50%,-50%);">${image(p)?`<img src="${esc(image(p))}" alt="">`:''}</div>`}if(run.player.x===x&&run.player.y===y){inner+=`<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">${human('blue','adult')}</div>`}return `<div class="tile ${t}" data-x="${x}" data-y="${y}">${inner}</div>`}
 function runResultModal(){const r=F.run?.result;if(!r)return;const items=Object.entries(r.delivered||{}).map(([id,n])=>`${F.item(id)?.name||id}×${n}`).join('、')||'なし';modal(`<h2>${r.success?'🏠 無事帰還！':'😵 冒険失敗'}</h2><p>持ち帰ったもの：<b>${esc(items)}</b></p>${Object.keys(r.lost||{}).length?'<p>倒れたため、一部を失いました。</p>':''}`,[{label:'拠点へ',fn:()=>{setView('home')}},{label:'お店へ',fn:()=>{setView('store')}}])}
 function stairsChoice(){const run=F.run;if(!run?.active)return;const last=run.floor>=run.maxFloor;modal(`<h2>🪜 階段</h2><p>${last?'最深部に向かいますか？':'次の階へ進むか、帰還するか選んでください。'}</p>`,[{label:'帰還する',fn:()=>{F.finishRun(true,'return');renderAll();runResultModal()}},{label:last?'最深部へ':'次の階へ',className:'cmdBtn primary',fn:()=>{F.nextFloor();renderAll();if(!F.run?.active)runResultModal()}},{label:'閉じる'}])}
 function showBag(){const run=F.run;if(!run?.active)return;const e=Object.entries(run.bag||{});let html='<h2>🎒 持ち物</h2>';if(!e.length)html+='<p>まだ何も持っていません。</p>';else html+='<div class="choiceGrid">'+e.map(([id,n])=>{const it=F.item(id);return `<div class="choiceCard"><div style="width:52px;height:72px;display:grid;place-items:center;font-size:32px;background:#f2f6f3;border-radius:7px">${it.icon}</div><span><b>${esc(it.name)}</b><small>${esc(it.kind)}</small><div class="badge">×${n}</div></span></div>`}).join('')+'</div>';modal(html,[{label:'閉じる'}])}
@@ -117,7 +124,7 @@ function advScene(s){const run=F.run; if(!run?.active){return `
       <div class="tree" style="left:76%;top:12%;position:absolute;"></div>
       <div class="tree" style="left:80%;top:62%;position:absolute;"></div>
       <div class="tree" style="left:18%;top:70%;position:absolute;"></div>
-      <div style="position:absolute;left:40%;top:46%;">${human('blue')}</div>
+      <div style="position:absolute;left:40%;top:46%;">${human('blue','adult')}</div>
       ${s.partnerId?`<div class="partnerSprite" style="left:48%;top:46%;"><img src="${esc(image(rec(s.partnerId)))}" alt=""></div>`:''}
       <div class="enemySprite" style="left:67%;top:42%;"><img src="${esc(image(rec(F.DUNGEON_ENEMIES[0].recordId)))}" alt=""><span class="enemyLabel">！</span></div>
       <div class="stairsIcon" style="position:absolute;left:74%;top:72%;"></div>
