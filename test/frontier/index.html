@@ -74,12 +74,9 @@ main{max-width:1200px;margin:auto;padding:12px}.notice{background:#fff7d5;border
   </section>
 </main>
 <div id="toast" class="toast"></div>
-<script src="../common/frenda-user.js"></script>
-<script src="../common/frenda-data.js"></script>
-<script src="../master/frenda-master.js"></script>
-<script src="frontier-data.js"></script>
-<script src="frontier-save.js"></script>
-<script src="frontier-core.js"></script>
-<script src="frontier-ui.js"></script>
+<script>
+(()=>{const v=document.documentElement.dataset.appVersion||"0";document.write(`<script src="../frenda-test.js?app=${v}"><\/script>`);document.write(`<script src="../frenda-user.js?app=${v}"><\/script>`);for(const f of ["frenda-master.js","frenda-data.js"])document.write(`<script src="../../${f}?app=${v}"><\/script>`);})();
+</script>
+<script>(()=>{const v=document.documentElement.dataset.appVersion||"0";for(const f of ["frontier-data.js","frontier-save.js","frontier-core.js","frontier-ui.js"])document.write(`<script src="${f}?v=${encodeURIComponent(v)}"><\/script>`);})();</script>
 </body>
 </html>
