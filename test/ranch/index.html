@@ -388,7 +388,7 @@ main> *:not(#world71App){display:none!important}
 </style>
 </head>
 <body>
-<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.80 / 景色の中の仲間</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
+<header><div class="head"><div><span class="title">🌏 フレンダワールド</span> <span class="ver">Ver0.82 / 気配から発見へ</span></div><div class="userHost headerTop" id="userHost"></div></div></header>
 <main>
 <section id="world71App" class="world71App" aria-label="フレンダワールド">
   <div id="world71Map" class="world71Map">
@@ -957,7 +957,7 @@ window.addEventListener('load',()=>setTimeout(bind,700));document.addEventListen
 
 
 <style id="world80Style">
-/* Ver0.80: ピック全体ではなくキャラクター部分を生活シーン用に見せる */
+/* Ver0.81: ピック全体ではなくキャラクター部分を生活シーン用に見せる */
 .world75Actor{background:transparent!important;border:0!important;box-shadow:none!important;min-width:0!important;padding:0!important;overflow:visible!important;transform:translate(-50%,-82%)!important}
 .world75Actor .mood,.world75Actor>b,.world75Actor>small{display:none!important}
 .world80Mon{position:relative;width:76px;height:76px;display:block;filter:drop-shadow(0 6px 5px #0007);transition:transform .18s ease;transform-origin:50% 100%}
@@ -994,5 +994,77 @@ setInterval(enhance,2200);
 })();
 </script>
 
+
+<style id="world81Style">
+/* Ver0.81: MasterDB official_image is a FRIENDA pick thumbnail, not standalone Pokémon art.
+   Never crop the pick into the life scene. Scene uses a neutral presence marker until a
+   dedicated standalone resident asset exists. The pick remains available only in profile. */
+.world80Mon{display:none!important}
+.world81Presence{position:relative;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 45% 40%,#ffffffee 0 12%,#c9f4d8dd 13% 31%,#174b32e8 32% 100%);border:2px solid #ffffffcc;box-shadow:0 8px 18px #0006;cursor:pointer;transform-origin:50% 100%}
+.world81Presence:after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);width:44px;height:11px;border-radius:50%;background:#0005;filter:blur(2px);z-index:-1}
+.world81Presence .paw{font-size:27px;filter:drop-shadow(0 2px 2px #0005)}
+.world81Presence .mood{position:absolute;right:-7px;top:-8px;min-width:25px;height:25px;border-radius:999px;display:grid;place-items:center;background:#082b20e8;border:1px solid #ffffff99;font-size:13px}
+.world75Actor:nth-child(1) .world81Presence{transform:scale(.82)}
+.world75Actor:nth-child(2) .world81Presence{transform:scale(1.03)}
+.world75Actor:nth-child(3) .world81Presence{transform:scale(.9)}
+.world75Actor:nth-child(4) .world81Presence{transform:scale(1.12)}
+.world81AssetNote{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:8;padding:5px 9px;border-radius:999px;background:#082b20c9;color:#fff;font-size:8px;border:1px solid #ffffff44;white-space:nowrap;pointer-events:none}
+</style>
+<script id="world81StandaloneAssetGuard">
+(()=>{
+const esc=x=>String(x??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
+function mood(c){const a=String(c?.world2?.action||'');if(/休|眠|のんびり/.test(a))return '💤';if(/泳|水/.test(a))return '💧';if(/飛|上空|枝/.test(a))return '🪽';if(/調べ|気に|見回/.test(a))return '👀';return '🐾'}
+function patch(){
+ const scene=document.getElementById('world71Scene');if(!scene||scene.hidden)return;
+ const R=window.FRENDA_RANCH,s=R?.readSave?.();if(!R||!s)return;
+ const area=window.__FW74_AREA||scene.dataset.area||'meadow';
+ const all=(s.creatures||[]).filter(c=>c?.status==='resident'&&c.world2?.currentArea===area);
+ const byId=new Map(all.map(c=>[String(c.ranchId),c]));
+ scene.querySelectorAll('.world75Actor').forEach(a=>{
+   const c=byId.get(String(a.dataset.rid||''));if(!c)return;
+   // Important: official_image is the pick thumbnail. Do not use it as a resident figure.
+   a.innerHTML=`<div class="world81Presence" role="button" aria-label="${esc(R.pickName?.(c.pickId)||'仲間')}"><span class="paw">🐾</span><span class="mood">${mood(c)}</span></div>`;
+ });
+ let note=scene.querySelector('.world81AssetNote');if(!note){note=document.createElement('div');note.className='world81AssetNote';scene.appendChild(note)}
+ note.textContent='生活シーン：ピック画像は使用しません';
+}
+window.renderWorld81=patch;
+window.addEventListener('load',()=>setTimeout(patch,650));
+document.addEventListener('click',e=>{if(e.target.closest('[data-w71]'))setTimeout(patch,420)});
+setInterval(patch,1800);
+})();
+</script>
+
+
+<style id="world82-discovery">
+.world82Presence{position:absolute;transform:translate(-50%,-100%);z-index:24;width:70px;height:70px;border-radius:50%;border:1px solid rgba(255,255,255,.7);background:radial-gradient(circle,rgba(255,255,255,.42),rgba(16,73,54,.70) 45%,rgba(5,35,27,.88));box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 0 8px rgba(255,255,255,.07);display:grid;place-items:center;color:white;font-size:30px;cursor:pointer;animation:fw82breathe 3.2s ease-in-out infinite}
+.world82Presence::after{content:"";position:absolute;left:50%;bottom:-8px;width:40px;height:12px;transform:translateX(-50%);background:rgba(0,0,0,.28);filter:blur(5px);border-radius:50%;z-index:-1}
+.world82Presence small{position:absolute;top:76px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(6,40,30,.82);padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800}
+@keyframes fw82breathe{50%{transform:translate(-50%,-100%) scale(1.06);box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 0 13px rgba(255,255,255,.03)}}
+.world82Hint{position:absolute;left:28px;right:28px;bottom:350px;z-index:23;color:white;text-align:center;font-weight:800;font-size:12px;text-shadow:0 2px 8px #000;background:rgba(5,36,28,.64);border:1px solid rgba(255,255,255,.28);border-radius:16px;padding:9px 12px;backdrop-filter:blur(8px)}
+</style>
+<script id="world82-discovery">
+(()=>{
+ const POS=[[22,57],[47,63],[72,54],[34,45],[62,42]];
+ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ function name(R,c){return R.pickName?.(c.pickId)||c.pickId||'ポケモン'}
+ function patch(){
+  const scene=document.getElementById('world71Scene'); if(!scene||scene.hidden)return;
+  const R=window.FRENDA_RANCH,s=R?.readSave?.(); if(!R||!s)return;
+  const area=window.__FW74_AREA||scene.dataset.area||'meadow';
+  const all=(s.creatures||[]).filter(c=>c?.status==='resident'&&c.world2?.currentArea===area);
+  const layer=scene.querySelector('.world75SceneLayer'); if(!layer)return;
+  layer.querySelectorAll('.world75Actor,.world82Presence').forEach(x=>x.remove());
+  const visible=all.slice(0,Math.min(5,all.length));
+  visible.forEach((c,i)=>{const p=POS[i%POS.length],b=document.createElement('button');b.className='world82Presence';b.style.left=p[0]+'%';b.style.top=p[1]+'%';b.innerHTML=`<span>🐾</span><small>${esc(c.world2?.action||'誰かの気配')}</small>`;b.onclick=()=>{ if(window.__FW78_OPEN_PROFILE) return window.__FW78_OPEN_PROFILE(c,R); const ev=new CustomEvent('fw:resident',{detail:{c,R}});window.dispatchEvent(ev)};layer.appendChild(b)});
+  let h=scene.querySelector('.world82Hint'); if(!h){h=document.createElement('div');h.className='world82Hint';scene.appendChild(h)}
+  h.textContent=visible.length?`この景色には${all.length}匹。今は${visible.length}匹の気配がします。気配をタップすると、その子が分かります。`:'今は静かです。時間が変わると誰かが現れるかもしれません。';
+ }
+ // Hook existing profile function by observing modal creation through clicks is unreliable; expose profile opener when possible.
+ const mo=new MutationObserver(()=>patch()); mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','data-area']});
+ setInterval(patch,5000); setTimeout(patch,900);
+ const oldOpen=window.openScene; if(typeof oldOpen==='function')window.openScene=function(id){const r=oldOpen.apply(this,arguments);setTimeout(patch,50);return r};
+})();
+</script>
 </body>
 </html>
