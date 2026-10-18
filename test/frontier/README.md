@@ -1,8 +1,8 @@
-# Frenda Frontier Ver0.33 / TEST
+# Frenda Frontier Ver0.34 / TEST
 
 Updated: 2026-10-19
 
-## Ver0.33
+## Ver0.34
 - 工事中の簡易Canvas仮素材を撤去し、正式ピクセルアートの工事アトラスへ変更。
 - 建設工程：建設予定地 → 基礎・資材搬入 → 柱・骨組み工事 → 屋根・仕上げ工事 → 完成。
 - 工程ごとに現場の当たり判定範囲も変化。
@@ -15,3 +15,12 @@ Updated: 2026-10-19
 - 🧪 レイヤー：自動 / ON / OFF / 最大発展 / 生レイヤー確認
 - 🚧 通行：通行判定表示
 - 🏗️ 発展：TESTでは工事を1段階ずつ進められる
+
+
+## Ver0.34 町全体マップ設計基盤
+- 現在の中心開拓地は「完成マップ」ではなく、町システム検証用の prototype として扱う。
+- 町全体は `TOWN_WORLD_DEF` / `AREA_DEFS` / `AREA_CONNECTION_DEFS` の論理グラフで管理する。
+- `gx/gy` は最終画像座標ではなく、全体構成検討用の論理座標。全体バランス確定後に各エリアの実画像・入口・collisionを決める。
+- 新エリアは定義と接続を追加するだけで拡張可能。中心エリアを作り直してもセーブや施設マスターを壊しにくい構造とする。
+- 町域画面の「全体マップ」から現在の論理構成を確認できる。
+- セーブ schemaVersion 7。`townWorld` に worldId / layoutRevision / currentAreaId / visitedAreas を保持する。

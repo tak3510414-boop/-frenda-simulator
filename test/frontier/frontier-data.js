@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.33 / construction art + staged collision + NPC sprite layers / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.34 / macro town world graph + expandable area architecture / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.33";
+F.VERSION="0.34";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -46,35 +46,49 @@ F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 // Ver0.28: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
 F.FACILITY_DEFS=Object.freeze([
- {id:"shop",name:"店",icon:"🏪",category:"commerce",constructionVisualSet:"default",startLevel:1,maxLevel:4,route:"commerce",levels:{
+ {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:1,maxLevel:4,route:"commerce",levels:{
    2:{actionId:"shop2",need:12,label:"店を少し大きくする",desc:"露店の設備と商品置き場を増やし、小さな店舗へ育てる。"},
    3:{actionId:"shop3",need:32,label:"店をさらに拡張する",desc:"売場を広げ、より多くの商品を扱えるようにする。"},
    4:{actionId:"shop4",need:55,label:"店を本格店舗にする",desc:"開拓地を代表する大きな店へ成長させる。"}
  }},
- {id:"forge",name:"鍛冶屋",icon:"⚒️",category:"craft",constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"forge",levels:{
+ {id:"forge",name:"鍛冶屋",icon:"⚒️",category:"craft",areaTagsAny:["forge","rock","craft","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"forge",levels:{
    1:{actionId:"forge",need:12,label:"鍛冶職人を呼ぶ",desc:"簡素な鍛冶作業場を作り、職人に来てもらう。"},
    2:{actionId:"forge2",need:34,label:"鍛冶屋を拡張する",desc:"炉と作業場を整え、修理や強化の幅を広げる。"},
    3:{actionId:"forge3",need:58,label:"鍛冶工房にする",desc:"本格的な工房へ発展させる。"}
  }},
- {id:"house",name:"住居",icon:"🏠",category:"life",constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"life",levels:{
+ {id:"house",name:"住居",icon:"🏠",category:"life",areaTagsAny:["life","residential","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"life",levels:{
    1:{actionId:"house",need:14,label:"最初の住居を建てる",desc:"住民が定住できる簡素な家を建てる。"},
    2:{actionId:"house2",need:36,label:"住居を増やす",desc:"暮らす人が増え、生活区画が形になってくる。"},
    3:{actionId:"house3",need:60,label:"生活区画を整える",desc:"複数の住居と生活設備を整える。"}
  }},
- {id:"market",name:"市場",icon:"🧺",category:"commerce",constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"commerce",levels:{
+ {id:"market",name:"市場",icon:"🧺",category:"commerce",areaTagsAny:["commerce","road","logistics"],constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"commerce",levels:{
    1:{actionId:"market",need:18,label:"小さな市場を開く",desc:"旅商人が立ち寄れる露店スペースを作る。"},
    2:{actionId:"market2",need:42,label:"市場を拡張する",desc:"複数の商人が店を出せる市場へ育てる。"}
  }},
- {id:"adventure_board",name:"冒険掲示板",icon:"📜",category:"adventure",constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"adventure",levels:{
+ {id:"adventure_board",name:"冒険掲示板",icon:"📜",category:"adventure",areaTagsAny:["adventure","nature","core"],constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"adventure",levels:{
    1:{actionId:"adventure_board",need:14,label:"冒険掲示板を置く",desc:"旅人や冒険者が情報を交換できる掲示板を設置する。"},
    2:{actionId:"adventure_board2",need:38,label:"冒険者の詰所を整える",desc:"冒険者が集まる場所へ発展させる。"}
  }},
- {id:"plaza",name:"広場",icon:"⛲",category:"civic",constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"standard",levels:{
+ {id:"plaza",name:"広場",icon:"⛲",category:"civic",areaTagsAny:["core","life","civic"],constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"standard",levels:{
    1:{actionId:"plaza",need:24,label:"小さな広場を整える",desc:"人が集まれる空間を整備する。噴水はこの段階以降に現れる。"},
    2:{actionId:"plaza2",need:48,label:"広場を拡張する",desc:"町の中心となる広場へ発展させる。"}
  }}
 ]);
 
+
+// Ver0.34: 全体マップ確定前に中心マップの細部を固定しない。
+// 町全体は「エリアの論理グラフ」として管理し、実景観画像・当たり判定座標とは分離する。
+// gx/gy は全体構成を検討するための論理座標であり、最終マップのピクセル座標ではない。
+F.TOWN_WORLD_DEF=Object.freeze({
+ id:"frontier_town",layoutRevision:1,status:"planning",startArea:"core",coordinateMode:"logical-grid",
+ extensible:true,description:"中心開拓地を核に、周辺エリアを後から追加・差替できる町域グラフ。"
+});
+F.AREA_CONNECTION_DEFS=Object.freeze([
+ {id:"core_west",a:"core",aPort:"west",b:"west_forest",bPort:"east",kind:"forest_path",label:"森へ続く道"},
+ {id:"core_south",a:"core",aPort:"south",b:"south_road",bPort:"north",kind:"road",label:"南の街道"},
+ {id:"core_east",a:"core",aPort:"east",b:"east_riverside",bPort:"west",kind:"bridge",label:"川辺への道"},
+ {id:"core_north",a:"core",aPort:"north",b:"north_highland",bPort:"south",kind:"stairs",label:"高台への道"}
+]);
 
 // Ver0.28: 町そのものも後から広がる。現在想定している地区だけに依存しないよう、
 // エリアはマスター定義で追加する。状態は locked → discovered → clearing → usable → developed。
@@ -84,19 +98,19 @@ F.AREA_STATE_INFO=Object.freeze({
  usable:{label:"利用可能",icon:"🚶"}, developed:{label:"整備済み",icon:"🏘️"}
 });
 F.AREA_DEFS=Object.freeze([
- {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},exits:[
+ {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",futurePorts:["nw","ne"]},startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},exits:[
    {id:"west",to:"west_forest",x:0,y:260,w:44,h:170,entry:{x:55,y:345}},
    {id:"south",to:"south_road",x:170,y:742,w:190,h:100,entry:{x:265,y:725}},
    {id:"east",to:"east_riverside",x:548,y:355,w:42,h:185,entry:{x:530,y:445}},
    {id:"north",to:"north_highland",x:430,y:0,w:105,h:70,entry:{x:480,y:82}}
  ]}},
- {id:"west_forest",name:"西の森外縁",icon:"🌲",tags:["nature","adventure"],startState:"locked",description:"冒険者向け施設や採集設備を置きやすい森側の土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
+ {id:"west_forest",name:"西の森外縁",icon:"🌲",tags:["nature","adventure"],world:{gx:-1,gy:0,role:"expansion",sceneStatus:"planned",futurePorts:["west","north"]},startState:"locked",description:"冒険者向け施設や採集設備を置きやすい森側の土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
    discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
- {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],startState:"locked",description:"行商・市場・倉庫など商業系の発展と相性がよい。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"south"}},transitions:{
+ {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],world:{gx:0,gy:1,role:"expansion",sceneStatus:"planned",futurePorts:["south","east","west"]},startState:"locked",description:"行商・市場・倉庫など商業系の発展と相性がよい。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"south"}},transitions:{
    discovered:{need:10,label:"南の街道を調べる"},clearing:{need:14,label:"街道脇を整地する"},usable:{need:22,label:"街道沿いを町域にする"},developed:{need:44,label:"物流路として整備する"}}},
- {id:"east_riverside",name:"東の川辺",icon:"🌊",tags:["water","life","craft"],startState:"locked",description:"水場を生かした生活・加工施設を置きやすい川辺。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"east"}},transitions:{
+ {id:"east_riverside",name:"東の川辺",icon:"🌊",tags:["water","life","craft"],world:{gx:1,gy:0,role:"expansion",sceneStatus:"planned",futurePorts:["east","south"]},startState:"locked",description:"水場を生かした生活・加工施設を置きやすい川辺。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"east"}},transitions:{
    discovered:{need:12,label:"川辺を調べる"},clearing:{need:18,label:"川辺を安全にする"},usable:{need:28,label:"川辺の区画を使えるようにする"},developed:{need:50,label:"護岸と通路を整える"}}},
- {id:"north_highland",name:"北の高台",icon:"⛰️",tags:["rock","forge","residential"],startState:"locked",description:"岩場と高台を生かし、工房や住宅を広げられる土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"north"}},transitions:{
+ {id:"north_highland",name:"北の高台",icon:"⛰️",tags:["rock","forge","residential"],world:{gx:0,gy:-1,role:"expansion",sceneStatus:"planned",futurePorts:["north","east","west"]},startState:"locked",description:"岩場と高台を生かし、工房や住宅を広げられる土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"north"}},transitions:{
    discovered:{need:14,label:"北の高台を調べる"},clearing:{need:22,label:"高台への道を作る"},usable:{need:32,label:"高台を町域にする"},developed:{need:54,label:"高台の階段と道を整える"}}}
 ]);
 F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
