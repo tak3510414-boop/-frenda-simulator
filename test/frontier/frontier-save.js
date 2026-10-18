@@ -1,16 +1,18 @@
-/* Frenda Frontier Ver0.27 / isolated + facility-master compatible save / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.28 / area-master + facility-master compatible save / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
 const now=()=>new Date().toISOString();
 const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=Number(d.startLevel)||0;return out};
+const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
+const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
 F.freshSave=()=>({
- schemaVersion:2,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
+ schemaVersion:3,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
  partnerId:null,warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
- development:{points:0,stage:0,town:{facilities:defaultFacilities(),priority:"standard",order:[],shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
+ development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
- history:[],settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"}}
+ history:[],settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}}}
 });
 function inferPriority(t){
  if(t?.priority&&["standard","commerce","forge","life","adventure"].includes(t.priority))return t.priority;
@@ -31,6 +33,19 @@ function migrateFacilities(t){
  }
  return facilities;
 }
+
+function migrateAreas(t){
+ const areas=Object.assign(defaultAreas(),t?.areas||{});
+ const valid=new Set(F.AREA_STATE_ORDER||["locked","discovered","clearing","usable","developed"]);
+ for(const d of (F.AREA_DEFS||[])){if(!valid.has(areas[d.id]))areas[d.id]=d.startState||"locked";}
+ return areas;
+}
+function migrateFacilityAreas(t){
+ const out=Object.assign(defaultFacilityAreas(),t?.facilityAreas||{});
+ const valid=new Set((F.AREA_DEFS||[]).map(a=>a.id));
+ for(const d of (F.FACILITY_DEFS||[]))if(!valid.has(out[d.id]))out[d.id]=d.defaultArea||"core";
+ return out;
+}
 F.normalizeSave=s=>{
  const base=F.freshSave();if(!s||typeof s!=="object")return base;
  s=Object.assign(base,s);
@@ -43,6 +58,8 @@ F.normalizeSave=s=>{
  s.development.town.order=Array.isArray(oldTown.order)?oldTown.order.slice(-40):[];
  s.development.town.priority=inferPriority(s.development.town);
  s.development.town.facilities=migrateFacilities(s.development.town);
+ s.development.town.areas=migrateAreas(s.development.town);
+ s.development.town.facilityAreas=migrateFacilityAreas(s.development.town);
  // 旧コードとの互換用ミラー。今後の本体判定はfacilitiesを正本にする。
  s.development.town.shopLevel=Math.max(1,Number(s.development.town.facilities.shop)||1);
  s.development.town.forgeBuilt=(Number(s.development.town.facilities.forge)||0)>=1;
@@ -54,7 +71,9 @@ F.normalizeSave=s=>{
  s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{},preset:"custom"};
  s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};
  s.settings.townLayerTest.preset=["auto","custom","off","max","raw"].includes(s.settings.townLayerTest.preset)?s.settings.townLayerTest.preset:"custom";
- s.schemaVersion=2;
+ s.settings.townAreaTest=s.settings.townAreaTest&&typeof s.settings.townAreaTest==="object"?s.settings.townAreaTest:{states:{}};
+ s.settings.townAreaTest.states=s.settings.townAreaTest.states&&typeof s.settings.townAreaTest.states==="object"?s.settings.townAreaTest.states:{};
+ s.schemaVersion=3;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};

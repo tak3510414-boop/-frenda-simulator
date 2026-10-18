@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.27 / exclusive town layers + playable core loop / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.28 / expandable town areas + exclusive layers / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -26,6 +26,16 @@ F.townState=s=>{
 };
 F.facilityLevel=(s,id)=>Math.max(0,Number(F.townState(s).facilities?.[id])||0);
 F.townRoute=s=>F.townState(s).priority||"standard";
+
+// Ver0.28: 町域は施設とは独立して拡張する。新しいエリアは AREA_DEFS に追加するだけでよい。
+F.areaState=(s,id)=>{const def=F.areaDef?.(id);return s?.development?.town?.areas?.[id]||def?.startState||"locked"};
+F.areaStateIndex=state=>Math.max(0,(F.AREA_STATE_ORDER||[]).indexOf(state));
+F.areaEffectiveState=(s,id)=>{const v=s?.settings?.townAreaTest?.states?.[id];return (F.AREA_STATE_ORDER||[]).includes(v)?v:F.areaState(s,id)};
+F.areaStats=s=>{const defs=F.AREA_DEFS||[],states=defs.map(d=>F.areaEffectiveState(s,d.id));return {total:defs.length,discovered:states.filter(x=>F.areaStateIndex(x)>=1).length,usable:states.filter(x=>F.areaStateIndex(x)>=3).length,developed:states.filter(x=>F.areaStateIndex(x)>=4).length}};
+F.areaOptions=s=>{const pts=Number(s?.development?.points)||0,out=[];for(const def of (F.AREA_DEFS||[])){const cur=F.areaState(s,def.id),idx=F.areaStateIndex(cur);if(idx<0||idx>=F.AREA_STATE_ORDER.length-1)continue;const next=F.AREA_STATE_ORDER[idx+1],tr=def.transitions?.[next];if(!tr)continue;out.push({areaId:def.id,areaName:def.name,icon:def.icon||"🗺️",from:cur,to:next,need:Number(tr.need)||0,label:tr.label||`${def.name}を${F.AREA_STATE_INFO?.[next]?.label||next}にする`,available:pts>=Number(tr.need||0),description:def.description||""})}return out.sort((a,b)=>a.need-b.need||a.areaName.localeCompare(b.areaName,"ja"))};
+F.applyAreaDevelopment=areaId=>F.mutateSave(s=>{const opt=F.areaOptions(s).find(x=>x.areaId===areaId);if(!opt)throw new Error("この町域は現在変更できません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);s.development.town.areas=s.development.town.areas||{};s.development.town.areas[areaId]=opt.to;F.addHistory(s,"area",`${opt.areaName}：${F.AREA_STATE_INFO?.[opt.to]?.label||opt.to}`);});
+F.setTownAreaTestState=(id,state)=>F.mutateSave(s=>{if(!F.areaDef?.(id))throw new Error("不明な町域です。");s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townAreaTest.states=s.settings.townAreaTest.states||{};if(state==="auto")delete s.settings.townAreaTest.states[id];else if((F.AREA_STATE_ORDER||[]).includes(state))s.settings.townAreaTest.states[id]=state;else throw new Error("不正な町域状態です。");});
+F.resetTownAreaTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest={states:{}}});
 F.townOptions=s=>{
  const pts=Number(s?.development?.points)||0,t=F.townState(s),out=[];
  for(const def of (F.FACILITY_DEFS||[])){
@@ -40,6 +50,8 @@ F.applyTownDevelopment=id=>F.mutateSave(s=>{
  const opt=F.townOptions(s).find(x=>x.id===id);if(!opt)throw new Error("この発展項目は現在選べません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);
  const cur=Math.max(0,Number(s.development.town.facilities[opt.facilityId])||0);if(cur>=opt.targetLevel)throw new Error("すでに発展済みです。");
  s.development.town.facilities[opt.facilityId]=opt.targetLevel;
+ s.development.town.facilityAreas=s.development.town.facilityAreas||{};
+ if(!s.development.town.facilityAreas[opt.facilityId])s.development.town.facilityAreas[opt.facilityId]="core";
  if((s.development.town.priority||"standard")==="standard"&&opt.route&&opt.route!=="standard")s.development.town.priority=opt.route;
  s.development.town.order.push(opt.id);
  // 旧版との互換用ミラー
@@ -50,7 +62,7 @@ F.applyTownDevelopment=id=>F.mutateSave(s=>{
 });
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
 
-// Ver0.27 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
+// Ver0.28 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
 // 「全部ON」は生の全重ねではなく完成表示（max preset）。段階レイヤーは exclusiveGroup で排他解決する。
 function evalLayerRule(s,rule){
  if(!rule)return false;const t=F.townState(s),pts=Number(s?.development?.points)||0,type=rule.type;
@@ -108,7 +120,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.27ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.28ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 

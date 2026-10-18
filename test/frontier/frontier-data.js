@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.27 / exclusive layer groups + max-development preset / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.28 / expandable town areas + layer architecture / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.27";
+F.VERSION="0.28";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -15,7 +15,7 @@ F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
 ]);
 
-// Ver0.27: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
+// Ver0.28: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
 F.FACILITY_DEFS=Object.freeze([
  {id:"shop",name:"店",icon:"🏪",category:"commerce",startLevel:1,maxLevel:4,route:"commerce",levels:{
@@ -47,10 +47,31 @@ F.FACILITY_DEFS=Object.freeze([
  }}
 ]);
 
-// Ver0.27: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
+
+// Ver0.28: 町そのものも後から広がる。現在想定している地区だけに依存しないよう、
+// エリアはマスター定義で追加する。状態は locked → discovered → clearing → usable → developed。
+F.AREA_STATE_ORDER=Object.freeze(["locked","discovered","clearing","usable","developed"]);
+F.AREA_STATE_INFO=Object.freeze({
+ locked:{label:"未発見",icon:"🔒"}, discovered:{label:"発見",icon:"👀"}, clearing:{label:"開拓中",icon:"🪓"},
+ usable:{label:"利用可能",icon:"🚶"}, developed:{label:"整備済み",icon:"🏘️"}
+});
+F.AREA_DEFS=Object.freeze([
+ {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。",transitions:{}},
+ {id:"west_forest",name:"西の森外縁",icon:"🌲",tags:["nature","adventure"],startState:"locked",description:"冒険者向け施設や採集設備を置きやすい森側の土地。",transitions:{
+   discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
+ {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],startState:"locked",description:"行商・市場・倉庫など商業系の発展と相性がよい。",transitions:{
+   discovered:{need:10,label:"南の街道を調べる"},clearing:{need:14,label:"街道脇を整地する"},usable:{need:22,label:"街道沿いを町域にする"},developed:{need:44,label:"物流路として整備する"}}},
+ {id:"east_riverside",name:"東の川辺",icon:"🌊",tags:["water","life","craft"],startState:"locked",description:"水場を生かした生活・加工施設を置きやすい川辺。",transitions:{
+   discovered:{need:12,label:"川辺を調べる"},clearing:{need:18,label:"川辺を安全にする"},usable:{need:28,label:"川辺の区画を使えるようにする"},developed:{need:50,label:"護岸と通路を整える"}}},
+ {id:"north_highland",name:"北の高台",icon:"⛰️",tags:["rock","forge","residential"],startState:"locked",description:"岩場と高台を生かし、工房や住宅を広げられる土地。",transitions:{
+   discovered:{need:14,label:"北の高台を調べる"},clearing:{need:22,label:"高台への道を作る"},usable:{need:32,label:"高台を町域にする"},developed:{need:54,label:"高台の階段と道を整える"}}}
+]);
+F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
+
+// Ver0.28: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
 // TEST画面はこの定義をそのまま列挙する。asset は major/detail のどちらのアトラスを使うかを示す。
 F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front"]);
-// Ver0.27: 描画順は z 値だけに依存せず band（地面→施設→低い小物→人物→前景）で固定する。
+// Ver0.28: 描画順は z 値だけに依存せず band（地面→施設→低い小物→人物→前景）で固定する。
 // これにより、将来レイヤーが増えても道・石畳などが人物の上に描画される事故を防ぐ。
 F.TOWN_LAYER_DEFS=Object.freeze([
  {id:"base",group:"基礎",label:"0pt 初期開拓地（固定ベース）",icon:"🌿",kind:"base",band:"ground",z:0,locked:true,auto:{type:"always"}},
