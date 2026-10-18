@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.32 / precise collision + town movement core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.33 / staged construction collision + town movement core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -137,7 +137,7 @@ F.setTownLayerTestPreset=preset=>F.mutateSave(s=>{if(!["auto","custom","off","ma
 F.setAllTownLayerTestModes=mode=>{const map={auto:"auto",off:"off",on:"max",raw:"raw"};if(!map[mode])throw new Error("不正なレイヤー指定です。");return F.setTownLayerTestPreset(map[mode])};
 
 
-// Ver0.32: 町の見た目レイヤーと同じ定義から通行判定を生成する。
+// Ver0.33: 町の見た目レイヤーと同じ定義から通行判定を生成する。
 // 将来の主人公・相棒・NPC移動は、このモデルを共通利用する。
 function navShapeContains(shape,x,y,pad=0){
  if(!shape)return false;const v=shape.v||[],p=Math.max(0,Number(pad)||0);
@@ -161,7 +161,7 @@ function navCollect(s){
  const area=F.areaDef?.("core"),base=F.TOWN_NAV_BASE||{},states=F.townLayerStates(s).filter(x=>x.effective);
  const blocks=[...(base.blocks||[])],walk=[...(base.walk||[])],interactions=[...(base.interactions||[])],entrances=[],npcWaypoints=[...(base.npcWaypoints||[])];
  for(const x of states){const n=x.def.nav;if(!n)continue;blocks.push(...(n.blocks||[]));walk.push(...(n.walk||[]));interactions.push(...(n.interactions||[]));entrances.push(...(n.entrances||[]));npcWaypoints.push(...(n.npcWaypoints||[]))}
- for(const pr of F.townProjects(s)){const site=F.facilitySite?.(pr.facilityId),def=(F.FACILITY_DEFS||[]).find(d=>d.id===pr.facilityId),ph=F.constructionPhase(pr);if(!site||site.areaId!=="core")continue;const inset=ph?.id==="planned"?18:ph?.id==="materials"?12:6;blocks.push({shape:"rect",v:[site.x+inset,site.y+inset,Math.max(10,site.w-inset*2),Math.max(10,site.h-inset*2)],reason:`construction:${pr.facilityId}`});interactions.push({id:`construction_${pr.facilityId}`,type:"construction",label:`${def?.name||pr.facilityId} ${ph?.label||"工事中"}`,x:site.entrance?.x||site.x+site.w/2,y:site.entrance?.y||site.y+site.h,r:55,facilityId:pr.facilityId})}
+ for(const pr of F.townProjects(s)){const site=F.facilitySite?.(pr.facilityId),def=(F.FACILITY_DEFS||[]).find(d=>d.id===pr.facilityId),ph=F.constructionPhase(pr);if(!site||site.areaId!=="core")continue;const navPhase=F.CONSTRUCTION_NAV_PHASES?.[ph?.id]||{inset:8},inset=Math.max(0,Number(navPhase.inset)||0);blocks.push({shape:"rect",v:[site.x+inset,site.y+inset,Math.max(10,site.w-inset*2),Math.max(10,site.h-inset*2)],reason:`construction:${pr.facilityId}:${ph?.id||"phase"}`});interactions.push({id:`construction_${pr.facilityId}`,type:"construction",label:`${def?.name||pr.facilityId} ${ph?.label||"工事中"}`,x:site.entrance?.x||site.x+site.w/2,y:site.entrance?.y||site.y+site.h,r:55,facilityId:pr.facilityId})}
  const exits=(area?.nav?.exits||[]).map(e=>({...e,targetState:F.areaEffectiveState(s,e.to),open:F.areaStateIndex(F.areaEffectiveState(s,e.to))>=F.areaStateIndex("usable")}));
  const uniq=a=>Array.from(new Map(a.map(x=>[x.id||JSON.stringify(x),x])).values());
  return {areaId:"core",area,base,states,blocks,walk,interactions:uniq(interactions),entrances:uniq(entrances),npcWaypoints:uniq(npcWaypoints),exits};
@@ -191,7 +191,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.32ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.33ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 
