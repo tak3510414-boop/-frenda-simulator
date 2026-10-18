@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.30 / precise town collision + tap-to-walk player movement / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.31 / precise town collision + tap-to-walk player movement / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.30";
+F.VERSION="0.31";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -76,14 +76,14 @@ F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
 // Ver0.28: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
 // TEST画面はこの定義をそのまま列挙する。asset は major/detail のどちらのアトラスを使うかを示す。
 F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front"]);
-// Ver0.30: 見た目と移動判定を同じ町データから生成する。画像解析は行わない。
+// Ver0.31: 見た目と移動判定を同じ町データから生成する。画像解析は行わない。
 // shape: rect=[x,y,w,h] / circle=[cx,cy,r]。walk は block より後に再開放する。
 F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
  player:{radius:10,step:"walk"},partner:{radius:8,step:"follow",followDistance:34},npc:{radius:9,step:"routine"}
 });
 F.TOWN_NAV_BASE=Object.freeze({
  areaId:"core",defaultWalkable:true,
- // Ver0.30: 初期開拓地の実景観に合わせて障害物を細分化。
+ // Ver0.31: 初期開拓地の実景観に合わせて障害物を細分化。
  // 大きな矩形1枚ではなく、小屋・露店・焚き火・資材・川岸などを別判定にする。
  blocks:[
    {shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_edge"},

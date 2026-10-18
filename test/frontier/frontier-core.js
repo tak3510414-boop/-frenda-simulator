@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.29 / layer-driven collision + expandable town areas / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.31 / precise collision + town movement core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -113,12 +113,24 @@ F.setTownLayerTestPreset=preset=>F.mutateSave(s=>{if(!["auto","custom","off","ma
 F.setAllTownLayerTestModes=mode=>{const map={auto:"auto",off:"off",on:"max",raw:"raw"};if(!map[mode])throw new Error("不正なレイヤー指定です。");return F.setTownLayerTestPreset(map[mode])};
 
 
-// Ver0.29: 町の見た目レイヤーと同じ定義から通行判定を生成する。
+// Ver0.31: 町の見た目レイヤーと同じ定義から通行判定を生成する。
 // 将来の主人公・相棒・NPC移動は、このモデルを共通利用する。
 function navShapeContains(shape,x,y,pad=0){
  if(!shape)return false;const v=shape.v||[],p=Math.max(0,Number(pad)||0);
  if(shape.shape==="rect")return x>=v[0]-p&&y>=v[1]-p&&x<v[0]+v[2]+p&&y<v[1]+v[3]+p;
  if(shape.shape==="circle"){const dx=x-v[0],dy=y-v[1],r=Number(v[2]||0)+p;return dx*dx+dy*dy<=r*r}
+ if(shape.shape==="poly"){
+  const pts=Array.isArray(v)?v:[];if(pts.length<3)return false;
+  // pad付きは頂点ごとの厳密なオフセットではなく、辺までの距離も使って安全側に判定する。
+  let inside=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+   const xi=Number(pts[i][0]),yi=Number(pts[i][1]),xj=Number(pts[j][0]),yj=Number(pts[j][1]);
+   const hit=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/((yj-yi)||1e-9)+xi);if(hit)inside=!inside;
+  }
+  if(inside)return true;if(p<=0)return false;
+  const segDist=(ax,ay,bx,by)=>{const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(!l2)return Math.hypot(x-ax,y-ay);let t=((x-ax)*dx+(y-ay)*dy)/l2;t=Math.max(0,Math.min(1,t));return Math.hypot(x-(ax+t*dx),y-(ay+t*dy))};
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++)if(segDist(Number(pts[j][0]),Number(pts[j][1]),Number(pts[i][0]),Number(pts[i][1]))<=p)return true;
+  return false;
+ }
  return false;
 }
 function navCollect(s){
@@ -138,6 +150,10 @@ F.townNavModel=(s,actor="player")=>{
 };
 F.townPointWalkable=(s,x,y,actor="player")=>{const m=F.townNavModel(s,actor),gx=Math.floor(Number(x)/m.cell),gy=Math.floor(Number(y)/m.cell);return !!m.grid?.[gy]?.[gx]};
 F.townFindPath=(s,from,to,actor="player")=>{const m=F.townNavModel(s,actor),sx=Math.floor(from.x/m.cell),sy=Math.floor(from.y/m.cell),tx=Math.floor(to.x/m.cell),ty=Math.floor(to.y/m.cell),k=(x,y)=>`${x},${y}`;if(!m.grid?.[sy]?.[sx]||!m.grid?.[ty]?.[tx])return[];const q=[[sx,sy]],prev=new Map([[k(sx,sy),null]]);while(q.length){const [x,y]=q.shift();if(x===tx&&y===ty)break;for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy,nk=k(nx,ny);if(!m.grid?.[ny]?.[nx]||prev.has(nk))continue;prev.set(nk,[x,y]);q.push([nx,ny])}}if(!prev.has(k(tx,ty)))return[];const out=[];let cur=[tx,ty];while(cur){out.push({x:cur[0]*m.cell+m.cell/2,y:cur[1]*m.cell+m.cell/2});cur=prev.get(k(cur[0],cur[1]))}return out.reverse()};
+F.townNearestWalkable=(s,point,actor="player",maxCells=8)=>{const m=F.townNavModel(s,actor),gx=Math.floor(Number(point.x)/m.cell),gy=Math.floor(Number(point.y)/m.cell);if(m.grid?.[gy]?.[gx])return{x:gx*m.cell+m.cell/2,y:gy*m.cell+m.cell/2};for(let r=1;r<=Math.max(1,Number(maxCells)||8);r++){let best=null,bestD=Infinity;for(let y=gy-r;y<=gy+r;y++)for(let x=gx-r;x<=gx+r;x++){if(Math.max(Math.abs(x-gx),Math.abs(y-gy))!==r||!m.grid?.[y]?.[x])continue;const px=x*m.cell+m.cell/2,py=y*m.cell+m.cell/2,d=Math.hypot(px-point.x,py-point.y);if(d<bestD){bestD=d;best={x:px,y:py}}}if(best)return best}return null};
+F.townMovement=(s)=>{const m=s?.townMovement||{},nav=F.townNavModel(s),spawn=nav.spawn||{x:350,y:475};let player={x:Number(m.player?.x)||spawn.x,y:Number(m.player?.y)||spawn.y},partner={x:Number(m.partner?.x)||player.x+42,y:Number(m.partner?.y)||player.y};if(!F.townPointWalkable(s,player.x,player.y,"player")){const p=F.townNearestWalkable(s,spawn,"player",20);if(p)player=p}if(!F.townPointWalkable(s,partner.x,partner.y,"partner")){const p=F.townNearestWalkable(s,{x:player.x+42,y:player.y},"partner",10);if(p)partner=p}return{areaId:m.areaId||"core",player,partner}};
+F.setTownMovement=(player,partner)=>F.mutateSave(s=>{s.townMovement=s.townMovement||{areaId:"core"};if(player)s.townMovement.player={x:Number(player.x),y:Number(player.y)};if(partner)s.townMovement.partner={x:Number(partner.x),y:Number(partner.y)};});
+F.resetTownMovement=()=>F.mutateSave(s=>{const spawn=F.areaDef?.("core")?.nav?.spawn||{x:350,y:475};s.townMovement={areaId:"core",player:{x:spawn.x,y:spawn.y},partner:{x:spawn.x+42,y:spawn.y}};});
 F.townNearestInteraction=(s,x,y,maxR=70)=>{const m=F.townNavModel(s);return m.interactions.map(it=>({...it,d:Math.hypot(Number(it.x)-x,Number(it.y)-y)})).filter(it=>it.d<=Math.max(maxR,Number(it.r)||0)).sort((a,b)=>a.d-b.d)[0]||null};
 F.townNavStats=(s,actor="player")=>{const m=F.townNavModel(s,actor),all=m.cols*m.rows,walk=m.grid.reduce((n,row)=>n+row.filter(Boolean).length,0);return {cells:all,walkable:walk,blocked:all-walk,walkableRate:all?Math.round(walk/all*100):0,interactions:m.interactions.length,entrances:m.entrances.length,openExits:m.exits.filter(e=>e.open).length,totalExits:m.exits.length}};
 F.setTownNavTestOverlay=on=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townNavTest=s.settings.townNavTest||{};s.settings.townNavTest.overlay=!!on;});
@@ -150,7 +166,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.29ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.31ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 

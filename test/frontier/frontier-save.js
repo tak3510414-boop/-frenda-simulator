@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.30 / persistent town movement + navigation-ready save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.31 / persistent town movement + navigation-ready save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
