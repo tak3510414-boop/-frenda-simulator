@@ -1,9 +1,9 @@
-Frenda Frontier Ver0.21 TEST
+Frenda Frontier Ver0.22 TEST
 Updated: 2026-10-18
 
 Town visual architecture
 - Ver0.19の「完成した町の上へ緑マスクを重ねる方式」を廃止。
-- Ver0.21では最初から自然な未発展マップをベース画像として使用。
+- Ver0.22では最初から自然な未発展マップをベース画像として使用。
 - 建築済み施設だけを frontier-asset-town-parts.png から切り出してレイヤー合成する。
 - 店Lv2 / 鍛冶屋 / 住居 / 広場整備 / 市場を独立状態として保持するため、発展順が違っても表示できる。
 - 「店を大きくする」「鍛冶屋を呼ぶ」は最初の主要分岐。どちらを先に選んでもよい。
@@ -26,5 +26,5 @@ All files stay directly under /test/frontier/ .
 Existing Simulator / Dungeon / Expedition data is not modified.
 
 
-## Ver0.21 TEST
-町画面に「🧪 進捗切替」ボタンを追加。初期／店先行／鍛冶屋先行／店＋鍛冶屋／住居／広場／全発展を即時切替。町の発展状態以外のセーブ項目は維持する。
+## Ver0.22 TEST
+町画面のTEST機能を「🧪 レイヤー」に変更。各町レイヤーを「自動／ON／OFF」で個別指定できる。テスト指定は発展pt・実際の建設状態・冒険・倉庫・売上を変更しない。レイヤー一覧は frontier-data.js の TOWN_LAYER_DEFS から自動生成されるため、将来レイヤー追加時にTEST画面のハードコード追加は不要。
