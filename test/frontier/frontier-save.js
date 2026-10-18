@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.25 / isolated + facility-master compatible save / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.26 / isolated + facility-master compatible save / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;

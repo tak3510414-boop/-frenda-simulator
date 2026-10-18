@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.25 / extensible town + playable core loop / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.26 / extensible town + playable core loop / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -50,7 +50,7 @@ F.applyTownDevelopment=id=>F.mutateSave(s=>{
 });
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
 
-// Ver0.25 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
+// Ver0.26 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
 // 新しい施設や景観レイヤーを追加しても、ここに施設名ごとの分岐を増やさない。
 function evalLayerRule(s,rule){
  if(!rule)return false;const t=F.townState(s),pts=Number(s?.development?.points)||0,type=rule.type;
@@ -80,7 +80,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.25ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.26ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 

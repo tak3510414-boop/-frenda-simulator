@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.25 / extensible facility + town-layer data / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.26 / extensible facility + town-layer data / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.25";
+F.VERSION="0.26";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -15,7 +15,7 @@ F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
 ]);
 
-// Ver0.25: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
+// Ver0.26: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
 F.FACILITY_DEFS=Object.freeze([
  {id:"shop",name:"店",icon:"🏪",category:"commerce",startLevel:1,maxLevel:4,route:"commerce",levels:{
@@ -47,34 +47,38 @@ F.FACILITY_DEFS=Object.freeze([
  }}
 ]);
 
-// Ver0.25: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
+// Ver0.26: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
 // TEST画面はこの定義をそのまま列挙する。asset は major/detail のどちらのアトラスを使うかを示す。
+F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front"]);
+// Ver0.26: 描画順は z 値だけに依存せず band（地面→施設→低い小物→人物→前景）で固定する。
+// これにより、将来レイヤーが増えても道・石畳などが人物の上に描画される事故を防ぐ。
 F.TOWN_LAYER_DEFS=Object.freeze([
- {id:"base",group:"基礎",label:"0pt 初期開拓地（固定ベース）",icon:"🌿",kind:"base",z:0,locked:true,auto:{type:"always"}},
+ {id:"base",group:"基礎",label:"0pt 初期開拓地（固定ベース）",icon:"🌿",kind:"base",band:"ground",z:0,locked:true,auto:{type:"always"}},
 
- {id:"visitor_first",group:"人・生活",label:"2pt 最初の旅人",icon:"🚶",kind:"atlas",asset:"detail",z:10,auto:{type:"pointsGte",value:2},atlas:{sx:4,sy:4,sw:50,sh:65,dx:500,dy:300,dw:50,dh:65}},
- {id:"shop_goods",group:"商業",label:"4pt 露店の商品・箱が増える",icon:"📦",kind:"atlas",asset:"detail",z:12,auto:{type:"pointsGte",value:4},atlas:{sx:58,sy:4,sw:100,sh:70,dx:80,dy:280,dw:100,dh:70}},
- {id:"path_clear",group:"道・整備",label:"6pt 踏み跡が少し整う",icon:"👣",kind:"atlas",asset:"detail",z:14,auto:{type:"pointsGte",value:6},atlas:{sx:326,sy:4,sw:150,sh:230,dx:285,dy:250,dw:150,dh:230}},
- {id:"fence_basic",group:"生活基盤",label:"8pt 簡素な柵が増える",icon:"🪵",kind:"atlas",asset:"detail",z:16,auto:{type:"pointsGte",value:8},atlas:{sx:480,sy:4,sw:210,sh:80,dx:245,dy:390,dw:210,dh:80}},
+ {id:"path_clear",group:"道・整備",label:"6pt 踏み跡が少し整う",icon:"👣",kind:"atlas",asset:"detail",band:"ground",z:10,auto:{type:"pointsGte",value:6},atlas:{sx:326,sy:4,sw:150,sh:230,dx:285,dy:250,dw:150,dh:230}},
+ {id:"stone_path",group:"道・整備",label:"16pt 道の一部が石敷きになる",icon:"🧱",kind:"atlas",asset:"detail",band:"ground",z:20,auto:{type:"pointsGte",value:16},atlas:{sx:814,sy:238,sw:190,sh:260,dx:270,dy:250,dw:190,dh:260}},
 
- {id:"route_commerce",group:"発展ルート",label:"8pt 商業優先：露店の日よけを改良",icon:"🏪",kind:"atlas",asset:"detail",z:18,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["commerce"]}]},atlas:{sx:162,sy:4,sw:160,sh:70,dx:85,dy:135,dw:160,dh:70}},
- {id:"route_forge",group:"発展ルート",label:"8pt 鍛冶優先：仮設作業場",icon:"⚒️",kind:"atlas",asset:"detail",z:18,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["forge"]}]},atlas:{sx:4,sy:238,sw:120,sh:95,dx:430,dy:180,dw:120,dh:95}},
- {id:"route_life",group:"発展ルート",label:"8pt 生活優先：仮設テント",icon:"⛺",kind:"atlas",asset:"detail",z:18,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["life"]}]},atlas:{sx:908,sy:4,sw:110,sh:80,dx:435,dy:180,dw:110,dh:80}},
- {id:"route_adventure",group:"発展ルート",label:"8pt 冒険優先：情報掲示板",icon:"📜",kind:"atlas",asset:"detail",z:18,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["adventure"]}]},atlas:{sx:128,sy:238,sw:80,sh:80,dx:455,dy:330,dw:80,dh:80}},
+ {id:"route_commerce",group:"発展ルート",label:"8pt 商業優先：露店の日よけを改良",icon:"🏪",kind:"atlas",asset:"detail",band:"structure",z:10,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["commerce"]}]},atlas:{sx:162,sy:4,sw:160,sh:70,dx:85,dy:135,dw:160,dh:70}},
+ {id:"route_forge",group:"発展ルート",label:"8pt 鍛冶優先：仮設作業場",icon:"⚒️",kind:"atlas",asset:"detail",band:"structure",z:12,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["forge"]}]},atlas:{sx:4,sy:238,sw:120,sh:95,dx:430,dy:180,dw:120,dh:95}},
+ {id:"route_life",group:"発展ルート",label:"8pt 生活優先：仮設テント",icon:"⛺",kind:"atlas",asset:"detail",band:"structure",z:14,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["life"]}]},atlas:{sx:908,sy:4,sw:110,sh:80,dx:435,dy:180,dw:110,dh:80}},
+ {id:"route_adventure",group:"発展ルート",label:"8pt 冒険優先：情報掲示板",icon:"📜",kind:"atlas",asset:"detail",band:"structure",z:16,auto:{type:"all",rules:[{type:"pointsGte",value:8},{type:"routeIn",values:["adventure"]}]},atlas:{sx:128,sy:238,sw:80,sh:80,dx:455,dy:330,dw:80,dh:80}},
+ {id:"shop2",group:"施設",label:"店 Lv2（施設本体）",icon:"🏪",kind:"atlas",asset:"facility",band:"structure",z:30,facilityId:"shop",auto:{type:"facilityGte",facilityId:"shop",value:2},atlas:{sx:0,sy:0,sw:325,sh:285,dx:0,dy:0,dw:325,dh:285}},
+ {id:"forge",group:"施設",label:"鍛冶屋 Lv1（施設本体）",icon:"⚒️",kind:"atlas",asset:"facility",band:"structure",z:32,facilityId:"forge",auto:{type:"facilityGte",facilityId:"forge",value:1},atlas:{sx:325,sy:0,sw:382,sh:310,dx:335,dy:0,dw:382,dh:310}},
+ {id:"house",group:"施設",label:"住居 Lv1（施設本体）",icon:"🏠",kind:"atlas",asset:"facility",band:"structure",z:34,facilityId:"house",auto:{type:"facilityGte",facilityId:"house",value:1},atlas:{sx:340,sy:325,sw:350,sh:320,dx:0,dy:345,dw:350,dh:320}},
+ {id:"market",group:"施設",label:"市場 Lv1（施設本体）",icon:"🧺",kind:"atlas",asset:"facility",band:"structure",z:36,facilityId:"market",auto:{type:"facilityGte",facilityId:"market",value:1},atlas:{sx:690,sy:325,sw:160,sh:300,dx:425,dy:290,dw:160,dh:300}},
 
- {id:"torches",group:"装飾・明かり",label:"10pt 松明が立つ",icon:"🔥",kind:"atlas",asset:"detail",z:20,auto:{type:"pointsGte",value:10},atlas:{sx:694,sy:4,sw:210,sh:85,dx:270,dy:340,dw:210,dh:85}},
- {id:"resident_more",group:"人・生活",label:"12pt 住民が少し増える",icon:"🧑",kind:"atlas",asset:"detail",z:22,auto:{type:"pointsGte",value:12},atlas:{sx:636,sy:502,sw:130,sh:75,dx:230,dy:475,dw:130,dh:75}},
- {id:"flowers",group:"装飾・明かり",label:"14pt 小さな花壇ができる",icon:"🌼",kind:"atlas",asset:"detail",z:24,auto:{type:"pointsGte",value:14},atlas:{sx:336,sy:238,sw:250,sh:100,dx:245,dy:325,dw:250,dh:100}},
- {id:"stone_path",group:"道・整備",label:"16pt 道の一部が石敷きになる",icon:"🧱",kind:"atlas",asset:"detail",z:26,auto:{type:"pointsGte",value:16},atlas:{sx:814,sy:238,sw:190,sh:260,dx:270,dy:250,dw:190,dh:260}},
- {id:"street_lamps",group:"装飾・明かり",label:"18pt 街灯が付き始める",icon:"🏮",kind:"atlas",asset:"detail",z:28,auto:{type:"pointsGte",value:18},atlas:{sx:590,sy:238,sw:220,sh:90,dx:270,dy:340,dw:220,dh:90}},
- {id:"banners",group:"装飾・明かり",label:"20pt 町の旗が立つ",icon:"🚩",kind:"atlas",asset:"detail",z:30,auto:{type:"pointsGte",value:20},atlas:{sx:4,sy:502,sw:230,sh:100,dx:260,dy:320,dw:230,dh:100}},
- {id:"benches",group:"生活基盤",label:"22pt ベンチが置かれる",icon:"🪑",kind:"atlas",asset:"detail",z:32,auto:{type:"pointsGte",value:22},atlas:{sx:362,sy:502,sw:270,sh:70,dx:225,dy:430,dw:270,dh:70}},
- {id:"plaza_fountain",group:"町並み",label:"24pt以降：広場の噴水",icon:"⛲",kind:"atlas",asset:"detail",z:34,facilityId:"plaza",auto:{type:"all",rules:[{type:"pointsGte",value:24},{type:"facilityGte",facilityId:"plaza",value:1}]},atlas:{sx:238,sy:502,sw:120,sh:100,dx:310,dy:300,dw:120,dh:100}},
+ {id:"shop_goods",group:"商業",label:"4pt 露店の商品・箱が増える",icon:"📦",kind:"atlas",asset:"detail",band:"low",z:10,auto:{type:"pointsGte",value:4},atlas:{sx:58,sy:4,sw:100,sh:70,dx:80,dy:280,dw:100,dh:70}},
+ {id:"fence_basic",group:"生活基盤",label:"8pt 簡素な柵が増える",icon:"🪵",kind:"atlas",asset:"detail",band:"low",z:12,auto:{type:"pointsGte",value:8},atlas:{sx:480,sy:4,sw:210,sh:80,dx:245,dy:390,dw:210,dh:80}},
+ {id:"flowers",group:"装飾・明かり",label:"14pt 小さな花壇ができる",icon:"🌼",kind:"atlas",asset:"detail",band:"low",z:14,auto:{type:"pointsGte",value:14},atlas:{sx:336,sy:238,sw:250,sh:100,dx:245,dy:325,dw:250,dh:100}},
+ {id:"benches",group:"生活基盤",label:"22pt ベンチが置かれる",icon:"🪑",kind:"atlas",asset:"detail",band:"low",z:16,auto:{type:"pointsGte",value:22},atlas:{sx:362,sy:502,sw:270,sh:70,dx:225,dy:430,dw:270,dh:70}},
+ {id:"plaza_fountain",group:"町並み",label:"24pt以降：広場の噴水",icon:"⛲",kind:"atlas",asset:"detail",band:"low",z:18,facilityId:"plaza",auto:{type:"all",rules:[{type:"pointsGte",value:24},{type:"facilityGte",facilityId:"plaza",value:1}]},atlas:{sx:238,sy:502,sw:120,sh:100,dx:310,dy:300,dw:120,dh:100}},
 
- {id:"shop2",group:"施設",label:"店 Lv2（施設本体）",icon:"🏪",kind:"atlas",asset:"major",z:50,facilityId:"shop",auto:{type:"facilityGte",facilityId:"shop",value:2},atlas:{sx:0,sy:0,sw:325,sh:285,dx:0,dy:0,dw:325,dh:285}},
- {id:"forge",group:"施設",label:"鍛冶屋 Lv1（施設本体）",icon:"⚒️",kind:"atlas",asset:"major",z:52,facilityId:"forge",auto:{type:"facilityGte",facilityId:"forge",value:1},atlas:{sx:325,sy:0,sw:382,sh:310,dx:335,dy:0,dw:382,dh:310}},
- {id:"house",group:"施設",label:"住居 Lv1（施設本体）",icon:"🏠",kind:"atlas",asset:"major",z:54,facilityId:"house",auto:{type:"facilityGte",facilityId:"house",value:1},atlas:{sx:340,sy:325,sw:350,sh:320,dx:0,dy:345,dw:350,dh:320}},
- {id:"market",group:"施設",label:"市場 Lv1（施設本体）",icon:"🧺",kind:"atlas",asset:"major",z:56,facilityId:"market",auto:{type:"facilityGte",facilityId:"market",value:1},atlas:{sx:690,sy:325,sw:160,sh:300,dx:425,dy:290,dw:160,dh:300}}
+ {id:"visitor_first",group:"人・生活",label:"2pt 最初の旅人",icon:"🚶",kind:"atlas",asset:"detail",band:"character",z:10,auto:{type:"pointsGte",value:2},atlas:{sx:4,sy:4,sw:50,sh:65,dx:500,dy:300,dw:50,dh:65}},
+ {id:"resident_more",group:"人・生活",label:"12pt 住民が少し増える",icon:"🧑",kind:"atlas",asset:"detail",band:"character",z:12,auto:{type:"pointsGte",value:12},atlas:{sx:636,sy:502,sw:130,sh:75,dx:230,dy:475,dw:130,dh:75}},
+
+ {id:"torches",group:"装飾・明かり",label:"10pt 松明が立つ",icon:"🔥",kind:"atlas",asset:"detail",band:"front",z:10,auto:{type:"pointsGte",value:10},atlas:{sx:694,sy:4,sw:210,sh:85,dx:270,dy:340,dw:210,dh:85}},
+ {id:"street_lamps",group:"装飾・明かり",label:"18pt 街灯が付き始める",icon:"🏮",kind:"atlas",asset:"detail",band:"front",z:12,auto:{type:"pointsGte",value:18},atlas:{sx:590,sy:238,sw:220,sh:90,dx:270,dy:340,dw:220,dh:90}},
+ {id:"banners",group:"装飾・明かり",label:"20pt 町の旗が立つ",icon:"🚩",kind:"atlas",asset:"detail",band:"front",z:14,auto:{type:"pointsGte",value:20},atlas:{sx:4,sy:502,sw:230,sh:100,dx:260,dy:320,dw:230,dh:100}}
 ]);
 F.TOWN_LAYER_GROUPS=Object.freeze(["基礎","道・整備","商業","生活基盤","発展ルート","施設","町並み","装飾・明かり","人・生活","演出"]);
 F.CUSTOMERS=Object.freeze([
