@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.20 / playable core loop / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.21 / playable core loop / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -25,6 +25,20 @@ F.townOptions=s=>{const pts=Number(s?.development?.points)||0,t=F.townState(s),f
 ].map(x=>({...x,available:!x.done&&pts>=x.need}));};
 F.applyTownDevelopment=id=>F.mutateSave(s=>{s.development.town=s.development.town||{shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:[]};const opt=F.townOptions(s).find(x=>x.id===id);if(!opt||opt.done)throw new Error("すでに発展済みです。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);if(id==="shop2")s.development.town.shopLevel=2;else if(id==="forge")s.development.town.forgeBuilt=true;else if(id==="house")s.development.town.houseBuilt=true;else if(id==="plaza")s.development.town.plazaBuilt=true;else if(id==="market")s.development.town.marketBuilt=true;s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order:[];s.development.town.order.push(id);F.addHistory(s,"development",`${opt.name}を選んだ。`);});
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
+// TEST専用：町の発展状態だけを任意の確認段階へ切り替える。冒険・倉庫・売上等は変更しない。
+F.setTownTestPreset=id=>F.mutateSave(s=>{
+ const presets={
+  initial:{points:0,town:{shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:[]}},
+  shop:{points:4,town:{shopLevel:2,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:["shop2"]}},
+  forge:{points:4,town:{shopLevel:1,forgeBuilt:true,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:["forge"]}},
+  shopforge:{points:8,town:{shopLevel:2,forgeBuilt:true,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:["shop2","forge"]}},
+  house:{points:12,town:{shopLevel:2,forgeBuilt:true,houseBuilt:true,plazaBuilt:false,marketBuilt:false,order:["shop2","forge","house"]}},
+  plaza:{points:16,town:{shopLevel:2,forgeBuilt:true,houseBuilt:true,plazaBuilt:true,marketBuilt:false,order:["shop2","forge","house","plaza"]}},
+  full:{points:20,town:{shopLevel:2,forgeBuilt:true,houseBuilt:true,plazaBuilt:true,marketBuilt:true,order:["shop2","forge","house","plaza","market"]}}
+ };
+ const p=presets[id];if(!p)throw new Error("不明なTEST進捗です。");
+ s.development=s.development||{};s.development.points=p.points;s.development.stage=F.developmentStage(p.points);s.development.town=clone(p.town);
+});
 
 F.storyStep=s=>s.story?.rumor?4:s.story?.firstSale?3:s.story?.firstReturn?2:s.partnerId?1:0;
 F.goal=s=>{
