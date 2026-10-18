@@ -1,50 +1,17 @@
-# Frenda Frontier Ver0.18（TEST）
+Frenda Frontier Ver0.19 TEST
+Updated: 2026-10-18
 
-配置先：`/test/frontier/`
+Town development foundation:
+- Layered town visual system
+- Development state saved independently in Frontier save data
+- Player can choose development order
+- First major branch: Shop expansion / Blacksmith
+- Later options: Residence / Plaza / Market
+- Tap the floating development-points button in town to open development menu
+- In TEST mode, +4 development points is available for verification
+- All files stay directly under /test/frontier/ (no assets subfolder)
 
-## 今回の基準変更
-Ver0.18では、Ver0.13の町をさらに描き直しました。建物の屋根・壁・窓・扉・看板、石畳の揺らぎ、樹木・植栽、噴水、街灯、ベンチ、露店、箱・樽、NPCスプライトの密度と陰影を強化し、「平面の配置図」よりも見下ろし型RPGの町として読めることを優先しています。家・店・冒険はVer0.13の機能を維持しています。
+New asset:
+- frontier-asset-town-parts.png : compact town overlay parts sheet
 
-従来のCSS/SVGで大きな図形を組み立てる方式をやめ、低解像度Canvasへタイル・建物・家具・人物を描画し、ブラウザ側でピクセル等倍拡大する方式へ変更しています。
-
-これにより、参考イメージのような「見下ろし型RPG画面」を今後同じ描画基盤で発展させられる状態にしています。
-
-## 新規ファイル
-- `frontier-render.js`
-  - 町・家・店・冒険フィールドのピクセルマップ描画
-  - 建物、石畳、草地、噴水、木、花、家具、棚、カウンター、NPC等の描画
-
-## 主要ファイル
-- `index.html`
-- `frontier-data.js`
-- `frontier-save.js`
-- `frontier-core.js`
-- `frontier-render.js`
-- `frontier-ui.js`
-
-## Ver0.18で遊べる範囲
-- 所持ピックから★3以下の相棒を選択
-- TEST環境で対象所持ピックが無い場合のみ体験用相棒を表示
-- 「はじまりの森」全3階のターン制探索
-- 相棒の自動戦闘、敵行動、採取、食料、バッグ、脱出ロープ
-- 階段ごとの帰還／続行
-- Frontier専用倉庫
-- 店の商品棚3枠、価格設定、来店・購入
-- 売上、町発展、簡易ストーリー進行
-
-## データ分離
-Frontierは専用保存キー `frenda:frontier:v1` を使用します。
-既存の所持ピック `frenda:owned:v1` は読み取りのみです。
-
-既存のSimulator / Dungeon / Expedition / Worldのソースや保存データは変更しません。
-
-## 今後の拡張前提
-今回のタイルマップ描画を基準に、歩行アニメーション、町人の移動、建物への出入り、店の来客アニメーション、複数ダンジョン、クラフト、住民・建築等を追加できる構造にしています。
-
-## Ver0.18 visual-game integration
-- `frontier-asset-town-visual.png` / `house-visual.png` / `store-visual.png` are the high-density scene artworks used directly as playable screens.
-- The visible command panels inside those scene artworks have transparent HTML hit areas layered over them, so the screen itself works as the controller.
-- Town: 話す / 家へ / 相棒 / 冒険 / お店 / 物語
-- House: 町へ / 相棒 / 倉庫 / 物語 / 冒険
-- Store: 棚1 / 棚2 / 棚3 / ねだん / 営業 / 倉庫
-- Adventure keeps the existing interactive dungeon renderer so movement/combat logic remains testable.
+Existing Simulator / Dungeon / Expedition data is not modified.

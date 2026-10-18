@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.18 / pixel-map renderer / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.19 / pixel-map renderer / Updated: 2026-10-18 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
 const W=180,H=240;
@@ -145,7 +145,7 @@ R.logicalSize={width:W,height:H};
 
 
 
-// --- Ver0.18: town scene rebuild (360x480) ---
+// --- Ver0.19: town scene rebuild (360x480) ---
 function setupTownHi(canvas){
  if(!canvas)return null;
  canvas.width=360;canvas.height=480;
@@ -251,7 +251,7 @@ function hperson(c,x,y,kind='capBlue',dir='front'){
  if(hat){hrect(c,x-8,y-19,16,5,hat);hrect(c,x-10,y-15,20,3,hat2);hrect(c,x-4,y-21,8,3,hat);hpx(c,x-5,y-18,'#ffffff22')}
 }
 R.renderTown=(canvas,s)=>{const c=setupTownHi(canvas);if(!c)return;hgrass(c);
- // Ver0.18 high-density pass: layered forest rim, irregular lots, richer roads and props.
+ // Ver0.19 high-density pass: layered forest rim, irregular lots, richer roads and props.
  for(const [x,y,sc] of [[5,3,1.18],[29,8,.95],[56,0,1.05],[91,6,.9],[119,1,.9],[242,1,.9],[274,6,.95],[305,0,1.08],[335,7,1],[358,2,1.18],[4,128,1],[356,132,1],[5,356,1.05],[355,358,1.05],[12,447,1.15],[43,458,.95],[319,457,.95],[350,446,1.15]])htree(c,x,y,sc);
  for(const [x,y,w] of [[0,58,66],[294,58,66],[0,174,42],[318,174,42],[0,298,55],[305,300,55],[0,410,54],[306,410,54],[101,4,45],[215,4,44]])hbush(c,x,y,w,17);
  // Road network: narrower than Ver0.15 and broken up by green verges.

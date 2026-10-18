@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.18 / static test data / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.19 / static test data / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.18";
+F.VERSION="0.19";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
