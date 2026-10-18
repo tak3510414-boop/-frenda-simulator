@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.12 / isolated save / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.13 / isolated save / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
