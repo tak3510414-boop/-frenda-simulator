@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.34 / persistent macro town world + construction + movement save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.35 / persistent town topology + construction + movement save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;

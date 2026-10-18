@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.34 / macro town world graph + staged construction + movement core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.35 / town topology + future expansion + staged construction + movement core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -58,12 +58,19 @@ F.setTownAreaTestState=(id,state)=>F.mutateSave(s=>{if(!F.areaDef?.(id))throw ne
 F.resetTownAreaTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest={states:{}}});
 F.areaConnections=id=>(F.AREA_CONNECTION_DEFS||[]).filter(c=>c.a===id||c.b===id);
 F.areaNeighbors=id=>F.areaConnections(id).map(c=>{const other=c.a===id?c.b:c.a;return {areaId:other,area:F.areaDef?.(other),connection:c,fromPort:c.a===id?c.aPort:c.bPort,toPort:c.a===id?c.bPort:c.aPort}});
-F.worldMapModel=s=>{
- const areas=(F.AREA_DEFS||[]).map(d=>({id:d.id,name:d.name,icon:d.icon||"🗺️",gx:Number(d.world?.gx)||0,gy:Number(d.world?.gy)||0,role:d.world?.role||"expansion",sceneStatus:d.world?.sceneStatus||"planned",futurePorts:[...(d.world?.futurePorts||[])],state:F.areaEffectiveState(s,d.id),actualState:F.areaState(s,d.id),tags:[...(d.tags||[])],description:d.description||""}));
- const connections=(F.AREA_CONNECTION_DEFS||[]).filter(c=>areas.some(a=>a.id===c.a)&&areas.some(a=>a.id===c.b)).map(c=>{const sa=F.areaEffectiveState(s,c.a),sb=F.areaEffectiveState(s,c.b),open=F.areaStateIndex(sa)>=3&&F.areaStateIndex(sb)>=3;return {...c,open,aState:sa,bState:sb}});
- return {definition:F.TOWN_WORLD_DEF||{},areas,connections,currentAreaId:s?.townWorld?.currentAreaId||s?.townMovement?.areaId||"core"};
+F.worldFutureExpansionCandidates=s=>{
+ const areas=(F.AREA_DEFS||[]),occupied=new Set(areas.map(a=>`${Number(a.world?.gx)||0},${Number(a.world?.gy)||0}`)),vectors=F.WORLD_PORT_VECTOR||{},seen=new Set(),out=[];
+ for(const a of areas){const ax=Number(a.world?.gx)||0,ay=Number(a.world?.gy)||0;for(const port of (a.world?.futurePorts||[])){const v=vectors[port];if(!v)continue;const gx=ax+v[0],gy=ay+v[1],key=`${gx},${gy}`;if(occupied.has(key)||seen.has(key))continue;seen.add(key);out.push({id:`future_${gx}_${gy}`,gx,gy,fromAreaId:a.id,fromAreaName:a.name,port,label:"＋ 新エリア",state:"future"});}}
+ return out;
 };
-F.worldMapStats=s=>{const m=F.worldMapModel(s),xs=m.areas.map(a=>a.gx),ys=m.areas.map(a=>a.gy);return {areas:m.areas.length,connections:m.connections.length,minX:Math.min(...xs,0),maxX:Math.max(...xs,0),minY:Math.min(...ys,0),maxY:Math.max(...ys,0),planned:m.areas.filter(a=>a.sceneStatus!=="ready").length}};
+F.townScaleTier=s=>{const stats=F.areaStats?.(s)||{usable:1},pts=Number(s?.development?.points)||0,tiers=F.TOWN_SCALE_TIERS||[];let cur=tiers[0]||{id:"frontier",label:"開拓地",icon:"🏕️"};for(const t of tiers)if(stats.usable>=Number(t.minUsable||0)&&pts>=Number(t.minPoints||0))cur=t;return cur};
+F.nextTownScaleTier=s=>{const cur=F.townScaleTier(s),tiers=F.TOWN_SCALE_TIERS||[],i=tiers.findIndex(t=>t.id===cur.id);return i>=0&&i<tiers.length-1?tiers[i+1]:null};
+F.worldMapModel=s=>{
+ const areas=(F.AREA_DEFS||[]).map(d=>({id:d.id,name:d.name,icon:d.icon||"🗺️",gx:Number(d.world?.gx)||0,gy:Number(d.world?.gy)||0,role:d.world?.role||"expansion",sceneStatus:d.world?.sceneStatus||"planned",futurePorts:[...(d.world?.futurePorts||[])],theme:d.world?.theme||"generic",growth:d.world?.growth||"branch",state:F.areaEffectiveState(s,d.id),actualState:F.areaState(s,d.id),tags:[...(d.tags||[])],description:d.description||""}));
+ const connections=(F.AREA_CONNECTION_DEFS||[]).filter(c=>areas.some(a=>a.id===c.a)&&areas.some(a=>a.id===c.b)).map(c=>{const sa=F.areaEffectiveState(s,c.a),sb=F.areaEffectiveState(s,c.b),open=F.areaStateIndex(sa)>=3&&F.areaStateIndex(sb)>=3;return {...c,open,aState:sa,bState:sb}});
+ return {definition:F.TOWN_WORLD_DEF||{},policy:F.TOWN_SCENE_POLICY||{},areas,connections,future:F.worldFutureExpansionCandidates(s),scale:F.townScaleTier(s),nextScale:F.nextTownScaleTier(s),currentAreaId:s?.townWorld?.currentAreaId||s?.townMovement?.areaId||"core"};
+};
+F.worldMapStats=s=>{const m=F.worldMapModel(s),all=[...m.areas,...m.future],xs=all.map(a=>a.gx),ys=all.map(a=>a.gy);return {areas:m.areas.length,connections:m.connections.length,future:m.future.length,minX:Math.min(...xs,0),maxX:Math.max(...xs,0),minY:Math.min(...ys,0),maxY:Math.max(...ys,0),planned:m.areas.filter(a=>a.sceneStatus!=="ready").length,scale:m.scale?.label||"開拓地"}};
 // 施設を将来の未知エリアへ配置できるよう、候補地判定もタグ駆動にする。現在の実景観は中心開拓地のみ試作。
 F.facilityAreaCandidates=(s,facilityId)=>{const def=(F.FACILITY_DEFS||[]).find(d=>d.id===facilityId),want=new Set(def?.areaTagsAny||[]);return (F.AREA_DEFS||[]).filter(a=>F.areaStateIndex(F.areaEffectiveState(s,a.id))>=3).filter(a=>!want.size||(a.tags||[]).some(t=>want.has(t))).map(a=>a.id)};
 F.townOptions=s=>{

@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.34 / macro town world planning + expandable area UI / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.35 / town topology planning + future expansion UI / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -98,19 +98,20 @@ function showFrontierDex(){modal('<h2>📖 冒険図鑑</h2><p>Frontierで遭遇
 
 function showTownWorldMap(){
  const s=F.readSave(),m=F.worldMapModel?.(s),stats=F.worldMapStats?.(s);if(!m){toast('全体マップ情報を読み込めません');return}
- const xs=m.areas.map(a=>a.gx),ys=m.areas.map(a=>a.gy),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),pad=72,stepX=145,stepY=118,w=Math.max(360,(maxX-minX)*stepX+pad*2),h=Math.max(300,(maxY-minY)*stepY+pad*2);
- const pos={};for(const a of m.areas)pos[a.id]={x:pad+(a.gx-minX)*stepX,y:pad+(a.gy-minY)*stepY};
+ const all=[...m.areas,...(m.future||[])],xs=all.map(a=>a.gx),ys=all.map(a=>a.gy),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),pad=74,stepX=132,stepY=108,w=Math.max(390,(maxX-minX)*stepX+pad*2),h=Math.max(330,(maxY-minY)*stepY+pad*2);
+ const pos={};for(const a of all)pos[a.id]={x:pad+(a.gx-minX)*stepX,y:pad+(a.gy-minY)*stepY};
  const stateColor={locked:'#89938d',discovered:'#a8853a',clearing:'#c56d2e',usable:'#2e7d57',developed:'#17613f'};
  let svg=`<svg class="worldMapSvg" viewBox="0 0 ${w} ${h}" role="img" aria-label="町の全体構成（論理マップ）">`;
  for(const c of m.connections){const a=pos[c.a],b=pos[c.b];if(!a||!b)continue;svg+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="worldMapLink ${c.open?'open':'closed'}"/><text x="${(a.x+b.x)/2}" y="${(a.y+b.y)/2-5}" class="worldMapLinkLabel">${esc(c.label||c.kind)}</text>`}
+ for(const f of (m.future||[])){const p=pos[f.id],a=pos[f.fromAreaId];if(a)svg+=`<line x1="${a.x}" y1="${a.y}" x2="${p.x}" y2="${p.y}" class="worldMapFutureLink"/>`;svg+=`<g class="worldMapFuture"><circle cx="${p.x}" cy="${p.y}" r="27"/><text x="${p.x}" y="${p.y-1}" class="worldMapFuturePlus">＋</text><text x="${p.x}" y="${p.y+16}" class="worldMapFutureText">拡張候補</text></g>`}
  for(const a of m.areas){const p=pos[a.id],col=stateColor[a.state]||'#60756a',current=a.id===m.currentAreaId;svg+=`<g class="worldMapNode"><rect x="${p.x-54}" y="${p.y-34}" width="108" height="68" rx="14" fill="${col}" class="${current?'current':''}"/><text x="${p.x}" y="${p.y-6}" class="worldMapIcon">${a.icon}</text><text x="${p.x}" y="${p.y+15}" class="worldMapName">${esc(a.name)}</text><text x="${p.x}" y="${p.y+29}" class="worldMapState">${esc(F.AREA_STATE_INFO?.[a.state]?.label||a.state)}</text></g>`}
  svg+='</svg>';
- let html=`<h2>🧭 町の全体マップ設計</h2><p><b>この図は最終背景画像ではなく、エリア同士の関係を決める論理マップです。</b> 中心エリアの道・橋・施設座標を今ここで固定せず、全体構成が固まった後に各実マップへ落とし込みます。</p><div class="worldMapWrap">${svg}</div><div class="worldMapNote">構成Rev.${Number(m.definition?.layoutRevision)||1} ／ ${stats?.areas||m.areas.length}エリア ／ ${stats?.connections||m.connections.length}接続<br>今後エリアを追加しても、<code>AREA_DEFS</code> と <code>AREA_CONNECTION_DEFS</code> の追加だけで全体マップへ接続できます。</div><div class="choiceGrid">`;
- for(const a of m.areas){const ns=F.areaNeighbors?.(a.id)||[];html+=`<div class="choiceCard" style="grid-template-columns:46px 1fr"><div style="font-size:28px">${a.icon}</div><span><b>${esc(a.name)}</b><small>${esc(a.description)}<br>役割：${esc(a.role)} ／ 実マップ：${a.sceneStatus==='prototype'?'試作中':'未作成'}<br>接続：${ns.length?ns.map(n=>esc(n.area?.name||n.areaId)).join('・'):'なし'}${a.futurePorts.length?`<br>将来拡張口：${a.futurePorts.map(esc).join(' / ')}`:''}</small></span></div>`}
+ const next=m.nextScale,policy=m.policy||{};
+ let html=`<h2>🧭 町の全体マップ Ver2</h2><p><b>先に全体構造を決め、各エリアの細かな道・建物・NPC座標はその後に作ります。</b> 町は1枚の巨大固定マップにせず、接続されたエリアを必要な分だけ増やしていく方式です。</p><div class="worldMapWrap">${svg}</div><div class="worldMapScale"><b>${m.scale?.icon||'🏕️'} 現在の規模：${esc(m.scale?.label||'開拓地')}</b>${next?`<small>次の目安：${esc(next.label)}（利用可能エリア ${next.minUsable}以上・発展 ${next.minPoints}pt以上）</small>`:`<small>現在定義している最上位規模です。エリア数の上限は固定していません。</small>`}</div><div class="worldMapNote"><b>採用するマップ方式</b><br>現在地＋隣接エリアだけを描画する「接続エリア方式」。境界まで歩くと隣のエリアへ遷移します。遠いエリアは描画せず、状態だけ保持します。<br>構成Rev.${Number(m.definition?.layoutRevision)||1} ／ 登録 ${stats?.areas||m.areas.length}エリア ／ 将来拡張候補 ${stats?.future||0}口 ／ ハード上限なし</div><div class="worldMapPrinciples"><b>全体設計で固定するもの</b><span>エリア同士の接続・地形テーマ・発展方向</span><b>まだ固定しないもの</b><span>建物座標・道路形状・NPC経路・花や街灯の位置</span></div><div class="choiceGrid">`;
+ for(const a of m.areas){const ns=F.areaNeighbors?.(a.id)||[];html+=`<div class="choiceCard" style="grid-template-columns:46px 1fr"><div style="font-size:28px">${a.icon}</div><span><b>${esc(a.name)}</b><small>${esc(a.description)}<br>役割：${esc(a.role)} ／ 地形：${esc(a.theme)} ／ 成長型：${esc(a.growth)}<br>実マップ：${a.sceneStatus==='prototype'?'試作（後で再設計）':'未作成'}<br>接続：${ns.length?ns.map(n=>esc(n.area?.name||n.areaId)).join('・'):'なし'}${a.futurePorts.length?`<br>将来拡張口：${a.futurePorts.map(esc).join(' / ')}`:''}</small></span></div>`}
  html+='</div>';
  modal(html,[{label:'町域の進行を見る',fn:showTownAreas},{label:'閉じる'}]);
 }
-
 function showTownAreas(){
  const s=F.readSave(),opts=F.areaOptions?.(s)||[],stats=F.areaStats?.(s)||{usable:1,total:1};
  let html=`<h2>🗺️ 町域</h2><p>町は最初から同じ広さではありません。周辺を発見し、切り開き、利用可能にしていきます。現在、利用可能 <b>${stats.usable}/${stats.total}</b> エリアです。</p><div class="choiceGrid">`;
