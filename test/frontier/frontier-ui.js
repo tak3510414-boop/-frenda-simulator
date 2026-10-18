@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.15 / pixel-map UI / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.16 / pixel-map UI / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;

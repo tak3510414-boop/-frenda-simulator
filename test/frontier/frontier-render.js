@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.15 / pixel-map renderer / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.16 / pixel-map renderer / Updated: 2026-10-18 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
 const W=180,H=240;
@@ -145,7 +145,7 @@ R.logicalSize={width:W,height:H};
 
 
 
-// --- Ver0.15: town scene rebuild (360x480) ---
+// --- Ver0.16: town scene rebuild (360x480) ---
 function setupTownHi(canvas){
  if(!canvas)return null;
  canvas.width=360;canvas.height=480;
@@ -251,33 +251,46 @@ function hperson(c,x,y,kind='capBlue',dir='front'){
  if(hat){hrect(c,x-8,y-19,16,5,hat);hrect(c,x-10,y-15,20,3,hat2);hrect(c,x-4,y-21,8,3,hat);hpx(c,x-5,y-18,'#ffffff22')}
 }
 R.renderTown=(canvas,s)=>{const c=setupTownHi(canvas);if(!c)return;hgrass(c);
- // deep forest frame so the town sits inside a world, not on a blank sheet
- for(const [x,y,sc] of [[8,8,1.1],[42,2,1],[80,7,1],[303,5,1],[336,4,1.1],[356,9,1],[7,141,1],[352,142,1],[14,354,1],[348,357,1],[22,443,1],[338,442,1]])htree(c,x,y,sc);
- hbush(c,0,61,56,18);hbush(c,304,64,56,18);hbush(c,0,300,55,18);hbush(c,305,300,55,18);hbush(c,106,8,40,14);hbush(c,214,8,40,14);
- // road network and plaza
- hcobble(c,145,0,70,480);hpathEdge(c,145,0,70,480);
- hcobble(c,0,208,360,88);hpathEdge(c,0,208,360,88);
- hcobble(c,82,136,196,112);hpathEdge(c,82,136,196,112);
- hcobble(c,34,118,84,130);hpathEdge(c,34,118,84,130);
- hcobble(c,242,118,84,130);hpathEdge(c,242,118,84,130);
- // entry spurs to lower buildings
- hcobble(c,54,300,68,56);hpathEdge(c,54,300,68,56);hcobble(c,236,300,68,56);hpathEdge(c,236,300,68,56);
- // buildings with more game-map style top-down facades
- htownBuilding(c,14,36,126,111,{roof:'#b94f3f',roof2:'#873a30',roofHi:'#d76b59',sign:'SHOP',awning:true,chimney:true,flowers:true,emblem:'shop'});
- htownBuilding(c,220,36,126,111,{roof:'#4777b8',roof2:'#315688',roofHi:'#6694d2',sign:'家',chimney:true,flowers:true,wall:'#e3ddcd',wall2:'#cfc5ae'});
- htownBuilding(c,14,330,118,104,{roof:'#95623a',roof2:'#68432b',roofHi:'#ae794b',sign:'鍛冶屋',chimney:true,flowers:true,wall:'#dbc5a5',wall2:'#c7ae8b',emblem:'forge'});
- htownBuilding(c,228,330,118,104,{roof:'#b18546',roof2:'#7d5d31',roofHi:'#c59b59',sign:'倉庫',flowers:true,wall:'#dac3a1',wall2:'#c8ad88',emblem:'crate'});
- // planting around lots
- hbush(c,9,158,56,13);hbush(c,86,158,48,13);hbush(c,228,157,46,13);hbush(c,294,157,54,13);hbush(c,17,418,48,13);hbush(c,81,418,43,13);hbush(c,235,418,49,13);hbush(c,301,418,44,13);
- hflowerBed(c,13,152,54);hflowerBed(c,295,151,48);hflower(c,14,189);hflower(c,310,191,['#ffd173','#eda2c5','#b9a4ee','#9edd8e']);
- // central town furniture
- hfountain(c,180,253);hbench(c,109,250);hbench(c,219,250);for(const [lx,ly] of [[137,167],[219,167],[137,314],[219,314]])hlamp(c,lx,ly);
- hsign(c,278,177);hcart(c,73,332);hcrate(c,46,316);hbarrel(c,66,315);hcrate(c,288,316);hbarrel(c,309,315);
- // lower lot borders and details
- hfence(c,0,450,84);hfence(c,276,450,84);for(const [x,y] of [[96,302],[260,301],[104,345],[251,344]]){hrect(c,x,y,3,7,'#4b8240');hpx(c,x+3,y+2,'#7ab361')}
- // townsfolk
- hperson(c,125,206,'capBlue','back');hperson(c,234,197,'capPurple');hperson(c,95,313,'woman');hperson(c,268,311,'capGreen');hperson(c,180,346,'capBlue');hperson(c,321,228,'straw');hperson(c,40,423,'elder');
- // front-edge trees for parallax feeling
- htree(c,-2,468,1.12);htree(c,360,468,1.12);
-};
-})();
+ // Ver0.16 high-density pass: layered forest rim, irregular lots, richer roads and props.
+ for(const [x,y,sc] of [[5,3,1.18],[29,8,.95],[56,0,1.05],[91,6,.9],[119,1,.9],[242,1,.9],[274,6,.95],[305,0,1.08],[335,7,1],[358,2,1.18],[4,128,1],[356,132,1],[5,356,1.05],[355,358,1.05],[12,447,1.15],[43,458,.95],[319,457,.95],[350,446,1.15]])htree(c,x,y,sc);
+ for(const [x,y,w] of [[0,58,66],[294,58,66],[0,174,42],[318,174,42],[0,298,55],[305,300,55],[0,410,54],[306,410,54],[101,4,45],[215,4,44]])hbush(c,x,y,w,17);
+ // Road network: narrower than Ver0.15 and broken up by green verges.
+ hcobble(c,151,0,58,480); hpathEdge(c,151,0,58,480);
+ hcobble(c,0,202,360,76); hpathEdge(c,0,202,360,76);
+ hcobble(c,74,150,212,112); hpathEdge(c,74,150,212,112);
+ hcobble(c,39,122,77,110); hpathEdge(c,39,122,77,110);
+ hcobble(c,244,122,77,110); hpathEdge(c,244,122,77,110);
+ hcobble(c,50,292,78,73);hpathEdge(c,50,292,78,73);hcobble(c,232,292,78,73);hpathEdge(c,232,292,78,73);
+ // tiny weeds/moss and cracked stones: these are what make the ground read as a game map.
+ for(let y=18;y<468;y+=13)for(let x=8;x<352;x+=17){const n=hnoise(x,y,91);if(n>.78){hrect(c,x,y,2,5,'#4f803f');hrect(c,x+3,y+2,2,3,'#7caf5e')}if(n<.10&&x>70&&x<290){hline(c,x,y,x+5,y+2,'#8f887c',1);hpx(c,x+2,y+3,'#a69d8d')}}
+ // Main buildings. More roof volume and facade clutter are layered after the base building.
+ htownBuilding(c,10,30,132,116,{roof:'#b94f3f',roof2:'#873a30',roofHi:'#d76b59',sign:'SHOP',awning:true,chimney:true,flowers:true,emblem:'shop'});
+ htownBuilding(c,218,30,132,116,{roof:'#4777b8',roof2:'#315688',roofHi:'#6694d2',sign:'家',chimney:true,flowers:true,wall:'#e3ddcd',wall2:'#cfc5ae'});
+ htownBuilding(c,9,329,124,108,{roof:'#95623a',roof2:'#68432b',roofHi:'#ae794b',sign:'鍛冶屋',chimney:true,flowers:true,wall:'#dbc5a5',wall2:'#c7ae8b',emblem:'forge'});
+ htownBuilding(c,227,329,124,108,{roof:'#b18546',roof2:'#7d5d31',roofHi:'#c59b59',sign:'倉庫',flowers:true,wall:'#dac3a1',wall2:'#c8ad88',emblem:'crate'});
+ // roof/facade micro-details: gutters, beams, hanging signs, pots, steps.
+ for(const [x,y,w,col] of [[25,69,100,'#714733'],[233,69,100,'#6c523e'],[24,368,94,'#6a4933'],[242,368,94,'#705037']]){hrect(c,x,y,w,3,col);for(let xx=x+6;xx<x+w-4;xx+=15)hrect(c,xx,y+3,2,5,col)}
+ hrect(c,66,126,26,5,'#87725c');hrect(c,67,131,24,3,'#b5a48c');hrect(c,270,126,26,5,'#87725c');hrect(c,271,131,24,3,'#b5a48c');
+ hbarrel(c,18,130);hcrate(c,121,130);hbarrel(c,326,129);hcrate(c,220,131);
+ // Dense gardens around every building.
+ for(const a of [[7,151,59],[77,151,59],[224,151,55],[292,151,60],[10,424,54],[72,424,54],[234,424,53],[296,424,53]]){hbush(c,...a,14)}
+ hflowerBed(c,10,145,56);hflowerBed(c,78,145,55);hflowerBed(c,226,145,52);hflowerBed(c,296,145,52);
+ hflowerBed(c,11,418,52);hflowerBed(c,74,418,50);hflowerBed(c,236,418,49);hflowerBed(c,298,418,49);
+ for(const [x,y] of [[13,181],[31,186],[120,184],[229,184],[312,183],[334,188],[17,449],[116,447],[242,448],[330,448]])hflower(c,x,y);
+ // Plaza furniture and market clutter.
+ hfountain(c,180,245);hbench(c,104,247);hbench(c,224,247);
+ for(const [lx,ly] of [[132,169],[224,169],[132,301],[224,301]])hlamp(c,lx,ly);
+ hsign(c,285,176);hcart(c,72,304);hcrate(c,43,303);hbarrel(c,62,304);hcrate(c,295,305);hbarrel(c,316,304);
+ // small produce stall and cloth canopy at the left plaza edge
+ hrect(c,16,216,50,5,'#68472f');for(let i=0;i<50;i+=10)hrect(c,16+i,207,10,9,(i/10)%2?'#f1e5c9':'#bd5c4c');hrect(c,20,221,42,15,'#93643b');for(let i=0;i<5;i++)hrect(c,23+i*8,218+(i%2),5,5,['#d96e57','#e0bf58','#76aa5e','#8aa7d3','#d47b9e'][i]);hrect(c,19,236,3,12,'#66462e');hrect(c,59,236,3,12,'#66462e');
+ // signposts, sacks and scattered logistics props.
+ for(const [x,y] of [[73,178],[278,291],[96,285],[256,183]])hsign(c,x,y);
+ for(const [x,y] of [[33,291],[50,288],[309,287],[326,290],[22,397],[325,397]]){hbarrel(c,x,y);if(x%2)hcrate(c,x+10,y+2)}
+ // fences create lot boundaries rather than empty green rectangles.
+ hfence(c,0,459,92);hfence(c,268,459,92);hfence(c,0,109,37);hfence(c,323,109,37);
+ // Townsfolk: varied placement and facing creates a lived-in scene.
+ hperson(c,124,204,'capBlue','back');hperson(c,235,194,'capPurple');hperson(c,92,312,'woman');hperson(c,271,310,'capGreen');hperson(c,180,341,'capBlue');hperson(c,323,226,'straw');hperson(c,41,421,'elder');hperson(c,69,189,'woman');hperson(c,292,196,'capGreen','back');
+ // extra tiny shadows/footprints and foreground foliage.
+ for(const [x,y] of [[144,188],[212,188],[147,285],[211,285],[88,273],[275,270]]){hrect(c,x,y,7,2,'#00000018');hpx(c,x+2,y+3,'#938c7e')}
+ htree(c,-2,471,1.2);htree(c,361,471,1.2);htree(c,25,472,.92);htree(c,335,472,.92);
+};})();
