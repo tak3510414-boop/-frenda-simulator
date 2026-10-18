@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.22 / playable core loop / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.23 / playable core loop / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -9,7 +9,7 @@ function takeWarehouse(s,id,n){n=Math.max(0,Math.min(Number(n)||0,Number(s.wareh
 F.addWarehouse=addWarehouse;F.takeWarehouse=takeWarehouse;
 F.developmentStage=points=>points>=60?3:points>=28?2:points>=10?1:0;
 F.stageInfo=stage=>[
- {name:"開拓地",caption:"小さな店だけの開拓地",future:"建設予定地"},
+ {name:"開拓地",caption:"露店と掘っ立て小屋だけの未整備な開拓地",future:"まだ何もない土地"},
  {name:"小さな集落",caption:"お店を目当てに人が立ち寄るようになった",future:"建設予定地"},
  {name:"村",caption:"職人や冒険者が暮らし始めた",future:"鍛冶屋 建設中"},
  {name:"にぎやかな村",caption:"新しい店や住民が増えてきた",future:"鍛冶屋"}
@@ -17,7 +17,7 @@ F.stageInfo=stage=>[
 
 F.townState=s=>{const d=s?.development||{},t=d.town||{};return {shopLevel:Math.max(1,Number(t.shopLevel)||1),forgeBuilt:!!t.forgeBuilt,houseBuilt:!!t.houseBuilt,plazaBuilt:!!t.plazaBuilt,marketBuilt:!!t.marketBuilt,order:Array.isArray(t.order)?t.order:[]};};
 F.townOptions=s=>{const pts=Number(s?.development?.points)||0,t=F.townState(s),firstMajor=t.order.filter(x=>x==="shop2"||x==="forge").length===0,majorReq=firstMajor?4:8;return [
- {id:"shop2",name:"店を大きくする",desc:"店先がにぎやかになり、商売の存在感が増える。",need:majorReq,done:t.shopLevel>=2,icon:"🏪"},
+ {id:"shop2",name:"店を大きくする",desc:"露店まわりを少し整え、商品や設備を増やす。",need:majorReq,done:t.shopLevel>=2,icon:"🏪"},
  {id:"forge",name:"鍛冶屋を呼ぶ",desc:"町に鍛冶屋ができ、装備・修理系の発展につながる。",need:majorReq,done:t.forgeBuilt,icon:"⚒️"},
  {id:"house",name:"住居区画を整える",desc:"住民が暮らせる家が建ち、町の生活感が増える。",need:12,done:t.houseBuilt,icon:"🏠"},
  {id:"plaza",name:"広場を整備する",desc:"中央広場と噴水を整え、町の評判を高める。",need:16,done:t.plazaBuilt,icon:"⛲"},
@@ -25,7 +25,7 @@ F.townOptions=s=>{const pts=Number(s?.development?.points)||0,t=F.townState(s),f
 ].map(x=>({...x,available:!x.done&&pts>=x.need}));};
 F.applyTownDevelopment=id=>F.mutateSave(s=>{s.development.town=s.development.town||{shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:[]};const opt=F.townOptions(s).find(x=>x.id===id);if(!opt||opt.done)throw new Error("すでに発展済みです。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);if(id==="shop2")s.development.town.shopLevel=2;else if(id==="forge")s.development.town.forgeBuilt=true;else if(id==="house")s.development.town.houseBuilt=true;else if(id==="plaza")s.development.town.plazaBuilt=true;else if(id==="market")s.development.town.marketBuilt=true;s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order:[];s.development.town.order.push(id);F.addHistory(s,"development",`${opt.name}を選んだ。`);});
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
-// Ver0.22 TEST専用：町レイヤーを個別指定する。通常の発展状態は変更しない。
+// Ver0.23 TEST専用：初期開拓地を固定ベースとし、追加レイヤーだけを個別指定する。通常の発展状態は変更しない。
 // mode = auto / on / off。未定義レイヤーは無視し、将来のレイヤー追加にも耐える。
 F.townLayerAutoState=(s,def)=>{
  if(!def)return false;if(def.kind==="base"||def.auto?.type==="always")return true;
@@ -61,7 +61,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.22ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.23ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 

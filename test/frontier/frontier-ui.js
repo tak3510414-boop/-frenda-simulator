@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.22 / layered town UI / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.23 / layered town UI / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -26,7 +26,7 @@ function fillCmd(id,items){const box=$(id);for(const c of items){const b=documen
 function homeDialog(s){if(homeMode==='house'){const p=rec(s.partnerId);return p?`相棒ポケモン\n「${p.name_ja}と いっしょに がんばろう！」`:'まずは相棒を決めよう。'}if(talkIndex>0)return `町の人\n「${talkLines[(talkIndex-1)%talkLines.length]}」`;return F.goal(s).text}
 function homeCommands(){return homeMode==='house'?[{t:'町へ',fn:()=>{homeMode='town';renderAll()}},{t:'相棒',fn:showPartnerModal,c:'primary'},{t:'倉庫',fn:showWarehouse},{t:'物語',fn:showStory},{t:'冒険',fn:()=>setView('adventure')}]:[{t:'話す',fn:()=>{talkIndex=(talkIndex+1)%5;renderAll()}},{t:'家へ',fn:()=>{homeMode='house';renderAll()}},{t:'相棒',fn:showPartnerModal,c:'primary'},{t:'冒険',fn:()=>setView('adventure'),c:'primary'},{t:'お店',fn:()=>setView('store')},{t:'物語',fn:showStory}]}
 function renderHome(s){if(homeMode==='house'){$('sceneMount').classList.remove('townSceneLayout');$('sceneMount').innerHTML=visualShell('frontier-asset-house-visual.png','家の中');visualHouseHotspots()}else{$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);visualTownHotspots();const db=$('townDevelopBtn');if(db)db.onclick=showDevelopment;const tb=$('townTestProgressBtn');if(tb)tb.onclick=showTownLayerTest}}
-function townDialogue(s){const t=F.townState(s),built=[t.shopLevel>=2,t.forgeBuilt,t.houseBuilt,t.plazaBuilt,t.marketBuilt].filter(Boolean).length;if(built===0)return '<b>町の人との会話</b><span>小さな店だけの開拓地です。次に何を建てるかで、町の姿が変わります。</span>';if(built===1)return '<b>町の人との会話</b><span>最初の発展が形になりました。次は別の施設を先にすることも、店をさらに育てることもできます。</span>';return `<b>町の人との会話</b><span>施設が${built}つ育ち、町らしくなってきました。発展の順番はあなた次第です。</span>`}
+function townDialogue(s){const states=F.townLayerStates(s),shown=states.filter(x=>x.def.kind!=="base"&&x.effective).length;if(shown===0)return '<b>町の人との会話</b><span>まだ荒れた土地に、露店と掘っ立て小屋があるだけです。ここから少しずつ育てていきましょう。</span>';if(shown===1)return '<b>町の人との会話</b><span>最初の変化が形になりました。何を先に育てるかで、この先の景色が変わります。</span>';return `<b>町の人との会話</b><span>表示中の発展レイヤーは${shown}個。少しずつ町らしい景色が積み重なってきました。</span>`}
 function showTownMove(){modal('<h2>👣 いどう</h2><p>行き先を選んでください。</p>',[{label:'🏠 家へ',fn:()=>{homeMode='house';renderAll()}},{label:'🏪 お店へ',fn:()=>setView('store')},{label:'🗺️ 冒険へ',fn:()=>setView('adventure')},{label:'閉じる'}])}
 function showFrontierDex(){modal('<h2>📖 冒険図鑑</h2><p>Frontierで遭遇したポケモンを記録する図鑑です。現在は画面準備中で、次の実装段階で遭遇履歴と所持状況を連動させます。</p>',[{label:'閉じる'}])}
 
@@ -34,9 +34,9 @@ function showTownLayerTest(){
  const s=F.readSave(),states=F.townLayerStates(s),groups=[];
  for(const g of (F.TOWN_LAYER_GROUPS||[]))if(states.some(x=>x.def.group===g))groups.push(g);
  for(const x of states)if(!groups.includes(x.def.group))groups.push(x.def.group||'その他');
- let html='<h2>🧪 TEST レイヤー指定</h2><p>町の表示レイヤーだけを個別に強制ON/OFFします。<b>発展pt・施設の建設状態・冒険・倉庫・売上は変更しません。</b></p><div class="layerLegend"><span>自動＝通常ゲーム判定</span><span>ON＝強制表示</span><span>OFF＝強制非表示</span></div>';
+ let html='<h2>🧪 TEST レイヤー指定</h2><p>初期開拓地は固定ベースです。追加レイヤーだけを個別に強制ON/OFFします。<b>「全部 OFF」＝0pt相当の初期景観</b>です。発展pt・実際の建設状態・冒険・倉庫・売上は変更しません。</p><div class="layerLegend"><span>自動＝通常ゲーム判定</span><span>ON＝強制表示</span><span>OFF＝強制非表示</span></div>';
  for(const g of groups){html+=`<h3 class="layerGroupTitle">${esc(g)}</h3><div class="layerTestList">`;for(const x of states.filter(y=>y.def.group===g)){const d=x.def,auto=x.auto?'ON':'OFF',eff=x.effective?'表示':'非表示';html+=`<div class="layerTestRow"><div class="layerTestName"><b>${esc(d.icon||'▫️')} ${esc(d.label||d.id)}</b><small>通常 ${auto} / 現在 ${eff}${d.locked?' / 固定':''}</small></div><div class="layerModeBtns">${d.locked?'<span class="layerLocked">固定ON</span>':['auto','on','off'].map(m=>`<button type="button" data-layer-id="${esc(d.id)}" data-layer-mode="${m}" class="${x.mode===m?'on':''}">${m==='auto'?'自動':m.toUpperCase()}</button>`).join('')}</div></div>`}html+='</div>'}
- modal(html,[{label:'全部 自動',close:false,fn:()=>{F.setAllTownLayerTestModes('auto');closeModal();renderAll();showTownLayerTest()}},{label:'全部 OFF',close:false,fn:()=>{F.setAllTownLayerTestModes('off');closeModal();renderAll();showTownLayerTest()}},{label:'全部 ON',close:false,fn:()=>{F.setAllTownLayerTestModes('on');closeModal();renderAll();showTownLayerTest()}},{label:'閉じる'}]);
+ modal(html,[{label:'全部 自動',close:false,fn:()=>{F.setAllTownLayerTestModes('auto');closeModal();renderAll();showTownLayerTest()}},{label:'全部 OFF（初期）',close:false,fn:()=>{F.setAllTownLayerTestModes('off');closeModal();renderAll();showTownLayerTest()}},{label:'全部 ON',close:false,fn:()=>{F.setAllTownLayerTestModes('on');closeModal();renderAll();showTownLayerTest()}},{label:'閉じる'}]);
  document.querySelectorAll('[data-layer-id][data-layer-mode]').forEach(b=>b.onclick=()=>{try{F.setTownLayerTestMode(b.dataset.layerId,b.dataset.layerMode);closeModal();renderAll();showTownLayerTest()}catch(e){toast(e.message)}});
 }
 
