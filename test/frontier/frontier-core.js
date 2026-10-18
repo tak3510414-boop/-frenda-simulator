@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.26 / extensible town + playable core loop / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.27 / exclusive town layers + playable core loop / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -50,8 +50,8 @@ F.applyTownDevelopment=id=>F.mutateSave(s=>{
 });
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
 
-// Ver0.26 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
-// 新しい施設や景観レイヤーを追加しても、ここに施設名ごとの分岐を増やさない。
+// Ver0.27 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
+// 「全部ON」は生の全重ねではなく完成表示（max preset）。段階レイヤーは exclusiveGroup で排他解決する。
 function evalLayerRule(s,rule){
  if(!rule)return false;const t=F.townState(s),pts=Number(s?.development?.points)||0,type=rule.type;
  if(type==="always")return true;
@@ -60,17 +60,45 @@ function evalLayerRule(s,rule){
  if(type==="routeIn")return (rule.values||[]).includes(F.townRoute(s));
  if(type==="all")return (rule.rules||[]).every(r=>evalLayerRule(s,r));
  if(type==="any")return (rule.rules||[]).some(r=>evalLayerRule(s,r));
- // Ver0.24定義も読める互換ルール
  if(type==="fieldTrue")return !!t[rule.field];
  if(type==="fieldGte")return Number(t[rule.field]||0)>=Number(rule.value||0);
  return false;
 }
+F.townLayerTestPreset=s=>{const p=s?.settings?.townLayerTest?.preset;return ["auto","custom","off","max","raw"].includes(p)?p:"custom"};
 F.townLayerAutoState=(s,def)=>!!def&&(def.kind==="base"||evalLayerRule(s,def.auto));
 F.townLayerTestMode=(s,id)=>{const v=s?.settings?.townLayerTest?.layers?.[id];return v==="on"||v==="off"?v:"auto"};
-F.townLayerEffectiveState=(s,def)=>{const auto=F.townLayerAutoState(s,def);if(def?.locked)return auto;const mode=F.townLayerTestMode(s,def?.id);return mode==="on"?true:mode==="off"?false:auto;};
-F.townLayerStates=s=>(F.TOWN_LAYER_DEFS||[]).map(def=>({def,auto:F.townLayerAutoState(s,def),mode:F.townLayerTestMode(s,def.id),effective:F.townLayerEffectiveState(s,def)}));
-F.setTownLayerTestMode=(id,mode)=>F.mutateSave(s=>{const def=(F.TOWN_LAYER_DEFS||[]).find(x=>x.id===id);if(!def||def.locked)return;if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};s.settings.townLayerTest.layers=s.settings.townLayerTest.layers||{};if(mode==="auto")delete s.settings.townLayerTest.layers[id];else s.settings.townLayerTest.layers[id]=mode;});
-F.setAllTownLayerTestModes=mode=>F.mutateSave(s=>{if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};const out={};if(mode!=="auto")for(const def of (F.TOWN_LAYER_DEFS||[]))if(!def.locked)out[def.id]=mode;s.settings.townLayerTest.layers=out;});
+function layerCandidate(s,def,preset){
+ if(def?.locked||def?.kind==="base")return true;
+ if(preset==="off")return false;
+ if(preset==="raw")return true;
+ if(preset==="max")return def.maxVisible!==false;
+ const auto=F.townLayerAutoState(s,def),mode=F.townLayerTestMode(s,def?.id);
+ return mode==="on"?true:mode==="off"?false:auto;
+}
+function resolveExclusive(states,preset){
+ if(preset==="raw")return states;
+ const groups=new Map();
+ for(const x of states){if(!x.effective||!x.def.exclusiveGroup)continue;const g=x.def.exclusiveGroup;if(!groups.has(g))groups.set(g,[]);groups.get(g).push(x)}
+ for(const list of groups.values()){
+  if(list.length<2)continue;
+  list.sort((a,b)=>{
+   const af=a.mode==="on"?1:0,bf=b.mode==="on"?1:0;if(af!==bf)return bf-af;
+   return Number(b.def.rank||0)-Number(a.def.rank||0);
+  });
+  for(let i=1;i<list.length;i++){list[i].effective=false;list[i].suppressed=true}
+ }
+ return states;
+}
+F.townLayerStates=s=>{const preset=F.townLayerTestPreset(s);const states=(F.TOWN_LAYER_DEFS||[]).map(def=>({def,auto:F.townLayerAutoState(s,def),mode:F.townLayerTestMode(s,def.id),effective:layerCandidate(s,def,preset),suppressed:false}));return resolveExclusive(states,preset)};
+F.setTownLayerTestMode=(id,mode)=>F.mutateSave(s=>{
+ const def=(F.TOWN_LAYER_DEFS||[]).find(x=>x.id===id);if(!def||def.locked)return;if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");
+ s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{},preset:"custom"};s.settings.townLayerTest.layers=s.settings.townLayerTest.layers||{};s.settings.townLayerTest.preset="custom";
+ if(mode==="auto")delete s.settings.townLayerTest.layers[id];else s.settings.townLayerTest.layers[id]=mode;
+ // 排他グループで1枚を強制ONした場合、兄弟レイヤーは強制OFF。段階画像の二重重ねを防ぐ。
+ if(mode==="on"&&def.exclusiveGroup)for(const other of (F.TOWN_LAYER_DEFS||[]))if(other.id!==def.id&&other.exclusiveGroup===def.exclusiveGroup&&!other.locked)s.settings.townLayerTest.layers[other.id]="off";
+});
+F.setTownLayerTestPreset=preset=>F.mutateSave(s=>{if(!["auto","custom","off","max","raw"].includes(preset))throw new Error("不正な表示プリセットです。");s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};s.settings.townLayerTest.preset=preset;if(preset!=="custom")s.settings.townLayerTest.layers={};});
+F.setAllTownLayerTestModes=mode=>{const map={auto:"auto",off:"off",on:"max",raw:"raw"};if(!map[mode])throw new Error("不正なレイヤー指定です。");return F.setTownLayerTestPreset(map[mode])};
 
 
 F.storyStep=s=>s.story?.rumor?4:s.story?.firstSale?3:s.story?.firstReturn?2:s.partnerId?1:0;
@@ -80,7 +108,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.26ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.27ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 

@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.26 / isolated + facility-master compatible save / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.27 / isolated + facility-master compatible save / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -10,7 +10,7 @@ F.freshSave=()=>({
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),priority:"standard",order:[],shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
- history:[],settings:{hintLevel:1,townLayerTest:{layers:{}}}
+ history:[],settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"}}
 });
 function inferPriority(t){
  if(t?.priority&&["standard","commerce","forge","life","adventure"].includes(t.priority))return t.priority;
@@ -51,8 +51,9 @@ F.normalizeSave=s=>{
  s.development.town.plazaBuilt=(Number(s.development.town.facilities.plaza)||0)>=1;
  s.story=Object.assign(base.story,s.story||{});s.history=Array.isArray(s.history)?s.history.slice(-100):[];
  s.settings=Object.assign(base.settings,s.settings||{});
- s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{}};
+ s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{},preset:"custom"};
  s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};
+ s.settings.townLayerTest.preset=["auto","custom","off","max","raw"].includes(s.settings.townLayerTest.preset)?s.settings.townLayerTest.preset:"custom";
  s.schemaVersion=2;
  return s;
 };
