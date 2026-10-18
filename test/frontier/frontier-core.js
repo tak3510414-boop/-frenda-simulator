@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.36 / world structure Ver3 + future expansion planning core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.37 / world structure Ver4 + future expansion planning core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -58,6 +58,17 @@ F.setTownAreaTestState=(id,state)=>F.mutateSave(s=>{if(!F.areaDef?.(id))throw ne
 F.resetTownAreaTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest={states:{}}});
 F.areaConnections=id=>(F.AREA_CONNECTION_DEFS||[]).filter(c=>c.a===id||c.b===id);
 F.areaNeighbors=id=>F.areaConnections(id).map(c=>{const other=c.a===id?c.b:c.a;return {areaId:other,area:F.areaDef?.(other),connection:c,fromPort:c.a===id?c.aPort:c.bPort,toPort:c.a===id?c.bPort:c.aPort}});
+// Ver0.37: 接続ごとの移動方式を共通化。隣接は歩行、自動境界切替。遠距離は将来の移動拠点から選択式。
+F.connectionTravelInfo=c=>{
+ const kind=F.connectionKind?.(c?.kind)||{},raw=c?.travel||{},modeId=raw.mode||kind.defaultMode||"walk",mode=F.travelMode?.(modeId)||F.travelMode?.("walk")||{};
+ return {mode:modeId,modeLabel:mode.label||modeId,modeIcon:mode.icon||"🚶",kind:c?.kind||"path",kindLabel:kind.label||c?.kind||"道",kindIcon:kind.icon||"▫️",autoTransition:raw.autoTransition!=null?!!raw.autoTransition:!!mode.autoTransition,fastTravel:raw.fastTravel!=null?!!raw.fastTravel:modeId==="fast",transition:kind.transition|| (modeId==="fast"?"select":"edge"),transitionMs:Number(kind.transitionMs)||260,seamlessLike:mode.seamlessLike!==false};
+};
+F.connectionBetween=(a,b)=>(F.AREA_CONNECTION_DEFS||[]).find(c=>(c.a===a&&c.b===b)||(c.a===b&&c.b===a))||null;
+F.connectionOpen=(s,c)=>{if(!c)return false;const sa=F.areaEffectiveState(s,c.a),sb=F.areaEffectiveState(s,c.b);return F.areaStateIndex(sa)>=F.areaStateIndex("usable")&&F.areaStateIndex(sb)>=F.areaStateIndex("usable")};
+F.areaTravelOptions=(s,fromAreaId)=>F.areaNeighbors(fromAreaId).map(n=>{const c=n.connection,ti=F.connectionTravelInfo(c),open=F.connectionOpen(s,c),to=F.areaDef?.(n.areaId);return {...n,open,travel:ti,toState:F.areaEffectiveState(s,n.areaId),sceneReady:["prototype","ready"].includes(to?.world?.sceneStatus||"")}});
+F.areaExitConnection=(s,areaId,exitId)=>{const area=F.areaDef?.(areaId),ex=(area?.nav?.exits||[]).find(x=>x.id===exitId);if(!ex)return null;const c=F.connectionBetween(areaId,ex.to);if(!c)return null;const ti=F.connectionTravelInfo(c);return {exit:ex,connection:c,travel:ti,target:F.areaDef?.(ex.to),open:F.connectionOpen(s,c)};};
+F.townExitAt=(s,x,y,areaId="core")=>{const area=F.areaDef?.(areaId);for(const ex of (area?.nav?.exits||[]))if(Number(x)>=ex.x&&Number(y)>=ex.y&&Number(x)<ex.x+ex.w&&Number(y)<ex.y+ex.h)return F.areaExitConnection(s,areaId,ex.id);return null};
+F.fastTravelOptions=s=>{const cur=s?.townWorld?.currentAreaId||"core",visited=new Set(s?.townWorld?.visitedAreas||["core"]);return (F.AREA_DEFS||[]).filter(a=>a.id!==cur&&visited.has(a.id)&&F.areaStateIndex(F.areaEffectiveState(s,a.id))>=F.areaStateIndex("usable")).filter(a=>!!a.world?.fastTravelNode).map(a=>({areaId:a.id,name:a.name,icon:a.icon||"🗺️",node:a.world.fastTravelNode}));};
 F.worldFutureExpansionCandidates=s=>{
  const areas=(F.AREA_DEFS||[]),occupied=new Set(areas.map(a=>`${Number(a.world?.gx)||0},${Number(a.world?.gy)||0}`)),vectors=F.WORLD_PORT_VECTOR||{},byCoord=new Map();
  for(const a of areas){
@@ -81,7 +92,7 @@ F.nextTownScaleTier=s=>{const cur=F.townScaleTier(s),tiers=F.TOWN_SCALE_TIERS||[
 F.areaPlanningInfo=d=>{const sc=F.areaSizeClass?.(d?.world?.sizeClass)||{},cap=Object.assign({},sc,d?.world?.capacity||{});return {sizeClass:d?.world?.sizeClass||"standard",sizeLabel:sc.label||"標準区画",terrainTags:[...(d?.world?.terrainTags||[])],travelCost:Number(d?.world?.travelCost)||1,capacity:{facilitySlots:Number(cap.facilitySlots)||0,landmarkSlots:Number(cap.landmarkSlots)||0,residentCapacity:Number(cap.residentCapacity)||0},traffic:cap.traffic||sc.traffic||"medium"}};
 F.worldMapModel=s=>{
  const areas=(F.AREA_DEFS||[]).map(d=>{const plan=F.areaPlanningInfo(d);return {id:d.id,name:d.name,icon:d.icon||"🗺️",gx:Number(d.world?.gx)||0,gy:Number(d.world?.gy)||0,role:d.world?.role||"expansion",sceneStatus:d.world?.sceneStatus||"planned",futurePorts:[...(d.world?.futurePorts||[])],theme:d.world?.theme||"generic",growth:d.world?.growth||"branch",state:F.areaEffectiveState(s,d.id),actualState:F.areaState(s,d.id),tags:[...(d.tags||[])],description:d.description||"",...plan,expansionProfiles:Object.assign({},d.world?.expansionProfiles||{})}});
- const connections=(F.AREA_CONNECTION_DEFS||[]).filter(c=>areas.some(a=>a.id===c.a)&&areas.some(a=>a.id===c.b)).map(c=>{const sa=F.areaEffectiveState(s,c.a),sb=F.areaEffectiveState(s,c.b),open=F.areaStateIndex(sa)>=3&&F.areaStateIndex(sb)>=3;return {...c,open,aState:sa,bState:sb,travelCost:Number(c.travelCost)||1}});
+ const connections=(F.AREA_CONNECTION_DEFS||[]).filter(c=>areas.some(a=>a.id===c.a)&&areas.some(a=>a.id===c.b)).map(c=>{const sa=F.areaEffectiveState(s,c.a),sb=F.areaEffectiveState(s,c.b),open=F.connectionOpen(s,c),travel=F.connectionTravelInfo(c);return {...c,open,aState:sa,bState:sb,travelCost:Number(c.travelCost)||1,travel}});
  return {definition:F.TOWN_WORLD_DEF||{},policy:F.TOWN_SCENE_POLICY||{},areas,connections,future:F.worldFutureExpansionCandidates(s),scale:F.townScaleTier(s),nextScale:F.nextTownScaleTier(s),currentAreaId:s?.townWorld?.currentAreaId||s?.townMovement?.areaId||"core"};
 };
 F.worldMapStats=s=>{const m=F.worldMapModel(s),all=[...m.areas,...m.future],xs=all.map(a=>a.gx),ys=all.map(a=>a.gy),capacity=m.areas.reduce((o,a)=>{o.facilitySlots+=Number(a.capacity?.facilitySlots)||0;o.landmarkSlots+=Number(a.capacity?.landmarkSlots)||0;o.residentCapacity+=Number(a.capacity?.residentCapacity)||0;return o},{facilitySlots:0,landmarkSlots:0,residentCapacity:0});return {areas:m.areas.length,connections:m.connections.length,future:m.future.length,minX:Math.min(...xs,0),maxX:Math.max(...xs,0),minY:Math.min(...ys,0),maxY:Math.max(...ys,0),planned:m.areas.filter(a=>a.sceneStatus!=="ready").length,scale:m.scale?.label||"開拓地",capacity}};
@@ -193,7 +204,7 @@ function navCollect(s){
  const blocks=[...(base.blocks||[])],walk=[...(base.walk||[])],interactions=[...(base.interactions||[])],entrances=[],npcWaypoints=[...(base.npcWaypoints||[])];
  for(const x of states){const n=x.def.nav;if(!n)continue;blocks.push(...(n.blocks||[]));walk.push(...(n.walk||[]));interactions.push(...(n.interactions||[]));entrances.push(...(n.entrances||[]));npcWaypoints.push(...(n.npcWaypoints||[]))}
  for(const pr of F.townProjects(s)){const site=F.facilitySite?.(pr.facilityId),def=(F.FACILITY_DEFS||[]).find(d=>d.id===pr.facilityId),ph=F.constructionPhase(pr);if(!site||site.areaId!=="core")continue;const navPhase=F.CONSTRUCTION_NAV_PHASES?.[ph?.id]||{inset:8},inset=Math.max(0,Number(navPhase.inset)||0);blocks.push({shape:"rect",v:[site.x+inset,site.y+inset,Math.max(10,site.w-inset*2),Math.max(10,site.h-inset*2)],reason:`construction:${pr.facilityId}:${ph?.id||"phase"}`});interactions.push({id:`construction_${pr.facilityId}`,type:"construction",label:`${def?.name||pr.facilityId} ${ph?.label||"工事中"}`,x:site.entrance?.x||site.x+site.w/2,y:site.entrance?.y||site.y+site.h,r:55,facilityId:pr.facilityId})}
- const exits=(area?.nav?.exits||[]).map(e=>({...e,targetState:F.areaEffectiveState(s,e.to),open:F.areaStateIndex(F.areaEffectiveState(s,e.to))>=F.areaStateIndex("usable")}));
+ const exits=(area?.nav?.exits||[]).map(e=>{const route=F.areaExitConnection?.(s,area.id,e.id),ti=route?.travel||{};return {...e,targetState:F.areaEffectiveState(s,e.to),open:!!route?.open,connectionId:route?.connection?.id||null,travelMode:ti.mode||"walk",connectionKind:route?.connection?.kind||"path",autoTransition:!!ti.autoTransition}});
  const uniq=a=>Array.from(new Map(a.map(x=>[x.id||JSON.stringify(x),x])).values());
  return {areaId:"core",area,base,states,blocks,walk,interactions:uniq(interactions),entrances:uniq(entrances),npcWaypoints:uniq(npcWaypoints),exits};
 }

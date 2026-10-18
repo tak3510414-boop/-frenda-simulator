@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.36 / world structure Ver3 + scalable area planning architecture / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.37 / world structure Ver4 + scalable area planning architecture / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.36";
+F.VERSION="0.37";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -76,21 +76,21 @@ F.FACILITY_DEFS=Object.freeze([
 ]);
 
 
-// Ver0.36: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
+// Ver0.37: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
 // ここで固定するのはエリアの役割・地形特性・接続能力・収容量など。道路や建物のピクセル座標はまだ固定しない。
 F.TOWN_WORLD_DEF=Object.freeze({
  id:"frontier_town",layoutRevision:3,status:"planning",startArea:"core",coordinateMode:"logical-grid",
  sceneMode:"connected-area-stream",transitionMode:"edge-gate",preloadNeighbors:1,hardAreaLimit:null,
- extensible:true,structureVersion:3,
- description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。"
+ extensible:true,structureVersion:4,
+ description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。隣接地区は歩行接続、遠距離は選択式高速移動を基本とする。"
 });
 F.TOWN_SCENE_POLICY=Object.freeze({
  mode:"connected-area-stream",localSceneDefault:{w:717,h:842},preloadNeighborDepth:1,
  unloadDistantScenes:true,keepLogicalState:true,transition:"edge-gate",
- note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。将来エリア追加で既存実マップを作り直さない。"
+ note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
 });
 
-// Ver0.36: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
+// Ver0.37: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
 F.AREA_SIZE_CLASSES=Object.freeze({
  compact:{id:"compact",label:"小区画",icon:"▫️",sceneScale:0.78,facilitySlots:3,landmarkSlots:0,residentCapacity:5,traffic:"low"},
  standard:{id:"standard",label:"標準区画",icon:"◻️",sceneScale:1.00,facilitySlots:5,landmarkSlots:1,residentCapacity:10,traffic:"medium"},
@@ -99,7 +99,7 @@ F.AREA_SIZE_CLASSES=Object.freeze({
 });
 F.areaSizeClass=id=>F.AREA_SIZE_CLASSES?.[id]||F.AREA_SIZE_CLASSES?.standard||null;
 
-// Ver0.36: 将来の「未知のエリア」は、個別名称を本体へベタ書きせずテンプレートから生成する。
+// Ver0.37: 将来の「未知のエリア」は、個別名称を本体へベタ書きせずテンプレートから生成する。
 // 追加コンテンツではここへテンプレートを足せば、既存町から自然に接続候補を出せる。
 F.EXPANSION_TEMPLATE_DEFS=Object.freeze([
  {id:"deep_forest",name:"深い森",icon:"🌳",sizeClass:"wide",terrainTags:["forest","nature","gathering"],facilityTags:["adventure","gathering","ranch"],travelCost:2,capacity:{facilitySlots:5,landmarkSlots:1},unlockHint:"森側の開拓と探索を進める"},
@@ -123,12 +123,32 @@ F.TOWN_SCALE_TIERS=Object.freeze([
  {id:"city",label:"交易都市",icon:"🌇",minUsable:12,minPoints:130}
 ]);
 F.WORLD_PORT_VECTOR=Object.freeze({north:[0,-1],south:[0,1],east:[1,0],west:[-1,0],ne:[1,-1],nw:[-1,-1],se:[1,1],sw:[-1,1]});
+// Ver0.37: エリア間移動は「隣接=歩行による疑似シームレス」「遠距離=選択式高速移動」を正式基準にする。
+// 見た目の接続種別と、実際の移動方式を分離しておくことで、将来 馬車・船・転送などを追加しても既存エリア定義を作り直さない。
+F.TRAVEL_MODE_DEFS=Object.freeze({
+ walk:{id:"walk",label:"歩行接続",icon:"🚶",selection:false,autoTransition:true,seamlessLike:true},
+ fast:{id:"fast",label:"高速移動",icon:"⚡",selection:true,autoTransition:false,seamlessLike:false}
+});
+F.CONNECTION_KIND_DEFS=Object.freeze({
+ forest_path:{id:"forest_path",label:"森道",icon:"🌲",defaultMode:"walk",transition:"edge",transitionMs:260},
+ road:{id:"road",label:"街道",icon:"🛣️",defaultMode:"walk",transition:"edge",transitionMs:220},
+ bridge:{id:"bridge",label:"橋",icon:"🌉",defaultMode:"walk",transition:"edge",transitionMs:280},
+ stairs:{id:"stairs",label:"階段・坂道",icon:"🪜",defaultMode:"walk",transition:"edge",transitionMs:300},
+ coach:{id:"coach",label:"馬車",icon:"🛞",defaultMode:"fast",transition:"select",transitionMs:450},
+ boat:{id:"boat",label:"船",icon:"⛵",defaultMode:"fast",transition:"select",transitionMs:520}
+});
+F.FAST_TRAVEL_POLICY=Object.freeze({
+ enabled:true,unlockRule:"visited-and-node",destinationRule:"visited-and-usable",requiresSelection:true,
+ note:"町内の隣接地区は歩行。町が大きくなった後の遠距離だけ、馬車・船などの移動拠点から目的地を選ぶ。"
+});
 F.AREA_CONNECTION_DEFS=Object.freeze([
- {id:"core_west",a:"core",aPort:"west",b:"west_forest",bPort:"east",kind:"forest_path",label:"森へ続く道",travelCost:1},
- {id:"core_south",a:"core",aPort:"south",b:"south_road",bPort:"north",kind:"road",label:"南の街道",travelCost:1},
- {id:"core_east",a:"core",aPort:"east",b:"east_riverside",bPort:"west",kind:"bridge",label:"川辺への道",travelCost:1},
- {id:"core_north",a:"core",aPort:"north",b:"north_highland",bPort:"south",kind:"stairs",label:"高台への道",travelCost:2}
+ {id:"core_west",a:"core",aPort:"west",b:"west_forest",bPort:"east",kind:"forest_path",label:"森へ続く道",travelCost:1,travel:{mode:"walk",autoTransition:true,fastTravel:false}},
+ {id:"core_south",a:"core",aPort:"south",b:"south_road",bPort:"north",kind:"road",label:"南の街道",travelCost:1,travel:{mode:"walk",autoTransition:true,fastTravel:false}},
+ {id:"core_east",a:"core",aPort:"east",b:"east_riverside",bPort:"west",kind:"bridge",label:"川辺への道",travelCost:1,travel:{mode:"walk",autoTransition:true,fastTravel:false}},
+ {id:"core_north",a:"core",aPort:"north",b:"north_highland",bPort:"south",kind:"stairs",label:"高台への道",travelCost:2,travel:{mode:"walk",autoTransition:true,fastTravel:false}}
 ]);
+F.connectionKind=id=>F.CONNECTION_KIND_DEFS?.[id]||null;
+F.travelMode=id=>F.TRAVEL_MODE_DEFS?.[id]||null;
 
 F.AREA_STATE_ORDER=Object.freeze(["locked","discovered","clearing","usable","developed"]);
 F.AREA_STATE_INFO=Object.freeze({
