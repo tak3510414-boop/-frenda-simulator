@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.29 / movement-ready town navigation + expandable layers / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.30 / precise town collision + tap-to-walk player movement / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.29";
+F.VERSION="0.30";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -56,7 +56,7 @@ F.AREA_STATE_INFO=Object.freeze({
  usable:{label:"利用可能",icon:"🚶"}, developed:{label:"整備済み",icon:"🏘️"}
 });
 F.AREA_DEFS=Object.freeze([
- {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。",transitions:{},nav:{scene:{w:717,h:842,cell:18},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:395},exits:[
+ {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},exits:[
    {id:"west",to:"west_forest",x:0,y:260,w:44,h:170,entry:{x:55,y:345}},
    {id:"south",to:"south_road",x:170,y:742,w:190,h:100,entry:{x:265,y:725}},
    {id:"east",to:"east_riverside",x:548,y:355,w:42,h:185,entry:{x:530,y:445}},
@@ -76,30 +76,39 @@ F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
 // Ver0.28: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
 // TEST画面はこの定義をそのまま列挙する。asset は major/detail のどちらのアトラスを使うかを示す。
 F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front"]);
-// Ver0.29: 見た目と移動判定を同じ町データから生成する。画像解析は行わない。
+// Ver0.30: 見た目と移動判定を同じ町データから生成する。画像解析は行わない。
 // shape: rect=[x,y,w,h] / circle=[cx,cy,r]。walk は block より後に再開放する。
 F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
  player:{radius:10,step:"walk"},partner:{radius:8,step:"follow",followDistance:34},npc:{radius:9,step:"routine"}
 });
 F.TOWN_NAV_BASE=Object.freeze({
  areaId:"core",defaultWalkable:true,
+ // Ver0.30: 初期開拓地の実景観に合わせて障害物を細分化。
+ // 大きな矩形1枚ではなく、小屋・露店・焚き火・資材・川岸などを別判定にする。
  blocks:[
-   {shape:"rect",v:[0,0,48,842],reason:"forest"},{shape:"rect",v:[555,0,35,842],reason:"forest"},
-   {shape:"rect",v:[0,0,590,48],reason:"forest"},
+   {shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_edge"},
+   {shape:"rect",v:[0,0,590,35],reason:"north_forest"},
    {shape:"rect",v:[0,630,590,212],reason:"river"},
-   {shape:"rect",v:[55,85,275,220],reason:"starter_shop"},
-   {shape:"circle",v:[548,275,62],reason:"campfire"},
-   {shape:"rect",v:[70,430,125,55],reason:"logs"},{shape:"rect",v:[455,438,85,70],reason:"sign"}
+   {shape:"poly",v:[[72,110],[275,110],[315,155],[315,315],[92,325],[55,265]],reason:"starter_shop"},
+   {shape:"poly",v:[[278,50],[455,55],[470,205],[430,245],[275,235]],reason:"starter_hut"},
+   {shape:"circle",v:[505,282,43],reason:"campfire"},
+   {shape:"rect",v:[70,430,125,48],reason:"logs_west"},{shape:"circle",v:[207,485,26],reason:"stump_west"},
+   {shape:"rect",v:[472,430,62,58],reason:"sign_east"},{shape:"rect",v:[506,520,84,115],reason:"tent_east"},
+   {shape:"circle",v:[462,355,18],reason:"rock_mid"},{shape:"circle",v:[250,515,20],reason:"rock_southwest"}
  ],
  walk:[
-   {shape:"rect",v:[176,585,190,170],reason:"bridge"},{shape:"rect",v:[185,720,170,122],reason:"south_path"},
-   {shape:"rect",v:[445,0,85,95],reason:"north_path"}
+   {shape:"poly",v:[[176,585],[360,585],[365,720],[335,755],[185,755],[165,700]],reason:"bridge"},
+   {shape:"rect",v:[185,720,170,122],reason:"south_path"},
+   {shape:"poly",v:[[426,0],[535,0],[520,115],[450,125],[420,70]],reason:"north_path"}
  ],
  interactions:[
-   {id:"starter_shop",type:"facility",label:"露店",x:300,y:305,r:42,facilityId:"shop"},
-   {id:"campfire",type:"scenery",label:"焚き火",x:505,y:345,r:34}
+   {id:"starter_shop",type:"facility",label:"露店",x:255,y:320,r:55,facilityId:"shop"},
+   {id:"campfire",type:"scenery",label:"焚き火",x:470,y:350,r:42}
  ],
- npcWaypoints:[{id:"plaza",x:350,y:400},{id:"shop_front",x:300,y:325},{id:"bridge_north",x:270,y:610},{id:"camp",x:475,y:370}]
+ npcWaypoints:[
+   {id:"center",x:350,y:470},{id:"shop_front",x:275,y:350},{id:"bridge_north",x:270,y:600},
+   {id:"camp",x:455,y:365},{id:"north_path",x:475,y:135},{id:"south_path",x:270,y:585}
+ ]
 });
 // Ver0.28: 描画順は z 値だけに依存せず band（地面→施設→低い小物→人物→前景）で固定する。
 // これにより、将来レイヤーが増えても道・石畳などが人物の上に描画される事故を防ぐ。
@@ -119,7 +128,7 @@ F.TOWN_LAYER_DEFS=Object.freeze([
  {id:"market",group:"施設",nav:{blocks:[{shape:"rect",v:[448,315,118,110],reason:"market_stall"}],interactions:[{id:"market",type:"facility",label:"市場",x:432,y:420,r:44,facilityId:"market"}]},label:"市場 Lv1（施設本体）",icon:"🧺",kind:"atlas",asset:"facility",band:"structure",z:36,facilityId:"market",auto:{type:"facilityGte",facilityId:"market",value:1},atlas:{sx:690,sy:325,sw:160,sh:300,dx:425,dy:290,dw:160,dh:300}},
 
  {id:"shop_goods",group:"商業",label:"4pt 露店の商品・箱が増える",icon:"📦",kind:"atlas",asset:"detail",band:"low",z:10,auto:{type:"pointsGte",value:4},atlas:{sx:58,sy:4,sw:100,sh:70,dx:80,dy:280,dw:100,dh:70}},
- {id:"fence_basic",group:"生活基盤",nav:{blocks:[{shape:"rect",v:[250,404,205,20],reason:"fence"}]},label:"8pt 簡素な柵が増える",icon:"🪵",kind:"atlas",asset:"detail",band:"low",z:12,auto:{type:"pointsGte",value:8},atlas:{sx:480,sy:4,sw:210,sh:80,dx:245,dy:390,dw:210,dh:80}},
+ {id:"fence_basic",group:"生活基盤",nav:{blocks:[{shape:"rect",v:[245,404,72,20],reason:"fence_west"},{shape:"rect",v:[392,404,63,20],reason:"fence_east"}]},label:"8pt 簡素な柵が増える",icon:"🪵",kind:"atlas",asset:"detail",band:"low",z:12,auto:{type:"pointsGte",value:8},atlas:{sx:480,sy:4,sw:210,sh:80,dx:245,dy:390,dw:210,dh:80}},
  {id:"flowers",group:"装飾・明かり",label:"14pt 小さな花壇ができる",icon:"🌼",kind:"atlas",asset:"detail",band:"low",z:14,auto:{type:"pointsGte",value:14},atlas:{sx:336,sy:238,sw:250,sh:100,dx:245,dy:325,dw:250,dh:100}},
  {id:"benches",group:"生活基盤",nav:{blocks:[{shape:"rect",v:[245,445,85,28],reason:"bench"},{shape:"rect",v:[400,445,85,28],reason:"bench"}]},label:"22pt ベンチが置かれる",icon:"🪑",kind:"atlas",asset:"detail",band:"low",z:16,auto:{type:"pointsGte",value:22},atlas:{sx:362,sy:502,sw:270,sh:70,dx:225,dy:430,dw:270,dh:70}},
  {id:"plaza_fountain",group:"町並み",nav:{blocks:[{shape:"circle",v:[370,350,58],reason:"fountain"}],interactions:[{id:"fountain",type:"scenery",label:"噴水",x:370,y:420,r:48}]},label:"24pt以降：広場の噴水",icon:"⛲",kind:"atlas",asset:"detail",band:"low",z:18,facilityId:"plaza",auto:{type:"all",rules:[{type:"pointsGte",value:24},{type:"facilityGte",facilityId:"plaza",value:1}]},atlas:{sx:238,sy:502,sw:120,sh:100,dx:310,dy:300,dw:120,dh:100}},

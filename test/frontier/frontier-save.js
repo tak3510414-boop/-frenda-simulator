@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.29 / navigation-ready save + area/facility masters / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.30 / persistent town movement + navigation-ready save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -7,12 +7,12 @@ const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))o
 const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
 const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
 F.freshSave=()=>({
- schemaVersion:4,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
+ schemaVersion:5,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
  partnerId:null,warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
- history:[],settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false}}
+ history:[],townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}},settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false}}
 });
 function inferPriority(t){
  if(t?.priority&&["standard","commerce","forge","life","adventure"].includes(t.priority))return t.priority;
@@ -76,9 +76,14 @@ F.normalizeSave=s=>{
  s.settings.townAreaTest.states=s.settings.townAreaTest.states&&typeof s.settings.townAreaTest.states==="object"?s.settings.townAreaTest.states:{};
  s.settings.townNavTest=s.settings.townNavTest&&typeof s.settings.townNavTest==="object"?s.settings.townNavTest:{overlay:false};
  s.settings.townNavTest.overlay=!!s.settings.townNavTest.overlay;
+ s.townMovement=s.townMovement&&typeof s.townMovement==="object"?s.townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}};
+ s.townMovement.areaId=F.areaDef?.(s.townMovement.areaId)?s.townMovement.areaId:"core";
+ const num=(v,d)=>Number.isFinite(Number(v))?Number(v):d;
+ s.townMovement.player={x:num(s.townMovement.player?.x,350),y:num(s.townMovement.player?.y,475)};
+ s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=4;
+ s.schemaVersion=5;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
