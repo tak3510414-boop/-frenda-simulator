@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.28 / expandable town areas + exclusive layers / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.29 / layer-driven collision + expandable town areas / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -113,6 +113,36 @@ F.setTownLayerTestPreset=preset=>F.mutateSave(s=>{if(!["auto","custom","off","ma
 F.setAllTownLayerTestModes=mode=>{const map={auto:"auto",off:"off",on:"max",raw:"raw"};if(!map[mode])throw new Error("不正なレイヤー指定です。");return F.setTownLayerTestPreset(map[mode])};
 
 
+// Ver0.29: 町の見た目レイヤーと同じ定義から通行判定を生成する。
+// 将来の主人公・相棒・NPC移動は、このモデルを共通利用する。
+function navShapeContains(shape,x,y,pad=0){
+ if(!shape)return false;const v=shape.v||[],p=Math.max(0,Number(pad)||0);
+ if(shape.shape==="rect")return x>=v[0]-p&&y>=v[1]-p&&x<v[0]+v[2]+p&&y<v[1]+v[3]+p;
+ if(shape.shape==="circle"){const dx=x-v[0],dy=y-v[1],r=Number(v[2]||0)+p;return dx*dx+dy*dy<=r*r}
+ return false;
+}
+function navCollect(s){
+ const area=F.areaDef?.("core"),base=F.TOWN_NAV_BASE||{},states=F.townLayerStates(s).filter(x=>x.effective);
+ const blocks=[...(base.blocks||[])],walk=[...(base.walk||[])],interactions=[...(base.interactions||[])],entrances=[],npcWaypoints=[...(base.npcWaypoints||[])];
+ for(const x of states){const n=x.def.nav;if(!n)continue;blocks.push(...(n.blocks||[]));walk.push(...(n.walk||[]));interactions.push(...(n.interactions||[]));entrances.push(...(n.entrances||[]));npcWaypoints.push(...(n.npcWaypoints||[]))}
+ const exits=(area?.nav?.exits||[]).map(e=>({...e,targetState:F.areaEffectiveState(s,e.to),open:F.areaStateIndex(F.areaEffectiveState(s,e.to))>=F.areaStateIndex("usable")}));
+ const uniq=a=>Array.from(new Map(a.map(x=>[x.id||JSON.stringify(x),x])).values());
+ return {areaId:"core",area,base,states,blocks,walk,interactions:uniq(interactions),entrances:uniq(entrances),npcWaypoints:uniq(npcWaypoints),exits};
+}
+F.townNavModel=(s,actor="player")=>{
+ const n=navCollect(s),profile=typeof actor==="string"?(F.TOWN_ACTOR_NAV_PROFILES?.[actor]||F.TOWN_ACTOR_NAV_PROFILES?.player||{}):(actor||{}),pad=Math.max(0,Number(profile.radius)||0),scene=n.area?.nav?.scene||{w:717,h:842,cell:18},wr=n.area?.nav?.worldRect||{x:0,y:0,w:scene.w,h:scene.h},cell=Math.max(8,Number(scene.cell)||18);
+ const cols=Math.ceil(scene.w/cell),rows=Math.ceil(scene.h/cell),grid=Array.from({length:rows},()=>Array(cols).fill(false));
+ const blockedReasons=new Map();
+ for(let gy=0;gy<rows;gy++)for(let gx=0;gx<cols;gx++){const x=gx*cell+cell/2,y=gy*cell+cell/2;let ok=!!n.base.defaultWalkable&&x>=wr.x&&y>=wr.y&&x<wr.x+wr.w&&y<wr.y+wr.h;let reason=ok?"":"outside";for(const sh of n.blocks)if(navShapeContains(sh,x,y,pad)){ok=false;reason=sh.reason||"blocked"}for(const sh of n.walk)if(navShapeContains(sh,x,y,0)){ok=true;reason=""}for(const ex of n.exits)if(!ex.open&&x>=ex.x&&y>=ex.y&&x<ex.x+ex.w&&y<ex.y+ex.h){ok=false;reason=`gate:${ex.to}`}grid[gy][gx]=ok;if(reason)blockedReasons.set(`${gx},${gy}`,reason)}
+ return {...n,actorProfile:profile,scene,worldRect:wr,cell,cols,rows,grid,blockedReasons,spawn:n.area?.nav?.spawn||{x:350,y:395}};
+};
+F.townPointWalkable=(s,x,y,actor="player")=>{const m=F.townNavModel(s,actor),gx=Math.floor(Number(x)/m.cell),gy=Math.floor(Number(y)/m.cell);return !!m.grid?.[gy]?.[gx]};
+F.townFindPath=(s,from,to,actor="player")=>{const m=F.townNavModel(s,actor),sx=Math.floor(from.x/m.cell),sy=Math.floor(from.y/m.cell),tx=Math.floor(to.x/m.cell),ty=Math.floor(to.y/m.cell),k=(x,y)=>`${x},${y}`;if(!m.grid?.[sy]?.[sx]||!m.grid?.[ty]?.[tx])return[];const q=[[sx,sy]],prev=new Map([[k(sx,sy),null]]);while(q.length){const [x,y]=q.shift();if(x===tx&&y===ty)break;for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy,nk=k(nx,ny);if(!m.grid?.[ny]?.[nx]||prev.has(nk))continue;prev.set(nk,[x,y]);q.push([nx,ny])}}if(!prev.has(k(tx,ty)))return[];const out=[];let cur=[tx,ty];while(cur){out.push({x:cur[0]*m.cell+m.cell/2,y:cur[1]*m.cell+m.cell/2});cur=prev.get(k(cur[0],cur[1]))}return out.reverse()};
+F.townNearestInteraction=(s,x,y,maxR=70)=>{const m=F.townNavModel(s);return m.interactions.map(it=>({...it,d:Math.hypot(Number(it.x)-x,Number(it.y)-y)})).filter(it=>it.d<=Math.max(maxR,Number(it.r)||0)).sort((a,b)=>a.d-b.d)[0]||null};
+F.townNavStats=(s,actor="player")=>{const m=F.townNavModel(s,actor),all=m.cols*m.rows,walk=m.grid.reduce((n,row)=>n+row.filter(Boolean).length,0);return {cells:all,walkable:walk,blocked:all-walk,walkableRate:all?Math.round(walk/all*100):0,interactions:m.interactions.length,entrances:m.entrances.length,openExits:m.exits.filter(e=>e.open).length,totalExits:m.exits.length}};
+F.setTownNavTestOverlay=on=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townNavTest=s.settings.townNavTest||{};s.settings.townNavTest.overlay=!!on;});
+F.townNavTestOverlay=s=>!!s?.settings?.townNavTest?.overlay;
+
 F.storyStep=s=>s.story?.rumor?4:s.story?.firstSale?3:s.story?.firstReturn?2:s.partnerId?1:0;
 F.goal=s=>{
  if(!s.partnerId)return {text:"まずは、一緒に冒険する相棒ポケモンを選ぼう！",hints:["所持ピックのうち★3以下から選べるよ。","『拠点』の相棒一覧から1体をタップしよう。"]};
@@ -120,7 +150,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.28ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.29ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 
