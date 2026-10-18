@@ -1,9 +1,9 @@
-# Frenda Frontier Ver0.16（TEST）
+# Frenda Frontier Ver0.17（TEST）
 
 配置先：`/test/frontier/`
 
 ## 今回の基準変更
-Ver0.16では、Ver0.13の町をさらに描き直しました。建物の屋根・壁・窓・扉・看板、石畳の揺らぎ、樹木・植栽、噴水、街灯、ベンチ、露店、箱・樽、NPCスプライトの密度と陰影を強化し、「平面の配置図」よりも見下ろし型RPGの町として読めることを優先しています。家・店・冒険はVer0.13の機能を維持しています。
+Ver0.17では、Ver0.13の町をさらに描き直しました。建物の屋根・壁・窓・扉・看板、石畳の揺らぎ、樹木・植栽、噴水、街灯、ベンチ、露店、箱・樽、NPCスプライトの密度と陰影を強化し、「平面の配置図」よりも見下ろし型RPGの町として読めることを優先しています。家・店・冒険はVer0.13の機能を維持しています。
 
 従来のCSS/SVGで大きな図形を組み立てる方式をやめ、低解像度Canvasへタイル・建物・家具・人物を描画し、ブラウザ側でピクセル等倍拡大する方式へ変更しています。
 
@@ -22,7 +22,7 @@ Ver0.16では、Ver0.13の町をさらに描き直しました。建物の屋根
 - `frontier-render.js`
 - `frontier-ui.js`
 
-## Ver0.16で遊べる範囲
+## Ver0.17で遊べる範囲
 - 所持ピックから★3以下の相棒を選択
 - TEST環境で対象所持ピックが無い場合のみ体験用相棒を表示
 - 「はじまりの森」全3階のターン制探索
@@ -40,3 +40,11 @@ Frontierは専用保存キー `frenda:frontier:v1` を使用します。
 
 ## 今後の拡張前提
 今回のタイルマップ描画を基準に、歩行アニメーション、町人の移動、建物への出入り、店の来客アニメーション、複数ダンジョン、クラフト、住民・建築等を追加できる構造にしています。
+
+## Ver0.17 visual-game integration
+- `assets/town-visual.png` / `house-visual.png` / `store-visual.png` are the high-density scene artworks used directly as playable screens.
+- The visible command panels inside those scene artworks have transparent HTML hit areas layered over them, so the screen itself works as the controller.
+- Town: 話す / 家へ / 相棒 / 冒険 / お店 / 物語
+- House: 町へ / 相棒 / 倉庫 / 物語 / 冒険
+- Store: 棚1 / 棚2 / 棚3 / ねだん / 営業 / 倉庫
+- Adventure keeps the existing interactive dungeon renderer so movement/combat logic remains testable.
