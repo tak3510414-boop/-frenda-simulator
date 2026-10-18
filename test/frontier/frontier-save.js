@@ -1,18 +1,63 @@
-/* Frenda Frontier Ver0.23 / isolated save / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.25 / isolated + facility-master compatible save / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
 const now=()=>new Date().toISOString();
+const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=Number(d.startLevel)||0;return out};
 F.freshSave=()=>({
- schemaVersion:1,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
+ schemaVersion:2,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
  partnerId:null,warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
- reputation:{adventure:0,rare:0,fair:0,pokemon:0},development:{points:0,stage:0,town:{shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:[]}},
+ reputation:{adventure:0,rare:0,fair:0,pokemon:0},
+ development:{points:0,stage:0,town:{facilities:defaultFacilities(),priority:"standard",order:[],shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
  history:[],settings:{hintLevel:1,townLayerTest:{layers:{}}}
 });
-F.normalizeSave=s=>{const base=F.freshSave();if(!s||typeof s!=="object")return base;s=Object.assign(base,s);s.warehouse=s.warehouse&&typeof s.warehouse==="object"?s.warehouse:{};s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,3):[null,null,null];while(s.shelves.length<3)s.shelves.push(null);s.sales=Object.assign(base.sales,s.sales||{});s.reputation=Object.assign(base.reputation,s.reputation||{});s.development=Object.assign(base.development,s.development||{});s.development.town=Object.assign(base.development.town,(s.development&&s.development.town)||{});s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order.slice(-20):[];s.story=Object.assign(base.story,s.story||{});s.history=Array.isArray(s.history)?s.history.slice(-80):[];s.settings=Object.assign(base.settings,s.settings||{});s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{}};s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};return s};
+function inferPriority(t){
+ if(t?.priority&&["standard","commerce","forge","life","adventure"].includes(t.priority))return t.priority;
+ const order=Array.isArray(t?.order)?t.order:[];
+ for(const id of order){if(/^shop/.test(id)||/^market/.test(id))return "commerce";if(/^forge/.test(id))return "forge";if(/^house/.test(id))return "life";if(/^adventure_board/.test(id))return "adventure"}
+ return "standard";
+}
+function migrateFacilities(t){
+ const facilities=Object.assign(defaultFacilities(),t?.facilities||{});
+ // Ver0.24以前の保存値を新しい汎用facility mapへ移す。
+ facilities.shop=Math.max(Number(facilities.shop)||0,Number(t?.shopLevel)||1);
+ if(t?.forgeBuilt)facilities.forge=Math.max(Number(facilities.forge)||0,1);
+ if(t?.houseBuilt)facilities.house=Math.max(Number(facilities.house)||0,1);
+ if(t?.marketBuilt)facilities.market=Math.max(Number(facilities.market)||0,1);
+ if(t?.plazaBuilt)facilities.plaza=Math.max(Number(facilities.plaza)||0,1);
+ for(const d of (F.FACILITY_DEFS||[])){
+   const max=Math.max(0,Number(d.maxLevel)||0);facilities[d.id]=Math.max(0,Math.min(max,Number(facilities[d.id])||0));
+ }
+ return facilities;
+}
+F.normalizeSave=s=>{
+ const base=F.freshSave();if(!s||typeof s!=="object")return base;
+ s=Object.assign(base,s);
+ s.warehouse=s.warehouse&&typeof s.warehouse==="object"?s.warehouse:{};
+ s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,3):[null,null,null];while(s.shelves.length<3)s.shelves.push(null);
+ s.sales=Object.assign(base.sales,s.sales||{});s.reputation=Object.assign(base.reputation,s.reputation||{});
+ s.development=Object.assign(base.development,s.development||{});
+ const oldTown=(s.development&&s.development.town)||{};
+ s.development.town=Object.assign(base.development.town,oldTown);
+ s.development.town.order=Array.isArray(oldTown.order)?oldTown.order.slice(-40):[];
+ s.development.town.priority=inferPriority(s.development.town);
+ s.development.town.facilities=migrateFacilities(s.development.town);
+ // 旧コードとの互換用ミラー。今後の本体判定はfacilitiesを正本にする。
+ s.development.town.shopLevel=Math.max(1,Number(s.development.town.facilities.shop)||1);
+ s.development.town.forgeBuilt=(Number(s.development.town.facilities.forge)||0)>=1;
+ s.development.town.houseBuilt=(Number(s.development.town.facilities.house)||0)>=1;
+ s.development.town.marketBuilt=(Number(s.development.town.facilities.market)||0)>=1;
+ s.development.town.plazaBuilt=(Number(s.development.town.facilities.plaza)||0)>=1;
+ s.story=Object.assign(base.story,s.story||{});s.history=Array.isArray(s.history)?s.history.slice(-100):[];
+ s.settings=Object.assign(base.settings,s.settings||{});
+ s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{}};
+ s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};
+ s.schemaVersion=2;
+ return s;
+};
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
 F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();storage().setItem(F.SAVE_KEY,JSON.stringify(s));return s};
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
-F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>80)s.history=s.history.slice(-80)};
+F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();

@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.24 / playable core loop / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.25 / extensible town + playable core loop / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -15,43 +15,62 @@ F.stageInfo=stage=>[
  {name:"にぎやかな村",caption:"新しい店や住民が増えてきた",future:"鍛冶屋"}
 ][Math.max(0,Math.min(3,Number(stage)||0))];
 
-F.townState=s=>{const d=s?.development||{},t=d.town||{};return {shopLevel:Math.max(1,Number(t.shopLevel)||1),forgeBuilt:!!t.forgeBuilt,houseBuilt:!!t.houseBuilt,plazaBuilt:!!t.plazaBuilt,marketBuilt:!!t.marketBuilt,order:Array.isArray(t.order)?t.order:[]};};
-F.townOptions=s=>{const pts=Number(s?.development?.points)||0,t=F.townState(s),firstMajor=t.order.filter(x=>x==="shop2"||x==="forge").length===0,majorReq=firstMajor?4:8;return [
- {id:"shop2",name:"店を大きくする",desc:"露店まわりを少し整え、商品や設備を増やす。",need:majorReq,done:t.shopLevel>=2,icon:"🏪"},
- {id:"forge",name:"鍛冶屋を呼ぶ",desc:"町に鍛冶屋ができ、装備・修理系の発展につながる。",need:majorReq,done:t.forgeBuilt,icon:"⚒️"},
- {id:"house",name:"住居区画を整える",desc:"住民が暮らせる家が建ち、町の生活感が増える。",need:12,done:t.houseBuilt,icon:"🏠"},
- {id:"plaza",name:"広場を整備する",desc:"中央広場と噴水を整え、町の評判を高める。",need:16,done:t.plazaBuilt,icon:"⛲"},
- {id:"market",name:"市場を開く",desc:"露店や旅商人が集まり、町がさらににぎやかになる。",need:20,done:t.marketBuilt,icon:"🧺"}
-].map(x=>({...x,available:!x.done&&pts>=x.need}));};
-F.applyTownDevelopment=id=>F.mutateSave(s=>{s.development.town=s.development.town||{shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false,order:[]};const opt=F.townOptions(s).find(x=>x.id===id);if(!opt||opt.done)throw new Error("すでに発展済みです。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);if(id==="shop2")s.development.town.shopLevel=2;else if(id==="forge")s.development.town.forgeBuilt=true;else if(id==="house")s.development.town.houseBuilt=true;else if(id==="plaza")s.development.town.plazaBuilt=true;else if(id==="market")s.development.town.marketBuilt=true;s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order:[];s.development.town.order.push(id);F.addHistory(s,"development",`${opt.name}を選んだ。`);});
+F.townState=s=>{
+ const d=s?.development||{},t=d.town||{},fac=Object.assign({},t.facilities||{});
+ for(const def of (F.FACILITY_DEFS||[]))if(fac[def.id]==null)fac[def.id]=Number(def.startLevel)||0;
+ return {
+  facilities:fac,priority:["standard","commerce","forge","life","adventure"].includes(t.priority)?t.priority:"standard",
+  order:Array.isArray(t.order)?t.order:[],shopLevel:Math.max(1,Number(fac.shop)||1),forgeBuilt:Number(fac.forge||0)>=1,
+  houseBuilt:Number(fac.house||0)>=1,plazaBuilt:Number(fac.plaza||0)>=1,marketBuilt:Number(fac.market||0)>=1
+ };
+};
+F.facilityLevel=(s,id)=>Math.max(0,Number(F.townState(s).facilities?.[id])||0);
+F.townRoute=s=>F.townState(s).priority||"standard";
+F.townOptions=s=>{
+ const pts=Number(s?.development?.points)||0,t=F.townState(s),out=[];
+ for(const def of (F.FACILITY_DEFS||[])){
+   const cur=Math.max(0,Number(t.facilities?.[def.id])||0),next=cur+1,lv=def.levels?.[next];
+   if(!lv||next>Number(def.maxLevel||0))continue;
+   out.push({id:lv.actionId||`${def.id}${next}`,facilityId:def.id,targetLevel:next,name:lv.label||`${def.name} Lv${next}`,desc:lv.desc||'',need:Number(lv.need)||0,done:false,icon:def.icon||'🏗️',route:def.route||'standard',available:pts>=Number(lv.need||0)});
+ }
+ return out.sort((a,b)=>a.need-b.need||a.name.localeCompare(b.name,'ja'));
+};
+F.applyTownDevelopment=id=>F.mutateSave(s=>{
+ s.development.town=s.development.town||{};s.development.town.facilities=s.development.town.facilities||{};s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order:[];
+ const opt=F.townOptions(s).find(x=>x.id===id);if(!opt)throw new Error("この発展項目は現在選べません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);
+ const cur=Math.max(0,Number(s.development.town.facilities[opt.facilityId])||0);if(cur>=opt.targetLevel)throw new Error("すでに発展済みです。");
+ s.development.town.facilities[opt.facilityId]=opt.targetLevel;
+ if((s.development.town.priority||"standard")==="standard"&&opt.route&&opt.route!=="standard")s.development.town.priority=opt.route;
+ s.development.town.order.push(opt.id);
+ // 旧版との互換用ミラー
+ s.development.town.shopLevel=Math.max(1,Number(s.development.town.facilities.shop)||1);
+ s.development.town.forgeBuilt=Number(s.development.town.facilities.forge||0)>=1;s.development.town.houseBuilt=Number(s.development.town.facilities.house||0)>=1;
+ s.development.town.marketBuilt=Number(s.development.town.facilities.market||0)>=1;s.development.town.plazaBuilt=Number(s.development.town.facilities.plaza||0)>=1;
+ F.addHistory(s,"development",`${opt.name}を選んだ。`);
+});
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
-// Ver0.24 TEST専用：初期開拓地を固定ベースとし、追加レイヤーだけを個別指定する。通常の発展状態は変更しない。
-// mode = auto / on / off。未定義レイヤーは無視し、将来のレイヤー追加にも耐える。
-F.townLayerAutoState=(s,def)=>{
- if(!def)return false;if(def.kind==="base"||def.auto?.type==="always")return true;
- const t=F.townState(s),a=def.auto||{};
- if(a.type==="fieldTrue")return !!t[a.field];
- if(a.type==="fieldGte")return Number(t[a.field]||0)>=Number(a.value||0);
+
+// Ver0.25 TEST専用：レイヤー定義に書かれた汎用ルールを評価する。
+// 新しい施設や景観レイヤーを追加しても、ここに施設名ごとの分岐を増やさない。
+function evalLayerRule(s,rule){
+ if(!rule)return false;const t=F.townState(s),pts=Number(s?.development?.points)||0,type=rule.type;
+ if(type==="always")return true;
+ if(type==="pointsGte")return pts>=Number(rule.value||0);
+ if(type==="facilityGte")return Number(t.facilities?.[rule.facilityId]||0)>=Number(rule.value||0);
+ if(type==="routeIn")return (rule.values||[]).includes(F.townRoute(s));
+ if(type==="all")return (rule.rules||[]).every(r=>evalLayerRule(s,r));
+ if(type==="any")return (rule.rules||[]).some(r=>evalLayerRule(s,r));
+ // Ver0.24定義も読める互換ルール
+ if(type==="fieldTrue")return !!t[rule.field];
+ if(type==="fieldGte")return Number(t[rule.field]||0)>=Number(rule.value||0);
  return false;
-};
+}
+F.townLayerAutoState=(s,def)=>!!def&&(def.kind==="base"||evalLayerRule(s,def.auto));
 F.townLayerTestMode=(s,id)=>{const v=s?.settings?.townLayerTest?.layers?.[id];return v==="on"||v==="off"?v:"auto"};
-F.townLayerEffectiveState=(s,def)=>{
- const auto=F.townLayerAutoState(s,def);if(def?.locked)return auto;
- const mode=F.townLayerTestMode(s,def?.id);return mode==="on"?true:mode==="off"?false:auto;
-};
+F.townLayerEffectiveState=(s,def)=>{const auto=F.townLayerAutoState(s,def);if(def?.locked)return auto;const mode=F.townLayerTestMode(s,def?.id);return mode==="on"?true:mode==="off"?false:auto;};
 F.townLayerStates=s=>(F.TOWN_LAYER_DEFS||[]).map(def=>({def,auto:F.townLayerAutoState(s,def),mode:F.townLayerTestMode(s,def.id),effective:F.townLayerEffectiveState(s,def)}));
-F.setTownLayerTestMode=(id,mode)=>F.mutateSave(s=>{
- const def=(F.TOWN_LAYER_DEFS||[]).find(x=>x.id===id);if(!def||def.locked)return;
- if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");
- s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};s.settings.townLayerTest.layers=s.settings.townLayerTest.layers||{};
- if(mode==="auto")delete s.settings.townLayerTest.layers[id];else s.settings.townLayerTest.layers[id]=mode;
-});
-F.setAllTownLayerTestModes=mode=>F.mutateSave(s=>{
- if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");
- s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};const out={};
- if(mode!=="auto")for(const def of (F.TOWN_LAYER_DEFS||[]))if(!def.locked)out[def.id]=mode;
- s.settings.townLayerTest.layers=out;
-});
+F.setTownLayerTestMode=(id,mode)=>F.mutateSave(s=>{const def=(F.TOWN_LAYER_DEFS||[]).find(x=>x.id===id);if(!def||def.locked)return;if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};s.settings.townLayerTest.layers=s.settings.townLayerTest.layers||{};if(mode==="auto")delete s.settings.townLayerTest.layers[id];else s.settings.townLayerTest.layers[id]=mode;});
+F.setAllTownLayerTestModes=mode=>F.mutateSave(s=>{if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{}};const out={};if(mode!=="auto")for(const def of (F.TOWN_LAYER_DEFS||[]))if(!def.locked)out[def.id]=mode;s.settings.townLayerTest.layers=out;});
 
 
 F.storyStep=s=>s.story?.rumor?4:s.story?.firstSale?3:s.story?.firstReturn?2:s.partnerId?1:0;
@@ -61,7 +80,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.24ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.25ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 
