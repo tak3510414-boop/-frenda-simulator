@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.23 / static test data / Updated: 2026-10-18 */
+/* Frenda Frontier Ver0.24 / static test data / Updated: 2026-10-18 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.23";
+F.VERSION="0.24";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -15,7 +15,7 @@ F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
 ]);
 
-// Ver0.23: 町レイヤー定義。初期開拓地は「ベース」で、追加施設や町並みだけをレイヤー化する。
+// Ver0.24: 町レイヤー定義。初期開拓地は「ベース」で、追加施設や町並みだけをレイヤー化する。
 // TESTの「全部OFF」はベースのみ＝0pt相当の初期景観になる。UIはこの定義を列挙するため、
 // 将来レイヤーを追加してもTEST画面側の個別改修は不要。atlas は town-parts.png の切り出し情報。
 F.TOWN_LAYER_DEFS=Object.freeze([
