@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.31 / precise town collision + tap-to-walk player movement / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.32 / precise town collision + tap-to-walk player movement / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.31";
+F.VERSION="0.32";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -14,6 +14,23 @@ F.ITEMS=Object.freeze({
 F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
 ]);
+
+// Ver0.32: 施設は選んだ瞬間に完成させず、予定地→資材→骨組み→仕上げ→完成を共通工程として持つ。
+F.CONSTRUCTION_PHASES=Object.freeze([
+ {id:"planned",label:"建設予定地",icon:"📍",progress:0.12},
+ {id:"materials",label:"資材搬入",icon:"🪵",progress:0.35},
+ {id:"frame",label:"骨組み工事",icon:"🛠️",progress:0.62},
+ {id:"finishing",label:"仕上げ工事",icon:"🏗️",progress:0.86}
+]);
+F.FACILITY_SITES=Object.freeze({
+ shop:{areaId:"core",x:52,y:92,w:250,h:190,entrance:{x:205,y:300}},
+ forge:{areaId:"core",x:350,y:72,w:220,h:190,entrance:{x:470,y:300}},
+ house:{areaId:"core",x:45,y:390,w:250,h:185,entrance:{x:182,y:615}},
+ market:{areaId:"core",x:430,y:325,w:135,h:125,entrance:{x:430,y:445}},
+ adventure_board:{areaId:"core",x:442,y:300,w:105,h:95,entrance:{x:430,y:415}},
+ plaza:{areaId:"core",x:295,y:300,w:155,h:130,entrance:{x:370,y:455}}
+});
+F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 
 // Ver0.28: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
@@ -76,14 +93,14 @@ F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
 // Ver0.28: 町の見た目は「固定ベース + 細かな景観レイヤー + 施設レイヤー」。
 // TEST画面はこの定義をそのまま列挙する。asset は major/detail のどちらのアトラスを使うかを示す。
 F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front"]);
-// Ver0.31: 見た目と移動判定を同じ町データから生成する。画像解析は行わない。
+// Ver0.32: 見た目と移動判定を同じ町データから生成する。画像解析は行わない。
 // shape: rect=[x,y,w,h] / circle=[cx,cy,r]。walk は block より後に再開放する。
 F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
  player:{radius:10,step:"walk"},partner:{radius:8,step:"follow",followDistance:34},npc:{radius:9,step:"routine"}
 });
 F.TOWN_NAV_BASE=Object.freeze({
  areaId:"core",defaultWalkable:true,
- // Ver0.31: 初期開拓地の実景観に合わせて障害物を細分化。
+ // Ver0.32: 初期開拓地の実景観に合わせて障害物を細分化。
  // 大きな矩形1枚ではなく、小屋・露店・焚き火・資材・川岸などを別判定にする。
  blocks:[
    {shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_edge"},

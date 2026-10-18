@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.31 / persistent town movement + navigation-ready save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.32 / persistent town movement + navigation-ready save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -7,10 +7,10 @@ const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))o
 const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
 const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
 F.freshSave=()=>({
- schemaVersion:5,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
+ schemaVersion:6,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
  partnerId:null,warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
- development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
+ development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
  history:[],townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}},settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false}}
 });
@@ -61,6 +61,14 @@ F.normalizeSave=s=>{
  s.development.town.facilities=migrateFacilities(s.development.town);
  s.development.town.areas=migrateAreas(s.development.town);
  s.development.town.facilityAreas=migrateFacilityAreas(s.development.town);
+ s.development.town.projects=s.development.town.projects&&typeof s.development.town.projects==="object"?s.development.town.projects:{};
+ for(const [fid,pr] of Object.entries({...s.development.town.projects})){
+  const def=(F.FACILITY_DEFS||[]).find(d=>d.id===fid),site=F.facilitySite?.(fid);
+  if(!def||!site||!pr||typeof pr!=="object"){delete s.development.town.projects[fid];continue}
+  const phases=F.CONSTRUCTION_PHASES||[];
+  pr.facilityId=fid;pr.fromLevel=Math.max(0,Number(pr.fromLevel)||0);pr.targetLevel=Math.max(pr.fromLevel+1,Math.min(Number(def.maxLevel)||1,Number(pr.targetLevel)||pr.fromLevel+1));
+  pr.phaseIndex=Math.max(0,Math.min(Math.max(0,phases.length-1),Number(pr.phaseIndex)||0));pr.stepsDone=Math.max(0,Number(pr.stepsDone)||0);
+ }
  // 旧コードとの互換用ミラー。今後の本体判定はfacilitiesを正本にする。
  s.development.town.shopLevel=Math.max(1,Number(s.development.town.facilities.shop)||1);
  s.development.town.forgeBuilt=(Number(s.development.town.facilities.forge)||0)>=1;
@@ -83,7 +91,7 @@ F.normalizeSave=s=>{
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=5;
+ s.schemaVersion=6;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};

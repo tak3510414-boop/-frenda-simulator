@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.31 / precise collision + town movement core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.32 / precise collision + town movement core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -19,13 +19,33 @@ F.townState=s=>{
  const d=s?.development||{},t=d.town||{},fac=Object.assign({},t.facilities||{});
  for(const def of (F.FACILITY_DEFS||[]))if(fac[def.id]==null)fac[def.id]=Number(def.startLevel)||0;
  return {
-  facilities:fac,priority:["standard","commerce","forge","life","adventure"].includes(t.priority)?t.priority:"standard",
+  facilities:fac,projects:t.projects&&typeof t.projects==="object"?t.projects:{},priority:["standard","commerce","forge","life","adventure"].includes(t.priority)?t.priority:"standard",
   order:Array.isArray(t.order)?t.order:[],shopLevel:Math.max(1,Number(fac.shop)||1),forgeBuilt:Number(fac.forge||0)>=1,
   houseBuilt:Number(fac.house||0)>=1,plazaBuilt:Number(fac.plaza||0)>=1,marketBuilt:Number(fac.market||0)>=1
  };
 };
 F.facilityLevel=(s,id)=>Math.max(0,Number(F.townState(s).facilities?.[id])||0);
 F.townRoute=s=>F.townState(s).priority||"standard";
+F.townProject=(s,id)=>F.townState(s).projects?.[id]||null;
+F.townProjects=s=>Object.values(F.townState(s).projects||{}).filter(Boolean);
+F.constructionPhase=pr=>{const a=F.CONSTRUCTION_PHASES||[];return a[Math.max(0,Math.min(a.length-1,Number(pr?.phaseIndex)||0))]||null};
+function advanceConstructionState(s,steps=1){
+ const town=s?.development?.town;if(!town)return[];town.projects=town.projects&&typeof town.projects==="object"?town.projects:{};const completed=[];
+ for(let st=0;st<Math.max(1,Number(steps)||1);st++){
+  for(const [fid,pr] of Object.entries({...town.projects})){
+   const def=(F.FACILITY_DEFS||[]).find(d=>d.id===fid);if(!def){delete town.projects[fid];continue}
+   pr.stepsDone=(Number(pr.stepsDone)||0)+1;pr.phaseIndex=(Number(pr.phaseIndex)||0)+1;pr.updatedDay=s.day;
+   if(pr.phaseIndex>=(F.CONSTRUCTION_PHASES||[]).length){
+    town.facilities[fid]=Math.max(Number(town.facilities?.[fid])||0,Number(pr.targetLevel)||1);delete town.projects[fid];
+    completed.push({facilityId:fid,name:def.name,targetLevel:Number(pr.targetLevel)||1});F.addHistory(s,"construction",`${def.name} Lv${Number(pr.targetLevel)||1}が完成した。`);
+   }
+  }
+ }
+ town.shopLevel=Math.max(1,Number(town.facilities?.shop)||1);town.forgeBuilt=Number(town.facilities?.forge||0)>=1;town.houseBuilt=Number(town.facilities?.house||0)>=1;town.marketBuilt=Number(town.facilities?.market||0)>=1;town.plazaBuilt=Number(town.facilities?.plaza||0)>=1;
+ return completed;
+}
+F.advanceTownConstructionState=advanceConstructionState;
+F.advanceTownConstruction=(steps=1)=>F.mutateSave(s=>advanceConstructionState(s,steps));
 
 // Ver0.28: 町域は施設とは独立して拡張する。新しいエリアは AREA_DEFS に追加するだけでよい。
 F.areaState=(s,id)=>{const def=F.areaDef?.(id);return s?.development?.town?.areas?.[id]||def?.startState||"locked"};
@@ -40,6 +60,7 @@ F.townOptions=s=>{
  const pts=Number(s?.development?.points)||0,t=F.townState(s),out=[];
  for(const def of (F.FACILITY_DEFS||[])){
    const cur=Math.max(0,Number(t.facilities?.[def.id])||0),next=cur+1,lv=def.levels?.[next];
+   if(t.projects?.[def.id])continue;
    if(!lv||next>Number(def.maxLevel||0))continue;
    out.push({id:lv.actionId||`${def.id}${next}`,facilityId:def.id,targetLevel:next,name:lv.label||`${def.name} Lv${next}`,desc:lv.desc||'',need:Number(lv.need)||0,done:false,icon:def.icon||'🏗️',route:def.route||'standard',available:pts>=Number(lv.need||0)});
  }
@@ -49,7 +70,8 @@ F.applyTownDevelopment=id=>F.mutateSave(s=>{
  s.development.town=s.development.town||{};s.development.town.facilities=s.development.town.facilities||{};s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order:[];
  const opt=F.townOptions(s).find(x=>x.id===id);if(!opt)throw new Error("この発展項目は現在選べません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);
  const cur=Math.max(0,Number(s.development.town.facilities[opt.facilityId])||0);if(cur>=opt.targetLevel)throw new Error("すでに発展済みです。");
- s.development.town.facilities[opt.facilityId]=opt.targetLevel;
+ s.development.town.projects=s.development.town.projects||{};if(s.development.town.projects[opt.facilityId])throw new Error("この施設は工事中です。");
+ s.development.town.projects[opt.facilityId]={facilityId:opt.facilityId,fromLevel:cur,targetLevel:opt.targetLevel,phaseIndex:0,stepsDone:0,startedDay:s.day,updatedDay:s.day};
  s.development.town.facilityAreas=s.development.town.facilityAreas||{};
  if(!s.development.town.facilityAreas[opt.facilityId])s.development.town.facilityAreas[opt.facilityId]="core";
  if((s.development.town.priority||"standard")==="standard"&&opt.route&&opt.route!=="standard")s.development.town.priority=opt.route;
@@ -58,7 +80,7 @@ F.applyTownDevelopment=id=>F.mutateSave(s=>{
  s.development.town.shopLevel=Math.max(1,Number(s.development.town.facilities.shop)||1);
  s.development.town.forgeBuilt=Number(s.development.town.facilities.forge||0)>=1;s.development.town.houseBuilt=Number(s.development.town.facilities.house||0)>=1;
  s.development.town.marketBuilt=Number(s.development.town.facilities.market||0)>=1;s.development.town.plazaBuilt=Number(s.development.town.facilities.plaza||0)>=1;
- F.addHistory(s,"development",`${opt.name}を選んだ。`);
+ F.addHistory(s,"development",`${opt.name}の建設を開始した。`);
 });
 F.addDevelopmentPoints=n=>F.mutateSave(s=>{s.development.points=Math.max(0,(Number(s.development.points)||0)+(Number(n)||0));s.development.stage=F.developmentStage(s.development.points);});
 
@@ -74,6 +96,8 @@ function evalLayerRule(s,rule){
  if(type==="any")return (rule.rules||[]).some(r=>evalLayerRule(s,r));
  if(type==="fieldTrue")return !!t[rule.field];
  if(type==="fieldGte")return Number(t[rule.field]||0)>=Number(rule.value||0);
+ if(type==="projectActive")return !!t.projects?.[rule.facilityId];
+ if(type==="projectPhaseIn"){const pr=t.projects?.[rule.facilityId];if(!pr)return false;const ph=F.constructionPhase(pr);return (rule.values||[]).includes(ph?.id)}
  return false;
 }
 F.townLayerTestPreset=s=>{const p=s?.settings?.townLayerTest?.preset;return ["auto","custom","off","max","raw"].includes(p)?p:"custom"};
@@ -113,7 +137,7 @@ F.setTownLayerTestPreset=preset=>F.mutateSave(s=>{if(!["auto","custom","off","ma
 F.setAllTownLayerTestModes=mode=>{const map={auto:"auto",off:"off",on:"max",raw:"raw"};if(!map[mode])throw new Error("不正なレイヤー指定です。");return F.setTownLayerTestPreset(map[mode])};
 
 
-// Ver0.31: 町の見た目レイヤーと同じ定義から通行判定を生成する。
+// Ver0.32: 町の見た目レイヤーと同じ定義から通行判定を生成する。
 // 将来の主人公・相棒・NPC移動は、このモデルを共通利用する。
 function navShapeContains(shape,x,y,pad=0){
  if(!shape)return false;const v=shape.v||[],p=Math.max(0,Number(pad)||0);
@@ -137,6 +161,7 @@ function navCollect(s){
  const area=F.areaDef?.("core"),base=F.TOWN_NAV_BASE||{},states=F.townLayerStates(s).filter(x=>x.effective);
  const blocks=[...(base.blocks||[])],walk=[...(base.walk||[])],interactions=[...(base.interactions||[])],entrances=[],npcWaypoints=[...(base.npcWaypoints||[])];
  for(const x of states){const n=x.def.nav;if(!n)continue;blocks.push(...(n.blocks||[]));walk.push(...(n.walk||[]));interactions.push(...(n.interactions||[]));entrances.push(...(n.entrances||[]));npcWaypoints.push(...(n.npcWaypoints||[]))}
+ for(const pr of F.townProjects(s)){const site=F.facilitySite?.(pr.facilityId),def=(F.FACILITY_DEFS||[]).find(d=>d.id===pr.facilityId),ph=F.constructionPhase(pr);if(!site||site.areaId!=="core")continue;const inset=ph?.id==="planned"?18:ph?.id==="materials"?12:6;blocks.push({shape:"rect",v:[site.x+inset,site.y+inset,Math.max(10,site.w-inset*2),Math.max(10,site.h-inset*2)],reason:`construction:${pr.facilityId}`});interactions.push({id:`construction_${pr.facilityId}`,type:"construction",label:`${def?.name||pr.facilityId} ${ph?.label||"工事中"}`,x:site.entrance?.x||site.x+site.w/2,y:site.entrance?.y||site.y+site.h,r:55,facilityId:pr.facilityId})}
  const exits=(area?.nav?.exits||[]).map(e=>({...e,targetState:F.areaEffectiveState(s,e.to),open:F.areaStateIndex(F.areaEffectiveState(s,e.to))>=F.areaStateIndex("usable")}));
  const uniq=a=>Array.from(new Map(a.map(x=>[x.id||JSON.stringify(x),x])).values());
  return {areaId:"core",area,base,states,blocks,walk,interactions:uniq(interactions),entrances:uniq(entrances),npcWaypoints:uniq(npcWaypoints),exits};
@@ -166,7 +191,7 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["冒険で仕入れ、お店で売る流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.31ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.32ではここまでがストーリー試作範囲です。","次版では新しい階層・クラフト・住民を追加予定。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const r=F.eligiblePartners().find(x=>String(x.master_id)===String(id));if(!r)throw new Error("このポケモンは現在のFrontierでは相棒にできません。");s.partnerId=r.master_id;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${r.name_ja}を相棒に選んだ。`)});
 
@@ -190,7 +215,7 @@ function onTile(run){const t=run.map[run.player.y][run.player.x];if(t==="gather"
 F.move=(dx,dy)=>{const run=F.run;if(!run?.active)return run;dx=Number(dx)||0;dy=Number(dy)||0;const nx=run.player.x+dx,ny=run.player.y+dy;if(!tileOpen(run.map,nx,ny)){run.log.push("そこには進めない。");return run}const e=entityAt(run,nx,ny);if(e){run.log.push(`⚠️ ${e.name}が道をふさいでいる。相棒に任せよう！`)}else if(!occupiedByPartner(run,nx,ny)){run.player.x=nx;run.player.y=ny}run.turn++;run.food=Math.max(0,run.food-1);if(run.food===0){run.playerHp=Math.max(0,run.playerHp-1);run.log.push("🍽️ 食料が尽きてHPが減った！")}partnerTurn(run);enemyTurn(run);onTile(run);if(run.playerHp<=0){F.finishRun(false,"defeat");return F.run}return run};
 F.isOnStairs=()=>F.run?.map?.[F.run.player.y]?.[F.run.player.x]==="stairs";
 F.nextFloor=()=>{const run=F.run;if(!F.isOnStairs())return false;if(run.floor>=run.maxFloor){F.finishRun(true,"clear");return true}run.floor++;run.food=Math.min(40,run.food+6);generateFloor(run);return true};
-F.finishRun=(success=true,reason="return")=>{const run=F.run;if(!run)return null;const s=F.readSave(),lost={};let delivered=clone(run.bag);if(!success&&reason==="defeat"){delivered={};for(const [id,n] of Object.entries(run.bag)){const keep=Math.ceil(Number(n)*.5),lose=Number(n)-keep;if(keep>0)delivered[id]=keep;if(lose>0)lost[id]=lose}}for(const [id,n] of Object.entries(delivered))addWarehouse(s,id,n);if(success&&reason==="clear")addWarehouse(s,"oldtool",1);s.story.firstReturn=true;s.story.step=Math.max(s.story.step,2);s.day++;s.development.points+=success?2:1;s.development.stage=F.developmentStage(s.development.points);F.addHistory(s,"adventure",success?(reason==="clear"?`はじまりの森を踏破。${Object.keys(delivered).length}種類を持ち帰った。`:`森から無事帰還。${Object.keys(delivered).length}種類を持ち帰った。`):`冒険に失敗したが、持ち物の一部を持ち帰った。`);F.writeSave(s);run.active=false;run.result={success,reason,delivered,lost};F.run=run;return run.result};
+F.finishRun=(success=true,reason="return")=>{const run=F.run;if(!run)return null;const s=F.readSave(),lost={};let delivered=clone(run.bag);if(!success&&reason==="defeat"){delivered={};for(const [id,n] of Object.entries(run.bag)){const keep=Math.ceil(Number(n)*.5),lose=Number(n)-keep;if(keep>0)delivered[id]=keep;if(lose>0)lost[id]=lose}}for(const [id,n] of Object.entries(delivered))addWarehouse(s,id,n);if(success&&reason==="clear")addWarehouse(s,"oldtool",1);s.story.firstReturn=true;s.story.step=Math.max(s.story.step,2);s.day++;const completed=advanceConstructionState(s,1);s.development.points+=success?2:1;s.development.stage=F.developmentStage(s.development.points);if(completed.length)F.addHistory(s,"town",`工事完成：${completed.map(x=>x.name).join("・")}`);F.addHistory(s,"adventure",success?(reason==="clear"?`はじまりの森を踏破。${Object.keys(delivered).length}種類を持ち帰った。`:`森から無事帰還。${Object.keys(delivered).length}種類を持ち帰った。`):`冒険に失敗したが、持ち物の一部を持ち帰った。`);F.writeSave(s);run.active=false;run.result={success,reason,delivered,lost};F.run=run;return run.result};
 F.escape=()=>{const run=F.run;if(!run?.active||run.escape<=0)return false;run.escape--;F.finishRun(true,"escape");return true};
 
 F.stockShelf=(slot,itemId,price)=>F.mutateSave(s=>{slot=Number(slot);if(slot<0||slot>2)throw new Error("棚番号が不正です。");if(s.shelves[slot])throw new Error("この棚には商品があります。");const it=F.item(itemId);if(!it)throw new Error("商品がありません。");if(!takeWarehouse(s,itemId,1))throw new Error("倉庫にありません。");const p=Math.max(10,Number(price)||it.base);s.shelves[slot]={itemId,qty:1,price:p};s.story.firstStock=true;F.addHistory(s,"stock",`${it.name}を${p}Gで棚に並べた。`)});
