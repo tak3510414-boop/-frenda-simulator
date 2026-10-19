@@ -1,6 +1,6 @@
-# Frenda Frontier Ver0.52 / TEST
+# Frenda Frontier Ver0.53 / TEST
 
-## Ver0.52 - ピック画像完全撤去
+## Ver0.53 - ピック画像完全撤去
 - Frontierの仲間一覧・図鑑・冒険画面・ダンジョンからフレンダのピック画像を完全撤去。
 - MasterDBの `official_image` はFrontierのキャラクター表示には使用しない。
 - 現段階ではタイプ記号＋種族名頭文字の仮キャラクタートークンで表示。今後、ポケモン歩行キャラクター素材へ差し替える。
