@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.42 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.43 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -93,7 +93,7 @@ async function drawTownVisual(s){
   const c=canvas.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
   const preset=F.townLayerTestPreset(s),rt=ensureTownRuntime(s),areaId=rt.areaId||F.townMovement(s).areaId;
   const drawNormal=()=>{
-   if(F.areaDef?.(areaId)?.world?.runtimeGenerator==="scene-spec-v2"){const compiled=F.compileAreaScene?.(areaId,s);/* Ver0.42: generated area base is rendered inside UI itself. This removes cross-file renderer timing/cache dependency on iOS/GitHub Pages. */drawGeneratedAreaFallback(canvas,compiled);const cc=canvas.getContext("2d");if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,"player");drawTownActor(cc,partnerSprite,rt.partner,"partner");return;}
+   if(F.areaDef?.(areaId)?.world?.runtimeGenerator==="scene-spec-v2"){const compiled=F.compileAreaScene?.(areaId,s);/* Ver0.43: generated area base is rendered inside UI itself. This removes cross-file renderer timing/cache dependency on iOS/GitHub Pages. */drawGeneratedAreaFallback(canvas,compiled);const cc=canvas.getContext("2d");if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,"player");drawTownActor(cc,partnerSprite,rt.partner,"partner");return;}
    c.drawImage(base,0,0,717,842);
    const states=F.townLayerStates(s).filter(x=>x.effective);
    const bands=F.TOWN_RENDER_BANDS||["ground","structure","low","character","front"];
