@@ -1,10 +1,12 @@
-# Frenda Frontier Ver0.53 / TEST
+# Frenda Frontier Ver0.54 / TEST
 
-## Ver0.53 - ピック画像完全撤去
-- Frontierの仲間一覧・図鑑・冒険画面・ダンジョンからフレンダのピック画像を完全撤去。
-- MasterDBの `official_image` はFrontierのキャラクター表示には使用しない。
-- 現段階ではタイプ記号＋種族名頭文字の仮キャラクタートークンで表示。今後、ポケモン歩行キャラクター素材へ差し替える。
-- ピック所持情報は仲間解放条件の判定だけに使用する。
+## Ver0.54 - 起動回帰修正
+- Ver0.52のピック画像撤去時に誤って削除された町UI関数群を、Ver0.51の正常系から復元しました。
+- 復元対象：`fillCmd` / `homeDialog` / `homeCommands` / `townDialogue` / `showTownNavTest` / `showTownRoundTripTest` / `showTownMove`。
+- Ver0.52以降の「ピック画像を表示しない」「ポケモン種族として扱う」方針は維持しています。
+- `renderHome` は重複させず、Ver0.53で復元した定義を正本として維持します。
+- 実機確認：起動、いどう、通行判定TEST、冒険、仲間選択、ダンジョン開始。
+- 今回は実機画面で町画像の読み込み失敗も確認されたため、復旧用として現行町・家・店・人物の画像資産10点をZIPへ再同梱します。
 
 ## Ver0.51 - ポケモン主体の冒険へ構造変更
 

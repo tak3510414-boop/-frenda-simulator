@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.52 / Pokemon species master + companion/enemy common layer / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.54 / Pokemon species master + companion/enemy common layer / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -22,7 +22,7 @@ function num(v,d=0){v=Number(v);return Number.isFinite(v)?v:d}
 function median(a){const v=a.map(Number).filter(Number.isFinite).sort((x,y)=>x-y);if(!v.length)return 0;const m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2}
 function sid(name){return `species:${String(name||"").trim()}`}
 function categoryScore(r){return CATEGORY_PREF[String(r?.category||"")]??30}
-function repScore(r){return categoryScore(r)+(r?.official_verified?10:0)+(r?.official_image?5:0)+(Number.isFinite(Number(r?.grade))?3:0)}
+function repScore(r){return categoryScore(r)+(r?.official_verified?10:0)+(Number.isFinite(Number(r?.grade))?3:0)}
 function chooseRepresentative(list){return [...list].sort((a,b)=>repScore(b)-repScore(a)||num(a.grade,99)-num(b.grade,99)||String(a.master_id).localeCompare(String(b.master_id)))[0]||null}
 function aiFor(sp){const t=new Set([sp.type1,sp.type2].filter(Boolean));const atk=Math.max(sp.stats.atk,sp.stats.spAtk),def=(sp.stats.def+sp.stats.spDef)/2,spd=sp.stats.speed;if(t.has("ゴースト")||t.has("あく"))return "ambush";if(spd>=105&&spd>atk*.85)return "skirmisher";if(def>=atk*1.18)return "guardian";if(sp.stats.spAtk>=sp.stats.atk*1.22)return "ranged";if(t.has("くさ")||t.has("フェアリー")||t.has("エスパー"))return "support";if(atk>=70)return "bruiser";return "wander"}
 function rarity(power){return power<=55?"common":power<=80?"uncommon":power<=105?"rare":"elite"}
@@ -37,7 +37,7 @@ F.buildPokemonSpeciesMaster=()=>{
  for(const [id,list] of groups){const rep=chooseRepresentative(list),types=[...new Set(list.flatMap(r=>[r.type1,r.type2]).filter(Boolean))];
   const stats={hp:median(list.map(r=>r.hp)),atk:median(list.map(r=>r.atk)),def:median(list.map(r=>r.def)),spAtk:median(list.map(r=>r.sp_atk)),spDef:median(list.map(r=>r.sp_def)),speed:median(list.map(r=>r.speed_value))};
   const power=(stats.hp+stats.atk+stats.def+stats.spAtk+stats.spDef+stats.speed)/6;
-  const sp={id,name:rep?.name_ja||id.replace(/^species:/,""),nameEn:rep?.name_en||"",type1:rep?.type1||types[0]||null,type2:rep?.type2||types.find(t=>t!==rep?.type1)||null,types,stats,power:Math.round(power*10)/10,rarity:rarity(power),rarityLabel:rarityLabel(rarity(power)),ai:null,recordIds:list.map(r=>String(r.master_id)),records:list,representative:rep,representativeId:rep?.master_id||null,officialImage:rep?.official_image||"",move:rep?.move||"こうげき",moveType:rep?.move_type||rep?.type1||null};
+  const sp={id,name:rep?.name_ja||id.replace(/^species:/,""),nameEn:rep?.name_en||"",type1:rep?.type1||types[0]||null,type2:rep?.type2||types.find(t=>t!==rep?.type1)||null,types,stats,power:Math.round(power*10)/10,rarity:rarity(power),rarityLabel:rarityLabel(rarity(power)),ai:null,recordIds:list.map(r=>String(r.master_id)),records:list,representative:rep,representativeId:rep?.master_id||null,move:rep?.move||"こうげき",moveType:rep?.move_type||rep?.type1||null};
   sp.ai=aiFor(sp);species.push(sp);
  }
  species.sort((a,b)=>a.power-b.power||a.name.localeCompare(b.name,"ja"));
