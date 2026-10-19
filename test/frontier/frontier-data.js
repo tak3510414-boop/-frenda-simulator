@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.50 / world structure Ver6 + common area scene specification / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.51 / world structure Ver6 + common area scene specification / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.50";
+F.VERSION="0.51";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -23,7 +23,7 @@ F.TIME_PHASES=Object.freeze([
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
 F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:3,bagLimit:10,startFood:32,escapeCount:1,gatherTable:"default",clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"開拓地の近くにある最初のダンジョン。素材を集めて店へ持ち帰る。"}
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:3,bagLimit:10,startFood:32,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",maxRarityByFloor:[1,1,2]},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"ポケモン探索隊が最初に挑む森。素材を集めて町へ持ち帰る。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
 F.DEFAULT_DUNGEON_ID="beginner_forest";
@@ -371,7 +371,7 @@ F.CUSTOMERS=Object.freeze([
 ]);
 F.STORY=Object.freeze([
  {id:"prologue",title:"序章　フロンティアへ",text:"『幻の大秘宝』の噂を追って、ほとんど人のいない開拓地へやってきた。",at:0},
- {id:"partner",title:"相棒との第一歩",text:"所持しているフレンダピックから相棒を選び、最初の冒険へ向かう。",at:1},
+ {id:"partner",title:"仲間との第一歩",text:"町で仲間になったポケモンから探索リーダーを選び、最初の冒険へ向かう。",at:1},
  {id:"supply",title:"店を開くための仕入れ",text:"はじまりの森で素材を集め、店に商品を並べる。",at:2},
  {id:"firstsale",title:"最初のお客さん",text:"自分で持ち帰った品が売れ、開拓地に少しずつ人が集まり始める。",at:3},
  {id:"rumor",title:"新しい噂",text:"店の評判が広がると、森の奥と『秘宝の手掛かり』について語る旅人が現れる。",at:4}

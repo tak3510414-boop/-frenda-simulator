@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.50 / persistent world structure Ver6 + common area scene save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.51 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -7,8 +7,8 @@ const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))o
 const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
 const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
 F.freshSave=()=>({
- schemaVersion:14,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
- partnerId:null,warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
+ schemaVersion:15,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
+ partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,firstLoop:false,rumor:false},
@@ -50,6 +50,17 @@ F.normalizeSave=s=>{
  const base=F.freshSave();if(!s||typeof s!=="object")return base;
  const previousAppVersion=String(s.appVersion||"");
  s=Object.assign(base,s);
+
+ s.team=Object.assign(base.team,s.team||{});
+ s.team.memberSpeciesIds=Array.isArray(s.team.memberSpeciesIds)?[...new Set(s.team.memberSpeciesIds.map(String))].slice(0,3):[];
+ // Ver0.51: 旧partnerId（ピックmaster_id）は種族IDへ移行し、以後team.leaderSpeciesIdを正本にする。
+ if(!s.team.leaderSpeciesId&&s.partnerId){const oldSp=F.speciesById?.(s.partnerId);if(oldSp)s.team.leaderSpeciesId=oldSp.id;}
+ if(s.team.leaderSpeciesId){const leader=F.speciesById?.(s.team.leaderSpeciesId);if(leader){s.team.leaderSpeciesId=leader.id;s.partnerId=leader.representativeId||s.partnerId;if(!s.team.memberSpeciesIds.includes(leader.id))s.team.memberSpeciesIds.unshift(leader.id);s.team.memberSpeciesIds=s.team.memberSpeciesIds.slice(0,3)}else{s.team.leaderSpeciesId=null;s.partnerId=null}}
+ s.pokemon=Object.assign(base.pokemon,s.pokemon||{});
+ s.pokemon.encountered=s.pokemon.encountered&&typeof s.pokemon.encountered==="object"?s.pokemon.encountered:{};
+ s.pokemon.firstSeenOrder=Array.isArray(s.pokemon.firstSeenOrder)?[...new Set(s.pokemon.firstSeenOrder.map(String))]:[];
+ s.pokemon.companionUnlocks=s.pokemon.companionUnlocks&&typeof s.pokemon.companionUnlocks==="object"?s.pokemon.companionUnlocks:{};
+ s.pokemon.storyCompanions=Array.isArray(s.pokemon.storyCompanions)?[...new Set(s.pokemon.storyCompanions.map(String))]:[];
  s.warehouse=s.warehouse&&typeof s.warehouse==="object"?s.warehouse:{};
  s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,3):[null,null,null];while(s.shelves.length<3)s.shelves.push(null);
  s.sales=Object.assign(base.sales,s.sales||{});s.reputation=Object.assign(base.reputation,s.reputation||{});
@@ -99,7 +110,7 @@ F.normalizeSave=s=>{
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=14;
+ s.schemaVersion=15;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};

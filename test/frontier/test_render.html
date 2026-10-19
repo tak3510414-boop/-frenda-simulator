@@ -1,6 +1,6 @@
 <!doctype html><html><body style='margin:0;background:#fff'><canvas id='c' width='717' height='842'></canvas>
 <script>window.FRENDA_TEST={active:true};</script>
-<script src='frontier-data.js'></script><script src='frontier-save.js'></script><script src='frontier-core.js'></script><script src='frontier-render.js'></script>
+<script src='frontier-data.js'></script><script src='frontier-pokemon.js'></script><script src='frontier-save.js'></script><script src='frontier-core.js'></script><script src='frontier-render.js'></script>
 <script>
-try{const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER; const s=F.defaultSave?F.defaultSave():{}; const cp=F.compileAreaScene('south_road',s); console.log('cp',cp); R.renderGeneratedArea(document.getElementById('c'),s,'south_road',cp); document.title='OK-'+cp.walkZones.length+'-'+cp.facilitySlots.length;}catch(e){console.error(e);document.title='ERR '+e.message;}
+try{const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER; const s=F.freshSave?F.freshSave():{}; const cp=F.compileAreaScene('south_road',s); console.log('cp',cp); R.renderGeneratedArea(document.getElementById('c'),s,'south_road',cp); document.title='OK-'+cp.walkZones.length+'-'+cp.facilitySlots.length;}catch(e){console.error(e);document.title='ERR '+e.message;}
 </script></body></html>
