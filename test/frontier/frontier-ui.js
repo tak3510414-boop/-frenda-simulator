@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.45 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.46 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -131,7 +131,7 @@ async function drawTownVisual(s){
 function townSetMessage(text){townMoveRuntime.message=text||'';const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(F.readSave())}
 function townPersistPosition(){if(!townMoveRuntime.player||!townMoveRuntime.partner)return;F.setTownMovement(townMoveRuntime.player,townMoveRuntime.partner,townMoveRuntime.areaId||null)}
 function setupTownMovement(){const canvas=$("townVisualCanvas");if(!canvas)return;canvas.onclick=e=>{if(e.target!==canvas)return;const s=F.readSave(),preset=F.townLayerTestPreset(s);if(preset==="max"){toast('最大発展表示では移動確認を停止しています');return}const rt=ensureTownRuntime(s),areaId=rt.areaId,r=canvas.getBoundingClientRect(),raw={x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height},m=F.townNavModel(s,"player",areaId),wr=m.worldRect;if(raw.x<wr.x||raw.y<wr.y||raw.x>=wr.x+wr.w||raw.y>=wr.y+wr.h)return;
- // Ver0.45: 画面端の出口へ続く道をタップした場合は、通常の「近い歩行セル」ではなく出口移動として扱う。
+ // Ver0.46: 画面端の出口へ続く道をタップした場合は、通常の「近い歩行セル」ではなく出口移動として扱う。
  const exitRoute=F.townExitTapAt?.(s,raw.x,raw.y,areaId);if(exitRoute){if(!exitRoute.open){toast('この道はまだ開通していません');return}if(!["prototype","ready"].includes(exitRoute.target?.world?.sceneStatus||"")){toast('この先のエリアはまだ準備中です');return}const target=F.townExitApproachPoint?.(s,exitRoute,"player",areaId);if(!target){toast('出口までの経路を作れませんでした');return}walkTownTo(target,{forcedExit:exitRoute});return}
  const target=F.townNearestWalkable(s,raw,"player",10,areaId);if(!target){toast('そこへは行けません');return}walkTownTo(target)};}
 function startTownAreaTransition(rt,route){
