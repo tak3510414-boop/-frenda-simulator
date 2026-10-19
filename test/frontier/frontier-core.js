@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.43 / world structure Ver6 + common area scene core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.44 / world structure Ver6 + common area scene core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -91,7 +91,7 @@ F.townScaleTier=s=>{const stats=F.areaStats?.(s)||{usable:1},pts=Number(s?.devel
 F.nextTownScaleTier=s=>{const cur=F.townScaleTier(s),tiers=F.TOWN_SCALE_TIERS||[],i=tiers.findIndex(t=>t.id===cur.id);return i>=0&&i<tiers.length-1?tiers[i+1]:null};
 F.areaPlanningInfo=d=>{const sc=F.areaSizeClass?.(d?.world?.sizeClass)||{},cap=Object.assign({},sc,d?.world?.capacity||{});return {sizeClass:d?.world?.sizeClass||"standard",sizeLabel:sc.label||"標準区画",terrainTags:[...(d?.world?.terrainTags||[])],travelCost:Number(d?.world?.travelCost)||1,capacity:{facilitySlots:Number(cap.facilitySlots)||0,landmarkSlots:Number(cap.landmarkSlots)||0,residentCapacity:Number(cap.residentCapacity)||0},traffic:cap.traffic||sc.traffic||"medium"}};
 
-// Ver0.43: エリア共通SceneSpec。今は「どこに何を置くか」の意味を1000x1000論理座標で固定し、
+// Ver0.44: エリア共通SceneSpec。今は「どこに何を置くか」の意味を1000x1000論理座標で固定し、
 // 実マップ画像・道路・施設座標は後から差し替えられるようにする。
 function scaleNormShape(shape,playfield){
  const sx=playfield.w/1000,sy=playfield.h/1000,v=shape?.v||[];
@@ -118,7 +118,7 @@ F.areaSceneZones=(areaId,kind)=>{const sp=F.areaSceneSpec(areaId);return (sp?.zo
 F.areaSceneSpecStats=areaId=>{const sp=F.areaSceneSpec(areaId);if(!sp)return null;const counts={};for(const z of sp.zones)counts[z.kind]=(counts[z.kind]||0)+1;return {areaId:sp.areaId,templateId:sp.templateId,templateLabel:sp.templateLabel,sceneStatus:sp.sceneStatus,zones:sp.zones.length,counts,ports:Object.values(sp.ports).length,connectedPorts:Object.values(sp.ports).filter(p=>p.connected).length,futurePorts:Object.values(sp.ports).filter(p=>p.future&&!p.connected).length,facilitySlots:sp.zones.filter(z=>z.kind==="facility").length,landmarkSlots:sp.zones.filter(z=>z.kind==="landmark").length,constructionZones:sp.zones.filter(z=>z.kind==="construction").length,npcZones:sp.zones.filter(z=>z.kind==="npc").length};};
 F.validateAreaSceneSpec=areaId=>{const area=F.areaDef?.(areaId),sp=F.areaSceneSpec(areaId),errors=[],warnings=[];if(!area){errors.push("不明なエリア");return {ok:false,errors,warnings}}if(!sp){errors.push("SceneSpecテンプレート未定義");return {ok:false,errors,warnings}}const kinds=new Set(sp.zones.map(z=>z.kind));for(const k of (F.AREA_SCENE_SCHEMA?.required||[]))if(!kinds.has(k))errors.push(`必須zone不足: ${k}`);const stats=F.areaSceneSpecStats(areaId),cap=sp.capacity||{};if(stats.facilitySlots<Number(cap.facilitySlots||0))warnings.push(`施設枠 ${stats.facilitySlots}/${cap.facilitySlots}`);if(stats.landmarkSlots<Number(cap.landmarkSlots||0))warnings.push(`ランドマーク枠 ${stats.landmarkSlots}/${cap.landmarkSlots}`);for(const n of F.areaNeighbors?.(areaId)||[]){if(!sp.ports?.[n.fromPort])errors.push(`接続port未定義: ${n.fromPort}`)}for(const p of (area.world?.futurePorts||[]))if(!sp.ports?.[p])warnings.push(`将来port未定義: ${p}`);return {ok:errors.length===0,errors,warnings,stats};};
 F.areaSceneSpecSummary=()=> (F.AREA_DEFS||[]).map(a=>({area:a,spec:F.areaSceneSpec(a.id),validation:F.validateAreaSceneSpec(a.id),stats:F.areaSceneSpecStats(a.id)}));
-// Ver0.43: SceneSpec -> RuntimeScene compiler.
+// Ver0.44: SceneSpec -> RuntimeScene compiler.
 // 最終画像の座標を固定せず、SceneSpecから実マップ側で必要なデータを一括生成する。
 function sceneShapeBounds(sh){if(!sh)return null;if(sh.shape==="rect")return{x:sh.v[0],y:sh.v[1],w:sh.v[2],h:sh.v[3]};if(sh.shape==="circle")return{x:sh.v[0]-sh.v[2],y:sh.v[1]-sh.v[2],w:sh.v[2]*2,h:sh.v[2]*2};if(sh.shape==="poly"){const xs=sh.v.map(p=>p[0]),ys=sh.v.map(p=>p[1]);return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}}return null}
 function sceneShapeCenter(sh){const b=sceneShapeBounds(sh);return b?{x:b.x+b.w/2,y:b.y+b.h/2}:{x:0,y:0}}

@@ -1,6 +1,16 @@
-# Frenda Frontier Ver0.43 / TEST
+# Frenda Frontier Ver0.44 / TEST
 
-## Ver0.43 - RuntimeScene描画の一体化
+## Ver0.44 - 双方向エリア移動の実機修正
+
+- `index.html` の `data-app-version` が 0.42 のまま残っていたため、Ver0.43のJSをアップロードしても iPhone / GitHub Pages が `?v=0.42` の旧JSを再利用できる状態だった問題を修正。`data-app-version=0.44` に更新。
+- エリア切替判定を「目的地へ到着した最後の1回だけ」から、**歩行中の各ステップで出口領域へ入った瞬間に判定**する方式へ変更。
+- 南の街道の北出口に入れば、タップした最終座標やグリッド端数に依存せず中心開拓地へ自動切替する。
+- 二重切替防止用 `transitioning` 状態を追加。
+
+### Ver0.44 実機確認
+南の街道沿いで上端の街道へ歩く → 自動的に中心開拓地へ戻り、南入口付近から再開すればOK。
+
+## Ver0.44 - RuntimeScene描画の一体化
 
 Ver0.39で定義したエリア共通SceneSpecを、実際のゲームフィールドで使うRuntimeSceneへコンパイルする基盤を実装しました。
 
@@ -26,26 +36,26 @@ Ver0.39で定義したエリア共通SceneSpecを、実際のゲームフィー�
 
 今後、全体マップのバランス変更で道路や施設位置が変わっても、エリアごとの個別コードを書き直さないための基盤です。西の森・東の川辺・北の高台や、将来追加される未知のエリアも同じコンパイラへSceneSpecを渡すだけで、最低限遊べるフィールドを生成できます。
 
-Ver0.43時点の生成マップは最終美術ではありません。地形・接続・通行・配置余地を実機で確認するための仮実マップです。全体構成確定後に正式背景・施設・当たり判定へ差し替えても、SceneSpec/RuntimeSceneのデータ構造は維持します。
+Ver0.44時点の生成マップは最終美術ではありません。地形・接続・通行・配置余地を実機で確認するための仮実マップです。全体構成確定後に正式背景・施設・当たり判定へ差し替えても、SceneSpec/RuntimeSceneのデータ構造は維持します。
 
 ### 配置
 
-画像アセットは変更していません。ZIP内の `test/frontier/` の7ファイルを `/test/frontier/` へ上書きしてください。Ver0.33以降の既存PNGはそのまま使用します。
+画像アセットは変更していません。ZIP内の `test/frontier/` の8ファイルを `/test/frontier/` へ上書きしてください。Ver0.33以降の既存PNGはそのまま使用します。
 
-## Ver0.43 修正
+## Ver0.44 修正
 - SceneSpec生成エリアで renderer JS が未反映・旧キャッシュの場合でも、暗い背景＋キャラだけにならない安全fallback描画を追加。
 - generated area renderer は実行時に `window.FRENDA_FRONTIER_RENDERER` から再取得し、読み込み順・旧参照の影響を回避。
 - renderer version sentinel: `RENDERER_VERSION=0.41`。
 
 
-## Ver0.43 実機修正
+## Ver0.44 実機修正
 - iPhone実機で `renderer未反映→安全表示` になるケースを確認。
 - SceneSpec生成エリアの基礎描画を `frontier-ui.js` 側へ統合し、`frontier-render.js` の読込タイミング・キャッシュに依存しない構成へ変更。
 - 生成マップの地形・通行域・施設候補・接続口は従来どおり同一RuntimeSceneを参照。
 - `frontier-render.js` は中心開拓地等の高密度描画を担当し、生成エリアの成立条件から分離。
 
 
-## Ver0.43
+## Ver0.44
 - SceneSpec生成エリアの出口判定が authored nav を参照して戻れない問題を修正。
 - 実際に描画・通行に使う RuntimeScene の exits を接続判定にも使用。
 - グリッド中心座標と境界矩形の端数差を吸収するため、出口判定に1セル強の許容幅を追加。
