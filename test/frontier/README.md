@@ -1,6 +1,6 @@
-# Frenda Frontier Ver0.47 / TEST
+# Frenda Frontier Ver0.48 / TEST
 
-## Ver0.47 - 5エリア移動基盤完成
+## Ver0.48 - 5エリア移動基盤完成
 
 - 西の森外縁・東の川辺・北の高台を `scene-spec-v2` の仮実マップとして有効化。
 - 中心開拓地から南・西・東・北の4方向へ歩いて移動し、各エリアから中心へ戻れる構造に統一。
@@ -68,7 +68,7 @@ Ver0.39で定義したエリア共通SceneSpecを、実際のゲームフィー�
 - NPC表示位置もSceneSpecのNPC活動域から生成
 - 施設枠は「最終建物座標」ではなく、全体構成変更に耐えられる建設可能領域として表示
 - エリア仕様画面でSceneSpecとRuntimeSceneの両方を検証
-- `AREA_SCENE_SCHEMA` v2 / 世界構造 Ver6 / save schemaVersion 12
+- `AREA_SCENE_SCHEMA` v2 / 世界構造 Ver6 / save schemaVersion 13
 
 ### 設計上の目的
 
@@ -97,3 +97,11 @@ Ver0.44時点の生成マップは最終美術ではありません。地形・�
 - SceneSpec生成エリアの出口判定が authored nav を参照して戻れない問題を修正。
 - 実際に描画・通行に使う RuntimeScene の exits を接続判定にも使用。
 - グリッド中心座標と境界矩形の端数差を吸収するため、出口判定に1セル強の許容幅を追加。
+
+
+## Ver0.48 5エリア往復TEST
+- 西の森外縁／北の高台／東の川辺／南の街道沿いについて、中心開拓地との往復を1つのTESTフローで確認できるようにした。
+- TEST開始時に5エリアを表示上「利用可能」にし、中心開拓地へ戻して、西→北→東→南の順に案内する。
+- エリア遷移ごとに往路・復路を自動記録し、4エリアすべて往復すると完了表示になる。
+- `townRoundTripDiagnostics()` を追加。実機確認前に接続定義・出口・到着点・往復経路・sceneReadyを自動診断する。
+- save schemaVersion 13。旧セーブは自動移行。

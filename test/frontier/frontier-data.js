@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.47 / world structure Ver6 + common area scene specification / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.48 / world structure Ver6 + common area scene specification / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.47";
+F.VERSION="0.48";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -250,7 +250,7 @@ F.AREA_DEFS=Object.freeze([
   world:{gx:-1,gy:0,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"wide",theme:"forest_edge",growth:"branch",sceneTemplate:"branch_forest",viewProfile:"town_mobile",travelCost:2,
    terrainTags:["forest","nature","gathering"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:7},futurePorts:["west","north"],
    expansionProfiles:{west:["deep_forest"],north:["pasture","foothill"]}},
-  startState:"locked",description:"冒険・採集系の拠点へ伸ばしやすい森側の土地。Ver0.47ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
+  startState:"locked",description:"冒険・採集系の拠点へ伸ばしやすい森側の土地。Ver0.48ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
    discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
  {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],
   world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"wide",theme:"roadside",growth:"corridor",sceneTemplate:"corridor",viewProfile:"town_mobile",travelCost:1,
@@ -278,13 +278,13 @@ F.AREA_DEFS=Object.freeze([
   world:{gx:1,gy:0,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"standard",theme:"riverside",growth:"branch",sceneTemplate:"riverside",viewProfile:"town_mobile",travelCost:2,
    terrainTags:["water","river","life"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:9},futurePorts:["east","south"],
    expansionProfiles:{east:["far_bank"],south:["wetland"]}},
-  startState:"locked",description:"水場を生かした生活・加工・研究方面へ伸ばしやすい川辺。Ver0.47ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"east"}},transitions:{
+  startState:"locked",description:"水場を生かした生活・加工・研究方面へ伸ばしやすい川辺。Ver0.48ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"east"}},transitions:{
    discovered:{need:12,label:"川辺を調べる"},clearing:{need:18,label:"川辺を安全にする"},usable:{need:28,label:"川辺の区画を使えるようにする"},developed:{need:50,label:"護岸と通路を整える"}}},
  {id:"north_highland",name:"北の高台",icon:"⛰️",tags:["rock","forge","residential"],
   world:{gx:0,gy:-1,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"standard",theme:"highland",growth:"terrace",sceneTemplate:"terrace",viewProfile:"town_mobile",travelCost:2,
    terrainTags:["highland","rock","residential"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:10},futurePorts:["north","east","west"],
    expansionProfiles:{north:["foothill"],east:["quarry"],west:["highland_meadow"]}},
-  startState:"locked",description:"岩場と高低差を生かし、工房・住宅・鉱山方面へつなげやすい土地。Ver0.47ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"north"}},transitions:{
+  startState:"locked",description:"岩場と高低差を生かし、工房・住宅・鉱山方面へつなげやすい土地。Ver0.48ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"north"}},transitions:{
    discovered:{need:14,label:"北の高台を調べる"},clearing:{need:22,label:"高台への道を作る"},usable:{need:32,label:"高台を町域にする"},developed:{need:54,label:"高台の階段と道を整える"}}}
 ]);
 F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
