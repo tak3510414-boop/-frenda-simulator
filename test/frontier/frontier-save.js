@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.48 / persistent world structure Ver6 + common area scene save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.49 / persistent world structure Ver6 + common area scene save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -12,7 +12,7 @@ F.freshSave=()=>({
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
- history:[],townWorld:{worldId:"frontier_town",layoutRevision:1,structureVersion:1,areaSchemaVersion:1,currentAreaId:"core",visitedAreas:["core"],fastTravelNodes:[]},townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}},settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false},townTravelTest:{active:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}}}
+ history:[],townWorld:{worldId:"frontier_town",layoutRevision:1,structureVersion:1,areaSchemaVersion:1,currentAreaId:"core",visitedAreas:["core"],fastTravelNodes:[]},townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}},settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false},townTravelTest:{active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}}}
 });
 function inferPriority(t){
  if(t?.priority&&["standard","commerce","forge","life","adventure"].includes(t.priority))return t.priority;
@@ -84,8 +84,8 @@ F.normalizeSave=s=>{
  s.settings.townAreaTest.states=s.settings.townAreaTest.states&&typeof s.settings.townAreaTest.states==="object"?s.settings.townAreaTest.states:{};
  s.settings.townNavTest=s.settings.townNavTest&&typeof s.settings.townNavTest==="object"?s.settings.townNavTest:{overlay:false};
  s.settings.townNavTest.overlay=!!s.settings.townNavTest.overlay;
- s.settings.townTravelTest=s.settings.townTravelTest&&typeof s.settings.townTravelTest==="object"?s.settings.townTravelTest:{active:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}};
- s.settings.townTravelTest.active=!!s.settings.townTravelTest.active;s.settings.townTravelTest.outbound=s.settings.townTravelTest.outbound&&typeof s.settings.townTravelTest.outbound==="object"?s.settings.townTravelTest.outbound:{};s.settings.townTravelTest.roundTrips=s.settings.townTravelTest.roundTrips&&typeof s.settings.townTravelTest.roundTrips==="object"?s.settings.townTravelTest.roundTrips:{};
+ s.settings.townTravelTest=s.settings.townTravelTest&&typeof s.settings.townTravelTest==="object"?s.settings.townTravelTest:{active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}};
+ s.settings.townTravelTest.active=!!s.settings.townTravelTest.active;s.settings.townTravelTest.forceAllUsable=!!s.settings.townTravelTest.forceAllUsable;s.settings.townTravelTest.outbound=s.settings.townTravelTest.outbound&&typeof s.settings.townTravelTest.outbound==="object"?s.settings.townTravelTest.outbound:{};s.settings.townTravelTest.roundTrips=s.settings.townTravelTest.roundTrips&&typeof s.settings.townTravelTest.roundTrips==="object"?s.settings.townTravelTest.roundTrips:{};
  s.townWorld=s.townWorld&&typeof s.townWorld==="object"?s.townWorld:{worldId:"frontier_town",layoutRevision:1,structureVersion:1,areaSchemaVersion:1,currentAreaId:"core",visitedAreas:["core"],fastTravelNodes:[]};
  s.townWorld.worldId=F.TOWN_WORLD_DEF?.id||"frontier_town";s.townWorld.layoutRevision=Number(F.TOWN_WORLD_DEF?.layoutRevision)||1;s.townWorld.structureVersion=Number(F.TOWN_WORLD_DEF?.structureVersion)||1;s.townWorld.areaSchemaVersion=Number(F.AREA_SCENE_SCHEMA?.version)||1;
  s.townWorld.currentAreaId=F.areaDef?.(s.townWorld.currentAreaId)?s.townWorld.currentAreaId:(F.areaDef?.(s.townMovement?.areaId)?s.townMovement.areaId:"core");
