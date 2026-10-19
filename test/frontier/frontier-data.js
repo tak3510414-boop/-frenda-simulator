@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.39 / world structure Ver5 + common area scene specification / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.40 / world structure Ver6 + common area scene specification / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.39";
+F.VERSION="0.40";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -79,15 +79,15 @@ F.FACILITY_DEFS=Object.freeze([
 // Ver0.38: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
 // ここで固定するのはエリアの役割・地形特性・接続能力・収容量など。道路や建物のピクセル座標はまだ固定しない。
 F.TOWN_WORLD_DEF=Object.freeze({
- id:"frontier_town",layoutRevision:4,status:"planning",startArea:"core",coordinateMode:"logical-grid",
+ id:"frontier_town",layoutRevision:5,status:"planning",startArea:"core",coordinateMode:"logical-grid",
  sceneMode:"connected-area-stream",transitionMode:"edge-gate",preloadNeighbors:1,hardAreaLimit:null,
- extensible:true,structureVersion:5,
- description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。Ver0.39から全エリアを共通のSceneSpec（入口・出口・通行・施設枠・工事枠・NPC活動域・将来拡張口）で設計する。"
+ extensible:true,structureVersion:6,
+ description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。Ver0.40から全エリアを共通のSceneSpec（入口・出口・通行・施設枠・工事枠・NPC活動域・将来拡張口）で設計する。"
 });
 F.TOWN_SCENE_POLICY=Object.freeze({
  mode:"connected-area-stream",localSceneDefault:{w:717,h:842},preloadNeighborDepth:1,
  unloadDistantScenes:true,keepLogicalState:true,transition:"edge-gate",
- areaSchemaVersion:1,zoneModel:"normalized-scene-spec",note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。各エリアは共通SceneSpecを持ち、隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
+ areaSchemaVersion:2,zoneModel:"scene-spec-compiler",note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。各エリアは共通SceneSpecを持ち、隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
 });
 
 // Ver0.38: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
@@ -157,20 +157,20 @@ F.AREA_STATE_INFO=Object.freeze({
 });
 
 
-// Ver0.39: 各実マップを作り込む前に、全エリアを同じ規格で扱うSceneSpecを定義する。
+// Ver0.40: 各実マップを作り込む前に、全エリアを同じ規格で扱うSceneSpecを定義する。
 // 1000x1000の論理座標で設計し、実Canvasサイズへコンパイルする。将来マップ画像のサイズやカメラ方式が変わっても、
 // 施設枠・工事枠・NPC活動域・入口/出口・将来拡張口の意味は維持できる。
 F.AREA_VIEW_PROFILES=Object.freeze({
  town_mobile:{id:"town_mobile",label:"町フィールド（スマホ）",canvas:{w:717,h:842},playfield:{x:0,y:0,w:590,h:842},uiReserved:{x:590,y:0,w:127,h:842},camera:"fixed-area"}
 });
 F.AREA_SCENE_SCHEMA=Object.freeze({
- version:1,logical:{w:1000,h:1000},defaultViewProfile:"town_mobile",
+ version:2,logical:{w:1000,h:1000},defaultViewProfile:"town_mobile",
  zoneKinds:Object.freeze({
   walk:{label:"主要通行域",icon:"👣"},facility:{label:"施設配置枠",icon:"🏠"},construction:{label:"工事用退避域",icon:"🏗️"},
   npc:{label:"NPC活動域",icon:"🧑"},landmark:{label:"ランドマーク枠",icon:"📍"},service:{label:"物流・裏動線",icon:"📦"}
  }),
  required:["walk","facility","construction","npc"],
- note:"見た目の画像とは独立した論理仕様。実マップ確定後も、同じSceneSpecから通行・建築・NPC・接続を組み立てる。"
+ note:"見た目の画像とは独立した論理仕様。Ver0.40からSceneSpecを実マップ用RuntimeSceneへコンパイルし、通行・施設枠・工事域・NPC活動・接続口を同じデータから生成する。"
 });
 F.areaViewProfile=id=>F.AREA_VIEW_PROFILES?.[id]||F.AREA_VIEW_PROFILES?.[F.AREA_SCENE_SCHEMA?.defaultViewProfile]||null;
 
@@ -253,10 +253,10 @@ F.AREA_DEFS=Object.freeze([
   startState:"locked",description:"冒険・採集系の拠点へ伸ばしやすい森側の土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
    discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
  {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],
-  world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",sizeClass:"wide",theme:"roadside",growth:"corridor",sceneTemplate:"corridor",viewProfile:"town_mobile",travelCost:1,
+  world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"wide",theme:"roadside",growth:"corridor",sceneTemplate:"corridor",viewProfile:"town_mobile",travelCost:1,
    terrainTags:["road","open","commerce"],capacity:{facilitySlots:8,landmarkSlots:1,residentCapacity:12},futurePorts:["south","east","west"],
    expansionProfiles:{south:["trade_route"],east:["plain"],west:["pasture","plain"]}},
-  startState:"locked",description:"行商・市場・倉庫など商業と物流を伸ばしやすい街道側。Ver0.38ではエリア接続確認用の仮実マップを持つ。",
+  startState:"locked",description:"行商・市場・倉庫など商業と物流を伸ばしやすい街道側。Ver0.40ではSceneSpecから通行・施設枠・NPC活動・接続口を自動生成した仮実マップを使用する。",
   nav:{scene:{w:717,h:842,cell:14},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:110},entries:{core:{x:295,y:92}},
    exits:[{id:"north",to:"core",x:205,y:0,w:180,h:76,entry:{x:295,y:92}}],
    base:{defaultWalkable:true,

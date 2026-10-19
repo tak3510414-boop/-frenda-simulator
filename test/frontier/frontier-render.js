@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.39 / pixel-map renderer / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.40 / pixel-map renderer / Updated: 2026-10-19 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
 const W=180,H=240;
@@ -293,4 +293,37 @@ R.renderTown=(canvas,s)=>{const c=setupTownHi(canvas);if(!c)return;hgrass(c);
  // extra tiny shadows/footprints and foreground foliage.
  for(const [x,y] of [[144,188],[212,188],[147,285],[211,285],[88,273],[275,270]]){hrect(c,x,y,7,2,'#00000018');hpx(c,x+2,y+3,'#938c7e')}
  htree(c,-2,471,1.2);htree(c,361,471,1.2);htree(c,25,472,.92);htree(c,335,472,.92);
+
+
+// --- Ver0.40: SceneSpec -> generated runtime area renderer ---
+function rHash(x,y,k=0){let n=(Math.imul((x|0)+17,73856093)^Math.imul((y|0)+31,19349663)^Math.imul(k+7,83492791))>>>0;n^=n>>>13;n=Math.imul(n,1274126177)>>>0;return(n>>>0)/4294967295}
+function rShapePath(c,sh){if(!sh)return false;c.beginPath();if(sh.shape==='rect'){const[x,y,w,h]=sh.v;c.rect(x,y,w,h);return true}if(sh.shape==='circle'){c.arc(sh.v[0],sh.v[1],sh.v[2],0,Math.PI*2);return true}if(sh.shape==='poly'&&sh.v.length){c.moveTo(sh.v[0][0],sh.v[0][1]);for(let i=1;i<sh.v.length;i++)c.lineTo(sh.v[i][0],sh.v[i][1]);c.closePath();return true}return false}
+function rFillShape(c,sh,fill,stroke=null,alpha=1){c.save();c.globalAlpha=alpha;if(rShapePath(c,sh)){c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke()}}c.restore()}
+function rBounds(sh){if(!sh)return null;if(sh.shape==='rect')return{x:sh.v[0],y:sh.v[1],w:sh.v[2],h:sh.v[3]};if(sh.shape==='circle')return{x:sh.v[0]-sh.v[2],y:sh.v[1]-sh.v[2],w:sh.v[2]*2,h:sh.v[2]*2};if(sh.shape==='poly'){const xs=sh.v.map(p=>p[0]),ys=sh.v.map(p=>p[1]);return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}}return null}
+function rGrassTexture(c,rect,k=0){const{x,y,w,h}=rect;c.fillStyle='#6e9b4f';c.fillRect(x,y,w,h);for(let yy=y+5;yy<y+h;yy+=10)for(let xx=x+5;xx<x+w;xx+=11){const n=rHash(xx,yy,k);if(n>.55){c.fillStyle=n>.82?'#96bd6d':'#4f7d41';c.fillRect(xx,yy,2,4);if(n>.76)c.fillRect(xx+3,yy+1,2,3)}if(n<.08){c.fillStyle='#d8d2aa';c.fillRect(xx,yy,3,2)}}}
+function rDirtShape(c,sh,k=0){rFillShape(c,sh,'#c79d61','#a77a49',1);const b=rBounds(sh);if(!b)return;c.save();rShapePath(c,sh);c.clip();for(let yy=b.y+7;yy<b.y+b.h;yy+=13)for(let xx=b.x+7;xx<b.x+b.w;xx+=15){const n=rHash(xx,yy,k);if(n>.57){c.fillStyle=n>.82?'#ead09a':'#a87949';c.fillRect(xx,yy,4,2)}if(n<.11){c.fillStyle='#7f9a58';c.fillRect(xx,yy,2,4)}}c.restore()}
+function rTree(c,x,y,s=1){c.save();c.fillStyle='#0003';c.beginPath();c.ellipse(x,y+18*s,20*s,7*s,0,0,Math.PI*2);c.fill();c.fillStyle='#6a4a31';c.fillRect(x-4*s,y+5*s,8*s,24*s);c.fillStyle='#2e6135';c.fillRect(x-20*s,y-8*s,40*s,25*s);c.fillStyle='#468044';c.fillRect(x-15*s,y-18*s,30*s,27*s);c.fillStyle='#68a052';c.fillRect(x-8*s,y-24*s,19*s,18*s);c.fillStyle='#91bc69';c.fillRect(x-5*s,y-20*s,7*s,5*s);c.restore()}
+function rRock(c,x,y,s=1){c.fillStyle='#6f756b';c.fillRect(x-13*s,y-8*s,26*s,16*s);c.fillStyle='#9aa08e';c.fillRect(x-8*s,y-12*s,16*s,10*s);c.fillStyle='#b8bba9';c.fillRect(x-4*s,y-10*s,8*s,4*s)}
+function rStake(c,x,y){c.fillStyle='#6b4a2d';c.fillRect(x-2,y-2,5,18);c.fillStyle='#8e6740';c.fillRect(x-3,y-3,7,4)}
+function rCrate(c,x,y){c.fillStyle='#68472d';c.fillRect(x,y,22,18);c.fillStyle='#a47748';c.fillRect(x+2,y+2,18,14);c.strokeStyle='#6f4c31';c.lineWidth=2;c.beginPath();c.moveTo(x+3,y+3);c.lineTo(x+19,y+15);c.moveTo(x+19,y+3);c.lineTo(x+3,y+15);c.stroke()}
+function rBarrel(c,x,y){c.fillStyle='#6a4930';c.fillRect(x,y,15,22);c.fillStyle='#9b7047';c.fillRect(x+2,y+1,11,20);c.fillStyle='#59402c';c.fillRect(x,y+5,15,3);c.fillRect(x,y+15,15,3)}
+function rSign(c,x,y,text=''){c.fillStyle='#5c4029';c.fillRect(x-3,y,6,31);c.fillStyle='#8c6139';c.fillRect(x-24,y-16,48,20);c.fillStyle='#d8bd7c';c.fillRect(x-21,y-13,42,14);if(text){c.fillStyle='#3a362d';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(text,x,y-3)}}
+function rCommandPanel(c){c.fillStyle='#062d54';c.fillRect(590,350,118,420);c.strokeStyle='#e6f3ff';c.lineWidth=3;c.strokeRect(590,350,118,420);c.fillStyle='#fff';c.font='bold 17px sans-serif';c.textAlign='left';c.fillText('▶ コマンド',602,374);const cmds=['💬 話す','🏠 家へ','🌱 相棒','🗺️ 冒険','🏪 お店','🔨 建設','👣 いどう','📖 図鑑'];c.font='bold 15px sans-serif';cmds.forEach((t,i)=>{const y=382+i*47;c.fillStyle=i===2?'#0d7a49':'#07549a';c.fillRect(599,y,100,38);c.strokeStyle='#78c6ff';c.strokeRect(599,y,100,38);c.fillStyle='#fff';c.fillText(t,606,y+25)})}
+R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||window.FRENDA_FRONTIER?.compileAreaScene?.(areaId,s);if(!canvas||!compiled)return null;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);c.fillStyle='#294e32';c.fillRect(0,0,717,842);rGrassTexture(c,compiled.playfield,19);
+ // reserve buildable lots as natural clearings first. Roads are painted over them so the visual and walkable route stay consistent.
+ for(const f of compiled.facilitySlots){const b=f.bounds;if(!b)continue;c.save();c.globalAlpha=.72;c.fillStyle='#7fa45c';c.fillRect(b.x+5,b.y+5,Math.max(8,b.w-10),Math.max(8,b.h-10));c.restore()}
+ // main routes generated from the same walk zones used by path finding
+ for(const z of compiled.walkZones)rDirtShape(c,z.pixelShape,31);
+ // lot markers are small props only; they never cover the generated road.
+ for(const f of compiled.facilitySlots){const b=f.bounds;if(!b)continue;rStake(c,b.x+10,b.y+10);rStake(c,b.x+b.w-12,b.y+10);if(f.slot<=3)rSign(c,f.entrance.x,f.entrance.y-8,`区画${f.slot}`)}
+ // landmark and service props
+ for(const l of compiled.landmarkSlots){const p=l.center;rSign(c,p.x,p.y,'目印');rBarrel(c,p.x+26,p.y-4)}
+ for(const z of compiled.serviceZones){const b=z.bounds;if(!b)continue;rCrate(c,b.x+16,b.y+16);rCrate(c,b.x+43,b.y+21);rBarrel(c,b.x+71,b.y+15)}
+ // forest/rocks around map edge: deterministic and deliberately outside main road rhythm
+ for(let y=38;y<805;y+=64){for(const x of [25,72,520,560]){if(rHash(x,y,51)>.22)rTree(c,x,y,.9+rHash(x,y,52)*.25)}}for(const [x,y] of [[110,125],[485,150],[92,565],[505,610],[155,745],[455,735]])rRock(c,x,y,.9);
+ // port markers
+ for(const p of compiled.ports){const b=rBounds(p.pixelShape);if(!b)continue;const x=b.x+b.w/2,y=b.y+b.h/2;if(p.connected){const target=window.FRENDA_FRONTIER?.areaDef?.(p.targetAreaId);rSign(c,x,Math.max(24,Math.min(810,y)),target?.name||'接続')}else if(p.future){rSign(c,x,Math.max(24,Math.min(810,y)),'未開拓')}}
+ // compiler badge + command panel
+ c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,275,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`SceneSpec生成：${compiled.areaName}`,31,807);rCommandPanel(c);return compiled};
+
 };})();
