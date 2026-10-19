@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.38 / world structure Ver4 + scalable area planning architecture / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.39 / world structure Ver5 + common area scene specification / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.38";
+F.VERSION="0.39";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -79,15 +79,15 @@ F.FACILITY_DEFS=Object.freeze([
 // Ver0.38: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
 // ここで固定するのはエリアの役割・地形特性・接続能力・収容量など。道路や建物のピクセル座標はまだ固定しない。
 F.TOWN_WORLD_DEF=Object.freeze({
- id:"frontier_town",layoutRevision:3,status:"planning",startArea:"core",coordinateMode:"logical-grid",
+ id:"frontier_town",layoutRevision:4,status:"planning",startArea:"core",coordinateMode:"logical-grid",
  sceneMode:"connected-area-stream",transitionMode:"edge-gate",preloadNeighbors:1,hardAreaLimit:null,
- extensible:true,structureVersion:4,
- description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。隣接地区は歩行接続、遠距離は選択式高速移動を基本とする。"
+ extensible:true,structureVersion:5,
+ description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。Ver0.39から全エリアを共通のSceneSpec（入口・出口・通行・施設枠・工事枠・NPC活動域・将来拡張口）で設計する。"
 });
 F.TOWN_SCENE_POLICY=Object.freeze({
  mode:"connected-area-stream",localSceneDefault:{w:717,h:842},preloadNeighborDepth:1,
  unloadDistantScenes:true,keepLogicalState:true,transition:"edge-gate",
- note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
+ areaSchemaVersion:1,zoneModel:"normalized-scene-spec",note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。各エリアは共通SceneSpecを持ち、隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
 });
 
 // Ver0.38: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
@@ -156,12 +156,88 @@ F.AREA_STATE_INFO=Object.freeze({
  usable:{label:"利用可能",icon:"🚶"}, developed:{label:"整備済み",icon:"🏘️"}
 });
 
+
+// Ver0.39: 各実マップを作り込む前に、全エリアを同じ規格で扱うSceneSpecを定義する。
+// 1000x1000の論理座標で設計し、実Canvasサイズへコンパイルする。将来マップ画像のサイズやカメラ方式が変わっても、
+// 施設枠・工事枠・NPC活動域・入口/出口・将来拡張口の意味は維持できる。
+F.AREA_VIEW_PROFILES=Object.freeze({
+ town_mobile:{id:"town_mobile",label:"町フィールド（スマホ）",canvas:{w:717,h:842},playfield:{x:0,y:0,w:590,h:842},uiReserved:{x:590,y:0,w:127,h:842},camera:"fixed-area"}
+});
+F.AREA_SCENE_SCHEMA=Object.freeze({
+ version:1,logical:{w:1000,h:1000},defaultViewProfile:"town_mobile",
+ zoneKinds:Object.freeze({
+  walk:{label:"主要通行域",icon:"👣"},facility:{label:"施設配置枠",icon:"🏠"},construction:{label:"工事用退避域",icon:"🏗️"},
+  npc:{label:"NPC活動域",icon:"🧑"},landmark:{label:"ランドマーク枠",icon:"📍"},service:{label:"物流・裏動線",icon:"📦"}
+ }),
+ required:["walk","facility","construction","npc"],
+ note:"見た目の画像とは独立した論理仕様。実マップ確定後も、同じSceneSpecから通行・建築・NPC・接続を組み立てる。"
+});
+F.areaViewProfile=id=>F.AREA_VIEW_PROFILES?.[id]||F.AREA_VIEW_PROFILES?.[F.AREA_SCENE_SCHEMA?.defaultViewProfile]||null;
+
+// normalized座標はplayfield内を 0..1000 とする。portsも同じ規格で、隣接エリア追加時に接続定義から自動生成する。
+F.AREA_SCENE_TEMPLATE_DEFS=Object.freeze({
+ hub:{id:"hub",label:"中心・広場型",icon:"🔶",zones:[
+  {id:"walk_ns",kind:"walk",shape:"rect",v:[420,0,160,1000]},{id:"walk_ew",kind:"walk",shape:"rect",v:[0,405,1000,190]},
+  {id:"walk_center",kind:"walk",shape:"circle",v:[500,500,210]},
+  {id:"facility_nw",kind:"facility",slot:1,shape:"rect",v:[55,75,280,250]},{id:"facility_ne",kind:"facility",slot:2,shape:"rect",v:[665,75,280,250]},
+  {id:"facility_w",kind:"facility",slot:3,shape:"rect",v:[55,650,260,240]},{id:"facility_e",kind:"facility",slot:4,shape:"rect",v:[685,650,260,240]},
+  {id:"facility_mid_w",kind:"facility",slot:5,shape:"rect",v:[65,330,245,185]},{id:"facility_mid_e",kind:"facility",slot:6,shape:"rect",v:[690,330,245,185]},
+  {id:"facility_center_s",kind:"facility",slot:7,shape:"rect",v:[355,635,290,205]},
+  {id:"landmark_center",kind:"landmark",slot:1,shape:"circle",v:[500,500,120]},{id:"landmark_north",kind:"landmark",slot:2,shape:"rect",v:[420,95,160,135]},
+  {id:"construction_w",kind:"construction",shape:"rect",v:[40,285,275,150]},{id:"construction_e",kind:"construction",shape:"rect",v:[685,285,275,150]},
+  {id:"construction_s",kind:"construction",shape:"rect",v:[335,700,330,170]},
+  {id:"npc_center",kind:"npc",shape:"circle",v:[500,510,255]},{id:"npc_market",kind:"npc",shape:"rect",v:[625,300,315,330]},{id:"npc_life",kind:"npc",shape:"rect",v:[55,575,310,315]},
+  {id:"service_north",kind:"service",shape:"rect",v:[350,0,300,155]}
+ ],ports:{north:{shape:"rect",v:[420,0,160,82],arrival:[500,105]},south:{shape:"rect",v:[405,918,190,82],arrival:[500,890]},west:{shape:"rect",v:[0,420,82,160],arrival:[105,500]},east:{shape:"rect",v:[918,420,82,160],arrival:[890,500]},nw:{shape:"rect",v:[0,90,82,130],arrival:[105,155]},ne:{shape:"rect",v:[918,90,82,130],arrival:[890,155]}}},
+ corridor:{id:"corridor",label:"街道・回廊型",icon:"🛣️",zones:[
+  {id:"walk_main",kind:"walk",shape:"rect",v:[405,0,190,1000]},{id:"walk_cross_n",kind:"walk",shape:"rect",v:[210,215,580,150]},{id:"walk_cross_s",kind:"walk",shape:"rect",v:[185,620,630,150]},
+  {id:"facility_l1",kind:"facility",slot:1,shape:"rect",v:[40,80,300,190]},{id:"facility_r1",kind:"facility",slot:2,shape:"rect",v:[660,80,300,190]},
+  {id:"facility_l2",kind:"facility",slot:3,shape:"rect",v:[40,300,300,190]},{id:"facility_r2",kind:"facility",slot:4,shape:"rect",v:[660,300,300,190]},
+  {id:"facility_l3",kind:"facility",slot:5,shape:"rect",v:[40,525,300,190]},{id:"facility_r3",kind:"facility",slot:6,shape:"rect",v:[660,525,300,190]},
+  {id:"facility_l4",kind:"facility",slot:7,shape:"rect",v:[40,745,300,190]},{id:"facility_r4",kind:"facility",slot:8,shape:"rect",v:[660,745,300,190]},
+  {id:"landmark_mid",kind:"landmark",slot:1,shape:"rect",v:[425,410,150,150]},
+  {id:"construction_l",kind:"construction",shape:"rect",v:[65,390,250,170]},{id:"construction_r",kind:"construction",shape:"rect",v:[685,390,250,170]},
+  {id:"npc_road",kind:"npc",shape:"rect",v:[345,70,310,860]},{id:"npc_merchants",kind:"npc",shape:"rect",v:[80,240,840,500]},
+  {id:"service_logistics",kind:"service",shape:"rect",v:[30,800,330,150]}
+ ],ports:{north:{shape:"rect",v:[405,0,190,82],arrival:[500,110]},south:{shape:"rect",v:[405,918,190,82],arrival:[500,890]},west:{shape:"rect",v:[0,420,82,160],arrival:[105,500]},east:{shape:"rect",v:[918,420,82,160],arrival:[890,500]}}},
+ branch_forest:{id:"branch_forest",label:"森・枝分かれ型",icon:"🌲",zones:[
+  {id:"walk_trunk",kind:"walk",shape:"rect",v:[430,0,155,1000]},{id:"walk_branch_w",kind:"walk",shape:"rect",v:[100,360,390,145]},{id:"walk_branch_e",kind:"walk",shape:"rect",v:[520,610,365,145]},
+  {id:"facility_1",kind:"facility",slot:1,shape:"rect",v:[90,95,270,210]},{id:"facility_2",kind:"facility",slot:2,shape:"rect",v:[650,95,255,210]},
+  {id:"facility_3",kind:"facility",slot:3,shape:"rect",v:[85,545,275,215]},{id:"facility_4",kind:"facility",slot:4,shape:"rect",v:[645,470,270,205]},
+  {id:"facility_5",kind:"facility",slot:5,shape:"rect",v:[365,760,280,185]},
+  {id:"landmark_forest",kind:"landmark",slot:1,shape:"circle",v:[510,475,115]},
+  {id:"construction_clearing",kind:"construction",shape:"rect",v:[315,285,380,180]},
+  {id:"npc_trail",kind:"npc",shape:"rect",v:[330,70,350,860]},{id:"npc_gather",kind:"npc",shape:"rect",v:[80,300,835,460]},
+  {id:"service_gather",kind:"service",shape:"rect",v:[70,770,275,160]}
+ ],ports:{east:{shape:"rect",v:[918,420,82,160],arrival:[890,500]},west:{shape:"rect",v:[0,420,82,160],arrival:[105,500]},north:{shape:"rect",v:[430,0,155,82],arrival:[510,110]},south:{shape:"rect",v:[430,918,155,82],arrival:[510,890]}}},
+ riverside:{id:"riverside",label:"川辺・水路型",icon:"🌊",zones:[
+  {id:"walk_bank",kind:"walk",shape:"rect",v:[120,360,760,190]},{id:"walk_spine",kind:"walk",shape:"rect",v:[430,0,160,1000]},
+  {id:"facility_1",kind:"facility",slot:1,shape:"rect",v:[70,80,280,220]},{id:"facility_2",kind:"facility",slot:2,shape:"rect",v:[650,80,280,220]},
+  {id:"facility_3",kind:"facility",slot:3,shape:"rect",v:[70,610,280,220]},{id:"facility_4",kind:"facility",slot:4,shape:"rect",v:[650,610,280,220]},
+  {id:"facility_5",kind:"facility",slot:5,shape:"rect",v:[365,600,270,210]},
+  {id:"landmark_water",kind:"landmark",slot:1,shape:"rect",v:[385,310,230,170]},
+  {id:"construction_bank",kind:"construction",shape:"rect",v:[115,555,770,140]},
+  {id:"npc_waterfront",kind:"npc",shape:"rect",v:[110,260,780,470]},{id:"service_dock",kind:"service",shape:"rect",v:[670,720,250,170]}
+ ],ports:{west:{shape:"rect",v:[0,420,82,160],arrival:[105,500]},east:{shape:"rect",v:[918,420,82,160],arrival:[890,500]},south:{shape:"rect",v:[430,918,160,82],arrival:[510,890]},north:{shape:"rect",v:[430,0,160,82],arrival:[510,110]}}},
+ terrace:{id:"terrace",label:"高台・段丘型",icon:"⛰️",zones:[
+  {id:"walk_steps",kind:"walk",shape:"rect",v:[430,0,150,1000]},{id:"walk_upper",kind:"walk",shape:"rect",v:[180,235,650,155]},{id:"walk_lower",kind:"walk",shape:"rect",v:[140,620,720,165]},
+  {id:"facility_1",kind:"facility",slot:1,shape:"rect",v:[75,60,285,200]},{id:"facility_2",kind:"facility",slot:2,shape:"rect",v:[640,60,285,200]},
+  {id:"facility_3",kind:"facility",slot:3,shape:"rect",v:[70,410,300,205]},{id:"facility_4",kind:"facility",slot:4,shape:"rect",v:[630,410,300,205]},
+  {id:"facility_5",kind:"facility",slot:5,shape:"rect",v:[350,755,300,180]},
+  {id:"landmark_view",kind:"landmark",slot:1,shape:"rect",v:[390,395,220,170]},
+  {id:"construction_terrace",kind:"construction",shape:"rect",v:[220,535,560,145]},
+  {id:"npc_upper",kind:"npc",shape:"rect",v:[150,130,700,340]},{id:"npc_lower",kind:"npc",shape:"rect",v:[120,530,760,360]},
+  {id:"service_rock",kind:"service",shape:"rect",v:[675,725,230,175]}
+ ],ports:{south:{shape:"rect",v:[430,918,150,82],arrival:[505,890]},north:{shape:"rect",v:[430,0,150,82],arrival:[505,110]},east:{shape:"rect",v:[918,420,82,160],arrival:[890,500]},west:{shape:"rect",v:[0,420,82,160],arrival:[105,500]}}}
+});
+F.areaSceneTemplateDef=id=>F.AREA_SCENE_TEMPLATE_DEFS?.[id]||null;
+
 // area.world の主要項目
 // sizeClass: 実マップの相対規模 / terrainTags: 地形特性 / capacity: 施設・住民の収容目安
 // travelCost: 隣接移動の重さ / expansionProfiles: その先に生成しやすい将来エリア候補
 F.AREA_DEFS=Object.freeze([
  {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],
-  world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"organic",travelCost:1,
+  world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"organic",sceneTemplate:"hub",viewProfile:"town_mobile",travelCost:1,
    terrainTags:["open","river_edge","frontier"],capacity:{facilitySlots:7,landmarkSlots:2,residentCapacity:16},futurePorts:["nw","ne"],
    expansionProfiles:{nw:["pasture","deep_forest"],ne:["highland_meadow","far_bank"]}},
   startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。最終配置は全体構成確定後に再設計する。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},entries:{south_road:{x:265,y:710},west_forest:{x:70,y:345},east_riverside:{x:520,y:445},north_highland:{x:480,y:92}},exits:[
@@ -171,13 +247,13 @@ F.AREA_DEFS=Object.freeze([
    {id:"north",to:"north_highland",x:430,y:0,w:105,h:70,entry:{x:480,y:82}}
   ]}},
  {id:"west_forest",name:"西の森外縁",icon:"🌲",tags:["nature","adventure"],
-  world:{gx:-1,gy:0,role:"expansion",sceneStatus:"planned",sizeClass:"wide",theme:"forest_edge",growth:"branch",travelCost:2,
+  world:{gx:-1,gy:0,role:"expansion",sceneStatus:"planned",sizeClass:"wide",theme:"forest_edge",growth:"branch",sceneTemplate:"branch_forest",viewProfile:"town_mobile",travelCost:2,
    terrainTags:["forest","nature","gathering"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:7},futurePorts:["west","north"],
    expansionProfiles:{west:["deep_forest"],north:["pasture","foothill"]}},
   startState:"locked",description:"冒険・採集系の拠点へ伸ばしやすい森側の土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
    discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
  {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],
-  world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",sizeClass:"wide",theme:"roadside",growth:"corridor",travelCost:1,
+  world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",sizeClass:"wide",theme:"roadside",growth:"corridor",sceneTemplate:"corridor",viewProfile:"town_mobile",travelCost:1,
    terrainTags:["road","open","commerce"],capacity:{facilitySlots:8,landmarkSlots:1,residentCapacity:12},futurePorts:["south","east","west"],
    expansionProfiles:{south:["trade_route"],east:["plain"],west:["pasture","plain"]}},
   startState:"locked",description:"行商・市場・倉庫など商業と物流を伸ばしやすい街道側。Ver0.38ではエリア接続確認用の仮実マップを持つ。",
@@ -199,13 +275,13 @@ F.AREA_DEFS=Object.freeze([
   },transitions:{
    discovered:{need:10,label:"南の街道を調べる"},clearing:{need:14,label:"街道脇を整地する"},usable:{need:22,label:"街道沿いを町域にする"},developed:{need:44,label:"物流路として整備する"}}},
  {id:"east_riverside",name:"東の川辺",icon:"🌊",tags:["water","life","craft"],
-  world:{gx:1,gy:0,role:"expansion",sceneStatus:"planned",sizeClass:"standard",theme:"riverside",growth:"branch",travelCost:2,
+  world:{gx:1,gy:0,role:"expansion",sceneStatus:"planned",sizeClass:"standard",theme:"riverside",growth:"branch",sceneTemplate:"riverside",viewProfile:"town_mobile",travelCost:2,
    terrainTags:["water","river","life"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:9},futurePorts:["east","south"],
    expansionProfiles:{east:["far_bank"],south:["wetland"]}},
   startState:"locked",description:"水場を生かした生活・加工・研究方面へ伸ばしやすい川辺。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"east"}},transitions:{
    discovered:{need:12,label:"川辺を調べる"},clearing:{need:18,label:"川辺を安全にする"},usable:{need:28,label:"川辺の区画を使えるようにする"},developed:{need:50,label:"護岸と通路を整える"}}},
  {id:"north_highland",name:"北の高台",icon:"⛰️",tags:["rock","forge","residential"],
-  world:{gx:0,gy:-1,role:"expansion",sceneStatus:"planned",sizeClass:"standard",theme:"highland",growth:"terrace",travelCost:2,
+  world:{gx:0,gy:-1,role:"expansion",sceneStatus:"planned",sizeClass:"standard",theme:"highland",growth:"terrace",sceneTemplate:"terrace",viewProfile:"town_mobile",travelCost:2,
    terrainTags:["highland","rock","residential"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:10},futurePorts:["north","east","west"],
    expansionProfiles:{north:["foothill"],east:["quarry"],west:["highland_meadow"]}},
   startState:"locked",description:"岩場と高低差を生かし、工房・住宅・鉱山方面へつなげやすい土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"north"}},transitions:{
