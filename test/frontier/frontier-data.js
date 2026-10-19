@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.37 / world structure Ver4 + scalable area planning architecture / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.38 / world structure Ver4 + scalable area planning architecture / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.37";
+F.VERSION="0.38";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -76,7 +76,7 @@ F.FACILITY_DEFS=Object.freeze([
 ]);
 
 
-// Ver0.37: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
+// Ver0.38: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
 // ここで固定するのはエリアの役割・地形特性・接続能力・収容量など。道路や建物のピクセル座標はまだ固定しない。
 F.TOWN_WORLD_DEF=Object.freeze({
  id:"frontier_town",layoutRevision:3,status:"planning",startArea:"core",coordinateMode:"logical-grid",
@@ -90,7 +90,7 @@ F.TOWN_SCENE_POLICY=Object.freeze({
  note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
 });
 
-// Ver0.37: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
+// Ver0.38: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
 F.AREA_SIZE_CLASSES=Object.freeze({
  compact:{id:"compact",label:"小区画",icon:"▫️",sceneScale:0.78,facilitySlots:3,landmarkSlots:0,residentCapacity:5,traffic:"low"},
  standard:{id:"standard",label:"標準区画",icon:"◻️",sceneScale:1.00,facilitySlots:5,landmarkSlots:1,residentCapacity:10,traffic:"medium"},
@@ -99,7 +99,7 @@ F.AREA_SIZE_CLASSES=Object.freeze({
 });
 F.areaSizeClass=id=>F.AREA_SIZE_CLASSES?.[id]||F.AREA_SIZE_CLASSES?.standard||null;
 
-// Ver0.37: 将来の「未知のエリア」は、個別名称を本体へベタ書きせずテンプレートから生成する。
+// Ver0.38: 将来の「未知のエリア」は、個別名称を本体へベタ書きせずテンプレートから生成する。
 // 追加コンテンツではここへテンプレートを足せば、既存町から自然に接続候補を出せる。
 F.EXPANSION_TEMPLATE_DEFS=Object.freeze([
  {id:"deep_forest",name:"深い森",icon:"🌳",sizeClass:"wide",terrainTags:["forest","nature","gathering"],facilityTags:["adventure","gathering","ranch"],travelCost:2,capacity:{facilitySlots:5,landmarkSlots:1},unlockHint:"森側の開拓と探索を進める"},
@@ -123,7 +123,7 @@ F.TOWN_SCALE_TIERS=Object.freeze([
  {id:"city",label:"交易都市",icon:"🌇",minUsable:12,minPoints:130}
 ]);
 F.WORLD_PORT_VECTOR=Object.freeze({north:[0,-1],south:[0,1],east:[1,0],west:[-1,0],ne:[1,-1],nw:[-1,-1],se:[1,1],sw:[-1,1]});
-// Ver0.37: エリア間移動は「隣接=歩行による疑似シームレス」「遠距離=選択式高速移動」を正式基準にする。
+// Ver0.38: エリア間移動は「隣接=歩行による疑似シームレス」「遠距離=選択式高速移動」を正式基準にする。
 // 見た目の接続種別と、実際の移動方式を分離しておくことで、将来 馬車・船・転送などを追加しても既存エリア定義を作り直さない。
 F.TRAVEL_MODE_DEFS=Object.freeze({
  walk:{id:"walk",label:"歩行接続",icon:"🚶",selection:false,autoTransition:true,seamlessLike:true},
@@ -164,7 +164,7 @@ F.AREA_DEFS=Object.freeze([
   world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"organic",travelCost:1,
    terrainTags:["open","river_edge","frontier"],capacity:{facilitySlots:7,landmarkSlots:2,residentCapacity:16},futurePorts:["nw","ne"],
    expansionProfiles:{nw:["pasture","deep_forest"],ne:["highland_meadow","far_bank"]}},
-  startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。最終配置は全体構成確定後に再設計する。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},exits:[
+  startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。最終配置は全体構成確定後に再設計する。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},entries:{south_road:{x:265,y:710},west_forest:{x:70,y:345},east_riverside:{x:520,y:445},north_highland:{x:480,y:92}},exits:[
    {id:"west",to:"west_forest",x:0,y:260,w:44,h:170,entry:{x:55,y:345}},
    {id:"south",to:"south_road",x:170,y:742,w:190,h:100,entry:{x:265,y:725}},
    {id:"east",to:"east_riverside",x:548,y:355,w:42,h:185,entry:{x:530,y:445}},
@@ -177,10 +177,26 @@ F.AREA_DEFS=Object.freeze([
   startState:"locked",description:"冒険・採集系の拠点へ伸ばしやすい森側の土地。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
    discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
  {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],
-  world:{gx:0,gy:1,role:"expansion",sceneStatus:"planned",sizeClass:"wide",theme:"roadside",growth:"corridor",travelCost:1,
+  world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",sizeClass:"wide",theme:"roadside",growth:"corridor",travelCost:1,
    terrainTags:["road","open","commerce"],capacity:{facilitySlots:8,landmarkSlots:1,residentCapacity:12},futurePorts:["south","east","west"],
    expansionProfiles:{south:["trade_route"],east:["plain"],west:["pasture","plain"]}},
-  startState:"locked",description:"行商・市場・倉庫など商業と物流を伸ばしやすい街道側。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"south"}},transitions:{
+  startState:"locked",description:"行商・市場・倉庫など商業と物流を伸ばしやすい街道側。Ver0.38ではエリア接続確認用の仮実マップを持つ。",
+  nav:{scene:{w:717,h:842,cell:14},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:110},entries:{core:{x:295,y:92}},
+   exits:[{id:"north",to:"core",x:205,y:0,w:180,h:76,entry:{x:295,y:92}}],
+   base:{defaultWalkable:true,
+    blocks:[
+     {shape:"rect",v:[0,0,42,842],reason:"west_edge"},{shape:"rect",v:[570,0,20,842],reason:"east_edge"},
+     {shape:"poly",v:[[42,70],[165,70],[190,210],[150,300],[42,330]],reason:"west_woods"},
+     {shape:"poly",v:[[425,45],[570,45],[570,315],[505,300],[450,220]],reason:"east_woods"},
+     {shape:"rect",v:[78,345,125,90],reason:"roadside_cart"},{shape:"rect",v:[410,390,125,105],reason:"roadside_stock"},
+     {shape:"circle",v:[122,560,46],reason:"camp"},{shape:"rect",v:[430,600,105,75],reason:"field_fence"},
+     {shape:"poly",v:[[45,720],[215,715],[235,842],[45,842]],reason:"southwest_rough"},{shape:"poly",v:[[400,720],[570,710],[570,842],[380,842]],reason:"southeast_rough"}
+    ],
+    walk:[{shape:"poly",v:[[230,0],[365,0],[385,842],[205,842]],reason:"main_road"},{shape:"rect",v:[175,280,260,300],reason:"roadside_open"}],
+    interactions:[{id:"south_sign",type:"scenery",label:"街道の道しるべ",x:365,y:330,r:44},{id:"south_cart",type:"scenery",label:"行商人の荷車",x:210,y:420,r:48}],
+    npcWaypoints:[{id:"north_gate",x:295,y:100},{id:"road_mid",x:300,y:380},{id:"cart",x:220,y:455},{id:"camp",x:175,y:560},{id:"south_way",x:300,y:690}]
+   }
+  },transitions:{
    discovered:{need:10,label:"南の街道を調べる"},clearing:{need:14,label:"街道脇を整地する"},usable:{need:22,label:"街道沿いを町域にする"},developed:{need:44,label:"物流路として整備する"}}},
  {id:"east_riverside",name:"東の川辺",icon:"🌊",tags:["water","life","craft"],
   world:{gx:1,gy:0,role:"expansion",sceneStatus:"planned",sizeClass:"standard",theme:"riverside",growth:"branch",travelCost:2,
