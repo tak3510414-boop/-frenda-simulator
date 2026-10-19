@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.49">
+<html lang="ja" data-app-version="0.50">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver0.49</title>
+<title>Frenda Frontier Ver0.50</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -27,12 +27,13 @@ main{max-width:920px;margin:auto;padding:9px}.notice{background:#fff7d6;border:1
 .worldMapWrap{overflow:auto;border:1px solid #cbd9ce;border-radius:16px;background:linear-gradient(#eef8f1,#e6f0e8);padding:8px;margin:10px 0}.worldMapSvg{display:block;min-width:340px;width:100%;height:auto}.worldMapLink{stroke:#89958d;stroke-width:5;stroke-linecap:round;stroke-dasharray:8 7}.worldMapLink.open{stroke:#2e7d57;stroke-dasharray:none}.worldMapLinkLabel{font-size:9px;fill:#52645a;text-anchor:middle;font-weight:800}.worldMapNode rect{stroke:#fff;stroke-width:3;filter:drop-shadow(0 3px 4px #0003)}.worldMapNode rect.current{stroke:#ffd15a;stroke-width:5}.worldMapIcon{font-size:20px;text-anchor:middle}.worldMapName{font-size:10px;fill:#fff;text-anchor:middle;font-weight:900}.worldMapState{font-size:8px;fill:#f1fff5;text-anchor:middle}.worldMapNote{font-size:10px;line-height:1.55;background:#f3f7f4;border:1px solid #d4e0d6;border-radius:12px;padding:9px;margin-bottom:10px}.worldMapNote code{font-size:9px;background:#e7eeea;padding:1px 4px;border-radius:5px}.worldMapFutureLink{stroke:#9ca9a1;stroke-width:3;stroke-dasharray:5 6}.worldMapFuture circle,.worldMapFuture rect{fill:#f8fbf8;stroke:#809188;stroke-width:2;stroke-dasharray:5 4}.worldMapFuturePlus{font-size:21px;font-weight:900;fill:#567064;text-anchor:middle}.worldMapFutureText{font-size:8px;font-weight:900;fill:#60756a;text-anchor:middle}.worldMapFutureSub{font-size:6px;font-weight:800;fill:#8a978f;text-anchor:middle}.worldMapScale{display:flex;flex-direction:column;gap:2px;background:#e8f5ed;border:1px solid #bad8c4;border-radius:12px;padding:10px;margin:8px 0}.worldMapScale b{font-size:13px;color:#165b3d}.worldMapScale small{font-size:9px;color:#52645a}.worldMapPrinciples{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;background:#fff7df;border:1px solid #e2cf92;border-radius:12px;padding:9px;margin:8px 0;font-size:9px;line-height:1.45}.worldMapPrinciples b{color:#765a09}
 
 .areaSpecDetail{display:grid;grid-template-columns:minmax(190px,1fr) minmax(170px,.9fr);gap:10px;align-items:start}.areaSpecSvg{display:block;width:100%;height:auto;border-radius:14px}.areaSpecStats{font-size:10px;line-height:1.55}.areaSpecStats>b{display:block;font-size:13px;color:#24513a}.areaSpecStats>small{display:block;color:#64766b;margin-bottom:7px}.areaSpecLegend{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}.areaSpecLegend span{font-size:8px;border:1px solid #d1ddd4;border-radius:999px;padding:3px 5px;background:#f5f9f6}.specOk{background:#eaf7ee;border:1px solid #aad1b6;border-radius:10px;padding:7px;color:#24613c}.specNg{background:#fff0e6;border:1px solid #e0a889;border-radius:10px;padding:7px;color:#8a4424}@media(max-width:420px){.areaSpecDetail{grid-template-columns:1fr}}
+.storeStatusOverlay{position:absolute;left:2.5%;bottom:1.8%;z-index:28;width:68%;background:#082b4de8;color:#fff;border:2px solid #eef6ff;border-radius:11px;padding:7px 9px;box-shadow:0 4px 12px #0006;font-size:9px;line-height:1.45;pointer-events:none}.storeStatusOverlay b,.storeStatusOverlay span{display:block}.storeStatusOverlay b{font-size:10px;margin-bottom:3px}.storeStatusOverlay span+span{margin-top:4px}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver0.49 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver0.50 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
- <div class="notice">🧪 Ver0.49：5エリア往復TEST中は町域を5/5に固定し、中心マップと各仮実マップに出口名を表示します。</div>
+ <div class="notice">🧪 Ver0.50：共通アイテム・経済・時間基盤＋最小ダンジョン＋最小ショップを接続。冒険→持ち帰る→棚に並べる→売る、まで1周できます。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
  <section class="gameFrame"><div class="gameHeader"><div><h2 id="viewTitle">拠点</h2><div class="sub" id="viewSubtitle"></div></div><div class="sub" id="viewMeta"></div></div><div class="sceneHolder"><div id="sceneMount" class="gameScene"></div></div></section>
 </main>

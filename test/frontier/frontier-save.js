@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.49 / persistent world structure Ver6 + common area scene save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.50 / persistent world structure Ver6 + common area scene save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -7,11 +7,11 @@ const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))o
 const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
 const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
 F.freshSave=()=>({
- schemaVersion:13,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:300,
+ schemaVersion:14,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
  partnerId:null,warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
- story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,rumor:false},
+ story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,firstLoop:false,rumor:false},
  history:[],townWorld:{worldId:"frontier_town",layoutRevision:1,structureVersion:1,areaSchemaVersion:1,currentAreaId:"core",visitedAreas:["core"],fastTravelNodes:[]},townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}},settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false},townTravelTest:{active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}}}
 });
 function inferPriority(t){
@@ -53,6 +53,7 @@ F.normalizeSave=s=>{
  s.warehouse=s.warehouse&&typeof s.warehouse==="object"?s.warehouse:{};
  s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,3):[null,null,null];while(s.shelves.length<3)s.shelves.push(null);
  s.sales=Object.assign(base.sales,s.sales||{});s.reputation=Object.assign(base.reputation,s.reputation||{});
+ s.clock=Object.assign(base.clock,s.clock||{});s.clock.phaseIndex=Math.max(0,Math.min((F.TIME_PHASES?.length||4)-1,Number(s.clock.phaseIndex)||0));s.clock.actionCount=Math.max(0,Number(s.clock.actionCount)||0);s.clock.lastAction=String(s.clock.lastAction||"start");
  s.development=Object.assign(base.development,s.development||{});
  const oldTown=(s.development&&s.development.town)||{};
  s.development.town=Object.assign(base.development.town,oldTown);
@@ -98,7 +99,7 @@ F.normalizeSave=s=>{
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=13;
+ s.schemaVersion=14;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
