@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.45 / world structure Ver6 + common area scene core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.47 / world structure Ver6 + common area scene core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -56,6 +56,8 @@ F.areaOptions=s=>{const pts=Number(s?.development?.points)||0,out=[];for(const d
 F.applyAreaDevelopment=areaId=>F.mutateSave(s=>{const opt=F.areaOptions(s).find(x=>x.areaId===areaId);if(!opt)throw new Error("この町域は現在変更できません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);s.development.town.areas=s.development.town.areas||{};s.development.town.areas[areaId]=opt.to;F.addHistory(s,"area",`${opt.areaName}：${F.AREA_STATE_INFO?.[opt.to]?.label||opt.to}`);});
 F.setTownAreaTestState=(id,state)=>F.mutateSave(s=>{if(!F.areaDef?.(id))throw new Error("不明な町域です。");s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townAreaTest.states=s.settings.townAreaTest.states||{};if(state==="auto")delete s.settings.townAreaTest.states[id];else if((F.AREA_STATE_ORDER||[]).includes(state))s.settings.townAreaTest.states[id]=state;else throw new Error("不正な町域状態です。");});
 F.resetTownAreaTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest={states:{}}});
+// Ver0.47: 5エリア往復の実機確認用。実際の町域進行は変更せずTEST表示だけ利用可能にする。
+F.setTownAreaTestAllUsable=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townAreaTest.states={};for(const a of (F.AREA_DEFS||[]))s.settings.townAreaTest.states[a.id]="usable";});
 F.areaConnections=id=>(F.AREA_CONNECTION_DEFS||[]).filter(c=>c.a===id||c.b===id);
 F.areaNeighbors=id=>F.areaConnections(id).map(c=>{const other=c.a===id?c.b:c.a;return {areaId:other,area:F.areaDef?.(other),connection:c,fromPort:c.a===id?c.aPort:c.bPort,toPort:c.a===id?c.bPort:c.aPort}});
 // Ver0.38: 接続ごとの移動方式を共通化。隣接は歩行、自動境界切替。遠距離は将来の移動拠点から選択式。

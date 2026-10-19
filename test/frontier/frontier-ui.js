@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.46 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.47 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -67,6 +67,18 @@ function drawGeneratedAreaFallback(canvas,compiled){
  c.fillStyle='#6e9b4f';c.fillRect(pf.x,pf.y,pf.w,pf.h);
  // 草の細かな点。外部rendererが古い/未反映でもRuntimeSceneを視認できる最低保証。
  for(let y=pf.y+7;y<pf.y+pf.h;y+=13)for(let x=pf.x+7;x<pf.x+pf.w;x+=17){const n=((x*13+y*7)%29);if(n<7){c.fillStyle=n<3?'#4f7d41':'#96bd6d';c.fillRect(x,y,2,4)}}
+ // Ver0.47: 4方向の仮実マップを見分けやすくする地形テーマ。最終美術ではなくSceneSpec確認用。
+ const tpl=compiled.templateId||'';
+ if(tpl==='branch_forest'){
+  c.fillStyle='#315f38';c.fillRect(pf.x,pf.y,92,pf.h);c.fillRect(pf.x+pf.w-92,pf.y,92,pf.h);
+  for(let yy=38;yy<805;yy+=72)for(const xx of [28,68,515,552]){c.fillStyle='#204b31';c.beginPath();c.arc(xx,yy,18,0,Math.PI*2);c.fill();c.fillStyle='#447b43';c.beginPath();c.arc(xx+5,yy-8,13,0,Math.PI*2);c.fill()}
+ }else if(tpl==='riverside'){
+  c.fillStyle='#2b79a8';c.fillRect(pf.x+pf.w-96,pf.y,96,pf.h);c.fillStyle='#5fb8d7';for(let yy=18;yy<820;yy+=34){c.fillRect(pf.x+pf.w-83,yy,54,3);c.fillRect(pf.x+pf.w-66,yy+9,35,2)}
+  c.fillStyle='#9aa38c';for(const yy of [120,265,525,710])c.fillRect(pf.x+pf.w-118,yy,26,15);
+ }else if(tpl==='terrace'){
+  c.fillStyle='#77836d';c.fillRect(pf.x,pf.y+180,pf.w,28);c.fillRect(pf.x,pf.y+565,pf.w,32);c.fillStyle='#a5ad98';
+  for(let xx=30;xx<560;xx+=42){c.fillRect(xx,pf.y+184,28,8);c.fillRect(xx+12,pf.y+572,28,8)}
+ }
  const path=(sh,fill,stroke)=>{if(!sh)return;c.save();c.beginPath();if(sh.shape==='rect'){const[x,y,w,h]=sh.v;c.rect(x,y,w,h)}else if(sh.shape==='circle'){c.arc(sh.v[0],sh.v[1],sh.v[2],0,Math.PI*2)}else if(sh.shape==='poly'&&sh.v?.length){c.moveTo(sh.v[0][0],sh.v[0][1]);for(let i=1;i<sh.v.length;i++)c.lineTo(sh.v[i][0],sh.v[i][1]);c.closePath()}else{c.restore();return}c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke()}c.restore()};
  for(const f of compiled.facilitySlots||[]){const b=f.bounds;if(!b)continue;c.save();c.globalAlpha=.78;c.fillStyle='#7fa45c';c.fillRect(b.x+4,b.y+4,Math.max(8,b.w-8),Math.max(8,b.h-8));c.restore()}
  for(const z of compiled.walkZones||[])path(z.pixelShape,'#c79d61','#a77a49');
@@ -74,7 +86,9 @@ function drawGeneratedAreaFallback(canvas,compiled){
  for(const f of compiled.facilitySlots||[]){const b=f.bounds;if(!b)continue;c.fillStyle='#6b4a2d';c.fillRect(b.x+7,b.y+7,4,15);c.fillRect(b.x+b.w-11,b.y+7,4,15);if(f.slot<=3)sign(f.entrance.x,f.entrance.y-4,`区画${f.slot}`)}
  for(const z of compiled.serviceZones||[]){const b=z.bounds;if(!b)continue;c.fillStyle='#a47748';c.fillRect(b.x+12,b.y+12,22,17);c.fillStyle='#68472d';c.strokeRect(b.x+12,b.y+12,22,17)}
  for(const p of compiled.ports||[]){const sh=p.pixelShape;if(!sh||sh.shape!=='rect')continue;const[x,y,w,h]=sh.v,cx=x+w/2,cy=y+h/2;if(p.connected)sign(cx,Math.max(24,Math.min(810,cy)),window.FRENDA_FRONTIER?.areaDef?.(p.targetAreaId)?.name||'接続');else if(p.future)sign(cx,Math.max(24,Math.min(810,cy)),'未開拓')}
- c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,310,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`RuntimeScene：${compiled.areaName}`,31,807);
+ // 右側コマンド欄。生成エリアでも中心と同じ操作位置を維持する。
+ c.fillStyle='#062d54';c.fillRect(590,350,118,420);c.strokeStyle='#e6f3ff';c.lineWidth=3;c.strokeRect(590,350,118,420);c.fillStyle='#fff';c.font='bold 17px sans-serif';c.textAlign='left';c.fillText('▶ コマンド',602,374);const cmds=['💬 話す','🏠 家へ','🌱 相棒','🗺️ 冒険','🏪 お店','🔨 建設','👣 いどう','📖 図鑑'];c.font='bold 15px sans-serif';cmds.forEach((t,i)=>{const y=382+i*47;c.fillStyle=i===2?'#0d7a49':'#07549a';c.fillRect(599,y,100,38);c.strokeStyle='#78c6ff';c.strokeRect(599,y,100,38);c.fillStyle='#fff';c.fillText(t,606,y+25)});
+ c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,330,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`RuntimeScene：${compiled.areaName}`,31,807);
  return true;
 }
 async function drawTownVisual(s){
@@ -185,7 +199,7 @@ function showTownAreas(){
  const s=F.readSave(),opts=F.areaOptions?.(s)||[],stats=F.areaStats?.(s)||{usable:1,total:1};
  let html=`<h2>🗺️ 町域</h2><p>町は最初から同じ広さではありません。周辺を発見し、切り開き、利用可能にしていきます。現在、利用可能 <b>${stats.usable}/${stats.total}</b> エリアです。</p><div class="choiceGrid">`;
  for(const d of (F.AREA_DEFS||[])){const actual=F.areaState(s,d.id),effective=F.areaEffectiveState(s,d.id),info=F.AREA_STATE_INFO?.[effective]||{label:effective,icon:"▫️"},next=opts.find(x=>x.areaId===d.id);html+=`<div class="choiceCard areaCard" style="grid-template-columns:52px 1fr"><div style="font-size:30px">${d.icon||'🗺️'}</div><span><b>${esc(d.name)}</b><small>${esc(d.description||'')}</small><div><span class="badge">${info.icon} ${esc(info.label)}</span>${actual!==effective?`<span class="badge">TEST表示</span>`:''}</div>${next?`<button class="cmdBtn ${next.available?'primary':''}" data-area-dev="${esc(d.id)}" ${!next.available?'disabled':''}>${esc(next.label)}（${next.need}pt）</button>`:''}${window.FRENDA_TEST?.active?`<div class="areaStateBtns"><button data-area-test="${esc(d.id)}" data-area-state="auto">自動</button>${(F.AREA_STATE_ORDER||[]).map(st=>`<button data-area-test="${esc(d.id)}" data-area-state="${st}" class="${effective===st&&actual!==effective?'on':''}">${esc(F.AREA_STATE_INFO?.[st]?.label||st)}</button>`).join('')}</div>`:''}</span></div>`}
- html+='</div>';const actions=[{label:'🧭 全体マップ',className:'cmdBtn primary',fn:showTownWorldMap},{label:'📐 エリア仕様',fn:()=>showAreaSceneSpecs()},{label:'閉じる'}];if(window.FRENDA_TEST?.active)actions.unshift({label:'🧪 TEST指定を全解除',close:false,fn:()=>{F.resetTownAreaTest();closeModal();renderAll();showTownAreas()}});modal(html,actions);
+ html+='</div>';const actions=[{label:'🧭 全体マップ',className:'cmdBtn primary',fn:showTownWorldMap},{label:'📐 エリア仕様',fn:()=>showAreaSceneSpecs()},{label:'閉じる'}];if(window.FRENDA_TEST?.active){actions.unshift({label:'🧪 5エリア移動用',className:'cmdBtn primary',close:false,fn:()=>{F.setTownAreaTestAllUsable();closeModal();renderAll();showTownAreas()}});actions.unshift({label:'🧪 TEST指定を全解除',close:false,fn:()=>{F.resetTownAreaTest();closeModal();renderAll();showTownAreas()}})}modal(html,actions);
  document.querySelectorAll('[data-area-dev]').forEach(b=>b.onclick=()=>{try{F.applyAreaDevelopment(b.dataset.areaDev);closeModal();toast('町域が少し広がりました');renderAll();showTownAreas()}catch(e){toast(e.message)}});
  document.querySelectorAll('[data-area-test]').forEach(b=>b.onclick=()=>{try{F.setTownAreaTestState(b.dataset.areaTest,b.dataset.areaState);closeModal();renderAll();showTownAreas()}catch(e){toast(e.message)}});
 }
