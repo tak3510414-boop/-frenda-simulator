@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.40 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.41 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -59,6 +59,24 @@ function drawSouthRoadPrototype(c,s){
  c.fillStyle='rgba(8,45,35,.86)';c.fillRect(18,782,235,40);c.fillStyle='#fff';c.font='bold 15px sans-serif';c.fillText('TEST 仮実マップ：南の街道沿い',31,808);
  c.restore();
 }
+function drawGeneratedAreaFallback(canvas,compiled){
+ if(!canvas||!compiled)return false;
+ canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);
+ c.fillStyle='#294e32';c.fillRect(0,0,717,842);
+ const pf=compiled.playfield||{x:0,y:0,w:590,h:842};
+ c.fillStyle='#6e9b4f';c.fillRect(pf.x,pf.y,pf.w,pf.h);
+ // 草の細かな点。外部rendererが古い/未反映でもRuntimeSceneを視認できる最低保証。
+ for(let y=pf.y+7;y<pf.y+pf.h;y+=13)for(let x=pf.x+7;x<pf.x+pf.w;x+=17){const n=((x*13+y*7)%29);if(n<7){c.fillStyle=n<3?'#4f7d41':'#96bd6d';c.fillRect(x,y,2,4)}}
+ const path=(sh,fill,stroke)=>{if(!sh)return;c.save();c.beginPath();if(sh.shape==='rect'){const[x,y,w,h]=sh.v;c.rect(x,y,w,h)}else if(sh.shape==='circle'){c.arc(sh.v[0],sh.v[1],sh.v[2],0,Math.PI*2)}else if(sh.shape==='poly'&&sh.v?.length){c.moveTo(sh.v[0][0],sh.v[0][1]);for(let i=1;i<sh.v.length;i++)c.lineTo(sh.v[i][0],sh.v[i][1]);c.closePath()}else{c.restore();return}c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke()}c.restore()};
+ for(const f of compiled.facilitySlots||[]){const b=f.bounds;if(!b)continue;c.save();c.globalAlpha=.78;c.fillStyle='#7fa45c';c.fillRect(b.x+4,b.y+4,Math.max(8,b.w-8),Math.max(8,b.h-8));c.restore()}
+ for(const z of compiled.walkZones||[])path(z.pixelShape,'#c79d61','#a77a49');
+ const sign=(x,y,t)=>{c.fillStyle='#5c4029';c.fillRect(x-3,y,6,27);c.fillStyle='#d8bd7c';c.fillRect(x-20,y-15,40,15);c.strokeStyle='#6f4c31';c.strokeRect(x-20,y-15,40,15);c.fillStyle='#3a362d';c.font='bold 9px sans-serif';c.textAlign='center';c.fillText(t,x,y-4)};
+ for(const f of compiled.facilitySlots||[]){const b=f.bounds;if(!b)continue;c.fillStyle='#6b4a2d';c.fillRect(b.x+7,b.y+7,4,15);c.fillRect(b.x+b.w-11,b.y+7,4,15);if(f.slot<=3)sign(f.entrance.x,f.entrance.y-4,`区画${f.slot}`)}
+ for(const z of compiled.serviceZones||[]){const b=z.bounds;if(!b)continue;c.fillStyle='#a47748';c.fillRect(b.x+12,b.y+12,22,17);c.fillStyle='#68472d';c.strokeRect(b.x+12,b.y+12,22,17)}
+ for(const p of compiled.ports||[]){const sh=p.pixelShape;if(!sh||sh.shape!=='rect')continue;const[x,y,w,h]=sh.v,cx=x+w/2,cy=y+h/2;if(p.connected)sign(cx,Math.max(24,Math.min(810,cy)),window.FRENDA_FRONTIER?.areaDef?.(p.targetAreaId)?.name||'接続');else if(p.future)sign(cx,Math.max(24,Math.min(810,cy)),'未開拓')}
+ c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,310,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`RuntimeScene：${compiled.areaName}（fallback）`,31,807);
+ return true;
+}
 async function drawTownVisual(s){
  const canvas=$("townVisualCanvas");if(!canvas)return;
  try{
@@ -75,7 +93,7 @@ async function drawTownVisual(s){
   const c=canvas.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
   const preset=F.townLayerTestPreset(s),rt=ensureTownRuntime(s),areaId=rt.areaId||F.townMovement(s).areaId;
   const drawNormal=()=>{
-   if(F.areaDef?.(areaId)?.world?.runtimeGenerator==="scene-spec-v2"){const compiled=F.compileAreaScene?.(areaId,s);R.renderGeneratedArea?.(canvas,s,areaId,compiled);const cc=canvas.getContext("2d");if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,"player");drawTownActor(cc,partnerSprite,rt.partner,"partner");return;}
+   if(F.areaDef?.(areaId)?.world?.runtimeGenerator==="scene-spec-v2"){const compiled=F.compileAreaScene?.(areaId,s);const rr=window.FRENDA_FRONTIER_RENDERER;let usedFallback=false;if(typeof rr?.renderGeneratedArea==="function"){rr.renderGeneratedArea(canvas,s,areaId,compiled)}else{usedFallback=drawGeneratedAreaFallback(canvas,compiled)}const cc=canvas.getContext("2d");if(usedFallback){cc.save();cc.fillStyle="rgba(130,75,0,.88)";cc.fillRect(338,782,235,40);cc.fillStyle="#fff";cc.font="bold 12px sans-serif";cc.textAlign="center";cc.fillText("renderer未反映→安全表示",455,807);cc.restore()}if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,"player");drawTownActor(cc,partnerSprite,rt.partner,"partner");return;}
    c.drawImage(base,0,0,717,842);
    const states=F.townLayerStates(s).filter(x=>x.effective);
    const bands=F.TOWN_RENDER_BANDS||["ground","structure","low","character","front"];

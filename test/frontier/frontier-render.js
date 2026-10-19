@@ -1,6 +1,8 @@
-/* Frenda Frontier Ver0.40 / pixel-map renderer / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.41 / pixel-map renderer / Updated: 2026-10-19 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
+R.RENDERER_VERSION="0.41";
+R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
  grass:'#77a956',grass2:'#85b864',grass3:'#67954b',dirt:'#c8b68d',dirt2:'#bda87d',stone:'#c8c0ad',stone2:'#aaa18f',
@@ -295,7 +297,7 @@ R.renderTown=(canvas,s)=>{const c=setupTownHi(canvas);if(!c)return;hgrass(c);
  htree(c,-2,471,1.2);htree(c,361,471,1.2);htree(c,25,472,.92);htree(c,335,472,.92);
 
 
-// --- Ver0.40: SceneSpec -> generated runtime area renderer ---
+// --- Ver0.41: SceneSpec -> generated runtime area renderer ---
 function rHash(x,y,k=0){let n=(Math.imul((x|0)+17,73856093)^Math.imul((y|0)+31,19349663)^Math.imul(k+7,83492791))>>>0;n^=n>>>13;n=Math.imul(n,1274126177)>>>0;return(n>>>0)/4294967295}
 function rShapePath(c,sh){if(!sh)return false;c.beginPath();if(sh.shape==='rect'){const[x,y,w,h]=sh.v;c.rect(x,y,w,h);return true}if(sh.shape==='circle'){c.arc(sh.v[0],sh.v[1],sh.v[2],0,Math.PI*2);return true}if(sh.shape==='poly'&&sh.v.length){c.moveTo(sh.v[0][0],sh.v[0][1]);for(let i=1;i<sh.v.length;i++)c.lineTo(sh.v[i][0],sh.v[i][1]);c.closePath();return true}return false}
 function rFillShape(c,sh,fill,stroke=null,alpha=1){c.save();c.globalAlpha=alpha;if(rShapePath(c,sh)){c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke()}}c.restore()}
