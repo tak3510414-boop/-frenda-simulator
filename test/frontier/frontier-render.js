@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.51 / pixel-map renderer / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.52 / pixel-map renderer / Updated: 2026-10-19 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.51";
+R.RENDERER_VERSION="0.52";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -139,7 +139,7 @@ R.renderStore=(canvas,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);
 R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);human(c,76,111,'blue','back');human(c,113,80,'gray');rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64)};
 R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#1e3726');const ox=8,oy=26,t=13;
  for(let y=0;y<run.map.length;y++)for(let x=0;x<run.map[y].length;x++){const tt=run.map[y][x],xx=ox+x*t,yy=oy+y*t;if(tt==='wall'){rect(c,xx,yy,t,t,'#31543b');rect(c,xx+2,yy+2,t-4,t-4,'#3f6748');if(seeded(x,y)>.45)rect(c,xx+3,yy+3,3,3,'#56805a')}else{rect(c,xx,yy,t,t,tt==='stairs'?'#bf9b61':tt==='gather'?'#99be72':'#a6c982');rect(c,xx,yy,t,1,'#7fa464');rect(c,xx,yy,1,t,'#7fa464');if(tt==='gather'){rect(c,xx+4,yy+5,5,3,'#4e9149');rect(c,xx+7,yy+3,3,5,'#5ca353')}if(tt==='stairs'){for(let i=0;i<4;i++)rect(c,xx+3,yy+3+i*2,7,1,'#77532e')}}}
- // Ver0.51: ダンジョンでは人間主人公を描画しない。探索リーダーのポケモンはUIトークン層で描画する。
+ // Ver0.52: ダンジョンでは人間主人公を描画しない。探索リーダーのポケモンはUIトークン層で描画する。
  return {ox,oy,t};
 };
 R.logicalSize={width:W,height:H};

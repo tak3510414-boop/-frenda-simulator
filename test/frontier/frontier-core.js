@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.51 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.52 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -322,12 +322,12 @@ F.goal=s=>{
  if(!s.story.firstStock)return {text:"持ち帰った品を、お店の商品棚に並べてみよう！",hints:["『お店』タブで空いている棚に商品を置けるよ。","倉庫にある品を1個ずつ棚へ移そう。"]};
  if(!s.story.firstSale)return {text:"お店を開いて、最初のお客さんに商品を売ろう！",hints:["棚に商品がある状態で『お店を開く』を押そう。","相場に近い値段なら買ってもらいやすいよ。"]};
  if(!s.story.rumor)return {text:"商売と冒険を続けて、開拓地の評判を広げよう！",hints:["ポケモン探索隊が仕入れ、人間主人公が町と店を育てる流れを繰り返そう。","町の発展ポイントが10になると新しい噂が届くよ。"]};
- return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.51では、MasterDBからポケモン種族マスターを自動生成し、ポケモン自身を冒険キャラクターとして扱う方式へ変更したよ。","仲間・野生ポケモンは同じ種族基盤から生成されるよ。"]};
+ return {text:"『幻の大秘宝』につながる森の奥の噂を追おう！",hints:["Ver0.52では、MasterDBからポケモン種族マスターを自動生成し、ポケモン自身を冒険キャラクターとして扱う方式へ変更したよ。","仲間・野生ポケモンは同じ種族基盤から生成されるよ。"]};
 };
 F.selectPartner=id=>F.mutateSave(s=>{const sp=F.speciesById?.(id),allowed=sp&&F.eligibleCompanions?.(s).some(x=>x.id===sp.id);if(!sp||!allowed)throw new Error("このポケモンは現在のFrontierでは仲間として連れて行けません。");s.team=s.team||{leaderSpeciesId:null,memberSpeciesIds:[]};s.team.leaderSpeciesId=sp.id;s.team.memberSpeciesIds=Array.isArray(s.team.memberSpeciesIds)?s.team.memberSpeciesIds:[];s.team.memberSpeciesIds=[sp.id,...s.team.memberSpeciesIds.filter(x=>x!==sp.id)].slice(0,3);s.partnerId=sp.representativeId||null;s.story.step=Math.max(s.story.step,1);F.addHistory(s,"partner",`${sp.name}を探索リーダーに選んだ。`)});
 F.selectCompanionLeader=F.selectPartner;
 
-// Ver0.51: ダンジョンでは人間を出さず、探索リーダーのポケモンを直接操作する。
+// Ver0.52: ダンジョンでは人間を出さず、探索リーダーのポケモンを直接操作する。
 function emptyRun(s,dungeonId=F.DEFAULT_DUNGEON_ID){const sp=F.currentLeaderSpecies?.(s),d=F.dungeonDef?.(dungeonId)||F.dungeonDef?.(F.DEFAULT_DUNGEON_ID)||{},hpBase=Math.max(24,22+Math.round((Number(sp?.stats?.hp)||60)/12));return {active:true,dungeonId:d.id||dungeonId,dungeonName:d.name||"ダンジョン",floor:1,maxFloor:Number(d.maxFloor)||3,turn:0,food:Number(d.startFood)||32,leaderSpeciesId:sp?.id||null,leaderHp:hpBase,leaderMaxHp:hpBase,leaderLv:1,leaderExp:0,movePp:12,movePpMax:12,escape:Number(d.escapeCount??1),bag:{},bagLimit:Number(d.bagLimit)||F.BAG_LIMIT,log:[],map:null,leader:{x:1,y:1},enemies:[]}}
 function tileOpen(map,x,y){return x>=0&&y>=0&&x<F.W&&y<F.H&&map[y][x]!=="wall"}
 function randomOpen(map,blocked=new Set(),minDist=0){for(let n=0;n<600;n++){const x=F.rand(1,F.W-2),y=F.rand(1,F.H-2);if(!tileOpen(map,x,y)||blocked.has(key(x,y)))continue;if(Math.abs(x-1)+Math.abs(y-1)<minDist)continue;return{x,y}}return{x:F.W-2,y:F.H-2}}

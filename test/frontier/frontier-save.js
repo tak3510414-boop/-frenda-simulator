@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.51 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.52 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -53,7 +53,7 @@ F.normalizeSave=s=>{
 
  s.team=Object.assign(base.team,s.team||{});
  s.team.memberSpeciesIds=Array.isArray(s.team.memberSpeciesIds)?[...new Set(s.team.memberSpeciesIds.map(String))].slice(0,3):[];
- // Ver0.51: 旧partnerId（ピックmaster_id）は種族IDへ移行し、以後team.leaderSpeciesIdを正本にする。
+ // Ver0.52: 旧partnerId（ピックmaster_id）は種族IDへ移行し、以後team.leaderSpeciesIdを正本にする。
  if(!s.team.leaderSpeciesId&&s.partnerId){const oldSp=F.speciesById?.(s.partnerId);if(oldSp)s.team.leaderSpeciesId=oldSp.id;}
  if(s.team.leaderSpeciesId){const leader=F.speciesById?.(s.team.leaderSpeciesId);if(leader){s.team.leaderSpeciesId=leader.id;s.partnerId=leader.representativeId||s.partnerId;if(!s.team.memberSpeciesIds.includes(leader.id))s.team.memberSpeciesIds.unshift(leader.id);s.team.memberSpeciesIds=s.team.memberSpeciesIds.slice(0,3)}else{s.team.leaderSpeciesId=null;s.partnerId=null}}
  s.pokemon=Object.assign(base.pokemon,s.pokemon||{});
