@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.41 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
+/* Frenda Frontier Ver0.42 / world structure Ver6 + area scene spec UI / Updated: 2026-10-19 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false;
@@ -74,7 +74,7 @@ function drawGeneratedAreaFallback(canvas,compiled){
  for(const f of compiled.facilitySlots||[]){const b=f.bounds;if(!b)continue;c.fillStyle='#6b4a2d';c.fillRect(b.x+7,b.y+7,4,15);c.fillRect(b.x+b.w-11,b.y+7,4,15);if(f.slot<=3)sign(f.entrance.x,f.entrance.y-4,`区画${f.slot}`)}
  for(const z of compiled.serviceZones||[]){const b=z.bounds;if(!b)continue;c.fillStyle='#a47748';c.fillRect(b.x+12,b.y+12,22,17);c.fillStyle='#68472d';c.strokeRect(b.x+12,b.y+12,22,17)}
  for(const p of compiled.ports||[]){const sh=p.pixelShape;if(!sh||sh.shape!=='rect')continue;const[x,y,w,h]=sh.v,cx=x+w/2,cy=y+h/2;if(p.connected)sign(cx,Math.max(24,Math.min(810,cy)),window.FRENDA_FRONTIER?.areaDef?.(p.targetAreaId)?.name||'接続');else if(p.future)sign(cx,Math.max(24,Math.min(810,cy)),'未開拓')}
- c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,310,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`RuntimeScene：${compiled.areaName}（fallback）`,31,807);
+ c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,310,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`RuntimeScene：${compiled.areaName}`,31,807);
  return true;
 }
 async function drawTownVisual(s){
@@ -93,7 +93,7 @@ async function drawTownVisual(s){
   const c=canvas.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
   const preset=F.townLayerTestPreset(s),rt=ensureTownRuntime(s),areaId=rt.areaId||F.townMovement(s).areaId;
   const drawNormal=()=>{
-   if(F.areaDef?.(areaId)?.world?.runtimeGenerator==="scene-spec-v2"){const compiled=F.compileAreaScene?.(areaId,s);const rr=window.FRENDA_FRONTIER_RENDERER;let usedFallback=false;if(typeof rr?.renderGeneratedArea==="function"){rr.renderGeneratedArea(canvas,s,areaId,compiled)}else{usedFallback=drawGeneratedAreaFallback(canvas,compiled)}const cc=canvas.getContext("2d");if(usedFallback){cc.save();cc.fillStyle="rgba(130,75,0,.88)";cc.fillRect(338,782,235,40);cc.fillStyle="#fff";cc.font="bold 12px sans-serif";cc.textAlign="center";cc.fillText("renderer未反映→安全表示",455,807);cc.restore()}if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,"player");drawTownActor(cc,partnerSprite,rt.partner,"partner");return;}
+   if(F.areaDef?.(areaId)?.world?.runtimeGenerator==="scene-spec-v2"){const compiled=F.compileAreaScene?.(areaId,s);/* Ver0.42: generated area base is rendered inside UI itself. This removes cross-file renderer timing/cache dependency on iOS/GitHub Pages. */drawGeneratedAreaFallback(canvas,compiled);const cc=canvas.getContext("2d");if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,"player");drawTownActor(cc,partnerSprite,rt.partner,"partner");return;}
    c.drawImage(base,0,0,717,842);
    const states=F.townLayerStates(s).filter(x=>x.effective);
    const bands=F.TOWN_RENDER_BANDS||["ground","structure","low","character","front"];
