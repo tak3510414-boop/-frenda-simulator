@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.63 / pixel-map renderer / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.65 / pixel-map renderer / Updated: 2026-10-20 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.63";
+R.RENDERER_VERSION="0.65";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -136,11 +136,11 @@ R.renderStore=(canvas,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);
  human(c,89,106,'orange');human(c,128,143,'purple');human(c,50,153,'green');human(c,110,151,'blue');
 };
 
-R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);/* Ver0.59: 人間は冒険隊に同行させない。町側の見送り役を出口の後方へ1人だけ置く。 */human(c,116,210,'gray','back');rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64);label(c,'町の出口',103,218,43)};
+R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);/* Ver0.64: human protagonist is drawn by the UI sprite layer; the preview background stays scenery-only. */rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64);label(c,'町の出口',103,218,43)};
 R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#17231b');
  const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(F.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.leader.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.leader.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[];
- // Ver0.63: unexplored = hidden, explored memory = dim teal, current sight = normal brightness.
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[];
+ // Ver0.64: unexplored = hidden, explored memory = dim teal, current sight = normal brightness.
  for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
   const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t,n=seeded(x*7+run.floor,y*11+run.floor),seen=!!run.seen?.[y]?.[x],visible=!!visibility?.[y]?.[x];
   if(!seen){rect(c,xx,yy,t,t,n>.66?'#1b2a20':'#17231b');if(n>.88)rect(c,xx+5,yy+5,2,2,'#22362a');continue}
@@ -328,7 +328,7 @@ function rStake(c,x,y){c.fillStyle='#6b4a2d';c.fillRect(x-2,y-2,5,18);c.fillStyl
 function rCrate(c,x,y){c.fillStyle='#68472d';c.fillRect(x,y,22,18);c.fillStyle='#a47748';c.fillRect(x+2,y+2,18,14);c.strokeStyle='#6f4c31';c.lineWidth=2;c.beginPath();c.moveTo(x+3,y+3);c.lineTo(x+19,y+15);c.moveTo(x+19,y+3);c.lineTo(x+3,y+15);c.stroke()}
 function rBarrel(c,x,y){c.fillStyle='#6a4930';c.fillRect(x,y,15,22);c.fillStyle='#9b7047';c.fillRect(x+2,y+1,11,20);c.fillStyle='#59402c';c.fillRect(x,y+5,15,3);c.fillRect(x,y+15,15,3)}
 function rSign(c,x,y,text=''){c.fillStyle='#5c4029';c.fillRect(x-3,y,6,31);c.fillStyle='#8c6139';c.fillRect(x-24,y-16,48,20);c.fillStyle='#d8bd7c';c.fillRect(x-21,y-13,42,14);if(text){c.fillStyle='#3a362d';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(text,x,y-3)}}
-function rCommandPanel(c){c.fillStyle='#062d54';c.fillRect(590,350,118,420);c.strokeStyle='#e6f3ff';c.lineWidth=3;c.strokeRect(590,350,118,420);c.fillStyle='#fff';c.font='bold 17px sans-serif';c.textAlign='left';c.fillText('▶ コマンド',602,374);const cmds=['💬 話す','🏠 家へ','🌱 相棒','🗺️ 冒険','🏪 お店','🔨 建設','👣 いどう','📖 図鑑'];c.font='bold 15px sans-serif';cmds.forEach((t,i)=>{const y=382+i*47;c.fillStyle=i===2?'#0d7a49':'#07549a';c.fillRect(599,y,100,38);c.strokeStyle='#78c6ff';c.strokeRect(599,y,100,38);c.fillStyle='#fff';c.fillText(t,606,y+25)})}
+function rCommandPanel(c){c.fillStyle='#062d54';c.fillRect(590,350,118,420);c.strokeStyle='#e6f3ff';c.lineWidth=3;c.strokeRect(590,350,118,420);c.fillStyle='#fff';c.font='bold 17px sans-serif';c.textAlign='left';c.fillText('▶ コマンド',602,374);const cmds=['💬 話す','🏠 家へ','🐾 ポケモン','🗺️ 冒険','🏪 お店','🔨 建設','👣 いどう','📖 図鑑'];c.font='bold 15px sans-serif';cmds.forEach((t,i)=>{const y=382+i*47;c.fillStyle=i===2?'#0d7a49':'#07549a';c.fillRect(599,y,100,38);c.strokeStyle='#78c6ff';c.strokeRect(599,y,100,38);c.fillStyle='#fff';c.fillText(t,606,y+25)})}
 R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||window.FRENDA_FRONTIER?.compileAreaScene?.(areaId,s);if(!canvas||!compiled)return null;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);c.fillStyle='#294e32';c.fillRect(0,0,717,842);rGrassTexture(c,compiled.playfield,19);
  // reserve buildable lots as natural clearings first. Roads are painted over them so the visual and walkable route stay consistent.
  for(const f of compiled.facilitySlots){const b=f.bounds;if(!b)continue;c.save();c.globalAlpha=.72;c.fillStyle='#7fa45c';c.fillRect(b.x+5,b.y+5,Math.max(8,b.w-10),Math.max(8,b.h-10));c.restore()}

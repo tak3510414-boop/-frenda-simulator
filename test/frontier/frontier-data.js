@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.63 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.65 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.63";
+F.VERSION="0.65";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -11,10 +11,38 @@ F.ITEMS=Object.freeze({
  crystal:{id:"crystal",icon:"✨",name:"森の結晶",kind:"珍品",base:260,desc:"森の奥で時々見つかる不思議な結晶。"},
  oldtool:{id:"oldtool",icon:"🧰",name:"古びた道具",kind:"珍品",base:420,desc:"誰かが昔使っていた探検道具。"}
 });
+
+
+// Ver0.64: Human-adventurer equipment. Pokemon stay on the town side and do not accompany dungeon runs.
+F.EQUIPMENT_SLOTS=Object.freeze([
+ {id:"weapon",label:"武器",icon:"⚔️"},
+ {id:"armor",label:"防具",icon:"🛡️"},
+ {id:"charm",label:"お守り",icon:"🔸"}
+]);
+F.EQUIPMENT_DEFS=Object.freeze({
+ wood_sword:{id:"wood_sword",slot:"weapon",icon:"🗡️",name:"木の剣",attack:3,defense:0,hp:0,desc:"開拓者の基本武器。扱いやすい木製の剣。"},
+ iron_sword:{id:"iron_sword",slot:"weapon",icon:"⚔️",name:"鉄の剣",attack:6,defense:0,hp:0,desc:"鉄のかけらから作られた丈夫な剣。"},
+ traveler_clothes:{id:"traveler_clothes",slot:"armor",icon:"🥋",name:"旅人の服",attack:0,defense:2,hp:0,desc:"動きやすい旅装。最低限の防御力がある。"},
+ leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。"},
+ traveler_charm:{id:"traveler_charm",slot:"charm",icon:"🧿",name:"旅のお守り",attack:0,defense:0,hp:5,desc:"旅の無事を願うお守り。最大HPが少し増える。"},
+ forest_charm:{id:"forest_charm",slot:"charm",icon:"🍃",name:"森のお守り",attack:1,defense:1,hp:4,desc:"森で見つかる不思議なお守り。攻守を少し補う。"}
+});
+F.STARTER_EQUIPMENT=Object.freeze({
+ owned:{wood_sword:1,traveler_clothes:1,traveler_charm:1},
+ equipped:{weapon:"wood_sword",armor:"traveler_clothes",charm:"traveler_charm"}
+});
+F.DUNGEON_EQUIPMENT_TABLE=Object.freeze([
+ {equipment:"leather_armor",weight:42,minFloor:1},
+ {equipment:"iron_sword",weight:34,minFloor:2},
+ {equipment:"forest_charm",weight:24,minFloor:2}
+]);
+F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
+F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
+
 F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
 ]);
-// Ver0.59: ダンジョン宝箱。素材だけでなく、探索継続に役立つ食料・HP・PPも出る。
+// Ver0.64: ダンジョン宝箱。素材・食料・HP回復に加え、持ち帰って装備できる品も出る。
 F.DUNGEON_CHEST_TABLE=Object.freeze([
  {kind:"item",item:"wood",weight:24,min:1,max:2},
  {kind:"item",item:"herb",weight:22,min:1,max:2},
@@ -22,7 +50,7 @@ F.DUNGEON_CHEST_TABLE=Object.freeze([
  {kind:"item",item:"crystal",weight:6,min:1,max:1},
  {kind:"food",weight:13,min:6,max:10},
  {kind:"heal",weight:11,min:5,max:9},
- {kind:"pp",weight:9,min:2,max:4}
+ {kind:"equipment",weight:9}
 ]);
 
 // Ver0.50: 町・ダンジョン・ショップで共通利用する時間・経済・ダンジョン定義。
@@ -33,7 +61,7 @@ F.TIME_PHASES=Object.freeze([
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
 F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:3,bagLimit:10,startFood:32,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",maxRarityByFloor:[1,1,2]},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"ポケモン探索隊が最初に挑む森。素材を集めて町へ持ち帰る。"}
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:3,bagLimit:10,startFood:32,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",maxRarityByFloor:[1,1,2]},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が最初に挑む森。野生ポケモンを退け、素材や装備を町へ持ち帰る。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
 F.DEFAULT_DUNGEON_ID="beginner_forest";
@@ -381,7 +409,7 @@ F.CUSTOMERS=Object.freeze([
 ]);
 F.STORY=Object.freeze([
  {id:"prologue",title:"序章　フロンティアへ",text:"『幻の大秘宝』の噂を追って、ほとんど人のいない開拓地へやってきた。",at:0},
- {id:"partner",title:"仲間との第一歩",text:"町で仲間になったポケモンから探索リーダーを選び、最初の冒険へ向かう。",at:1},
+ {id:"gear",title:"開拓者の装備",text:"人間の開拓者が武器・防具・お守りを整え、野生ポケモンのいる森へ単独で向かう。",at:1},
  {id:"supply",title:"店を開くための仕入れ",text:"はじまりの森で素材を集め、店に商品を並べる。",at:2},
  {id:"firstsale",title:"最初のお客さん",text:"自分で持ち帰った品が売れ、開拓地に少しずつ人が集まり始める。",at:3},
  {id:"rumor",title:"新しい噂",text:"店の評判が広がると、森の奥と『秘宝の手掛かり』について語る旅人が現れる。",at:4}

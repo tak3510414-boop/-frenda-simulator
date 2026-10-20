@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.63 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.65 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -6,9 +6,10 @@ const now=()=>new Date().toISOString();
 const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=Number(d.startLevel)||0;return out};
 const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
 const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
+const defaultEquipment=()=>({owned:Object.assign({},F.STARTER_EQUIPMENT?.owned||{}),equipped:Object.assign({},F.STARTER_EQUIPMENT?.equipped||{})});
 F.freshSave=()=>({
- schemaVersion:15,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
- partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
+ schemaVersion:16,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
+ partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},equipment:defaultEquipment(),warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,firstLoop:false,rumor:false},
@@ -53,7 +54,7 @@ F.normalizeSave=s=>{
 
  s.team=Object.assign(base.team,s.team||{});
  s.team.memberSpeciesIds=Array.isArray(s.team.memberSpeciesIds)?[...new Set(s.team.memberSpeciesIds.map(String))].slice(0,3):[];
- // Ver0.52: 旧partnerId（ピックmaster_id）は種族IDへ移行し、以後team.leaderSpeciesIdを正本にする。
+ // Ver0.52互換: 旧partnerId（ピックmaster_id）は町側ポケモン情報として種族IDへ移行。Ver0.64以降、ダンジョン主人公には使用しない。
  if(!s.team.leaderSpeciesId&&s.partnerId){const oldSp=F.speciesById?.(s.partnerId);if(oldSp)s.team.leaderSpeciesId=oldSp.id;}
  if(s.team.leaderSpeciesId){const leader=F.speciesById?.(s.team.leaderSpeciesId);if(leader){s.team.leaderSpeciesId=leader.id;s.partnerId=leader.representativeId||s.partnerId;if(!s.team.memberSpeciesIds.includes(leader.id))s.team.memberSpeciesIds.unshift(leader.id);s.team.memberSpeciesIds=s.team.memberSpeciesIds.slice(0,3)}else{s.team.leaderSpeciesId=null;s.partnerId=null}}
  s.pokemon=Object.assign(base.pokemon,s.pokemon||{});
@@ -61,6 +62,11 @@ F.normalizeSave=s=>{
  s.pokemon.firstSeenOrder=Array.isArray(s.pokemon.firstSeenOrder)?[...new Set(s.pokemon.firstSeenOrder.map(String))]:[];
  s.pokemon.companionUnlocks=s.pokemon.companionUnlocks&&typeof s.pokemon.companionUnlocks==="object"?s.pokemon.companionUnlocks:{};
  s.pokemon.storyCompanions=Array.isArray(s.pokemon.storyCompanions)?[...new Set(s.pokemon.storyCompanions.map(String))]:[];
+ // Ver0.64: old saves receive the starter human-adventurer gear automatically.
+ const eqBase=defaultEquipment(),oldEq=s.equipment&&typeof s.equipment==="object"?s.equipment:{};
+ s.equipment={owned:Object.assign({},eqBase.owned,oldEq.owned||{}),equipped:Object.assign({},eqBase.equipped,oldEq.equipped||{})};
+ for(const id of Object.keys(s.equipment.owned)){if(!F.equipment?.(id)||Number(s.equipment.owned[id])<=0)delete s.equipment.owned[id];else s.equipment.owned[id]=Math.max(1,Math.floor(Number(s.equipment.owned[id])||1));}
+ for(const slot of (F.EQUIPMENT_SLOTS||[])){const id=s.equipment.equipped[slot.id],def=F.equipment?.(id);if(!def||def.slot!==slot.id||!s.equipment.owned[id])s.equipment.equipped[slot.id]=eqBase.equipped[slot.id]||null;}
  s.warehouse=s.warehouse&&typeof s.warehouse==="object"?s.warehouse:{};
  s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,3):[null,null,null];while(s.shelves.length<3)s.shelves.push(null);
  s.sales=Object.assign(base.sales,s.sales||{});s.reputation=Object.assign(base.reputation,s.reputation||{});
@@ -110,7 +116,7 @@ F.normalizeSave=s=>{
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=15;
+ s.schemaVersion=16;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
