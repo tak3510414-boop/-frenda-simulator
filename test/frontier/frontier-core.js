@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.60 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.61 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -329,19 +329,33 @@ F.selectCompanionLeader=F.selectPartner;
 
 // Ver0.52: ダンジョンでは人間を出さず、探索リーダーのポケモンを直接操作する。
 function emptyRun(s,dungeonId=F.DEFAULT_DUNGEON_ID){const sp=F.currentLeaderSpecies?.(s),d=F.dungeonDef?.(dungeonId)||F.dungeonDef?.(F.DEFAULT_DUNGEON_ID)||{},hpBase=Math.max(24,22+Math.round((Number(sp?.stats?.hp)||60)/12));return {active:true,dungeonId:d.id||dungeonId,dungeonName:d.name||"ダンジョン",floor:1,maxFloor:Number(d.maxFloor)||3,turn:0,food:Number(d.startFood)||32,leaderSpeciesId:sp?.id||null,leaderHp:hpBase,leaderMaxHp:hpBase,leaderLv:1,leaderExp:0,movePp:12,movePpMax:12,escape:Number(d.escapeCount??1),bag:{},bagLimit:Number(d.bagLimit)||F.BAG_LIMIT,log:[],map:null,leader:{x:1,y:1},leaderFacing:'down',leaderStep:0,enemies:[]}}
-function tileOpen(map,x,y){return x>=0&&y>=0&&x<F.W&&y<F.H&&map[y][x]!=="wall"}
+function tileOpen(map,x,y){const h=map?.length||0,w=map?.[0]?.length||0;return x>=0&&y>=0&&x<w&&y<h&&map[y][x]!=="wall"}
 // Ver0.60: dungeon-only 8-direction movement. Town/pathfinding keeps the existing 4-direction dirs.
 const dungeonDirs8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 function dungeonCanStep(map,x,y,dx,dy){dx=Math.sign(Number(dx)||0);dy=Math.sign(Number(dy)||0);if(!dx&&!dy)return false;const nx=x+dx,ny=y+dy;if(!tileOpen(map,nx,ny))return false;if(dx&&dy){if(!tileOpen(map,x+dx,y)||!tileOpen(map,x,y+dy))return false}return true}
 function dungeonDistance(a,b){return Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y))}
 F.dungeonCanStep=dungeonCanStep;
 F.dungeonDirections8=dungeonDirs8.map(v=>v.slice());
-function allOpenConnected(map){let total=0;for(let y=0;y<F.H;y++)for(let x=0;x<F.W;x++)if(tileOpen(map,x,y))total++;if(!total||!tileOpen(map,1,1))return false;const q=[[1,1]],seen=new Set([key(1,1)]);for(let i=0;i<q.length;i++){const[x,y]=q[i];for(const[dx,dy]of dirs){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(tileOpen(map,nx,ny)&&!seen.has(k)){seen.add(k);q.push([nx,ny])}}}return seen.size===total}
-function randomOpen(map,blocked=new Set(),minDist=0){for(let n=0;n<600;n++){const x=F.rand(1,F.W-2),y=F.rand(1,F.H-2);if(!tileOpen(map,x,y)||blocked.has(key(x,y)))continue;if(Math.abs(x-1)+Math.abs(y-1)<minDist)continue;return{x,y}}return{x:F.W-2,y:F.H-2}}
+function allOpenConnected(map){const h=map?.length||0,w=map?.[0]?.length||0;let total=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(tileOpen(map,x,y))total++;if(!total||!tileOpen(map,1,1))return false;const q=[[1,1]],seen=new Set([key(1,1)]);for(let i=0;i<q.length;i++){const[x,y]=q[i];for(const[dx,dy]of dirs){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(tileOpen(map,nx,ny)&&!seen.has(k)){seen.add(k);q.push([nx,ny])}}}return seen.size===total}
+function randomOpen(map,blocked=new Set(),minDist=0){const h=map?.length||0,w=map?.[0]?.length||0;for(let n=0;n<Math.max(600,w*h*4);n++){const x=F.rand(1,w-2),y=F.rand(1,h-2);if(!tileOpen(map,x,y)||blocked.has(key(x,y)))continue;if(Math.abs(x-1)+Math.abs(y-1)<minDist)continue;return{x,y}}for(let y=h-2;y>=1;y--)for(let x=w-2;x>=1;x--)if(tileOpen(map,x,y)&&!blocked.has(key(x,y)))return{x,y};return{x:1,y:1}}
 function frontierCombatAttack(sp){return Math.max(Number(sp?.stats?.atk)||45,Number(sp?.stats?.spAtk)||45)}
 function frontierCombatDefense(sp){return ((Number(sp?.stats?.def)||45)+(Number(sp?.stats?.spDef)||45))/2}
 function createEnemy(sp,floor,pos,index){const hp=Math.max(9,8+floor*3+Math.round((Number(sp?.stats?.hp)||55)/20)),atk=Math.max(2,1+floor+Math.round(frontierCombatAttack(sp)/55));return{id:`e${floor}_${index}_${Date.now()%9999}`,speciesId:sp?.id||null,recordId:sp?.representativeId||null,name:sp?.name||"野生ポケモン",ai:sp?.ai||"wander",rarity:sp?.rarity||"common",x:pos.x,y:pos.y,hp,maxHp:hp,atk,facing:'down',step:0}}
-function generateFloor(run,s=null){const map=Array.from({length:F.H},(_,y)=>Array.from({length:F.W},(_,x)=>(x===0||y===0||x===F.W-1||y===F.H-1)?"wall":"floor"));let placedWalls=0,wallTries=0;while(placedWalls<11&&wallTries++<160){const x=F.rand(2,F.W-3),y=F.rand(1,F.H-2);if((x<=2&&y<=2)||(x>=F.W-3&&y>=F.H-3)||map[y][x]==="wall")continue;map[y][x]="wall";if(!allOpenConnected(map)){map[y][x]="floor";continue}placedWalls++}map[1][1]="floor";const blocked=new Set([key(1,1)]);const stairs=randomOpen(map,blocked,10);map[stairs.y][stairs.x]="stairs";blocked.add(key(stairs.x,stairs.y));for(let i=0;i<5;i++){const p=randomOpen(map,blocked,3);map[p.y][p.x]="gather";blocked.add(key(p.x,p.y))}const chestCount=run.floor>=2?2:1;for(let i=0;i<chestCount;i++){const p=randomOpen(map,blocked,4);map[p.y][p.x]="chest";blocked.add(key(p.x,p.y))}run.map=map;run.leader={x:1,y:1};run.leaderFacing=run.leaderFacing||'down';run.leaderStep=0;run.enemies=[];for(let i=0;i<Math.min(4,1+run.floor);i++){const p=randomOpen(map,blocked,5),sp=F.chooseEnemySpecies?.(run.dungeonId,run.floor);if(!sp)continue;blocked.add(key(p.x,p.y));run.enemies.push(createEnemy(sp,run.floor,p,i))}if(s)F.markEncounterState?.(s,run.enemies.map(e=>e.speciesId),run.dungeonId);run.log.push(`地下${run.floor}階へ入った。${run.enemies.length?` 野生ポケモンの気配が${run.enemies.length}つある。`:""}${chestCount?` 宝箱が${chestCount}個ありそうだ。`:""}`);return run}
+function generateFloor(run,s=null){
+ const w=Math.max(12,Number(F.W)||24),h=Math.max(8,Number(F.H)||18);
+ const map=Array.from({length:h},(_,y)=>Array.from({length:w},(_,x)=>(x===0||y===0||x===w-1||y===h-1)?"wall":"floor"));
+ // Ver0.61: larger dungeon floor. Keep every open tile connected so camera-follow exploration never hides an unreachable objective.
+ const interior=(w-2)*(h-2),wallTarget=Math.max(11,Math.round(interior*.12));let placedWalls=0,wallTries=0;
+ while(placedWalls<wallTarget&&wallTries++<wallTarget*30){const x=F.rand(2,w-3),y=F.rand(1,h-2);if((x<=3&&y<=3)||(x>=w-4&&y>=h-4)||map[y][x]==="wall")continue;map[y][x]="wall";if(!allOpenConnected(map)){map[y][x]="floor";continue}placedWalls++}
+ map[1][1]="floor";const blocked=new Set([key(1,1)]),stairsMin=Math.max(10,Math.round((w+h)*.45));
+ const stairs=randomOpen(map,blocked,stairsMin);map[stairs.y][stairs.x]="stairs";blocked.add(key(stairs.x,stairs.y));
+ const gatherCount=7+Math.min(3,Number(run.floor)||1);for(let i=0;i<gatherCount;i++){const p=randomOpen(map,blocked,4);map[p.y][p.x]="gather";blocked.add(key(p.x,p.y))}
+ const chestCount=run.floor>=2?3:2;for(let i=0;i<chestCount;i++){const p=randomOpen(map,blocked,6);map[p.y][p.x]="chest";blocked.add(key(p.x,p.y))}
+ run.map=map;run.leader={x:1,y:1};run.leaderFacing=run.leaderFacing||'down';run.leaderStep=0;run.enemies=[];
+ const enemyCount=Math.min(7,3+(Number(run.floor)||1));for(let i=0;i<enemyCount;i++){const p=randomOpen(map,blocked,7),sp=F.chooseEnemySpecies?.(run.dungeonId,run.floor);if(!sp)continue;blocked.add(key(p.x,p.y));run.enemies.push(createEnemy(sp,run.floor,p,i))}
+ if(s)F.markEncounterState?.(s,run.enemies.map(e=>e.speciesId),run.dungeonId);
+ run.log.push(`地下${run.floor}階へ入った。広いフロアを探索しよう。${run.enemies.length?` 野生ポケモンの気配が${run.enemies.length}つある。`:""}${chestCount?` 宝箱が${chestCount}個ありそうだ。`:""}`);return run
+}
 F.startRun=(dungeonId=F.DEFAULT_DUNGEON_ID)=>{const s=F.readSave(),leader=F.currentLeaderSpecies?.(s);if(!leader)throw new Error("先に探索リーダーのポケモンを選んでください。");const d=F.dungeonDef?.(dungeonId);if(!d)throw new Error("このダンジョンはまだ利用できません。");const run=generateFloor(emptyRun(s,dungeonId),s);s.story.firstAdventure=true;F.addHistory(s,"adventure",`${leader.name}を探索リーダーにして${d.name}へ出発した。`);F.writeSave(s);F.run=run;return run};
 function bagSlots(bag){return Object.values(bag||{}).filter(n=>Number(n)>0).length}
 F.bagSlots=bagSlots;

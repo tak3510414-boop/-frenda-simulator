@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="0.60">
+<html lang="ja" data-app-version="0.61">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver0.60</title>
+<title>Frenda Frontier Ver0.61</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -14,7 +14,7 @@ main{max-width:920px;margin:auto;padding:9px}.notice{background:#fff7d6;border:1
 .dialogBox,.commandBox{position:absolute;z-index:12;background:var(--navy);color:#fff;border:3px solid #e0e8f2;border-radius:12px;box-shadow:0 6px 18px #0006}.dialogBox{left:9px;right:116px;bottom:9px;min-height:96px;padding:10px}.dialogBox h3{margin:0 0 6px;font-size:12px}.dialogBox p{margin:0;font-size:11px;line-height:1.65;white-space:pre-line}.commandBox{right:9px;bottom:9px;width:100px;padding:8px}.commandTitle{font-size:11px;font-weight:900;margin:0 0 6px}.cmdList{display:grid;gap:5px}.cmdBtn{width:100%;text-align:left;padding:6px 7px;border-radius:8px;border:1px solid #8199c2;background:linear-gradient(#244a7d,#17345b);color:#fff;font-weight:900;font-size:10px}.cmdBtn.primary{background:linear-gradient(#2f7d5f,#1e6248);border-color:#72b295}.cmdBtn.warn{background:linear-gradient(#a76b41,#824a2c);border-color:#d49c74}.cmdBtn:disabled{opacity:.45;cursor:not-allowed}
 #tokenLayer{position:absolute;inset:0;z-index:8;pointer-events:none}.pokemonToken{position:absolute;z-index:9;width:44px;height:44px;overflow:visible;transform:translate(-50%,-58%);filter:drop-shadow(0 3px 2px #0006)}.pokemonToken:after{content:"";position:absolute;left:20%;right:20%;bottom:1px;height:6px;border-radius:50%;background:#1020184d;z-index:-1}.pokemonToken .speciesVisual{width:100%;height:100%}.pokemonToken.moving .pokemonSpriteImg{animation:frontierStep .20s ease-out}.enemyToken .pokemonSpriteImg{filter:saturate(.92)}.partnerToken .pokemonSpriteImg{filter:drop-shadow(0 0 3px #dfffe4)}.tokenLabel{position:absolute;z-index:10;transform:translate(-50%,0);background:#fff;border:2px solid #b44;color:#722;border-radius:999px;padding:1px 5px;font-size:8px;font-weight:900;white-space:nowrap}@keyframes frontierStep{0%{translate:0 0}45%{translate:0 -5px}100%{translate:0 0}}
 .dirPad{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:6px}.dirPad button{height:28px;border-radius:7px;border:1px solid #8199c2;background:#244a7d;color:#fff;font-weight:900;font-size:11px}.dirPad .up{grid-column:2}
-/* Ver0.60: mobile dungeon supports 8-direction tap/click movement; diagonal corner-cutting is blocked. */
+/* Ver0.61: mobile dungeon uses a larger full floor with a follow-camera viewport; 8-direction tap/click movement remains enabled. */
 @media(max-width:600px){
 body.dungeonActive header{padding:4px 8px}
 body.dungeonActive .brand b{font-size:15px}
@@ -60,9 +60,9 @@ body.dungeonActive .gameHeader .sub{font-size:8px}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver0.60 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver0.61 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
- <div class="notice">🧪 Ver0.60：ダンジョンは8方向移動に対応。斜め移動・斜め攻撃ができ、壁の角はすり抜けません。タップ／クリック操作のまま遊べます。</div>
+ <div class="notice">🧪 Ver0.61：ダンジョンを24×18マスへ拡大し、11×9マスの追従カメラ表示へ変更。8方向移動・斜め攻撃・角抜け禁止は維持しています。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
  <section class="gameFrame"><div class="gameHeader"><div><h2 id="viewTitle">拠点</h2><div class="sub" id="viewSubtitle"></div></div><div class="sub" id="viewMeta"></div></div><div class="sceneHolder"><div id="sceneMount" class="gameScene"></div></div></section>
 </main>

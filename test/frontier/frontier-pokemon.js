@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.60 / Pokemon species master + companion/enemy common layer / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.61 / Pokemon species master + companion/enemy common layer / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};

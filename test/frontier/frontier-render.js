@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.60 / pixel-map renderer / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.61 / pixel-map renderer / Updated: 2026-10-20 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.60";
+R.RENDERER_VERSION="0.61";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -137,10 +137,14 @@ R.renderStore=(canvas,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);
 };
 
 R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);/* Ver0.59: 人間は冒険隊に同行させない。町側の見送り役を出口の後方へ1人だけ置く。 */human(c,116,210,'gray','back');rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64);label(c,'町の出口',103,218,43)};
-R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#1e3726');const ox=8,oy=26,t=13;
- for(let y=0;y<run.map.length;y++)for(let x=0;x<run.map[y].length;x++){const tt=run.map[y][x],xx=ox+x*t,yy=oy+y*t;if(tt==='wall'){rect(c,xx,yy,t,t,'#31543b');rect(c,xx+2,yy+2,t-4,t-4,'#3f6748');if(seeded(x,y)>.45)rect(c,xx+3,yy+3,3,3,'#56805a')}else{rect(c,xx,yy,t,t,tt==='stairs'?'#bf9b61':tt==='gather'?'#99be72':tt==='chest'?'#a6c982':'#a6c982');rect(c,xx,yy,t,1,'#7fa464');rect(c,xx,yy,1,t,'#7fa464');if(tt==='gather'){rect(c,xx+4,yy+5,5,3,'#4e9149');rect(c,xx+7,yy+3,3,5,'#5ca353')}if(tt==='chest'){rect(c,xx+3,yy+5,8,6,'#8a5c2d');rect(c,xx+3,yy+4,8,3,'#b77a39');rect(c,xx+6,yy+6,2,3,'#e6c35b');rect(c,xx+4,yy+3,6,1,'#6f4723')}if(tt==='stairs'){for(let i=0;i<4;i++)rect(c,xx+3,yy+3+i*2,7,1,'#77532e')}}}
- // Ver0.52: ダンジョンでは人間主人公を描画しない。探索リーダーのポケモンはUIトークン層で描画する。
- return {ox,oy,t};
+R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#1e3726');
+ const mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(window.FRENDA_FRONTIER?.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(window.FRENDA_FRONTIER?.DUNGEON_VIEW_ROWS)||9,mapH),t=14,ox=Math.round((W-viewCols*t)/2),oy=27;
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.leader.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.leader.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows));
+ // Ver0.61: only the camera viewport is drawn. The full floor remains larger off-screen.
+ for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t;if(tt==='wall'){rect(c,xx,yy,t,t,'#31543b');rect(c,xx+2,yy+2,t-4,t-4,'#3f6748');if(seeded(x,y)>.45)rect(c,xx+3,yy+3,3,3,'#56805a')}else{rect(c,xx,yy,t,t,tt==='stairs'?'#bf9b61':tt==='gather'?'#99be72':'#a6c982');rect(c,xx,yy,t,1,'#7fa464');rect(c,xx,yy,1,t,'#7fa464');if(tt==='gather'){rect(c,xx+4,yy+5,5,3,'#4e9149');rect(c,xx+7,yy+3,3,5,'#5ca353')}if(tt==='chest'){rect(c,xx+3,yy+5,8,6,'#8a5c2d');rect(c,xx+3,yy+4,8,3,'#b77a39');rect(c,xx+6,yy+6,2,3,'#e6c35b');rect(c,xx+4,yy+3,6,1,'#6f4723')}if(tt==='stairs'){for(let i=0;i<4;i++)rect(c,xx+3,yy+3+i*2,7,1,'#77532e')}}}
+ // Small edge marks show that the dungeon continues outside the current camera window.
+ const mx=ox+viewCols*t,my=oy+viewRows*t;if(camX>0){rect(c,ox-4,oy+viewRows*t/2-5,2,10,'#d8eadb')}if(camX+viewCols<mapW){rect(c,mx+2,oy+viewRows*t/2-5,2,10,'#d8eadb')}if(camY>0){rect(c,ox+viewCols*t/2-5,oy-4,10,2,'#d8eadb')}if(camY+viewRows<mapH){rect(c,ox+viewCols*t/2-5,my+2,10,2,'#d8eadb')}
+ return {ox,oy,t,camX,camY,viewCols,viewRows,mapW,mapH};
 };
 R.logicalSize={width:W,height:H};
 
