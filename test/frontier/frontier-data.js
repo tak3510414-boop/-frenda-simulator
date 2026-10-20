@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.65 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.66 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.65";
+F.VERSION="0.66";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -20,21 +20,31 @@ F.EQUIPMENT_SLOTS=Object.freeze([
  {id:"charm",label:"お守り",icon:"🔸"}
 ]);
 F.EQUIPMENT_DEFS=Object.freeze({
- wood_sword:{id:"wood_sword",slot:"weapon",icon:"🗡️",name:"木の剣",attack:3,defense:0,hp:0,desc:"開拓者の基本武器。扱いやすい木製の剣。"},
- iron_sword:{id:"iron_sword",slot:"weapon",icon:"⚔️",name:"鉄の剣",attack:6,defense:0,hp:0,desc:"鉄のかけらから作られた丈夫な剣。"},
+ wood_sword:{id:"wood_sword",slot:"weapon",icon:"🗡️",name:"木の剣",attack:3,defense:0,hp:0,weapon:{type:"sword",label:"剣",range:1,directions:8,accuracy:.95,power:1},desc:"開拓者の基本武器。周囲8方向の隣接マスを安定して攻撃できる。"},
+ iron_sword:{id:"iron_sword",slot:"weapon",icon:"⚔️",name:"鉄の剣",attack:6,defense:0,hp:0,weapon:{type:"sword",label:"剣",range:1,directions:8,accuracy:.96,power:1.06},desc:"木の剣より高威力な正統派の剣。周囲8方向の隣接攻撃。"},
+ wood_spear:{id:"wood_spear",slot:"weapon",icon:"🔱",name:"木の槍",attack:4,defense:0,hp:0,weapon:{type:"spear",label:"槍",range:2,directions:4,accuracy:.92,power:1},desc:"隣接8方向に加え、上下左右なら2マス先まで突ける。"},
+ hunter_bow:{id:"hunter_bow",slot:"weapon",icon:"🏹",name:"狩人の弓",attack:3,defense:0,hp:0,weapon:{type:"bow",label:"弓",range:4,directions:8,accuracy:.88,power:.92},desc:"直線8方向の4マス先まで射てる。壁や敵を貫通しない。"},
+ iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.28},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
  traveler_clothes:{id:"traveler_clothes",slot:"armor",icon:"🥋",name:"旅人の服",attack:0,defense:2,hp:0,desc:"動きやすい旅装。最低限の防御力がある。"},
- leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。"},
- traveler_charm:{id:"traveler_charm",slot:"charm",icon:"🧿",name:"旅のお守り",attack:0,defense:0,hp:5,desc:"旅の無事を願うお守り。最大HPが少し増える。"},
- forest_charm:{id:"forest_charm",slot:"charm",icon:"🍃",name:"森のお守り",attack:1,defense:1,hp:4,desc:"森で見つかる不思議なお守り。攻守を少し補う。"}
+ leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。受けるダメージをしっかり抑える。"},
+ iron_armor:{id:"iron_armor",slot:"armor",icon:"🛡️",name:"鉄のよろい",attack:0,defense:8,hp:2,damageReduction:1,desc:"重いが頑丈な防具。防御が高く、被ダメージをさらに1軽減する。"},
+ traveler_charm:{id:"traveler_charm",slot:"charm",icon:"🧿",name:"旅のお守り",attack:0,defense:0,hp:5,foodSaveEvery:6,desc:"最大HP+5。6ターンごとに食料消費を1回抑える。"},
+ forest_charm:{id:"forest_charm",slot:"charm",icon:"🍃",name:"森のお守り",attack:1,defense:1,hp:4,damageReduction:1,desc:"攻撃+1・防御+1・最大HP+4。被ダメージを1軽減する。"},
+ hunter_charm:{id:"hunter_charm",slot:"charm",icon:"🎯",name:"狩人のお守り",attack:0,defense:0,hp:2,accuracyBonus:.08,criticalBonus:.04,desc:"最大HP+2。武器の命中率+8%、急所率+4%。"}
 });
 F.STARTER_EQUIPMENT=Object.freeze({
  owned:{wood_sword:1,traveler_clothes:1,traveler_charm:1},
  equipped:{weapon:"wood_sword",armor:"traveler_clothes",charm:"traveler_charm"}
 });
 F.DUNGEON_EQUIPMENT_TABLE=Object.freeze([
- {equipment:"leather_armor",weight:42,minFloor:1},
- {equipment:"iron_sword",weight:34,minFloor:2},
- {equipment:"forest_charm",weight:24,minFloor:2}
+ {equipment:"leather_armor",weight:30,minFloor:1},
+ {equipment:"wood_spear",weight:24,minFloor:1},
+ {equipment:"iron_sword",weight:20,minFloor:2},
+ {equipment:"hunter_bow",weight:18,minFloor:2},
+ {equipment:"forest_charm",weight:15,minFloor:2},
+ {equipment:"hunter_charm",weight:12,minFloor:2},
+ {equipment:"iron_hammer",weight:10,minFloor:3},
+ {equipment:"iron_armor",weight:9,minFloor:3}
 ]);
 F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
 F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
