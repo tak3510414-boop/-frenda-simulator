@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.57 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.58 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];

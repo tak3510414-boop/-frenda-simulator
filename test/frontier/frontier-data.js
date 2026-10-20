@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.57 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.58 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.57";
+F.VERSION="0.58";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -14,7 +14,7 @@ F.ITEMS=Object.freeze({
 F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
 ]);
-// Ver0.57: ダンジョン宝箱。素材だけでなく、探索継続に役立つ食料・HP・PPも出る。
+// Ver0.58: ダンジョン宝箱。素材だけでなく、探索継続に役立つ食料・HP・PPも出る。
 F.DUNGEON_CHEST_TABLE=Object.freeze([
  {kind:"item",item:"wood",weight:24,min:1,max:2},
  {kind:"item",item:"herb",weight:22,min:1,max:2},
