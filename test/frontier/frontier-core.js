@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.62 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.63 / world structure Ver6 + Pokemon-led dungeon core / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -338,7 +338,11 @@ F.dungeonCanStep=dungeonCanStep;
 F.dungeonDirections8=dungeonDirs8.map(v=>v.slice());
 function allOpenConnected(map,start={x:1,y:1}){const h=map?.length||0,w=map?.[0]?.length||0;let total=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(tileOpen(map,x,y))total++;if(!total||!tileOpen(map,start.x,start.y))return false;const q=[[start.x,start.y]],seen=new Set([key(start.x,start.y)]);for(let i=0;i<q.length;i++){const[x,y]=q[i];for(const[dx,dy]of dirs){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(tileOpen(map,nx,ny)&&!seen.has(k)){seen.add(k);q.push([nx,ny])}}}return seen.size===total}
 function roomContains(r,x,y){return !!r&&x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h}
-function revealDungeon(run){if(!run?.map)return;const h=run.map.length,w=run.map[0]?.length||0;if(!Array.isArray(run.seen)||run.seen.length!==h)run.seen=Array.from({length:h},()=>Array(w).fill(false));const mark=(x,y)=>{if(x>=0&&y>=0&&x<w&&y<h)run.seen[y][x]=true};let inRoom=null;for(const r of (run.rooms||[]))if(roomContains(r,run.leader.x,run.leader.y)){inRoom=r;break}if(inRoom){for(let y=inRoom.y-1;y<=inRoom.y+inRoom.h;y++)for(let x=inRoom.x-1;x<=inRoom.x+inRoom.w;x++)mark(x,y)}else{for(let y=run.leader.y-1;y<=run.leader.y+1;y++)for(let x=run.leader.x-1;x<=run.leader.x+1;x++)mark(x,y)}mark(run.leader.x,run.leader.y)}
+// Ver0.63: current sight is separate from explored memory. In a room, reveal the whole room and its rim; in corridors, only the local 3x3 area is visible.
+function dungeonVisibility(run){if(!run?.map)return[];const h=run.map.length,w=run.map[0]?.length||0,vis=Array.from({length:h},()=>Array(w).fill(false));const mark=(x,y)=>{if(x>=0&&y>=0&&x<w&&y<h)vis[y][x]=true};let inRoom=null;for(const r of (run.rooms||[]))if(roomContains(r,run.leader.x,run.leader.y)){inRoom=r;break}if(inRoom){for(let y=inRoom.y-1;y<=inRoom.y+inRoom.h;y++)for(let x=inRoom.x-1;x<=inRoom.x+inRoom.w;x++)mark(x,y)}else{for(let y=run.leader.y-1;y<=run.leader.y+1;y++)for(let x=run.leader.x-1;x<=run.leader.x+1;x++)mark(x,y)}mark(run.leader.x,run.leader.y);return vis}
+function revealDungeon(run){if(!run?.map)return;const h=run.map.length,w=run.map[0]?.length||0;if(!Array.isArray(run.seen)||run.seen.length!==h)run.seen=Array.from({length:h},()=>Array(w).fill(false));const vis=dungeonVisibility(run);for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(vis[y]?.[x])run.seen[y][x]=true}
+F.dungeonVisibility=dungeonVisibility;
+F.isDungeonVisible=(run,x,y)=>!!dungeonVisibility(run)?.[y]?.[x];
 F.revealDungeonMap=revealDungeon;
 function randomOpen(map,blocked=new Set(),minDist=0,origin={x:1,y:1},predicate=null){const h=map?.length||0,w=map?.[0]?.length||0;for(let n=0;n<Math.max(900,w*h*5);n++){const x=F.rand(1,w-2),y=F.rand(1,h-2);if(!tileOpen(map,x,y)||blocked.has(key(x,y)))continue;if(Math.abs(x-origin.x)+Math.abs(y-origin.y)<minDist)continue;if(predicate&&!predicate(x,y))continue;return{x,y}}for(let y=h-2;y>=1;y--)for(let x=w-2;x>=1;x--)if(tileOpen(map,x,y)&&!blocked.has(key(x,y))&&(!predicate||predicate(x,y)))return{x,y};return{x:origin.x,y:origin.y}}
 function carveRoom(map,r){for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)map[y][x]='floor'}
