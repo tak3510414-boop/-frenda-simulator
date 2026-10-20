@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.61 / pixel-map renderer / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.62 / pixel-map renderer / Updated: 2026-10-20 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.61";
+R.RENDERER_VERSION="0.62";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -137,13 +137,27 @@ R.renderStore=(canvas,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);
 };
 
 R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);/* Ver0.59: 人間は冒険隊に同行させない。町側の見送り役を出口の後方へ1人だけ置く。 */human(c,116,210,'gray','back');rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64);label(c,'町の出口',103,218,43)};
-R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#1e3726');
- const mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(window.FRENDA_FRONTIER?.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(window.FRENDA_FRONTIER?.DUNGEON_VIEW_ROWS)||9,mapH),t=14,ox=Math.round((W-viewCols*t)/2),oy=27;
+R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#223126');
+ const mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(window.FRENDA_FRONTIER?.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(window.FRENDA_FRONTIER?.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.leader.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.leader.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows));
- // Ver0.61: only the camera viewport is drawn. The full floor remains larger off-screen.
- for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t;if(tt==='wall'){rect(c,xx,yy,t,t,'#31543b');rect(c,xx+2,yy+2,t-4,t-4,'#3f6748');if(seeded(x,y)>.45)rect(c,xx+3,yy+3,3,3,'#56805a')}else{rect(c,xx,yy,t,t,tt==='stairs'?'#bf9b61':tt==='gather'?'#99be72':'#a6c982');rect(c,xx,yy,t,1,'#7fa464');rect(c,xx,yy,1,t,'#7fa464');if(tt==='gather'){rect(c,xx+4,yy+5,5,3,'#4e9149');rect(c,xx+7,yy+3,3,5,'#5ca353')}if(tt==='chest'){rect(c,xx+3,yy+5,8,6,'#8a5c2d');rect(c,xx+3,yy+4,8,3,'#b77a39');rect(c,xx+6,yy+6,2,3,'#e6c35b');rect(c,xx+4,yy+3,6,1,'#6f4723')}if(tt==='stairs'){for(let i=0;i<4;i++)rect(c,xx+3,yy+3+i*2,7,1,'#77532e')}}}
- // Small edge marks show that the dungeon continues outside the current camera window.
- const mx=ox+viewCols*t,my=oy+viewRows*t;if(camX>0){rect(c,ox-4,oy+viewRows*t/2-5,2,10,'#d8eadb')}if(camX+viewCols<mapW){rect(c,mx+2,oy+viewRows*t/2-5,2,10,'#d8eadb')}if(camY>0){rect(c,ox+viewCols*t/2-5,oy-4,10,2,'#d8eadb')}if(camY+viewRows<mapH){rect(c,ox+viewCols*t/2-5,my+2,10,2,'#d8eadb')}
+ // Ver0.62: room/corridor floor. The leader stays near the center while the camera follows through a much larger floor.
+ for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
+  const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t,n=seeded(x*7+run.floor,y*11+run.floor);
+  if(tt==='wall'){
+   rect(c,xx,yy,t,t,n>.55?'#344c36':'#2d4432');rect(c,xx+2,yy+2,t-4,t-4,n>.72?'#426047':'#38533c');
+   if(n>.45)rect(c,xx+3+(x%3),yy+3+(y%3),2,3,'#557057');if(n<.18)rect(c,xx+t-5,yy+t-5,2,2,'#263a2b');
+  }else{
+   const floorCol=n>.7?'#7e8d5f':n>.35?'#74845a':'#6c7b52';rect(c,xx,yy,t,t,floorCol);
+   if(n>.78)rect(c,xx+3,yy+4,2,2,'#91a86c');if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,'#566846');
+   // Torneko/Mystery-Dungeon-like explored-map overlay: whole rooms reveal at once, corridors reveal as you walk them.
+   if(run.seen?.[y]?.[x])rect(c,xx+1,yy+1,t-2,t-2,'rgba(48,145,170,.25)');
+   if(tt==='gather'){rect(c,xx+4,yy+7,6,3,'#3f7c40');rect(c,xx+7,yy+4,3,6,'#55984d')}
+   if(tt==='chest'){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
+   if(tt==='stairs'){rect(c,xx+2,yy+2,t-4,t-4,'#a98358');for(let i=0;i<5;i++)rect(c,xx+3,yy+3+i*2,t-6,1,'#66492e')}
+  }
+ }
+ // Thin continuation markers only; they show that the floor extends beyond the current camera without exposing the full layout.
+ const mx=ox+viewCols*t,my=oy+viewRows*t;if(camX>0)rect(c,ox-3,oy+viewRows*t/2-4,2,8,'#b9d7cf');if(camX+viewCols<mapW)rect(c,mx+1,oy+viewRows*t/2-4,2,8,'#b9d7cf');if(camY>0)rect(c,ox+viewCols*t/2-4,oy-3,8,2,'#b9d7cf');if(camY+viewRows<mapH)rect(c,ox+viewCols*t/2-4,my+1,8,2,'#b9d7cf');
  return {ox,oy,t,camX,camY,viewCols,viewRows,mapW,mapH};
 };
 R.logicalSize={width:W,height:H};
