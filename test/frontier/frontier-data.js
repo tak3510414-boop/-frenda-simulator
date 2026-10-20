@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.55 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.57 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.55";
+F.VERSION="0.57";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=12;F.H=8;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -13,6 +13,16 @@ F.ITEMS=Object.freeze({
 });
 F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
+]);
+// Ver0.57: ダンジョン宝箱。素材だけでなく、探索継続に役立つ食料・HP・PPも出る。
+F.DUNGEON_CHEST_TABLE=Object.freeze([
+ {kind:"item",item:"wood",weight:24,min:1,max:2},
+ {kind:"item",item:"herb",weight:22,min:1,max:2},
+ {kind:"item",item:"iron",weight:15,min:1,max:1},
+ {kind:"item",item:"crystal",weight:6,min:1,max:1},
+ {kind:"food",weight:13,min:6,max:10},
+ {kind:"heal",weight:11,min:5,max:9},
+ {kind:"pp",weight:9,min:2,max:4}
 ]);
 
 // Ver0.50: 町・ダンジョン・ショップで共通利用する時間・経済・ダンジョン定義。

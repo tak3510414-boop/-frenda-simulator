@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.55 / Pokemon species master + companion/enemy common layer / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.57 / Pokemon species master + companion/enemy common layer / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -65,5 +65,5 @@ F.markEncounterState=(s,speciesIds,dungeonId)=>{s.pokemon=s.pokemon||{};s.pokemo
 F.frontierDexEntries=s=>{const m=F.buildPokemonSpeciesMaster(),enc=s?.pokemon?.encountered||{},real=new Set(F.realEligibleCompanions(s).map(x=>x.id));return m.records.map(sp=>({species:sp,encountered:!!enc[sp.id],encounterCount:Number(enc[sp.id]?.count)||0,companion:real.has(sp.id),access:F.companionAccess(sp,s)}))};
 F.biomeWeight=(sp,biome="forest")=>{const t=TYPE_BIOME_WEIGHT[biome]||TYPE_BIOME_WEIGHT.forest;return Math.max(.02,...sp.types.map(x=>Number(t[x])||0))};
 F.enemySpeciesCandidates=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{const d=F.dungeonDef?.(dungeonId)||{},biome=d.enemyRules?.biome||"forest",max=Number(d.enemyRules?.maxRarityByFloor?.[Math.max(0,Number(floor)-1)]??(floor<=1?1:floor===2?2:2)),rank={common:0,uncommon:1,rare:2,elite:3};return F.buildPokemonSpeciesMaster().records.filter(sp=>(rank[sp.rarity]??9)<=max&&F.biomeWeight(sp,biome)>=.1).map(sp=>({species:sp,weight:F.biomeWeight(sp,biome)*(sp.rarity==="common"?1.35:sp.rarity==="uncommon"?1:sp.rarity==="rare"?.55:.18)}))};
-F.chooseEnemySpecies=(dungeonId,floor)=>{const pool=F.enemySpeciesCandidates(dungeonId,floor);if(!pool.length)return F.buildPokemonSpeciesMaster().records[0]||null;const hit=F.weighted(pool.map(x=>({weight:x.weight,value:x.species})));return hit?.value||pool[0].species};
+F.chooseEnemySpecies=(dungeonId,floor)=>{let pool=F.enemySpeciesCandidates(dungeonId,floor);if(!pool.length)return F.buildPokemonSpeciesMaster().records[0]||null;const spriteState=F.spriteDexStatus?.();if(spriteState&&!spriteState.ready&&F.hasImmediateSprite){const local=pool.filter(x=>F.hasImmediateSprite(x.species));if(local.length>=6)pool=local}const hit=F.weighted(pool.map(x=>({weight:x.weight,value:x.species})));return hit?.value||pool[0].species};
 })();
