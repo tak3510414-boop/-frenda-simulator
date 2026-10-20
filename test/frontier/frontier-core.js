@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.67 / world structure Ver6 + human-adventurer dungeon core / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.68 / world structure Ver6 + human-adventurer dungeon core / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -417,3 +417,4 @@ F.applyCustomerVisit=result=>F.mutateSave(s=>{s.sales.customers++;if(!result?.bo
 F.applySale=result=>F.applyCustomerVisit(result);
 F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(F.TIME_ACTION_COSTS?.shopOpen)||1,"shopOpen");F.addHistory(s,"shop",`営業を終えた。${time.phase.icon}${time.phase.label}になった。`);return time});
 })();
+// Updated: 2026-10-20 22:38 JST
