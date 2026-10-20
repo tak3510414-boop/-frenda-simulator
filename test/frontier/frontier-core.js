@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.68 / world structure Ver6 + human-adventurer dungeon core / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.69 / world structure Ver6 + human-adventurer dungeon core / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
