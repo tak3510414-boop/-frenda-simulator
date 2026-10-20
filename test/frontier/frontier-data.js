@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.66 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.67 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.66";
+F.VERSION="0.67";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({

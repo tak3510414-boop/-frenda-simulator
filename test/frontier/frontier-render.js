@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.66 / pixel-map renderer / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.67 / pixel-map renderer / Updated: 2026-10-20 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.66";
+R.RENDERER_VERSION="0.67";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -137,9 +137,18 @@ R.renderStore=(canvas,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);
 };
 
 R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);/* Ver0.64: human protagonist is drawn by the UI sprite layer; the preview background stays scenery-only. */rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64);label(c,'町の出口',103,218,43)};
+
+function dungeonGroundItem(c,id,x,y,t){
+ const cx=x+Math.floor(t/2),cy=y+Math.floor(t/2);
+ if(id==='wood'){rect(c,cx-5,cy-2,9,3,'#9a6339');rect(c,cx-4,cy-4,9,3,'#c4864b');px(c,cx+3,cy-3,'#e2b270');return}
+ if(id==='herb'){rect(c,cx-1,cy-1,2,5,'#315e36');rect(c,cx-5,cy-4,5,4,'#5aa44f');rect(c,cx+1,cy-5,5,5,'#72bd5e');px(c,cx+2,cy-3,'#b6df82');return}
+ if(id==='iron'){rect(c,cx-5,cy-2,10,6,'#60696b');rect(c,cx-3,cy-5,6,4,'#858f91');px(c,cx-1,cy-3,'#d9e2df');px(c,cx+3,cy,'#aab4b2');return}
+ if(id==='crystal'){rect(c,cx-1,cy-6,3,12,'#5bb9cf');rect(c,cx-4,cy-3,9,6,'#79d5df');px(c,cx,cy-4,'#e9ffff');px(c,cx+2,cy-1,'#d9ffff');return}
+ rect(c,cx-4,cy-4,8,8,'#c9a24f');px(c,cx,cy-1,'#fff0a8');
+}
 R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#17231b');
  const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(F.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[];
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it]));
  // Ver0.64: unexplored = hidden, explored memory = dim teal, current sight = normal brightness.
  for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
   const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t,n=seeded(x*7+run.floor,y*11+run.floor),seen=!!run.seen?.[y]?.[x],visible=!!visibility?.[y]?.[x];
@@ -150,7 +159,7 @@ R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return nul
   }else{
    const floorCol=n>.7?'#7e8d5f':n>.35?'#74845a':'#6c7b52';rect(c,xx,yy,t,t,floorCol);
    if(n>.78)rect(c,xx+3,yy+4,2,2,'#91a86c');if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,'#566846');
-   if(tt==='gather'){rect(c,xx+4,yy+7,6,3,'#3f7c40');rect(c,xx+7,yy+4,3,6,'#55984d')}
+   if(tt==='gather'){const drop=groundMap.get(x+','+y);dungeonGroundItem(c,drop?.itemId,xx,yy,t)}
    if(tt==='chest'){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
    if(tt==='stairs'){rect(c,xx+2,yy+2,t-4,t-4,'#a98358');for(let i=0;i<5;i++)rect(c,xx+3,yy+3+i*2,t-6,1,'#66492e')}
   }
