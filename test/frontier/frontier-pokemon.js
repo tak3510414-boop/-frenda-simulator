@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.72 / Pokemon species master + floor-band enemy selection / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.73 / Pokemon species master + floor-band enemy selection / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};

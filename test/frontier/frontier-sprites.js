@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.72 / Pokemon sprite resolver / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.73 / Pokemon sprite resolver / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CACHE_KEY="frenda:frontier:sprite-dex:v2";

@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.72 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.73 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.72";
+R.RENDERER_VERSION="0.73";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -171,7 +171,22 @@ function drawDungeonAutoMap(c,run,visibility,viewRect){
   if(!isSeenOpen(x-1,y)){c.beginPath();c.moveTo(xx,yy);c.lineTo(xx,yy+rr);c.stroke()}
  }
  c.restore();
- // Once found, stairs stay on the map even after leaving sight. Treasure/items are intentionally not mapped yet.
+ // Ver0.73: discovered floor items and unopened treasure remain on the auto map until collected/opened.
+ // Because the markers are derived from the current floor state, pickup/open immediately removes the marker without a separate stale-map cache.
+ for(const it of (run.floorItems||[])){
+  const x=Number(it?.x),y=Number(it?.y);if(!Number.isFinite(x)||!Number.isFinite(y)||!run.seen?.[y]?.[x])continue;
+  const xx=left+x*cell,yy=top+y*cell,cx=xx+Math.floor(cell/2),cy=yy+Math.floor(cell/2),m=Math.max(2,Math.min(3,cell));
+  // Small bright diamond/square: readable at the 32x24 full-floor scale without obscuring the room shape.
+  if(cell>=4){px(c,cx,cy-1,'rgba(255,248,158,.98)');px(c,cx-1,cy,'rgba(255,215,82,.98)');px(c,cx,cy,'rgba(255,239,119,.98)');px(c,cx+1,cy,'rgba(255,215,82,.98)');px(c,cx,cy+1,'rgba(255,248,158,.98)')}
+  else rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(255,226,86,.98)');
+ }
+ // Unopened treasure chests use a separate orange marker and disappear as soon as the chest tile becomes floor.
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(run.seen?.[y]?.[x]&&run.map[y]?.[x]==='chest'){
+  const xx=left+x*cell,yy=top+y*cell,m=Math.max(2,Math.min(3,cell));
+  rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(239,137,58,.98)');
+  if(cell>=4)px(c,xx+Math.floor(cell/2),yy+Math.floor(cell/2),'#ffe3a1');
+ }
+ // Once found, stairs stay on the map even after leaving sight.
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(run.seen?.[y]?.[x]&&run.map[y]?.[x]==='stairs'){
   const xx=left+x*cell,yy=top+y*cell,m=Math.max(2,cell-1);rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(255,196,76,.94)');
   if(cell>=4)px(c,xx+Math.floor(cell/2),yy+Math.floor(cell/2),'#fff1a8');
