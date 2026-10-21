@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.85 / world structure Ver6 + 30-floor human-adventurer dungeon core / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.90 / world structure Ver6 + 30-floor human-adventurer dungeon core / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -457,6 +457,8 @@ F.attackAt=(tx,ty)=>{const run=F.run;if(!run?.active)return{attempted:false,reas
 // Ver0.85: scroll / wand / throwing-item layer inspired by classic Mystery Dungeon resource play.
 function consumeBagItem(run,id,n=1){run.bag[id]=(Number(run.bag[id])||0)-n;if(run.bag[id]<=0)delete run.bag[id]}
 function facingVector(face){return ({up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]})[String(face||'down')]||[0,1]}
+function normalizeFacing(face,def='down'){return ({up:'up',down:'down',left:'left',right:'right'})[String(face||'').toLowerCase()]||def}
+F.setDungeonFacing=face=>{const run=F.run;if(!run?.active)return false;run.playerFacing=normalizeFacing(face,run.playerFacing||'down');return run.playerFacing};
 function itemLineTarget(run,maxRange=6){const [sx,sy]=facingVector(run.playerFacing),out={sx,sy,enemy:null,dist:0};let x=run.player.x,y=run.player.y;for(let i=1;i<=maxRange;i++){if(!dungeonCanStep(run.map,x,y,sx,sy))break;x+=sx;y+=sy;out.dist=i;const e=entityAt(run,x,y);if(e){out.enemy=e;break}}return out}
 function itemDamageEnemy(run,e,dmg,label){if(!e||e.hp<=0)return false;e.hp=Math.max(0,e.hp-Math.max(1,Number(dmg)||1));run.log.push(`${label} ${e.name}に${dmg}ダメージ。`);if(e.hp<=0){run.log.push(`✅ ${e.name}を追い払った！`);run.playerExp+=2+run.floor;if(run.playerExp>=run.playerLv*5){run.playerExp=0;run.playerLv++;run.playerMaxHp+=3;run.playerHp=Math.min(run.playerMaxHp,run.playerHp+5);run.playerAttack++;run.log.push(`🌟 冒険者Lvが${run.playerLv}になった！`)}}return true}
 function revealWholeFloor(run){if(!run?.map)return;const h=run.map.length,w=run.map[0]?.length||0;if(!Array.isArray(run.seen)||run.seen.length!==h)run.seen=Array.from({length:h},()=>Array(w).fill(false));for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(run.map[y]?.[x]&&run.map[y][x]!== 'wall')run.seen[y][x]=true}
@@ -484,5 +486,5 @@ F.applyCustomerVisit=result=>F.mutateSave(s=>{s.sales.customers++;if(!result?.bo
 F.applySale=result=>F.applyCustomerVisit(result);
 F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(F.TIME_ACTION_COSTS?.shopOpen)||1,"shopOpen");F.addHistory(s,"shop",`営業を終えた。${time.phase.icon}${time.phase.label}になった。`);return time});
 })();
-// Updated: 2026-10-21 21:23 JST / Ver0.85
-/* Updated: 2026-10-21 21:23 JST / Ver0.85 */
+// Updated: 2026-10-21 22:35 JST / Ver0.90
+/* Updated: 2026-10-21 22:35 JST / Ver0.90 */

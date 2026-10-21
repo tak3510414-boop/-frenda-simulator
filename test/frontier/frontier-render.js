@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.88 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.90 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.88";
+R.RENDERER_VERSION="0.90";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -23,8 +23,11 @@ const ITEM_ART_PATHS={
  sleep_scroll:'frontier-item-sleep_scroll-v086.png',
  spark_wand:'frontier-item-spark_wand-v088.png',
  throw_stone:'frontier-item-throw_stone-v086.png',
- crystal:'frontier-item-crystal-v086.png'
+ crystal:'frontier-item-crystal-v086.png',
+ wood:'frontier-item-wood-v090.png',
+ iron:'frontier-item-iron-v090.png'
 };
+const CHEST_ART_PATH='frontier-chest-v090.png';
 const itemArtCache={};
 function itemArtImage(id){
  const src=ITEM_ART_PATHS[id];
@@ -47,6 +50,25 @@ function drawItemArt(c,id,x,y,t){
  return true;
 }
 for(const id of Object.keys(ITEM_ART_PATHS))itemArtImage(id);
+let chestArtImg=null;
+function chestArtImage(){
+ if(chestArtImg)return chestArtImg;
+ chestArtImg=new Image();
+ chestArtImg.decoding='async';
+ chestArtImg.src=CHEST_ART_PATH;
+ return chestArtImg;
+}
+function drawChestArt(c,x,y,t){
+ const img=chestArtImage();
+ if(!img||!img.complete||!img.naturalWidth)return false;
+ const maxW=Math.max(10,Math.min(t*1.28,18)), maxH=Math.max(10,Math.min(t*1.22,17));
+ const scale=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
+ const w=Math.max(6,Math.round(img.naturalWidth*scale)), h=Math.max(6,Math.round(img.naturalHeight*scale));
+ const dx=Math.round(x+(t-w)/2), dy=Math.round(y+(t-h)/2)+1;
+ c.drawImage(img,dx,dy,w,h);
+ return true;
+}
+chestArtImage();
 
 function setup(canvas){
  if(!canvas)return null; canvas.width=W;canvas.height=H;if(canvas.style)canvas.style.imageRendering='pixelated';
@@ -265,7 +287,7 @@ R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return nul
    const floorCol=n>.7?'#7e8d5f':n>.35?'#74845a':'#6c7b52';rect(c,xx,yy,t,t,floorCol);
    if(n>.78)rect(c,xx+3,yy+4,2,2,'#91a86c');if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,'#566846');
    if(tt==='gather'){const drop=groundMap.get(x+','+y);dungeonGroundItem(c,drop?.itemId,xx,yy,t)}
-   if(tt==='chest'){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
+   if(tt==='chest'&&!drawChestArt(c,xx,yy,t)){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
    if(tt==='stairs'){rect(c,xx+2,yy+2,t-4,t-4,'#a98358');for(let i=0;i<5;i++)rect(c,xx+3,yy+3+i*2,t-6,1,'#66492e')}
    const trap=trapMap.get(x+','+y);if(trap){const cx=xx+Math.floor(t/2),cy=yy+Math.floor(t/2);rect(c,cx-4,cy-4,9,9,'rgba(94,54,83,.78)');rect(c,cx-3,cy-3,7,7,'rgba(201,91,150,.72)');line(c,cx-2,cy-2,cx+2,cy+2,'#ffe8f4',1);line(c,cx+2,cy-2,cx-2,cy+2,'#ffe8f4',1)}
   }
