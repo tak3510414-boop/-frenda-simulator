@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.91 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.92 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.91";
+F.VERSION="0.92";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -59,6 +59,18 @@ F.DUNGEON_EQUIPMENT_TABLE=Object.freeze([
 ]);
 F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
 F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
+
+// Ver0.92: Equipment is managed as individual instances. + values are applied to weapon attack / armor defense.
+F.equipmentInstanceView=inst=>{
+ const raw=typeof inst==="string"?{defId:inst,plus:0}:inst||{},d=F.equipment?.(raw.defId||raw.id);
+ if(!d)return null;
+ const plus=Math.max(0,Math.min(99,Math.floor(Number(raw.plus)||0))),out=Object.assign({},d,{uid:raw.uid||null,defId:d.id,plus,baseName:d.name});
+ if(d.slot==="weapon")out.attack=(Number(d.attack)||0)+plus;
+ if(d.slot==="armor")out.defense=(Number(d.defense)||0)+plus;
+ out.name=`${d.name}${plus>0?`+${plus}`:""}`;
+ return out;
+};
+F.equipmentInstanceName=inst=>F.equipmentInstanceView(inst)?.name||"不明な装備";
 
 F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:30,min:1,max:2},{item:"herb",weight:20,min:1,max:2},{item:"bread",weight:18,min:1,max:1},{item:"big_bread",weight:5,min:1,max:1},{item:"iron",weight:15,min:1,max:1},{item:"crystal",weight:6,min:1,max:1},
@@ -475,5 +487,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-21 22:55 JST / Ver0.91
-/* Updated: 2026-10-21 22:55 JST / Ver0.91 */
+// Updated: 2026-10-21 23:30 JST / Ver0.92
+/* Updated: 2026-10-21 23:30 JST / Ver0.92 */
