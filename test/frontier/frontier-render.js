@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.85 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.88 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.85";
+R.RENDERER_VERSION="0.88";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -9,6 +9,45 @@ const PAL={
  wood:'#b97c46',wood2:'#9b6038',wood3:'#d39a5e',wall:'#e8ddbd',wall2:'#d2c39f',dark:'#5f4029',roofR:'#bd5846',roofR2:'#984638',roofB:'#4c7bbd',roofB2:'#365d97',
  blue:'#6bb8dc',water:'#68bce4',water2:'#d2f3ff',ink:'#20322a'
 };
+
+const ITEM_ART_PATHS={
+ herb:'frontier-item-herb-v086.png',
+ antidote_herb:'frontier-item-antidote_herb-v086.png',
+ paralysis_herb:'frontier-item-paralysis_herb-v086.png',
+ wake_herb:'frontier-item-wake_herb-v086.png',
+ clarity_herb:'frontier-item-clarity_herb-v086.png',
+ panacea:'frontier-item-panacea-v086.png',
+ bread:'frontier-item-bread-v086.png',
+ big_bread:'frontier-item-big_bread-v086.png',
+ survey_scroll:'frontier-item-survey_scroll-v086.png',
+ sleep_scroll:'frontier-item-sleep_scroll-v086.png',
+ spark_wand:'frontier-item-spark_wand-v088.png',
+ throw_stone:'frontier-item-throw_stone-v086.png',
+ crystal:'frontier-item-crystal-v086.png'
+};
+const itemArtCache={};
+function itemArtImage(id){
+ const src=ITEM_ART_PATHS[id];
+ if(!src)return null;
+ let img=itemArtCache[id];
+ if(!img){img=new Image();img.decoding='async';img.src=src;itemArtCache[id]=img}
+ return img;
+}
+function drawItemArt(c,id,x,y,t){
+ const img=itemArtImage(id);
+ if(!img||!img.complete||!img.naturalWidth)return false;
+ const maxW=Math.max(8,Math.min(t*1.28,18));
+ const maxH=Math.max(8,Math.min(t*1.18,16));
+ const scale=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
+ const w=Math.max(2,Math.round(img.naturalWidth*scale));
+ const h=Math.max(2,Math.round(img.naturalHeight*scale));
+ const dx=Math.round(x+(t-w)/2);
+ const dy=Math.round(y+(t-h)/2)+1;
+ c.drawImage(img,dx,dy,w,h);
+ return true;
+}
+for(const id of Object.keys(ITEM_ART_PATHS))itemArtImage(id);
+
 function setup(canvas){
  if(!canvas)return null; canvas.width=W;canvas.height=H;if(canvas.style)canvas.style.imageRendering='pixelated';
  const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,W,H);return c;
@@ -140,6 +179,7 @@ R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c
 
 function dungeonGroundItem(c,id,x,y,t){
  const cx=x+Math.floor(t/2),cy=y+Math.floor(t/2);
+ if(drawItemArt(c,id,x,y,t))return;
  if(id==='wood'){rect(c,cx-5,cy-2,9,3,'#9a6339');rect(c,cx-4,cy-4,9,3,'#c4864b');px(c,cx+3,cy-3,'#e2b270');return}
  if(id==='herb'){rect(c,cx-1,cy-1,2,5,'#315e36');rect(c,cx-5,cy-4,5,4,'#5aa44f');rect(c,cx+1,cy-5,5,5,'#72bd5e');px(c,cx+2,cy-3,'#b6df82');return}
  if(['antidote_herb','paralysis_herb','wake_herb','clarity_herb'].includes(id)){const col=id==='antidote_herb'?'#78c96c':id==='paralysis_herb'?'#d3c84e':id==='wake_herb'?'#e9cfe9':'#8fb8dc';rect(c,cx-1,cy-1,2,5,'#3b6544');rect(c,cx-5,cy-4,5,4,col);rect(c,cx+1,cy-5,5,5,col);px(c,cx+2,cy-3,'#fff8d7');return}
