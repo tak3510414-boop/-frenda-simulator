@@ -1,12 +1,17 @@
-/* Frenda Frontier Ver0.83 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.84 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.83";
+F.VERSION="0.84";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
  wood:{id:"wood",icon:"🪵",name:"木材",kind:"素材",base:90,desc:"森で集めた丈夫な木材。"},
  herb:{id:"herb",icon:"🌿",name:"薬草",kind:"草",base:70,desc:"ダンジョンで使うとHPを14、満腹度を5回復する薬草。"},
+ antidote_herb:{id:"antidote_herb",icon:"🍃",name:"解毒草",kind:"草",base:110,cures:["poison"],desc:"どく状態を治す草。"},
+ paralysis_herb:{id:"paralysis_herb",icon:"🌱",name:"しびれ取り草",kind:"草",base:120,cures:["paralysis"],desc:"まひ状態を治す草。"},
+ wake_herb:{id:"wake_herb",icon:"🌼",name:"目覚め草",kind:"草",base:120,cures:["sleep"],desc:"ねむり状態を治す草。"},
+ clarity_herb:{id:"clarity_herb",icon:"🌿",name:"正気草",kind:"草",base:120,cures:["confusion"],desc:"こんらん状態を治す草。"},
+ panacea:{id:"panacea",icon:"💊",name:"万能薬",kind:"薬",base:360,cures:["poison","paralysis","sleep","confusion"],desc:"どく・まひ・ねむり・こんらんをすべて治す珍しい薬。"},
  bread:{id:"bread",icon:"🍞",name:"パン",kind:"食料",base:100,fullness:50,desc:"食べると満腹度を50回復する。"},
  big_bread:{id:"big_bread",icon:"🥖",name:"大きなパン",kind:"食料",base:200,fullness:100,desc:"食べると満腹度を100回復する。"},
  iron:{id:"iron",icon:"⛏️",name:"鉄のかけら",kind:"素材",base:140,desc:"少量だが価値のある鉱石。"},
@@ -52,7 +57,8 @@ F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
 F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
 
 F.GATHER_TABLE=Object.freeze([
- {item:"wood",weight:32,min:1,max:2},{item:"herb",weight:24,min:1,max:2},{item:"bread",weight:18,min:1,max:1},{item:"big_bread",weight:5,min:1,max:1},{item:"iron",weight:15,min:1,max:1},{item:"crystal",weight:6,min:1,max:1}
+ {item:"wood",weight:30,min:1,max:2},{item:"herb",weight:20,min:1,max:2},{item:"bread",weight:18,min:1,max:1},{item:"big_bread",weight:5,min:1,max:1},{item:"iron",weight:15,min:1,max:1},{item:"crystal",weight:6,min:1,max:1},
+ {item:"antidote_herb",weight:5,min:1,max:1},{item:"paralysis_herb",weight:4,min:1,max:1},{item:"wake_herb",weight:3,min:1,max:1},{item:"clarity_herb",weight:4,min:1,max:1},{item:"panacea",weight:1,min:1,max:1}
 ]);
 // Ver0.76: 宝箱の空腹回復は数値直回復をやめ、パン系アイテムとして手に入る。
 F.DUNGEON_CHEST_TABLE=Object.freeze([
@@ -62,6 +68,11 @@ F.DUNGEON_CHEST_TABLE=Object.freeze([
  {kind:"item",item:"crystal",weight:6,min:1,max:1},
  {kind:"item",item:"bread",weight:10,min:1,max:1},
  {kind:"item",item:"big_bread",weight:3,min:1,max:1},
+ {kind:"item",item:"antidote_herb",weight:4,min:1,max:1},
+ {kind:"item",item:"paralysis_herb",weight:3,min:1,max:1},
+ {kind:"item",item:"wake_herb",weight:3,min:1,max:1},
+ {kind:"item",item:"clarity_herb",weight:3,min:1,max:1},
+ {kind:"item",item:"panacea",weight:1,min:1,max:1},
  {kind:"heal",weight:11,min:5,max:9},
  {kind:"equipment",weight:9}
 ]);
@@ -457,4 +468,4 @@ F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
 // Updated: 2026-10-21 15:05 JST
-/* Updated: 2026-10-21 17:25 JST / Ver0.83 */
+/* Updated: 2026-10-21 19:59 JST / Ver0.84 */

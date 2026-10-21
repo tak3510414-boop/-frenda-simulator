@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.83 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.84 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -125,4 +125,4 @@ F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
 // Updated: 2026-10-21 15:05 JST
-/* Updated: 2026-10-21 17:25 JST / Ver0.83 */
+/* Updated: 2026-10-21 19:59 JST / Ver0.84 */

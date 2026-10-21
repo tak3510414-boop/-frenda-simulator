@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.83 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.84 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.83";
+R.RENDERER_VERSION="0.84";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -142,6 +142,8 @@ function dungeonGroundItem(c,id,x,y,t){
  const cx=x+Math.floor(t/2),cy=y+Math.floor(t/2);
  if(id==='wood'){rect(c,cx-5,cy-2,9,3,'#9a6339');rect(c,cx-4,cy-4,9,3,'#c4864b');px(c,cx+3,cy-3,'#e2b270');return}
  if(id==='herb'){rect(c,cx-1,cy-1,2,5,'#315e36');rect(c,cx-5,cy-4,5,4,'#5aa44f');rect(c,cx+1,cy-5,5,5,'#72bd5e');px(c,cx+2,cy-3,'#b6df82');return}
+ if(['antidote_herb','paralysis_herb','wake_herb','clarity_herb'].includes(id)){const col=id==='antidote_herb'?'#78c96c':id==='paralysis_herb'?'#d3c84e':id==='wake_herb'?'#e9cfe9':'#8fb8dc';rect(c,cx-1,cy-1,2,5,'#3b6544');rect(c,cx-5,cy-4,5,4,col);rect(c,cx+1,cy-5,5,5,col);px(c,cx+2,cy-3,'#fff8d7');return}
+ if(id==='panacea'){rect(c,cx-4,cy-4,8,8,'#dfe8ff');rect(c,cx-4,cy,8,4,'#9d83d7');px(c,cx-2,cy-2,'#fff');px(c,cx+2,cy+2,'#5c4b91');return}
  if(id==='bread'){rect(c,cx-5,cy-3,10,7,'#d89a4e');rect(c,cx-4,cy-5,8,4,'#f0c06b');px(c,cx-2,cy-3,'#fff0b5');px(c,cx+2,cy-3,'#fff0b5');return}
  if(id==='big_bread'){rect(c,cx-6,cy-3,12,7,'#bc7f3f');rect(c,cx-5,cy-5,10,4,'#e7b45f');rect(c,cx-3,cy-4,2,1,'#fff0b5');rect(c,cx+1,cy-4,2,1,'#fff0b5');return}
  if(id==='iron'){rect(c,cx-5,cy-2,10,6,'#60696b');rect(c,cx-3,cy-5,6,4,'#858f91');px(c,cx-1,cy-3,'#d9e2df');px(c,cx+3,cy,'#aab4b2');return}
@@ -423,4 +425,4 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
 
 };})();
 // Updated: 2026-10-21 15:05 JST
-/* Updated: 2026-10-21 17:25 JST / Ver0.83 */
+/* Updated: 2026-10-21 19:59 JST / Ver0.84 */
