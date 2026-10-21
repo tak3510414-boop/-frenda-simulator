@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.80 / Pokemon sprite resolver / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.81 / Pokemon sprite resolver / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CACHE_KEY="frenda:frontier:sprite-dex:v2";
@@ -56,4 +56,4 @@ async function fetchIndex(url){const r=await fetch(url,{cache:'force-cache'});if
 F.ensureSpriteDex=()=>{if(ready)return Promise.resolve({ready:true,count:dex.size,cached:true});if(loading)return loading;if(typeof fetch!=='function')return Promise.resolve({ready:false,count:dex.size,error:'fetch unavailable'});loading=(async()=>{const errors=[];for(const url of INDEX_URLS){try{const j=await fetchIndex(url),added=ingest(j);if(added>0){ready=dex.size>500;saveCache();window.dispatchEvent(new CustomEvent('frontier:sprites-ready',{detail:{count:dex.size,ready,url}}));if(ready)return{ready,count:dex.size,url}}}catch(e){errors.push(`${url}: ${e?.message||e}`)}}console.warn('Frontier sprite dex:',errors.join(' / '));return{ready:false,count:dex.size,error:errors.join(' / ')}})().finally(()=>{loading=null});return loading};
 })();
 // Updated: 2026-10-21 15:05 JST
-/* Updated: 2026-10-21 16:45 JST / Ver0.80 */
+/* Updated: 2026-10-21 16:55 JST / Ver0.81 */
