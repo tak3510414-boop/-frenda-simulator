@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.93 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.95 / world structure Ver6 + multi-dungeon balance foundation / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.93";
+F.VERSION="0.95";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -142,20 +142,37 @@ F.TIME_PHASES=Object.freeze([
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
 F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
 // Ver0.72: 不思議のダンジョン系を基準に、最初のダンジョンも「最深部を目指す深い構成」にする。
-F.DUNGEON_FLOOR_BANDS=Object.freeze([
- {id:"entrance",from:1,to:5,label:"森の入口",enemyMaxRarity:0},
- {id:"inner",from:6,to:10,label:"森の中腹",enemyMaxRarity:1},
- {id:"deep",from:11,to:15,label:"深い森",enemyMaxRarity:1},
- {id:"ancient",from:16,to:20,label:"古樹の森",enemyMaxRarity:2},
- {id:"abyss",from:21,to:25,label:"森の深奥",enemyMaxRarity:2},
- {id:"core",from:26,to:30,label:"最深部",enemyMaxRarity:3}
+// Ver0.95: 全ダンジョン共通の難度Tier＋深度カーブ。後続ダンジョンを追加しても第1ダンジョンの数値を作り直さない構造にする。
+F.DUNGEON_TIER_DEFS=Object.freeze({
+ tier1:Object.freeze({id:"tier1",short:"T1",name:"基礎",role:"最初の標準ダンジョン",globalDepthOffset:0,enemyHpRate:1.00,enemyAtkRate:1.00,enemyCountBonus:0,rarityBonus:0,plusOffset:0,plusCap:5,traitBonus:0,curseBonus:0,gatherRate:1.00,chestBonus:0,trapRate:1.00,recommendedPlus:"+0〜+5"}),
+ tier2:Object.freeze({id:"tier2",short:"T2",name:"応用",role:"第2標準ダンジョン想定",globalDepthOffset:18,enemyHpRate:1.03,enemyAtkRate:1.03,enemyCountBonus:1,rarityBonus:1,plusOffset:2,plusCap:7,traitBonus:.03,curseBonus:.02,gatherRate:.95,chestBonus:0,trapRate:1.10,recommendedPlus:"+2〜+7"}),
+ tier3:Object.freeze({id:"tier3",short:"T3",name:"上級",role:"第3標準ダンジョン想定",globalDepthOffset:32,enemyHpRate:1.06,enemyAtkRate:1.06,enemyCountBonus:1,rarityBonus:1,plusOffset:4,plusCap:9,traitBonus:.05,curseBonus:.03,gatherRate:.90,chestBonus:0,trapRate:1.20,recommendedPlus:"+4〜+9"}),
+ tier4:Object.freeze({id:"tier4",short:"T4",name:"最深級",role:"高難度標準ダンジョン想定",globalDepthOffset:44,enemyHpRate:1.09,enemyAtkRate:1.09,enemyCountBonus:2,rarityBonus:1,plusOffset:5,plusCap:10,traitBonus:.07,curseBonus:.04,gatherRate:.85,chestBonus:0,trapRate:1.30,recommendedPlus:"+5〜+10"})
+});
+// 6段階の「ダンジョン内進行カーブ」。実際の階数に正規化して使うため、30階以外にも再利用できる。
+F.DUNGEON_DEPTH_CURVE=Object.freeze([
+ Object.freeze({id:"entry",label:"序盤",enemyMaxRarity:0,enemyBase:5,hpRate:1.00,atkRate:1.00,traitChance:.14,curseChance:.05,plusBias:0}),
+ Object.freeze({id:"inner",label:"中盤1",enemyMaxRarity:1,enemyBase:6,hpRate:1.05,atkRate:1.04,traitChance:.20,curseChance:.08,plusBias:0}),
+ Object.freeze({id:"deep",label:"中盤2",enemyMaxRarity:1,enemyBase:6,hpRate:1.10,atkRate:1.08,traitChance:.25,curseChance:.10,plusBias:1}),
+ Object.freeze({id:"ancient",label:"後半1",enemyMaxRarity:2,enemyBase:7,hpRate:1.16,atkRate:1.12,traitChance:.30,curseChance:.12,plusBias:1}),
+ Object.freeze({id:"abyss",label:"後半2",enemyMaxRarity:2,enemyBase:7,hpRate:1.23,atkRate:1.17,traitChance:.35,curseChance:.14,plusBias:2}),
+ Object.freeze({id:"core",label:"最深部",enemyMaxRarity:3,enemyBase:8,hpRate:1.30,atkRate:1.22,traitChance:.40,curseChance:.16,plusBias:2})
 ]);
-F.dungeonFloorBand=floor=>{floor=Math.max(1,Number(floor)||1);return (F.DUNGEON_FLOOR_BANDS||[]).find(b=>floor>=b.from&&floor<=b.to)||null};
+// 旧API互換：はじまりの森では従来どおり5階ごとの6帯域として見える。
+F.DUNGEON_FLOOR_BANDS=Object.freeze(F.DUNGEON_DEPTH_CURVE.map((b,i)=>Object.freeze({...b,from:i*5+1,to:(i+1)*5,label:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"][i]})));
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",rarityBands:F.DUNGEON_FLOOR_BANDS.map(b=>({from:b.from,to:b.to,max:b.enemyMaxRarity}))},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の森。野生ポケモンを退け、装備と素材を集めながら最深部を目指す。"}
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,balanceTier:"tier1",depthLabels:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"],progressionRole:"基準ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest"},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の基準ダンジョン。ここで基本を覚え、次のダンジョンへつながる装備を整える。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
 F.DEFAULT_DUNGEON_ID="beginner_forest";
+F.dungeonTierDef=id=>F.DUNGEON_TIER_DEFS?.[id]||F.DUNGEON_TIER_DEFS?.tier1||null;
+F.dungeonBalance=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{
+ const d=F.dungeonDef?.(dungeonId)||F.dungeonDef?.(F.DEFAULT_DUNGEON_ID)||{},tier=F.dungeonTierDef?.(d.balanceTier)||F.DUNGEON_TIER_DEFS.tier1,curve=F.DUNGEON_DEPTH_CURVE||[],maxFloor=Math.max(1,Number(d.maxFloor)||30),f=Math.max(1,Math.min(maxFloor,Number(floor)||1));
+ const progress=maxFloor<=1?0:(f-1)/(maxFloor-1),phaseIndex=Math.min(Math.max(0,curve.length-1),Math.floor(progress*curve.length)),phase=curve[phaseIndex]||curve[0]||{},normalizedFloor=maxFloor<=1?1:1+Math.round(progress*29),withinBand=(normalizedFloor-1)%5;
+ const label=Array.isArray(d.depthLabels)&&d.depthLabels[phaseIndex]?d.depthLabels[phaseIndex]:(phase.label||""),effectiveDepth=normalizedFloor+Math.max(0,Number(tier.globalDepthOffset)||0);
+ return {...phase,label,phaseIndex,normalizedFloor,withinBand,effectiveDepth,tierId:tier.id,tierShort:tier.short,tierName:tier.name,tierRole:tier.role,recommendedPlus:tier.recommendedPlus,enemyMaxRarity:Math.max(0,Math.min(3,(Number(phase.enemyMaxRarity)||0)+(Number(tier.rarityBonus)||0))),enemyBase:Math.max(1,(Number(phase.enemyBase)||5)+(Number(tier.enemyCountBonus)||0)),hpRate:(Number(phase.hpRate)||1)*(Number(tier.enemyHpRate)||1),atkRate:(Number(phase.atkRate)||1)*(Number(tier.enemyAtkRate)||1),traitChance:Math.max(0,Math.min(.65,(Number(phase.traitChance)||0)+(Number(tier.traitBonus)||0))),curseChance:Math.max(0,Math.min(.28,(Number(phase.curseChance)||0)+(Number(tier.curseBonus)||0))),plusOffset:Math.max(0,Number(tier.plusOffset)||0),plusCap:Math.max(0,Number(tier.plusCap)||5),gatherRate:Math.max(.5,Number(tier.gatherRate)||1),chestBonus:Math.floor(Number(tier.chestBonus)||0),trapRate:Math.max(.5,Number(tier.trapRate)||1)};
+};
+F.dungeonFloorBand=(floor,dungeonId=F.DEFAULT_DUNGEON_ID)=>F.dungeonBalance?.(dungeonId,floor)||null;
 F.SHOP_RULES=Object.freeze({baseCustomers:4,maxPriceMultiplier:3,minPrice:10});
 
 // Ver0.33: 施設は選んだ瞬間に完成させず、予定地→資材→骨組み→仕上げ→完成を共通工程として持つ。
@@ -515,5 +532,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-21 23:48 JST / Ver0.93
-/* Updated: 2026-10-21 23:48 JST / Ver0.93 */
+// Updated: 2026-10-22 07:16 JST / Ver0.95
+/* Updated: 2026-10-22 07:16 JST / Ver0.95 */
