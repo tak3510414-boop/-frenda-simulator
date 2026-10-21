@@ -486,5 +486,5 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
  c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,275,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`SceneSpec生成：${compiled.areaName}`,31,807);rCommandPanel(c);return compiled};
 
 };})();
-// Updated: 2026-10-21 21:23 JST / Ver0.85
-/* Updated: 2026-10-21 21:23 JST / Ver0.85 */
+// Updated: 2026-10-21 22:55 JST / Ver0.91
+/* Updated: 2026-10-21 22:55 JST / Ver0.91 */

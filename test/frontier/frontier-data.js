@@ -475,5 +475,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-21 21:23 JST / Ver0.85
-/* Updated: 2026-10-21 21:23 JST / Ver0.85 */
+// Updated: 2026-10-21 22:55 JST / Ver0.91
+/* Updated: 2026-10-21 22:55 JST / Ver0.91 */
