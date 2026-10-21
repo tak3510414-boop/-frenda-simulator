@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.90 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.91 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.90";
+R.RENDERER_VERSION="0.91";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={

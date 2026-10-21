@@ -1,4 +1,4 @@
-# Frenda Frontier Ver0.90 / TEST
+# Frenda Frontier Ver0.91 / TEST
 
 ## Ver0.85 - 巻物・杖・投げ物 第1段階
 
