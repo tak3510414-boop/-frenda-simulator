@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.71 / world structure Ver6 + 30-floor dungeon UI / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.72 / world structure Ver6 + 30-floor dungeon UI / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0;

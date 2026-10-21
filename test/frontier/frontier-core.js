@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.71 / world structure Ver6 + 30-floor human-adventurer dungeon core / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.72 / world structure Ver6 + 30-floor human-adventurer dungeon core / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -341,7 +341,7 @@ F.dungeonCanStep=dungeonCanStep;
 F.dungeonDirections8=dungeonDirs8.map(v=>v.slice());
 function allOpenConnected(map,start={x:1,y:1}){const h=map?.length||0,w=map?.[0]?.length||0;let total=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(tileOpen(map,x,y))total++;if(!total||!tileOpen(map,start.x,start.y))return false;const q=[[start.x,start.y]],seen=new Set([key(start.x,start.y)]);for(let i=0;i<q.length;i++){const[x,y]=q[i];for(const[dx,dy]of dirs){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(tileOpen(map,nx,ny)&&!seen.has(k)){seen.add(k);q.push([nx,ny])}}}return seen.size===total}
 function roomContains(r,x,y){return !!r&&x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h}
-// Ver0.63: current sight is separate from explored memory. In a room, reveal the whole room and its rim; in corridors, only the local 3x3 area is visible.
+// Ver0.72: current sight stays separate from explored memory. Entering a room reveals that room for the auto map; corridors reveal locally as they are traversed.
 function dungeonVisibility(run){if(!run?.map)return[];const h=run.map.length,w=run.map[0]?.length||0,vis=Array.from({length:h},()=>Array(w).fill(false));const mark=(x,y)=>{if(x>=0&&y>=0&&x<w&&y<h)vis[y][x]=true};let inRoom=null;for(const r of (run.rooms||[]))if(roomContains(r,run.player.x,run.player.y)){inRoom=r;break}if(inRoom){for(let y=inRoom.y-1;y<=inRoom.y+inRoom.h;y++)for(let x=inRoom.x-1;x<=inRoom.x+inRoom.w;x++)mark(x,y)}else{for(let y=run.player.y-1;y<=run.player.y+1;y++)for(let x=run.player.x-1;x<=run.player.x+1;x++)mark(x,y)}mark(run.player.x,run.player.y);return vis}
 function revealDungeon(run){if(!run?.map)return;const h=run.map.length,w=run.map[0]?.length||0;if(!Array.isArray(run.seen)||run.seen.length!==h)run.seen=Array.from({length:h},()=>Array(w).fill(false));const vis=dungeonVisibility(run);for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(vis[y]?.[x])run.seen[y][x]=true}
 F.dungeonVisibility=dungeonVisibility;

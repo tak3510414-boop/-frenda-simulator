@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.71 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.72 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.71";
+R.RENDERER_VERSION="0.72";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -146,10 +146,49 @@ function dungeonGroundItem(c,id,x,y,t){
  if(id==='crystal'){rect(c,cx-1,cy-6,3,12,'#5bb9cf');rect(c,cx-4,cy-3,9,6,'#79d5df');px(c,cx,cy-4,'#e9ffff');px(c,cx+2,cy-1,'#d9ffff');return}
  rect(c,cx-4,cy-4,8,8,'#c9a24f');px(c,cx,cy-1,'#fff0a8');
 }
+// Ver0.72: Mystery-Dungeon-style auto map. Entered rooms fill in at once; corridors grow as they are seen.
+// The map is a translucent full-floor overlay, separate from the follow camera, so explored terrain accumulates like a hand-drawn map.
+function drawDungeonAutoMap(c,run,visibility,viewRect){
+ if(!run?.map||!Array.isArray(run.seen))return null;
+ const h=run.map.length,w=run.map[0]?.length||0;if(!w||!h)return null;
+ const maxW=Math.max(1,viewRect.w-12),maxH=Math.max(1,viewRect.h-12),cell=Math.max(2,Math.floor(Math.min(maxW/w,maxH/h)));
+ const mw=w*cell,mh=h*cell,left=Math.round(viewRect.x+(viewRect.w-mw)/2),top=Math.round(viewRect.y+(viewRect.h-mh)/2);
+ const isOpen=(x,y)=>x>=0&&y>=0&&x<w&&y<h&&run.map[y]?.[x]!== 'wall';
+ const isSeenOpen=(x,y)=>isOpen(x,y)&&!!run.seen?.[y]?.[x];
+ // Rooms become translucent blue areas; one-tile corridors naturally become thin lines at this scale.
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  if(!isSeenOpen(x,y))continue;
+  const xx=left+x*cell,yy=top+y*cell,now=!!visibility?.[y]?.[x];
+  rect(c,xx,yy,cell,cell,now?'rgba(23,174,220,.34)':'rgba(20,137,190,.27)');
+ }
+ // A pale rim makes room edges/corridor shapes readable without drawing undiscovered walls.
+ c.save();c.strokeStyle='rgba(94,221,246,.44)';c.lineWidth=1;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  if(!isSeenOpen(x,y))continue;const xx=left+x*cell+.5,yy=top+y*cell+.5,rr=Math.max(1,cell-1);
+  if(!isSeenOpen(x,y-1)){c.beginPath();c.moveTo(xx,yy);c.lineTo(xx+rr,yy);c.stroke()}
+  if(!isSeenOpen(x+1,y)){c.beginPath();c.moveTo(xx+rr,yy);c.lineTo(xx+rr,yy+rr);c.stroke()}
+  if(!isSeenOpen(x,y+1)){c.beginPath();c.moveTo(xx,yy+rr);c.lineTo(xx+rr,yy+rr);c.stroke()}
+  if(!isSeenOpen(x-1,y)){c.beginPath();c.moveTo(xx,yy);c.lineTo(xx,yy+rr);c.stroke()}
+ }
+ c.restore();
+ // Once found, stairs stay on the map even after leaving sight. Treasure/items are intentionally not mapped yet.
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(run.seen?.[y]?.[x]&&run.map[y]?.[x]==='stairs'){
+  const xx=left+x*cell,yy=top+y*cell,m=Math.max(2,cell-1);rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(255,196,76,.94)');
+  if(cell>=4)px(c,xx+Math.floor(cell/2),yy+Math.floor(cell/2),'#fff1a8');
+ }
+ // Current location marker belongs to the auto map, independent of the large adventurer sprite in the camera view.
+ if(run.player&&isSeenOpen(run.player.x,run.player.y)){
+  const xx=left+run.player.x*cell,yy=top+run.player.y*cell,m=Math.max(2,Math.min(4,cell));
+  rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(250,255,255,.97)');
+  if(m>=3)rect(c,xx+Math.floor(cell/2),yy+Math.floor(cell/2),1,1,'#177da1');
+ }
+ return {x:left,y:top,cell,w,h};
+}
+
 R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#17231b');
  const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(F.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it]));
- // Ver0.64: unexplored = hidden, explored memory = dim teal, current sight = normal brightness.
+ // Ver0.72: local camera keeps the Ver0.63 visibility model; the accumulated blue auto map is drawn separately above it.
  for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
   const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t,n=seeded(x*7+run.floor,y*11+run.floor),seen=!!run.seen?.[y]?.[x],visible=!!visibility?.[y]?.[x];
   if(!seen){rect(c,xx,yy,t,t,n>.66?'#1b2a20':'#17231b');if(n>.88)rect(c,xx+5,yy+5,2,2,'#22362a');continue}
@@ -166,9 +205,11 @@ R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return nul
   if(!visible){rect(c,xx,yy,t,t,'rgba(7,21,23,.58)');rect(c,xx+1,yy+1,t-2,t-2,'rgba(45,133,157,.18)')}
   else rect(c,xx+1,yy+1,t-2,t-2,'rgba(150,220,198,.045)');
  }
+ // Ver0.72: draw the accumulated full-floor auto map above terrain but below DOM sprites/enemy tokens.
+ const autoMap=drawDungeonAutoMap(c,run,visibility,{x:ox,y:oy,w:viewCols*t,h:viewRows*t});
  // Thin continuation markers show that the floor extends beyond the current follow-camera.
  const mx=ox+viewCols*t,my=oy+viewRows*t;if(camX>0)rect(c,ox-3,oy+viewRows*t/2-4,2,8,'#8eaaa4');if(camX+viewCols<mapW)rect(c,mx+1,oy+viewRows*t/2-4,2,8,'#8eaaa4');if(camY>0)rect(c,ox+viewCols*t/2-4,oy-3,8,2,'#8eaaa4');if(camY+viewRows<mapH)rect(c,ox+viewCols*t/2-4,my+1,8,2,'#8eaaa4');
- return {ox,oy,t,camX,camY,viewCols,viewRows,mapW,mapH,visibility};
+ return {ox,oy,t,camX,camY,viewCols,viewRows,mapW,mapH,visibility,autoMap};
 };
 R.logicalSize={width:W,height:H};
 

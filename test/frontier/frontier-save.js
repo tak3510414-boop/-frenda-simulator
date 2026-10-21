@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.71 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.72 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;

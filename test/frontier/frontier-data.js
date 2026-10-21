@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.71 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.72 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.71";
+F.VERSION="0.72";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -70,7 +70,7 @@ F.TIME_PHASES=Object.freeze([
 ]);
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
 F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
-// Ver0.71: 不思議のダンジョン系を基準に、最初のダンジョンも「最深部を目指す深い構成」にする。
+// Ver0.72: 不思議のダンジョン系を基準に、最初のダンジョンも「最深部を目指す深い構成」にする。
 F.DUNGEON_FLOOR_BANDS=Object.freeze([
  {id:"entrance",from:1,to:5,label:"森の入口",enemyMaxRarity:0},
  {id:"inner",from:6,to:10,label:"森の中腹",enemyMaxRarity:1},
