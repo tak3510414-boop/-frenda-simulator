@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.92 / Pokemon species master + floor-band enemy selection / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.93 / Pokemon species master + floor-band enemy selection / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -67,5 +67,5 @@ F.biomeWeight=(sp,biome="forest")=>{const t=TYPE_BIOME_WEIGHT[biome]||TYPE_BIOME
 F.enemySpeciesCandidates=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{const d=F.dungeonDef?.(dungeonId)||{},biome=d.enemyRules?.biome||"forest",f=Math.max(1,Number(floor)||1),band=(d.enemyRules?.rarityBands||[]).find(b=>f>=Number(b.from||1)&&f<=Number(b.to||999)),max=Number(band?.max??d.enemyRules?.maxRarityByFloor?.[Math.max(0,f-1)]??(f<=5?0:f<=15?1:f<=25?2:3)),rank={common:0,uncommon:1,rare:2,elite:3};return F.buildPokemonSpeciesMaster().records.filter(sp=>(rank[sp.rarity]??9)<=max&&F.biomeWeight(sp,biome)>=.1).map(sp=>({species:sp,weight:F.biomeWeight(sp,biome)*(sp.rarity==="common"?1.35:sp.rarity==="uncommon"?1:sp.rarity==="rare"?.55:.18)}))};
 F.chooseEnemySpecies=(dungeonId,floor)=>{let pool=F.enemySpeciesCandidates(dungeonId,floor);if(!pool.length)return F.buildPokemonSpeciesMaster().records[0]||null;const spriteState=F.spriteDexStatus?.();if(spriteState&&!spriteState.ready&&F.hasImmediateSprite){const local=pool.filter(x=>F.hasImmediateSprite(x.species));if(local.length>=6)pool=local}const hit=F.weighted(pool.map(x=>({weight:x.weight,value:x.species})));return hit?.value||pool[0].species};
 })();
-// Updated: 2026-10-21 23:30 JST / Ver0.92
-/* Updated: 2026-10-21 23:30 JST / Ver0.92 */
+// Updated: 2026-10-21 23:48 JST / Ver0.93
+/* Updated: 2026-10-21 23:48 JST / Ver0.93 */

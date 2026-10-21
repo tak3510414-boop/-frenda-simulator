@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.92 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.93 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.92";
+F.VERSION="0.93";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -16,6 +16,7 @@ F.ITEMS=Object.freeze({
  big_bread:{id:"big_bread",icon:"🥖",name:"大きなパン",kind:"食料",base:200,dungeonUse:"food",effectText:"満腹度100回復",fullness:100,desc:"食べると満腹度を100回復する。"},
  survey_scroll:{id:"survey_scroll",icon:"📜",name:"探索の巻物",kind:"巻物",base:260,dungeonUse:"scroll",effectText:"この階の地形・床アイテム・宝箱を地図化",desc:"読むと現在の階の地形が青地図に一気に記録される。隠れた罠は見えない。"},
  sleep_scroll:{id:"sleep_scroll",icon:"📜",name:"眠りの巻物",kind:"巻物",base:300,dungeonUse:"scroll",effectText:"視界内の敵を眠らせる",desc:"読むと視界内の敵ポケモンを数ターン眠らせる。"},
+ purify_scroll:{id:"purify_scroll",icon:"📜",name:"おはらいの巻物",kind:"巻物",base:360,dungeonUse:"scroll",effectText:"装備中の呪いを解除",desc:"読むと装備中の呪われた武器・防具・お守りの呪いを解く。"},
  spark_wand:{id:"spark_wand",icon:"🪄",name:"火花の杖",kind:"杖",base:340,dungeonUse:"wand",effectText:"向いている方向6マス・12ダメージ",desc:"向いている方向へ火花を飛ばす。×数は残り使用回数。壁で止まる。"},
  throw_stone:{id:"throw_stone",icon:"🪨",name:"投げ石",kind:"投げ物",base:45,dungeonUse:"throw",effectText:"向いている方向6マス・7ダメージ",desc:"向いている方向へ投げる。敵に当たれば7ダメージ。外しても1個なくなる。"},
  iron:{id:"iron",icon:"⛏️",name:"鉄のかけら",kind:"素材",base:140,desc:"少量だが価値のある鉱石。"},
@@ -60,21 +61,47 @@ F.DUNGEON_EQUIPMENT_TABLE=Object.freeze([
 F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
 F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
 
-// Ver0.92: Equipment is managed as individual instances. + values are applied to weapon attack / armor defense.
+// Ver0.93: individual equipment can carry a hidden trait and/or curse. Unknown properties are revealed by trying to equip it.
+F.EQUIPMENT_TRAITS=Object.freeze({
+ fierce:{id:"fierce",name:"猛攻",slots:["weapon"],attack:2,desc:"攻撃+2"},
+ precise:{id:"precise",name:"精密",slots:["weapon"],accuracyBonus:.05,desc:"命中率+5%"},
+ critical:{id:"critical",name:"会心",slots:["weapon"],criticalBonus:.04,desc:"急所率+4%"},
+ sturdy:{id:"sturdy",name:"堅牢",slots:["armor"],defense:2,desc:"防御+2"},
+ vitality:{id:"vitality",name:"活力",slots:["armor"],hp:5,desc:"最大HP+5"},
+ barrier:{id:"barrier",name:"鉄壁",slots:["armor"],damageReduction:1,desc:"受けるダメージをさらに1軽減"},
+ blessing:{id:"blessing",name:"加護",slots:["charm"],hp:4,desc:"最大HP+4"},
+ lucky:{id:"lucky",name:"幸運",slots:["charm"],criticalBonus:.04,desc:"急所率+4%"},
+ frugal:{id:"frugal",name:"節食",slots:["charm"],foodSaveEvery:4,desc:"満腹度の減少をより抑えやすい"}
+});
+F.equipmentTrait=id=>F.EQUIPMENT_TRAITS?.[id]||null;
 F.equipmentInstanceView=inst=>{
- const raw=typeof inst==="string"?{defId:inst,plus:0}:inst||{},d=F.equipment?.(raw.defId||raw.id);
+ const raw=typeof inst==="string"?{defId:inst,plus:0,identified:true}:inst||{},d=F.equipment?.(raw.defId||raw.id);
  if(!d)return null;
- const plus=Math.max(0,Math.min(99,Math.floor(Number(raw.plus)||0))),out=Object.assign({},d,{uid:raw.uid||null,defId:d.id,plus,baseName:d.name});
+ const plus=Math.max(0,Math.min(99,Math.floor(Number(raw.plus)||0))),identified=raw.identified!==false,cursed=!!raw.cursed,trait=F.equipmentTrait?.(raw.traitId),validTrait=trait&&Array.isArray(trait.slots)&&trait.slots.includes(d.slot)?trait:null;
+ const out=Object.assign({},d,{uid:raw.uid||null,defId:d.id,plus,baseName:d.name,identified,cursed,traitId:validTrait?.id||null,trait:validTrait||null});
  if(d.slot==="weapon")out.attack=(Number(d.attack)||0)+plus;
  if(d.slot==="armor")out.defense=(Number(d.defense)||0)+plus;
- out.name=`${d.name}${plus>0?`+${plus}`:""}`;
+ if(validTrait){
+  for(const k of ["attack","defense","hp","accuracyBonus","criticalBonus","damageReduction"])out[k]=(Number(out[k])||0)+(Number(validTrait[k])||0);
+  if(Number(validTrait.foodSaveEvery)>0)out.foodSaveEvery=out.foodSaveEvery?Math.min(Number(out.foodSaveEvery),Number(validTrait.foodSaveEvery)):Number(validTrait.foodSaveEvery);
+ }
+ out.name=`${identified&&cursed?"💀 ":""}${d.name}${plus>0?`+${plus}`:""}${identified&&validTrait?`〈${validTrait.name}〉`:""}`;
+ out.traitText=identified&&validTrait?validTrait.desc:"";
+ out.curseText=identified&&cursed?"呪い：ダンジョン中は通常の装備変更では外せない。":"";
  return out;
+};
+F.equipmentInstancePreview=inst=>{
+ const raw=typeof inst==="string"?{defId:inst,plus:0,identified:true}:inst||{};
+ if(raw.identified!==false)return F.equipmentInstanceView(raw);
+ const d=F.equipmentInstanceView(Object.assign({},raw,{traitId:null,cursed:false,identified:true}));
+ if(d){d.identified=false;d.name=`${d.baseName}${d.plus>0?`+${d.plus}`:""}`;d.trait=null;d.traitId=null;d.traitText="";d.curseText="";}
+ return d;
 };
 F.equipmentInstanceName=inst=>F.equipmentInstanceView(inst)?.name||"不明な装備";
 
 F.GATHER_TABLE=Object.freeze([
  {item:"wood",weight:30,min:1,max:2},{item:"herb",weight:20,min:1,max:2},{item:"bread",weight:18,min:1,max:1},{item:"big_bread",weight:5,min:1,max:1},{item:"iron",weight:15,min:1,max:1},{item:"crystal",weight:6,min:1,max:1},
- {item:"antidote_herb",weight:5,min:1,max:1},{item:"paralysis_herb",weight:4,min:1,max:1},{item:"wake_herb",weight:3,min:1,max:1},{item:"clarity_herb",weight:4,min:1,max:1},{item:"panacea",weight:1,min:1,max:1},{item:"survey_scroll",weight:4,min:1,max:1},{item:"sleep_scroll",weight:3,min:1,max:1},{item:"spark_wand",weight:3,min:2,max:4},{item:"throw_stone",weight:8,min:2,max:4}
+ {item:"antidote_herb",weight:5,min:1,max:1},{item:"paralysis_herb",weight:4,min:1,max:1},{item:"wake_herb",weight:3,min:1,max:1},{item:"clarity_herb",weight:4,min:1,max:1},{item:"panacea",weight:1,min:1,max:1},{item:"survey_scroll",weight:4,min:1,max:1},{item:"sleep_scroll",weight:3,min:1,max:1},{item:"purify_scroll",weight:2,min:1,max:1},{item:"spark_wand",weight:3,min:2,max:4},{item:"throw_stone",weight:8,min:2,max:4}
 ]);
 // Ver0.76: 宝箱の空腹回復は数値直回復をやめ、パン系アイテムとして手に入る。
 F.DUNGEON_CHEST_TABLE=Object.freeze([
@@ -91,6 +118,7 @@ F.DUNGEON_CHEST_TABLE=Object.freeze([
  {kind:"item",item:"panacea",weight:1,min:1,max:1},
  {kind:"item",item:"survey_scroll",weight:3,min:1,max:1},
  {kind:"item",item:"sleep_scroll",weight:2,min:1,max:1},
+ {kind:"item",item:"purify_scroll",weight:2,min:1,max:1},
  {kind:"item",item:"spark_wand",weight:3,min:2,max:4},
  {kind:"item",item:"throw_stone",weight:5,min:2,max:4},
  {kind:"heal",weight:11,min:5,max:9},
@@ -487,5 +515,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-21 23:30 JST / Ver0.92
-/* Updated: 2026-10-21 23:30 JST / Ver0.92 */
+// Updated: 2026-10-21 23:48 JST / Ver0.93
+/* Updated: 2026-10-21 23:48 JST / Ver0.93 */

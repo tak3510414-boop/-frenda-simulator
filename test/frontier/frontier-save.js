@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.92 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.93 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -6,10 +6,10 @@ const now=()=>new Date().toISOString();
 const defaultFacilities=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=Number(d.startLevel)||0;return out};
 const defaultAreas=()=>{const out={};for(const d of (F.AREA_DEFS||[]))out[d.id]=d.startState||"locked";return out};
 const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]))out[d.id]=d.defaultArea||"core";return out};
-const starterEquipmentInstances=()=>{const a=[];for(const [id,n0] of Object.entries(F.STARTER_EQUIPMENT?.owned||{})){const n=Math.max(0,Math.floor(Number(n0)||0));for(let i=0;i<n;i++)a.push({uid:`starter_${id}_${i+1}`,defId:id,plus:0})}return a};
+const starterEquipmentInstances=()=>{const a=[];for(const [id,n0] of Object.entries(F.STARTER_EQUIPMENT?.owned||{})){const n=Math.max(0,Math.floor(Number(n0)||0));for(let i=0;i<n;i++)a.push({uid:`starter_${id}_${i+1}`,defId:id,plus:0,identified:true,cursed:false,traitId:null})}return a};
 const defaultEquipment=()=>{const instances=starterEquipmentInstances(),equipped=Object.assign({},F.STARTER_EQUIPMENT?.equipped||{}),equippedUids={};for(const slot of (F.EQUIPMENT_SLOTS||[])){const id=equipped[slot.id],hit=instances.find(x=>x.defId===id);equippedUids[slot.id]=hit?.uid||null}return{owned:Object.assign({},F.STARTER_EQUIPMENT?.owned||{}),equipped,instances,equippedUids}};
 F.freshSave=()=>({
- schemaVersion:17,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
+ schemaVersion:18,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
  partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},equipment:defaultEquipment(),warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
@@ -63,12 +63,13 @@ F.normalizeSave=s=>{
  s.pokemon.firstSeenOrder=Array.isArray(s.pokemon.firstSeenOrder)?[...new Set(s.pokemon.firstSeenOrder.map(String))]:[];
  s.pokemon.companionUnlocks=s.pokemon.companionUnlocks&&typeof s.pokemon.companionUnlocks==="object"?s.pokemon.companionUnlocks:{};
  s.pokemon.storyCompanions=Array.isArray(s.pokemon.storyCompanions)?[...new Set(s.pokemon.storyCompanions.map(String))]:[];
+ // Ver0.93: preserve curse / identification / trait fields on individualized equipment. Ver0.92 and older gear migrates as identified and safe.
  // Ver0.92: migrate quantity-based equipment into individual instances while keeping legacy mirrors for compatibility.
  const eqBase=defaultEquipment(),oldEq=s.equipment&&typeof s.equipment==="object"?s.equipment:{},wanted=Object.assign({},eqBase.owned);
  for(const [id,n] of Object.entries(oldEq.owned||{}))if(F.equipment?.(id))wanted[id]=Math.max(Number(wanted[id])||0,Math.max(0,Math.floor(Number(n)||0)));
  const instances=[],used=new Set();
- for(const raw of (Array.isArray(oldEq.instances)?oldEq.instances:[])){const def=F.equipment?.(raw?.defId||raw?.id),uid=String(raw?.uid||'').trim();if(!def||!uid||used.has(uid))continue;used.add(uid);instances.push({uid,defId:def.id,plus:Math.max(0,Math.min(99,Math.floor(Number(raw.plus)||0)))})}
- for(const [id,n0] of Object.entries(wanted)){const d=F.equipment?.(id);if(!d)continue;let have=instances.filter(x=>x.defId===id).length,n=Math.max(0,Math.floor(Number(n0)||0));for(let i=have;i<n;i++){let k=i+1,uid=`legacy_${id}_${k}`;while(used.has(uid))uid=`legacy_${id}_${++k}`;used.add(uid);instances.push({uid,defId:id,plus:0})}}
+ for(const raw of (Array.isArray(oldEq.instances)?oldEq.instances:[])){const def=F.equipment?.(raw?.defId||raw?.id),uid=String(raw?.uid||'').trim();if(!def||!uid||used.has(uid))continue;used.add(uid);const trait=F.equipmentTrait?.(raw?.traitId);instances.push({uid,defId:def.id,plus:Math.max(0,Math.min(99,Math.floor(Number(raw.plus)||0))),identified:raw?.identified!==false,cursed:!!raw?.cursed,traitId:trait&&Array.isArray(trait.slots)&&trait.slots.includes(def.slot)?trait.id:null})}
+ for(const [id,n0] of Object.entries(wanted)){const d=F.equipment?.(id);if(!d)continue;let have=instances.filter(x=>x.defId===id).length,n=Math.max(0,Math.floor(Number(n0)||0));for(let i=have;i<n;i++){let k=i+1,uid=`legacy_${id}_${k}`;while(used.has(uid))uid=`legacy_${id}_${++k}`;used.add(uid);instances.push({uid,defId:id,plus:0,identified:true,cursed:false,traitId:null})}}
  const equippedUids={},legacyEquipped=Object.assign({},eqBase.equipped,oldEq.equipped||{}),oldUids=oldEq.equippedUids&&typeof oldEq.equippedUids==='object'?oldEq.equippedUids:{};
  for(const slot of (F.EQUIPMENT_SLOTS||[])){let hit=instances.find(x=>x.uid===oldUids[slot.id]&&F.equipment?.(x.defId)?.slot===slot.id);if(!hit){const id=legacyEquipped[slot.id];hit=instances.find(x=>x.defId===id&&F.equipment?.(x.defId)?.slot===slot.id)}equippedUids[slot.id]=hit?.uid||null}
  const owned={};for(const x of instances)owned[x.defId]=(Number(owned[x.defId])||0)+1;const equipped={};for(const slot of (F.EQUIPMENT_SLOTS||[])){const hit=instances.find(x=>x.uid===equippedUids[slot.id]);equipped[slot.id]=hit?.defId||null}
@@ -122,7 +123,7 @@ F.normalizeSave=s=>{
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=17;
+ s.schemaVersion=18;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
@@ -130,5 +131,5 @@ F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();st
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
-// Updated: 2026-10-21 23:30 JST / Ver0.92
-/* Updated: 2026-10-21 23:30 JST / Ver0.92 */
+// Updated: 2026-10-21 23:48 JST / Ver0.93
+/* Updated: 2026-10-21 23:48 JST / Ver0.93 */
