@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.73 / pixel-map renderer / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.76 / pixel-map renderer / Updated: 2026-10-21 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="0.73";
+R.RENDERER_VERSION="0.76";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -142,6 +142,8 @@ function dungeonGroundItem(c,id,x,y,t){
  const cx=x+Math.floor(t/2),cy=y+Math.floor(t/2);
  if(id==='wood'){rect(c,cx-5,cy-2,9,3,'#9a6339');rect(c,cx-4,cy-4,9,3,'#c4864b');px(c,cx+3,cy-3,'#e2b270');return}
  if(id==='herb'){rect(c,cx-1,cy-1,2,5,'#315e36');rect(c,cx-5,cy-4,5,4,'#5aa44f');rect(c,cx+1,cy-5,5,5,'#72bd5e');px(c,cx+2,cy-3,'#b6df82');return}
+ if(id==='bread'){rect(c,cx-5,cy-3,10,7,'#d89a4e');rect(c,cx-4,cy-5,8,4,'#f0c06b');px(c,cx-2,cy-3,'#fff0b5');px(c,cx+2,cy-3,'#fff0b5');return}
+ if(id==='big_bread'){rect(c,cx-6,cy-3,12,7,'#bc7f3f');rect(c,cx-5,cy-5,10,4,'#e7b45f');rect(c,cx-3,cy-4,2,1,'#fff0b5');rect(c,cx+1,cy-4,2,1,'#fff0b5');return}
  if(id==='iron'){rect(c,cx-5,cy-2,10,6,'#60696b');rect(c,cx-3,cy-5,6,4,'#858f91');px(c,cx-1,cy-3,'#d9e2df');px(c,cx+3,cy,'#aab4b2');return}
  if(id==='crystal'){rect(c,cx-1,cy-6,3,12,'#5bb9cf');rect(c,cx-4,cy-3,9,6,'#79d5df');px(c,cx,cy-4,'#e9ffff');px(c,cx+2,cy-1,'#d9ffff');return}
  rect(c,cx-4,cy-4,8,8,'#c9a24f');px(c,cx,cy-1,'#fff0a8');
@@ -186,6 +188,13 @@ function drawDungeonAutoMap(c,run,visibility,viewRect){
   rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(239,137,58,.98)');
   if(cell>=4)px(c,xx+Math.floor(cell/2),yy+Math.floor(cell/2),'#ffe3a1');
  }
+ // Ver0.76: a trap appears on the auto map only after it has actually been triggered/revealed.
+ for(const trap of (run.traps||[])){
+  if(!trap?.revealed||!run.seen?.[trap.y]?.[trap.x])continue;
+  const xx=left+trap.x*cell,yy=top+trap.y*cell,cx=xx+Math.floor(cell/2),cy=yy+Math.floor(cell/2);
+  if(cell>=4){px(c,cx-1,cy,'rgba(241,124,178,.98)');px(c,cx+1,cy,'rgba(241,124,178,.98)');px(c,cx,cy-1,'rgba(255,176,211,.98)');px(c,cx,cy+1,'rgba(255,176,211,.98)');px(c,cx,cy,'#fff0f7')}
+  else rect(c,xx+Math.floor((cell-2)/2),yy+Math.floor((cell-2)/2),2,2,'rgba(241,124,178,.98)');
+ }
  // Once found, stairs stay on the map even after leaving sight.
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(run.seen?.[y]?.[x]&&run.map[y]?.[x]==='stairs'){
   const xx=left+x*cell,yy=top+y*cell,m=Math.max(2,cell-1);rect(c,xx+Math.floor((cell-m)/2),yy+Math.floor((cell-m)/2),m,m,'rgba(255,196,76,.94)');
@@ -202,7 +211,7 @@ function drawDungeonAutoMap(c,run,visibility,viewRect){
 
 R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#17231b');
  const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(F.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it]));
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it])),trapMap=new Map((run.traps||[]).filter(t=>t?.revealed).map(t=>[t.x+','+t.y,t]));
  // Ver0.72: local camera keeps the Ver0.63 visibility model; the accumulated blue auto map is drawn separately above it.
  for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
   const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t,n=seeded(x*7+run.floor,y*11+run.floor),seen=!!run.seen?.[y]?.[x],visible=!!visibility?.[y]?.[x];
@@ -216,6 +225,7 @@ R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return nul
    if(tt==='gather'){const drop=groundMap.get(x+','+y);dungeonGroundItem(c,drop?.itemId,xx,yy,t)}
    if(tt==='chest'){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
    if(tt==='stairs'){rect(c,xx+2,yy+2,t-4,t-4,'#a98358');for(let i=0;i<5;i++)rect(c,xx+3,yy+3+i*2,t-6,1,'#66492e')}
+   const trap=trapMap.get(x+','+y);if(trap){const cx=xx+Math.floor(t/2),cy=yy+Math.floor(t/2);rect(c,cx-4,cy-4,9,9,'rgba(94,54,83,.78)');rect(c,cx-3,cy-3,7,7,'rgba(201,91,150,.72)');line(c,cx-2,cy-2,cx+2,cy+2,'#ffe8f4',1);line(c,cx+2,cy-2,cx-2,cy+2,'#ffe8f4',1)}
   }
   if(!visible){rect(c,xx,yy,t,t,'rgba(7,21,23,.58)');rect(c,xx+1,yy+1,t-2,t-2,'rgba(45,133,157,.18)')}
   else rect(c,xx+1,yy+1,t-2,t-2,'rgba(150,220,198,.045)');
@@ -412,4 +422,4 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
  c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,275,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`SceneSpec生成：${compiled.areaName}`,31,807);rCommandPanel(c);return compiled};
 
 };})();
-// Updated: 2026-10-21 07:40 JST
+// Updated: 2026-10-21 15:05 JST

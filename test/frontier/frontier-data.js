@@ -1,12 +1,14 @@
-/* Frenda Frontier Ver0.73 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.76 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.73";
+F.VERSION="0.76";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
  wood:{id:"wood",icon:"🪵",name:"木材",kind:"素材",base:90,desc:"森で集めた丈夫な木材。"},
- herb:{id:"herb",icon:"🌿",name:"薬草",kind:"素材",base:70,desc:"回復用品にも使えそうな薬草。"},
+ herb:{id:"herb",icon:"🌿",name:"薬草",kind:"草",base:70,desc:"ダンジョンで使うとHPを14、満腹度を5回復する薬草。"},
+ bread:{id:"bread",icon:"🍞",name:"パン",kind:"食料",base:100,fullness:50,desc:"食べると満腹度を50回復する。"},
+ big_bread:{id:"big_bread",icon:"🥖",name:"大きなパン",kind:"食料",base:200,fullness:100,desc:"食べると満腹度を100回復する。"},
  iron:{id:"iron",icon:"⛏️",name:"鉄のかけら",kind:"素材",base:140,desc:"少量だが価値のある鉱石。"},
  crystal:{id:"crystal",icon:"✨",name:"森の結晶",kind:"珍品",base:260,desc:"森の奥で時々見つかる不思議な結晶。"},
  oldtool:{id:"oldtool",icon:"🧰",name:"古びた道具",kind:"珍品",base:420,desc:"誰かが昔使っていた探検道具。"}
@@ -28,7 +30,7 @@ F.EQUIPMENT_DEFS=Object.freeze({
  traveler_clothes:{id:"traveler_clothes",slot:"armor",icon:"🥋",name:"旅人の服",attack:0,defense:2,hp:0,desc:"動きやすい旅装。最低限の防御力がある。"},
  leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。受けるダメージをしっかり抑える。"},
  iron_armor:{id:"iron_armor",slot:"armor",icon:"🛡️",name:"鉄のよろい",attack:0,defense:8,hp:2,damageReduction:1,desc:"重いが頑丈な防具。防御が高く、被ダメージをさらに1軽減する。"},
- traveler_charm:{id:"traveler_charm",slot:"charm",icon:"🧿",name:"旅のお守り",attack:0,defense:0,hp:5,foodSaveEvery:6,desc:"最大HP+5。6ターンごとに食料消費を1回抑える。"},
+ traveler_charm:{id:"traveler_charm",slot:"charm",icon:"🧿",name:"旅のお守り",attack:0,defense:0,hp:5,foodSaveEvery:6,desc:"最大HP+5。満腹度の減少を時々抑える。"},
  forest_charm:{id:"forest_charm",slot:"charm",icon:"🍃",name:"森のお守り",attack:1,defense:1,hp:4,damageReduction:1,desc:"攻撃+1・防御+1・最大HP+4。被ダメージを1軽減する。"},
  hunter_charm:{id:"hunter_charm",slot:"charm",icon:"🎯",name:"狩人のお守り",attack:0,defense:0,hp:2,accuracyBonus:.08,criticalBonus:.04,desc:"最大HP+2。武器の命中率+8%、急所率+4%。"}
 });
@@ -50,18 +52,28 @@ F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
 F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
 
 F.GATHER_TABLE=Object.freeze([
- {item:"wood",weight:38,min:1,max:2},{item:"herb",weight:34,min:1,max:2},{item:"iron",weight:20,min:1,max:1},{item:"crystal",weight:8,min:1,max:1}
+ {item:"wood",weight:32,min:1,max:2},{item:"herb",weight:24,min:1,max:2},{item:"bread",weight:18,min:1,max:1},{item:"big_bread",weight:5,min:1,max:1},{item:"iron",weight:15,min:1,max:1},{item:"crystal",weight:6,min:1,max:1}
 ]);
-// Ver0.64: ダンジョン宝箱。素材・食料・HP回復に加え、持ち帰って装備できる品も出る。
+// Ver0.76: 宝箱の空腹回復は数値直回復をやめ、パン系アイテムとして手に入る。
 F.DUNGEON_CHEST_TABLE=Object.freeze([
  {kind:"item",item:"wood",weight:24,min:1,max:2},
  {kind:"item",item:"herb",weight:22,min:1,max:2},
  {kind:"item",item:"iron",weight:15,min:1,max:1},
  {kind:"item",item:"crystal",weight:6,min:1,max:1},
- {kind:"food",weight:13,min:6,max:10},
+ {kind:"item",item:"bread",weight:10,min:1,max:1},
+ {kind:"item",item:"big_bread",weight:3,min:1,max:1},
  {kind:"heal",weight:11,min:5,max:9},
  {kind:"equipment",weight:9}
 ]);
+
+// Ver0.76: Hidden floor traps. They are not shown by sight alone; stepping on one reveals and activates it.
+F.DUNGEON_TRAP_DEFS=Object.freeze({
+ thorn:{id:"thorn",name:"トゲの罠",icon:"✹",weight:45,effect:"damage",power:5,desc:"踏むと足元からトゲが飛び出してダメージを受ける。"},
+ hunger:{id:"hunger",name:"空腹の罠",icon:"▽",weight:30,effect:"fullness",power:10,desc:"踏むと満腹度が10減る。"},
+ warp:{id:"warp",name:"ワープの罠",icon:"◎",weight:25,effect:"warp",power:0,desc:"踏むと同じ階の別の場所へ飛ばされる。"}
+});
+F.dungeonTrap=id=>F.DUNGEON_TRAP_DEFS?.[id]||null;
+F.DUNGEON_TRAP_TABLE=Object.freeze(Object.values(F.DUNGEON_TRAP_DEFS).map(t=>({weight:t.weight,value:t.id})));
 
 // Ver0.50: 町・ダンジョン・ショップで共通利用する時間・経済・ダンジョン定義。
 // 実時間には連動せず、ゲーム内の大きな行動で時間帯が進む。
@@ -81,7 +93,7 @@ F.DUNGEON_FLOOR_BANDS=Object.freeze([
 ]);
 F.dungeonFloorBand=floor=>{floor=Math.max(1,Number(floor)||1);return (F.DUNGEON_FLOOR_BANDS||[]).find(b=>floor>=b.from&&floor<=b.to)||null};
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,bagLimit:10,startFood:40,foodMax:40,foodTickEvery:3,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",rarityBands:F.DUNGEON_FLOOR_BANDS.map(b=>({from:b.from,to:b.to,max:b.enemyMaxRarity}))},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の森。野生ポケモンを退け、装備と素材を集めながら最深部を目指す。"}
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",rarityBands:F.DUNGEON_FLOOR_BANDS.map(b=>({from:b.from,to:b.to,max:b.enemyMaxRarity}))},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の森。野生ポケモンを退け、装備と素材を集めながら最深部を目指す。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
 F.DEFAULT_DUNGEON_ID="beginner_forest";
@@ -444,4 +456,4 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-21 07:40 JST
+// Updated: 2026-10-21 15:05 JST
