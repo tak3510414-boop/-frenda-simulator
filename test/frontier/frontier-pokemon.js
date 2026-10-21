@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.82 / Pokemon species master + floor-band enemy selection / Updated: 2026-10-21 */
+/* Frenda Frontier Ver0.83 / Pokemon species master + floor-band enemy selection / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -68,4 +68,4 @@ F.enemySpeciesCandidates=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{const d=F.du
 F.chooseEnemySpecies=(dungeonId,floor)=>{let pool=F.enemySpeciesCandidates(dungeonId,floor);if(!pool.length)return F.buildPokemonSpeciesMaster().records[0]||null;const spriteState=F.spriteDexStatus?.();if(spriteState&&!spriteState.ready&&F.hasImmediateSprite){const local=pool.filter(x=>F.hasImmediateSprite(x.species));if(local.length>=6)pool=local}const hit=F.weighted(pool.map(x=>({weight:x.weight,value:x.species})));return hit?.value||pool[0].species};
 })();
 // Updated: 2026-10-21 15:05 JST
-/* Updated: 2026-10-21 17:15 JST / Ver0.82 */
+/* Updated: 2026-10-21 17:25 JST / Ver0.83 */
