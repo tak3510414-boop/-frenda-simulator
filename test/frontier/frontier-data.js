@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.69 / world structure Ver6 + common area scene specification / Updated: 2026-10-20 */
+/* Frenda Frontier Ver0.71 / world structure Ver6 + 30-floor dungeon foundation / Updated: 2026-10-21 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.69";
+F.VERSION="0.71";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -38,13 +38,13 @@ F.STARTER_EQUIPMENT=Object.freeze({
 });
 F.DUNGEON_EQUIPMENT_TABLE=Object.freeze([
  {equipment:"leather_armor",weight:30,minFloor:1},
- {equipment:"wood_spear",weight:24,minFloor:1},
- {equipment:"iron_sword",weight:20,minFloor:2},
- {equipment:"hunter_bow",weight:18,minFloor:2},
- {equipment:"forest_charm",weight:15,minFloor:2},
- {equipment:"hunter_charm",weight:12,minFloor:2},
- {equipment:"iron_hammer",weight:10,minFloor:3},
- {equipment:"iron_armor",weight:9,minFloor:3}
+ {equipment:"wood_spear",weight:24,minFloor:3},
+ {equipment:"iron_sword",weight:20,minFloor:6},
+ {equipment:"forest_charm",weight:15,minFloor:8},
+ {equipment:"hunter_bow",weight:18,minFloor:10},
+ {equipment:"hunter_charm",weight:12,minFloor:12},
+ {equipment:"iron_hammer",weight:10,minFloor:16},
+ {equipment:"iron_armor",weight:9,minFloor:20}
 ]);
 F.equipment=id=>F.EQUIPMENT_DEFS?.[id]||null;
 F.equipmentBySlot=slot=>Object.values(F.EQUIPMENT_DEFS||{}).filter(x=>x.slot===slot);
@@ -70,8 +70,18 @@ F.TIME_PHASES=Object.freeze([
 ]);
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
 F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
+// Ver0.71: 不思議のダンジョン系を基準に、最初のダンジョンも「最深部を目指す深い構成」にする。
+F.DUNGEON_FLOOR_BANDS=Object.freeze([
+ {id:"entrance",from:1,to:5,label:"森の入口",enemyMaxRarity:0},
+ {id:"inner",from:6,to:10,label:"森の中腹",enemyMaxRarity:1},
+ {id:"deep",from:11,to:15,label:"深い森",enemyMaxRarity:1},
+ {id:"ancient",from:16,to:20,label:"古樹の森",enemyMaxRarity:2},
+ {id:"abyss",from:21,to:25,label:"森の深奥",enemyMaxRarity:2},
+ {id:"core",from:26,to:30,label:"最深部",enemyMaxRarity:3}
+]);
+F.dungeonFloorBand=floor=>{floor=Math.max(1,Number(floor)||1);return (F.DUNGEON_FLOOR_BANDS||[]).find(b=>floor>=b.from&&floor<=b.to)||null};
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:3,bagLimit:10,startFood:32,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",maxRarityByFloor:[1,1,2]},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が最初に挑む森。野生ポケモンを退け、素材や装備を町へ持ち帰る。"}
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,bagLimit:10,startFood:40,foodMax:40,foodTickEvery:3,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest",rarityBands:F.DUNGEON_FLOOR_BANDS.map(b=>({from:b.from,to:b.to,max:b.enemyMaxRarity}))},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の森。野生ポケモンを退け、装備と素材を集めながら最深部を目指す。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
 F.DEFAULT_DUNGEON_ID="beginner_forest";
@@ -434,4 +444,4 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-20 22:38 JST
+// Updated: 2026-10-21 07:40 JST
