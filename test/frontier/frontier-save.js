@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.09 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.10 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -9,7 +9,7 @@ const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]
 const starterEquipmentInstances=()=>{const a=[];for(const [id,n0] of Object.entries(F.STARTER_EQUIPMENT?.owned||{})){const n=Math.max(0,Math.floor(Number(n0)||0));for(let i=0;i<n;i++)a.push({uid:`starter_${id}_${i+1}`,defId:id,plus:0,identified:true,cursed:false,traitId:null})}return a};
 const defaultEquipment=()=>{const instances=starterEquipmentInstances(),equipped=Object.assign({},F.STARTER_EQUIPMENT?.equipped||{}),equippedUids={};for(const slot of (F.EQUIPMENT_SLOTS||[])){const id=equipped[slot.id],hit=instances.find(x=>x.defId===id);equippedUids[slot.id]=hit?.uid||null}return{owned:Object.assign({},F.STARTER_EQUIPMENT?.owned||{}),equipped,instances,equippedUids}};
 F.freshSave=()=>({
- schemaVersion:19,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
+ schemaVersion:20,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
  partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},equipment:defaultEquipment(),warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
@@ -128,9 +128,12 @@ F.normalizeSave=s=>{
  const num=(v,d)=>Number.isFinite(Number(v))?Number(v):d;
  s.townMovement.player={x:num(s.townMovement.player?.x,350),y:num(s.townMovement.player?.y,475)};
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
+ // Ver1.10: 初代トルネコ型の単一拠点へ移行。旧5町域の現在地・往復TEST状態を安全に中心町へ戻す。
+ s.townWorld.currentAreaId="core";s.townWorld.visitedAreas=["core"];s.townWorld.fastTravelNodes=[];s.townMovement.areaId="core";
+ s.settings=s.settings||{};s.settings.townAreaTest={states:{}};s.settings.townTravelTest={active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=19;
+ s.schemaVersion=20;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
@@ -138,5 +141,5 @@ F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();st
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
-// Updated: 2026-10-22 21:18 JST / Ver1.09
-/* Updated: 2026-10-22 21:18 JST / Ver1.09 */
+// Updated: 2026-10-22 21:42 JST / Ver1.10
+/* Updated: 2026-10-22 21:42 JST / Ver1.10 */

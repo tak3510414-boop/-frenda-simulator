@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.09 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.10 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.09";
+F.VERSION="1.10";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -251,15 +251,15 @@ F.FACILITY_DEFS=Object.freeze([
 // Ver0.38: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
 // ここで固定するのはエリアの役割・地形特性・接続能力・収容量など。道路や建物のピクセル座標はまだ固定しない。
 F.TOWN_WORLD_DEF=Object.freeze({
- id:"frontier_town",layoutRevision:5,status:"planning",startArea:"core",coordinateMode:"logical-grid",
- sceneMode:"connected-area-stream",transitionMode:"edge-gate",preloadNeighbors:1,hardAreaLimit:null,
- extensible:true,structureVersion:6,
- description:"中心開拓地を核に、地形・用途・プレイヤーの発展方針に応じて外側へ枝分かれできる町域グラフ。Ver0.44から全エリアを共通のSceneSpec（入口・出口・通行・施設枠・工事枠・NPC活動域・将来拡張口）で設計する。"
+ id:"frontier_town",layoutRevision:6,status:"single-town",startArea:"core",coordinateMode:"single-map",
+ sceneMode:"single-growing-town",transitionMode:"none",preloadNeighbors:0,hardAreaLimit:1,
+ extensible:false,structureVersion:7,
+ description:"初代トルネコ型。拠点は1つだけで、冒険と商売の成果に応じて同じ町の建物・施設・景観が段階的に発展する。別町への移動は行わない。"
 });
 F.TOWN_SCENE_POLICY=Object.freeze({
- mode:"connected-area-stream",localSceneDefault:{w:717,h:842},preloadNeighborDepth:1,
- unloadDistantScenes:true,keepLogicalState:true,transition:"edge-gate",
- areaSchemaVersion:2,zoneModel:"scene-spec-compiler",note:"現在地と隣接エリアだけを描画し、町全体は論理グラフとして保持する。各エリアは共通SceneSpecを持ち、隣接地区は境界まで歩くと短い切替で次エリアへ入り、遠距離のみ高速移動を使う。"
+ mode:"single-growing-town",localSceneDefault:{w:717,h:842},preloadNeighborDepth:0,
+ unloadDistantScenes:false,keepLogicalState:true,transition:"none",
+ areaSchemaVersion:3,zoneModel:"single-town-layers",note:"1つの町マップを使い続け、発展段階に応じて施設・景観レイヤーと通行域を更新する。"
 });
 
 // Ver0.38: エリアの広さは固定1種類にしない。施設密度・NPC数・移動距離の目安として使う。
@@ -288,11 +288,9 @@ F.expansionTemplate=id=>(F.EXPANSION_TEMPLATE_DEFS||[]).find(x=>x.id===id)||null
 
 F.TOWN_SCALE_TIERS=Object.freeze([
  {id:"frontier",label:"開拓地",icon:"🏕️",minUsable:1,minPoints:0},
- {id:"hamlet",label:"小さな集落",icon:"🏘️",minUsable:2,minPoints:12},
- {id:"village",label:"村",icon:"🏡",minUsable:3,minPoints:28},
- {id:"town",label:"町",icon:"🏙️",minUsable:5,minPoints:52},
- {id:"large_town",label:"大きな町",icon:"🌆",minUsable:8,minPoints:86},
- {id:"city",label:"交易都市",icon:"🌇",minUsable:12,minPoints:130}
+ {id:"hamlet",label:"小さな集落",icon:"🏘️",minUsable:1,minPoints:10},
+ {id:"village",label:"村",icon:"🏡",minUsable:1,minPoints:28},
+ {id:"lively_village",label:"にぎやかな村",icon:"🏘️",minUsable:1,minPoints:60}
 ]);
 F.WORLD_PORT_VECTOR=Object.freeze({north:[0,-1],south:[0,1],east:[1,0],west:[-1,0],ne:[1,-1],nw:[-1,-1],se:[1,1],sw:[-1,1]});
 // Ver0.38: エリア間移動は「隣接=歩行による疑似シームレス」「遠距離=選択式高速移動」を正式基準にする。
@@ -408,56 +406,11 @@ F.areaSceneTemplateDef=id=>F.AREA_SCENE_TEMPLATE_DEFS?.[id]||null;
 // sizeClass: 実マップの相対規模 / terrainTags: 地形特性 / capacity: 施設・住民の収容目安
 // travelCost: 隣接移動の重さ / expansionProfiles: その先に生成しやすい将来エリア候補
 F.AREA_DEFS=Object.freeze([
- {id:"core",name:"中心開拓地",icon:"🏕️",tags:["core","commerce","life"],
-  world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"organic",sceneTemplate:"hub",viewProfile:"town_mobile",travelCost:1,
-   terrainTags:["open","river_edge","frontier"],capacity:{facilitySlots:7,landmarkSlots:2,residentCapacity:16},futurePorts:["nw","ne"],
-   expansionProfiles:{nw:["pasture","deep_forest"],ne:["highland_meadow","far_bank"]}},
-  startState:"usable",description:"露店と掘っ立て小屋から始まる最初の拠点。最終配置は全体構成確定後に再設計する。",transitions:{},nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},entries:{south_road:{x:265,y:710},west_forest:{x:70,y:345},east_riverside:{x:520,y:445},north_highland:{x:480,y:92}},exits:[
-   {id:"west",to:"west_forest",x:0,y:260,w:44,h:170,entry:{x:55,y:345}},
-   {id:"south",to:"south_road",x:170,y:742,w:190,h:100,entry:{x:265,y:725}},
-   {id:"east",to:"east_riverside",x:548,y:355,w:42,h:185,entry:{x:530,y:445}},
-   {id:"north",to:"north_highland",x:430,y:0,w:105,h:70,entry:{x:480,y:82}}
-  ]}},
- {id:"west_forest",name:"西の森外縁",icon:"🌲",tags:["nature","adventure"],
-  world:{gx:-1,gy:0,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"wide",theme:"forest_edge",growth:"branch",sceneTemplate:"branch_forest",viewProfile:"town_mobile",travelCost:2,
-   terrainTags:["forest","nature","gathering"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:7},futurePorts:["west","north"],
-   expansionProfiles:{west:["deep_forest"],north:["pasture","foothill"]}},
-  startState:"locked",description:"冒険・採集系の拠点へ伸ばしやすい森側の土地。Ver0.50ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"west"}},transitions:{
-   discovered:{need:8,label:"西の森を調べる"},clearing:{need:12,label:"西の森を切り開く"},usable:{need:18,label:"森側の区画を使えるようにする"},developed:{need:40,label:"森側の道と設備を整える"}}},
- {id:"south_road",name:"南の街道沿い",icon:"🛤️",tags:["road","commerce","logistics"],
-  world:{gx:0,gy:1,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"wide",theme:"roadside",growth:"corridor",sceneTemplate:"corridor",viewProfile:"town_mobile",travelCost:1,
-   terrainTags:["road","open","commerce"],capacity:{facilitySlots:8,landmarkSlots:1,residentCapacity:12},futurePorts:["south","east","west"],
-   expansionProfiles:{south:["trade_route"],east:["plain"],west:["pasture","plain"]}},
-  startState:"locked",description:"行商・市場・倉庫など商業と物流を伸ばしやすい街道側。Ver0.44ではSceneSpecから通行・施設枠・NPC活動・接続口を自動生成した仮実マップを使用する。",
-  nav:{scene:{w:717,h:842,cell:14},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:110},entries:{core:{x:295,y:92}},
-   exits:[{id:"north",to:"core",x:205,y:0,w:180,h:76,entry:{x:295,y:92}}],
-   base:{defaultWalkable:true,
-    blocks:[
-     {shape:"rect",v:[0,0,42,842],reason:"west_edge"},{shape:"rect",v:[570,0,20,842],reason:"east_edge"},
-     {shape:"poly",v:[[42,70],[165,70],[190,210],[150,300],[42,330]],reason:"west_woods"},
-     {shape:"poly",v:[[425,45],[570,45],[570,315],[505,300],[450,220]],reason:"east_woods"},
-     {shape:"rect",v:[78,345,125,90],reason:"roadside_cart"},{shape:"rect",v:[410,390,125,105],reason:"roadside_stock"},
-     {shape:"circle",v:[122,560,46],reason:"camp"},{shape:"rect",v:[430,600,105,75],reason:"field_fence"},
-     {shape:"poly",v:[[45,720],[215,715],[235,842],[45,842]],reason:"southwest_rough"},{shape:"poly",v:[[400,720],[570,710],[570,842],[380,842]],reason:"southeast_rough"}
-    ],
-    walk:[{shape:"poly",v:[[230,0],[365,0],[385,842],[205,842]],reason:"main_road"},{shape:"rect",v:[175,280,260,300],reason:"roadside_open"}],
-    interactions:[{id:"south_sign",type:"scenery",label:"街道の道しるべ",x:365,y:330,r:44},{id:"south_cart",type:"scenery",label:"行商人の荷車",x:210,y:420,r:48}],
-    npcWaypoints:[{id:"north_gate",x:295,y:100},{id:"road_mid",x:300,y:380},{id:"cart",x:220,y:455},{id:"camp",x:175,y:560},{id:"south_way",x:300,y:690}]
-   }
-  },transitions:{
-   discovered:{need:10,label:"南の街道を調べる"},clearing:{need:14,label:"街道脇を整地する"},usable:{need:22,label:"街道沿いを町域にする"},developed:{need:44,label:"物流路として整備する"}}},
- {id:"east_riverside",name:"東の川辺",icon:"🌊",tags:["water","life","craft"],
-  world:{gx:1,gy:0,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"standard",theme:"riverside",growth:"branch",sceneTemplate:"riverside",viewProfile:"town_mobile",travelCost:2,
-   terrainTags:["water","river","life"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:9},futurePorts:["east","south"],
-   expansionProfiles:{east:["far_bank"],south:["wetland"]}},
-  startState:"locked",description:"水場を生かした生活・加工・研究方面へ伸ばしやすい川辺。Ver0.50ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"east"}},transitions:{
-   discovered:{need:12,label:"川辺を調べる"},clearing:{need:18,label:"川辺を安全にする"},usable:{need:28,label:"川辺の区画を使えるようにする"},developed:{need:50,label:"護岸と通路を整える"}}},
- {id:"north_highland",name:"北の高台",icon:"⛰️",tags:["rock","forge","residential"],
-  world:{gx:0,gy:-1,role:"expansion",sceneStatus:"prototype",runtimeGenerator:"scene-spec-v2",sizeClass:"standard",theme:"highland",growth:"terrace",sceneTemplate:"terrace",viewProfile:"town_mobile",travelCost:2,
-   terrainTags:["highland","rock","residential"],capacity:{facilitySlots:5,landmarkSlots:1,residentCapacity:10},futurePorts:["north","east","west"],
-   expansionProfiles:{north:["foothill"],east:["quarry"],west:["highland_meadow"]}},
-  startState:"locked",description:"岩場と高低差を生かし、工房・住宅・鉱山方面へつなげやすい土地。Ver0.50ではSceneSpec生成の仮実マップで往復移動を確認できる。",nav:{scene:{w:717,h:842,cell:18},entryFrom:{area:"core",gate:"north"}},transitions:{
-   discovered:{need:14,label:"北の高台を調べる"},clearing:{need:22,label:"高台への道を作る"},usable:{need:32,label:"高台を町域にする"},developed:{need:54,label:"高台の階段と道を整える"}}}
+ {id:"core",name:"町",icon:"🏘️",tags:["core","commerce","life","forge","craft","adventure","road","logistics","civic","residential","nature"],
+  world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"single-town",sceneTemplate:"hub",viewProfile:"town_mobile",travelCost:1,
+   terrainTags:["open","river_edge","frontier"],capacity:{facilitySlots:12,landmarkSlots:4,residentCapacity:30},futurePorts:[],expansionProfiles:{}},
+  startState:"usable",description:"初代不思議のダンジョン型の単一拠点。同じ町の中で店・住居・鍛冶・広場などが段階的に増え、見た目と機能が発展する。別の町域へ移動しない。",transitions:{},
+  nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},entries:{},exits:[]}}
 ]);
 F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
 
@@ -545,5 +498,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-22 21:18 JST / Ver1.09
-/* Updated: 2026-10-22 21:18 JST / Ver1.09 */
+// Updated: 2026-10-22 21:42 JST / Ver1.10
+/* Updated: 2026-10-22 21:42 JST / Ver1.10 */

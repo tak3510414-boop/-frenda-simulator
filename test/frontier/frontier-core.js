@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.09 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.10 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -57,20 +57,15 @@ F.advanceTownConstruction=(steps=1)=>F.mutateSave(s=>advanceConstructionState(s,
 F.areaState=(s,id)=>{const def=F.areaDef?.(id);return s?.development?.town?.areas?.[id]||def?.startState||"locked"};
 F.areaStateIndex=state=>Math.max(0,(F.AREA_STATE_ORDER||[]).indexOf(state));
 F.areaEffectiveState=(s,id)=>{if(s?.settings?.townTravelTest?.forceAllUsable&&F.areaDef?.(id))return "usable";const v=s?.settings?.townAreaTest?.states?.[id];return (F.AREA_STATE_ORDER||[]).includes(v)?v:F.areaState(s,id)};
-F.areaStats=s=>{const defs=F.AREA_DEFS||[],states=defs.map(d=>F.areaEffectiveState(s,d.id));return {total:defs.length,discovered:states.filter(x=>F.areaStateIndex(x)>=1).length,usable:states.filter(x=>F.areaStateIndex(x)>=3).length,developed:states.filter(x=>F.areaStateIndex(x)>=4).length}};
-F.areaOptions=s=>{const pts=Number(s?.development?.points)||0,out=[];for(const def of (F.AREA_DEFS||[])){const cur=F.areaState(s,def.id),idx=F.areaStateIndex(cur);if(idx<0||idx>=F.AREA_STATE_ORDER.length-1)continue;const next=F.AREA_STATE_ORDER[idx+1],tr=def.transitions?.[next];if(!tr)continue;out.push({areaId:def.id,areaName:def.name,icon:def.icon||"🗺️",from:cur,to:next,need:Number(tr.need)||0,label:tr.label||`${def.name}を${F.AREA_STATE_INFO?.[next]?.label||next}にする`,available:pts>=Number(tr.need||0),description:def.description||""})}return out.sort((a,b)=>a.need-b.need||a.areaName.localeCompare(b.areaName,"ja"))};
+F.areaStats=s=>({total:1,discovered:1,usable:1,developed:F.developmentStage?.(s?.development?.points||0)>=3?1:0});
+F.areaOptions=s=>[];
 F.applyAreaDevelopment=areaId=>F.mutateSave(s=>{const opt=F.areaOptions(s).find(x=>x.areaId===areaId);if(!opt)throw new Error("この町域は現在変更できません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);s.development.town.areas=s.development.town.areas||{};s.development.town.areas[areaId]=opt.to;F.addHistory(s,"area",`${opt.areaName}：${F.AREA_STATE_INFO?.[opt.to]?.label||opt.to}`);});
 F.setTownAreaTestState=(id,state)=>F.mutateSave(s=>{if(!F.areaDef?.(id))throw new Error("不明な町域です。");s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townAreaTest.states=s.settings.townAreaTest.states||{};if(state==="auto")delete s.settings.townAreaTest.states[id];else if((F.AREA_STATE_ORDER||[]).includes(state))s.settings.townAreaTest.states[id]=state;else throw new Error("不正な町域状態です。");});
 F.resetTownAreaTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest={states:{}}});
 // Ver0.50: 5エリア往復の実機確認用。実際の町域進行は変更せずTEST表示だけ利用可能にする。
 F.setTownAreaTestAllUsable=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townAreaTest.states={};for(const a of (F.AREA_DEFS||[]))s.settings.townAreaTest.states[a.id]="usable";});
 // Ver0.50: 5エリアの双方向移動を一度に実機確認する巡回TEST。
-F.TOWN_ROUNDTRIP_TEST_TARGETS=Object.freeze([
- {areaId:"west_forest",label:"西の森外縁",icon:"🌲",fromCore:"左端の森道",back:"右端の道"},
- {areaId:"north_highland",label:"北の高台",icon:"⛰️",fromCore:"上端の高台への道",back:"下端の道"},
- {areaId:"east_riverside",label:"東の川辺",icon:"🌊",fromCore:"右端の川辺への道",back:"左端の道"},
- {areaId:"south_road",label:"南の街道沿い",icon:"🛤️",fromCore:"下端の街道",back:"上端の街道"}
-]);
+F.TOWN_ROUNDTRIP_TEST_TARGETS=Object.freeze([]);
 F.townRoundTripTestState=s=>{const raw=s?.settings?.townTravelTest||{},targets=F.TOWN_ROUNDTRIP_TEST_TARGETS||[],outbound=raw.outbound&&typeof raw.outbound==="object"?raw.outbound:{},roundTrips=raw.roundTrips&&typeof raw.roundTrips==="object"?raw.roundTrips:{},done=targets.filter(t=>!!roundTrips[t.areaId]).length,next=targets.find(t=>!roundTrips[t.areaId])||null;return{active:!!raw.active,forceAllUsable:!!raw.forceAllUsable,startedAt:raw.startedAt||null,completedAt:raw.completedAt||null,outbound,roundTrips,done,total:targets.length,next,currentAreaId:s?.townMovement?.areaId||s?.townWorld?.currentAreaId||"core"}};
 function recordTownRoundTripTransition(s,from,to){const raw=s?.settings?.townTravelTest;if(!raw?.active)return;raw.outbound=raw.outbound&&typeof raw.outbound==="object"?raw.outbound:{};raw.roundTrips=raw.roundTrips&&typeof raw.roundTrips==="object"?raw.roundTrips:{};const ids=new Set((F.TOWN_ROUNDTRIP_TEST_TARGETS||[]).map(t=>t.areaId));if(from==="core"&&ids.has(to))raw.outbound[to]=true;if(to==="core"&&ids.has(from)&&raw.outbound[from])raw.roundTrips[from]=true;const all=(F.TOWN_ROUNDTRIP_TEST_TARGETS||[]).every(t=>raw.roundTrips[t.areaId]);if(all){raw.active=false;raw.completedAt=new Date().toISOString();}}
 F.startTownRoundTripTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townTravelTest={active:true,forceAllUsable:true,startedAt:new Date().toISOString(),completedAt:null,outbound:{},roundTrips:{}};const spawn=F.areaNavDefinition?.("core")?.spawn||F.areaDef?.("core")?.nav?.spawn||{x:350,y:475};s.townWorld=s.townWorld||{};s.townWorld.currentAreaId="core";s.townWorld.visitedAreas=Array.isArray(s.townWorld.visitedAreas)?s.townWorld.visitedAreas:["core"];if(!s.townWorld.visitedAreas.includes("core"))s.townWorld.visitedAreas.unshift("core");s.townMovement={areaId:"core",player:{x:spawn.x,y:spawn.y},partner:{x:spawn.x+42,y:spawn.y}};});
@@ -86,32 +81,15 @@ F.connectionBetween=(a,b)=>(F.AREA_CONNECTION_DEFS||[]).find(c=>(c.a===a&&c.b===
 // Ver0.46: 一度実際に到達した隣接エリアへの帰路は、TEST状態変更で閉じない。
 // 通常は両エリアusable以上で開通。加えて、接続両端を訪問済みなら既開通路として扱う。
 F.connectionOpen=(s,c)=>{if(!c)return false;const sa=F.areaEffectiveState(s,c.a),sb=F.areaEffectiveState(s,c.b),stateOpen=F.areaStateIndex(sa)>=F.areaStateIndex("usable")&&F.areaStateIndex(sb)>=F.areaStateIndex("usable"),visited=new Set(s?.townWorld?.visitedAreas||["core"]),visitedOpen=visited.has(c.a)&&visited.has(c.b);return stateOpen||visitedOpen};
-F.areaTravelOptions=(s,fromAreaId)=>F.areaNeighbors(fromAreaId).map(n=>{const c=n.connection,ti=F.connectionTravelInfo(c),open=F.connectionOpen(s,c),to=F.areaDef?.(n.areaId);return {...n,open,travel:ti,toState:F.areaEffectiveState(s,n.areaId),sceneReady:["prototype","ready"].includes(to?.world?.sceneStatus||"")}});
+F.areaTravelOptions=(s,fromAreaId)=>[];
 F.areaExitConnection=(s,areaId,exitId)=>{const area=F.areaDef?.(areaId),nav=F.areaNavDefinition?.(areaId)||area?.nav||{},ex=(nav.exits||[]).find(x=>x.id===exitId)||(area?.nav?.exits||[]).find(x=>x.id===exitId);if(!ex)return null;const c=F.connectionBetween(areaId,ex.to);if(!c)return null;const ti=F.connectionTravelInfo(c);return {exit:ex,connection:c,travel:ti,target:F.areaDef?.(ex.to),open:F.connectionOpen(s,c)};};
 F.townExitAt=(s,x,y,areaId=null)=>{areaId=areaId||s?.townMovement?.areaId||s?.townWorld?.currentAreaId||"core";const nav=F.areaNavDefinition?.(areaId)||F.areaDef?.(areaId)?.nav||{},cell=Math.max(8,Number(nav.scene?.cell)||12),px=Number(x),py=Number(y);for(const ex of (nav.exits||[])){const pad=cell*1.25;if(px>=ex.x-pad&&py>=ex.y-pad&&px<ex.x+ex.w+pad&&py<ex.y+ex.h+pad)return F.areaExitConnection(s,areaId,ex.id)}return null};
 // Ver0.46: 「出口そのもの」だけでなく、出口へ続く画面端の道をタップした時も移動意図として扱う。
 // 実歩行の自動判定(townExitAt)は狭いまま維持し、到着直後の逆戻りを防ぐ。
 F.townExitTapAt=(s,x,y,areaId=null)=>{areaId=areaId||s?.townMovement?.areaId||s?.townWorld?.currentAreaId||"core";const nav=F.areaNavDefinition?.(areaId)||F.areaDef?.(areaId)?.nav||{},cell=Math.max(8,Number(nav.scene?.cell)||12),wr=nav.worldRect||{x:0,y:0,w:nav.scene?.w||717,h:nav.scene?.h||842},px=Number(x),py=Number(y);for(const ex of (nav.exits||[])){const route=F.areaExitConnection(s,areaId,ex.id);if(!route)continue;const sideTop=ex.y<=wr.y+cell*2,sideBottom=ex.y+ex.h>=wr.y+wr.h-cell*2,sideLeft=ex.x<=wr.x+cell*2,sideRight=ex.x+ex.w>=wr.x+wr.w-cell*2,pad=cell*2.25,depth=cell*5;let hit=false;if(sideTop)hit=px>=ex.x-pad&&px<=ex.x+ex.w+pad&&py>=wr.y&&py<=Math.max(ex.y+ex.h+depth,wr.y+depth);else if(sideBottom)hit=px>=ex.x-pad&&px<=ex.x+ex.w+pad&&py<=wr.y+wr.h&&py>=Math.min(ex.y-depth,wr.y+wr.h-depth);else if(sideLeft)hit=py>=ex.y-pad&&py<=ex.y+ex.h+pad&&px>=wr.x&&px<=Math.max(ex.x+ex.w+depth,wr.x+depth);else if(sideRight)hit=py>=ex.y-pad&&py<=ex.y+ex.h+pad&&px<=wr.x+wr.w&&px>=Math.min(ex.x-depth,wr.x+wr.w-depth);else hit=px>=ex.x-pad&&py>=ex.y-pad&&px<=ex.x+ex.w+pad&&py<=ex.y+ex.h+pad;if(hit)return route}return null};
 F.townExitApproachPoint=(s,route,actor="player",areaId=null)=>{if(!route?.exit)return null;areaId=areaId||s?.townMovement?.areaId||s?.townWorld?.currentAreaId||"core";const m=F.townNavModel(s,actor,areaId),ex=route.exit,wr=m.worldRect,cell=m.cell;let p={x:ex.x+ex.w/2,y:ex.y+ex.h/2};if(ex.y<=wr.y+cell*2)p.y=ex.y+Math.min(ex.h*.35,cell*1.5);else if(ex.y+ex.h>=wr.y+wr.h-cell*2)p.y=ex.y+ex.h-Math.min(ex.h*.35,cell*1.5);else if(ex.x<=wr.x+cell*2)p.x=ex.x+Math.min(ex.w*.35,cell*1.5);else if(ex.x+ex.w>=wr.x+wr.w-cell*2)p.x=ex.x+ex.w-Math.min(ex.w*.35,cell*1.5);return F.townNearestWalkable(s,p,actor,12,areaId)||p};
-F.fastTravelOptions=s=>{const cur=s?.townWorld?.currentAreaId||"core",visited=new Set(s?.townWorld?.visitedAreas||["core"]);return (F.AREA_DEFS||[]).filter(a=>a.id!==cur&&visited.has(a.id)&&F.areaStateIndex(F.areaEffectiveState(s,a.id))>=F.areaStateIndex("usable")).filter(a=>!!a.world?.fastTravelNode).map(a=>({areaId:a.id,name:a.name,icon:a.icon||"🗺️",node:a.world.fastTravelNode}));};
-F.worldFutureExpansionCandidates=s=>{
- const areas=(F.AREA_DEFS||[]),occupied=new Set(areas.map(a=>`${Number(a.world?.gx)||0},${Number(a.world?.gy)||0}`)),vectors=F.WORLD_PORT_VECTOR||{},byCoord=new Map();
- for(const a of areas){
-  const ax=Number(a.world?.gx)||0,ay=Number(a.world?.gy)||0;
-  for(const port of (a.world?.futurePorts||[])){
-   const v=vectors[port];if(!v)continue;const gx=ax+v[0],gy=ay+v[1],coord=`${gx},${gy}`;if(occupied.has(coord))continue;
-   const templateIds=a.world?.expansionProfiles?.[port]||[];
-   let row=byCoord.get(coord);if(!row){row={id:`future_${gx}_${gy}`,gx,gy,state:"future",sources:[],templateIds:[]};byCoord.set(coord,row)}
-   row.sources.push({areaId:a.id,areaName:a.name,port});for(const id of templateIds)if(!row.templateIds.includes(id))row.templateIds.push(id);
-  }
- }
- return [...byCoord.values()].map(row=>{const templates=row.templateIds.map(id=>F.expansionTemplate?.(id)).filter(Boolean),primary=templates[0]||null,source=row.sources[0]||{};return {...row,
-   fromAreaId:source.areaId||null,fromAreaName:source.areaName||"",port:source.port||"",templateId:primary?.id||null,
-   label:primary?`${primary.name}候補`:"新エリア候補",name:primary?.name||"新エリア",icon:primary?.icon||"＋",
-   sizeClass:primary?.sizeClass||"standard",terrainTags:[...(primary?.terrainTags||[])],facilityTags:[...(primary?.facilityTags||[])],
-   travelCost:Number(primary?.travelCost)||1,capacity:Object.assign({},F.areaSizeClass?.(primary?.sizeClass)||{},primary?.capacity||{}),unlockHint:primary?.unlockHint||"町の発展に応じて開放",
-   alternatives:templates.slice(1).map(t=>({id:t.id,name:t.name,icon:t.icon||"＋",sizeClass:t.sizeClass,terrainTags:[...(t.terrainTags||[])],facilityTags:[...(t.facilityTags||[])]}))};});
-};
+F.fastTravelOptions=s=>[];
+F.worldFutureExpansionCandidates=s=>[];
 F.townScaleTier=s=>{const stats=F.areaStats?.(s)||{usable:1},pts=Number(s?.development?.points)||0,tiers=F.TOWN_SCALE_TIERS||[];let cur=tiers[0]||{id:"frontier",label:"開拓地",icon:"🏕️"};for(const t of tiers)if(stats.usable>=Number(t.minUsable||0)&&pts>=Number(t.minPoints||0))cur=t;return cur};
 F.nextTownScaleTier=s=>{const cur=F.townScaleTier(s),tiers=F.TOWN_SCALE_TIERS||[],i=tiers.findIndex(t=>t.id===cur.id);return i>=0&&i<tiers.length-1?tiers[i+1]:null};
 F.areaPlanningInfo=d=>{const sc=F.areaSizeClass?.(d?.world?.sizeClass)||{},cap=Object.assign({},sc,d?.world?.capacity||{});return {sizeClass:d?.world?.sizeClass||"standard",sizeLabel:sc.label||"標準区画",terrainTags:[...(d?.world?.terrainTags||[])],travelCost:Number(d?.world?.travelCost)||1,capacity:{facilitySlots:Number(cap.facilitySlots)||0,landmarkSlots:Number(cap.landmarkSlots)||0,residentCapacity:Number(cap.residentCapacity)||0},traffic:cap.traffic||sc.traffic||"medium"}};
@@ -538,5 +516,5 @@ F.applyCustomerVisit=result=>F.mutateSave(s=>{s.sales.customers++;if(!result?.bo
 F.applySale=result=>F.applyCustomerVisit(result);
 F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(F.TIME_ACTION_COSTS?.shopOpen)||1,"shopOpen");F.addHistory(s,"shop",`営業を終えた。${time.phase.icon}${time.phase.label}になった。`);return time});
 })();
-// Updated: 2026-10-22 21:18 JST / Ver1.09
-/* Updated: 2026-10-22 21:18 JST / Ver1.09 */
+// Updated: 2026-10-22 21:42 JST / Ver1.10
+/* Updated: 2026-10-22 21:42 JST / Ver1.10 */
