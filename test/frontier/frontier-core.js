@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.12 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.13 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -516,5 +516,5 @@ F.applyCustomerVisit=result=>F.mutateSave(s=>{s.sales.customers++;if(!result?.bo
 F.applySale=result=>F.applyCustomerVisit(result);
 F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(F.TIME_ACTION_COSTS?.shopOpen)||1,"shopOpen");F.addHistory(s,"shop",`営業を終えた。${time.phase.icon}${time.phase.label}になった。`);return time});
 })();
-// Updated: 2026-10-23 07:10 JST / Ver1.12
-/* Updated: 2026-10-23 07:10 JST / Ver1.12 */
+// Updated: 2026-10-23 07:40 JST / Ver1.13
+/* Updated: 2026-10-23 07:40 JST / Ver1.13 */

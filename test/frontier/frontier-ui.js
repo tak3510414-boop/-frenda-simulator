@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.12 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.13 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -59,7 +59,7 @@ function showDungeonHistory(){const run=F.run;if(!run?.active){toast('探索中�
 function visualShell(src,label=''){return `<img class="visualSceneImg" src="${src}" alt="${esc(label)}"><div id="visualHotspots"></div>`}
 function visualTownShell(s){return `<canvas class="visualSceneCanvas townWalkCanvas" id="townVisualCanvas" width="717" height="842" aria-label="開拓地の町。フィールドをタップすると歩きます"></canvas><div class="townDialogOverlay" id="townDialogOverlay"></div><div class="townWalkHint" id="townWalkHint">👆 タップ移動 / 町は追従表示</div><div class="townAreaTransition" id="townAreaTransition"></div><button class="townMenuBtn" id="townMenuBtn" type="button">☰ 町メニュー</button>`}
 const TOWN_MAP_X=1,TOWN_MAP_Y=1;
-function ensureTownRuntime(s){const mv=F.townMovement(s);if(townMoveRuntime.areaId!==mv.areaId){townMoveRuntime.token++;townMoveRuntime.moving=false;townMoveRuntime.transitioning=false;townMoveRuntime.areaId=mv.areaId;townMoveRuntime.player={...mv.player};townMoveRuntime.partner={...mv.partner};townMoveRuntime.trail=[];townMoveRuntime.tap=null;}if(!townMoveRuntime.player||!F.townPointWalkable(s,townMoveRuntime.player.x,townMoveRuntime.player.y,'player'))townMoveRuntime.player={...mv.player};if(!townMoveRuntime.partner||!F.townPointWalkable(s,townMoveRuntime.partner.x,townMoveRuntime.partner.y,'partner'))townMoveRuntime.partner={...mv.partner};return townMoveRuntime}
+function ensureTownRuntime(s){let mv;try{mv=F.townMovement(s)}catch(e){console.warn('townMovement fallback',e);mv={areaId:'core',player:{x:Number(s?.townMovement?.player?.x)||350,y:Number(s?.townMovement?.player?.y)||475}}}const areaId=F.areaDef?.(mv?.areaId)?mv.areaId:'core',player=mv?.player||{x:350,y:475};if(townMoveRuntime.areaId!==areaId){townMoveRuntime.token++;townMoveRuntime.moving=false;townMoveRuntime.transitioning=false;townMoveRuntime.areaId=areaId;townMoveRuntime.player={...player};townMoveRuntime.partner=null;townMoveRuntime.trail=[];townMoveRuntime.tap=null;townMoveRuntime.camera=null;}if(!townMoveRuntime.player)townMoveRuntime.player={...player};try{if(!F.townPointWalkable(s,townMoveRuntime.player.x,townMoveRuntime.player.y,'player'))townMoveRuntime.player={...player}}catch(e){townMoveRuntime.player={...player}}return townMoveRuntime}
 function townFacingFromDelta(dx,dy,prev='down'){dx=Number(dx)||0;dy=Number(dy)||0;if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(Math.abs(dy)>0)return dy<0?'up':'down';return prev||'down'}
 function townPlayerSprite(assets,facing){const f=['up','down','left','right'].includes(String(facing||''))?String(facing):'down';return f==='up'?assets.playerBack:f==='down'?assets.playerFront:f==='left'?assets.playerLeft:assets.playerRight}
 function townCameraSpec(areaId){const nav=F.areaNavDefinition?.(areaId)||F.areaDef?.(areaId)?.nav||{},sceneW=Math.max(280,Number(nav.scene?.w)||717),sceneH=Math.max(320,Number(nav.scene?.h)||842),wr=nav.worldRect||{x:0,y:0,w:sceneW,h:sceneH},screenW=717,screenH=842,targetZoom=areaId==='core'?1.46:1.38,viewportW=Math.round(Math.min(Number(wr.w)||sceneW,screenW/targetZoom)),viewportH=Math.round(Math.min(Number(wr.h)||sceneH,screenH/targetZoom));return {sceneW,sceneH,worldX:Number(wr.x)||0,worldY:Number(wr.y)||0,worldW:Number(wr.w)||sceneW,worldH:Number(wr.h)||sceneH,screenW,screenH,viewportW,viewportH,zoomX:screenW/viewportW,zoomY:screenH/viewportH};}
@@ -99,6 +99,31 @@ function drawCoreTownFallback(canvas,s){
  const states=(F.townLayerStates?.(s)||[]).filter(x=>x.effective&&x.def.kind==='atlas');for(const st of states){const d=st.def,m=d.atlas;if(!m)continue;const x=m.dx||0,y=m.dy||0,w=Math.max(28,m.dw||60),h=Math.max(24,m.dh||50);c.save();c.globalAlpha=.90;c.fillStyle=d.facilityId?'#c89355':'#8caf65';c.fillRect(x+6,y+6,Math.min(w-12,120),Math.min(h-12,78));c.strokeStyle='#5d4732';c.lineWidth=3;c.strokeRect(x+6,y+6,Math.min(w-12,120),Math.min(h-12,78));c.fillStyle='#243221';c.font='bold 11px sans-serif';c.textAlign='center';c.fillText(String(d.label||d.facilityId||'発展').replace(/（.*?）/g,'').slice(0,8),x+6+Math.min(w-12,120)/2,y+28);c.restore()}
  c.fillStyle='rgba(5,32,25,.82)';c.fillRect(15,12,220,34);c.fillStyle='#fff';c.font='bold 13px sans-serif';c.textAlign='left';c.fillText('町画像未配置：内蔵マップで表示中',26,34);
  return true;
+}
+function drawSafeTownMap(canvas,s,rt,playerSprite){
+ if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);
+ const pts=Math.max(0,Number(s?.development?.points)||0),stage=pts>=60?3:pts>=28?2:pts>=10?1:0;
+ // One persistent town. This renderer intentionally has no dependency on legacy area/layer atlases.
+ c.fillStyle='#284b32';c.fillRect(0,0,717,842);c.fillStyle='#6f9d50';c.fillRect(0,0,590,842);
+ for(let y=8;y<835;y+=15)for(let x=8;x<585;x+=19){const n=(x*13+y*7)%37;if(n<9){c.fillStyle=n<4?'#4f7d40':'#9bc274';c.fillRect(x,y,3,4)}}
+ // river / bank
+ c.fillStyle='#56764f';c.fillRect(0,630,590,30);c.fillStyle='#2e79a8';c.fillRect(0,660,590,182);c.fillStyle='#5bb9d8';for(let y=674;y<835;y+=34)for(let x=16;x<570;x+=86)c.fillRect(x+(y%17),y,50,3);
+ // main paths: north-south + center square + south bridge
+ c.fillStyle='#c99d61';c.beginPath();c.moveTo(430,0);c.lineTo(526,0);c.lineTo(500,185);c.lineTo(454,275);c.lineTo(446,510);c.lineTo(388,585);c.lineTo(350,842);c.lineTo(196,842);c.lineTo(184,720);c.lineTo(222,600);c.lineTo(286,535);c.lineTo(300,300);c.lineTo(350,220);c.lineTo(405,150);c.closePath();c.fill();c.fillRect(175,285,330,250);
+ c.fillStyle='#8b5d34';c.fillRect(170,585,190,150);c.fillStyle='#b9824c';for(let y=590;y<730;y+=18)c.fillRect(175,y,180,11);c.fillStyle='#5c422d';c.fillRect(176,580,8,160);c.fillRect(350,580,8,160);
+ const building=(x,y,w,h,roof,wall,label)=>{c.fillStyle='#65452f';c.fillRect(x+8,y+h-12,w-16,12);c.fillStyle=wall;c.fillRect(x+14,y+34,w-28,h-46);c.fillStyle=roof;c.beginPath();c.moveTo(x,y+42);c.lineTo(x+w/2,y);c.lineTo(x+w,y+42);c.closePath();c.fill();c.fillStyle='#50301f';c.fillRect(x+w/2-14,y+h-48,28,38);c.fillStyle='rgba(255,255,255,.92)';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText(label,x+w/2,y+h-7)};
+ building(54,90,205,170,'#b55b35','#dab170',stage>=2?'お店':'露店');
+ building(325,66,178,158,'#5c83a2','#cda873','住居');
+ if(stage>=1)building(365,330,165,145,'#754b3b','#c99966','鍛冶');
+ if(stage>=2)building(60,350,165,135,'#7b6a3a','#d8bd72','市場');
+ if(stage>=3){c.fillStyle='#8bb5c8';c.beginPath();c.arc(315,400,38,0,Math.PI*2);c.fill();c.fillStyle='#cfe5ec';c.beginPath();c.arc(315,400,18,0,Math.PI*2);c.fill();c.fillStyle='#477b92';c.fillRect(309,365,12,40)}
+ // campfire and simple scenery
+ c.fillStyle='#6a472e';for(let a=0;a<6;a++){const ang=a*Math.PI/3;c.beginPath();c.arc(500+Math.cos(ang)*28,270+Math.sin(ang)*28,7,0,Math.PI*2);c.fill()}c.fillStyle='#ffb43a';c.beginPath();c.moveTo(500,232);c.lineTo(480,282);c.lineTo(520,282);c.closePath();c.fill();
+ for(let y=52;y<590;y+=90)for(const x of [28,558]){c.fillStyle='#264e32';c.fillRect(x-5,y+20,10,30);c.fillStyle='#3f7a42';c.beginPath();c.arc(x,y+15,24,0,Math.PI*2);c.fill();c.fillStyle='#619c51';c.beginPath();c.arc(x+8,y+3,16,0,Math.PI*2);c.fill()}
+ c.fillStyle='#5e412c';c.fillRect(488,430,8,70);c.fillStyle='#b78a4b';c.fillRect(458,432,72,38);c.fillStyle='#3a2e22';c.font='bold 12px sans-serif';c.fillText('町',494,456);
+ // player; if sprite cannot load, still show a clear marker instead of failing.
+ const p=rt?.player||{x:350,y:475};if(playerSprite&&Number(playerSprite.naturalWidth)>0){drawTownActor(c,playerSprite,p,'player')}else{c.fillStyle='#d43f2f';c.beginPath();c.arc(p.x,p.y-14,15,0,Math.PI*2);c.fill();c.fillStyle='#17334e';c.fillRect(p.x-10,p.y,20,26);c.fillStyle='#fff';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText('YOU',p.x,p.y+18)}
+ c.fillStyle='rgba(8,42,32,.83)';c.fillRect(14,12,236,35);c.fillStyle='#fff';c.font='bold 13px sans-serif';c.textAlign='left';c.fillText(`町の発展 ${pts}pt / 段階${stage+1}`,26,35);return true;
 }
 function drawTownWorld(worldCanvas,s,assets,rt,areaId){const {base,facility,detail,maxTown,constructionAtlas,npcAtlas}=assets;const playerSprite=townPlayerSprite(assets,rt.facing);const preset=F.townLayerTestPreset(s);worldCanvas.width=717;worldCanvas.height=842;const c=worldCanvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,worldCanvas.width,worldCanvas.height);const drawNormal=()=>{if(F.areaDef?.(areaId)?.world?.runtimeGenerator==='scene-spec-v2'){const compiled=F.compileAreaScene?.(areaId,s);drawGeneratedAreaFallback(worldCanvas,compiled);const cc=worldCanvas.getContext('2d');if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,'player');return;}if(base)c.drawImage(base,0,0,717,842);else drawCoreTownFallback(worldCanvas,s);const states=F.townLayerStates(s).filter(x=>x.effective);const bands=F.TOWN_RENDER_BANDS||['ground','structure','low','character','front'];const drawBand=band=>{const off=document.createElement('canvas');off.width=717;off.height=842;const oc=off.getContext('2d');oc.imageSmoothingEnabled=false;const list=states.filter(x=>x.def.kind==='atlas'&&(x.def.band||'low')===band).sort((a,b)=>(a.def.z||0)-(b.def.z||0));for(const x of list){const defs=x.def.parts||[x.def.atlas];const src=x.def.asset==='detail'?detail:facility;if(!src)continue;for(const m of defs){if(!m)continue;oc.drawImage(src,m.sx,m.sy,m.sw,m.sh,m.dx*TOWN_MAP_X,m.dy*TOWN_MAP_Y,m.dw*TOWN_MAP_X,m.dh*TOWN_MAP_Y)}}c.drawImage(off,0,0);const npcs=states.filter(x=>x.def.kind==='npc'&&(x.def.band||'character')===band).sort((a,b)=>(a.def.z||0)-(b.def.z||0));for(const x of npcs)drawNpcLayer(c,npcAtlas,x.def)};for(const band of bands){if(band==='front'){drawTownActor(c,playerSprite,rt.player,'player')}drawBand(band);if(band==='structure')drawTownConstruction(c,s,constructionAtlas)}if(!bands.includes('front')){drawTownActor(c,playerSprite,rt.player,'player')}};if(areaId==='core'&&preset==='max'&&maxTown)c.drawImage(maxTown,0,0,717,842);else drawNormal();if(F.townNavTestOverlay(s))drawTownNavOverlay(c,s);drawTownRoundTripGuides(c,s);if(townMoveRuntime.tap){c.save();c.strokeStyle='rgba(255,245,130,.95)';c.lineWidth=4;c.beginPath();c.arc(townMoveRuntime.tap.x,townMoveRuntime.tap.y,12,0,Math.PI*2);c.stroke();c.restore();}}
 function drawTownActor(c,img,pos,kind){if(!img||!pos)return;const scale=kind==='player'?1:1;const w=img.naturalWidth*scale,h=img.naturalHeight*scale;c.save();c.imageSmoothingEnabled=false;c.drawImage(img,Math.round(pos.x-w/2),Math.round(pos.y-h+8),w,h);c.restore()}
@@ -176,31 +201,17 @@ function drawGeneratedAreaFallback(canvas,compiled){
 async function drawTownVisual(s){
  const canvas=$("townVisualCanvas");if(!canvas)return;
  try{
-  const [base,facility,detail,maxTown,playerFront,playerBack,playerLeft,playerRight,constructionAtlas,npcAtlas]=await Promise.all([
-   loadVisualOptional("frontier-asset-town-base-v031.png"),
-   loadVisualOptional("frontier-asset-town-facilities-v031.png"),
-   loadVisualOptional("frontier-asset-town-detail-v033.png"),
-   loadVisualOptional("frontier-asset-town-max-v031.png"),
-   loadVisualOptional("frontier-sprite-player-front-v069.png"),
-   loadVisualOptional("frontier-sprite-player-back-v069.png"),
-   loadVisualOptional("frontier-sprite-player-left-v069.png"),
-   loadVisualOptional("frontier-sprite-player-right-v069.png"),
-   loadVisualOptional("frontier-asset-construction-v033.png"),
-   loadVisualOptional("frontier-sprite-npcs-v033.png")
+  const [playerFront,playerBack,playerLeft,playerRight]=await Promise.all([
+   loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png")
   ]);
-  const rt=ensureTownRuntime(s),areaId=rt.areaId||F.townMovement(s).areaId,assets={base,facility,detail,maxTown,playerFront,playerBack,playerLeft,playerRight,constructionAtlas,npcAtlas};
-  const worldCanvas=document.createElement('canvas');
-  drawTownWorld(worldCanvas,s,assets,rt,areaId);
+  const rt=ensureTownRuntime(s),areaId='core',assets={playerFront,playerBack,playerLeft,playerRight},playerSprite=townPlayerSprite(assets,rt.facing);
+  const worldCanvas=document.createElement('canvas');drawSafeTownMap(worldCanvas,s,rt,playerSprite);
   const camera=townCameraFor(areaId,rt.player);townMoveRuntime.camera=camera;
-  const c=canvas.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
-  c.drawImage(worldCanvas,camera.x,camera.y,camera.w,camera.h,0,0,canvas.width,canvas.height);
-  drawTownMinimap(c,worldCanvas,camera,rt);
-  const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(s);
+  const c=canvas.getContext("2d");if(!c)throw new Error('Canvas 2Dを取得できません');c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
+  c.drawImage(worldCanvas,camera.x,camera.y,camera.w,camera.h,0,0,canvas.width,canvas.height);drawTownMinimap(c,worldCanvas,camera,rt);
+  const d=$("townDialogOverlay");if(d){try{d.innerHTML=townDialogue(s)}catch(e){d.innerHTML='<b>町</b><span>行きたい場所をタップしてください。</span>'}}
  }catch(e){
-  console.error(e);
-  townMoveRuntime.camera=null;
-  const c=canvas.getContext("2d");c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle='#183b2b';c.fillRect(0,0,canvas.width,canvas.height);c.fillStyle='#fff';c.font='bold 24px sans-serif';c.textAlign='center';c.fillText('町の描画に失敗しました',canvas.width/2,canvas.height/2-10);c.font='16px sans-serif';c.fillText('町メニューの「初期位置へ戻す」を試してください',canvas.width/2,canvas.height/2+28);
-  toast("町の描画でエラーが発生しました")
+  console.error('town draw fatal',e);townMoveRuntime.camera=null;const c=canvas.getContext("2d");if(c){c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle='#24462f';c.fillRect(0,0,canvas.width,canvas.height);c.fillStyle='#c99d61';c.fillRect(canvas.width*.38,0,canvas.width*.24,canvas.height);c.fillStyle='#fff';c.font='bold 22px sans-serif';c.textAlign='center';c.fillText('町',canvas.width/2,80);c.font='14px sans-serif';c.fillText('安全表示で起動しています',canvas.width/2,112)}toast(`町描画: ${e?.message||'不明なエラー'}`)
  }
 }
 function townSetMessage(text){townMoveRuntime.message=text||'';const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(F.readSave())}
@@ -344,5 +355,5 @@ function bind(){document.querySelectorAll('#mainNav button').forEach(b=>b.onclic
 function init(){if(!window.FRENDA_MASTER?.records||!window.FRENDA_DATA||!R)throw new Error('Frontier共通データを読み込めませんでした。');const host=$('frontierUserHost'),badge=$('frendaActiveUserBadge');if(host&&badge)host.appendChild(badge);bind();window.addEventListener('frontier:sprites-ready',()=>renderAll());F.ensureSpriteDex?.();renderAll()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{try{init()}catch(e){console.error(e);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="modalPanel"><h2>起動エラー</h2><p>${esc(e.message)}</p></div></div>`)}});else init();
 })();
-// Updated: 2026-10-23 07:10 JST / Ver1.12
-/* Updated: 2026-10-23 07:10 JST / Ver1.12 */
+// Updated: 2026-10-23 07:40 JST / Ver1.13
+/* Updated: 2026-10-23 07:40 JST / Ver1.13 */

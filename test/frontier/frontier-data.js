@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.12 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.13 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.12";
+F.VERSION="1.13";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -160,14 +160,14 @@ F.DUNGEON_DEPTH_CURVE=Object.freeze([
  Object.freeze({id:"entry",label:"序盤",enemyMaxRarity:0,enemyBase:5,hpRate:1.00,atkRate:1.00,traitChance:.14,curseChance:.05,plusBias:0}),
  Object.freeze({id:"inner",label:"中盤1",enemyMaxRarity:1,enemyBase:6,hpRate:1.05,atkRate:1.04,traitChance:.20,curseChance:.08,plusBias:0}),
  Object.freeze({id:"deep",label:"中盤2",enemyMaxRarity:1,enemyBase:6,hpRate:1.10,atkRate:1.08,traitChance:.25,curseChance:.10,plusBias:1}),
- Object.freeze({id:"ancient",label:"後半1",enemyMaxRarity:2,enemyBase:7,hpRate:1.16,atkRate:1.12,traitChance:.30,curseChance:.12,plusBias:1}),
+ Object.freeze({id:"ancient",label:"後半1",enemyMaxRarity:2,enemyBase:7,hpRate:1.16,atkRate:1.13,traitChance:.30,curseChance:.12,plusBias:1}),
  Object.freeze({id:"abyss",label:"後半2",enemyMaxRarity:2,enemyBase:7,hpRate:1.23,atkRate:1.17,traitChance:.35,curseChance:.14,plusBias:2}),
  Object.freeze({id:"core",label:"最深部",enemyMaxRarity:3,enemyBase:8,hpRate:1.30,atkRate:1.22,traitChance:.40,curseChance:.16,plusBias:2})
 ]);
 // 旧API互換：はじまりの森では従来どおり5階ごとの6帯域として見える。
 F.DUNGEON_FLOOR_BANDS=Object.freeze(F.DUNGEON_DEPTH_CURVE.map((b,i)=>Object.freeze({...b,from:i*5+1,to:(i+1)*5,label:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"][i]})));
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,balanceTier:"tier1",depthLabels:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"],progressionRole:"基準ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest"},boss:{title:"森の主",preferredSpecies:["オーロット","ドダイトス","ゴリランダー","ジュナイパー"],hpRate:2.2,atkRate:1.12},clearReward:{itemId:"oldtool",qty:1},bossReward:{itemId:"forest_crest",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の基準ダンジョン。B30Fの森の主を退け、最深部を踏破しよう。"},
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,balanceTier:"tier1",depthLabels:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"],progressionRole:"基準ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest"},boss:{title:"森の主",preferredSpecies:["オーロット","ドダイトス","ゴリランダー","ジュナイパー"],hpRate:2.2,atkRate:1.13},clearReward:{itemId:"oldtool",qty:1},bossReward:{itemId:"forest_crest",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の基準ダンジョン。B30Fの森の主を退け、最深部を踏破しよう。"},
  {id:"rocky_cave",name:"岩山の洞窟",icon:"⛰️",maxFloor:30,balanceTier:"tier2",depthLabels:["岩場の入口","乾いた洞路","鉱脈地帯","崩落区画","深部坑道","地底最深部"],progressionRole:"第2ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"mountain"},unlock:{type:"clear",dungeonId:"beginner_forest"},implementationStatus:"preview",description:"はじまりの森踏破後に見つかる第2ダンジョン。T2想定。内容は次段階で実装する。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
@@ -498,5 +498,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-23 07:10 JST / Ver1.12
-/* Updated: 2026-10-23 07:10 JST / Ver1.12 */
+// Updated: 2026-10-23 07:40 JST / Ver1.13
+/* Updated: 2026-10-23 07:40 JST / Ver1.13 */
