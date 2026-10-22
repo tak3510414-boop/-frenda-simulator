@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.95 / world structure Ver6 + multi-dungeon balance foundation / Updated: 2026-10-22 */
+/* Frenda Frontier Ver0.98 / world structure Ver6 + multi-dungeon balance foundation / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.95";
+F.VERSION="0.98";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -142,7 +142,7 @@ F.TIME_PHASES=Object.freeze([
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
 F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
 // Ver0.72: 不思議のダンジョン系を基準に、最初のダンジョンも「最深部を目指す深い構成」にする。
-// Ver0.95: 全ダンジョン共通の難度Tier＋深度カーブ。後続ダンジョンを追加しても第1ダンジョンの数値を作り直さない構造にする。
+// Ver0.96: 全ダンジョン共通の難度Tier＋深度カーブ。後続ダンジョンを追加しても第1ダンジョンの数値を作り直さない構造にする。
 F.DUNGEON_TIER_DEFS=Object.freeze({
  tier1:Object.freeze({id:"tier1",short:"T1",name:"基礎",role:"最初の標準ダンジョン",globalDepthOffset:0,enemyHpRate:1.00,enemyAtkRate:1.00,enemyCountBonus:0,rarityBonus:0,plusOffset:0,plusCap:5,traitBonus:0,curseBonus:0,gatherRate:1.00,chestBonus:0,trapRate:1.00,recommendedPlus:"+0〜+5"}),
  tier2:Object.freeze({id:"tier2",short:"T2",name:"応用",role:"第2標準ダンジョン想定",globalDepthOffset:18,enemyHpRate:1.03,enemyAtkRate:1.03,enemyCountBonus:1,rarityBonus:1,plusOffset:2,plusCap:7,traitBonus:.03,curseBonus:.02,gatherRate:.95,chestBonus:0,trapRate:1.10,recommendedPlus:"+2〜+7"}),
@@ -532,5 +532,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-22 07:16 JST / Ver0.95
-/* Updated: 2026-10-22 07:16 JST / Ver0.95 */
+// Updated: 2026-10-22 08:48 JST / Ver0.98
+/* Updated: 2026-10-22 08:48 JST / Ver0.98 */
