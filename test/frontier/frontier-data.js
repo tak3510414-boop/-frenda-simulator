@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver0.99 / world structure Ver6 + multi-dungeon balance foundation / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.03 / world structure Ver6 + multi-dungeon balance foundation / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="0.99";
+F.VERSION="1.03";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -21,7 +21,8 @@ F.ITEMS=Object.freeze({
  throw_stone:{id:"throw_stone",icon:"🪨",name:"投げ石",kind:"投げ物",base:45,dungeonUse:"throw",effectText:"向いている方向6マス・7ダメージ",desc:"向いている方向へ投げる。敵に当たれば7ダメージ。外しても1個なくなる。"},
  iron:{id:"iron",icon:"⛏️",name:"鉄のかけら",kind:"素材",base:140,desc:"少量だが価値のある鉱石。"},
  crystal:{id:"crystal",icon:"✨",name:"森の結晶",kind:"珍品",base:260,desc:"森の奥で時々見つかる不思議な結晶。"},
- oldtool:{id:"oldtool",icon:"🧰",name:"古びた道具",kind:"珍品",base:420,desc:"誰かが昔使っていた探検道具。"}
+ oldtool:{id:"oldtool",icon:"🧰",name:"古びた道具",kind:"珍品",base:420,desc:"誰かが昔使っていた探検道具。"},
+ forest_crest:{id:"forest_crest",icon:"🌿",name:"森の主の証",kind:"秘宝",base:1200,desc:"はじまりの森の最深部で森の主を退けた証。次の冒険への道を開く。"}
 });
 
 
@@ -127,12 +128,17 @@ F.DUNGEON_CHEST_TABLE=Object.freeze([
 
 // Ver0.76: Hidden floor traps. They are not shown by sight alone; stepping on one reveals and activates it.
 F.DUNGEON_TRAP_DEFS=Object.freeze({
- thorn:{id:"thorn",name:"トゲの罠",icon:"✹",weight:45,effect:"damage",power:5,desc:"踏むと足元からトゲが飛び出してダメージを受ける。"},
- hunger:{id:"hunger",name:"空腹の罠",icon:"▽",weight:30,effect:"fullness",power:10,desc:"踏むと満腹度が10減る。"},
- warp:{id:"warp",name:"ワープの罠",icon:"◎",weight:25,effect:"warp",power:0,desc:"踏むと同じ階の別の場所へ飛ばされる。"}
+ stumble:{id:"stumble",name:"転びの罠",icon:"↯",weight:30,effect:"stumble",power:1,minFloor:1,desc:"踏むと転び、持ち物を1個近くへ落とすことがある。"},
+ thorn:{id:"thorn",name:"トゲの罠",icon:"✹",weight:35,effect:"damage",power:4,minFloor:1,desc:"踏むと足元からトゲが飛び出して少量のダメージを受ける。"},
+ hunger:{id:"hunger",name:"空腹の罠",icon:"▽",weight:25,effect:"fullness",power:10,minFloor:1,desc:"踏むと満腹度が10減る。"},
+ warp:{id:"warp",name:"ワープの罠",icon:"◎",weight:15,effect:"warp",power:0,minFloor:1,desc:"踏むと同じ階の別の場所へ飛ばされる。"},
+ poison:{id:"poison",name:"どくの罠",icon:"☠",weight:18,effect:"status",statusId:"poison",minFloor:6,desc:"B6F以降に出現。踏むとどく状態になる。"},
+ paralysis:{id:"paralysis",name:"まひの罠",icon:"⚡",weight:14,effect:"status",statusId:"paralysis",minFloor:11,desc:"B11F以降に出現。踏むとまひ状態になる。"},
+ sleep:{id:"sleep",name:"ねむりの罠",icon:"☾",weight:10,effect:"status",statusId:"sleep",minFloor:16,desc:"B16F以降に出現。踏むとねむり状態になる。"}
 });
 F.dungeonTrap=id=>F.DUNGEON_TRAP_DEFS?.[id]||null;
 F.DUNGEON_TRAP_TABLE=Object.freeze(Object.values(F.DUNGEON_TRAP_DEFS).map(t=>({weight:t.weight,value:t.id})));
+F.dungeonTrapTable=(floor=1,dungeonId=F.DEFAULT_DUNGEON_ID)=>{const b=F.dungeonBalance?.(dungeonId,floor)||{},nf=Math.max(1,Number(b.normalizedFloor)||Number(floor)||1);return Object.values(F.DUNGEON_TRAP_DEFS).filter(t=>nf>=Math.max(1,Number(t.minFloor)||1)&&(!Number(t.maxFloor)||nf<=Number(t.maxFloor))).map(t=>({weight:t.weight,value:t.id}))};
 
 // Ver0.50: 町・ダンジョン・ショップで共通利用する時間・経済・ダンジョン定義。
 // 実時間には連動せず、ゲーム内の大きな行動で時間帯が進む。
@@ -161,10 +167,16 @@ F.DUNGEON_DEPTH_CURVE=Object.freeze([
 // 旧API互換：はじまりの森では従来どおり5階ごとの6帯域として見える。
 F.DUNGEON_FLOOR_BANDS=Object.freeze(F.DUNGEON_DEPTH_CURVE.map((b,i)=>Object.freeze({...b,from:i*5+1,to:(i+1)*5,label:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"][i]})));
 F.DUNGEON_DEFS=Object.freeze([
- {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,balanceTier:"tier1",depthLabels:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"],progressionRole:"基準ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest"},clearReward:{itemId:"oldtool",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の基準ダンジョン。ここで基本を覚え、次のダンジョンへつながる装備を整える。"}
+ {id:"beginner_forest",name:"はじまりの森",icon:"🌲",maxFloor:30,balanceTier:"tier1",depthLabels:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"],progressionRole:"基準ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"forest"},boss:{title:"森の主",preferredSpecies:["オーロット","ドダイトス","ゴリランダー","ジュナイパー"],hpRate:2.2,atkRate:1.12},clearReward:{itemId:"oldtool",qty:1},bossReward:{itemId:"forest_crest",qty:1},unlock:{type:"always"},description:"人間の開拓者が挑む30階の基準ダンジョン。B30Fの森の主を退け、最深部を踏破しよう。"},
+ {id:"rocky_cave",name:"岩山の洞窟",icon:"⛰️",maxFloor:30,balanceTier:"tier2",depthLabels:["岩場の入口","乾いた洞路","鉱脈地帯","崩落区画","深部坑道","地底最深部"],progressionRole:"第2ダンジョン",bagLimit:10,startFullness:100,fullnessMax:100,fullnessTickEvery:10,naturalHealEvery:5,escapeCount:1,gatherTable:"default",enemyRules:{biome:"mountain"},unlock:{type:"clear",dungeonId:"beginner_forest"},implementationStatus:"preview",description:"はじまりの森踏破後に見つかる第2ダンジョン。T2想定。内容は次段階で実装する。"}
 ]);
 F.dungeonDef=id=>(F.DUNGEON_DEFS||[]).find(d=>d.id===id)||null;
 F.DEFAULT_DUNGEON_ID="beginner_forest";
+F.dungeonClearCount=(s,id)=>Math.max(0,Number(s?.dungeons?.cleared?.[id]?.count)||0);
+F.dungeonCleared=(s,id)=>F.dungeonClearCount(s,id)>0;
+F.dungeonUnlocked=(s,dungeonOrId)=>{const d=typeof dungeonOrId==="object"?dungeonOrId:F.dungeonDef?.(dungeonOrId);if(!d)return false;const u=d.unlock||{type:"always"};if(u.type==="always")return true;if(u.type==="clear")return F.dungeonCleared(s,u.dungeonId);return false};
+F.dungeonPlayable=(s,dungeonOrId)=>{const d=typeof dungeonOrId==="object"?dungeonOrId:F.dungeonDef?.(dungeonOrId);return !!d&&F.dungeonUnlocked(s,d)&&d.implementationStatus!=="preview"};
+
 F.dungeonTierDef=id=>F.DUNGEON_TIER_DEFS?.[id]||F.DUNGEON_TIER_DEFS?.tier1||null;
 F.dungeonBalance=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{
  const d=F.dungeonDef?.(dungeonId)||F.dungeonDef?.(F.DEFAULT_DUNGEON_ID)||{},tier=F.dungeonTierDef?.(d.balanceTier)||F.DUNGEON_TIER_DEFS.tier1,curve=F.DUNGEON_DEPTH_CURVE||[],maxFloor=Math.max(1,Number(d.maxFloor)||30),f=Math.max(1,Math.min(maxFloor,Number(floor)||1));
@@ -532,5 +544,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-22 09:21 JST / Ver0.99
-/* Updated: 2026-10-22 09:21 JST / Ver0.99 */
+// Updated: 2026-10-22 13:43 JST / Ver1.03
+/* Updated: 2026-10-22 13:43 JST / Ver1.03 */

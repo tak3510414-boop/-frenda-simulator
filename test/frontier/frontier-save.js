@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.99 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.03 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -9,11 +9,12 @@ const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]
 const starterEquipmentInstances=()=>{const a=[];for(const [id,n0] of Object.entries(F.STARTER_EQUIPMENT?.owned||{})){const n=Math.max(0,Math.floor(Number(n0)||0));for(let i=0;i<n;i++)a.push({uid:`starter_${id}_${i+1}`,defId:id,plus:0,identified:true,cursed:false,traitId:null})}return a};
 const defaultEquipment=()=>{const instances=starterEquipmentInstances(),equipped=Object.assign({},F.STARTER_EQUIPMENT?.equipped||{}),equippedUids={};for(const slot of (F.EQUIPMENT_SLOTS||[])){const id=equipped[slot.id],hit=instances.find(x=>x.defId===id);equippedUids[slot.id]=hit?.uid||null}return{owned:Object.assign({},F.STARTER_EQUIPMENT?.owned||{}),equipped,instances,equippedUids}};
 F.freshSave=()=>({
- schemaVersion:18,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
+ schemaVersion:19,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
  partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},equipment:defaultEquipment(),warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
  story:{step:0,firstAdventure:false,firstReturn:false,firstStock:false,firstSale:false,firstLoop:false,rumor:false},
+ dungeons:{cleared:{},unlocked:{beginner_forest:true}},
  history:[],townWorld:{worldId:"frontier_town",layoutRevision:1,structureVersion:1,areaSchemaVersion:1,currentAreaId:"core",visitedAreas:["core"],fastTravelNodes:[]},townMovement:{areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}},settings:{hintLevel:1,townLayerTest:{layers:{},preset:"custom"},townAreaTest:{states:{}},townNavTest:{overlay:false},townTravelTest:{active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}}}
 });
 function inferPriority(t){
@@ -100,7 +101,13 @@ F.normalizeSave=s=>{
  s.development.town.houseBuilt=(Number(s.development.town.facilities.house)||0)>=1;
  s.development.town.marketBuilt=(Number(s.development.town.facilities.market)||0)>=1;
  s.development.town.plazaBuilt=(Number(s.development.town.facilities.plaza)||0)>=1;
- s.story=Object.assign(base.story,s.story||{});s.history=Array.isArray(s.history)?s.history.slice(-100):[];
+ s.story=Object.assign(base.story,s.story||{});
+ s.dungeons=s.dungeons&&typeof s.dungeons==="object"?s.dungeons:{cleared:{},unlocked:{beginner_forest:true}};
+ s.dungeons.cleared=s.dungeons.cleared&&typeof s.dungeons.cleared==="object"?s.dungeons.cleared:{};
+ s.dungeons.unlocked=s.dungeons.unlocked&&typeof s.dungeons.unlocked==="object"?s.dungeons.unlocked:{beginner_forest:true};
+ s.dungeons.unlocked.beginner_forest=true;
+ for(const d of (F.DUNGEON_DEFS||[])){if(F.dungeonUnlocked?.(s,d))s.dungeons.unlocked[d.id]=true;}
+ s.history=Array.isArray(s.history)?s.history.slice(-100):[];
  s.settings=Object.assign(base.settings,s.settings||{});
  s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{},preset:"custom"};
  s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};
@@ -123,7 +130,7 @@ F.normalizeSave=s=>{
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=18;
+ s.schemaVersion=19;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
@@ -131,5 +138,5 @@ F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();st
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
-// Updated: 2026-10-22 09:21 JST / Ver0.99
-/* Updated: 2026-10-22 09:21 JST / Ver0.99 */
+// Updated: 2026-10-22 13:43 JST / Ver1.03
+/* Updated: 2026-10-22 13:43 JST / Ver1.03 */

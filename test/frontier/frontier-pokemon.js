@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver0.99 / Pokemon species master + move-based enemy technique AI / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.03 / Pokemon species master + move-based enemy technique AI / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -92,6 +92,7 @@ F.frontierDexEntries=s=>{const m=F.buildPokemonSpeciesMaster(),enc=s?.pokemon?.e
 F.biomeWeight=(sp,biome="forest")=>{const t=TYPE_BIOME_WEIGHT[biome]||TYPE_BIOME_WEIGHT.forest;return Math.max(.02,...sp.types.map(x=>Number(t[x])||0))};
 F.enemySpeciesCandidates=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{const d=F.dungeonDef?.(dungeonId)||{},biome=d.enemyRules?.biome||"forest",f=Math.max(1,Number(floor)||1),balance=F.dungeonBalance?.(dungeonId,f),max=Number(balance?.enemyMaxRarity??(f<=5?0:f<=15?1:f<=25?2:3)),rank={common:0,uncommon:1,rare:2,elite:3};return F.buildPokemonSpeciesMaster().records.filter(sp=>(rank[sp.rarity]??9)<=max&&F.biomeWeight(sp,biome)>=.1).map(sp=>({species:sp,weight:F.biomeWeight(sp,biome)*(sp.rarity==="common"?1.35:sp.rarity==="uncommon"?1:sp.rarity==="rare"?.55:.18)}))};
 F.chooseEnemySpecies=(dungeonId,floor)=>{let pool=F.enemySpeciesCandidates(dungeonId,floor);if(!pool.length)return F.buildPokemonSpeciesMaster().records[0]||null;const spriteState=F.spriteDexStatus?.();if(spriteState&&!spriteState.ready&&F.hasImmediateSprite){const local=pool.filter(x=>F.hasImmediateSprite(x.species));if(local.length>=6)pool=local}const hit=F.weighted(pool.map(x=>({weight:x.weight,value:x.species})));return hit?.value||pool[0].species};
+F.chooseDungeonBossSpecies=(dungeonId,floor)=>{const d=F.dungeonDef?.(dungeonId)||{},preferred=Array.isArray(d.boss?.preferredSpecies)?d.boss.preferredSpecies:[],master=F.buildPokemonSpeciesMaster();for(const name of preferred){const hit=master.records.find(sp=>sp.name===name);if(hit)return hit}const pool=F.enemySpeciesCandidates(dungeonId,floor).map(x=>x.species).filter(Boolean).sort((a,b)=>(Number(b.power)||0)-(Number(a.power)||0));return pool[0]||master.records.slice().sort((a,b)=>(Number(b.power)||0)-(Number(a.power)||0))[0]||null};
 })();
-// Updated: 2026-10-22 09:21 JST / Ver0.99
-/* Updated: 2026-10-22 09:21 JST / Ver0.99 */
+// Updated: 2026-10-22 13:43 JST / Ver1.03
+/* Updated: 2026-10-22 13:43 JST / Ver1.03 */
