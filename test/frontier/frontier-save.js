@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.10 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.11 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -128,7 +128,7 @@ F.normalizeSave=s=>{
  const num=(v,d)=>Number.isFinite(Number(v))?Number(v):d;
  s.townMovement.player={x:num(s.townMovement.player?.x,350),y:num(s.townMovement.player?.y,475)};
  s.townMovement.partner={x:num(s.townMovement.partner?.x,392),y:num(s.townMovement.partner?.y,475)};
- // Ver1.10: 初代トルネコ型の単一拠点へ移行。旧5町域の現在地・往復TEST状態を安全に中心町へ戻す。
+ // Ver1.11: 初代トルネコ型の単一拠点へ移行。旧5町域の現在地・往復TEST状態を安全に中心町へ戻す。
  s.townWorld.currentAreaId="core";s.townWorld.visitedAreas=["core"];s.townWorld.fastTravelNodes=[];s.townMovement.areaId="core";
  s.settings=s.settings||{};s.settings.townAreaTest={states:{}};s.settings.townTravelTest={active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
@@ -141,5 +141,5 @@ F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();st
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
-// Updated: 2026-10-22 21:42 JST / Ver1.10
-/* Updated: 2026-10-22 21:42 JST / Ver1.10 */
+// Updated: 2026-10-22 21:42 JST / Ver1.11
+/* Updated: 2026-10-22 21:42 JST / Ver1.11 */
