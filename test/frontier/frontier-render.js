@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.05 / pixel-map renderer / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.06 / pixel-map renderer / Updated: 2026-10-22 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="1.05";
+R.RENDERER_VERSION="1.06";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -487,5 +487,5 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
  c.fillStyle='rgba(8,45,35,.88)';c.fillRect(18,782,275,40);c.fillStyle='#fff';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(`SceneSpec生成：${compiled.areaName}`,31,807);rCommandPanel(c);return compiled};
 
 };})();
-// Updated: 2026-10-22 20:20 JST / Ver1.05
-/* Updated: 2026-10-22 20:20 JST / Ver1.05 */
+// Updated: 2026-10-22 20:20 JST / Ver1.06
+/* Updated: 2026-10-22 20:20 JST / Ver1.06 */

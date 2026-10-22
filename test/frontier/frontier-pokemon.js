@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.05 / Pokemon species master + move-based enemy technique AI / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.06 / Pokemon species master + move-based enemy technique AI / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -94,5 +94,5 @@ F.enemySpeciesCandidates=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{const d=F.du
 F.chooseEnemySpecies=(dungeonId,floor)=>{let pool=F.enemySpeciesCandidates(dungeonId,floor);if(!pool.length)return F.buildPokemonSpeciesMaster().records[0]||null;const spriteState=F.spriteDexStatus?.();if(spriteState&&!spriteState.ready&&F.hasImmediateSprite){const local=pool.filter(x=>F.hasImmediateSprite(x.species));if(local.length>=6)pool=local}const hit=F.weighted(pool.map(x=>({weight:x.weight,value:x.species})));return hit?.value||pool[0].species};
 F.chooseDungeonBossSpecies=(dungeonId,floor)=>{const d=F.dungeonDef?.(dungeonId)||{},preferred=Array.isArray(d.boss?.preferredSpecies)?d.boss.preferredSpecies:[],master=F.buildPokemonSpeciesMaster();for(const name of preferred){const hit=master.records.find(sp=>sp.name===name);if(hit)return hit}const pool=F.enemySpeciesCandidates(dungeonId,floor).map(x=>x.species).filter(Boolean).sort((a,b)=>(Number(b.power)||0)-(Number(a.power)||0));return pool[0]||master.records.slice().sort((a,b)=>(Number(b.power)||0)-(Number(a.power)||0))[0]||null};
 })();
-// Updated: 2026-10-22 20:20 JST / Ver1.05
-/* Updated: 2026-10-22 20:20 JST / Ver1.05 */
+// Updated: 2026-10-22 20:20 JST / Ver1.06
+/* Updated: 2026-10-22 20:20 JST / Ver1.06 */
