@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.13 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.14 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -9,7 +9,7 @@ const defaultFacilityAreas=()=>{const out={};for(const d of (F.FACILITY_DEFS||[]
 const starterEquipmentInstances=()=>{const a=[];for(const [id,n0] of Object.entries(F.STARTER_EQUIPMENT?.owned||{})){const n=Math.max(0,Math.floor(Number(n0)||0));for(let i=0;i<n;i++)a.push({uid:`starter_${id}_${i+1}`,defId:id,plus:0,identified:true,cursed:false,traitId:null})}return a};
 const defaultEquipment=()=>{const instances=starterEquipmentInstances(),equipped=Object.assign({},F.STARTER_EQUIPMENT?.equipped||{}),equippedUids={};for(const slot of (F.EQUIPMENT_SLOTS||[])){const id=equipped[slot.id],hit=instances.find(x=>x.defId===id);equippedUids[slot.id]=hit?.uid||null}return{owned:Object.assign({},F.STARTER_EQUIPMENT?.owned||{}),equipped,instances,equippedUids}};
 F.freshSave=()=>({
- schemaVersion:20,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
+ schemaVersion:21,appVersion:F.VERSION,createdAt:now(),updatedAt:now(),day:1,coins:Number(F.ECONOMY_RULES?.startCoins)||300,clock:{phaseIndex:0,actionCount:0,lastAction:"start"},
  partnerId:null,team:{leaderSpeciesId:null,memberSpeciesIds:[]},pokemon:{encountered:{},firstSeenOrder:[],companionUnlocks:{},storyCompanions:[]},equipment:defaultEquipment(),warehouse:{},shelves:[null,null,null],sales:{count:0,revenue:0,customers:0},
  reputation:{adventure:0,rare:0,fair:0,pokemon:0},
  development:{points:0,stage:0,town:{facilities:defaultFacilities(),facilityAreas:defaultFacilityAreas(),areas:defaultAreas(),priority:"standard",order:[],projects:{},shopLevel:1,forgeBuilt:false,houseBuilt:false,plazaBuilt:false,marketBuilt:false}},
@@ -112,6 +112,8 @@ F.normalizeSave=s=>{
  s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{},preset:"custom"};
  s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};
  s.settings.townLayerTest.preset=["auto","custom","off","max","raw"].includes(s.settings.townLayerTest.preset)?s.settings.townLayerTest.preset:"custom";
+ // Ver1.14: legacy visual-test presets must never disable town movement.
+ if(["max","raw"].includes(s.settings.townLayerTest.preset))s.settings.townLayerTest={layers:{},preset:"custom"};
  s.settings.townAreaTest=s.settings.townAreaTest&&typeof s.settings.townAreaTest==="object"?s.settings.townAreaTest:{states:{}};
  s.settings.townAreaTest.states=s.settings.townAreaTest.states&&typeof s.settings.townAreaTest.states==="object"?s.settings.townAreaTest.states:{};
  s.settings.townNavTest=s.settings.townNavTest&&typeof s.settings.townNavTest==="object"?s.settings.townNavTest:{overlay:false};
@@ -133,7 +135,12 @@ F.normalizeSave=s=>{
  s.settings=s.settings||{};s.settings.townAreaTest={states:{}};s.settings.townTravelTest={active:false,forceAllUsable:false,startedAt:null,completedAt:null,outbound:{},roundTrips:{}};
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
- s.schemaVersion=20;
+ if(Number(s.schemaVersion||0)<21){
+  // Ver1.14: old follow-map saves could leave the player in a disconnected legacy cell.
+  s.townWorld=s.townWorld||{};s.townWorld.currentAreaId="core";
+  s.townMovement={areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}};
+ }
+ s.schemaVersion=21;
  return s;
 };
 F.readSave=()=>{try{return F.normalizeSave(JSON.parse(storage().getItem(F.SAVE_KEY)||"null"))}catch{return F.freshSave()}};
@@ -141,5 +148,5 @@ F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();st
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
-// Updated: 2026-10-23 07:40 JST / Ver1.13
-/* Updated: 2026-10-23 07:40 JST / Ver1.13 */
+// Updated: 2026-10-23 07:40 JST / Ver1.14
+/* Updated: 2026-10-23 07:40 JST / Ver1.14 */

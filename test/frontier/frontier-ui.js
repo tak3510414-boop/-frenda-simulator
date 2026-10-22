@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.13 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.14 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -216,7 +216,7 @@ async function drawTownVisual(s){
 }
 function townSetMessage(text){townMoveRuntime.message=text||'';const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(F.readSave())}
 function townPersistPosition(){if(!townMoveRuntime.player)return;F.setTownMovement(townMoveRuntime.player,null,townMoveRuntime.areaId||null)}
-function setupTownMovement(){const canvas=$("townVisualCanvas");if(!canvas)return;canvas.onclick=e=>{if(e.target!==canvas)return;const s=F.readSave(),preset=F.townLayerTestPreset(s);if(preset==="max"){toast('最大発展表示では移動確認を停止しています');return}const rt=ensureTownRuntime(s),areaId=rt.areaId,r=canvas.getBoundingClientRect(),screenPt={x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height},raw=townScreenToWorld(screenPt),m=F.townNavModel(s,"player",areaId),wr=m.worldRect;if(raw.x<wr.x||raw.y<wr.y||raw.x>=wr.x+wr.w||raw.y>=wr.y+wr.h)return;
+function setupTownMovement(){const canvas=$("townVisualCanvas");if(!canvas)return;canvas.onclick=e=>{if(e.target!==canvas)return;const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,r=canvas.getBoundingClientRect(),screenPt={x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height},raw=townScreenToWorld(screenPt),m=F.townNavModel(s,"player",areaId),wr=m.worldRect;if(raw.x<wr.x||raw.y<wr.y||raw.x>=wr.x+wr.w||raw.y>=wr.y+wr.h)return;
  const exitRoute=F.townExitTapAt?.(s,raw.x,raw.y,areaId);if(exitRoute){if(!exitRoute.open){toast('この道はまだ開通していません');return}if(!["prototype","ready"].includes(exitRoute.target?.world?.sceneStatus||"")){toast('この先のエリアはまだ準備中です');return}const target=F.townExitApproachPoint?.(s,exitRoute,"player",areaId);if(!target){toast('出口までの経路を作れませんでした');return}walkTownTo(target,{forcedExit:exitRoute});return}
  const target=F.townNearestReachable?.(s,rt.player,raw,"player",999,areaId)||F.townNearestWalkable(s,raw,"player",40,areaId);if(!target){toast('そこへは行けません');return}const reachablePath=F.townFindPath(s,rt.player,target,"player",areaId);if(reachablePath.length<2){toast('そこへは行けません');return}rt.tap={...target};drawTownVisual(s);walkTownTo(target)};}
 function tryTownAreaAutoTransition(rt){if(!rt||rt.transitioning||!rt.player||!rt.areaId)return false;const latest=F.readSave(),route=F.townExitAt?.(latest,rt.player.x,rt.player.y,rt.areaId);return startTownAreaTransition(rt,route)}
@@ -355,5 +355,5 @@ function bind(){document.querySelectorAll('#mainNav button').forEach(b=>b.onclic
 function init(){if(!window.FRENDA_MASTER?.records||!window.FRENDA_DATA||!R)throw new Error('Frontier共通データを読み込めませんでした。');const host=$('frontierUserHost'),badge=$('frendaActiveUserBadge');if(host&&badge)host.appendChild(badge);bind();window.addEventListener('frontier:sprites-ready',()=>renderAll());F.ensureSpriteDex?.();renderAll()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{try{init()}catch(e){console.error(e);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="modalPanel"><h2>起動エラー</h2><p>${esc(e.message)}</p></div></div>`)}});else init();
 })();
-// Updated: 2026-10-23 07:40 JST / Ver1.13
-/* Updated: 2026-10-23 07:40 JST / Ver1.13 */
+// Updated: 2026-10-23 07:40 JST / Ver1.14
+/* Updated: 2026-10-23 07:40 JST / Ver1.14 */
