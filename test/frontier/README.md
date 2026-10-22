@@ -1,4 +1,4 @@
-# Frenda Frontier Ver1.11 / TEST
+# Frenda Frontier Ver1.12 / TEST
 
 
 
@@ -300,6 +300,12 @@
 
 <!-- Updated: 2026-10-22 20:07 JST / Ver1.04 -->
 
+
+## Ver1.12 - 町描画エラー修正
+
+- Ver1.11で町主人公の向き判定が未定義 `spriteFacing4()` を呼んでいた不具合を修正。
+- 向きは up/down/left/right を直接検証し、未設定時は down へ安全フォールバック。
+- 町画像欠落時の内蔵Canvas町マップ経路でも描画を継続。
 
 ## Ver1.11 - 町画像欠落時の自動フォールバック
 

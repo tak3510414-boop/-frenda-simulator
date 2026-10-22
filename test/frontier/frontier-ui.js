@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.11 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.12 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -61,7 +61,7 @@ function visualTownShell(s){return `<canvas class="visualSceneCanvas townWalkCan
 const TOWN_MAP_X=1,TOWN_MAP_Y=1;
 function ensureTownRuntime(s){const mv=F.townMovement(s);if(townMoveRuntime.areaId!==mv.areaId){townMoveRuntime.token++;townMoveRuntime.moving=false;townMoveRuntime.transitioning=false;townMoveRuntime.areaId=mv.areaId;townMoveRuntime.player={...mv.player};townMoveRuntime.partner={...mv.partner};townMoveRuntime.trail=[];townMoveRuntime.tap=null;}if(!townMoveRuntime.player||!F.townPointWalkable(s,townMoveRuntime.player.x,townMoveRuntime.player.y,'player'))townMoveRuntime.player={...mv.player};if(!townMoveRuntime.partner||!F.townPointWalkable(s,townMoveRuntime.partner.x,townMoveRuntime.partner.y,'partner'))townMoveRuntime.partner={...mv.partner};return townMoveRuntime}
 function townFacingFromDelta(dx,dy,prev='down'){dx=Number(dx)||0;dy=Number(dy)||0;if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(Math.abs(dy)>0)return dy<0?'up':'down';return prev||'down'}
-function townPlayerSprite(assets,facing){const f=spriteFacing4(facing);return f==='up'?assets.playerBack:f==='down'?assets.playerFront:f==='left'?assets.playerLeft:assets.playerRight}
+function townPlayerSprite(assets,facing){const f=['up','down','left','right'].includes(String(facing||''))?String(facing):'down';return f==='up'?assets.playerBack:f==='down'?assets.playerFront:f==='left'?assets.playerLeft:assets.playerRight}
 function townCameraSpec(areaId){const nav=F.areaNavDefinition?.(areaId)||F.areaDef?.(areaId)?.nav||{},sceneW=Math.max(280,Number(nav.scene?.w)||717),sceneH=Math.max(320,Number(nav.scene?.h)||842),wr=nav.worldRect||{x:0,y:0,w:sceneW,h:sceneH},screenW=717,screenH=842,targetZoom=areaId==='core'?1.46:1.38,viewportW=Math.round(Math.min(Number(wr.w)||sceneW,screenW/targetZoom)),viewportH=Math.round(Math.min(Number(wr.h)||sceneH,screenH/targetZoom));return {sceneW,sceneH,worldX:Number(wr.x)||0,worldY:Number(wr.y)||0,worldW:Number(wr.w)||sceneW,worldH:Number(wr.h)||sceneH,screenW,screenH,viewportW,viewportH,zoomX:screenW/viewportW,zoomY:screenH/viewportH};}
 function townCameraFor(areaId,focus){const spec=townCameraSpec(areaId),fx=Number(focus?.x)||spec.worldX+spec.worldW/2,fy=Number(focus?.y)||spec.worldY+spec.worldH/2,minX=spec.worldX,maxX=spec.worldX+spec.worldW-spec.viewportW,minY=spec.worldY,maxY=spec.worldY+spec.worldH-spec.viewportH;let x=Math.round(fx-spec.viewportW/2),y=Math.round(fy-spec.viewportH/2);x=Math.max(minX,Math.min(maxX,x));y=Math.max(minY,Math.min(maxY,y));return {...spec,x,y,w:spec.viewportW,h:spec.viewportH};}
 function townScreenToWorld(pt){const cam=townMoveRuntime.camera;if(!cam)return {x:Number(pt?.x)||0,y:Number(pt?.y)||0};return {x:cam.x+(Number(pt?.x)||0)*(cam.w/cam.screenW),y:cam.y+(Number(pt?.y)||0)*(cam.h/cam.screenH)};}
@@ -344,5 +344,5 @@ function bind(){document.querySelectorAll('#mainNav button').forEach(b=>b.onclic
 function init(){if(!window.FRENDA_MASTER?.records||!window.FRENDA_DATA||!R)throw new Error('Frontier共通データを読み込めませんでした。');const host=$('frontierUserHost'),badge=$('frendaActiveUserBadge');if(host&&badge)host.appendChild(badge);bind();window.addEventListener('frontier:sprites-ready',()=>renderAll());F.ensureSpriteDex?.();renderAll()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{try{init()}catch(e){console.error(e);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="modalPanel"><h2>起動エラー</h2><p>${esc(e.message)}</p></div></div>`)}});else init();
 })();
-// Updated: 2026-10-22 21:42 JST / Ver1.11
-/* Updated: 2026-10-22 21:42 JST / Ver1.11 */
+// Updated: 2026-10-23 07:10 JST / Ver1.12
+/* Updated: 2026-10-23 07:10 JST / Ver1.12 */

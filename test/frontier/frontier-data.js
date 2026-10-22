@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.11 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.12 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.11";
+F.VERSION="1.12";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -498,5 +498,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-22 21:42 JST / Ver1.11
-/* Updated: 2026-10-22 21:42 JST / Ver1.11 */
+// Updated: 2026-10-23 07:10 JST / Ver1.12
+/* Updated: 2026-10-23 07:10 JST / Ver1.12 */
