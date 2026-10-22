@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.06 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.07 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.06";
+F.VERSION="1.07";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -487,7 +487,8 @@ F.TOWN_NAV_BASE=Object.freeze({
  walk:[
    {shape:"poly",v:[[176,585],[360,585],[365,720],[335,755],[185,755],[165,700]],reason:"bridge"},
    {shape:"rect",v:[185,720,170,122],reason:"south_path"},
-   {shape:"poly",v:[[426,0],[535,0],[520,115],[450,125],[420,70]],reason:"north_path"}
+   {shape:"poly",v:[[426,0],[535,0],[520,115],[450,125],[420,70]],reason:"north_path"},
+   {shape:"rect",v:[420,105,72,165],reason:"north_public_access"}
  ],
  interactions:[
    {id:"starter_shop",type:"facility",label:"露店",x:255,y:320,r:55,facilityId:"shop"},
@@ -544,5 +545,5 @@ F.item=id=>F.ITEMS[id]||null;
 F.rand=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()*sum;for(const x of list){r-=x.weight;if(r<=0)return x}return list[list.length-1]};
 })();
-// Updated: 2026-10-22 20:20 JST / Ver1.06
-/* Updated: 2026-10-22 20:20 JST / Ver1.06 */
+// Updated: 2026-10-22 20:55 JST / Ver1.07
+/* Updated: 2026-10-22 20:55 JST / Ver1.07 */
