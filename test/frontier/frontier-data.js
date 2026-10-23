@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.23 / world structure Ver6 + paved-road player collision / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.24 / world structure Ver6 + paved-road player collision / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 F.VERSION="1.20";

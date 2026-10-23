@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.23 / smooth collision-safe town actors and NPC life / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.24 / player-matched four-way NPC sprites / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -163,8 +163,8 @@ function drawTownLayerBench(c,atlas,x,y,w=78,h=48){drawTownLayerSprite(c,atlas,2
 // Do not use the general town pathfinder here: it intentionally treats lawn as walkable,
 // while the painted fences in this background are not separate collision objects.
 const TOWN_NPC_ROUTES=Object.freeze({
- visitor:{name:'旅人',job:'森を調査中',sprite:0,speed:30,points:[{x:430,y:305},{x:485,y:305},{x:540,y:305},{x:485,y:305}],lines:['森の奥で、きらめく鉱石を見つけました。','石畳を東へ進むと、冒険掲示板があります。']},
- residentA:{name:'ミナ',job:'町の案内人',sprite:1,speed:25,points:[{x:295,y:420},{x:295,y:470},{x:295,y:520},{x:295,y:560},{x:295,y:520},{x:295,y:470}],lines:['広場の近くなら、どの施設にも行きやすいですよ。','鍛冶屋では冒険の装備を整えられます。']},
+ visitor:{name:'旅人',job:'森を調査中',sprite:1,speed:30,points:[{x:430,y:305},{x:485,y:305},{x:540,y:305},{x:485,y:305}],lines:['森の奥で、きらめく鉱石を見つけました。','石畳を東へ進むと、冒険掲示板があります。']},
+ residentA:{name:'ミナ',job:'町の案内人',sprite:0,speed:25,points:[{x:295,y:420},{x:295,y:470},{x:295,y:520},{x:295,y:560},{x:295,y:520},{x:295,y:470}],lines:['広場の近くなら、どの施設にも行きやすいですよ。','鍛冶屋では冒険の装備を整えられます。']},
  residentB:{name:'コウ',job:'広場の案内人',sprite:2,speed:27,points:[{x:295,y:235},{x:295,y:245},{x:295,y:265},{x:295,y:245}],lines:['市場には森で集めた素材も並ぶんです。','町が発展すると、ここを訪れる人も増えます。']}
 });
 function advanceTownNpcWalkers(s,states,now=Date.now()){
@@ -181,7 +181,7 @@ function advanceTownNpcWalkers(s,states,now=Date.now()){
  return result.sort((a,b)=>a.y-b.y);
 }
 const TOWN_NPC_CROPS=Object.freeze([{x:11,y:9,w:43,h:67},{x:12,y:10,w:41,h:65},{x:11,y:11,w:43,h:61},{x:9,y:6,w:47,h:70}]);
-function drawTownWalkers(c,atlas,actors,now){if(!atlas)return;for(const a of actors){const bob=a.moving?Math.sin(now/115+a.sprite)*.7:0,crop=TOWN_NPC_CROPS[a.sprite]||TOWN_NPC_CROPS[0];c.save();c.imageSmoothingEnabled=false;c.fillStyle='rgba(25,28,20,.24)';c.beginPath();c.ellipse(a.x,a.y+4,13,4,0,0,Math.PI*2);c.fill();if(a.direction<0){c.translate(Math.round(a.x*2),0);c.scale(-1,1)}c.drawImage(atlas,a.sprite*64+crop.x,crop.y,crop.w,crop.h,Math.round(a.x-21.5),Math.round(a.y-62+bob),43,68);c.restore()}}
+function drawTownWalkers(c,atlas,actors,now){if(!atlas)return;const detailed=Number(atlas.naturalWidth||atlas.width)>=768;for(const a of actors){const bob=a.moving?Math.sin(now/115+a.sprite)*.7:0;c.save();c.imageSmoothingEnabled=false;c.fillStyle='rgba(25,28,20,.24)';c.beginPath();c.ellipse(a.x,a.y+4,13,4,0,0,Math.PI*2);c.fill();if(detailed){const face={down:0,left:1,right:2,up:3}[a.facing]??0,index=(Number(a.sprite)||0)*4+face;c.drawImage(atlas,index*64,0,64,80,Math.round(a.x-32),Math.round(a.y-72+bob),64,80)}else{const crop=TOWN_NPC_CROPS[a.sprite]||TOWN_NPC_CROPS[0];if(a.direction<0){c.translate(Math.round(a.x*2),0);c.scale(-1,1)}c.drawImage(atlas,a.sprite*64+crop.x,crop.y,crop.w,crop.h,Math.round(a.x-21.5),Math.round(a.y-62+bob),43,68)}c.restore()}}
 function drawSafeTownMap(canvas,s,rt,playerSprite,art={},options={}){
  if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;
  const model=F.townSceneModel(s),states=F.townLayerStates(s),byId=new Map(states.map(x=>[x.def.id,x]));const on=id=>byId.get(id)?.effective!==false;
@@ -289,7 +289,7 @@ function scheduleTownNpcFrame(){if(townNpcRuntime.rafPending||typeof requestAnim
 async function drawTownVisual(s){
  const canvas=$("townVisualCanvas");if(!canvas)return;
  try{
-  if(!townRenderRuntime.art){if(!townRenderRuntime.loading)townRenderRuntime.loading=Promise.all([loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png"),loadVisualOptional("frontier-town-background-v118.png"),loadVisualOptional("frontier-town-buildings-v117.png"),loadVisualOptional("frontier-town-decorations-v118.png"),loadVisualOptional("frontier-sprite-npcs-v033.png")]).then(([playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs])=>({playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs}));townRenderRuntime.art=await townRenderRuntime.loading}
+  if(!townRenderRuntime.art){if(!townRenderRuntime.loading)townRenderRuntime.loading=Promise.all([loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png"),loadVisualOptional("frontier-town-background-v118.png"),loadVisualOptional("frontier-town-buildings-v117.png"),loadVisualOptional("frontier-town-decorations-v118.png"),loadVisualOptional("frontier-sprite-npcs-v124.png")]).then(([playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs])=>({playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs}));townRenderRuntime.art=await townRenderRuntime.loading}
   const art=townRenderRuntime.art,rt=ensureTownRuntime(s),signature=townStaticSignature(s);
   if(!townRenderRuntime.world||townRenderRuntime.staticKey!==signature||townRenderRuntime.areaId!==rt.areaId){townRenderRuntime.world=document.createElement('canvas');drawSafeTownMap(townRenderRuntime.world,s,rt,null,art,{skipLiveActors:true});townRenderRuntime.staticKey=signature;townRenderRuntime.areaId=rt.areaId}
   paintTownFrame(s,art);if(F.townLayerStates(s).some(x=>x.effective&&x.def.kind==='npc'))scheduleTownNpcFrame();

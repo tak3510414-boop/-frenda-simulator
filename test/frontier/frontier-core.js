@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.23 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.24 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
