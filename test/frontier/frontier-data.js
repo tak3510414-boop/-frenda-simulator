@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.22 / world structure Ver6 + paved-road player collision / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.23 / world structure Ver6 + paved-road player collision / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 F.VERSION="1.20";
@@ -429,7 +429,7 @@ F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front
 F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
  player:{radius:10,step:"walk"},partner:{radius:8,step:"follow",followDistance:34},npc:{radius:9,step:"routine"}
 });
-// Ver1.22: The background is 1086x1448 and is drawn at 590x842. These
+// Ver1.23: The background is 1086x1448 and is drawn at 590x842. These
 // walk corridors follow the visible paving; all grass, fencing, water and
 // structure art is blocked even when it has no separate collision sprite.
 F.TOWN_PLAYER_WALK_CORRIDORS=Object.freeze([
@@ -525,4 +525,4 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
-/* Updated: 2026-10-23 21:55 JST / Ver1.22 */
+/* Updated: 2026-10-23 21:55 JST / Ver1.23 */

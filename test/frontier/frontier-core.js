@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.22 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.23 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -298,7 +298,7 @@ function navCollect(s,areaId=currentTownAreaId(s)){
 F.townNavModel=(s,actor="player",areaId=null)=>{
  const n=navCollect(s,areaId||currentTownAreaId(s)),profile=typeof actor==="string"?(F.TOWN_ACTOR_NAV_PROFILES?.[actor]||F.TOWN_ACTOR_NAV_PROFILES?.player||{}):(actor||{}),pad=Math.max(0,Number(profile.radius)||0),scene=n.navDef?.scene||n.area?.nav?.scene||{w:717,h:842,cell:18},wr=n.navDef?.worldRect||n.area?.nav?.worldRect||{x:0,y:0,w:scene.w,h:scene.h},cell=Math.max(8,Number(scene.cell)||18);
  const cols=Math.ceil(scene.w/cell),rows=Math.ceil(scene.h/cell),grid=Array.from({length:rows},()=>Array(cols).fill(false));
- const blockedReasons=new Map(),strictCoreRoads=n.areaId==="core"&&(actor==="player"||actor==="partner"),roadGrid=strictCoreRoads?townCoreRoadGrid(scene,cell,cols,rows):null;
+ const blockedReasons=new Map(),strictCoreRoads=n.areaId==="core"&&(actor==="player"||actor==="partner"||actor==="npc"),roadGrid=strictCoreRoads?townCoreRoadGrid(scene,cell,cols,rows):null;
  for(let gy=0;gy<rows;gy++)for(let gx=0;gx<cols;gx++){const x=gx*cell+cell/2,y=gy*cell+cell/2;let ok=!!n.base.defaultWalkable&&x>=wr.x&&y>=wr.y&&x<wr.x+wr.w&&y<wr.y+wr.h;let reason=ok?"":"outside";if(strictCoreRoads){ok=!!roadGrid?.[gy]?.[gx];reason=ok?"":"off_paved_road";}for(const sh of n.blocks)if(navShapeContains(sh,x,y,pad)&&!(strictCoreRoads&&sh.reason==="river"&&roadGrid?.[gy]?.[gx])&&!(strictCoreRoads&&/^(facility|construction):/.test(sh.reason||"")&&(n.entrances||[]).some(e=>Math.hypot(x-e.x,y-e.y)<=18))){ok=false;reason=sh.reason||"blocked"}for(const sh of n.walk)if(!strictCoreRoads&&navShapeContains(sh,x,y,0)){ok=true;reason=""}for(const ex of n.exits)if(!ex.open&&x>=ex.x&&y>=ex.y&&x<ex.x+ex.w&&y<ex.y+ex.h){ok=false;reason=`gate:${ex.to}`}grid[gy][gx]=ok;if(reason)blockedReasons.set(`${gx},${gy}`,reason)}
  return {...n,actorProfile:profile,scene,worldRect:wr,cell,cols,rows,grid,blockedReasons,spawn:n.navDef?.spawn||n.area?.nav?.spawn||{x:350,y:395}};
 };
