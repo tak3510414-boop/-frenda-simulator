@@ -182,7 +182,12 @@ function advanceTownNpcWalkers(s,states,now=Date.now()){
 }
 const TOWN_NPC_CROPS=Object.freeze([{x:11,y:9,w:43,h:67},{x:12,y:10,w:41,h:65},{x:11,y:11,w:43,h:61},{x:9,y:6,w:47,h:70}]);
 function drawTownWalkers(c,atlas,actors,now){if(!atlas)return;const detailed=Number(atlas.naturalWidth||atlas.width)>=768;for(const a of actors){const bob=a.moving?Math.sin(now/115+a.sprite)*.7:0;c.save();c.imageSmoothingEnabled=false;c.fillStyle='rgba(25,28,20,.24)';c.beginPath();c.ellipse(a.x,a.y+4,13,4,0,0,Math.PI*2);c.fill();if(detailed){const face={down:0,left:1,right:2,up:3}[a.facing]??0,index=(Number(a.sprite)||0)*4+face;drawWalkingSprite(c,atlas,index*64,0,64,80,Math.round(a.x-32),Math.round(a.y-72+bob),a.moving,now)}else{const crop=TOWN_NPC_CROPS[a.sprite]||TOWN_NPC_CROPS[0];if(a.direction<0){c.translate(Math.round(a.x*2),0);c.scale(-1,1)}c.drawImage(atlas,a.sprite*64+crop.x,crop.y,crop.w,crop.h,Math.round(a.x-21.5),Math.round(a.y-62+bob),43,68)}c.restore()}}
-function drawTownTerrain(c,model){const rich=model.points>=16,rand=(x,y)=>{let n=(x*374761393+y*668265263)>>>0;n=(n^(n>>>13))>>>0;return(n%1000)/1000};c.fillStyle=rich?'#658c47':'#788358';c.fillRect(0,0,590,842);
+function drawTownTerrain(c,model,background){if(background&&background.naturalWidth){c.drawImage(background,0,0,590,842);const built=model.facilities.filter(f=>f.state!=='vacant');
+ for(const f of built){const{x,y,w,h}=f.site;c.save();c.fillStyle='#849957';c.beginPath();c.ellipse(x+w/2,y+h*.68,w*.56,h*.49,0,0,Math.PI*2);c.fill();c.fillStyle='#a0a574';for(let i=0;i<35;i++){const px=x+((i*47)%w),py=y+h*.45+((i*23)%(h*.5));c.fillRect(px,py,2,2)}c.restore();
+ const e=f.entrance;c.save();c.lineCap='round';c.strokeStyle=model.points>=24?'#c1b490':'#a79670';c.lineWidth=model.points>=24?32:22;c.beginPath();c.moveTo(295,420);c.quadraticCurveTo(295,e.y,e.x,e.y);c.stroke();c.restore();}
+ if(model.points>0&&built.length===0){c.fillStyle='#d5be8b';c.beginPath();c.moveTo(268,402);c.lineTo(295,360);c.lineTo(320,402);c.closePath();c.fill();c.fillStyle='#65513a';c.fillRect(291,380,10,22);c.fillStyle='#c47f43';c.fillRect(332,410,8,7)}
+ if(built.length){c.fillStyle='#725137';c.fillRect(249,674,90,168);for(let y=678;y<842;y+=13){c.fillStyle='#b78b59';c.fillRect(253,y,82,9)}}return}
+const rich=model.points>=16,rand=(x,y)=>{let n=(x*374761393+y*668265263)>>>0;n=(n^(n>>>13))>>>0;return(n%1000)/1000};c.fillStyle=rich?'#658c47':'#788358';c.fillRect(0,0,590,842);
  for(let y=0;y<660;y+=5)for(let x=0;x<590;x+=5){const r=rand(x,y);if(r>.72){c.fillStyle=r>.9?'#a1a36a':'#546e43';c.fillRect(x,y,2,2)}}
  c.fillStyle='#356d81';c.fillRect(0,670,590,172);for(let y=678;y<842;y+=18)for(let x=0;x<590;x+=32){c.fillStyle='#6dabb6';c.fillRect(x+(y%7),y,15,2)}
  for(const sh of F.TOWN_PLAYER_WALK_CORRIDORS){const[x,y,w,h]=sh.v;c.fillStyle=rich?'#b9ab83':'#99916b';c.fillRect(x,y,w,Math.min(h,Math.max(0,670-y)));if(rich)for(let yy=y+2;yy<Math.min(y+h,670);yy+=9)for(let xx=x+2;xx<x+w-6;xx+=13){c.fillStyle=rand(xx,yy)>.5?'#d1c6a2':'#c3b792';c.fillRect(xx+(yy%2)*3,yy,10,6)}}
@@ -195,7 +200,7 @@ function drawSafeTownMap(canvas,s,rt,playerSprite,art={},options={}){
  if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;
  const model=F.townSceneModel(s),states=F.townLayerStates(s),byId=new Map(states.map(x=>[x.def.id,x]));const on=id=>byId.get(id)?.effective!==false;
  c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);
- drawTownTerrain(c,model);
+ drawTownTerrain(c,model,art.background);
  // Layer TEST settings now control the rendered scenery and each completed facility.
  const facilityLayer={shop:'shop2',house:'house',forge:'forge',market:'market',plaza:'plaza_fountain'};
  for(const f of [...model.facilities].sort((a,b)=>a.site.y+a.site.h-b.site.y-b.site.h)){
@@ -298,7 +303,7 @@ function scheduleTownNpcFrame(){if(townNpcRuntime.rafPending||typeof requestAnim
 async function drawTownVisual(s){
  const canvas=$("townVisualCanvas");if(!canvas)return;
  try{
-  if(!townRenderRuntime.art){if(!townRenderRuntime.loading)townRenderRuntime.loading=Promise.all([loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png"),loadVisualOptional("frontier-town-background-v118.png"),loadVisualOptional("frontier-town-buildings-v117.png"),loadVisualOptional("frontier-town-decorations-v118.png"),loadVisualOptional("frontier-sprite-npcs-v124.png")]).then(([playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs])=>({playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs}));townRenderRuntime.art=await townRenderRuntime.loading}
+  if(!townRenderRuntime.art){if(!townRenderRuntime.loading)townRenderRuntime.loading=Promise.all([loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png"),loadVisualOptional("frontier-town-wilderness-v128.png"),loadVisualOptional("frontier-town-buildings-v117.png"),loadVisualOptional("frontier-town-decorations-v118.png"),loadVisualOptional("frontier-sprite-npcs-v124.png")]).then(([playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs])=>({playerFront,playerBack,playerLeft,playerRight,background,buildings,decorations,npcs}));townRenderRuntime.art=await townRenderRuntime.loading}
   const art=townRenderRuntime.art,rt=ensureTownRuntime(s),signature=townStaticSignature(s);
   if(!townRenderRuntime.world||townRenderRuntime.staticKey!==signature||townRenderRuntime.areaId!==rt.areaId){townRenderRuntime.world=document.createElement('canvas');drawSafeTownMap(townRenderRuntime.world,s,rt,null,art,{skipLiveActors:true});townRenderRuntime.staticKey=signature;townRenderRuntime.areaId=rt.areaId}
   paintTownFrame(s,art);if(F.townLayerStates(s).some(x=>x.effective&&x.def.kind==='npc'))scheduleTownNpcFrame();
@@ -407,7 +412,7 @@ function showTownAreas(){
 
 function showTownLayerTest(){
  modal('<h2>町の表示プリセット</h2><p>選ぶと町へ戻り、その状態を表示します。保存中の建設状況や所持金は変更しません。</p>',[
- ...[['initial','初期（何もない開拓地）'],['house1','家 Lv1'],['shop2','店 Lv2'],['forge1','鍛冶屋 Lv1'],['complete','完成した町'],['normal','通常の町へ戻す']].map(([id,label])=>({label,fn:()=>{F.mutateSave(s=>{s.settings.townLayerTest={preset:'auto',layers:{},scenePreset:id}});townNpcRuntime.actors.clear();townMoveRuntime.areaId=null;townMoveRuntime.player=null;renderAll()}})),{label:'細かく指定',fn:showTownLayerDetails},{label:'閉じる'}]);
+ ...[['initial','初期（何もない開拓地）'],['camp','野営・開墾'],['house1','家 Lv1'],['shop2','店 Lv2'],['forge1','鍛冶屋 Lv1'],['settlement','小さな集落'],['expansion','町の拡張'],['complete','完成した町'],['normal','通常の町へ戻す']].map(([id,label])=>({label,fn:()=>{F.mutateSave(s=>{s.settings.townLayerTest={preset:'auto',layers:{},scenePreset:id}});townNpcRuntime.actors.clear();townMoveRuntime.areaId=null;townMoveRuntime.player=null;renderAll()}})),{label:'細かく指定',fn:showTownLayerDetails},{label:'閉じる'}]);
 }
 function showTownLayerDetails(){
  const s=F.readSave(),states=F.townLayerStates(s),groups=[],preset=F.townLayerTestPreset(s);
@@ -530,3 +535,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* Ver1.21: NPCs follow central collision-safe lanes and share the player sprite footprint */
 
 // Updated: 2026-10-24 05:00 JST / Ver1.27
+
+// Updated: 2026-10-24 05:20 JST / Ver1.28

@@ -21,7 +21,7 @@ F.advanceTimeState=(s,steps=1,reason="action")=>{s.clock=s.clock||{phaseIndex:0,
 F.advanceTime=(steps=1,reason="action")=>F.mutateSave(s=>F.advanceTimeState(s,steps,reason));
 F.gameplayLoopStatus=s=>{if(!s?.story?.firstReturn)return{step:0,label:"装備を整えて冒険する"};if(!s?.story?.firstStock)return{step:1,label:"商品を棚に並べる"};if(!s?.story?.firstSale)return{step:2,label:"店を開いて売る"};return{step:3,label:"冒険→商売→町発展の1周完成",complete:true}};
 
-F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=id==='complete'?80:id==='initial'?0:18;t.development.town.facilities={shop:0,house:0,forge:0,market:0,plaza:0,adventure_board:0};t.development.town.projects={};if(id==='house1')t.development.town.facilities.house=1;if(id==='shop2')t.development.town.facilities.shop=2;if(id==='forge1')t.development.town.facilities.forge=1;if(id==='complete')for(const d of F.FACILITY_DEFS)t.development.town.facilities[d.id]=d.maxLevel;return t};
+F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=id==='complete'?80:id==='initial'?0:id==='camp'?2:id==='settlement'?24:id==='expansion'?50:18;t.development.town.facilities={shop:0,house:0,forge:0,market:0,plaza:0,adventure_board:0};t.development.town.projects={};if(id==='house1')t.development.town.facilities.house=1;if(id==='shop2')t.development.town.facilities.shop=2;if(id==='forge1')t.development.town.facilities.forge=1;if(id==='settlement')Object.assign(t.development.town.facilities,{shop:2,house:1,forge:1,market:1});if(id==='expansion')Object.assign(t.development.town.facilities,{shop:3,house:2,forge:2,market:1,plaza:1,adventure_board:1});if(id==='complete')for(const d of F.FACILITY_DEFS)t.development.town.facilities[d.id]=d.maxLevel;return t};
 F.townState=s=>{s=F.townPreviewState(s);
  const d=s?.development||{},t=d.town||{},fac=Object.assign({},t.facilities||{});
  for(const def of (F.FACILITY_DEFS||[]))if(fac[def.id]==null)fac[def.id]=Number(def.startLevel)||0;
@@ -554,3 +554,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
 
 // Updated: 2026-10-24 05:00 JST / Ver1.27
+
+// Updated: 2026-10-24 05:20 JST / Ver1.28

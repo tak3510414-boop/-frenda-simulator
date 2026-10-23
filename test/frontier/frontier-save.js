@@ -26,7 +26,7 @@ function inferPriority(t){
 function migrateFacilities(t){
  const facilities=Object.assign(defaultFacilities(),t?.facilities||{});
  // Ver0.24以前の保存値を新しい汎用facility mapへ移す。
- facilities.shop=Math.max(Number(facilities.shop)||0,Number(t?.shopLevel)||1);
+ if(t?.facilities?.shop==null)facilities.shop=Math.max(Number(facilities.shop)||0,Number(t?.shopLevel)||1);
  if(t?.forgeBuilt)facilities.forge=Math.max(Number(facilities.forge)||0,1);
  if(t?.houseBuilt)facilities.house=Math.max(Number(facilities.house)||0,1);
  if(t?.marketBuilt)facilities.market=Math.max(Number(facilities.market)||0,1);
@@ -156,3 +156,5 @@ F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.h
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
+
+// Updated: 2026-10-24 05:20 JST / Ver1.28

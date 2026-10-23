@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.27 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.28 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.27";
+F.VERSION="1.28";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -529,4 +529,6 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 /* Updated: 2026-10-23 21:55 JST / Ver1.23 */
 
-// Updated: 2026-10-24 05:00 JST / Ver1.27
+// Updated: 2026-10-24 05:00 JST / Ver1.28
+
+// Updated: 2026-10-24 05:20 JST / Ver1.28
