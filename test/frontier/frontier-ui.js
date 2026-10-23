@@ -1,8 +1,9 @@
-/* Frenda Frontier Ver1.18 / layer test rendering connected / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.19 / town residents correctly sized and walking / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
 let townMoveRuntime={token:0,moving:false,transitioning:false,areaId:null,player:null,partner:null,trail:[],message:'',tap:null,camera:null,facing:'down'};
+const townNpcRuntime={actors:new Map(),lastTick:0,rafPending:false,lastFrame:0};
 // Ver0.78: dungeon dash runtime for keyboard Shift+direction.
 // Ver0.79: stepping onto stairs automatically opens the next-floor / return choice.
 // Ver0.80: pointer controls use single tap/click = one step, double tap/double click = safe auto-move to the selected explored tile.
@@ -156,6 +157,29 @@ function drawTownLayerSprite(c,atlas,index,x,y,w,h){if(!atlas||!Number.isFinite(
 function drawTownLayerLantern(c,atlas,x,y){drawTownLayerSprite(c,atlas,1,x-18,y-62,36,62)}
 function drawTownLayerFlower(c,atlas,x,y,w=56,h=42){drawTownLayerSprite(c,atlas,0,x,y,w,h)}
 function drawTownLayerBench(c,atlas,x,y,w=78,h=48){drawTownLayerSprite(c,atlas,2,x,y,w,h)}
+const TOWN_NPC_ROUTES=Object.freeze({
+ visitor:{sprite:0,points:[{x:430,y:306},{x:390,y:306},{x:345,y:306},{x:295,y:306},{x:345,y:306},{x:390,y:306}]},
+ residentA:{sprite:1,points:[{x:245,y:450},{x:280,y:450},{x:325,y:450},{x:350,y:450},{x:350,y:495},{x:310,y:495},{x:270,y:495}]},
+ residentB:{sprite:2,points:[{x:245,y:520},{x:295,y:520},{x:345,y:520},{x:345,y:480},{x:345,y:440},{x:295,y:440}]}
+});
+function advanceTownNpcWalkers(s,states,now=Date.now()){
+ const visible=new Set();for(const st of states||[])if(st.effective&&st.def.kind==='npc'){
+  if(st.def.id==='visitor_first')visible.add('visitor');
+  if(st.def.id==='resident_more'){visible.add('residentA');visible.add('residentB')}
+ }
+ const dt=townNpcRuntime.lastTick?Math.max(0,Math.min(.25,(now-townNpcRuntime.lastTick)/1000)):0;townNpcRuntime.lastTick=now;
+ const result=[];
+ for(const id of visible){const route=TOWN_NPC_ROUTES[id];let actor=townNpcRuntime.actors.get(id);if(!actor){const start=route.points[0];actor={id,sprite:route.sprite,x:start.x,y:start.y,next:1,path:[],pathIndex:0,pauseUntil:now+300,direction:1,moving:false};townNpcRuntime.actors.set(id,actor)}
+  if(!actor.path.length&&now>=actor.pauseUntil){const target=route.points[actor.next%route.points.length],path=F.townFindPath?.(s,{x:actor.x,y:actor.y},target,'npc')||[];if(path.length>1){actor.path=path.slice(1);actor.pathIndex=0}else{actor.next=(actor.next+1)%route.points.length;actor.pauseUntil=now+650}}
+  actor.moving=false;let distance=dt*30;
+  while(distance>0&&actor.pathIndex<actor.path.length){const point=actor.path[actor.pathIndex],dx=point.x-actor.x,dy=point.y-actor.y,d=Math.hypot(dx,dy);if(d<.5){actor.x=point.x;actor.y=point.y;actor.pathIndex++;continue}actor.direction=dx<-.5?-1:dx>.5?1:actor.direction;actor.moving=true;if(d<=distance){actor.x=point.x;actor.y=point.y;distance-=d;actor.pathIndex++}else{actor.x+=dx/d*distance;actor.y+=dy/d*distance;distance=0}}
+  if(actor.path.length&&actor.pathIndex>=actor.path.length){actor.path=[];actor.pathIndex=0;actor.next=(actor.next+1)%route.points.length;actor.pauseUntil=now+450;actor.moving=false}
+  result.push(actor)
+ }
+ return result.sort((a,b)=>a.y-b.y);
+}
+function drawTownWalkers(c,atlas,actors,now){if(!atlas)return;for(const a of actors){const bob=a.moving?Math.sin(now/85+a.sprite)*1.5:0;c.save();c.imageSmoothingEnabled=false;c.fillStyle='rgba(25,28,20,.24)';c.beginPath();c.ellipse(a.x,a.y+4,13,4,0,0,Math.PI*2);c.fill();if(a.direction<0){c.translate(Math.round(a.x*2),0);c.scale(-1,1);c.drawImage(atlas,a.sprite*64,0,64,80,Math.round(a.x-32),Math.round(a.y-72+bob),64,80)}else c.drawImage(atlas,a.sprite*64,0,64,80,Math.round(a.x-32),Math.round(a.y-72+bob),64,80);c.restore()}}
+function scheduleTownNpcFrame(){if(townNpcRuntime.rafPending||typeof requestAnimationFrame!=='function'||!$('townVisualCanvas'))return;townNpcRuntime.rafPending=true;const tick=now=>{if(!$('townVisualCanvas')){townNpcRuntime.rafPending=false;return}if(now-townNpcRuntime.lastFrame>=180){townNpcRuntime.rafPending=false;townNpcRuntime.lastFrame=now;drawTownVisual(F.readSave());return}requestAnimationFrame(tick)};requestAnimationFrame(tick)}
 function drawSafeTownMap(canvas,s,rt,playerSprite,art={}){
  if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;
  const model=F.townSceneModel(s),states=F.townLayerStates(s),byId=new Map(states.map(x=>[x.def.id,x]));const on=id=>byId.get(id)?.effective!==false;
@@ -175,7 +199,7 @@ function drawSafeTownMap(canvas,s,rt,playerSprite,art={}){
  if(on('benches')){drawTownLayerBench(c,art.decorations,220,430,72,44);drawTownLayerBench(c,art.decorations,380,430,72,44)}
  if(on('street_lamps')){drawTownLayerLantern(c,art.decorations,205,388);drawTownLayerLantern(c,art.decorations,390,388);drawTownLayerLantern(c,art.decorations,500,294)}
  if(on('plaza_fountain')&&model.facilities.find(f=>f.id==='plaza')?.level>0){} // plaza is rendered through its facility sprite above.
- if(on('visitor_first')||on('resident_more')){const parts=[];if(on('visitor_first'))parts.push({sprite:0,dx:470,dy:252,dw:48,dh:60});if(on('resident_more'))parts.push({sprite:1,dx:228,dy:446,dw:48,dh:60},{sprite:2,dx:395,dy:468,dw:48,dh:60});if(parts.length&&art.npcs)drawNpcLayer(c,art.npcs,{parts})}
+ const walkers=advanceTownNpcWalkers(s,states,Date.now());drawTownWalkers(c,art.npcs,walkers,Date.now())
  if(model.stage>=1&&on('street_lamps')){for(const [x,y]of [[245,557],[365,557]]){c.fillStyle='#6c5838';c.fillRect(x,y-25,4,28);c.fillStyle='#f0d187';c.fillRect(x-4,y-32,12,12)}}
  if(F.townNavTestOverlay(s))drawTownNavOverlay(c,s);
  if(rt?.tap){c.strokeStyle='#ffed8a';c.lineWidth=3;c.beginPath();c.arc(rt.tap.x,rt.tap.y,10,0,Math.PI*2);c.stroke()}
@@ -269,6 +293,7 @@ async function drawTownVisual(s){
   const c=canvas.getContext("2d");if(!c)throw new Error('Canvas 2Dを取得できません');c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
   c.drawImage(worldCanvas,camera.x,camera.y,camera.w,camera.h,0,0,canvas.width,canvas.height);drawTownMinimap(c,worldCanvas,camera,rt);
   const d=$("townDialogOverlay");if(d){try{d.innerHTML=townDialogue(s)}catch(e){d.innerHTML='<b>町</b><span>行きたい場所をタップしてください。</span>'}}
+  if(F.townLayerStates(s).some(x=>x.effective&&x.def.kind==='npc'))scheduleTownNpcFrame();
  }catch(e){
   console.error('town draw fatal',e);townMoveRuntime.camera=null;const c=canvas.getContext("2d");if(c){c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle='#24462f';c.fillRect(0,0,canvas.width,canvas.height);c.fillStyle='#c99d61';c.fillRect(canvas.width*.38,0,canvas.width*.24,canvas.height);c.fillStyle='#fff';c.font='bold 22px sans-serif';c.textAlign='center';c.fillText('町',canvas.width/2,80);c.font='14px sans-serif';c.fillText('安全表示で起動しています',canvas.width/2,112)}toast(`町描画: ${e?.message||'不明なエラー'}`)
  }
@@ -482,3 +507,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* Ver1.18: layer test toggles now control town art and visible facility/NPC sprites */
 
 /* Ver1.18: town layer test controls render scenery and facilities */
+
+/* Ver1.19: town people match player sprite scale and walk on safe town paths */
