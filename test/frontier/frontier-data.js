@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.28 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.29 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.28";
+F.VERSION="1.29";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -37,7 +37,7 @@ F.EQUIPMENT_DEFS=Object.freeze({
  iron_sword:{id:"iron_sword",slot:"weapon",icon:"⚔️",name:"鉄の剣",attack:6,defense:0,hp:0,weapon:{type:"sword",label:"剣",range:1,directions:8,accuracy:.96,power:1.06},desc:"木の剣より高威力な正統派の剣。周囲8方向の隣接攻撃。"},
  wood_spear:{id:"wood_spear",slot:"weapon",icon:"🔱",name:"木の槍",attack:4,defense:0,hp:0,weapon:{type:"spear",label:"槍",range:2,directions:4,accuracy:.92,power:1},desc:"隣接8方向に加え、上下左右なら2マス先まで突ける。"},
  hunter_bow:{id:"hunter_bow",slot:"weapon",icon:"🏹",name:"狩人の弓",attack:3,defense:0,hp:0,weapon:{type:"bow",label:"弓",range:4,directions:8,accuracy:.88,power:.92},desc:"直線8方向の4マス先まで射てる。壁や敵を貫通しない。"},
- iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.28},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
+ iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.29},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
  traveler_clothes:{id:"traveler_clothes",slot:"armor",icon:"🥋",name:"旅人の服",attack:0,defense:2,hp:0,desc:"動きやすい旅装。最低限の防御力がある。"},
  leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。受けるダメージをしっかり抑える。"},
  iron_armor:{id:"iron_armor",slot:"armor",icon:"🛡️",name:"鉄のよろい",attack:0,defense:8,hp:2,damageReduction:1,desc:"重いが頑丈な防具。防御が高く、被ダメージをさらに1軽減する。"},
@@ -274,7 +274,7 @@ F.TOWN_SCENE_POLICY=Object.freeze({
 F.AREA_SIZE_CLASSES=Object.freeze({
  compact:{id:"compact",label:"小区画",icon:"▫️",sceneScale:0.78,facilitySlots:3,landmarkSlots:0,residentCapacity:5,traffic:"low"},
  standard:{id:"standard",label:"標準区画",icon:"◻️",sceneScale:1.00,facilitySlots:5,landmarkSlots:1,residentCapacity:10,traffic:"medium"},
- wide:{id:"wide",label:"広域区画",icon:"⬜",sceneScale:1.28,facilitySlots:8,landmarkSlots:2,residentCapacity:18,traffic:"high"},
+ wide:{id:"wide",label:"広域区画",icon:"⬜",sceneScale:1.29,facilitySlots:8,landmarkSlots:2,residentCapacity:18,traffic:"high"},
  hub:{id:"hub",label:"中心区画",icon:"🔶",sceneScale:1.15,facilitySlots:7,landmarkSlots:2,residentCapacity:16,traffic:"hub"}
 });
 F.areaSizeClass=id=>F.AREA_SIZE_CLASSES?.[id]||F.AREA_SIZE_CLASSES?.standard||null;
@@ -529,6 +529,6 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 /* Updated: 2026-10-23 21:55 JST / Ver1.23 */
 
-// Updated: 2026-10-24 05:00 JST / Ver1.28
+// Updated: 2026-10-24 05:00 JST / Ver1.29
 
-// Updated: 2026-10-24 05:20 JST / Ver1.28
+// Updated: 2026-10-24 05:20 JST / Ver1.29
