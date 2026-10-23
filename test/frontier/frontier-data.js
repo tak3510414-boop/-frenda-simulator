@@ -1,8 +1,8 @@
-// Ver1.31: staged settlement growth, eastern facilities and services. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.31 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
+// Ver1.32: staged settlement growth, eastern facilities and services. Updated 2026-10-24 JST
+/* Frenda Frontier Ver1.32 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.31";
+F.VERSION="1.32";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -38,7 +38,7 @@ F.EQUIPMENT_DEFS=Object.freeze({
  iron_sword:{id:"iron_sword",slot:"weapon",icon:"⚔️",name:"鉄の剣",attack:6,defense:0,hp:0,weapon:{type:"sword",label:"剣",range:1,directions:8,accuracy:.96,power:1.06},desc:"木の剣より高威力な正統派の剣。周囲8方向の隣接攻撃。"},
  wood_spear:{id:"wood_spear",slot:"weapon",icon:"🔱",name:"木の槍",attack:4,defense:0,hp:0,weapon:{type:"spear",label:"槍",range:2,directions:4,accuracy:.92,power:1},desc:"隣接8方向に加え、上下左右なら2マス先まで突ける。"},
  hunter_bow:{id:"hunter_bow",slot:"weapon",icon:"🏹",name:"狩人の弓",attack:3,defense:0,hp:0,weapon:{type:"bow",label:"弓",range:4,directions:8,accuracy:.88,power:.92},desc:"直線8方向の4マス先まで射てる。壁や敵を貫通しない。"},
- iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.31},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
+ iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.32},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
  traveler_clothes:{id:"traveler_clothes",slot:"armor",icon:"🥋",name:"旅人の服",attack:0,defense:2,hp:0,desc:"動きやすい旅装。最低限の防御力がある。"},
  leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。受けるダメージをしっかり抑える。"},
  iron_armor:{id:"iron_armor",slot:"armor",icon:"🛡️",name:"鉄のよろい",attack:0,defense:8,hp:2,damageReduction:1,desc:"重いが頑丈な防具。防御が高く、被ダメージをさらに1軽減する。"},
@@ -154,7 +154,7 @@ F.DUNGEON_TIER_DEFS=Object.freeze({
  tier1:Object.freeze({id:"tier1",short:"T1",name:"基礎",role:"最初の標準ダンジョン",globalDepthOffset:0,enemyHpRate:1.00,enemyAtkRate:1.00,enemyCountBonus:0,rarityBonus:0,plusOffset:0,plusCap:5,traitBonus:0,curseBonus:0,gatherRate:1.00,chestBonus:0,trapRate:1.00,recommendedPlus:"+0〜+5"}),
  tier2:Object.freeze({id:"tier2",short:"T2",name:"応用",role:"第2標準ダンジョン想定",globalDepthOffset:18,enemyHpRate:1.03,enemyAtkRate:1.03,enemyCountBonus:1,rarityBonus:1,plusOffset:2,plusCap:7,traitBonus:.03,curseBonus:.02,gatherRate:.95,chestBonus:0,trapRate:1.10,recommendedPlus:"+2〜+7"}),
  tier3:Object.freeze({id:"tier3",short:"T3",name:"上級",role:"第3標準ダンジョン想定",globalDepthOffset:32,enemyHpRate:1.06,enemyAtkRate:1.06,enemyCountBonus:1,rarityBonus:1,plusOffset:4,plusCap:9,traitBonus:.05,curseBonus:.03,gatherRate:.90,chestBonus:0,trapRate:1.20,recommendedPlus:"+4〜+9"}),
- tier4:Object.freeze({id:"tier4",short:"T4",name:"最深級",role:"高難度標準ダンジョン想定",globalDepthOffset:44,enemyHpRate:1.09,enemyAtkRate:1.09,enemyCountBonus:2,rarityBonus:1,plusOffset:5,plusCap:10,traitBonus:.07,curseBonus:.04,gatherRate:.85,chestBonus:0,trapRate:1.31,recommendedPlus:"+5〜+10"})
+ tier4:Object.freeze({id:"tier4",short:"T4",name:"最深級",role:"高難度標準ダンジョン想定",globalDepthOffset:44,enemyHpRate:1.09,enemyAtkRate:1.09,enemyCountBonus:2,rarityBonus:1,plusOffset:5,plusCap:10,traitBonus:.07,curseBonus:.04,gatherRate:.85,chestBonus:0,trapRate:1.32,recommendedPlus:"+5〜+10"})
 });
 // 6段階の「ダンジョン内進行カーブ」。実際の階数に正規化して使うため、30階以外にも再利用できる。
 F.DUNGEON_DEPTH_CURVE=Object.freeze([
@@ -163,7 +163,7 @@ F.DUNGEON_DEPTH_CURVE=Object.freeze([
  Object.freeze({id:"deep",label:"中盤2",enemyMaxRarity:1,enemyBase:6,hpRate:1.10,atkRate:1.08,traitChance:.25,curseChance:.10,plusBias:1}),
  Object.freeze({id:"ancient",label:"後半1",enemyMaxRarity:2,enemyBase:7,hpRate:1.16,atkRate:1.14,traitChance:.30,curseChance:.12,plusBias:1}),
  Object.freeze({id:"abyss",label:"後半2",enemyMaxRarity:2,enemyBase:7,hpRate:1.23,atkRate:1.17,traitChance:.35,curseChance:.14,plusBias:2}),
- Object.freeze({id:"core",label:"最深部",enemyMaxRarity:3,enemyBase:8,hpRate:1.31,atkRate:1.22,traitChance:.40,curseChance:.16,plusBias:2})
+ Object.freeze({id:"core",label:"最深部",enemyMaxRarity:3,enemyBase:8,hpRate:1.32,atkRate:1.22,traitChance:.40,curseChance:.16,plusBias:2})
 ]);
 // 旧API互換：はじまりの森では従来どおり5階ごとの6帯域として見える。
 F.DUNGEON_FLOOR_BANDS=Object.freeze(F.DUNGEON_DEPTH_CURVE.map((b,i)=>Object.freeze({...b,from:i*5+1,to:(i+1)*5,label:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"][i]})));
@@ -301,7 +301,7 @@ F.TOWN_SCENE_POLICY=Object.freeze({
 F.AREA_SIZE_CLASSES=Object.freeze({
  compact:{id:"compact",label:"小区画",icon:"▫️",sceneScale:0.78,facilitySlots:3,landmarkSlots:0,residentCapacity:5,traffic:"low"},
  standard:{id:"standard",label:"標準区画",icon:"◻️",sceneScale:1.00,facilitySlots:5,landmarkSlots:1,residentCapacity:10,traffic:"medium"},
- wide:{id:"wide",label:"広域区画",icon:"⬜",sceneScale:1.31,facilitySlots:8,landmarkSlots:2,residentCapacity:18,traffic:"high"},
+ wide:{id:"wide",label:"広域区画",icon:"⬜",sceneScale:1.32,facilitySlots:8,landmarkSlots:2,residentCapacity:18,traffic:"high"},
  hub:{id:"hub",label:"中心区画",icon:"🔶",sceneScale:1.15,facilitySlots:7,landmarkSlots:2,residentCapacity:16,traffic:"hub"}
 });
 F.areaSizeClass=id=>F.AREA_SIZE_CLASSES?.[id]||F.AREA_SIZE_CLASSES?.standard||null;
@@ -514,14 +514,14 @@ F.TOWN_LAYER_DEFS=Object.freeze([
  {id:"house",group:"施設",nav:{blocks:[{shape:"rect",v:[25,385,285,205],reason:"house"}],walk:[{shape:"rect",v:[145,570,75,70],reason:"house_entrance"}],entrances:[{id:"house_door",x:182,y:610,facing:"north"}],interactions:[{id:"house",type:"facility",label:"住居",x:182,y:625,r:40,facilityId:"house"}]},label:"住居 Lv1（施設本体）",icon:"🏠",kind:"atlas",asset:"facility",band:"structure",z:34,facilityId:"house",auto:{type:"facilityGte",facilityId:"house",value:1},atlas:{sx:340,sy:325,sw:350,sh:320,dx:0,dy:345,dw:350,dh:320}},
  {id:"market",group:"施設",nav:{blocks:[{shape:"rect",v:[448,315,118,110],reason:"market_stall"}],interactions:[{id:"market",type:"facility",label:"市場",x:432,y:420,r:44,facilityId:"market"}]},label:"市場 Lv1（施設本体）",icon:"🧺",kind:"atlas",asset:"facility",band:"structure",z:36,facilityId:"market",auto:{type:"facilityGte",facilityId:"market",value:1},atlas:{sx:690,sy:325,sw:160,sh:300,dx:425,dy:290,dw:160,dh:300}},
 
- {id:"flowers",group:"装飾・明かり",label:"14pt 小さな花壇ができる",icon:"🌼",kind:"atlas",asset:"detail",band:"low",z:14,auto:{type:"pointsGte",value:14},atlas:{sx:336,sy:238,sw:250,sh:100,dx:245,dy:325,dw:250,dh:100}},
- {id:"benches",group:"生活基盤",nav:{blocks:[{shape:"rect",v:[245,445,85,28],reason:"bench"},{shape:"rect",v:[400,445,85,28],reason:"bench"}]},label:"22pt ベンチが置かれる",icon:"🪑",kind:"atlas",asset:"detail",band:"low",z:16,auto:{type:"pointsGte",value:22},atlas:{sx:362,sy:502,sw:270,sh:70,dx:225,dy:430,dw:270,dh:70}},
+ {id:"flowers",group:"装飾・明かり",label:"広場完成：花壇",icon:"🌼",kind:"atlas",asset:"detail",band:"low",z:14,auto:{type:"facilityGte",facilityId:"plaza",value:1},atlas:{sx:336,sy:238,sw:250,sh:100,dx:245,dy:325,dw:250,dh:100}},
+ {id:"benches",group:"生活基盤",nav:{blocks:[{shape:"rect",v:[245,445,85,28],reason:"bench"},{shape:"rect",v:[400,445,85,28],reason:"bench"}]},label:"広場完成：休憩ベンチ",icon:"🪑",kind:"atlas",asset:"detail",band:"low",z:16,auto:{type:"facilityGte",facilityId:"plaza",value:1},atlas:{sx:362,sy:502,sw:270,sh:70,dx:225,dy:430,dw:270,dh:70}},
  {id:"plaza_fountain",group:"町並み",nav:{blocks:[{shape:"circle",v:[370,350,58],reason:"fountain"}],interactions:[{id:"fountain",type:"scenery",label:"噴水",x:370,y:420,r:48}]},label:"24pt以降：広場の噴水",icon:"⛲",kind:"atlas",asset:"detail",band:"low",z:18,facilityId:"plaza",auto:{type:"all",rules:[{type:"pointsGte",value:24},{type:"facilityGte",facilityId:"plaza",value:1}]},atlas:{sx:238,sy:502,sw:120,sh:100,dx:310,dy:300,dw:120,dh:100}},
 
  {id:"visitor_first",group:"人・生活",label:"2pt 最初の旅人",icon:"🚶",kind:"npc",band:"character",z:10,auto:{type:"pointsGte",value:2},parts:[{sprite:0,dx:492,dy:292,dw:64,dh:80}]},
  {id:"resident_more",group:"人・生活",label:"12pt 住民が少し増える",icon:"🧑",kind:"npc",band:"character",z:12,auto:{type:"pointsGte",value:12},parts:[{sprite:1,dx:238,dy:465,dw:64,dh:80},{sprite:2,dx:302,dy:478,dw:64,dh:80}]},
 
- {id:"street_lamps",group:"装飾・明かり",nav:{blocks:[{shape:"circle",v:[325,370,14],reason:"lamp"},{shape:"circle",v:[435,370,14],reason:"lamp"}]},exclusiveGroup:"town_lighting",rank:2,label:"18pt 街灯が付き始める",icon:"🏮",kind:"atlas",asset:"detail",band:"front",z:12,auto:{type:"pointsGte",value:18},atlas:{sx:590,sy:238,sw:220,sh:90,dx:270,dy:340,dw:220,dh:90}},
+ {id:"street_lamps",group:"装飾・明かり",nav:{blocks:[{shape:"circle",v:[325,370,14],reason:"lamp"},{shape:"circle",v:[435,370,14],reason:"lamp"}]},exclusiveGroup:"town_lighting",rank:2,label:"広場・宿・掲示板完成：街灯",icon:"🏮",kind:"atlas",asset:"detail",band:"front",z:12,auto:{type:"all",rules:[{type:"facilityGte",facilityId:"plaza",value:1},{type:"facilityGte",facilityId:"inn",value:1},{type:"facilityGte",facilityId:"adventure_board",value:1}]},atlas:{sx:590,sy:238,sw:220,sh:90,dx:270,dy:340,dw:220,dh:90}},
 ]);
 F.TOWN_LAYER_GROUPS=Object.freeze(["基礎","道・整備","商業","生活基盤","発展ルート","施設","町並み","装飾・明かり","人・生活","演出"]);
 F.CUSTOMERS=Object.freeze([
@@ -556,8 +556,10 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 /* Updated: 2026-10-23 21:55 JST / Ver1.23 */
 
-// Updated: 2026-10-24 05:00 JST / Ver1.31
+// Updated: 2026-10-24 05:00 JST / Ver1.32
 
-// Updated: 2026-10-24 05:20 JST / Ver1.31
+// Updated: 2026-10-24 05:20 JST / Ver1.32
 
-// Updated: 2026-10-24 05:48 JST / Ver1.31
+// Updated: 2026-10-24 05:48 JST / Ver1.32
+
+// Updated: 2026-10-24 JST / Ver1.32
