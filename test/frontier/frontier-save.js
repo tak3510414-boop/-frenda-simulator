@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.14 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.15 / persistent world structure Ver6 + Pokemon species/team save / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const storage=()=>window.FRENDA_USER?.storage||window.localStorage;
@@ -112,7 +112,7 @@ F.normalizeSave=s=>{
  s.settings.townLayerTest=s.settings.townLayerTest&&typeof s.settings.townLayerTest==="object"?s.settings.townLayerTest:{layers:{},preset:"custom"};
  s.settings.townLayerTest.layers=s.settings.townLayerTest.layers&&typeof s.settings.townLayerTest.layers==="object"?s.settings.townLayerTest.layers:{};
  s.settings.townLayerTest.preset=["auto","custom","off","max","raw"].includes(s.settings.townLayerTest.preset)?s.settings.townLayerTest.preset:"custom";
- // Ver1.14: legacy visual-test presets must never disable town movement.
+ // Ver1.15: legacy visual-test presets must never disable town movement.
  if(["max","raw"].includes(s.settings.townLayerTest.preset))s.settings.townLayerTest={layers:{},preset:"custom"};
  s.settings.townAreaTest=s.settings.townAreaTest&&typeof s.settings.townAreaTest==="object"?s.settings.townAreaTest:{states:{}};
  s.settings.townAreaTest.states=s.settings.townAreaTest.states&&typeof s.settings.townAreaTest.states==="object"?s.settings.townAreaTest.states:{};
@@ -136,7 +136,7 @@ F.normalizeSave=s=>{
  // 開発用の生レイヤー表示は、バージョン更新後まで持ち越さない。
  if(previousAppVersion&&previousAppVersion!==F.VERSION&&s.settings.townLayerTest.preset==="raw")s.settings.townLayerTest={layers:{},preset:"auto"};
  if(Number(s.schemaVersion||0)<21){
-  // Ver1.14: old follow-map saves could leave the player in a disconnected legacy cell.
+  // Ver1.15: old follow-map saves could leave the player in a disconnected legacy cell.
   s.townWorld=s.townWorld||{};s.townWorld.currentAreaId="core";
   s.townMovement={areaId:"core",player:{x:350,y:475},partner:{x:392,y:475}};
  }
@@ -148,5 +148,7 @@ F.writeSave=s=>{s=F.normalizeSave(s);s.appVersion=F.VERSION;s.updatedAt=now();st
 F.mutateSave=fn=>{const s=F.readSave();if(typeof fn==="function")fn(s);return F.writeSave(s)};
 F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.history.push({at:now(),day:s.day,type,text});if(s.history.length>100)s.history=s.history.slice(-100)};
 })();
-// Updated: 2026-10-23 07:40 JST / Ver1.14
-/* Updated: 2026-10-23 07:40 JST / Ver1.14 */
+// Updated: 2026-10-23 07:40 JST / Ver1.15
+/* Updated: 2026-10-23 07:40 JST / Ver1.15 */
+
+/* Updated: 2026-10-23 13:34 JST / Ver1.15 */
