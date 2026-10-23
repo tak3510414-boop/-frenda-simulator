@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.16 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.17 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.16";
+F.VERSION="1.17";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -215,7 +215,7 @@ F.FACILITY_SITES=Object.freeze({
  plaza:{areaId:"core",x:280,y:340,w:62,h:70,entrance:{x:310,y:438}}
 });
 F.SINGLE_TOWN_SCENE=Object.freeze({
- scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},
+ scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:420},
  bridge:{x:170,y:585,w:190,h:150},campfire:{x:535,y:567,r:22},
  borderBlocks:[{shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_forest"},{shape:"rect",v:[0,0,590,35],reason:"north_forest"},{shape:"rect",v:[0,630,590,212],reason:"river"}],
  publicWalk:[{shape:"rect",v:[185,585,160,257],reason:"bridge_and_south_path"}]
@@ -417,7 +417,7 @@ F.AREA_DEFS=Object.freeze([
   world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"single-town",sceneTemplate:"hub",viewProfile:"town_mobile",travelCost:1,
    terrainTags:["open","river_edge","frontier"],capacity:{facilitySlots:12,landmarkSlots:4,residentCapacity:30},futurePorts:[],expansionProfiles:{}},
   startState:"usable",description:"初代不思議のダンジョン型の単一拠点。同じ町の中で店・住居・鍛冶・広場などが段階的に増え、見た目と機能が発展する。別の町域へ移動しない。",transitions:{},
-  nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},entries:{},exits:[]}}
+  nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:420},entries:{},exits:[]}}
 ]);
 F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
 
@@ -511,3 +511,5 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
+
+/* Updated: 2026-10-23 20:14 JST / Ver1.17 */

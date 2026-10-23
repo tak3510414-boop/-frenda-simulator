@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.16 / pixel-map renderer / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.17 / pixel-map renderer / Updated: 2026-10-22 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
 R.RENDERER_VERSION="1.16";
@@ -493,3 +493,5 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
+
+/* Updated: 2026-10-23 20:14 JST / Ver1.17 */

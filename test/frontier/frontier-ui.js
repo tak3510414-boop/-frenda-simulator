@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.16 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.17 / detailed pixel-art town / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -101,7 +101,7 @@ function drawCoreTownFallback(canvas,s){
  return true;
 }
 // Ver1.16: self-contained town art from the exact same scene model used for walking.
-function drawTownFacility(c,f){
+function drawTownFacility(c,f,buildingAtlas=null){
  const {x,y,w,h}=f.site,level=f.level,colors={shop:['#b85c3c','#e5c795'],house:['#6388a3','#e1c79d'],forge:['#68505a','#b6a18b'],market:['#63865b','#e5c586'],adventure_board:['#916948','#d2b27a'],plaza:['#618d9d','#b4d1d6']},[roof,wall]=colors[f.id]||colors.house;
  const box=(a,b,d,e,color)=>{c.fillStyle=color;c.fillRect(Math.round(a),Math.round(b),Math.round(d),Math.round(e))};
  const name=(text,color='#203c2c')=>{c.fillStyle=color;c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(text,x+w/2,y+h+14)};
@@ -110,6 +110,8 @@ function drawTownFacility(c,f){
   name(f.name+'予定地','#365632');return;
  }
  const drawBuilt=()=>{
+  const spriteIndex={shop:0,house:1,forge:2,market:3,plaza:4,adventure_board:5}[f.id];
+  if(buildingAtlas&&Number.isInteger(spriteIndex)){const sw=buildingAtlas.naturalWidth/3,sh=buildingAtlas.naturalHeight/2,ix=(spriteIndex%3)*sw,iy=Math.floor(spriteIndex/3)*sh;const pad=8,scale=Math.min((w-pad*2)/sw,(h-pad*2)/sh),dw=sw*scale,dh=sh*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;c.save();c.imageSmoothingEnabled=false;c.shadowColor='rgba(23,35,22,.35)';c.shadowBlur=5;c.shadowOffsetY=4;c.drawImage(buildingAtlas,ix,iy,sw,sh,dx,dy,dw,dh);c.restore();return}
   if(f.id==='plaza'){
    box(x,y,w,h,'#a5aaa0');for(let yy=y;yy<y+h;yy+=14)for(let xx=x;xx<x+w;xx+=16)box(xx+1,yy+1,14,12,'#bac0ae');
    c.fillStyle='#709eb5';c.beginPath();c.ellipse(x+w/2,y+h/2,w*.40,h*.29,0,0,Math.PI*2);c.fill();box(x+w/2-4,y+13,8,30,'#d2e5dd');box(x+w/2-10,y+10,20,7,'#eff4d9');return;
@@ -150,18 +152,12 @@ function drawTownFacility(c,f){
   name(f.name+' '+(f.phase?.label||'工事中'),'#5d3c18');
  }else name((f.id==='shop'&&level===1?'露店':f.name)+' Lv'+level);
 }
-function drawSafeTownMap(canvas,s,rt,playerSprite){
+function drawSafeTownMap(canvas,s,rt,playerSprite,art={}){
  if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;
  const model=F.townSceneModel(s);c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);
- c.fillStyle='#284b32';c.fillRect(0,0,717,842);c.fillStyle='#729e53';c.fillRect(0,0,590,842);
- for(let y=8;y<835;y+=15)for(let x=8;x<585;x+=19){const n=(x*13+y*7)%37;if(n<9){c.fillStyle=n<4?'#557f45':'#9bc274';c.fillRect(x,y,3,4)}}
- c.fillStyle='#56764f';c.fillRect(0,630,590,30);c.fillStyle='#2e79a8';c.fillRect(0,660,590,182);c.fillStyle='#5bb9d8';for(let y=674;y<835;y+=34)for(let x=16;x<570;x+=86)c.fillRect(x+(y%17),y,50,3);
- c.fillStyle=model.facilities.find(f=>f.id==='plaza')?.level>0?'#b8b29a':'#c99d61';c.fillRect(246,245,118,365);c.fillRect(165,275,300,50);c.fillRect(135,495,345,38);c.fillRect(385,225,52,100);c.fillRect(422,295,108,33);
- c.fillStyle='#c99d61';c.fillRect(238,600,88,242);c.fillRect(420,35,60,205);
- const bridge=model.bridge;c.fillStyle='#8b5d34';c.fillRect(bridge.x,bridge.y,bridge.w,bridge.h);c.fillStyle='#b9824c';for(let y=bridge.y+5;y<bridge.y+bridge.h;y+=18)c.fillRect(bridge.x+5,y,bridge.w-10,11);c.fillStyle='#5c422d';c.fillRect(bridge.x+6,bridge.y-5,8,bridge.h+10);c.fillRect(bridge.x+bridge.w-10,bridge.y-5,8,bridge.h+10);
- for(const f of [...model.facilities].sort((a,b)=>a.site.y+a.site.h-b.site.y-b.site.h))drawTownFacility(c,f);
- const fire=model.campfire;c.fillStyle='#6a472e';for(let a=0;a<6;a++){const ang=a*Math.PI/3;c.beginPath();c.arc(fire.x+Math.cos(ang)*fire.r,fire.y+Math.sin(ang)*fire.r,6,0,Math.PI*2);c.fill()}c.fillStyle='#ffb43a';c.beginPath();c.moveTo(fire.x,fire.y-30);c.lineTo(fire.x-15,fire.y+8);c.lineTo(fire.x+15,fire.y+8);c.closePath();c.fill();
- for(let y=52;y<590;y+=90)for(const x of [22,580]){c.fillStyle='#264e32';c.fillRect(x-4,y+20,8,25);c.fillStyle='#3f7a42';c.beginPath();c.arc(x,y+15,21,0,Math.PI*2);c.fill();c.fillStyle='#619c51';c.beginPath();c.arc(x+7,y+3,14,0,Math.PI*2);c.fill()}
+ if(art.background)c.drawImage(art.background,0,0,590,842);
+ else{c.fillStyle='#547a43';c.fillRect(0,0,590,842);c.fillStyle='#c99d61';c.fillRect(245,0,115,630);c.fillRect(110,275,370,245);c.fillStyle='#2e79a8';c.fillRect(0,660,590,182);const bridge=model.bridge;c.fillStyle='#8b5d34';c.fillRect(bridge.x,bridge.y,bridge.w,bridge.h);c.fillStyle='#b9824c';for(let y=bridge.y+5;y<bridge.y+bridge.h;y+=18)c.fillRect(bridge.x+5,y,bridge.w-10,11)}
+ for(const f of [...model.facilities].sort((a,b)=>a.site.y+a.site.h-b.site.y-b.site.h))drawTownFacility(c,f,art.buildings);
  if(model.stage>=1){for(const [x,y]of [[245,557],[365,557],[248,250],[450,545]]){c.fillStyle='#6c5838';c.fillRect(x,y-25,4,28);c.fillStyle='#f0d187';c.fillRect(x-4,y-32,12,12)}}
  if(F.townNavTestOverlay(s))drawTownNavOverlay(c,s);
  if(rt?.tap){c.strokeStyle='#ffed8a';c.lineWidth=3;c.beginPath();c.arc(rt.tap.x,rt.tap.y,10,0,Math.PI*2);c.stroke()}
@@ -245,11 +241,12 @@ function drawGeneratedAreaFallback(canvas,compiled){
 async function drawTownVisual(s){
  const canvas=$("townVisualCanvas");if(!canvas)return;
  try{
-  const [playerFront,playerBack,playerLeft,playerRight]=await Promise.all([
-   loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png")
+  const [playerFront,playerBack,playerLeft,playerRight,background,buildings]=await Promise.all([
+   loadVisualOptional("frontier-sprite-player-front-v069.png"),loadVisualOptional("frontier-sprite-player-back-v069.png"),loadVisualOptional("frontier-sprite-player-left-v069.png"),loadVisualOptional("frontier-sprite-player-right-v069.png"),
+   loadVisualOptional("frontier-town-background-v117.png"),loadVisualOptional("frontier-town-buildings-v117.png")
   ]);
   const rt=ensureTownRuntime(s),areaId='core',assets={playerFront,playerBack,playerLeft,playerRight},playerSprite=townPlayerSprite(assets,rt.facing);
-  const worldCanvas=document.createElement('canvas');drawSafeTownMap(worldCanvas,s,rt,playerSprite);
+  const worldCanvas=document.createElement('canvas');drawSafeTownMap(worldCanvas,s,rt,playerSprite,{background,buildings});
   const camera=townCameraFor(areaId,rt.player);townMoveRuntime.camera=camera;
   const c=canvas.getContext("2d");if(!c)throw new Error('Canvas 2Dを取得できません');c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);
   c.drawImage(worldCanvas,camera.x,camera.y,camera.w,camera.h,0,0,canvas.width,canvas.height);drawTownMinimap(c,worldCanvas,camera,rt);
@@ -462,3 +459,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
+
+/* Ver1.17: illustrated town background and facility spritesheet */
