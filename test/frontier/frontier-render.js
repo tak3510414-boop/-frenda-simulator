@@ -286,7 +286,12 @@ R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return nul
    if(n>.45)rect(c,xx+3+(x%3),yy+3+(y%3),2,3,cave?'#85745d':'#557057');if(n<.18)rect(c,xx+t-5,yy+t-5,2,2,cave?'#302e2b':'#263a2b');
   }else{
    const floorCol=n>.7?floorBase[0]:n>.35?floorBase[1]:floorBase[2];rect(c,xx,yy,t,t,floorCol);
-   if(n>.78)rect(c,xx+3,yy+4,2,2,cave?'#b09a78':'#91a86c');if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,cave?'#514a40':'#566846');if(cave&&n>.55){line(c,xx+3,yy+3,xx+8,yy+6,'#9b896c',1);if(n>.86)px(c,xx+11,yy+3,'#d5b45b')}
+   // Hand-cut floor tiles with edge light, cracks and tiny biome details break up the flat grid.
+   line(c,xx+1,yy+1,xx+t-2,yy+1,cave?'#95836a':'#94a371',1);line(c,xx+1,yy+t-1,xx+t-2,yy+t-1,cave?'#4d453b':'#59674b',1);
+   if(n>.78){rect(c,xx+3,yy+4,2,2,cave?'#b09a78':'#91a86c');if(!cave)px(c,xx+6,yy+7,'#a2ae79')}
+   if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,cave?'#514a40':'#566846');
+   if(cave&&n>.55){line(c,xx+3,yy+3,xx+8,yy+6,'#9b896c',1);if(n>.86){px(c,xx+11,yy+3,'#f1d276');px(c,xx+12,yy+4,'#c19d47')}}
+   if(!cave&&n>.58){line(c,xx+4,yy+11,xx+7,yy+9,'#536847',1);if(n>.84)px(c,xx+10,yy+12,'#b6c276')}
    if(tt==='gather'){const drop=groundMap.get(x+','+y);dungeonGroundItem(c,drop?.itemId,xx,yy,t)}
    if(tt==='chest'&&!drawChestArt(c,xx,yy,t)){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
    if(tt==='stairs'){rect(c,xx+2,yy+2,t-4,t-4,'#a98358');for(let i=0;i<5;i++)rect(c,xx+3,yy+3+i*2,t-6,1,'#66492e')}

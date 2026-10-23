@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.25 / wider town lanes + NPC-safe walking / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.26 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.25";
+F.VERSION="1.26";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({

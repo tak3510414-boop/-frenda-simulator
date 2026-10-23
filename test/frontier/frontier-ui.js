@@ -163,9 +163,9 @@ function drawTownLayerBench(c,atlas,x,y,w=78,h=48){drawTownLayerSprite(c,atlas,2
 // Do not use the general town pathfinder here: it intentionally treats lawn as walkable,
 // while the painted fences in this background are not separate collision objects.
 const TOWN_NPC_ROUTES=Object.freeze({
- visitor:{name:'旅人',job:'森を調査中',sprite:1,speed:30,points:[{x:430,y:305},{x:485,y:305},{x:540,y:305},{x:485,y:305}],lines:['森の奥で、きらめく鉱石を見つけました。','石畳を東へ進むと、冒険掲示板があります。']},
- residentA:{name:'ミナ',job:'町の案内人',sprite:0,speed:25,points:[{x:295,y:420},{x:295,y:470},{x:295,y:520},{x:295,y:560},{x:295,y:520},{x:295,y:470}],lines:['広場の近くなら、どの施設にも行きやすいですよ。','鍛冶屋では冒険の装備を整えられます。']},
- residentB:{name:'コウ',job:'広場の案内人',sprite:2,speed:27,points:[{x:295,y:235},{x:295,y:245},{x:295,y:265},{x:295,y:245}],lines:['市場には森で集めた素材も並ぶんです。','町が発展すると、ここを訪れる人も増えます。']}
+ visitor:{name:'旅人',job:'森を調査中',sprite:1,speed:66,points:[{x:430,y:305},{x:485,y:305},{x:540,y:305},{x:485,y:305}],lines:['森の奥で、きらめく鉱石を見つけました。','石畳を東へ進むと、冒険掲示板があります。']},
+ residentA:{name:'ミナ',job:'町の案内人',sprite:0,speed:48,points:[{x:295,y:420},{x:295,y:470},{x:295,y:520},{x:295,y:560},{x:295,y:520},{x:295,y:470}],lines:['広場の近くなら、どの施設にも行きやすいですよ。','鍛冶屋では冒険の装備を整えられます。']},
+ residentB:{name:'コウ',job:'広場の案内人',sprite:2,speed:52,points:[{x:295,y:235},{x:295,y:245},{x:295,y:265},{x:295,y:245}],lines:['市場には森で集めた素材も並ぶんです。','町が発展すると、ここを訪れる人も増えます。']}
 });
 function advanceTownNpcWalkers(s,states,now=Date.now()){
  const visible=new Set();for(const st of states||[])if(st.effective&&st.def.kind==='npc'){
@@ -339,6 +339,7 @@ function townDialogue(s){
 function townSetMessage(text){townMoveRuntime.message=text||'';const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(F.readSave())}
 function townPersistPosition(){if(!townMoveRuntime.player)return;F.setTownMovement(townMoveRuntime.player,null,townMoveRuntime.areaId||null)}
 function rtFacingToNpc(actor,player){const dx=player.x-actor.x,dy=player.y-actor.y;return Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down')}
+function yieldTownNpc(actor,player,from,to,s,others){const dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,px=-dy/len,py=dx/len;for(const sign of [1,-1]){const p=F.townNearestWalkable(s,{x:actor.x+px*60*sign,y:actor.y+py*60*sign},'npc',5,'core');if(p&&Math.hypot(p.x-player.x,p.y-player.y)>=46&&others.filter(a=>a!==actor).every(a=>Math.hypot(p.x-a.x,p.y-a.y)>=43)){actor.x=p.x;actor.y=p.y;actor.pauseUntil=townNow()+180;actor.moving=false;return true}}return false}
 function setupTownMovement(){const canvas=$("townVisualCanvas");if(!canvas)return;canvas.onclick=e=>{if(e.target!==canvas)return;const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,r=canvas.getBoundingClientRect(),screenPt={x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height},raw=townScreenToWorld(screenPt),m=F.townNavModel(s,"player",areaId),wr=m.worldRect;if(raw.x<wr.x||raw.y<wr.y||raw.x>=wr.x+wr.w||raw.y>=wr.y+wr.h)return;
  if(areaId==='core'&&F.townSceneModel(s).facilities.some(f=>f.id==='house'&&f.level>0&&!f.project&&raw.x>=f.site.x&&raw.x<=f.site.x+f.site.w&&raw.y>=f.site.y&&raw.y<=f.site.y+f.site.h)){homeMode='house';townMoveRuntime.token++;townMoveRuntime.moving=false;renderAll();return}
  const nearby=advanceTownNpcWalkers(s,F.townLayerStates(s),Date.now()).map(a=>({a,d:Math.hypot(a.x-raw.x,a.y-raw.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby&&nearby.d<43){const route=TOWN_NPC_ROUTES[nearby.a.id],line=route.lines[nearby.a.lineIndex++%route.lines.length];nearby.a.pauseUntil=Date.now()+1100;nearby.a.moving=false;nearby.a.facing=rtFacingToNpc(nearby.a,rt.player);townNpcRuntime.talk={name:`${route.name}｜${route.job}`,line,until:Date.now()+3900};const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(s);drawTownVisual(s);return}
@@ -355,8 +356,8 @@ async function walkTownTo(target){
    const next=path[i],prev={...rt.player};if(!nav.grid?.[Math.floor(next.y/nav.cell)]?.[Math.floor(next.x/nav.cell)]){townSetMessage('道がふさがっています。別の場所をタップしてください。');return}const length=Math.hypot(next.x-prev.x,next.y-prev.y),duration=Math.max(80,length/118*1000),started=townNow();rt.trail.push(prev);if(rt.trail.length>8)rt.trail.shift();rt.facing=townFacingFromDelta(next.x-prev.x,next.y-prev.y,rt.facing);
    while(token===rt.token){const t=Math.min(1,(townNow()-started)/duration),candidate={x:prev.x+(next.x-prev.x)*t,y:prev.y+(next.y-prev.y)*t};
     // Stop before an NPC's full sprite footprint; resume as soon as the NPC clears the lane.
-    const actors=advanceTownNpcWalkers(F.readSave(),F.townLayerStates(F.readSave()),townNow()),crowded=actors.some(a=>Math.hypot(candidate.x-a.x,candidate.y-a.y)<34);
-    if(crowded){if(townNow()-started>1800){townSetMessage('人が通るのを待っています。別の場所をタップしてください。');return}await drawTownVisual(F.readSave());await new Promise(resolve=>setTimeout(resolve,45));continue}
+    const state=F.readSave(),actors=advanceTownNpcWalkers(state,F.townLayerStates(state),townNow()),blocker=actors.find(a=>Math.hypot(candidate.x-a.x,candidate.y-a.y)<46);
+    if(blocker){if(townNow()-started>420)yieldTownNpc(blocker,candidate,prev,next,state,actors);if(townNow()-started>2200){townSetMessage('人をよけて進めませんでした。少し離れた道をタップしてください。');return}await drawTownVisual(F.readSave());await new Promise(resolve=>setTimeout(resolve,35));continue}
     rt.player=candidate;await drawTownVisual(F.readSave());if(t>=1)break;await new Promise(resolve=>setTimeout(resolve,24))}rt.player={...next};if(i%3===0)townPersistPosition();
   }
   if(token!==rt.token||currentView!=='home'||homeMode!=='town')return;
