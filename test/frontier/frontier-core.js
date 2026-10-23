@@ -1,3 +1,4 @@
+// Ver1.31: staged settlement growth, eastern facilities and services. Updated 2026-10-24 JST
 /* Frenda Frontier Ver1.24 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
@@ -21,7 +22,14 @@ F.advanceTimeState=(s,steps=1,reason="action")=>{s.clock=s.clock||{phaseIndex:0,
 F.advanceTime=(steps=1,reason="action")=>F.mutateSave(s=>F.advanceTimeState(s,steps,reason));
 F.gameplayLoopStatus=s=>{if(!s?.story?.firstReturn)return{step:0,label:"装備を整えて冒険する"};if(!s?.story?.firstStock)return{step:1,label:"商品を棚に並べる"};if(!s?.story?.firstSale)return{step:2,label:"店を開いて売る"};return{step:3,label:"冒険→商売→町発展の1周完成",complete:true}};
 
-F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=id==='complete'?80:id==='initial'?0:id==='camp'?2:id==='settlement'?24:id==='expansion'?50:18;t.development.town.facilities={shop:0,house:0,forge:0,market:0,plaza:0,adventure_board:0};t.development.town.projects={};t.development.town.residentCount=['settlement','expansion','complete'].includes(id)?(id==='settlement'?1:2):0;if(id==='house1')t.development.town.facilities.house=1;if(id==='shop2')t.development.town.facilities.shop=2;if(id==='forge1')t.development.town.facilities.forge=1;if(id==='settlement')Object.assign(t.development.town.facilities,{shop:2,house:1,forge:1,market:1});if(id==='expansion')Object.assign(t.development.town.facilities,{shop:3,house:2,forge:2,market:1,plaza:1,adventure_board:1});if(id==='complete')for(const d of F.FACILITY_DEFS)t.development.town.facilities[d.id]=d.maxLevel;return t};
+F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const alias={settlement:'craft',expansion:'hub'},stage=F.TOWN_GROWTH_STAGES.find(x=>x.id===(alias[id]||id)),t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=stage?.points||(id==='initial'?0:18);t.development.town.facilities=Object.fromEntries(F.FACILITY_DEFS.map(f=>[f.id,0]));Object.assign(t.development.town.facilities,stage?.facilities||(id==='house1'?{house:1}:id==='forge1'?{forge:1}:{}));t.development.town.residentCount=stage?.residents||0;t.development.town.projects={};return t};
+F.townGrowthState=s=>{s=F.townPreviewState(s);const t=F.townState(s),fac=t.facilities;let index=-1;for(let i=0;i<F.TOWN_GROWTH_STAGES.length;i++){const st=F.TOWN_GROWTH_STAGES[i];if(Object.entries(st.facilities).every(([id,l])=>Number(fac[id]||0)>=l)&&(Number(s.development.town.residentCount)||0)>=st.residents)index=i;else break}if(index===0&&!(s.story?.firstAdventure||s.development.points>0))index=-1;return{index,current:F.TOWN_GROWTH_STAGES[index]||{label:'未開拓地'},next:F.TOWN_GROWTH_STAGES[index+1]||null}};
+F.townBuildRequirement=(s,id)=>{const rule=F.TOWN_BUILD_RULES[id]||{},missing=[];for(const [fid,lv]of Object.entries(rule.requires||{}))if(F.facilityLevel(s,fid)<lv||F.townProject(s,fid))missing.push(`${F.FACILITY_DEFS.find(x=>x.id===fid)?.name||fid} Lv${lv}の完成`);if(rule.story&&!s.story?.[rule.story])missing.push(rule.story==='firstSale'?'最初の商品販売':'最初の冒険から帰還');if((Number(s.development.town.residentCount)||0)<(rule.residents||0))missing.push(`住民${rule.residents}人の入居`);if((s.coins||0)<(rule.coins||0))missing.push(`${rule.coins}G`);for(const[id,n]of Object.entries(rule.items||{}))if((s.warehouse?.[id]||0)<n)missing.push(`${F.item(id)?.name||id}×${n}`);return{...rule,missing}};
+F.townBankTransfer=amount=>F.mutateSave(s=>{if(F.facilityLevel(s,'bank')<1)throw new Error('預かり所を建設してください。');if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('通常の町へ戻して利用してください。');const n=Math.trunc(Number(amount)||0),t=s.development.town,b=Math.max(0,Number(t.bankBalance)||0);if(n>0&&s.coins<n||n<0&&b< -n)throw new Error('金額が足りません。');s.coins-=n;t.bankBalance=b+n});
+F.townInnRest=()=>F.mutateSave(s=>{if(F.facilityLevel(s,'inn')<1)throw new Error('宿屋を建設してください。');if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('通常の町へ戻して利用してください。');if(s.coins<30)throw new Error('宿泊には30G必要です。');s.coins-=30;const steps=4-(Number(s.clock?.phaseIndex)||0);F.advanceTimeState(s,steps,'inn');F.addHistory(s,'rest','宿屋で翌朝まで休んだ。')});
+
+F.townBuySupply=id=>F.mutateSave(s=>{const level=F.facilityLevel(s,'market');if(level<1)throw new Error('市場を建設してください。');if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('通常の町へ戻して利用してください。');const ids=level>=2?['bread','herb','antidote_herb','big_bread','panacea','survey_scroll']:['bread','herb','antidote_herb'];if(!ids.includes(id))throw new Error('この商品は扱っていません。');const it=F.item(id),t=s.development.town;if(t.marketStock?.day!==s.day)t.marketStock={day:s.day,bought:{}};const n=Number(t.marketStock.bought[id])||0;if(n>=2)throw new Error('本日分は売り切れました。');if(s.coins<it.base)throw new Error('お金が足りません。');s.coins-=it.base;t.marketStock.bought[id]=n+1;addWarehouse(s,id,1)});
+F.townForgeUpgrade=()=>F.mutateSave(s=>{const lv=F.facilityLevel(s,'forge');if(lv<1||(Number(s.development.town.residentCount)||0)<1)throw new Error('工房の完成と職人の入居が必要です。');if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('通常の町へ戻して利用してください。');const uid=s.equipment.equippedUids?.weapon,inst=s.equipment.instances.find(i=>i.uid===uid);if(!inst)throw new Error('武器を装備してください。');if((inst.plus||0)>=lv*2)throw new Error(`この工房では＋${lv*2}まで強化できます。`);if(s.coins<100||(s.warehouse.iron||0)<2)throw new Error('100Gと鉄のかけら2個が必要です。');s.coins-=100;takeWarehouse(s,'iron',2);inst.plus=(inst.plus||0)+1;F.addHistory(s,'forge','装備中の武器を＋1強化した。')});
 F.townState=s=>{s=F.townPreviewState(s);
  const d=s?.development||{},t=d.town||{},fac=Object.assign({},t.facilities||{});
  for(const def of (F.FACILITY_DEFS||[]))if(fac[def.id]==null)fac[def.id]=Number(def.startLevel)||0;
@@ -60,7 +68,7 @@ F.areaStateIndex=state=>Math.max(0,(F.AREA_STATE_ORDER||[]).indexOf(state));
 F.areaEffectiveState=(s,id)=>{if(s?.settings?.townTravelTest?.forceAllUsable&&F.areaDef?.(id))return "usable";const v=s?.settings?.townAreaTest?.states?.[id];return (F.AREA_STATE_ORDER||[]).includes(v)?v:F.areaState(s,id)};
 F.areaStats=s=>({total:1,discovered:1,usable:1,developed:F.developmentStage?.(s?.development?.points||0)>=3?1:0});
 F.areaOptions=s=>[];
-F.applyAreaDevelopment=areaId=>F.mutateSave(s=>{const opt=F.areaOptions(s).find(x=>x.areaId===areaId);if(!opt)throw new Error("この町域は現在変更できません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);s.development.town.areas=s.development.town.areas||{};s.development.town.areas[areaId]=opt.to;F.addHistory(s,"area",`${opt.areaName}：${F.AREA_STATE_INFO?.[opt.to]?.label||opt.to}`);});
+F.applyAreaDevelopment=areaId=>F.mutateSave(s=>{const opt=F.areaOptions(s).find(x=>x.areaId===areaId);if(!opt)throw new Error("この町域は現在変更できません。");if(!opt.available)throw new Error([...(opt.requirement?.missing||[]),...(Number(s.development.points)<opt.need?[`発展${opt.need}pt`]:[])].join("・")+"が必要です。");s.development.town.areas=s.development.town.areas||{};s.development.town.areas[areaId]=opt.to;F.addHistory(s,"area",`${opt.areaName}：${F.AREA_STATE_INFO?.[opt.to]?.label||opt.to}`);});
 F.setTownAreaTestState=(id,state)=>F.mutateSave(s=>{if(!F.areaDef?.(id))throw new Error("不明な町域です。");s.settings=s.settings||{};s.settings.townAreaTest=s.settings.townAreaTest||{states:{}};s.settings.townAreaTest.states=s.settings.townAreaTest.states||{};if(state==="auto")delete s.settings.townAreaTest.states[id];else if((F.AREA_STATE_ORDER||[]).includes(state))s.settings.townAreaTest.states[id]=state;else throw new Error("不正な町域状態です。");});
 F.resetTownAreaTest=()=>F.mutateSave(s=>{s.settings=s.settings||{};s.settings.townAreaTest={states:{}}});
 // Ver0.50: 5エリア往復の実機確認用。実際の町域進行は変更せずTEST表示だけ利用可能にする。
@@ -164,16 +172,16 @@ F.townOptions=s=>{
    const cur=Math.max(0,Number(t.facilities?.[def.id])||0),next=cur+1,lv=def.levels?.[next];
    if(t.projects?.[def.id])continue;
    if(!lv||next>Number(def.maxLevel||0))continue;
-   out.push({id:lv.actionId||`${def.id}${next}`,facilityId:def.id,targetLevel:next,name:lv.label||`${def.name} Lv${next}`,desc:lv.desc||'',need:Number(lv.need)||0,done:false,icon:def.icon||'🏗️',route:def.route||'standard',available:pts>=Number(lv.need||0)});
+   const requirement=F.townBuildRequirement(s,lv.actionId||`${def.id}${next}`);out.push({requirement,id:lv.actionId||`${def.id}${next}`,facilityId:def.id,targetLevel:next,name:lv.label||`${def.name} Lv${next}`,desc:lv.desc||'',need:Number(lv.need)||0,done:false,icon:def.icon||'🏗️',route:def.route||'standard',available:pts>=Number(lv.need||0)&&requirement.missing.length===0});
  }
  return out.sort((a,b)=>a.need-b.need||a.name.localeCompare(b.name,'ja'));
 };
-F.applyTownDevelopment=id=>F.mutateSave(s=>{
+F.applyTownDevelopment=id=>F.mutateSave(s=>{if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('表示プリセットを通常の町へ戻してから建設してください。');
  s.development.town=s.development.town||{};s.development.town.facilities=s.development.town.facilities||{};s.development.town.order=Array.isArray(s.development.town.order)?s.development.town.order:[];
- const opt=F.townOptions(s).find(x=>x.id===id);if(!opt)throw new Error("この発展項目は現在選べません。");if(!opt.available)throw new Error(`発展${opt.need}ptで選べます。`);
+ const opt=F.townOptions(s).find(x=>x.id===id);if(!opt)throw new Error("この発展項目は現在選べません。");if(!opt.available)throw new Error([...(opt.requirement?.missing||[]),...(Number(s.development.points)<opt.need?[`発展${opt.need}pt`]:[])].join("・")+"が必要です。");
  const cur=Math.max(0,Number(s.development.town.facilities[opt.facilityId])||0);if(cur>=opt.targetLevel)throw new Error("すでに発展済みです。");
  s.development.town.projects=s.development.town.projects||{};if(s.development.town.projects[opt.facilityId])throw new Error("この施設は工事中です。");
- s.development.town.projects[opt.facilityId]={facilityId:opt.facilityId,fromLevel:cur,targetLevel:opt.targetLevel,phaseIndex:0,stepsDone:0,startedDay:s.day,updatedDay:s.day};
+ s.coins-=Number(opt.requirement?.coins)||0;for(const[id,n]of Object.entries(opt.requirement?.items||{}))takeWarehouse(s,id,n);s.development.town.projects[opt.facilityId]={facilityId:opt.facilityId,fromLevel:cur,targetLevel:opt.targetLevel,phaseIndex:0,stepsDone:0,startedDay:s.day,updatedDay:s.day};
  s.development.town.facilityAreas=s.development.town.facilityAreas||{};
  if(!s.development.town.facilityAreas[opt.facilityId])s.development.town.facilityAreas[opt.facilityId]="core";
  if((s.development.town.priority||"standard")==="standard"&&opt.route&&opt.route!=="standard")s.development.town.priority=opt.route;
@@ -264,7 +272,7 @@ function townCoreRoadGrid(scene,cell,cols,rows,shapes=F.TOWN_PLAYER_WALK_CORRIDO
 function currentTownAreaId(s){return F.areaDef?.(s?.townMovement?.areaId)?s.townMovement.areaId:(F.areaDef?.(s?.townWorld?.currentAreaId)?s.townWorld.currentAreaId:"core")}
 // Ver1.16: facility levels and saved projects are the source of truth for the town.
 F.townPopulation=s=>{s=F.townPreviewState(s);const t=F.townState(s);return{customers:t.facilities.shop>0&&!t.projects.shop,residents:t.facilities.house>0&&!t.projects.house?Math.min(Number(s.development.town.residentCount)||0,t.facilities.house*2):0}};
-F.inviteTownResident=()=>F.mutateSave(s=>{if(F.facilityLevel(s,'house')<1)throw new Error('住居を完成させてください。');s.development.town.residentCount=Math.min((Number(s.development.town.residentCount)||0)+1,F.facilityLevel(s,'house')*2)});
+F.inviteTownResident=()=>F.mutateSave(s=>{if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('通常の町へ戻して入居を確定してください。');if(F.facilityLevel(s,'house')<1||F.facilityLevel(s,'forge')<1)throw new Error('職人の住居と鍛冶工房を完成させてください。');if((Number(s.development.town.residentCount)||0)>=2)throw new Error('現在迎えられる担当者は入居済みです。');if((Number(s.development.town.residentCount)||0)>=1&&F.facilityLevel(s,'inn')<1)throw new Error('次の入居者には酒場兼宿屋が必要です。');s.development.town.residentCount=Math.min((Number(s.development.town.residentCount)||0)+1,F.facilityLevel(s,'house')*2)});
 F.townPathOutline=(from,to,stone=false,seed=0)=>{const pts=[],dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,width=stone?44:42,nx=-dy/len,ny=dx/len;for(const side of [1,-1])for(let j=0;j<=70;j++){const t=(side===1?j:70-j)/70,x=(1-t)*(1-t)*from.x+2*(1-t)*t*from.x+t*t*to.x,y=(1-t)*(1-t)*from.y+2*(1-t)*t*to.y+t*t*to.y,w=width+Math.sin(t*43+seed)*1.7;pts.push([x+nx*w*side,y+ny*w*side])}return pts};
 F.townRoadPaths=model=>{const built=model.facilities.filter(f=>f.state!=='vacant'),stone=model.points>=24;if(!built.length)return[];const paths=[{from:{x:295,y:420},to:{x:295,y:0},stone,seed:1},{from:{x:295,y:420},to:{x:295,y:842},stone,seed:2}];for(const f of built){paths.push({from:{x:295,y:420},to:f.entrance,stone,seed:f.site.x});paths.push({from:f.entrance,to:{x:f.site.x+f.site.w/2,y:f.site.y+f.site.h-12},stone,seed:f.site.y})}return paths};
 F.townSceneModel=s=>{s=F.townPreviewState(s);
@@ -277,7 +285,7 @@ F.townSceneModel=s=>{s=F.townPreviewState(s);
 };
 function singleTownNavCollect(s){
  const model=F.townSceneModel(s),area=F.areaDef('core'),blocks=model.borderBlocks.map(x=>({...x})),walk=model.publicWalk.map(x=>({...x})),interactions=[],entrances=[];
- const fire=model.campfire;blocks.push({shape:'circle',v:[fire.x,fire.y,fire.r],reason:'campfire'});
+ const fire=model.campfire;
  for(const f of model.facilities){
   const site=f.site;
   if(f.state!=='vacant'){

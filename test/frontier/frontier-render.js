@@ -1,3 +1,4 @@
+// Ver1.31: staged settlement growth, eastern facilities and services. Updated 2026-10-24 JST
 /* Frenda Frontier Ver1.19 / pixel-map renderer / Updated: 2026-10-22 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
@@ -197,6 +198,8 @@ R.renderStore=(canvas,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);
  table(c,13,128,27,42);table(c,45,128,27,42);
  human(c,89,106,'orange');human(c,128,143,'purple');human(c,50,153,'green');human(c,110,151,'blue');
 };
+
+R.renderTownService=(canvas,id,s)=>{const c=setup(canvas);if(!c)return;roomShell(c);windowPx(c,77,23);if(id==='warehouse'){for(const x of [10,132])for(const y of [35,91,147]){shelf(c,x,y,36,38,true);table(c,x+2,y+40,32,12)}for(let i=0;i<3;i++){table(c,58+i*22,58,18,16);line(c,60+i*22,60,72+i*22,70,'#69482e',1)}}else if(id==='inn'){bed(c,12,32);bed(c,130,32);rug(c,53,100,75,70);table(c,70,121,40,23);shelf(c,12,154,34,39,true);shelf(c,132,154,34,39,true);plant(c,17,118);plant(c,164,118)}else if(id==='bank'){table(c,11,91,158,24);human(c,90,68,'gray');for(const x of [16,138]){rect(c,x,35,26,32,'#5e6971');rect(c,x+2,37,22,28,'#8c9799');rect(c,x+11,45,5,9,'#d0b869')}rug(c,60,132,60,38)}else{rect(c,10,34,48,47,'#55473b');rect(c,16,40,36,34,'#a64c2f');rect(c,21,49,26,22,'#efae49');shelf(c,132,34,34,55,true);table(c,56,113,68,31);rect(c,78,111,24,8,'#5b6066');rect(c,86,116,8,14,'#7a8082');for(let i=0;i<3;i++)table(c,12,110+i*20,29,14)}rect(c,78,222,24,14,'#5d402c');rect(c,80,224,20,12,'#c2a572');};
 
 R.renderAdventurePreview=(canvas,s)=>{const c=setup(canvas);if(!c)return;grass(c);dirt(c,52,0,78,H);for(let i=0;i<6;i++){tree(c,12+i*30,20+(i%2)*8);tree(c,18+i*28,150+(i%2)*10)}cobble(c,53,136,76,18);/* Ver0.64: human protagonist is drawn by the UI sprite layer; the preview background stays scenery-only. */rect(c,134,178,16,10,'#805e38');rect(c,136,180,12,6,'#d9bc6d');label(c,'はじまりの森',58,8,64);label(c,'町の出口',103,218,43)};
 

@@ -1,7 +1,8 @@
-/* Frenda Frontier Ver1.30 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
+// Ver1.31: staged settlement growth, eastern facilities and services. Updated 2026-10-24 JST
+/* Frenda Frontier Ver1.31 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.30";
+F.VERSION="1.31";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -37,7 +38,7 @@ F.EQUIPMENT_DEFS=Object.freeze({
  iron_sword:{id:"iron_sword",slot:"weapon",icon:"⚔️",name:"鉄の剣",attack:6,defense:0,hp:0,weapon:{type:"sword",label:"剣",range:1,directions:8,accuracy:.96,power:1.06},desc:"木の剣より高威力な正統派の剣。周囲8方向の隣接攻撃。"},
  wood_spear:{id:"wood_spear",slot:"weapon",icon:"🔱",name:"木の槍",attack:4,defense:0,hp:0,weapon:{type:"spear",label:"槍",range:2,directions:4,accuracy:.92,power:1},desc:"隣接8方向に加え、上下左右なら2マス先まで突ける。"},
  hunter_bow:{id:"hunter_bow",slot:"weapon",icon:"🏹",name:"狩人の弓",attack:3,defense:0,hp:0,weapon:{type:"bow",label:"弓",range:4,directions:8,accuracy:.88,power:.92},desc:"直線8方向の4マス先まで射てる。壁や敵を貫通しない。"},
- iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.30},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
+ iron_hammer:{id:"iron_hammer",slot:"weapon",icon:"🔨",name:"鉄のハンマー",attack:8,defense:0,hp:0,weapon:{type:"hammer",label:"ハンマー",range:1,directions:8,accuracy:.82,power:1.31},desc:"隣接攻撃のみ。命中は低めだが当たれば大ダメージ。"},
  traveler_clothes:{id:"traveler_clothes",slot:"armor",icon:"🥋",name:"旅人の服",attack:0,defense:2,hp:0,desc:"動きやすい旅装。最低限の防御力がある。"},
  leather_armor:{id:"leather_armor",slot:"armor",icon:"🛡️",name:"革のよろい",attack:0,defense:5,hp:0,desc:"野外探索向けの軽い防具。受けるダメージをしっかり抑える。"},
  iron_armor:{id:"iron_armor",slot:"armor",icon:"🛡️",name:"鉄のよろい",attack:0,defense:8,hp:2,damageReduction:1,desc:"重いが頑丈な防具。防御が高く、被ダメージをさらに1軽減する。"},
@@ -153,7 +154,7 @@ F.DUNGEON_TIER_DEFS=Object.freeze({
  tier1:Object.freeze({id:"tier1",short:"T1",name:"基礎",role:"最初の標準ダンジョン",globalDepthOffset:0,enemyHpRate:1.00,enemyAtkRate:1.00,enemyCountBonus:0,rarityBonus:0,plusOffset:0,plusCap:5,traitBonus:0,curseBonus:0,gatherRate:1.00,chestBonus:0,trapRate:1.00,recommendedPlus:"+0〜+5"}),
  tier2:Object.freeze({id:"tier2",short:"T2",name:"応用",role:"第2標準ダンジョン想定",globalDepthOffset:18,enemyHpRate:1.03,enemyAtkRate:1.03,enemyCountBonus:1,rarityBonus:1,plusOffset:2,plusCap:7,traitBonus:.03,curseBonus:.02,gatherRate:.95,chestBonus:0,trapRate:1.10,recommendedPlus:"+2〜+7"}),
  tier3:Object.freeze({id:"tier3",short:"T3",name:"上級",role:"第3標準ダンジョン想定",globalDepthOffset:32,enemyHpRate:1.06,enemyAtkRate:1.06,enemyCountBonus:1,rarityBonus:1,plusOffset:4,plusCap:9,traitBonus:.05,curseBonus:.03,gatherRate:.90,chestBonus:0,trapRate:1.20,recommendedPlus:"+4〜+9"}),
- tier4:Object.freeze({id:"tier4",short:"T4",name:"最深級",role:"高難度標準ダンジョン想定",globalDepthOffset:44,enemyHpRate:1.09,enemyAtkRate:1.09,enemyCountBonus:2,rarityBonus:1,plusOffset:5,plusCap:10,traitBonus:.07,curseBonus:.04,gatherRate:.85,chestBonus:0,trapRate:1.30,recommendedPlus:"+5〜+10"})
+ tier4:Object.freeze({id:"tier4",short:"T4",name:"最深級",role:"高難度標準ダンジョン想定",globalDepthOffset:44,enemyHpRate:1.09,enemyAtkRate:1.09,enemyCountBonus:2,rarityBonus:1,plusOffset:5,plusCap:10,traitBonus:.07,curseBonus:.04,gatherRate:.85,chestBonus:0,trapRate:1.31,recommendedPlus:"+5〜+10"})
 });
 // 6段階の「ダンジョン内進行カーブ」。実際の階数に正規化して使うため、30階以外にも再利用できる。
 F.DUNGEON_DEPTH_CURVE=Object.freeze([
@@ -162,7 +163,7 @@ F.DUNGEON_DEPTH_CURVE=Object.freeze([
  Object.freeze({id:"deep",label:"中盤2",enemyMaxRarity:1,enemyBase:6,hpRate:1.10,atkRate:1.08,traitChance:.25,curseChance:.10,plusBias:1}),
  Object.freeze({id:"ancient",label:"後半1",enemyMaxRarity:2,enemyBase:7,hpRate:1.16,atkRate:1.14,traitChance:.30,curseChance:.12,plusBias:1}),
  Object.freeze({id:"abyss",label:"後半2",enemyMaxRarity:2,enemyBase:7,hpRate:1.23,atkRate:1.17,traitChance:.35,curseChance:.14,plusBias:2}),
- Object.freeze({id:"core",label:"最深部",enemyMaxRarity:3,enemyBase:8,hpRate:1.30,atkRate:1.22,traitChance:.40,curseChance:.16,plusBias:2})
+ Object.freeze({id:"core",label:"最深部",enemyMaxRarity:3,enemyBase:8,hpRate:1.31,atkRate:1.22,traitChance:.40,curseChance:.16,plusBias:2})
 ]);
 // 旧API互換：はじまりの森では従来どおり5階ごとの6帯域として見える。
 F.DUNGEON_FLOOR_BANDS=Object.freeze(F.DUNGEON_DEPTH_CURVE.map((b,i)=>Object.freeze({...b,from:i*5+1,to:(i+1)*5,label:["森の入口","森の中腹","深い森","古樹の森","森の深奥","最深部"][i]})));
@@ -212,12 +213,15 @@ F.FACILITY_SITES=Object.freeze({
  forge:{areaId:"core",x:365,y:330,w:165,h:145,entrance:{x:315,y:498}},
  market:{areaId:"core",x:60,y:350,w:165,h:135,entrance:{x:275,y:510}},
  adventure_board:{areaId:"core",x:470,y:235,w:65,h:65,entrance:{x:445,y:318}},
- plaza:{areaId:"core",x:280,y:340,w:62,h:70,entrance:{x:310,y:438}}
+ plaza:{areaId:"core",x:280,y:340,w:62,h:70,entrance:{x:310,y:438}},
+ warehouse:{areaId:"core",x:650,y:150,w:190,h:160,entrance:{x:745,y:328}},
+ inn:{areaId:"core",x:650,y:390,w:210,h:190,entrance:{x:755,y:598}},
+ bank:{areaId:"core",x:870,y:180,w:110,h:130,entrance:{x:925,y:328}}
 });
 F.SINGLE_TOWN_SCENE=Object.freeze({
- scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:420},
+ scene:{w:1127,h:842,cell:12},worldRect:{x:0,y:0,w:1000,h:842},spawn:{x:295,y:420},
  bridge:{x:170,y:585,w:190,h:150},campfire:{x:535,y:567,r:22},
- borderBlocks:[{shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_forest"},{shape:"rect",v:[0,0,590,35],reason:"north_forest"},{shape:"rect",v:[0,630,590,212],reason:"river"}],
+ borderBlocks:[{shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[980,0,20,842],reason:"east_forest"},{shape:"rect",v:[0,0,1000,35],reason:"north_forest"},{shape:"rect",v:[0,630,1000,212],reason:"river"}],
  publicWalk:[{shape:"rect",v:[185,585,160,257],reason:"bridge_and_south_path"}]
 });
 F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
@@ -227,7 +231,7 @@ F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 F.FACILITY_DEFS=Object.freeze([
  {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:0,maxLevel:4,route:"commerce",levels:{
    1:{actionId:"shop1",need:0,label:"最初の露店を作る",desc:"何もない開拓地に最初の売り場を作る。"},
-   2:{actionId:"shop2",need:12,label:"店を少し大きくする",desc:"露店の設備と商品置き場を増やし、小さな店舗へ育てる。"},
+   2:{actionId:"shop2",need:12,label:"住居付きの店を建てる",desc:"売場の奥に寝室と小さな保管場所を設ける。"},
    3:{actionId:"shop3",need:32,label:"店をさらに拡張する",desc:"売場を広げ、より多くの商品を扱えるようにする。"},
    4:{actionId:"shop4",need:55,label:"店を本格店舗にする",desc:"開拓地を代表する大きな店へ成長させる。"}
  }},
@@ -236,10 +240,10 @@ F.FACILITY_DEFS=Object.freeze([
    2:{actionId:"forge2",need:34,label:"鍛冶屋を拡張する",desc:"炉と作業場を整え、修理や強化の幅を広げる。"},
    3:{actionId:"forge3",need:58,label:"鍛冶工房にする",desc:"本格的な工房へ発展させる。"}
  }},
- {id:"house",name:"住居",icon:"🏠",category:"life",areaTagsAny:["life","residential","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"life",levels:{
-   1:{actionId:"house",need:14,label:"最初の住居を建てる",desc:"住民が定住できる簡素な家を建てる。"},
-   2:{actionId:"house2",need:36,label:"住居を増やす",desc:"暮らす人が増え、生活区画が形になってくる。"},
-   3:{actionId:"house3",need:60,label:"生活区画を整える",desc:"複数の住居と生活設備を整える。"}
+ {id:"house",name:"職人の住居",icon:"🏠",category:"life",areaTagsAny:["life","residential","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"life",levels:{
+   1:{actionId:"house",need:14,label:"職人の住居を建てる",desc:"鍛冶職人が定住できる家を用意する。"},
+   2:{actionId:"house2",need:36,label:"職人の住居を拡張する",desc:"家族と道具のための部屋を広げる。"},
+   3:{actionId:"house3",need:60,label:"生活区画を整える",desc:"生活設備を整える。住宅の棟数は増やさない。"}
  }},
  {id:"market",name:"市場",icon:"🧺",category:"commerce",areaTagsAny:["commerce","road","logistics"],constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"commerce",levels:{
    1:{actionId:"market",need:18,label:"小さな市場を開く",desc:"旅商人が立ち寄れる露店スペースを作る。"},
@@ -252,9 +256,32 @@ F.FACILITY_DEFS=Object.freeze([
  {id:"plaza",name:"広場",icon:"⛲",category:"civic",areaTagsAny:["core","life","civic"],constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"standard",levels:{
    1:{actionId:"plaza",need:24,label:"小さな広場を整える",desc:"人が集まれる空間を整備する。噴水はこの段階以降に現れる。"},
    2:{actionId:"plaza2",need:48,label:"広場を拡張する",desc:"町の中心となる広場へ発展させる。"}
- }}
+ }},
+ {id:"warehouse",name:"倉庫",icon:"📦",startLevel:0,maxLevel:2,route:"commerce",levels:{1:{actionId:"warehouse",need:12,label:"店の隣に倉庫を作る",desc:"売る品と次の冒険へ残す品を整理できる倉庫。"},2:{actionId:"warehouse2",need:36,label:"倉庫を増築する",desc:"保管場所と作業場を広げる。"}}},
+ {id:"inn",name:"酒場兼宿屋",icon:"🍺",startLevel:0,maxLevel:2,route:"life",levels:{1:{actionId:"inn",need:28,label:"酒場兼宿屋を建てる",desc:"旅人が休み、噂と依頼が集まる場所。"},2:{actionId:"inn2",need:55,label:"宿屋の客室を増築する",desc:"冒険者や行商人が泊まれる宿へ発展する。"}}},
+ {id:"bank",name:"預かり所",icon:"💰",startLevel:0,maxLevel:1,route:"commerce",levels:{1:{actionId:"bank",need:40,label:"お金の預かり所を開く",desc:"次の冒険へ持ち出さないお金を預ける。"}}}
+
 ]);
 
+
+F.TOWN_GROWTH_STAGES=Object.freeze([
+ {id:'camp',label:'① 野営開始',facilities:{},points:2,residents:0},
+ {id:'stall',label:'② 最初の店',facilities:{shop:1},points:6,residents:0},
+ {id:'shop2',label:'③ 店と暮らし',facilities:{shop:2},points:14,residents:0},
+ {id:'warehouse',label:'④ 倉庫の完成',facilities:{shop:2,warehouse:1},points:20,residents:0},
+ {id:'craft',label:'⑤ 職人の定住',facilities:{shop:2,warehouse:1,forge:1,house:1},points:28,residents:1},
+ {id:'tavern',label:'⑥ 旅人の集まる場所',facilities:{shop:2,warehouse:1,forge:1,house:1,market:1,inn:1,adventure_board:1},points:40,residents:1},
+ {id:'hub',label:'⑦ 冒険の拠点',facilities:{shop:3,warehouse:2,forge:2,house:1,market:1,inn:1,adventure_board:2,bank:1,plaza:1},points:55,residents:2},
+ {id:'complete',label:'⑧ 発展した町',facilities:{shop:4,warehouse:2,forge:3,house:2,market:2,inn:2,adventure_board:2,bank:1,plaza:2},points:80,residents:2}
+]);
+F.TOWN_BUILD_RULES=Object.freeze({
+ shop1:{coins:40,items:{wood:2},story:'firstReturn'},shop2:{coins:120,items:{wood:5},requires:{shop:1},story:'firstSale'},
+ warehouse:{coins:100,items:{wood:5},requires:{shop:2}},house:{coins:100,items:{wood:5},requires:{warehouse:1}},forge:{coins:160,items:{wood:3,iron:2},requires:{warehouse:1,house:1}},
+ market:{coins:120,items:{wood:4},requires:{forge:1},residents:1},adventure_board:{coins:60,items:{wood:2},requires:{forge:1},residents:1},inn:{coins:200,items:{wood:8},requires:{market:1,adventure_board:1}},
+ shop3:{coins:250,items:{wood:8},requires:{inn:1}},warehouse2:{coins:180,items:{wood:6,iron:2},requires:{inn:1}},bank:{coins:220,items:{wood:4,iron:3},requires:{shop:3,warehouse:2}},plaza:{coins:160,items:{iron:2},requires:{inn:1}},
+ shop4:{coins:400,items:{wood:10,iron:5},requires:{bank:1}},forge2:{coins:200,items:{iron:4},requires:{inn:1}},forge3:{coins:350,items:{iron:6},requires:{bank:1}},inn2:{coins:300,items:{wood:10},requires:{bank:1}},plaza2:{coins:250,items:{iron:4},requires:{bank:1}},
+ house2:{coins:180,items:{wood:6},requires:{inn:1}},house3:{coins:300,items:{wood:10},requires:{bank:1}},market2:{coins:200,items:{wood:6},requires:{inn:1}},adventure_board2:{coins:120,items:{wood:4},requires:{inn:1}}
+});
 
 // Ver0.38: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。
 // ここで固定するのはエリアの役割・地形特性・接続能力・収容量など。道路や建物のピクセル座標はまだ固定しない。
@@ -274,7 +301,7 @@ F.TOWN_SCENE_POLICY=Object.freeze({
 F.AREA_SIZE_CLASSES=Object.freeze({
  compact:{id:"compact",label:"小区画",icon:"▫️",sceneScale:0.78,facilitySlots:3,landmarkSlots:0,residentCapacity:5,traffic:"low"},
  standard:{id:"standard",label:"標準区画",icon:"◻️",sceneScale:1.00,facilitySlots:5,landmarkSlots:1,residentCapacity:10,traffic:"medium"},
- wide:{id:"wide",label:"広域区画",icon:"⬜",sceneScale:1.30,facilitySlots:8,landmarkSlots:2,residentCapacity:18,traffic:"high"},
+ wide:{id:"wide",label:"広域区画",icon:"⬜",sceneScale:1.31,facilitySlots:8,landmarkSlots:2,residentCapacity:18,traffic:"high"},
  hub:{id:"hub",label:"中心区画",icon:"🔶",sceneScale:1.15,facilitySlots:7,landmarkSlots:2,residentCapacity:16,traffic:"hub"}
 });
 F.areaSizeClass=id=>F.AREA_SIZE_CLASSES?.[id]||F.AREA_SIZE_CLASSES?.standard||null;
@@ -418,7 +445,7 @@ F.AREA_DEFS=Object.freeze([
   world:{gx:0,gy:0,role:"hub",sceneStatus:"prototype",sizeClass:"hub",theme:"frontier_core",growth:"single-town",sceneTemplate:"hub",viewProfile:"town_mobile",travelCost:1,
    terrainTags:["open","river_edge","frontier"],capacity:{facilitySlots:12,landmarkSlots:4,residentCapacity:30},futurePorts:[],expansionProfiles:{}},
   startState:"usable",description:"初代不思議のダンジョン型の単一拠点。同じ町の中で店・住居・鍛冶・広場などが段階的に増え、見た目と機能が発展する。別の町域へ移動しない。",transitions:{},
-  nav:{scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:295,y:420},entries:{},exits:[]}}
+  nav:{scene:{w:1127,h:842,cell:12},worldRect:{x:0,y:0,w:1000,h:842},spawn:{x:295,y:420},entries:{},exits:[]}}
 ]);
 F.areaDef=id=>(F.AREA_DEFS||[]).find(a=>a.id===id)||null;
 
@@ -450,8 +477,8 @@ F.TOWN_NAV_BASE=Object.freeze({
  // 大きな矩形1枚ではなく、小屋・露店・焚き火・資材・川岸などを別判定にする。
  blocks:[
    {shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_edge"},
-   {shape:"rect",v:[0,0,590,35],reason:"north_forest"},
-   {shape:"rect",v:[0,630,590,212],reason:"river"},
+   {shape:"rect",v:[0,0,1000,35],reason:"north_forest"},
+   {shape:"rect",v:[0,630,1000,212],reason:"river"},
    {shape:"poly",v:[[72,110],[275,110],[315,155],[315,315],[92,325],[55,265]],reason:"starter_shop"},
    {shape:"poly",v:[[278,50],[455,55],[470,205],[430,245],[275,235]],reason:"starter_hut"},
    {shape:"circle",v:[505,282,43],reason:"campfire"},
@@ -529,8 +556,8 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 /* Updated: 2026-10-23 21:55 JST / Ver1.23 */
 
-// Updated: 2026-10-24 05:00 JST / Ver1.30
+// Updated: 2026-10-24 05:00 JST / Ver1.31
 
-// Updated: 2026-10-24 05:20 JST / Ver1.30
+// Updated: 2026-10-24 05:20 JST / Ver1.31
 
-// Updated: 2026-10-24 05:48 JST / Ver1.30
+// Updated: 2026-10-24 05:48 JST / Ver1.31
