@@ -21,7 +21,8 @@ F.advanceTimeState=(s,steps=1,reason="action")=>{s.clock=s.clock||{phaseIndex:0,
 F.advanceTime=(steps=1,reason="action")=>F.mutateSave(s=>F.advanceTimeState(s,steps,reason));
 F.gameplayLoopStatus=s=>{if(!s?.story?.firstReturn)return{step:0,label:"装備を整えて冒険する"};if(!s?.story?.firstStock)return{step:1,label:"商品を棚に並べる"};if(!s?.story?.firstSale)return{step:2,label:"店を開いて売る"};return{step:3,label:"冒険→商売→町発展の1周完成",complete:true}};
 
-F.townState=s=>{
+F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=id==='complete'?80:id==='initial'?0:18;t.development.town.facilities={shop:0,house:0,forge:0,market:0,plaza:0,adventure_board:0};t.development.town.projects={};if(id==='house1')t.development.town.facilities.house=1;if(id==='shop2')t.development.town.facilities.shop=2;if(id==='forge1')t.development.town.facilities.forge=1;if(id==='complete')for(const d of F.FACILITY_DEFS)t.development.town.facilities[d.id]=d.maxLevel;return t};
+F.townState=s=>{s=F.townPreviewState(s);
  const d=s?.development||{},t=d.town||{},fac=Object.assign({},t.facilities||{});
  for(const def of (F.FACILITY_DEFS||[]))if(fac[def.id]==null)fac[def.id]=Number(def.startLevel)||0;
  return {
@@ -226,7 +227,7 @@ function resolveExclusive(states,preset){
  }
  return states;
 }
-F.townLayerStates=s=>{const preset=F.townLayerTestPreset(s);const states=(F.TOWN_LAYER_DEFS||[]).map(def=>({def,auto:F.townLayerAutoState(s,def),mode:F.townLayerTestMode(s,def.id),effective:layerCandidate(s,def,preset),suppressed:false}));return resolveExclusive(states,preset)};
+F.townLayerStates=s=>{s=F.townPreviewState(s);const preset=F.townLayerTestPreset(s);const states=(F.TOWN_LAYER_DEFS||[]).map(def=>({def,auto:F.townLayerAutoState(s,def),mode:F.townLayerTestMode(s,def.id),effective:layerCandidate(s,def,preset),suppressed:false}));return resolveExclusive(states,preset)};
 F.setTownLayerTestMode=(id,mode)=>F.mutateSave(s=>{
  const def=(F.TOWN_LAYER_DEFS||[]).find(x=>x.id===id);if(!def||def.locked)return;if(!["auto","on","off"].includes(mode))throw new Error("不正なレイヤー指定です。");
  s.settings=s.settings||{};s.settings.townLayerTest=s.settings.townLayerTest||{layers:{},preset:"custom"};s.settings.townLayerTest.layers=s.settings.townLayerTest.layers||{};s.settings.townLayerTest.preset="custom";
@@ -262,7 +263,7 @@ const coreRoadGridCache=new Map();
 function townCoreRoadGrid(scene,cell,cols,rows){const k=`${scene.w}x${scene.h}@${cell}`;if(coreRoadGridCache.has(k))return coreRoadGridCache.get(k);const grid=Array.from({length:rows},(_,gy)=>Array.from({length:cols},(_,gx)=>{const x=gx*cell+cell/2,y=gy*cell+cell/2;return(F.TOWN_PLAYER_WALK_CORRIDORS||[]).some(sh=>navShapeContains(sh,x,y))}));coreRoadGridCache.set(k,grid);return grid}
 function currentTownAreaId(s){return F.areaDef?.(s?.townMovement?.areaId)?s.townMovement.areaId:(F.areaDef?.(s?.townWorld?.currentAreaId)?s.townWorld.currentAreaId:"core")}
 // Ver1.16: facility levels and saved projects are the source of truth for the town.
-F.townSceneModel=s=>{
+F.townSceneModel=s=>{s=F.townPreviewState(s);
  const layout=F.SINGLE_TOWN_SCENE,town=F.townState(s),points=Math.max(0,Number(s?.development?.points)||0);
  const facilities=(F.FACILITY_DEFS||[]).map(def=>{
   const site=F.facilitySite(def.id),level=Math.max(0,Number(town.facilities[def.id])||0),project=town.projects[def.id]||null,phase=project?F.constructionPhase(project):null;
@@ -551,3 +552,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
+
+// Updated: 2026-10-24 05:00 JST / Ver1.27

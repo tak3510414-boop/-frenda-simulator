@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.26 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.27 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.26";
+F.VERSION="1.27";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -225,7 +225,8 @@ F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 // Ver0.28: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
 F.FACILITY_DEFS=Object.freeze([
- {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:1,maxLevel:4,route:"commerce",levels:{
+ {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:0,maxLevel:4,route:"commerce",levels:{
+   1:{actionId:"shop1",need:0,label:"最初の露店を作る",desc:"何もない開拓地に最初の売り場を作る。"},
    2:{actionId:"shop2",need:12,label:"店を少し大きくする",desc:"露店の設備と商品置き場を増やし、小さな店舗へ育てる。"},
    3:{actionId:"shop3",need:32,label:"店をさらに拡張する",desc:"売場を広げ、より多くの商品を扱えるようにする。"},
    4:{actionId:"shop4",need:55,label:"店を本格店舗にする",desc:"開拓地を代表する大きな店へ成長させる。"}
@@ -434,13 +435,13 @@ F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
 // structure art is blocked even when it has no separate collision sprite.
 F.TOWN_PLAYER_WALK_CORRIDORS=Object.freeze([
  // Wider paved lanes add a forgiving shoulder around the visible cobbles for touch movement.
- {shape:"rect",v:[251,0,88,278]},
+ {shape:"rect",v:[235,0,120,278]},
  {shape:"rect",v:[0,256,276,114]},
  {shape:"rect",v:[248,256,205,114]},
- {shape:"rect",v:[310,254,280,102]},
- {shape:"rect",v:[238,332,100,280]},
+ {shape:"rect",v:[310,244,280,126]},
+ {shape:"rect",v:[225,332,130,280]},
  {shape:"rect",v:[238,338,44,92]},
- {shape:"rect",v:[238,578,124,190]},
+ {shape:"rect",v:[225,578,140,190]},
  {shape:"rect",v:[247,742,96,100]}
 ]);
 F.TOWN_NAV_BASE=Object.freeze({
@@ -527,3 +528,5 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
 /* Updated: 2026-10-23 21:55 JST / Ver1.23 */
+
+// Updated: 2026-10-24 05:00 JST / Ver1.27
