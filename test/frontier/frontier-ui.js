@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.21 / NPC collision lanes, matched sprite scale and greetings / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.22 / collision-safe player paths and town interaction / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -345,16 +345,16 @@ function townPersistPosition(){if(!townMoveRuntime.player)return;F.setTownMoveme
 function setupTownMovement(){const canvas=$("townVisualCanvas");if(!canvas)return;canvas.onclick=e=>{if(e.target!==canvas)return;const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,r=canvas.getBoundingClientRect(),screenPt={x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height},raw=townScreenToWorld(screenPt),m=F.townNavModel(s,"player",areaId),wr=m.worldRect;if(raw.x<wr.x||raw.y<wr.y||raw.x>=wr.x+wr.w||raw.y>=wr.y+wr.h)return;
  const nearby=advanceTownNpcWalkers(s,F.townLayerStates(s),Date.now()).map(a=>({a,d:Math.hypot(a.x-raw.x,a.y-raw.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby&&nearby.d<34){const lines=[['旅人','この先の森に、珍しい素材があるそうですよ。'],['町の人','石畳の道を進めば、町の施設に行けますよ。'],['町の人','鍛冶屋ができてから、冒険の準備がしやすくなりました。']];townNpcRuntime.talk={name:lines[nearby.a.sprite][0],line:lines[nearby.a.sprite][1],until:Date.now()+3600};const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(s);return}
  townNpcRuntime.talk=null;
- const target=F.townNearestReachable?.(s,rt.player,raw,"player",999,areaId)||F.townNearestWalkable(s,raw,"player",40,areaId);if(!target){toast('そこへは行けません');return}const reachablePath=F.townFindPath(s,rt.player,target,"player",areaId);if(reachablePath.length<2){toast('そこへは行けません');return}rt.tap={...target};drawTownVisual(s);walkTownTo(target)};}
+ const clickedWalkable=F.townPointWalkable(s,raw.x,raw.y,"player",areaId);if(!clickedWalkable){toast('道の上をタップしてください');return} const target=F.townNearestReachable?.(s,rt.player,raw,"player",999,areaId)||F.townNearestWalkable(s,raw,"player",40,areaId);if(!target){toast('そこへは行けません');return}const reachablePath=F.townFindPath(s,rt.player,target,"player",areaId);if(reachablePath.length<2){toast('そこへは行けません');return}rt.tap={...target};drawTownVisual(s);walkTownTo(target)};}
 async function walkTownTo(target){
- const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,path=F.townFindPath(s,rt.player,target,'player',areaId);
+ const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,path=F.townFindPath(s,rt.player,target,'player',areaId),nav=F.townNavModel(s,'player',areaId);
  if(path.length<2){toast('そこへは行けません');return}
  const token=++rt.token;rt.moving=true;rt.transitioning=false;rt.tap={...target};rt.trail=[{...rt.player}];
  try{
   townSetMessage('タップした場所まで歩きます。');
   for(let i=1;i<path.length;i++){
    if(token!==rt.token||currentView!=='home'||homeMode!=='town')return;
-   const next=path[i],prev={...rt.player};rt.trail.push(prev);if(rt.trail.length>8)rt.trail.shift();
+   const next=path[i],prev={...rt.player};if(!nav.grid?.[Math.floor(next.y/nav.cell)]?.[Math.floor(next.x/nav.cell)]){townSetMessage('道がふさがっています。別の場所をタップしてください。');return}rt.trail.push(prev);if(rt.trail.length>8)rt.trail.shift();
    rt.facing=townFacingFromDelta(next.x-prev.x,next.y-prev.y,rt.facing);rt.player={...next};
    if(i%4===0)townPersistPosition();
    await drawTownVisual(F.readSave());await new Promise(resolve=>setTimeout(resolve,72));

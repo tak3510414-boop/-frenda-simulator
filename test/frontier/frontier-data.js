@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.20 / world structure Ver6 + town camera follow map / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.22 / world structure Ver6 + paved-road player collision / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 F.VERSION="1.20";
@@ -208,10 +208,10 @@ F.CONSTRUCTION_NAV_PHASES=Object.freeze({
 // Ver1.16: one layout is shared by construction, rendering and collision.
 F.FACILITY_SITES=Object.freeze({
  shop:{areaId:"core",x:54,y:90,w:205,h:170,entrance:{x:156,y:282}},
- house:{areaId:"core",x:325,y:66,w:178,h:158,entrance:{x:414,y:246}},
- forge:{areaId:"core",x:365,y:330,w:165,h:145,entrance:{x:448,y:498}},
- market:{areaId:"core",x:60,y:350,w:165,h:135,entrance:{x:142,y:510}},
- adventure_board:{areaId:"core",x:470,y:235,w:65,h:65,entrance:{x:502,y:318}},
+ house:{areaId:"core",x:325,y:66,w:178,h:158,entrance:{x:324,y:270}},
+ forge:{areaId:"core",x:365,y:330,w:165,h:145,entrance:{x:315,y:498}},
+ market:{areaId:"core",x:60,y:350,w:165,h:135,entrance:{x:275,y:510}},
+ adventure_board:{areaId:"core",x:470,y:235,w:65,h:65,entrance:{x:445,y:318}},
  plaza:{areaId:"core",x:280,y:340,w:62,h:70,entrance:{x:310,y:438}}
 });
 F.SINGLE_TOWN_SCENE=Object.freeze({
@@ -429,6 +429,19 @@ F.TOWN_RENDER_BANDS=Object.freeze(["ground","structure","low","character","front
 F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
  player:{radius:10,step:"walk"},partner:{radius:8,step:"follow",followDistance:34},npc:{radius:9,step:"routine"}
 });
+// Ver1.22: The background is 1086x1448 and is drawn at 590x842. These
+// walk corridors follow the visible paving; all grass, fencing, water and
+// structure art is blocked even when it has no separate collision sprite.
+F.TOWN_PLAYER_WALK_CORRIDORS=Object.freeze([
+ {shape:"rect",v:[265,0,60,278]},
+ {shape:"rect",v:[0,270,262,86]},
+ {shape:"rect",v:[260,270,180,86]},
+ {shape:"rect",v:[325,270,265,70]},
+ {shape:"rect",v:[250,345,76,252]},
+ {shape:"rect",v:[250,350,24,75]},
+ {shape:"rect",v:[250,590,100,177]},
+ {shape:"rect",v:[260,755,70,87]}
+]);
 F.TOWN_NAV_BASE=Object.freeze({
  areaId:"core",defaultWalkable:true,
  // Ver0.33: 初期開拓地の実景観に合わせて障害物を細分化。
@@ -512,4 +525,4 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
-/* Updated: 2026-10-23 21:30 JST / Ver1.20 */
+/* Updated: 2026-10-23 21:55 JST / Ver1.22 */
