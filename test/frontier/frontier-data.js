@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.24 / world structure Ver6 + paved-road player collision / Updated: 2026-10-23 */
+/* Frenda Frontier Ver1.25 / wider town lanes + NPC-safe walking / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.20";
+F.VERSION="1.25";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -433,14 +433,15 @@ F.TOWN_ACTOR_NAV_PROFILES=Object.freeze({
 // walk corridors follow the visible paving; all grass, fencing, water and
 // structure art is blocked even when it has no separate collision sprite.
 F.TOWN_PLAYER_WALK_CORRIDORS=Object.freeze([
- {shape:"rect",v:[265,0,60,278]},
- {shape:"rect",v:[0,270,262,86]},
- {shape:"rect",v:[260,270,180,86]},
- {shape:"rect",v:[325,270,265,70]},
- {shape:"rect",v:[250,345,76,252]},
- {shape:"rect",v:[250,350,24,75]},
- {shape:"rect",v:[250,590,100,177]},
- {shape:"rect",v:[260,755,70,87]}
+ // Wider paved lanes add a forgiving shoulder around the visible cobbles for touch movement.
+ {shape:"rect",v:[251,0,88,278]},
+ {shape:"rect",v:[0,256,276,114]},
+ {shape:"rect",v:[248,256,205,114]},
+ {shape:"rect",v:[310,254,280,102]},
+ {shape:"rect",v:[238,332,100,280]},
+ {shape:"rect",v:[238,338,44,92]},
+ {shape:"rect",v:[238,578,124,190]},
+ {shape:"rect",v:[247,742,96,100]}
 ]);
 F.TOWN_NAV_BASE=Object.freeze({
  areaId:"core",defaultWalkable:true,

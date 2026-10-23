@@ -340,9 +340,10 @@ function townSetMessage(text){townMoveRuntime.message=text||'';const d=$("townDi
 function townPersistPosition(){if(!townMoveRuntime.player)return;F.setTownMovement(townMoveRuntime.player,null,townMoveRuntime.areaId||null)}
 function rtFacingToNpc(actor,player){const dx=player.x-actor.x,dy=player.y-actor.y;return Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down')}
 function setupTownMovement(){const canvas=$("townVisualCanvas");if(!canvas)return;canvas.onclick=e=>{if(e.target!==canvas)return;const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,r=canvas.getBoundingClientRect(),screenPt={x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height},raw=townScreenToWorld(screenPt),m=F.townNavModel(s,"player",areaId),wr=m.worldRect;if(raw.x<wr.x||raw.y<wr.y||raw.x>=wr.x+wr.w||raw.y>=wr.y+wr.h)return;
+ if(areaId==='core'&&F.townSceneModel(s).facilities.some(f=>f.id==='house'&&f.level>0&&!f.project&&raw.x>=f.site.x&&raw.x<=f.site.x+f.site.w&&raw.y>=f.site.y&&raw.y<=f.site.y+f.site.h)){homeMode='house';townMoveRuntime.token++;townMoveRuntime.moving=false;renderAll();return}
  const nearby=advanceTownNpcWalkers(s,F.townLayerStates(s),Date.now()).map(a=>({a,d:Math.hypot(a.x-raw.x,a.y-raw.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby&&nearby.d<43){const route=TOWN_NPC_ROUTES[nearby.a.id],line=route.lines[nearby.a.lineIndex++%route.lines.length];nearby.a.pauseUntil=Date.now()+1100;nearby.a.moving=false;nearby.a.facing=rtFacingToNpc(nearby.a,rt.player);townNpcRuntime.talk={name:`${route.name}｜${route.job}`,line,until:Date.now()+3900};const d=$("townDialogOverlay");if(d)d.innerHTML=townDialogue(s);drawTownVisual(s);return}
  townNpcRuntime.talk=null;
- const clickedWalkable=F.townPointWalkable(s,raw.x,raw.y,"player",areaId);if(!clickedWalkable){toast('道の上をタップしてください');return} const target=F.townNearestReachable?.(s,rt.player,raw,"player",999,areaId)||F.townNearestWalkable(s,raw,"player",40,areaId);if(!target){toast('そこへは行けません');return}const reachablePath=F.townFindPath(s,rt.player,target,"player",areaId);if(reachablePath.length<2){toast('そこへは行けません');return}rt.tap={...target};drawTownVisual(s);walkTownTo(target)};}
+ const target=F.townNearestReachable?.(s,rt.player,raw,"player",6,areaId);if(!target){toast('道の近くをタップしてください');return}const reachablePath=F.townFindPath(s,rt.player,target,"player",areaId);if(reachablePath.length<2){toast('そこへは行けません');return}rt.tap={...target};drawTownVisual(s);walkTownTo(target)};}
 async function walkTownTo(target){
  const s=F.readSave(),rt=ensureTownRuntime(s),areaId=rt.areaId,path=F.townFindPath(s,rt.player,target,'player',areaId),nav=F.townNavModel(s,'player',areaId);
  if(path.length<2){toast('そこへは行けません');return}
@@ -352,7 +353,11 @@ async function walkTownTo(target){
   for(let i=1;i<path.length;i++){
    if(token!==rt.token||currentView!=='home'||homeMode!=='town')return;
    const next=path[i],prev={...rt.player};if(!nav.grid?.[Math.floor(next.y/nav.cell)]?.[Math.floor(next.x/nav.cell)]){townSetMessage('道がふさがっています。別の場所をタップしてください。');return}const length=Math.hypot(next.x-prev.x,next.y-prev.y),duration=Math.max(80,length/118*1000),started=townNow();rt.trail.push(prev);if(rt.trail.length>8)rt.trail.shift();rt.facing=townFacingFromDelta(next.x-prev.x,next.y-prev.y,rt.facing);
-   while(token===rt.token){const t=Math.min(1,(townNow()-started)/duration);rt.player={x:prev.x+(next.x-prev.x)*t,y:prev.y+(next.y-prev.y)*t};await drawTownVisual(F.readSave());if(t>=1)break;await new Promise(resolve=>setTimeout(resolve,24))}rt.player={...next};if(i%3===0)townPersistPosition();
+   while(token===rt.token){const t=Math.min(1,(townNow()-started)/duration),candidate={x:prev.x+(next.x-prev.x)*t,y:prev.y+(next.y-prev.y)*t};
+    // Stop before an NPC's full sprite footprint; resume as soon as the NPC clears the lane.
+    const actors=advanceTownNpcWalkers(F.readSave(),F.townLayerStates(F.readSave()),townNow()),crowded=actors.some(a=>Math.hypot(candidate.x-a.x,candidate.y-a.y)<34);
+    if(crowded){if(townNow()-started>1800){townSetMessage('人が通るのを待っています。別の場所をタップしてください。');return}await drawTownVisual(F.readSave());await new Promise(resolve=>setTimeout(resolve,45));continue}
+    rt.player=candidate;await drawTownVisual(F.readSave());if(t>=1)break;await new Promise(resolve=>setTimeout(resolve,24))}rt.player={...next};if(i%3===0)townPersistPosition();
   }
   if(token!==rt.token||currentView!=='home'||homeMode!=='town')return;
   townPersistPosition();const latest=F.readSave(),near=F.townNearestInteraction(latest,rt.player.x,rt.player.y,62);

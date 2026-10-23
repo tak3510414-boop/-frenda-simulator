@@ -276,17 +276,17 @@ function drawDungeonAutoMap(c,run,visibility,viewRect){
 
 R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#17231b');
  const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(F.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it])),trapMap=new Map((run.traps||[]).filter(t=>t?.revealed).map(t=>[t.x+','+t.y,t]));
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it])),trapMap=new Map((run.traps||[]).filter(t=>t?.revealed).map(t=>[t.x+','+t.y,t])),cave=run.dungeonId==='rocky_cave',wallBase=cave?'#433d39':'#344c36',wallInset=cave?'#5b5046':'#426047',floorBase=cave?['#82735f','#756852','#685d4f']:['#7e8d5f','#74845a','#6c7b52'];
  // Ver0.72: local camera keeps the Ver0.63 visibility model; the accumulated blue auto map is drawn separately above it.
  for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
   const x=camX+vx,y=camY+vy,tt=run.map[y]?.[x]||'wall',xx=ox+vx*t,yy=oy+vy*t,n=seeded(x*7+run.floor,y*11+run.floor),seen=!!run.seen?.[y]?.[x],visible=!!visibility?.[y]?.[x];
   if(!seen){rect(c,xx,yy,t,t,n>.66?'#1b2a20':'#17231b');if(n>.88)rect(c,xx+5,yy+5,2,2,'#22362a');continue}
   if(tt==='wall'){
-   rect(c,xx,yy,t,t,n>.55?'#344c36':'#2d4432');rect(c,xx+2,yy+2,t-4,t-4,n>.72?'#426047':'#38533c');
-   if(n>.45)rect(c,xx+3+(x%3),yy+3+(y%3),2,3,'#557057');if(n<.18)rect(c,xx+t-5,yy+t-5,2,2,'#263a2b');
+   rect(c,xx,yy,t,t,cave?(n>.55?'#514840':'#383633'):(n>.55?wallBase:'#2d4432'));rect(c,xx+2,yy+2,t-4,t-4,cave?(n>.72?'#68594b':wallInset):(n>.72?wallInset:'#38533c'));
+   if(n>.45)rect(c,xx+3+(x%3),yy+3+(y%3),2,3,cave?'#85745d':'#557057');if(n<.18)rect(c,xx+t-5,yy+t-5,2,2,cave?'#302e2b':'#263a2b');
   }else{
-   const floorCol=n>.7?'#7e8d5f':n>.35?'#74845a':'#6c7b52';rect(c,xx,yy,t,t,floorCol);
-   if(n>.78)rect(c,xx+3,yy+4,2,2,'#91a86c');if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,'#566846');
+   const floorCol=n>.7?floorBase[0]:n>.35?floorBase[1]:floorBase[2];rect(c,xx,yy,t,t,floorCol);
+   if(n>.78)rect(c,xx+3,yy+4,2,2,cave?'#b09a78':'#91a86c');if(n<.22)rect(c,xx+t-5,yy+t-4,2,1,cave?'#514a40':'#566846');if(cave&&n>.55){line(c,xx+3,yy+3,xx+8,yy+6,'#9b896c',1);if(n>.86)px(c,xx+11,yy+3,'#d5b45b')}
    if(tt==='gather'){const drop=groundMap.get(x+','+y);dungeonGroundItem(c,drop?.itemId,xx,yy,t)}
    if(tt==='chest'&&!drawChestArt(c,xx,yy,t)){rect(c,xx+3,yy+6,9,6,'#7c512c');rect(c,xx+3,yy+4,9,4,'#ad7036');rect(c,xx+7,yy+7,2,3,'#edc75c');rect(c,xx+5,yy+3,5,1,'#5f3b22')}
    if(tt==='stairs'){rect(c,xx+2,yy+2,t-4,t-4,'#a98358');for(let i=0;i<5;i++)rect(c,xx+3,yy+3+i*2,t-6,1,'#66492e')}
