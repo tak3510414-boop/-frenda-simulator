@@ -21,7 +21,7 @@ F.advanceTimeState=(s,steps=1,reason="action")=>{s.clock=s.clock||{phaseIndex:0,
 F.advanceTime=(steps=1,reason="action")=>F.mutateSave(s=>F.advanceTimeState(s,steps,reason));
 F.gameplayLoopStatus=s=>{if(!s?.story?.firstReturn)return{step:0,label:"装備を整えて冒険する"};if(!s?.story?.firstStock)return{step:1,label:"商品を棚に並べる"};if(!s?.story?.firstSale)return{step:2,label:"店を開いて売る"};return{step:3,label:"冒険→商売→町発展の1周完成",complete:true}};
 
-F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=id==='complete'?80:id==='initial'?0:id==='camp'?2:id==='settlement'?24:id==='expansion'?50:18;t.development.town.facilities={shop:0,house:0,forge:0,market:0,plaza:0,adventure_board:0};t.development.town.projects={};if(id==='house1')t.development.town.facilities.house=1;if(id==='shop2')t.development.town.facilities.shop=2;if(id==='forge1')t.development.town.facilities.forge=1;if(id==='settlement')Object.assign(t.development.town.facilities,{shop:2,house:1,forge:1,market:1});if(id==='expansion')Object.assign(t.development.town.facilities,{shop:3,house:2,forge:2,market:1,plaza:1,adventure_board:1});if(id==='complete')for(const d of F.FACILITY_DEFS)t.development.town.facilities[d.id]=d.maxLevel;return t};
+F.townPreviewState=s=>{const id=s?.settings?.townLayerTest?.scenePreset;if(!id||id==='normal'||s.__townPreview)return s;const t=JSON.parse(JSON.stringify(s));t.__townPreview=true;t.development.points=id==='complete'?80:id==='initial'?0:id==='camp'?2:id==='settlement'?24:id==='expansion'?50:18;t.development.town.facilities={shop:0,house:0,forge:0,market:0,plaza:0,adventure_board:0};t.development.town.projects={};t.development.town.residentCount=['settlement','expansion','complete'].includes(id)?(id==='settlement'?1:2):0;if(id==='house1')t.development.town.facilities.house=1;if(id==='shop2')t.development.town.facilities.shop=2;if(id==='forge1')t.development.town.facilities.forge=1;if(id==='settlement')Object.assign(t.development.town.facilities,{shop:2,house:1,forge:1,market:1});if(id==='expansion')Object.assign(t.development.town.facilities,{shop:3,house:2,forge:2,market:1,plaza:1,adventure_board:1});if(id==='complete')for(const d of F.FACILITY_DEFS)t.development.town.facilities[d.id]=d.maxLevel;return t};
 F.townState=s=>{s=F.townPreviewState(s);
  const d=s?.development||{},t=d.town||{},fac=Object.assign({},t.facilities||{});
  for(const def of (F.FACILITY_DEFS||[]))if(fac[def.id]==null)fac[def.id]=Number(def.startLevel)||0;
@@ -260,14 +260,18 @@ function navShapeContains(shape,x,y,pad=0){
  return false;
 }
 const coreRoadGridCache=new Map();
-function townCoreRoadGrid(scene,cell,cols,rows){const k=`${scene.w}x${scene.h}@${cell}`;if(coreRoadGridCache.has(k))return coreRoadGridCache.get(k);const grid=Array.from({length:rows},(_,gy)=>Array.from({length:cols},(_,gx)=>{const x=gx*cell+cell/2,y=gy*cell+cell/2;return(F.TOWN_PLAYER_WALK_CORRIDORS||[]).some(sh=>navShapeContains(sh,x,y))}));coreRoadGridCache.set(k,grid);return grid}
+function townCoreRoadGrid(scene,cell,cols,rows,shapes=F.TOWN_PLAYER_WALK_CORRIDORS){const k=JSON.stringify(shapes)+`${scene.w}x${scene.h}@${cell}`;if(coreRoadGridCache.has(k))return coreRoadGridCache.get(k);const grid=Array.from({length:rows},(_,gy)=>Array.from({length:cols},(_,gx)=>{const x=gx*cell+cell/2,y=gy*cell+cell/2;return(shapes||[]).some(sh=>navShapeContains(sh,x,y))}));coreRoadGridCache.set(k,grid);return grid}
 function currentTownAreaId(s){return F.areaDef?.(s?.townMovement?.areaId)?s.townMovement.areaId:(F.areaDef?.(s?.townWorld?.currentAreaId)?s.townWorld.currentAreaId:"core")}
 // Ver1.16: facility levels and saved projects are the source of truth for the town.
+F.townPopulation=s=>{s=F.townPreviewState(s);const t=F.townState(s);return{customers:t.facilities.shop>0&&!t.projects.shop,residents:t.facilities.house>0&&!t.projects.house?Math.min(Number(s.development.town.residentCount)||0,t.facilities.house*2):0}};
+F.inviteTownResident=()=>F.mutateSave(s=>{if(F.facilityLevel(s,'house')<1)throw new Error('住居を完成させてください。');s.development.town.residentCount=Math.min((Number(s.development.town.residentCount)||0)+1,F.facilityLevel(s,'house')*2)});
+F.townPathOutline=(from,to,stone=false,seed=0)=>{const pts=[],dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,width=stone?44:42,nx=-dy/len,ny=dx/len;for(const side of [1,-1])for(let j=0;j<=70;j++){const t=(side===1?j:70-j)/70,x=(1-t)*(1-t)*from.x+2*(1-t)*t*from.x+t*t*to.x,y=(1-t)*(1-t)*from.y+2*(1-t)*t*to.y+t*t*to.y,w=width+Math.sin(t*43+seed)*1.7;pts.push([x+nx*w*side,y+ny*w*side])}return pts};
+F.townRoadPaths=model=>{const built=model.facilities.filter(f=>f.state!=='vacant'),stone=model.points>=24;if(!built.length)return[];const paths=[{from:{x:295,y:420},to:{x:295,y:0},stone,seed:1},{from:{x:295,y:420},to:{x:295,y:842},stone,seed:2}];for(const f of built){paths.push({from:{x:295,y:420},to:f.entrance,stone,seed:f.site.x});paths.push({from:f.entrance,to:{x:f.site.x+f.site.w/2,y:f.site.y+f.site.h-12},stone,seed:f.site.y})}return paths};
 F.townSceneModel=s=>{s=F.townPreviewState(s);
  const layout=F.SINGLE_TOWN_SCENE,town=F.townState(s),points=Math.max(0,Number(s?.development?.points)||0);
  const facilities=(F.FACILITY_DEFS||[]).map(def=>{
   const site=F.facilitySite(def.id),level=Math.max(0,Number(town.facilities[def.id])||0),project=town.projects[def.id]||null,phase=project?F.constructionPhase(project):null;
-  return {id:def.id,name:def.name,icon:def.icon,site,level,project,phase,state:project?(level?'upgrading':'construction'):(level?'built':'vacant'),entrance:site?.entrance};
+  return {id:def.id,name:def.name,icon:def.icon,site,level,project,phase,state:project?(level?'upgrading':'construction'):(level?'built':'vacant'),entrance:site?{x:site.x+site.w/2,y:site.y+site.h+18}:null};
  }).filter(x=>x.site);
  return {...layout,points,stage:F.developmentStage(points),facilities};
 };
@@ -277,7 +281,7 @@ function singleTownNavCollect(s){
  for(const f of model.facilities){
   const site=f.site;
   if(f.state!=='vacant'){
-   blocks.push({shape:'rect',v:[site.x,site.y,site.w,site.h],reason:f.project?`construction:${f.id}:${f.phase?.id}`:`facility:${f.id}:lv${f.level}`});
+   blocks.push({shape:f.id==='plaza'&&!f.project?'circle':'rect',v:f.id==='plaza'&&!f.project?[site.x+site.w/2,site.y+site.h/2,10]:[site.x,site.y,site.w,site.h],reason:f.project?`construction:${f.id}:${f.phase?.id}`:`facility:${f.id}:lv${f.level}`});
    entrances.push({id:f.id+'_door',...f.entrance,facing:'north'});
    interactions.push({id:f.id,type:f.project?'construction':'facility',facilityId:f.id,label:f.project?`${f.name} ${f.phase?.label||'工事中'}`:f.name,...f.entrance,r:42});
   }
@@ -299,7 +303,7 @@ function navCollect(s,areaId=currentTownAreaId(s)){
 F.townNavModel=(s,actor="player",areaId=null)=>{
  const n=navCollect(s,areaId||currentTownAreaId(s)),profile=typeof actor==="string"?(F.TOWN_ACTOR_NAV_PROFILES?.[actor]||F.TOWN_ACTOR_NAV_PROFILES?.player||{}):(actor||{}),pad=Math.max(0,Number(profile.radius)||0),scene=n.navDef?.scene||n.area?.nav?.scene||{w:717,h:842,cell:18},wr=n.navDef?.worldRect||n.area?.nav?.worldRect||{x:0,y:0,w:scene.w,h:scene.h},cell=Math.max(8,Number(scene.cell)||18);
  const cols=Math.ceil(scene.w/cell),rows=Math.ceil(scene.h/cell),grid=Array.from({length:rows},()=>Array(cols).fill(false));
- const blockedReasons=new Map(),strictCoreRoads=n.areaId==="core"&&(actor==="player"||actor==="partner"||actor==="npc"),roadGrid=strictCoreRoads?townCoreRoadGrid(scene,cell,cols,rows):null;
+ const blockedReasons=new Map(),strictCoreRoads=n.areaId==="core"&&(actor==="player"||actor==="partner"||actor==="npc"),roadGrid=strictCoreRoads?townCoreRoadGrid(scene,cell,cols,rows,n.sceneModel&&F.townRoadPaths(n.sceneModel).length?F.townRoadPaths(n.sceneModel).flatMap(r=>[{shape:'poly',v:F.townPathOutline(r.from,r.to,r.stone,r.seed)},{shape:'circle',v:[r.from.x,r.from.y,42]},{shape:'circle',v:[r.to.x,r.to.y,42]}]):F.TOWN_PLAYER_WALK_CORRIDORS):null;
  for(let gy=0;gy<rows;gy++)for(let gx=0;gx<cols;gx++){const x=gx*cell+cell/2,y=gy*cell+cell/2;let ok=!!n.base.defaultWalkable&&x>=wr.x&&y>=wr.y&&x<wr.x+wr.w&&y<wr.y+wr.h;let reason=ok?"":"outside";if(strictCoreRoads){ok=!!roadGrid?.[gy]?.[gx];reason=ok?"":"off_paved_road";}for(const sh of n.blocks)if(navShapeContains(sh,x,y,pad)&&!(strictCoreRoads&&sh.reason==="river"&&roadGrid?.[gy]?.[gx])&&!(strictCoreRoads&&/^(facility|construction):/.test(sh.reason||"")&&(n.entrances||[]).some(e=>Math.hypot(x-e.x,y-e.y)<=18))){ok=false;reason=sh.reason||"blocked"}for(const sh of n.walk)if(!strictCoreRoads&&navShapeContains(sh,x,y,0)){ok=true;reason=""}for(const ex of n.exits)if(!ex.open&&x>=ex.x&&y>=ex.y&&x<ex.x+ex.w&&y<ex.y+ex.h){ok=false;reason=`gate:${ex.to}`}grid[gy][gx]=ok;if(reason)blockedReasons.set(`${gx},${gy}`,reason)}
  return {...n,actorProfile:profile,scene,worldRect:wr,cell,cols,rows,grid,blockedReasons,spawn:n.navDef?.spawn||n.area?.nav?.spawn||{x:350,y:395}};
 };
@@ -556,3 +560,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 // Updated: 2026-10-24 05:00 JST / Ver1.27
 
 // Updated: 2026-10-24 05:20 JST / Ver1.28
+
+// Updated: 2026-10-24 05:48 JST / Ver1.30
