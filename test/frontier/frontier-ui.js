@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.15 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.16 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べて、お店を開こう。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
@@ -100,30 +100,74 @@ function drawCoreTownFallback(canvas,s){
  c.fillStyle='rgba(5,32,25,.82)';c.fillRect(15,12,220,34);c.fillStyle='#fff';c.font='bold 13px sans-serif';c.textAlign='left';c.fillText('町画像未配置：内蔵マップで表示中',26,34);
  return true;
 }
+// Ver1.16: self-contained town art from the exact same scene model used for walking.
+function drawTownFacility(c,f){
+ const {x,y,w,h}=f.site,level=f.level,colors={shop:['#b85c3c','#e5c795'],house:['#6388a3','#e1c79d'],forge:['#68505a','#b6a18b'],market:['#63865b','#e5c586'],adventure_board:['#916948','#d2b27a'],plaza:['#618d9d','#b4d1d6']},[roof,wall]=colors[f.id]||colors.house;
+ const box=(a,b,d,e,color)=>{c.fillStyle=color;c.fillRect(Math.round(a),Math.round(b),Math.round(d),Math.round(e))};
+ const name=(text,color='#203c2c')=>{c.fillStyle=color;c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(text,x+w/2,y+h+14)};
+ if(f.state==='vacant'){
+  c.save();c.globalAlpha=.38;box(x+12,y+h-26,w-24,22,'#8fa568');c.strokeStyle='#b8c68d';c.setLineDash([5,7]);c.strokeRect(x+12,y+18,w-24,h-36);c.setLineDash([]);c.restore();
+  name(f.name+'予定地','#365632');return;
+ }
+ const drawBuilt=()=>{
+  if(f.id==='plaza'){
+   box(x,y,w,h,'#a5aaa0');for(let yy=y;yy<y+h;yy+=14)for(let xx=x;xx<x+w;xx+=16)box(xx+1,yy+1,14,12,'#bac0ae');
+   c.fillStyle='#709eb5';c.beginPath();c.ellipse(x+w/2,y+h/2,w*.40,h*.29,0,0,Math.PI*2);c.fill();box(x+w/2-4,y+13,8,30,'#d2e5dd');box(x+w/2-10,y+10,20,7,'#eff4d9');return;
+  }
+  if(f.id==='adventure_board'){
+   box(x+8,y+15,7,h-15,'#65472e');box(x+w-15,y+15,7,h-15,'#65472e');box(x+3,y+3,w-6,h-18,'#9b7245');box(x+8,y+9,w-16,h-31,'#d3b97e');box(x+15,y+16,16,23,'#f1e5bd');if(level>=2)box(x+36,y+17,12,19,'#e4d6ab');return;
+  }
+  if((f.id==='shop'&&level===1)||f.id==='market'){
+   const top=y+34,post=y+h-22;box(x+12,top+15,8,post-top,'#79512e');box(x+w-20,top+15,8,post-top,'#79512e');
+   for(let xx=x;xx<x+w;xx+=22)box(xx,top,Math.min(22,x+w-xx),45,Math.floor((xx-x)/22)%2?wall:roof);
+   box(x+9,post-5,w-18,24,'#946436');box(x+12,post-1,w-24,8,'#c79553');
+   for(let i=0;i<Math.min(6,level+2);i++){box(x+24+i*23,post-16,16,14,i%2?'#d8bd52':'#86a45e')}
+   if(level>=2){box(x+15,y+10,w-30,18,'#e7d6a9');box(x+22,y+14,w-44,4,roof)}return;
+  }
+  box(x+7,y+h-9,w-14,9,'#694d37');box(x+12,y+42,w-24,h-51,wall);
+  for(let xx=x+16;xx<x+w-16;xx+=20)box(xx,y+53,3,h-66,'#9c825e');
+  c.fillStyle=roof;c.beginPath();c.moveTo(x,y+48);c.lineTo(x+w/2,y);c.lineTo(x+w,y+48);c.closePath();c.fill();
+  for(let yy=y+20;yy<y+45;yy+=9){const inset=(45-(yy-y))*w/95;box(x+inset,yy,w-inset*2,3,'#ffffff20')}
+  box(x+w/2-15,y+h-51,30,42,'#4d392b');box(x+w/2+6,y+h-30,3,4,'#dfbd69');
+  const win=(xx)=>{box(xx,y+h-73,26,25,'#6e624e');box(xx+3,y+h-70,20,18,'#a2cdd1');box(xx+12,y+h-70,2,18,'#e6dbb5');box(xx+3,y+h-62,20,2,'#e6dbb5')};win(x+25);if(w>165||level>=2)win(x+w-51);
+  if(level>=2){box(x+9,y+52,w-18,6,'#f0d6a8');box(x+w-43,y-2,18,28,'#8b735f')}
+  if(level>=3){box(x+4,y+h-19,40,9,'#b85f49');box(x+w-44,y+h-19,40,9,'#b85f49');for(let xx=x+9;xx<x+w;xx+=18)box(xx,y+h-24,5,5,'#e5bb70')}
+  if(f.id==='forge'){box(x+w-51,y+57,22,32,'#68514a');box(x+w-47,y+67,14,15,'#f3a33d');box(x+w-43,y+74,7,8,'#d45a2d')}
+ };
+ if(level>0)drawBuilt();
+ if(f.project){
+  const phase=Number(f.project.phaseIndex)||0,inset=level>0?8:0,sx=x+inset,sy=y+inset,sw=w-inset*2,sh=h-inset*2;
+  c.save();if(level>0)c.globalAlpha=.90;
+  if(level===0)box(sx+4,sy+10,sw-8,sh-12,'#b39160');
+  // Stakes and boundary always remain visible while under construction.
+  c.strokeStyle='#e9c76d';c.lineWidth=3;c.setLineDash([10,6]);c.strokeRect(sx+4,sy+12,sw-8,sh-16);c.setLineDash([]);
+  for(const xx of [sx+5,sx+sw-11])for(const yy of [sy+12,sy+sh-20])box(xx,yy,6,20,'#745334');
+  if(phase>=1){for(let i=0;i<3;i++)box(sx+12,sy+sh-43+i*8,sw*.42,6,'#8d5d34');box(sx+sw*.62,sy+sh-39,sw*.24,22,'#adb2aa')}
+  if(phase>=2){for(const xx of [sx+18,sx+sw/2-3,sx+sw-24])box(xx,sy+35,6,sh-54,'#8f613c');box(sx+14,sy+34,sw-28,7,'#bd8c54');box(sx+14,sy+sh-40,sw-28,5,'#bd8c54');c.strokeStyle='#b17f4e';c.lineWidth=4;c.beginPath();c.moveTo(sx+18,sy+sh-35);c.lineTo(sx+sw-20,sy+40);c.stroke()}
+  if(phase>=3){c.fillStyle=roof;c.beginPath();c.moveTo(sx+6,sy+45);c.lineTo(sx+sw/2,sy+8);c.lineTo(sx+sw-6,sy+45);c.closePath();c.fill();box(sx+16,sy+48,sw-32,sh-70,wall);for(let yy=sy+45;yy<sy+sh-10;yy+=18)box(sx+sw-19,yy,12,4,'#e0c078')}
+  c.restore();
+  box(x+5,y+h-18,w-10,14,'#553c24');box(x+7,y+h-16,(w-14)*(f.phase?.progress||0),10,'#e4b94b');
+  name(f.name+' '+(f.phase?.label||'工事中'),'#5d3c18');
+ }else name((f.id==='shop'&&level===1?'露店':f.name)+' Lv'+level);
+}
 function drawSafeTownMap(canvas,s,rt,playerSprite){
- if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);
- const pts=Math.max(0,Number(s?.development?.points)||0),stage=pts>=60?3:pts>=28?2:pts>=10?1:0;
- // One persistent town. This renderer intentionally has no dependency on legacy area/layer atlases.
- c.fillStyle='#284b32';c.fillRect(0,0,717,842);c.fillStyle='#6f9d50';c.fillRect(0,0,590,842);
- for(let y=8;y<835;y+=15)for(let x=8;x<585;x+=19){const n=(x*13+y*7)%37;if(n<9){c.fillStyle=n<4?'#4f7d40':'#9bc274';c.fillRect(x,y,3,4)}}
- // river / bank
+ if(!canvas)return false;canvas.width=717;canvas.height=842;const c=canvas.getContext('2d');if(!c)return false;
+ const model=F.townSceneModel(s);c.imageSmoothingEnabled=false;c.clearRect(0,0,717,842);
+ c.fillStyle='#284b32';c.fillRect(0,0,717,842);c.fillStyle='#729e53';c.fillRect(0,0,590,842);
+ for(let y=8;y<835;y+=15)for(let x=8;x<585;x+=19){const n=(x*13+y*7)%37;if(n<9){c.fillStyle=n<4?'#557f45':'#9bc274';c.fillRect(x,y,3,4)}}
  c.fillStyle='#56764f';c.fillRect(0,630,590,30);c.fillStyle='#2e79a8';c.fillRect(0,660,590,182);c.fillStyle='#5bb9d8';for(let y=674;y<835;y+=34)for(let x=16;x<570;x+=86)c.fillRect(x+(y%17),y,50,3);
- // main paths: north-south + center square + south bridge
- c.fillStyle='#c99d61';c.beginPath();c.moveTo(430,0);c.lineTo(526,0);c.lineTo(500,185);c.lineTo(454,275);c.lineTo(446,510);c.lineTo(388,585);c.lineTo(350,842);c.lineTo(196,842);c.lineTo(184,720);c.lineTo(222,600);c.lineTo(286,535);c.lineTo(300,300);c.lineTo(350,220);c.lineTo(405,150);c.closePath();c.fill();c.fillRect(175,285,330,250);
- c.fillStyle='#8b5d34';c.fillRect(170,585,190,150);c.fillStyle='#b9824c';for(let y=590;y<730;y+=18)c.fillRect(175,y,180,11);c.fillStyle='#5c422d';c.fillRect(176,580,8,160);c.fillRect(350,580,8,160);
- const building=(x,y,w,h,roof,wall,label)=>{c.fillStyle='#65452f';c.fillRect(x+8,y+h-12,w-16,12);c.fillStyle=wall;c.fillRect(x+14,y+34,w-28,h-46);c.fillStyle=roof;c.beginPath();c.moveTo(x,y+42);c.lineTo(x+w/2,y);c.lineTo(x+w,y+42);c.closePath();c.fill();c.fillStyle='#50301f';c.fillRect(x+w/2-14,y+h-48,28,38);c.fillStyle='rgba(255,255,255,.92)';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText(label,x+w/2,y+h-7)};
- building(54,90,205,170,'#b55b35','#dab170',stage>=2?'お店':'露店');
- building(325,66,178,158,'#5c83a2','#cda873','住居');
- if(stage>=1)building(365,330,165,145,'#754b3b','#c99966','鍛冶');
- if(stage>=2)building(60,350,165,135,'#7b6a3a','#d8bd72','市場');
- if(stage>=3){c.fillStyle='#8bb5c8';c.beginPath();c.arc(315,400,38,0,Math.PI*2);c.fill();c.fillStyle='#cfe5ec';c.beginPath();c.arc(315,400,18,0,Math.PI*2);c.fill();c.fillStyle='#477b92';c.fillRect(309,365,12,40)}
- // campfire and simple scenery
- c.fillStyle='#6a472e';for(let a=0;a<6;a++){const ang=a*Math.PI/3;c.beginPath();c.arc(500+Math.cos(ang)*28,270+Math.sin(ang)*28,7,0,Math.PI*2);c.fill()}c.fillStyle='#ffb43a';c.beginPath();c.moveTo(500,232);c.lineTo(480,282);c.lineTo(520,282);c.closePath();c.fill();
- for(let y=52;y<590;y+=90)for(const x of [28,558]){c.fillStyle='#264e32';c.fillRect(x-5,y+20,10,30);c.fillStyle='#3f7a42';c.beginPath();c.arc(x,y+15,24,0,Math.PI*2);c.fill();c.fillStyle='#619c51';c.beginPath();c.arc(x+8,y+3,16,0,Math.PI*2);c.fill()}
- c.fillStyle='#5e412c';c.fillRect(488,430,8,70);c.fillStyle='#b78a4b';c.fillRect(458,432,72,38);c.fillStyle='#3a2e22';c.font='bold 12px sans-serif';c.fillText('町',494,456);
- // player; if sprite cannot load, still show a clear marker instead of failing.
- const p=rt?.player||{x:350,y:475};if(playerSprite&&Number(playerSprite.naturalWidth)>0){drawTownActor(c,playerSprite,p,'player')}else{c.fillStyle='#d43f2f';c.beginPath();c.arc(p.x,p.y-14,15,0,Math.PI*2);c.fill();c.fillStyle='#17334e';c.fillRect(p.x-10,p.y,20,26);c.fillStyle='#fff';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText('YOU',p.x,p.y+18)}
- c.fillStyle='rgba(8,42,32,.83)';c.fillRect(14,12,236,35);c.fillStyle='#fff';c.font='bold 13px sans-serif';c.textAlign='left';c.fillText(`町の発展 ${pts}pt / 段階${stage+1}`,26,35);return true;
+ c.fillStyle=model.facilities.find(f=>f.id==='plaza')?.level>0?'#b8b29a':'#c99d61';c.fillRect(246,245,118,365);c.fillRect(165,275,300,50);c.fillRect(135,495,345,38);c.fillRect(385,225,52,100);c.fillRect(422,295,108,33);
+ c.fillStyle='#c99d61';c.fillRect(238,600,88,242);c.fillRect(420,35,60,205);
+ const bridge=model.bridge;c.fillStyle='#8b5d34';c.fillRect(bridge.x,bridge.y,bridge.w,bridge.h);c.fillStyle='#b9824c';for(let y=bridge.y+5;y<bridge.y+bridge.h;y+=18)c.fillRect(bridge.x+5,y,bridge.w-10,11);c.fillStyle='#5c422d';c.fillRect(bridge.x+6,bridge.y-5,8,bridge.h+10);c.fillRect(bridge.x+bridge.w-10,bridge.y-5,8,bridge.h+10);
+ for(const f of [...model.facilities].sort((a,b)=>a.site.y+a.site.h-b.site.y-b.site.h))drawTownFacility(c,f);
+ const fire=model.campfire;c.fillStyle='#6a472e';for(let a=0;a<6;a++){const ang=a*Math.PI/3;c.beginPath();c.arc(fire.x+Math.cos(ang)*fire.r,fire.y+Math.sin(ang)*fire.r,6,0,Math.PI*2);c.fill()}c.fillStyle='#ffb43a';c.beginPath();c.moveTo(fire.x,fire.y-30);c.lineTo(fire.x-15,fire.y+8);c.lineTo(fire.x+15,fire.y+8);c.closePath();c.fill();
+ for(let y=52;y<590;y+=90)for(const x of [22,580]){c.fillStyle='#264e32';c.fillRect(x-4,y+20,8,25);c.fillStyle='#3f7a42';c.beginPath();c.arc(x,y+15,21,0,Math.PI*2);c.fill();c.fillStyle='#619c51';c.beginPath();c.arc(x+7,y+3,14,0,Math.PI*2);c.fill()}
+ if(model.stage>=1){for(const [x,y]of [[245,557],[365,557],[248,250],[450,545]]){c.fillStyle='#6c5838';c.fillRect(x,y-25,4,28);c.fillStyle='#f0d187';c.fillRect(x-4,y-32,12,12)}}
+ if(F.townNavTestOverlay(s))drawTownNavOverlay(c,s);
+ if(rt?.tap){c.strokeStyle='#ffed8a';c.lineWidth=3;c.beginPath();c.arc(rt.tap.x,rt.tap.y,10,0,Math.PI*2);c.stroke()}
+ const p=rt?.player||model.spawn;if(playerSprite&&Number(playerSprite.naturalWidth)>0)drawTownActor(c,playerSprite,p,'player');else{c.fillStyle='#d43f2f';c.beginPath();c.arc(p.x,p.y-14,15,0,Math.PI*2);c.fill();c.fillStyle='#17334e';c.fillRect(p.x-10,p.y,20,26)}
+ const built=model.facilities.filter(f=>f.level>0).length,projects=model.facilities.filter(f=>f.project).length;
+ c.fillStyle='rgba(8,42,32,.86)';c.fillRect(14,12,310,35);c.fillStyle='#fff';c.font='bold 13px sans-serif';c.textAlign='left';c.fillText(`町 ${model.points}pt / 完成施設 ${built} / 工事中 ${projects}`,26,35);return true;
 }
 function drawTownWorld(worldCanvas,s,assets,rt,areaId){const {base,facility,detail,maxTown,constructionAtlas,npcAtlas}=assets;const playerSprite=townPlayerSprite(assets,rt.facing);const preset=F.townLayerTestPreset(s);worldCanvas.width=717;worldCanvas.height=842;const c=worldCanvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,worldCanvas.width,worldCanvas.height);const drawNormal=()=>{if(F.areaDef?.(areaId)?.world?.runtimeGenerator==='scene-spec-v2'){const compiled=F.compileAreaScene?.(areaId,s);drawGeneratedAreaFallback(worldCanvas,compiled);const cc=worldCanvas.getContext('2d');if(npcAtlas&&compiled?.npcActivity){const parts=compiled.npcActivity.slice(0,4).map((n,i)=>({sprite:i%5,dx:n.anchor.x-20,dy:n.anchor.y-42,dw:40,dh:50}));drawNpcLayer(cc,npcAtlas,{parts})}drawTownActor(cc,playerSprite,rt.player,'player');return;}if(base)c.drawImage(base,0,0,717,842);else drawCoreTownFallback(worldCanvas,s);const states=F.townLayerStates(s).filter(x=>x.effective);const bands=F.TOWN_RENDER_BANDS||['ground','structure','low','character','front'];const drawBand=band=>{const off=document.createElement('canvas');off.width=717;off.height=842;const oc=off.getContext('2d');oc.imageSmoothingEnabled=false;const list=states.filter(x=>x.def.kind==='atlas'&&(x.def.band||'low')===band).sort((a,b)=>(a.def.z||0)-(b.def.z||0));for(const x of list){const defs=x.def.parts||[x.def.atlas];const src=x.def.asset==='detail'?detail:facility;if(!src)continue;for(const m of defs){if(!m)continue;oc.drawImage(src,m.sx,m.sy,m.sw,m.sh,m.dx*TOWN_MAP_X,m.dy*TOWN_MAP_Y,m.dw*TOWN_MAP_X,m.dh*TOWN_MAP_Y)}}c.drawImage(off,0,0);const npcs=states.filter(x=>x.def.kind==='npc'&&(x.def.band||'character')===band).sort((a,b)=>(a.def.z||0)-(b.def.z||0));for(const x of npcs)drawNpcLayer(c,npcAtlas,x.def)};for(const band of bands){if(band==='front'){drawTownActor(c,playerSprite,rt.player,'player')}drawBand(band);if(band==='structure')drawTownConstruction(c,s,constructionAtlas)}if(!bands.includes('front')){drawTownActor(c,playerSprite,rt.player,'player')}};if(areaId==='core'&&preset==='max'&&maxTown)c.drawImage(maxTown,0,0,717,842);else drawNormal();if(F.townNavTestOverlay(s))drawTownNavOverlay(c,s);drawTownRoundTripGuides(c,s);if(townMoveRuntime.tap){c.save();c.strokeStyle='rgba(255,245,130,.95)';c.lineWidth=4;c.beginPath();c.arc(townMoveRuntime.tap.x,townMoveRuntime.tap.y,12,0,Math.PI*2);c.stroke();c.restore();}}
 function drawTownActor(c,img,pos,kind){if(!img||!pos)return;const scale=kind==='player'?1:1;const w=img.naturalWidth*scale,h=img.naturalHeight*scale;c.save();c.imageSmoothingEnabled=false;c.drawImage(img,Math.round(pos.x-w/2),Math.round(pos.y-h+8),w,h);c.restore()}
@@ -416,3 +460,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* Updated: 2026-10-23 07:40 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
+
+/* Updated: 2026-10-23 20:00 JST / Ver1.16 */

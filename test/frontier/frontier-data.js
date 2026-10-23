@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.15 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.16 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.15";
+F.VERSION="1.16";
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -205,13 +205,20 @@ F.CONSTRUCTION_NAV_PHASES=Object.freeze({
  planned:{inset:24},materials:{inset:16},frame:{inset:9},finishing:{inset:6}
 });
 
+// Ver1.16: one layout is shared by construction, rendering and collision.
 F.FACILITY_SITES=Object.freeze({
- shop:{areaId:"core",x:52,y:92,w:250,h:190,entrance:{x:205,y:300}},
- forge:{areaId:"core",x:350,y:72,w:220,h:190,entrance:{x:470,y:300}},
- house:{areaId:"core",x:45,y:390,w:250,h:185,entrance:{x:182,y:615}},
- market:{areaId:"core",x:430,y:325,w:135,h:125,entrance:{x:430,y:445}},
- adventure_board:{areaId:"core",x:442,y:300,w:105,h:95,entrance:{x:430,y:415}},
- plaza:{areaId:"core",x:295,y:300,w:155,h:130,entrance:{x:370,y:455}}
+ shop:{areaId:"core",x:54,y:90,w:205,h:170,entrance:{x:156,y:282}},
+ house:{areaId:"core",x:325,y:66,w:178,h:158,entrance:{x:414,y:246}},
+ forge:{areaId:"core",x:365,y:330,w:165,h:145,entrance:{x:448,y:498}},
+ market:{areaId:"core",x:60,y:350,w:165,h:135,entrance:{x:142,y:510}},
+ adventure_board:{areaId:"core",x:470,y:235,w:65,h:65,entrance:{x:502,y:318}},
+ plaza:{areaId:"core",x:280,y:340,w:62,h:70,entrance:{x:310,y:438}}
+});
+F.SINGLE_TOWN_SCENE=Object.freeze({
+ scene:{w:717,h:842,cell:12},worldRect:{x:0,y:0,w:590,h:842},spawn:{x:350,y:475},
+ bridge:{x:170,y:585,w:190,h:150},campfire:{x:535,y:567,r:22},
+ borderBlocks:[{shape:"rect",v:[0,0,42,842],reason:"west_forest"},{shape:"rect",v:[570,0,20,842],reason:"east_forest"},{shape:"rect",v:[0,0,590,35],reason:"north_forest"},{shape:"rect",v:[0,630,590,212],reason:"river"}],
+ publicWalk:[{shape:"rect",v:[185,585,160,257],reason:"bridge_and_south_path"}]
 });
 F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 
@@ -502,3 +509,5 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 /* Updated: 2026-10-23 07:40 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
+
+/* Updated: 2026-10-23 20:00 JST / Ver1.16 */

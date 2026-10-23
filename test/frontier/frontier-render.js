@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.15 / pixel-map renderer / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.16 / pixel-map renderer / Updated: 2026-10-22 */
 (()=>{"use strict";
 const R=window.FRENDA_FRONTIER_RENDERER=window.FRENDA_FRONTIER_RENDERER||{};
-R.RENDERER_VERSION="1.15";
+R.RENDERER_VERSION="1.16";
 R.GENERATED_AREA_RENDERER_VERSION=2;
 const W=180,H=240;
 const PAL={
@@ -491,3 +491,5 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
 /* Updated: 2026-10-23 07:40 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
+
+/* Updated: 2026-10-23 20:00 JST / Ver1.16 */

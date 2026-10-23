@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.15 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.16 / world structure Ver6 + town camera follow map / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -259,7 +259,32 @@ function navShapeContains(shape,x,y,pad=0){
  return false;
 }
 function currentTownAreaId(s){return F.areaDef?.(s?.townMovement?.areaId)?s.townMovement.areaId:(F.areaDef?.(s?.townWorld?.currentAreaId)?s.townWorld.currentAreaId:"core")}
+// Ver1.16: facility levels and saved projects are the source of truth for the town.
+F.townSceneModel=s=>{
+ const layout=F.SINGLE_TOWN_SCENE,town=F.townState(s),points=Math.max(0,Number(s?.development?.points)||0);
+ const facilities=(F.FACILITY_DEFS||[]).map(def=>{
+  const site=F.facilitySite(def.id),level=Math.max(0,Number(town.facilities[def.id])||0),project=town.projects[def.id]||null,phase=project?F.constructionPhase(project):null;
+  return {id:def.id,name:def.name,icon:def.icon,site,level,project,phase,state:project?(level?'upgrading':'construction'):(level?'built':'vacant'),entrance:site?.entrance};
+ }).filter(x=>x.site);
+ return {...layout,points,stage:F.developmentStage(points),facilities};
+};
+function singleTownNavCollect(s){
+ const model=F.townSceneModel(s),area=F.areaDef('core'),blocks=model.borderBlocks.map(x=>({...x})),walk=model.publicWalk.map(x=>({...x})),interactions=[],entrances=[];
+ const fire=model.campfire;blocks.push({shape:'circle',v:[fire.x,fire.y,fire.r],reason:'campfire'});
+ for(const f of model.facilities){
+  const site=f.site;
+  if(f.state!=='vacant'){
+   blocks.push({shape:'rect',v:[site.x,site.y,site.w,site.h],reason:f.project?`construction:${f.id}:${f.phase?.id}`:`facility:${f.id}:lv${f.level}`});
+   entrances.push({id:f.id+'_door',...f.entrance,facing:'north'});
+   interactions.push({id:f.id,type:f.project?'construction':'facility',facilityId:f.id,label:f.project?`${f.name} ${f.phase?.label||'工事中'}`:f.name,...f.entrance,r:42});
+  }
+ }
+ interactions.push({id:'campfire',type:'scenery',label:'焚き火',x:fire.x-35,y:fire.y,r:38});
+ const navDef={scene:model.scene,worldRect:model.worldRect,spawn:model.spawn,exits:[],base:{defaultWalkable:true}};
+ return {areaId:'core',area,navDef,base:navDef.base,states:[],blocks,walk,interactions,entrances,npcWaypoints:[],exits:[],sceneModel:model};
+}
 function navCollect(s,areaId=currentTownAreaId(s)){
+ if(areaId==='core')return singleTownNavCollect(s);
  const area=F.areaDef?.(areaId)||F.areaDef?.("core"),isCore=area?.id==="core",navDef=F.areaNavDefinition?.(area?.id)||area?.nav||{},base=navDef.base||{defaultWalkable:true},states=isCore?F.townLayerStates(s).filter(x=>x.effective):[];
  const blocks=[...(base.blocks||[])],walk=[...(base.walk||[])],interactions=[...(base.interactions||[])],entrances=[],npcWaypoints=[...(base.npcWaypoints||[])];
  if(isCore)for(const x of states){const n=x.def.nav;if(!n)continue;blocks.push(...(n.blocks||[]));walk.push(...(n.walk||[]));interactions.push(...(n.interactions||[]));entrances.push(...(n.entrances||[]));npcWaypoints.push(...(n.npcWaypoints||[]))}
@@ -520,3 +545,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 /* Updated: 2026-10-23 07:40 JST / Ver1.15 */
 
 /* Updated: 2026-10-23 13:34 JST / Ver1.15 */
+
+/* Updated: 2026-10-23 20:00 JST / Ver1.16 */
