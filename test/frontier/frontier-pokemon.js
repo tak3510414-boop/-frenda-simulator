@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.17 / Pokemon species master + move-based enemy technique AI / Updated: 2026-10-22 */
+/* Frenda Frontier Ver1.18 / Pokemon species master + move-based enemy technique AI / Updated: 2026-10-22 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 const CATEGORY_PREF={star2_star3:90,treasure:80,super_treasure:70,parallel_art:55,shiny:50,"レガシーピック":40,"ワンダーピック":35,"スペシャルフレンダピック":20};
@@ -101,4 +101,4 @@ F.chooseDungeonBossSpecies=(dungeonId,floor)=>{const d=F.dungeonDef?.(dungeonId)
 
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
-/* Updated: 2026-10-23 20:14 JST / Ver1.17 */
+/* Updated: 2026-10-23 20:14 JST / Ver1.18 */
