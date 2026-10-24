@@ -2,9 +2,9 @@
 /* Frenda Frontier Ver1.32 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.36";
-F.SHOP_CAPACITY=Object.freeze([3,3,6,12,18]);
-F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(4,Number(s?.development?.town?.facilities?.shop)||0))];
+F.VERSION="1.37";
+F.SHOP_CAPACITY=Object.freeze([3,3,6,12,18,24,30,36,42,48,54]);
+F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(10,Number(s?.development?.town?.facilities?.shop)||0))];
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -231,11 +231,17 @@ F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 // Ver0.28: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
 F.FACILITY_DEFS=Object.freeze([
- {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:0,maxLevel:4,route:"commerce",levels:{
-   1:{actionId:"shop1",need:0,label:"最初の露店を作る",desc:"何もない開拓地に最初の売り場を作る。"},
-   2:{actionId:"shop2",need:12,label:"住居付きの店を建てる",desc:"売場の奥に寝室と小さな保管場所を設ける。"},
-   3:{actionId:"shop3",need:32,label:"店をさらに拡張する",desc:"売場を広げ、より多くの商品を扱えるようにする。"},
-   4:{actionId:"shop4",need:55,label:"店を本格店舗にする",desc:"開拓地を代表する大きな店へ成長させる。"}
+ {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:0,maxLevel:10,route:"commerce",levels:{
+   1:{actionId:"shop1",need:0,label:"最初の露店を作る",desc:"野営地のそばに、暮らしと売り場を兼ねた小さな店を開く。"},
+   2:{actionId:"shop2",need:12,label:"店に寝室と作業場を増築",desc:"大木を取り込んだ店へ改装し、寝室と作業場所を加える。"},
+   3:{actionId:"shop3",need:32,label:"売場と住居を拡張",desc:"品ぞろえと生活スペースを広げる。"},
+   4:{actionId:"shop4",need:55,label:"店を本格店舗にする",desc:"売り場を広げ、陳列枠を増やす。"},
+   5:{actionId:"shop5",need:70,label:"店の売場を拡張",desc:"新しい棚列を増築する。"},
+   6:{actionId:"shop6",need:85,label:"従業員を雇う",desc:"係員・接客係を迎え、店の運営を整える。"},
+   7:{actionId:"shop7",need:100,label:"二階に住居を増築",desc:"従業員と住民のための寝室を増やす。"},
+   8:{actionId:"shop8",need:120,label:"隣地へ売場を拡張",desc:"隣接区画をつなぎ、大型店舗にする。"},
+   9:{actionId:"shop9",need:145,label:"店員と売場を増やす",desc:"さらに従業員を迎え、売場を拡張する。"},
+   10:{actionId:"shop10",need:175,label:"町の大店を完成",desc:"複数区画を使う町の中心店舗へ発展させる。"}
  }},
  {id:"forge",name:"鍛冶屋",icon:"⚒️",category:"craft",areaTagsAny:["forge","rock","craft","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"forge",levels:{
    1:{actionId:"forge",need:12,label:"鍛冶職人を呼ぶ",desc:"簡素な鍛冶作業場を作り、職人に来てもらう。"},
@@ -274,14 +280,14 @@ F.TOWN_GROWTH_STAGES=Object.freeze([
  {id:'craft',label:'⑤ 職人の定住',facilities:{shop:2,warehouse:1,forge:1,house:1},points:28,residents:1},
  {id:'tavern',label:'⑥ 旅人の集まる場所',facilities:{shop:2,warehouse:1,forge:1,house:1,market:1,inn:1,adventure_board:1},points:40,residents:1},
  {id:'hub',label:'⑦ 冒険の拠点',facilities:{shop:3,warehouse:2,forge:2,house:1,market:1,inn:1,adventure_board:2,bank:1,plaza:1},points:55,residents:2},
- {id:'complete',label:'⑧ 発展した町',facilities:{shop:4,warehouse:2,forge:3,house:2,market:2,inn:2,adventure_board:2,bank:1,plaza:2},points:80,residents:2}
+ {id:'complete',label:'⑧ 発展した町',facilities:{shop:10,warehouse:2,forge:3,house:2,market:2,inn:2,adventure_board:2,bank:1,plaza:2},points:80,residents:2}
 ]);
 F.TOWN_BUILD_RULES=Object.freeze({
  shop1:{coins:40,items:{wood:2},story:'firstReturn'},shop2:{coins:120,items:{wood:5},requires:{shop:1},story:'firstSale'},
  warehouse:{coins:100,items:{wood:5},requires:{shop:2}},house:{coins:100,items:{wood:5},requires:{warehouse:1}},forge:{coins:160,items:{wood:3,iron:2},requires:{warehouse:1,house:1}},
  market:{coins:120,items:{wood:4},requires:{forge:1},residents:1},adventure_board:{coins:60,items:{wood:2},requires:{forge:1},residents:1},inn:{coins:200,items:{wood:8},requires:{market:1,adventure_board:1}},
  shop3:{coins:250,items:{wood:8},requires:{inn:1}},warehouse2:{coins:180,items:{wood:6,iron:2},requires:{inn:1}},bank:{coins:220,items:{wood:4,iron:3},requires:{shop:3,warehouse:2}},plaza:{coins:160,items:{iron:2},requires:{inn:1}},
- shop4:{coins:400,items:{wood:10,iron:5},requires:{bank:1}},forge2:{coins:200,items:{iron:4},requires:{inn:1}},forge3:{coins:350,items:{iron:6},requires:{bank:1}},inn2:{coins:300,items:{wood:10},requires:{bank:1}},plaza2:{coins:250,items:{iron:4},requires:{bank:1}},
+ shop4:{coins:400,items:{wood:10,iron:5},requires:{bank:1}},shop5:{coins:600,items:{wood:14,iron:6},requires:{shop:4,bank:1}},shop6:{coins:900,items:{wood:18,iron:8},requires:{shop:5,warehouse:2}},shop7:{coins:1400,items:{wood:24,iron:10},requires:{shop:6,house:2}},shop8:{coins:2200,items:{wood:32,iron:14},requires:{shop:7,plaza:2}},shop9:{coins:3400,items:{wood:40,iron:18},requires:{shop:8,inn:2}},shop10:{coins:5000,items:{wood:55,iron:25},requires:{shop:9,bank:1}},forge2:{coins:200,items:{iron:4},requires:{inn:1}},forge3:{coins:350,items:{iron:6},requires:{bank:1}},inn2:{coins:300,items:{wood:10},requires:{bank:1}},plaza2:{coins:250,items:{iron:4},requires:{bank:1}},
  house2:{coins:180,items:{wood:6},requires:{inn:1}},house3:{coins:300,items:{wood:10},requires:{bank:1}},market2:{coins:200,items:{wood:6},requires:{inn:1}},adventure_board2:{coins:120,items:{wood:4},requires:{inn:1}}
 });
 
@@ -573,3 +579,5 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 // Updated: 2026-10-24 JST / Ver1.35
 
 // Updated: 2026-10-24 JST / Ver1.36
+
+// Updated: 2026-10-24 JST / Ver1.37

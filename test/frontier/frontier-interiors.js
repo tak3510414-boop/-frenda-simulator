@@ -1,18 +1,18 @@
 /* Frenda Frontier Ver1.34: shared room geometry, furniture, navigation and rendering. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER;
-F.interiorModel=(id,save)=>{const s=F.townPreviewState(save),lv=Math.max(1,F.facilityLevel(s,id)),max={shop:4,warehouse:2,house:3,forge:3,inn:2,bank:1}[id]||1;
- const dims={shop:[[512,448],[640,512],[768,576]][Math.max(0,lv-2)],warehouse:lv>1?[640,512]:[448,384],house:[[384,384],[512,448],[640,448]][Math.min(2,lv-1)],forge:[[448,384],[576,448],[640,512]][Math.min(2,lv-1)],inn:lv>1?[768,576]:[512,448],bank:[448,384]},[w,h]=dims[id]||dims.house,objects=[],walls=[];
+F.interiorModel=(id,save)=>{const s=F.townPreviewState(save),lv=Math.max(1,F.facilityLevel(s,id)),max={shop:10,warehouse:2,house:3,forge:3,inn:2,bank:1}[id]||1;
+ const shopSlots=F.SHOP_CAPACITY[Math.min(10,lv)]||3,shopRows=Math.ceil((shopSlots/3)/2),shopW=Math.min(896,512+Math.max(0,lv-2)*48),shopH=Math.max(448,256+shopRows*80),dims={shop:[shopW,shopH],warehouse:lv>1?[640,512]:[448,384],house:[[384,384],[512,448],[640,448]][Math.min(2,lv-1)],forge:[[448,384],[576,448],[640,512]][Math.min(2,lv-1)],inn:lv>1?[768,576]:[512,448],bank:[448,384]},[w,h]=dims[id]||dims.house,objects=[],walls=[];
  const add=(kind,x,y,ow,oh,label,action,extra={})=>{const o={kind,x,y,w:ow,h:oh,label,action,...extra};objects.push(o);return o};
  const partition=(x,y,pw,ph,door,vertical=false)=>{if(vertical){walls.push({x,y,w:pw,h:door-y},{x,y:door+64,w:pw,h:y+ph-door-64})}else walls.push({x,y,w:door-x,h:ph},{x:door+64,y,w:x+pw-door-64,h:ph})};
  const room={id,lv,max,w,h,objects,walls,spawn:{x:w/2,y:h-64},exit:{kind:'exit',x:w/2-32,y:h-32,w:64,h:32,label:'町へ出る',action:'exit'},shelves:[],name:F.FACILITY_DEFS.find(f=>f.id===id)?.name||id};
  const bed=(x,y,label='休む')=>add('bed',x,y,48,72,label,'rest');const rack=(x,y,slots=null)=>{const o=add('shelf',x,y,120,48,slots?'陳列棚':'保管棚',slots?'stock':'warehouse',{slots});if(slots)room.shelves.push(o);return o};
  if(id==='shop'){
-  const count=(F.SHOP_CAPACITY[lv]||6)/3,bedroomW=128;partition(w-bedroomW,32,8,144,80,true);partition(w-bedroomW,176,bedroomW-32,8,w-112);bed(w-104,48);add('desk',w-104,136,48,32,'装備','equipment');
+  const count=(F.SHOP_CAPACITY[lv]||6)/3,bedroomW=lv>=7?192:128,bedCount=lv>=7?3:1;if(lv<7){partition(w-bedroomW,32,8,144,80,true);partition(w-bedroomW,176,bedroomW-32,8,w-112);}for(let i=0;i<bedCount;i++)bed(w-bedroomW+40+(i%2)*72,40+Math.floor(i/2)*80);add('desk',w-104,136,48,32,'装備','equipment');
   add('counter',w/2-80,56,160,52,'営業・商品一覧','shop');add('cabinet',w-104,48,64,32,'保管品','warehouse');
   // A compact shop floor: customers enter through a clear central aisle;
   // merchandise racks face inward and the counter anchors the back wall.
-  const rows=count/2;for(let i=0;i<count;i++){const col=i%2,row=Math.floor(i/2);rack(col?Math.min(w-168,344):48,160+row*80,[i*3,i*3+1,i*3+2])}
-  if(lv>=3){add('cabinet',w-104,224,64,40,'保管品','warehouse');if(lv>=4)add('cabinet',w-104,304,64,40,'保管品','warehouse')}
+  const rows=Math.ceil(count/2);for(let i=0;i<count;i++){const col=i%2,row=Math.floor(i/2);rack(col?Math.min(w-168,344):48,160+row*80,[i*3,i*3+1,i*3+2])}
+  if(lv>=3)add('cabinet',w-104,224,64,40,'保管品','warehouse');if(lv>=6)add('counter',w-220,240,128,44,'従業員用会計','shop');if(lv>=8)add('cabinet',w-104,304,64,40,'保管品','warehouse')
  }else if(id==='warehouse'){
   const rows=lv>1?4:2;for(let i=0;i<rows;i++){rack(40,64+i*88);rack(w-136,64+i*88)}if(lv>1){rack(208,64);rack(336,64)}add('desk',w/2-40,h-128,80,40,'保管品を整理','warehouse');
  }else if(id==='house'){
@@ -28,8 +28,8 @@ F.interiorModel=(id,save)=>{const s=F.townPreviewState(save),lv=Math.max(1,F.fac
  objects.push(room.exit);room.stockCapacity=room.shelves.reduce((n,o)=>n+o.slots.length,0);return room};
 F.interiorWalkable=(m,x,y)=>{const r=8;if(x<24+r||x>m.w-24-r||y<32+r||y>m.h-32)return false;return ![...m.walls,...m.objects.filter(o=>o.kind!=='exit')].some(o=>x>o.x-r&&x<o.x+o.w+r&&y>o.y-r&&y<o.y+o.h+r)};
 F.interiorPath=(m,start,target,object=null)=>{const cell=16,cols=Math.ceil(m.w/cell),rows=Math.ceil(m.h/cell),key=(x,y)=>y*cols+x,coord=k=>({x:(k%cols)*cell+8,y:Math.floor(k/cols)*cell+8}),sx=Math.floor(start.x/cell),sy=Math.floor(start.y/cell),queue=[key(sx,sy)],seen=new Map([[queue[0],null]]);let end=null,best=Infinity;
- for(let i=0;i<queue.length;i++){const k=queue[i],p=coord(k),d=object?Math.hypot(Math.max(object.x-p.x,0,p.x-object.x-object.w),Math.max(object.y-p.y,0,p.y-object.y-object.h)):Math.hypot(p.x-target.x,p.y-target.y);if(d<best){best=d;end=k}if(d<=(object?27:10))break;const x=k%cols,y=Math.floor(k/cols);for(const [dx,dy]of [[0,1],[1,0],[0,-1],[-1,0]]){const nx=x+dx,ny=y+dy,n=key(nx,ny),q=coord(n);if(nx<0||ny<0||nx>=cols||ny>=rows||seen.has(n)||!F.interiorWalkable(m,q.x,q.y))continue;seen.set(n,k);queue.push(n)}}
- if(best>(object?28:32)||end===null)return[];const out=[];for(let k=end;k!==null;k=seen.get(k))out.push(coord(k));return out.reverse()};
+ for(let i=0;i<queue.length;i++){const k=queue[i],p=coord(k),d=object?Math.hypot(Math.max(object.x-p.x,0,p.x-object.x-object.w),Math.max(object.y-p.y,0,p.y-object.y-object.h)):Math.hypot(p.x-target.x,p.y-target.y);if(d<best){best=d;end=k}if(d<=(object?(object.kind==='bed'?40:27):10))break;const x=k%cols,y=Math.floor(k/cols);for(const [dx,dy]of [[0,1],[1,0],[0,-1],[-1,0]]){const nx=x+dx,ny=y+dy,n=key(nx,ny),q=coord(n);if(nx<0||ny<0||nx>=cols||ny>=rows||seen.has(n)||!F.interiorWalkable(m,q.x,q.y))continue;seen.set(n,k);queue.push(n)}}
+ if(best>(object?(object.kind==='bed'?42:28):32)||end===null)return[];const out=[];for(let k=end;k!==null;k=seen.get(k))out.push(coord(k));return out.reverse()};
 R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;const c=canvas.getContext('2d');if(!c)return;const px=rt.player?.x||m.spawn.x,py=rt.player?.y||m.spawn.y,fit=m.id==='shop'&&m.lv===2?1:Math.min(1,480/(m.w-32),416/(m.h-32)),camera={x:m.w<512?(m.w-512)/2:Math.max(0,Math.min(m.w-512,px-256)),y:m.h<448?(m.h-448)/2:Math.max(0,Math.min(m.h-448,py-240))};rt.camera=camera;c.imageSmoothingEnabled=false;c.fillStyle='#10291f';c.fillRect(0,0,512,448);c.save();if(fit<1){c.translate(256,224);c.scale(fit,fit);c.translate(-256,-224)}c.translate(-Math.round(camera.x),-Math.round(camera.y));
  const box=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))},outline=(o)=>{c.strokeStyle='#3e291b';c.lineWidth=3;c.strokeRect(o.x+1,o.y+1,o.w-2,o.h-2)},label=(text,x,y)=>{c.font='bold 11px sans-serif';c.textAlign='center';c.strokeStyle='#2c281d';c.lineWidth=3;c.strokeText(text,x,y);c.fillStyle='#f8e5b8';c.fillText(text,x,y)};
  const wood=(o,tone=0)=>{box(o.x,o.y+5,o.w,o.h,'#0005');box(o.x,o.y,o.w,o.h,['#926039','#ad7544','#805631'][tone]);for(let yy=o.y+4;yy<o.y+o.h;yy+=8){box(o.x+2,yy,o.w-4,1,'#dba166');box(o.x+3,yy+4,o.w-7,1,'#674428');for(let xx=o.x+9;xx<o.x+o.w-5;xx+=24)box(xx+(yy%3),yy+2,9,1,'#b7824a')}outline(o)};
@@ -60,3 +60,5 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;con
 // Updated: 2026-10-24 JST / Ver1.35
 
 // Updated: 2026-10-24 JST / Ver1.36
+
+// Updated: 2026-10-24 JST / Ver1.37
