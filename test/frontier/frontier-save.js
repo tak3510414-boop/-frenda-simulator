@@ -76,7 +76,7 @@ F.normalizeSave=s=>{
  const owned={};for(const x of instances)owned[x.defId]=(Number(owned[x.defId])||0)+1;const equipped={};for(const slot of (F.EQUIPMENT_SLOTS||[])){const hit=instances.find(x=>x.uid===equippedUids[slot.id]);equipped[slot.id]=hit?.defId||null}
  s.equipment={owned,equipped,instances,equippedUids};
  s.warehouse=s.warehouse&&typeof s.warehouse==="object"?s.warehouse:{};
- s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,3):[null,null,null];while(s.shelves.length<3)s.shelves.push(null);
+ s.shelves=Array.isArray(s.shelves)?s.shelves.slice(0,18):[null,null,null];const shelfCount=Math.max(F.shopCapacity(s),s.shelves.length);while(s.shelves.length<shelfCount)s.shelves.push(null);
  s.sales=Object.assign(base.sales,s.sales||{});s.reputation=Object.assign(base.reputation,s.reputation||{});
  s.clock=Object.assign(base.clock,s.clock||{});s.clock.phaseIndex=Math.max(0,Math.min((F.TIME_PHASES?.length||4)-1,Number(s.clock.phaseIndex)||0));s.clock.actionCount=Math.max(0,Number(s.clock.actionCount)||0);s.clock.lastAction=String(s.clock.lastAction||"start");
  s.development=Object.assign(base.development,s.development||{});
@@ -158,3 +158,5 @@ F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.h
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
 
 // Updated: 2026-10-24 05:20 JST / Ver1.28
+
+// Updated: 2026-10-24 JST / Ver1.34
