@@ -282,7 +282,8 @@ F.townSceneModel=s=>{s=F.townPreviewState(s);
  const layout=F.SINGLE_TOWN_SCENE,town=F.townState(s),points=Math.max(0,Number(s?.development?.points)||0);
  const facilities=(F.FACILITY_DEFS||[]).map(def=>{
   const baseSite=F.facilitySite(def.id),level=Math.max(0,Number(town.facilities[def.id])||0),factor=({shop:[.86,.86,.90,.95,1],warehouse:[.80,.80,1],house:[.78,.78,.89,1],forge:[.78,.78,.89,1],inn:[.82,.82,1]}[def.id]||[1])[level]||1,site=baseSite?{...baseSite,x:baseSite.x+baseSite.w*(1-factor)/2,y:baseSite.y+baseSite.h*(1-factor),w:baseSite.w*factor,h:baseSite.h*factor}:null,project=town.projects[def.id]||null,phase=project?F.constructionPhase(project):null;
-  return {id:def.id,name:def.name,icon:def.icon,site,level,project,phase,state:project?(level?'upgrading':'construction'):(level?'built':'vacant'),entrance:site?{x:site.x+site.w/2,y:site.y+site.h+18}:null};
+  const entrance=site?(def.id==='owner_home'&&baseSite?.entrance?{...baseSite.entrance}:{x:site.x+site.w/2,y:site.y+site.h+18}):null;
+  return {id:def.id,name:def.name,icon:def.icon,site,level,project,phase,state:project?(level?'upgrading':'construction'):(level?'built':'vacant'),entrance};
  }).filter(x=>x.site);
  return {...layout,points,stage:F.developmentStage(points),facilities};
 };

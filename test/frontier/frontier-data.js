@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.39 / level-based buildings and interior plans / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.39";
+F.VERSION="1.40";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
@@ -212,7 +212,7 @@ F.CONSTRUCTION_NAV_PHASES=Object.freeze({
 F.FACILITY_SITES=Object.freeze({
  shop:{areaId:"core",x:54,y:90,w:205,h:170,entrance:{x:156,y:282}},
  house:{areaId:"core",x:325,y:66,w:178,h:158,entrance:{x:324,y:270}},
- owner_home:{areaId:"core",x:360,y:505,w:130,h:100,entrance:{x:425,y:623}},
+ owner_home:{areaId:"core",x:590,y:240,w:60,h:100,entrance:{x:655,y:358}},
  forge:{areaId:"core",x:365,y:330,w:165,h:145,entrance:{x:315,y:498}},
  market:{areaId:"core",x:60,y:350,w:165,h:135,entrance:{x:275,y:510}},
  adventure_board:{areaId:"core",x:470,y:235,w:65,h:65,entrance:{x:445,y:318}},
