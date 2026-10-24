@@ -7,12 +7,11 @@ F.interiorModel=(id,save)=>{const s=F.townPreviewState(save),lv=Math.max(1,F.fac
  const room={id,lv,max,w,h,objects,walls,spawn:{x:w/2,y:h-64},exit:{kind:'exit',x:w/2-32,y:h-32,w:64,h:32,label:'町へ出る',action:'exit'},shelves:[],name:F.FACILITY_DEFS.find(f=>f.id===id)?.name||id};
  const bed=(x,y,label='休む')=>add('bed',x,y,48,72,label,'rest');const rack=(x,y,slots=null)=>{const o=add('shelf',x,y,120,48,slots?'陳列棚':'保管棚',slots?'stock':'warehouse',{slots});if(slots)room.shelves.push(o);return o};
  if(id==='shop'){
-  const count=(F.SHOP_CAPACITY[lv]||6)/3,bedroomW=lv>=7?192:128,bedCount=lv>=7?3:1;if(lv<7){partition(w-bedroomW,32,8,144,80,true);partition(w-bedroomW,176,bedroomW-32,8,w-112);}for(let i=0;i<bedCount;i++)bed(w-bedroomW+40+(i%2)*72,40+Math.floor(i/2)*80);add('desk',w-104,136,48,32,'装備','equipment');
-  add('counter',w/2-80,56,160,52,'営業・商品一覧','shop');add('cabinet',w-104,48,64,32,'保管品','warehouse');
-  // A compact shop floor: customers enter through a clear central aisle;
-  // merchandise racks face inward and the counter anchors the back wall.
-  const rows=Math.ceil(count/2);for(let i=0;i<count;i++){const col=i%2,row=Math.floor(i/2);rack(col?Math.min(w-168,344):48,160+row*80,[i*3,i*3+1,i*3+2])}
-  if(lv>=3)add('cabinet',w-104,224,64,40,'保管品','warehouse');if(lv>=6)add('counter',w-220,240,128,44,'従業員用会計','shop');if(lv>=8)add('cabinet',w-104,304,64,40,'保管品','warehouse')
+  const count=(F.SHOP_CAPACITY[lv]||6)/3,bedroomW=lv>=7?192:128,bedCount=lv>=7?3:1;if(lv<7){partition(w-bedroomW,32,8,144,80,true);partition(w-bedroomW,176,bedroomW-32,8,w-112);}for(let i=0;i<bedCount;i++)bed(w-bedroomW+24+(i%2)*64,40+Math.floor(i/2)*80);add('desk',w-104,136,48,32,'装備','equipment');
+  const salesW=w-bedroomW-48;add('counter',Math.max(48,salesW/2-80),56,160,52,'営業・商品一覧','shop');add('cabinet',w-104,48,64,32,'保管品','warehouse');
+  // Shelf rows expand across the sales floor while the right wing becomes living space.
+  const cols=lv>=5?3:2,rows=Math.ceil(count/cols),step=(salesW-120)/(cols-1);for(let i=0;i<count;i++){const col=i%cols,row=Math.floor(i/cols);rack(48+col*step,160+row*80,[i*3,i*3+1,i*3+2])}
+  if(lv>=3)add('cabinet',w-104,224,64,40,'保管品','warehouse');if(lv>=6)add('counter',salesW/2-64,240,128,44,'従業員用会計','shop');if(lv>=8)add('cabinet',w-104,304,64,40,'保管品','warehouse')
  }else if(id==='warehouse'){
   const rows=lv>1?4:2;for(let i=0;i<rows;i++){rack(40,64+i*88);rack(w-136,64+i*88)}if(lv>1){rack(208,64);rack(336,64)}add('desk',w/2-40,h-128,80,40,'保管品を整理','warehouse');
  }else if(id==='house'){
@@ -30,7 +29,7 @@ F.interiorWalkable=(m,x,y)=>{const r=8;if(x<24+r||x>m.w-24-r||y<32+r||y>m.h-32)r
 F.interiorPath=(m,start,target,object=null)=>{const cell=16,cols=Math.ceil(m.w/cell),rows=Math.ceil(m.h/cell),key=(x,y)=>y*cols+x,coord=k=>({x:(k%cols)*cell+8,y:Math.floor(k/cols)*cell+8}),sx=Math.floor(start.x/cell),sy=Math.floor(start.y/cell),queue=[key(sx,sy)],seen=new Map([[queue[0],null]]);let end=null,best=Infinity;
  for(let i=0;i<queue.length;i++){const k=queue[i],p=coord(k),d=object?Math.hypot(Math.max(object.x-p.x,0,p.x-object.x-object.w),Math.max(object.y-p.y,0,p.y-object.y-object.h)):Math.hypot(p.x-target.x,p.y-target.y);if(d<best){best=d;end=k}if(d<=(object?(object.kind==='bed'?40:27):10))break;const x=k%cols,y=Math.floor(k/cols);for(const [dx,dy]of [[0,1],[1,0],[0,-1],[-1,0]]){const nx=x+dx,ny=y+dy,n=key(nx,ny),q=coord(n);if(nx<0||ny<0||nx>=cols||ny>=rows||seen.has(n)||!F.interiorWalkable(m,q.x,q.y))continue;seen.set(n,k);queue.push(n)}}
  if(best>(object?(object.kind==='bed'?42:28):32)||end===null)return[];const out=[];for(let k=end;k!==null;k=seen.get(k))out.push(coord(k));return out.reverse()};
-R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;const c=canvas.getContext('2d');if(!c)return;const px=rt.player?.x||m.spawn.x,py=rt.player?.y||m.spawn.y,fit=m.id==='shop'&&m.lv===2?1:Math.min(1,480/(m.w-32),416/(m.h-32)),camera={x:m.w<512?(m.w-512)/2:Math.max(0,Math.min(m.w-512,px-256)),y:m.h<448?(m.h-448)/2:Math.max(0,Math.min(m.h-448,py-240))};rt.camera=camera;c.imageSmoothingEnabled=false;c.fillStyle='#10291f';c.fillRect(0,0,512,448);c.save();if(fit<1){c.translate(256,224);c.scale(fit,fit);c.translate(-256,-224)}c.translate(-Math.round(camera.x),-Math.round(camera.y));
+R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;const c=canvas.getContext('2d');if(!c)return;const px=rt.player?.x||m.spawn.x,py=rt.player?.y||m.spawn.y,fit=1,camera={x:m.w<512?(m.w-512)/2:Math.max(0,Math.min(m.w-512,px-256)),y:m.h<448?(m.h-448)/2:Math.max(0,Math.min(m.h-448,py-240))};rt.camera=camera;c.imageSmoothingEnabled=false;c.fillStyle='#10291f';c.fillRect(0,0,512,448);c.save();if(fit<1){c.translate(256,224);c.scale(fit,fit);c.translate(-256,-224)}c.translate(-Math.round(camera.x),-Math.round(camera.y));
  const box=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))},outline=(o)=>{c.strokeStyle='#3e291b';c.lineWidth=3;c.strokeRect(o.x+1,o.y+1,o.w-2,o.h-2)},label=(text,x,y)=>{c.font='bold 11px sans-serif';c.textAlign='center';c.strokeStyle='#2c281d';c.lineWidth=3;c.strokeText(text,x,y);c.fillStyle='#f8e5b8';c.fillText(text,x,y)};
  const wood=(o,tone=0)=>{box(o.x,o.y+5,o.w,o.h,'#0005');box(o.x,o.y,o.w,o.h,['#926039','#ad7544','#805631'][tone]);for(let yy=o.y+4;yy<o.y+o.h;yy+=8){box(o.x+2,yy,o.w-4,1,'#dba166');box(o.x+3,yy+4,o.w-7,1,'#674428');for(let xx=o.x+9;xx<o.x+o.w-5;xx+=24)box(xx+(yy%3),yy+2,9,1,'#b7824a')}outline(o)};
  const cuts={shelf:[14,174,405,191],bed:[460,40,203,325],furnace:[768,14,267,357],stove:[768,14,267,357],counter:[1082,144,349,220],workbench:[14,446,393,226],anvil:[436,462,278,216],safe:[794,394,199,283],cabinet:[1075,401,358,269],table:[14,744,368,246],desk:[14,744,368,246],wood:[396,700,322,322],stone:[734,700,330,322],wall:[1084,700,338,322]};
@@ -62,3 +61,5 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;con
 // Updated: 2026-10-24 JST / Ver1.36
 
 // Updated: 2026-10-24 JST / Ver1.37
+
+// Updated: 2026-10-24 JST / Ver1.38

@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.32 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.37";
+F.VERSION="1.38";
 F.SHOP_CAPACITY=Object.freeze([3,3,6,12,18,24,30,36,42,48,54]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(10,Number(s?.development?.town?.facilities?.shop)||0))];
 F.SAVE_KEY="frenda:frontier:v1";
@@ -581,3 +581,5 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 // Updated: 2026-10-24 JST / Ver1.36
 
 // Updated: 2026-10-24 JST / Ver1.37
+
+// Updated: 2026-10-24 JST / Ver1.38
