@@ -5,11 +5,11 @@ F.interiorModel=(id,save)=>{const s=F.townPreviewState(save),lv=Math.max(1,F.fac
  const add=(kind,x,y,ow,oh,label,action,extra={})=>{const o={kind,x,y,w:ow,h:oh,label,action,...extra};objects.push(o);return o};
  const partition=(x,y,pw,ph,door,vertical=false)=>{if(vertical){walls.push({x,y,w:pw,h:door-y},{x,y:door+64,w:pw,h:y+ph-door-64})}else walls.push({x,y,w:door-x,h:ph},{x:door+64,y,w:x+pw-door-64,h:ph})};
  const room={id,lv,max,w,h,objects,walls,spawn:{x:w/2,y:h-64},exit:{kind:'exit',x:w/2-32,y:h-32,w:64,h:32,label:'町へ出る',action:'exit'},shelves:[],name:F.FACILITY_DEFS.find(f=>f.id===id)?.name||id};
- const bed=(x,y,label='休む')=>add('bed',x,y,48,72,label,'rest');const rack=(x,y,slots=null)=>{const o=add('shelf',x,y,96,40,slots?'陳列棚':'保管棚',slots?'stock':'warehouse',{slots});if(slots)room.shelves.push(o);return o};
+ const bed=(x,y,label='休む')=>add('bed',x,y,48,72,label,'rest');const rack=(x,y,slots=null)=>{const o=add('shelf',x,y,120,48,slots?'陳列棚':'保管棚',slots?'stock':'warehouse',{slots});if(slots)room.shelves.push(o);return o};
  if(id==='shop'){
   const count=(F.SHOP_CAPACITY[lv]||6)/3,bedroomW=128;partition(w-bedroomW,32,8,144,80,true);partition(w-bedroomW,176,bedroomW-32,8,w-112);bed(w-104,48);add('desk',w-104,136,48,32,'装備','equipment');
   add('counter',48,96,128,40,'営業・商品一覧','shop');add('cabinet',208,48,64,32,'保管品','warehouse');
-  const rows=count/2;for(let i=0;i<count;i++){const col=i%2,row=Math.floor(i/2);rack(col?Math.min(w-168,400):80,224+row*88,[i*3,i*3+1,i*3+2])}
+  const rows=count/2;for(let i=0;i<count;i++){const col=i%2,row=Math.floor(i/2);rack(col?Math.min(w-176,344):112,216+row*80,[i*3,i*3+1,i*3+2])}
   if(lv>=3){add('cabinet',w-104,224,64,40,'保管品','warehouse');if(lv>=4)add('cabinet',w-104,304,64,40,'保管品','warehouse')}
  }else if(id==='warehouse'){
   const rows=lv>1?4:2;for(let i=0;i<rows;i++){rack(40,64+i*88);rack(w-136,64+i*88)}if(lv>1){rack(208,64);rack(336,64)}add('desk',w/2-40,h-128,80,40,'保管品を整理','warehouse');
@@ -42,7 +42,7 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;con
  for(const x of [40,m.w-52]){box(x,46,10,18,'#35281d');box(x+2,48,6,12,'#f5c46d');box(x+3,49,3,9,'#fff1b0')}
  if(['shop','house','inn','bank'].includes(m.id)){const rx=m.w/2-28,ry=m.h-152;box(rx,ry,56,112,'#665a36');box(rx+3,ry+3,50,106,'#a08e52');box(rx+6,ry+6,44,100,'#5d6742');for(let yy=ry+12;yy<ry+102;yy+=16){box(rx+10,yy,4,4,'#c6ad68');box(rx+42,yy,4,4,'#c6ad68')}}
  for(const o of m.objects){if(o.kind==='exit'){box(o.x,o.y,o.w,o.h,'#6b583a');box(o.x+4,o.y+4,o.w-8,o.h-8,'#c4a87d');label('町へ',o.x+o.w/2,o.y+20);continue}const rich=sprite(o.kind,o);if(!rich)wood(o,o.kind==='bed'?2:0);
-  if(o.kind==='shelf'){if(!rich){box(o.x+5,o.y+7,o.w-10,o.h-13,'#3f2b1b');for(let i=0;i<3;i++){box(o.x+5+i*29,o.y+7,3,o.h-13,'#d09a5c');box(o.x+8+i*29,o.y+o.h-9,26,3,'#c89150')}}if(o.slots)o.slots.forEach((slot,i)=>{const sh=s.shelves?.[slot],im=sh&&sh.qty>0?art.items?.[sh.itemId]:null,cx=o.x+19+i*29;if(im){const k=Math.min(24/im.naturalWidth,24/im.naturalHeight);c.drawImage(im,cx-im.naturalWidth*k/2,o.y+8,im.naturalWidth*k,im.naturalHeight*k)}else if(sh&&sh.qty>0)label(F.item(sh.itemId)?.icon||'',cx,o.y+25);label(sh&&sh.qty>0?sh.price+'G':'空',cx,o.y+o.h+13)});
+  if(o.kind==='shelf'){if(!rich){box(o.x+5,o.y+7,o.w-10,o.h-13,'#3f2b1b');for(let i=0;i<3;i++){box(o.x+5+i*29,o.y+7,3,o.h-13,'#d09a5c');box(o.x+8+i*29,o.y+o.h-9,26,3,'#c89150')}}if(o.slots)o.slots.forEach((slot,i)=>{const sh=s.shelves?.[slot],im=sh&&sh.qty>0?art.items?.[sh.itemId]:null,cx=o.x+24+i*37;if(im){const k=Math.min(24/im.naturalWidth,24/im.naturalHeight);c.drawImage(im,cx-im.naturalWidth*k/2,o.y+8,im.naturalWidth*k,im.naturalHeight*k)}else if(sh&&sh.qty>0)label(F.item(sh.itemId)?.icon||'',cx,o.y+25);label(sh&&sh.qty>0?sh.price+'G':'空',cx,o.y+o.h+13)});
   }else if(!rich&&o.kind==='bed'){box(o.x+5,o.y+8,o.w-10,o.h-14,'#e1d3a4');box(o.x+7,o.y+24,o.w-14,o.h-33,'#4d819b');for(let yy=o.y+28;yy<o.y+o.h-9;yy+=8)box(o.x+9,yy,o.w-18,1,'#86adc0');box(o.x+8,o.y+9,o.w-16,16,'#f0ebd2');
   }else if(!rich&&(o.kind==='furnace'||o.kind==='stove')){box(o.x+3,o.y+3,o.w-6,o.h-6,'#605c50');for(let yy=o.y+5;yy<o.y+o.h-5;yy+=12)for(let xx=o.x+5;xx<o.x+o.w-5;xx+=16)box(xx,yy,13,9,'#807967');box(o.x+12,o.y+o.h*.45,o.w-24,o.h*.4,'#342a21');box(o.x+16,o.y+o.h*.52,o.w-32,o.h*.28,'#d66a2d');box(o.x+20,o.y+o.h*.62,o.w-40,o.h*.17,'#ffcf61');
   }else if(!rich&&o.kind==='safe'){box(o.x+3,o.y+3,o.w-6,o.h-6,'#6d7b7c');box(o.x+7,o.y+7,o.w-14,o.h-14,'#424b4c');box(o.x+o.w/2,o.y+o.h/2,12,6,'#c9ad64');
@@ -50,7 +50,9 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{canvas.width=512;canvas.height=448;con
   }else if(!rich&&o.kind==='counter'){box(o.x+8,o.y+8,18,12,'#303a39');box(o.x+10,o.y+9,14,7,'#8ca397');box(o.x+o.w-26,o.y+8,16,18,'#e1cf96');
   }else if(!rich&&o.kind==='workbench'){box(o.x+15,o.y+8,32,4,'#565d59');box(o.x+39,o.y+6,6,14,'#8c9891')}
  }
- const player=rt.player||m.spawn,img=art[rt.facing==='up'?'playerBack':rt.facing==='left'?'playerLeft':rt.facing==='right'?'playerRight':'playerFront'];box(player.x-9,player.y-1,18,4,'#0004');if(img){const sw=img.naturalWidth,sh=img.naturalHeight,dw=32,dh=40,feet=sh*.20,step=rt.moving?Math.sin(Date.now()/90)*1.4:0;c.drawImage(img,0,0,sw,sh-feet,player.x-16,player.y-38,dw,dh*.8);c.drawImage(img,0,sh-feet,sw/2,feet,player.x-16,player.y-6-step,16,8);c.drawImage(img,sw/2,sh-feet,sw/2,feet,player.x,player.y-6+step,16,8)}else{box(player.x-10,player.y-32,20,16,'#b44832');box(player.x-8,player.y-16,16,16,'#33546a')}
+ const player=rt.player||m.spawn,img=art[rt.facing==='up'?'playerBack':rt.facing==='left'?'playerLeft':rt.facing==='right'?'playerRight':'playerFront'];box(player.x-9,player.y-1,18,4,'#0004');if(img){const sw=img.naturalWidth,sh=img.naturalHeight,dw=48,dh=60,feet=sh*.20,step=rt.moving?Math.sin(Date.now()/90)*1.4:0;c.drawImage(img,0,0,sw,sh-feet,player.x-24,player.y-56,dw,dh*.8);c.drawImage(img,0,sh-feet,sw/2,feet,player.x-24,player.y-8-step,24,12);c.drawImage(img,sw/2,sh-feet,sw/2,feet,player.x,player.y-8+step,24,12)}else{box(player.x-10,player.y-32,20,16,'#b44832');box(player.x-8,player.y-16,16,16,'#33546a')}
  c.restore();return camera};
 })();
 // Updated: 2026-10-24 JST / Ver1.34
+
+// Updated: 2026-10-24 JST / Ver1.35
