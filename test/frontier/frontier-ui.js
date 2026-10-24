@@ -109,7 +109,8 @@ function drawCoreTownFallback(canvas,s){
 function drawTownFacility(c,f,buildingAtlas=null,extraAtlas=null,stallSprite=null){
  const {x,y,w,h}=f.site,level=f.level,colors={shop:['#b85c3c','#e5c795'],house:['#6388a3','#e1c79d'],owner_home:['#6388a3','#e1c79d'],forge:['#68505a','#b6a18b'],market:['#63865b','#e5c586'],adventure_board:['#916948','#d2b27a'],plaza:['#618d9d','#b4d1d6']},[roof,wall]=colors[f.id]||colors.house;
  const box=(a,b,d,e,color)=>{c.fillStyle=color;c.fillRect(Math.round(a),Math.round(b),Math.round(d),Math.round(e))};
- const name=(text,color='#f6efd4')=>{c.font='bold 12px sans-serif';c.textAlign='center';c.strokeStyle='#213a29';c.lineWidth=3;c.strokeText(text,x+w/2,y+h+14);c.fillStyle=color;c.fillText(text,x+w/2,y+h+14)};
+ const visual=f.id==='owner_home'?{x:536,y:224,w:112,h:118}:f.site;
+ const name=(text,color='#f6efd4')=>{const p=f.id==='owner_home'?visual:f.site;c.font='bold 12px sans-serif';c.textAlign='center';c.strokeStyle='#213a29';c.lineWidth=3;c.strokeText(text,p.x+p.w/2,p.y+p.h+14);c.fillStyle=color;c.fillText(text,p.x+p.w/2,p.y+p.h+14)};
  if(f.state==='vacant'){return;
   c.save();c.globalAlpha=.38;box(x+12,y+h-26,w-24,22,'#8fa568');c.strokeStyle='#b8c68d';c.setLineDash([5,7]);c.strokeRect(x+12,y+18,w-24,h-36);c.setLineDash([]);c.restore();
   name(f.name+'予定地','#365632');return;
@@ -120,7 +121,7 @@ function drawTownFacility(c,f,buildingAtlas=null,extraAtlas=null,stallSprite=nul
   const extraIndex={warehouse:0,inn:1,bank:2}[f.id];if(extraAtlas&&Number.isInteger(extraIndex)){const cut=[[0,.35],[.35,.36],[.71,.29]][extraIndex],sx=cut[0]*extraAtlas.naturalWidth,sw=cut[1]*extraAtlas.naturalWidth,sh=extraAtlas.naturalHeight,scale=Math.min((w-8)/sw,(h-8)/sh),dw=sw*scale,dh=sh*scale;c.drawImage(extraAtlas,sx,0,sw,sh,x+(w-dw)/2,y+h-dh,dw,dh);return}
 
   const spriteIndex={shop:0,house:1,owner_home:1,forge:2,market:3,plaza:4,adventure_board:5}[f.id];
-  if(buildingAtlas&&Number.isInteger(spriteIndex)){const sw=buildingAtlas.naturalWidth/3,sh=buildingAtlas.naturalHeight/2,ix=(spriteIndex%3)*sw,iy=Math.floor(spriteIndex/3)*sh;const pad=8,scale=Math.min((w-pad*2)/sw,(h-pad*2)/sh),dw=sw*scale,dh=sh*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;c.save();c.imageSmoothingEnabled=false;c.shadowColor='rgba(23,35,22,.35)';c.shadowBlur=5;c.shadowOffsetY=4;c.drawImage(buildingAtlas,ix,iy,sw,sh,dx,dy,dw,dh);c.restore();return}
+  if(buildingAtlas&&Number.isInteger(spriteIndex)){const sw=buildingAtlas.naturalWidth/3,sh=buildingAtlas.naturalHeight/2,ix=(spriteIndex%3)*sw,iy=Math.floor(spriteIndex/3)*sh,pad=8,v=f.id==='owner_home'?visual:{x,y,w,h},scale=Math.min((v.w-pad*2)/sw,(v.h-pad*2)/sh),dw=sw*scale,dh=sh*scale,dx=v.x+(v.w-dw)/2,dy=v.y+(v.h-dh)/2;c.save();c.imageSmoothingEnabled=false;c.shadowColor='rgba(23,35,22,.35)';c.shadowBlur=5;c.shadowOffsetY=4;c.drawImage(buildingAtlas,ix,iy,sw,sh,dx,dy,dw,dh);c.restore();return}
   if(f.id==='plaza'){
    box(x,y,w,h,'#a5aaa0');for(let yy=y;yy<y+h;yy+=14)for(let xx=x;xx<x+w;xx+=16)box(xx+1,yy+1,14,12,'#bac0ae');
    c.fillStyle='#709eb5';c.beginPath();c.ellipse(x+w/2,y+h/2,w*.40,h*.29,0,0,Math.PI*2);c.fill();box(x+w/2-4,y+13,8,30,'#d2e5dd');box(x+w/2-10,y+10,20,7,'#eff4d9');return;

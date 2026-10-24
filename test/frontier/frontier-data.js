@@ -1,5 +1,5 @@
-// Ver1.39: level-based shop, forge, home and tavern interiors. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.39 / level-based buildings and interior plans / Updated: 2026-10-24 */
+// Ver1.40: corrected owner-home scale and shop entrance clearance. Updated 2026-10-24 JST
+/* Frenda Frontier Ver1.40 / level-based buildings and interior plans / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
 F.VERSION="1.40";

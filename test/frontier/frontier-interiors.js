@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.39: level-based one-story interiors, stock shelves and walkable rooms. */
+/* Frenda Frontier Ver1.40: level-based one-story interiors, stock shelves and walkable rooms. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER;
 F.interiorModel=(id,save)=>{
  const s=F.townPreviewState(save),lv=Math.max(1,Math.min(({shop:6,forge:6,inn:6,house:6,owner_home:1,warehouse:2,bank:1})[id]||1,F.facilityLevel(s,id))),objects=[],walls=[];
@@ -18,9 +18,15 @@ F.interiorModel=(id,save)=>{
  if(id==='shop'){
   const cap=F.SHOP_CAPACITY[lv]||3,hasHome=lv<6,homeW=hasHome?160:0,salesRight=w-homeW;
   if(hasHome){const doorway=Math.round(h*.58);partition(w-homeW,32,8,h-64,doorway,true);add('door',w-homeW-20,doorway+7,48,46,'立入禁止（店主は通行可）','rest');bed(w-homeW+24,72,'寝室で休む');add('table',w-homeW+24,184,88,48,'自宅で休む','rest');add('cabinet',w-homeW+72,h-112,72,44,'保管品','warehouse')}
-  counter(Math.round(w*.16),Math.round(h*.31),128,'会計・営業');
+  // Keep checkout against the back wall so the main entrance aisle remains open.
+  counter(32,48,128,'会計・営業');
   const coords=[];
-  if(cap<=4){for(let i=0;i<cap;i++)coords.push([40+(i%2)*152,194+Math.floor(i/2)*94])}
+  if(lv===6){
+   // Nine displays in side banks with a clear, continuous aisle to the door.
+   coords.push([32,106],[286,106],[540,106]);
+   for(const y of [190,276,362])coords.push([32,y],[540,y]);
+  }
+  else if(cap<=4){for(let i=0;i<cap;i++)coords.push([40+(i%2)*152,194+Math.floor(i/2)*94])}
   else if(cap<=6){for(let i=0;i<cap;i++)coords.push([36+(i%3)*148,190+Math.floor(i/3)*92])}
   else {for(let i=0;i<cap;i++)coords.push([28+(i%3)*152,164+Math.floor(i/3)*82])}
   coords.forEach(([x,y],i)=>{if(!hasHome||x+132<=salesRight)rack(x,y,i)});
