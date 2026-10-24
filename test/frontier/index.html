@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.44">
+<html lang="ja" data-app-version="1.45">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.44</title>
+<title>Frenda Frontier Ver1.45</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -80,9 +80,9 @@ body.dungeonActive .gameHeader .sub{font-size:8px}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.44 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.45 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
- <div class="notice">🌿 Ver1.44：店・鍛冶屋・酒場・専用住宅の室内を設計図に一致。</div>
+ <div class="notice">🌱 Ver1.45：未開拓地・構築物なしのマップで歩行確認。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
  <section class="gameFrame"><div class="gameHeader"><div><h2 id="viewTitle">拠点</h2><div class="sub" id="viewSubtitle"></div></div><div class="sub" id="viewMeta"></div></div><div class="sceneHolder"><div id="sceneMount" class="gameScene"></div></div></section>
 </main>
@@ -90,7 +90,7 @@ body.dungeonActive .gameHeader .sub{font-size:8px}
 <script>
 (()=>{const v=document.documentElement.dataset.appVersion||"0";document.write(`<script src="../frenda-test.js?app=${v}"><\/script>`);document.write(`<script src="../frenda-user.js?app=${v}"><\/script>`);for(const f of ["frenda-master.js","frenda-data.js"])document.write(`<script src="../../${f}?app=${v}"><\/script>`);})();
 </script>
-<script>(()=>{const v=document.documentElement.dataset.appVersion||"0";for(const f of ["frontier-data.js","frontier-pokemon.js","frontier-sprites.js","frontier-save.js","frontier-core.js","frontier-render.js","frontier-interiors.js","frontier-ui.js"])document.write(`<script src="${f}?v=${encodeURIComponent(v)}"><\/script>`);})();</script>
+<script>(()=>{const v=document.documentElement.dataset.appVersion||"0";for(const f of ["frontier-data.js","frontier-pokemon.js","frontier-sprites.js","frontier-save.js","frontier-core.js","frontier-render.js","frontier-interiors.js","frontier-wilderness.js","frontier-ui.js"])document.write(`<script src="${f}?v=${encodeURIComponent(v)}"><\/script>`);})();</script>
 </body>
 </html>
 <!-- Updated: 2026-10-22 21:42 JST / Ver1.10 -->
@@ -120,4 +120,6 @@ body.dungeonActive .gameHeader .sub{font-size:8px}
 
 <!-- Updated: 2026-10-24 JST / Ver1.38 -->
 
-<!-- Updated: 2026-10-24 JST / Ver1.44 -->
+<!-- Updated: 2026-10-24 JST / Ver1.45 -->
+
+<!-- Updated: 2026-10-25 JST / Ver1.45 -->
