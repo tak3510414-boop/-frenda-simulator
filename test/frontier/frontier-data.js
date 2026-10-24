@@ -1,8 +1,8 @@
-// Ver1.40: corrected owner-home scale and shop entrance clearance. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.40 / level-based buildings and interior plans / Updated: 2026-10-24 */
+// Ver1.44: render the approved interior artwork with save-linked shop stock. Updated 2026-10-24 JST
+/* Frenda Frontier Ver1.44 / approved interior layouts / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.42";
+F.VERSION="1.44";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
