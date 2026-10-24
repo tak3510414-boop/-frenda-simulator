@@ -1,10 +1,10 @@
-// Ver1.32: staged settlement growth, eastern facilities and services. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.32 / NPC yielding + dungeon floor detail / Updated: 2026-10-23 */
+// Ver1.39: level-based shop, forge, home and tavern interiors. Updated 2026-10-24 JST
+/* Frenda Frontier Ver1.39 / level-based buildings and interior plans / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.38";
-F.SHOP_CAPACITY=Object.freeze([3,3,6,12,18,24,30,36,42,48,54]);
-F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(10,Number(s?.development?.town?.facilities?.shop)||0))];
+F.VERSION="1.39";
+F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
+F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
 F.W=32;F.H=24;F.DUNGEON_VIEW_COLS=11;F.DUNGEON_VIEW_ROWS=9;F.BAG_LIMIT=10;
 F.ITEMS=Object.freeze({
@@ -212,6 +212,7 @@ F.CONSTRUCTION_NAV_PHASES=Object.freeze({
 F.FACILITY_SITES=Object.freeze({
  shop:{areaId:"core",x:54,y:90,w:205,h:170,entrance:{x:156,y:282}},
  house:{areaId:"core",x:325,y:66,w:178,h:158,entrance:{x:324,y:270}},
+ owner_home:{areaId:"core",x:360,y:505,w:130,h:100,entrance:{x:425,y:623}},
  forge:{areaId:"core",x:365,y:330,w:165,h:145,entrance:{x:315,y:498}},
  market:{areaId:"core",x:60,y:350,w:165,h:135,entrance:{x:275,y:510}},
  adventure_board:{areaId:"core",x:470,y:235,w:65,h:65,entrance:{x:445,y:318}},
@@ -231,28 +232,31 @@ F.facilitySite=id=>F.FACILITY_SITES?.[id]||null;
 // Ver0.28: 施設はマスター定義で管理する。今後、新施設を追加しても町本体のロジックを増やさず、
 // この定義と対応する表示レイヤーを追加すれば拡張できる構造にする。
 F.FACILITY_DEFS=Object.freeze([
- {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:0,maxLevel:10,route:"commerce",levels:{
-   1:{actionId:"shop1",need:0,label:"最初の露店を作る",desc:"野営地のそばに、暮らしと売り場を兼ねた小さな店を開く。"},
-   2:{actionId:"shop2",need:12,label:"店に寝室と作業場を増築",desc:"大木を取り込んだ店へ改装し、寝室と作業場所を加える。"},
-   3:{actionId:"shop3",need:32,label:"売場と住居を拡張",desc:"品ぞろえと生活スペースを広げる。"},
-   4:{actionId:"shop4",need:55,label:"店を本格店舗にする",desc:"売り場を広げ、陳列枠を増やす。"},
-   5:{actionId:"shop5",need:70,label:"店の売場を拡張",desc:"新しい棚列を増築する。"},
-   6:{actionId:"shop6",need:85,label:"従業員を雇う",desc:"係員・接客係を迎え、店の運営を整える。"},
-   7:{actionId:"shop7",need:100,label:"二階に住居を増築",desc:"従業員と住民のための寝室を増やす。"},
-   8:{actionId:"shop8",need:120,label:"隣地へ売場を拡張",desc:"隣接区画をつなぎ、大型店舗にする。"},
-   9:{actionId:"shop9",need:145,label:"店員と売場を増やす",desc:"さらに従業員を迎え、売場を拡張する。"},
-   10:{actionId:"shop10",need:175,label:"町の大店を完成",desc:"複数区画を使う町の中心店舗へ発展させる。"}
+ {id:"shop",name:"店",icon:"🏪",category:"commerce",areaTagsAny:["commerce","road","core"],constructionVisualSet:"default",startLevel:0,maxLevel:6,route:"commerce",levels:{
+   1:{actionId:"shop1",need:0,label:"最初の露店を作る",desc:"野営地のそばに、暮らしと売り場を兼ねた小さな店を開く。棚3枠。"},
+   2:{actionId:"shop2",need:12,label:"店を少し広げる",desc:"店舗兼住宅を増築し、棚を4枠にする。"},
+   3:{actionId:"shop3",need:32,label:"売場と住居を広げる",desc:"同じ建物の中で売場を広げ、棚を5枠にする。"},
+   4:{actionId:"shop4",need:55,label:"本格店舗へ増築",desc:"町マップの区画内で1階を広げ、棚を6枠にする。"},
+   5:{actionId:"shop5",need:70,label:"店舗兼住宅を整える",desc:"店舗の外形を保ち、棚6枠と居住区画を使いやすく整える。"},
+   6:{actionId:"shop6",need:85,label:"店舗専用化・隣に専用住宅を建てる",desc:"店舗の外形は縮めず、住居部分を売場に転換して棚を9枠にする。同時に隣の区画へ専用住宅を建てる。"}
  }},
- {id:"forge",name:"鍛冶屋",icon:"⚒️",category:"craft",areaTagsAny:["forge","rock","craft","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"forge",levels:{
-   1:{actionId:"forge",need:12,label:"鍛冶職人を呼ぶ",desc:"簡素な鍛冶作業場を作り、職人に来てもらう。"},
-   2:{actionId:"forge2",need:34,label:"鍛冶屋を拡張する",desc:"炉と作業場を整え、修理や強化の幅を広げる。"},
-   3:{actionId:"forge3",need:58,label:"鍛冶工房にする",desc:"本格的な工房へ発展させる。"}
+ {id:"forge",name:"鍛冶屋",icon:"⚒️",category:"craft",areaTagsAny:["forge","rock","craft","core"],constructionVisualSet:"default",startLevel:0,maxLevel:6,route:"forge",levels:{
+   1:{actionId:"forge",need:12,label:"小さな鍛冶屋を作る",desc:"炉1・金床1・作業台1の小さな作業場。"},
+   2:{actionId:"forge2",need:34,label:"素材棚を整える",desc:"炉・金床・作業台を保ち、素材棚を追加する。"},
+   3:{actionId:"forge3",need:58,label:"冷却場を作る",desc:"金床を2台に増やし、水槽を備える。"},
+   4:{actionId:"forge4",need:75,label:"炉を増やす",desc:"炉2・金床2にして、素材置場を区切る。"},
+   5:{actionId:"forge5",need:95,label:"受付と展示を整える",desc:"作業台を2台にし、受付と完成装備の展示棚を設ける。"},
+   6:{actionId:"forge6",need:120,label:"鍛冶工房を完成",desc:"炉2・金床3・作業台2・倉庫を備えた一階建て工房。"}
  }},
- {id:"house",name:"職人の住居",icon:"🏠",category:"life",areaTagsAny:["life","residential","core"],constructionVisualSet:"default",startLevel:0,maxLevel:3,route:"life",levels:{
+ {id:"house",name:"住居",icon:"🏠",category:"life",areaTagsAny:["life","residential","core"],constructionVisualSet:"default",startLevel:0,maxLevel:6,route:"life",levels:{
    1:{actionId:"house",need:14,label:"職人の住居を建てる",desc:"鍛冶職人が定住できる家を用意する。"},
    2:{actionId:"house2",need:36,label:"職人の住居を拡張する",desc:"家族と道具のための部屋を広げる。"},
-   3:{actionId:"house3",need:60,label:"生活区画を整える",desc:"生活設備を整える。住宅の棟数は増やさない。"}
+   3:{actionId:"house3",need:60,label:"生活区画を整える",desc:"生活設備を整える。住宅の棟数は増やさない。"},
+   4:{actionId:"house4",need:76,label:"居間を広げる",desc:"一階の面積を広げ、居間と寝室を分ける。"},
+   5:{actionId:"house5",need:96,label:"家族の部屋を整える",desc:"寝室と収納を増やした住居。"},
+   6:{actionId:"house6",need:120,label:"住居を完成させる",desc:"広い居間、台所、収納、寝室を備える最終形。"}
  }},
+ {id:"owner_home",name:"店主の専用住宅",icon:"🏡",category:"life",startLevel:0,maxLevel:1,route:"life",autoBuild:true,levels:{1:{actionId:"owner_home",need:9999,label:"店主の専用住宅",desc:"店Lv6の完成と同時に、町の空き区画へ建つ独立した住居。"}}},
  {id:"market",name:"市場",icon:"🧺",category:"commerce",areaTagsAny:["commerce","road","logistics"],constructionVisualSet:"default",startLevel:0,maxLevel:2,route:"commerce",levels:{
    1:{actionId:"market",need:18,label:"小さな市場を開く",desc:"旅商人が立ち寄れる露店スペースを作る。"},
    2:{actionId:"market2",need:42,label:"市場を拡張する",desc:"複数の商人が店を出せる市場へ育てる。"}
@@ -266,7 +270,14 @@ F.FACILITY_DEFS=Object.freeze([
    2:{actionId:"plaza2",need:48,label:"広場を拡張する",desc:"町の中心となる広場へ発展させる。"}
  }},
  {id:"warehouse",name:"倉庫",icon:"📦",startLevel:0,maxLevel:2,route:"commerce",levels:{1:{actionId:"warehouse",need:12,label:"店の隣に倉庫を作る",desc:"売る品と次の冒険へ残す品を整理できる倉庫。"},2:{actionId:"warehouse2",need:36,label:"倉庫を増築する",desc:"保管場所と作業場を広げる。"}}},
- {id:"inn",name:"酒場兼宿屋",icon:"🍺",startLevel:0,maxLevel:2,route:"life",levels:{1:{actionId:"inn",need:28,label:"酒場兼宿屋を建てる",desc:"旅人が休み、噂と依頼が集まる場所。"},2:{actionId:"inn2",need:55,label:"宿屋の客室を増築する",desc:"冒険者や行商人が泊まれる宿へ発展する。"}}},
+ {id:"inn",name:"酒場兼宿屋",icon:"🍺",startLevel:0,maxLevel:6,route:"life",levels:{
+   1:{actionId:"inn",need:28,label:"小さな酒場兼宿屋を建てる",desc:"客席4席・ベッド1床。"},
+   2:{actionId:"inn2",need:55,label:"酒場を広げる",desc:"客席8席・ベッド1床。"},
+   3:{actionId:"inn3",need:70,label:"客室を増やす",desc:"客席8席・ベッド2床。"},
+   4:{actionId:"inn4",need:85,label:"宿泊棟を増築",desc:"客席12席・ベッド3床。"},
+   5:{actionId:"inn5",need:105,label:"酒場兼宿屋を拡張",desc:"客席16席・ベッド4床。"},
+   6:{actionId:"inn6",need:125,label:"酒場兼宿屋を完成",desc:"客席20席・ベッド6床の最終規模。"}
+ }},
  {id:"bank",name:"預かり所",icon:"💰",startLevel:0,maxLevel:1,route:"commerce",levels:{1:{actionId:"bank",need:40,label:"お金の預かり所を開く",desc:"次の冒険へ持ち出さないお金を預ける。"}}}
 
 ]);
@@ -280,15 +291,15 @@ F.TOWN_GROWTH_STAGES=Object.freeze([
  {id:'craft',label:'⑤ 職人の定住',facilities:{shop:2,warehouse:1,forge:1,house:1},points:28,residents:1},
  {id:'tavern',label:'⑥ 旅人の集まる場所',facilities:{shop:2,warehouse:1,forge:1,house:1,market:1,inn:1,adventure_board:1},points:40,residents:1},
  {id:'hub',label:'⑦ 冒険の拠点',facilities:{shop:3,warehouse:2,forge:2,house:1,market:1,inn:1,adventure_board:2,bank:1,plaza:1},points:55,residents:2},
- {id:'complete',label:'⑧ 発展した町',facilities:{shop:10,warehouse:2,forge:3,house:2,market:2,inn:2,adventure_board:2,bank:1,plaza:2},points:80,residents:2}
+ {id:'complete',label:'⑧ 発展した町',facilities:{shop:6,owner_home:1,warehouse:2,forge:6,house:6,market:2,inn:6,adventure_board:2,bank:1,plaza:2},points:80,residents:2}
 ]);
 F.TOWN_BUILD_RULES=Object.freeze({
  shop1:{coins:40,items:{wood:2},story:'firstReturn'},shop2:{coins:120,items:{wood:5},requires:{shop:1},story:'firstSale'},
  warehouse:{coins:100,items:{wood:5},requires:{shop:2}},house:{coins:100,items:{wood:5},requires:{warehouse:1}},forge:{coins:160,items:{wood:3,iron:2},requires:{warehouse:1,house:1}},
  market:{coins:120,items:{wood:4},requires:{forge:1},residents:1},adventure_board:{coins:60,items:{wood:2},requires:{forge:1},residents:1},inn:{coins:200,items:{wood:8},requires:{market:1,adventure_board:1}},
  shop3:{coins:250,items:{wood:8},requires:{inn:1}},warehouse2:{coins:180,items:{wood:6,iron:2},requires:{inn:1}},bank:{coins:220,items:{wood:4,iron:3},requires:{shop:3,warehouse:2}},plaza:{coins:160,items:{iron:2},requires:{inn:1}},
- shop4:{coins:400,items:{wood:10,iron:5},requires:{bank:1}},shop5:{coins:600,items:{wood:14,iron:6},requires:{shop:4,bank:1}},shop6:{coins:900,items:{wood:18,iron:8},requires:{shop:5,warehouse:2}},shop7:{coins:1400,items:{wood:24,iron:10},requires:{shop:6,house:2}},shop8:{coins:2200,items:{wood:32,iron:14},requires:{shop:7,plaza:2}},shop9:{coins:3400,items:{wood:40,iron:18},requires:{shop:8,inn:2}},shop10:{coins:5000,items:{wood:55,iron:25},requires:{shop:9,bank:1}},forge2:{coins:200,items:{iron:4},requires:{inn:1}},forge3:{coins:350,items:{iron:6},requires:{bank:1}},inn2:{coins:300,items:{wood:10},requires:{bank:1}},plaza2:{coins:250,items:{iron:4},requires:{bank:1}},
- house2:{coins:180,items:{wood:6},requires:{inn:1}},house3:{coins:300,items:{wood:10},requires:{bank:1}},market2:{coins:200,items:{wood:6},requires:{inn:1}},adventure_board2:{coins:120,items:{wood:4},requires:{inn:1}}
+ shop4:{coins:400,items:{wood:10,iron:5},requires:{bank:1}},shop5:{coins:600,items:{wood:14,iron:6},requires:{shop:4,bank:1}},shop6:{coins:900,items:{wood:18,iron:8},requires:{shop:5,warehouse:2}},forge2:{coins:200,items:{iron:4},requires:{inn:1}},forge3:{coins:350,items:{iron:6},requires:{bank:1}},forge4:{coins:500,items:{iron:8,wood:8},requires:{forge:3}},forge5:{coins:750,items:{iron:12,wood:12},requires:{forge:4}},forge6:{coins:1100,items:{iron:16,wood:16},requires:{forge:5}},inn2:{coins:300,items:{wood:10},requires:{bank:1}},inn3:{coins:400,items:{wood:12},requires:{inn:2}},inn4:{coins:600,items:{wood:16},requires:{inn:3}},inn5:{coins:850,items:{wood:20},requires:{inn:4}},inn6:{coins:1200,items:{wood:24},requires:{inn:5}},plaza2:{coins:250,items:{iron:4},requires:{bank:1}},
+ house2:{coins:180,items:{wood:6},requires:{inn:1}},house3:{coins:300,items:{wood:10},requires:{bank:1}},house4:{coins:420,items:{wood:12,iron:2},requires:{house:3}},house5:{coins:620,items:{wood:16,iron:3},requires:{house:4}},house6:{coins:900,items:{wood:20,iron:5},requires:{house:5}},market2:{coins:200,items:{wood:6},requires:{inn:1}},adventure_board2:{coins:120,items:{wood:4},requires:{inn:1}}
 });
 
 // Ver0.38: 全体マップの「形」より先に、今後増えるエリアを同じ規格で扱える世界構造を定義する。

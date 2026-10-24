@@ -52,6 +52,7 @@ function advanceConstructionState(s,steps=1){
    pr.stepsDone=(Number(pr.stepsDone)||0)+1;pr.phaseIndex=(Number(pr.phaseIndex)||0)+1;pr.updatedDay=s.day;
    if(pr.phaseIndex>=(F.CONSTRUCTION_PHASES||[]).length){
     town.facilities[fid]=Math.max(Number(town.facilities?.[fid])||0,Number(pr.targetLevel)||1);delete town.projects[fid];
+    if(fid==='shop'&&Number(pr.targetLevel)===6&&Number(town.facilities.owner_home||0)<1){town.facilities.owner_home=1;F.addHistory(s,'construction','店主の専用住宅が店Lv6の完成と同時に建った。')}
     completed.push({facilityId:fid,name:def.name,targetLevel:Number(pr.targetLevel)||1});F.addHistory(s,"construction",`${def.name} Lv${Number(pr.targetLevel)||1}が完成した。`);
    }
   }
@@ -169,6 +170,7 @@ F.facilityAreaCandidates=(s,facilityId)=>{const def=(F.FACILITY_DEFS||[]).find(d
 F.townOptions=s=>{
  const pts=Number(s?.development?.points)||0,t=F.townState(s),out=[];
  for(const def of (F.FACILITY_DEFS||[])){
+   if(def.autoBuild)continue;
    const cur=Math.max(0,Number(t.facilities?.[def.id])||0),next=cur+1,lv=def.levels?.[next];
    if(t.projects?.[def.id])continue;
    if(!lv||next>Number(def.maxLevel||0))continue;
