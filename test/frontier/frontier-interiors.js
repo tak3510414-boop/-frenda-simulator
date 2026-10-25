@@ -194,10 +194,10 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
  }
  // Main entrance mat; drawn above the floor but below the player.
  if(!plannedRoom){const ex=m.exit.x,ey=m.exit.y;box(ex+4,ey-8,m.exit.w-8,12,'#5c432b');box(ex+8,ey-6,m.exit.w-16,8,'#d9be81')}
- F.SHOP_VISITS?.drawIndoor(c,m,rt,true);
+ F.SHOP_VISITS?.drawIndoor(c,m,rt,true);F.RESIDENTS?.drawIndoor(c,m,rt,true);
  const player=rt.player||m.spawn,img=art[rt.facing==='up'?'playerBack':rt.facing==='left'?'playerLeft':rt.facing==='right'?'playerRight':'playerFront'];
  box(player.x-9,player.y-1,18,4,'#0004');if(img){const sw=img.naturalWidth,sh=img.naturalHeight,dw=56,dh=68,feet=sh*.20,step=rt.moving?Math.sin(Date.now()/90)*1.4:0;c.drawImage(img,0,0,sw,sh-feet,player.x-dw/2,player.y-dh+14,dw,dh*.8);c.drawImage(img,0,sh-feet,sw/2,feet,player.x-dw/2,player.y-8-step,dw/2,15);c.drawImage(img,sw/2,sh-feet,sw/2,feet,player.x,player.y-8+step,dw/2,15)}else{box(player.x-10,player.y-32,20,16,'#b44832');box(player.x-8,player.y-16,16,16,'#33546a')}
- F.SHOP_VISITS?.drawIndoor(c,m,rt,false);
+ F.SHOP_VISITS?.drawIndoor(c,m,rt,false);F.RESIDENTS?.drawIndoor(c,m,rt,false);
  c.restore();return camera
 };
 })();
@@ -207,3 +207,5 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
 // Updated: 2026-10-25 19:47 JST / Ver1.66
 
 // Updated: 2026-10-25 19:54 JST / Ver1.66
+
+// Updated: 2026-10-25 20:51 JST / Ver1.68
