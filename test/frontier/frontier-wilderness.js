@@ -1,6 +1,6 @@
 /* Frenda Frontier Ver1.45 — construction-free terrain inspection. */
 (()=>{'use strict';
-const F=window.FRENDA_FRONTIER, W=F.WILDERNESS={active:true,width:1536,height:1024,structures:[],position:{x:768,y:768},facing:'down',overview:true,token:0};
+const F=window.FRENDA_FRONTIER, W=F.WILDERNESS={active:true,width:1536,height:1024,structures:[],position:{x:775,y:315},facing:'down',overview:false,token:0};
 const cell=12,cols=128,rows=86;
 // Authored terrain zones: grass clearings and trails; water and woodland are closed.
 const clearings=[[[.04,.08],[.25,.06],[.28,.20],[.20,.26],[.06,.23]],[[.39,.08],[.57,.08],[.60,.20],[.51,.26],[.40,.22]],[[.68,.08],[.90,.09],[.94,.22],[.74,.26]],[[.04,.36],[.24,.36],[.28,.48],[.17,.55],[.06,.49]],[[.40,.35],[.60,.36],[.61,.55],[.42,.56]],[[.73,.36],[.95,.36],[.96,.53],[.78,.56]],[[.05,.65],[.17,.65],[.19,.75],[.06,.77]],[[.28,.65],[.40,.66],[.42,.76],[.28,.77]],[[.60,.65],[.74,.65],[.77,.77],[.61,.77]]];
@@ -19,7 +19,7 @@ W.mount=(host,rerender,actions={})=>{W.stop();W.structures=F.OPENING?.solids()||
  const cv=document.getElementById('wildernessCanvas'),msg=document.getElementById('wildernessMessage');cv.width=W.overview?1536:720;cv.height=W.overview?1024:820;
  document.getElementById('viewTitle').textContent=phase==='complete'?'はじまりの店':'未開拓地';document.getElementById('viewSubtitle').textContent='テント設営後の開拓生活';document.getElementById('viewMeta').textContent='構築物 '+count;
  const stats=document.getElementById('headStats');if(stats)stats.innerHTML=`<span class="pill">🌱 開拓ミッション</span><span class="pill">構築物 ${count}</span>`;
- document.getElementById('wildZoom').onclick=()=>{W.overview=!W.overview;rerender()};document.getElementById('wildReset').onclick=()=>{W.position={x:768,y:768};rerender()};document.getElementById('wildNormal').onclick=()=>{try{F.OPENING?.leave();W.active=false;W.stop();rerender()}catch(e){msg.textContent=e.message}};
+ document.getElementById('wildZoom').onclick=()=>{W.overview=!W.overview;rerender()};document.getElementById('wildReset').onclick=()=>{W.position={x:775,y:315};rerender()};document.getElementById('wildNormal').onclick=()=>{try{F.OPENING?.leave();W.active=false;W.stop();rerender()}catch(e){msg.textContent=e.message}};
  let art,camera={x:0,y:0},last=0,route=[];
  const draw=()=>{const c=cv.getContext('2d');c.imageSmoothingEnabled=false;camera=W.overview?{x:0,y:0}:{x:Math.max(0,Math.min(1536-cv.width,W.position.x-cv.width/2)),y:Math.max(0,Math.min(1024-cv.height,W.position.y-cv.height/2))};c.clearRect(0,0,cv.width,cv.height);if(!art)return;c.drawImage(art[0],0,0,1536,1024,-camera.x,-camera.y,1536,1024);F.OPENING?.draw(c,art,camera);const im=art[1+['down','up','left','right'].indexOf(W.facing)],p=W.position;c.drawImage(im,p.x-camera.x-19,p.y-camera.y-48,38,54)};
  cv.onclick=e=>{if(!art)return;const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+camera.x,y:(e.clientY-b.top)/b.height*cv.height+camera.y};route=W.path(W.position,p);msg.textContent=route.length?'移動しています。':'そこへは歩いて行けません。草地・土の道を選んでください。'};
@@ -34,3 +34,5 @@ W.mount=(host,rerender,actions={})=>{W.stop();W.structures=F.OPENING?.solids()||
 // Updated: 2026-10-25 JST / Ver1.47
 
 // Updated: 2026-10-25 JST / Ver1.48
+
+// Updated: 2026-10-25 JST / Ver1.51

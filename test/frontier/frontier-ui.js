@@ -536,7 +536,7 @@ ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み'
  const footAction=F.dungeonFootItemAction?.(),footItem=footAction?F.floorItemAt?.(run,run.player.x,run.player.y):null,contextCmd=footAction?{t:footAction.mode==='exchange'?'交換':'拾う',fn:pickupFootItem,c:'primary'}:{t:'階段',fn:stairsChoice,c:F.isOnStairs()?'primary':'',disabled:!F.isOnStairs()};
  const footHint=$('dungeonFootItemHint');if(footHint&&footAction?.item){footHint.classList.remove('hidden');footHint.innerHTML=`${itemVisualHtml(footAction.item,28,'footHintVisual')}<span><b>${esc(footAction.item.name)}${footAction.qty>1?` ×${footAction.qty}`:''}</b><small>${footAction.mode==='exchange'?'バッグ満杯：交換':'足元：拾える'}</small></span>`}
  fillCmd('cmdAdv',[{t:'どうぐ',fn:showBag},{t:'装備',fn:showEquipmentModal},{t:'つよさ',fn:showStrengthModal},{t:'向き',fn:showFacingModal},{t:'素振り',fn:swingTurn},contextCmd,{t:'履歴',fn:showDungeonHistory},{t:'ロープ',fn:()=>{if(F.escape()){renderAll();runResultModal()}},c:'warn',disabled:run.escape<=0}]);
- // Ver1.50: tapping a known destination follows the explored route automatically;
+ // Ver1.51: tapping a known destination follows the explored route automatically;
  // fog-of-war exploration and adjacent tactical moves still use one turn per tap.
  const canvas=$('sceneCanvas');canvas.style.touchAction='none';
  canvas.onclick=e=>{if(dungeonDashRuntime.moving)return;const active=F.run||run,hit=dungeonTileFromEvent(canvas,meta,active,e);if(!hit)return;const{tx,ty}=hit,enemy=(active.enemies||[]).find(en=>en.hp>0&&en.x===tx&&en.y===ty),visibility=F.dungeonVisibility?.(active)||meta.visibility;if(enemy&&visibility?.[ty]?.[tx]){dungeonEnemyInfoRuntime.enemyId=enemy.id;const a=F.attackAt?.(tx,ty);if(a?.attempted){renderAll();if(F.run&&!F.run.active)runResultModal()}else{renderAll();if(a?.reason)toast(a.reason)}return}dungeonEnemyInfoRuntime.enemyId=null;if(tx===active.player.x&&ty===active.player.y){waitTurn();return}const distance=Math.max(Math.abs(tx-active.player.x),Math.abs(ty-active.player.y));if(active.seen?.[ty]?.[tx]&&distance>1){dungeonAutoMoveTo(tx,ty);return}const[dx,dy]=dungeonFirstStep(active,tx,ty);if(!dx&&!dy){waitTurn();return}move(dx,dy)};
@@ -605,4 +605,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-10-25 JST / Ver1.48
 
-// Updated: 2026-10-25 JST / Ver1.50
+// Updated: 2026-10-25 JST / Ver1.51
