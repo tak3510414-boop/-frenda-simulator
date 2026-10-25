@@ -41,4 +41,4 @@ W.mount=(host,rerender,actions={})=>{W.stop();W.structures=F.OPENING?.solids()||
 
 // Updated: 2026-10-25 14:08 JST / Ver1.58
 
-// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65

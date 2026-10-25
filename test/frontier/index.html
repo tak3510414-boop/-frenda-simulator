@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.64">
+<html lang="ja" data-app-version="1.65">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.64</title>
+<title>Frenda Frontier Ver1.65</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -86,10 +86,37 @@ body.dungeonActive .gameHeader .sub{font-size:8px}
 body:not(.test-menu-open) .test-menu-panel{display:none!important}
 .gameScene{width:100%;max-width:720px}@media(min-width:700px){.gameScene{width:100%}}
 .brand,.brand *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.brand{touch-action:none;cursor:pointer}
+
+/* Ver1.65: town content must not be clipped by the legacy fixed scene ratio. */
+.gameScene.progressTownLayout{aspect-ratio:auto;height:auto;min-height:0;max-height:none;overflow:visible;background:#163d2b;color:#fff}
+.progressGuide{margin:0;background:#234f38;color:#fff;border-bottom:1px solid #66836b}
+.progressGuide>summary{padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;color:#fff;line-height:1.5}
+.progressGuide>summary span{margin-left:7px;color:#fff1be}
+.progressGuide>section{color:#173126}
+.progressGuide #nextActions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}
+.progressGuide .cmdBtn{min-height:36px}
+.progressMessage{margin:0;padding:7px 12px;font-size:11px;line-height:1.5;color:#f0f6ed;min-height:30px}
+.progressCommands{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:7px;padding:0 10px 10px}
+.progressCommands .cmdBtn{min-height:38px;text-align:center;line-height:1.4}
+body.progressTownActive #openingMissionNav{display:none}
+@media(max-width:640px){
+body.progressTownActive header{padding:5px 10px}
+body.progressTownActive .head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px}
+body.progressTownActive #frontierUserHost{grid-column:1/-1;font-size:10px;line-height:1}
+body.progressTownActive .brand{min-width:0}
+body.progressTownActive .brand b{font-size:17px;white-space:nowrap}
+body.progressTownActive .brand small{font-size:9px}
+body.progressTownActive .headStats{max-width:156px;gap:3px}
+body.progressTownActive .pill{font-size:9px;padding:3px 5px}
+body.progressTownActive .gameHeader{padding:6px 10px}
+body.progressTownActive .gameHeader h2{font-size:13px}
+body.progressTownActive .gameHeader .sub{font-size:9px;max-width:76vw}
+body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
+}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.64 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.65 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
  <div class="notice">🌱 テント設営後からスタート。「次にすること」に沿って、露店を開こう。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
@@ -155,4 +182,4 @@ body:not(.test-menu-open) .test-menu-panel{display:none!important}
 
 <!-- Updated: 2026-10-25 JST / Ver1.63 -->
 
-<!-- Updated: 2026-10-25 JST / Ver1.64 -->
+<!-- Updated: 2026-10-25 JST / Ver1.65 -->

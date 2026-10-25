@@ -639,7 +639,7 @@ function bindTestLongPress(){
  window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',cancel);
 }
 
-function renderAll(){bindTestLongPress();F.WILDERNESS?.stop();$('sceneMount').classList.remove('indoorSceneLayout','stallSceneLayout');const s=F.readSave();s.development.stage=F.developmentStage(s.development.points);F.writeSave(s);document.body.classList.toggle('dungeonActive',currentView==='adventure'&&!!F.run?.active);header(s);if($('openingMissionNav'))$('openingMissionNav').textContent=F.OPENING?.active()?'📋 ミッション一覧':'🌱 開拓生活（TEST）';if(currentView!=='home')$('sceneMount').classList.remove('townSceneLayout');if(currentView!=='adventure')$('sceneMount').classList.remove('dungeonSceneLayout');if(currentView==='home')renderHome(s);else if(currentView==='store')renderStore(s);else renderAdventure(s);syncShopService()}
+function renderAll(){document.body.classList.remove('progressTownActive');$('sceneMount').classList.remove('progressTownLayout');bindTestLongPress();F.WILDERNESS?.stop();$('sceneMount').classList.remove('indoorSceneLayout','stallSceneLayout');const s=F.readSave();s.development.stage=F.developmentStage(s.development.points);F.writeSave(s);document.body.classList.toggle('dungeonActive',currentView==='adventure'&&!!F.run?.active);header(s);if($('openingMissionNav'))$('openingMissionNav').textContent=F.OPENING?.active()?'📋 ミッション一覧':'🌱 開拓生活（TEST）';if(currentView!=='home')$('sceneMount').classList.remove('townSceneLayout');if(currentView!=='adventure')$('sceneMount').classList.remove('dungeonSceneLayout');if(currentView==='home')renderHome(s);else if(currentView==='store')renderStore(s);else renderAdventure(s);syncShopService()}
 function bind(){const wb=document.createElement('button');wb.id='openingMissionNav';wb.textContent='📋 ミッション一覧';wb.className='cmdBtn';wb.style.margin='6px 12px';wb.onclick=()=>{try{if(F.OPENING?.active()){modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]);return}F.OPENING?.enter();F.WILDERNESS.active=true;homeMode='town';setView('home')}catch(e){toast(e.message)}};$('sceneMount').parentNode.insertBefore(wb,$('sceneMount'));document.querySelectorAll('#mainNav button').forEach(b=>b.onclick=()=>setView(b.dataset.view));window.addEventListener('keydown',e=>{if(!F.run?.active)return;const k=String(e.key||'').toLowerCase(),m={arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0],q:[-1,-1],e:[1,-1],z:[-1,1],c:[1,1],home:[-1,-1],pageup:[1,-1],end:[-1,1],pagedown:[1,1]}[k];if(m){e.preventDefault();if(e.shiftKey)dungeonDash(...m);else move(...m);return}if(e.key===' '){e.preventDefault();swingTurn()}})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){storeSessionToken++;storeBusy=false;}else{syncShopService();}});
 function init(){if(!window.FRENDA_MASTER?.records||!window.FRENDA_DATA||!R)throw new Error('Frontier共通データを読み込めませんでした。');const host=$('frontierUserHost'),badge=$('frendaActiveUserBadge');if(host&&badge)host.appendChild(badge);bind();window.addEventListener('frontier:sprites-ready',()=>renderAll());F.ensureSpriteDex?.();renderAll()}
@@ -700,6 +700,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-10-25 JST / Ver1.62: release long-press suppression before subsequent button taps.
 
-// Updated: 2026-10-25 JST / Ver1.64
+// Updated: 2026-10-25 JST / Ver1.65
 
-// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65

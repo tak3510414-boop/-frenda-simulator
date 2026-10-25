@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.64 — construction, services and provisional economy. */
+/* Frenda Frontier Ver1.65 — construction, services and provisional economy. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER,P=F.TOWN_PROGRESS,O=F.OPENING,T=F.TOWN_DEVELOPMENT={};
 F.BALANCE_RULES=Object.freeze({provisional:true,customer:F.CUSTOMER_BALANCE,loot:{baseCount:6,maxCount:10,countEvery:5,minDepth:{iron:3,crystal:6,panacea:8,spark_wand:5,purify_scroll:5,big_bread:4},gatherTable:F.GATHER_TABLE,chestTable:F.DUNGEON_CHEST_TABLE},tutorial:{stallWood:2,storeWood:4,storeCoins:120},staff:{hireCost:200,wage:5,minStage:6},
  prices:{wood:30,iron:55,bread:40,big_bread:95,herb:35,antidote_herb:45,paralysis_herb:50,wake_herb:50,clarity_herb:50,panacea:160,survey_scroll:90,sleep_scroll:100,purify_scroll:130,spark_wand:100,throw_stone:15,crystal:140,oldtool:220},
@@ -28,6 +28,6 @@ F.setShopStaffDuty=value=>F.mutateSave(s=>{const x=T.staffStatus(s);if(!x.hired)
 F.hasOnDutyShopStaff=s=>T.staffStatus(s).onDuty;
 F.beginShopSession=()=>F.mutateSave(s=>{F.advanceTimeState(s,Number(F.TIME_ACTION_COSTS?.shopOpen)||1,'shopOpen');const x=T.staffStatus(s),w=F.BALANCE_RULES.staff.wage;if(x.onDuty){if(s.coins>=w){s.coins-=w;F.addHistory(s,'wage','店員の賃金 '+w+'Gを支払った。');}else x.employee.onDuty=false;}F.addHistory(s,'shop','営業の時間を進めた。');});
 })();
-// Updated: 2026-10-25 JST / Ver1.64
+// Updated: 2026-10-25 JST / Ver1.65
 
-// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65

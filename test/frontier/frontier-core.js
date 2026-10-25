@@ -592,6 +592,6 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 
 // Updated: 2026-10-24 JST / Ver1.36
 
-// Updated: 2026-10-25 JST / Ver1.64: explicit loot test only; depth-filtered economy tables.
+// Updated: 2026-10-25 JST / Ver1.65: explicit loot test only; depth-filtered economy tables.
 
-// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
