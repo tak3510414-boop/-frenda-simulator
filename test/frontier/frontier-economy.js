@@ -34,9 +34,14 @@ F.evaluateShopCustomer=(s,customer,rng=Math.random)=>{const available=(s.shelves
  const bought=!!choice&&rng()<probability;
  return{customer,budget:customer.budgetValue,choice,bought,probability,phase:F.timeInfo(s),reason:!available.length?'欲しい商品が残っていない':!choice?'予算や希望に合う商品がない':!bought?'今回は購入を見送った':customer.line};};
 F.simulateCustomer=(customer)=>{const s=F.readSave();return F.evaluateShopCustomer(s,customer||F.createShopVisitor(s));};
+// Only explicit hired, on-duty staff count. An NPC or a high-level shop is not an employee.
+F.hasOnDutyShopStaff=s=>Array.isArray(s.employment?.shop)&&s.employment.shop.some(person=>person?.hired===true&&person.onDuty===true);
+F.shopPresence=(s,ownerPresent)=>{const staffed=F.hasOnDutyShopStaff(s),capacity=F.shopCapacity(s),phase=s.story?.opening?.phase,allowed=!phase||!['arrival','tent','mission1','stocking','building'].includes(phase),preview=s.settings?.townLayerTest?.scenePreset;return{open:capacity>0&&allowed&&(!preview||preview==='normal')&&(ownerPresent||staffed),owner:!!ownerPresent,staffed};};
 F.beginShopSession=()=>F.mutateSave(s=>{F.advanceTimeState(s,Number(F.TIME_ACTION_COSTS?.shopOpen)||1,'shopOpen');F.addHistory(s,'shop','営業を開始した（時間を消費）。');});
 F.endShopSession=(visitors,sold)=>F.mutateSave(s=>{F.addHistory(s,'shop',`営業終了：来店${visitors}人、販売${sold}件。`);});
 })();
 // Updated: 2026-10-25 JST / Ver1.59
 
 // Updated: 2026-10-25 14:32 JST / Ver1.59
+
+// Updated: 2026-10-25 JST / Ver1.60
