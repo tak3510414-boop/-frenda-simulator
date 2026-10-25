@@ -9,7 +9,7 @@ trails.push({p:[[.17,.52],[.17,.59]],w:38},{p:[[.82,.52],[.82,.60]],w:38},{p:[[.
 const rocks=[[.565,.46,18],[.44,.44,16],[.25,.31,17],[.915,.49,18]];
 const inside=(x,y,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[a,b]=p[i],[c,d]=p[j];if((b>y)!==(d>y)&&x<(c-a)*(y-b)/(d-b)+a)yes=!yes}return yes};
 const dist=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy)};
-W.walkable=(x,y)=>{if(W.structures.some(b=>x>b.x-10&&x<b.x+b.w+10&&y>b.y-8&&y<b.y+b.h))return false;if(x<18||x>1518||y<8||y>860)return false;if(rocks.some(([a,b,r])=>Math.hypot(x-a*1536,y-b*1024)<r+10))return false;if(clearings.some(p=>inside(x/1536,y/1024,p)))return true;return trails.some(t=>t.p.slice(1).some((b,i)=>dist({x,y},{x:t.p[i][0]*1536,y:t.p[i][1]*1024},{x:b[0]*1536,y:b[1]*1024})<t.w/2))};
+W.walkable=(x,y)=>{if(W.structures.some(b=>x>b.x-10&&x<b.x+b.w+10&&y>b.y-8&&y<b.y+b.h))return false;if(F.OPENING?.active()&&F.OPENING.phase()==='complete'&&F.OPENING.currentLevel()>=7&&x>=765&&x<=1104&&y>=254&&y<=290)return true;if(x<18||x>1518||y<8||y>860)return false;if(rocks.some(([a,b,r])=>Math.hypot(x-a*1536,y-b*1024)<r+10))return false;if(clearings.some(p=>inside(x/1536,y/1024,p)))return true;return trails.some(t=>t.p.slice(1).some((b,i)=>dist({x,y},{x:t.p[i][0]*1536,y:t.p[i][1]*1024},{x:b[0]*1536,y:b[1]*1024})<t.w/2))};
 let grid=Array.from({length:rows},(_,y)=>Array.from({length:cols},(_,x)=>W.walkable(x*cell+6,y*cell+6)));
 W.path=(from,to)=>{const sx=Math.floor(from.x/cell),sy=Math.floor(from.y/cell),tx=Math.floor(to.x/cell),ty=Math.floor(to.y/cell);if(!grid[ty]?.[tx]||!grid[sy]?.[sx])return[];const start=sy*cols+sx,goal=ty*cols+tx,q=[start],prev=new Map([[start,-1]]);for(let i=0;i<q.length;i++){const k=q[i];if(k===goal)break;const x=k%cols,y=Math.floor(k/cols);for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,n=ny*cols+nx;if(nx<0||nx>=cols||!grid[ny]?.[nx]||prev.has(n))continue;prev.set(n,k);q.push(n)}}if(!prev.has(goal))return[];const p=[];for(let k=goal;k!==-1;k=prev.get(k))p.push({x:k%cols*cell+6,y:Math.floor(k/cols)*cell+6});return p.reverse()};
 const images={},load=src=>images[src]||(images[src]=new Promise((resolve,reject)=>{const i=new Image;i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('マップ画像を読み込めません。差分ZIPの画像も配置してください。'));i.src=src}));
@@ -24,7 +24,7 @@ W.mount=(host,rerender,actions={})=>{W.stop();W.structures=F.OPENING?.solids()||
  const draw=()=>{const c=cv.getContext('2d');c.imageSmoothingEnabled=false;camera=W.overview?{x:0,y:0}:{x:Math.max(0,Math.min(1536-cv.width,W.position.x-cv.width/2)),y:Math.max(0,Math.min(1024-cv.height,W.position.y-cv.height/2))};c.clearRect(0,0,cv.width,cv.height);if(!art)return;c.drawImage(art[0],0,0,1536,1024,-camera.x,-camera.y,1536,1024);F.OPENING?.draw(c,art,camera);const im=art[1+['down','up','left','right'].indexOf(W.facing)],p=W.position;c.drawImage(im,p.x-camera.x-19,p.y-camera.y-48,38,54)};
  cv.onclick=e=>{if(!art)return;const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+camera.x,y:(e.clientY-b.top)/b.height*cv.height+camera.y};route=W.path(W.position,p);msg.textContent=route.length?'移動しています。':'そこへは歩いて行けません。草地・土の道を選んでください。'};
  const tick=now=>{if(token!==W.token||!cv.isConnected)return;const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;let budget=120*dt;while(route.length&&budget>0){const t=route[0],dx=t.x-W.position.x,dy=t.y-W.position.y,d=Math.hypot(dx,dy);if(d<.1){route.shift();continue}W.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');const step=Math.min(d,budget);W.position.x+=dx/d*step;W.position.y+=dy/d*step;budget-=step;if(step===d)route.shift();if(!route.length)msg.textContent='到着しました。次の場所をタップできます。'}draw();requestAnimationFrame(tick)};
- Promise.all(['frontier-wilderness-v145.png','frontier-sprite-player-front-v069.png','frontier-sprite-player-back-v069.png','frontier-sprite-player-left-v069.png','frontier-sprite-player-right-v069.png','frontier-tent-v130.png','frontier-starter-shop-v146.png','frontier-stall-v133.png'].map(load)).then(a=>{if(token!==W.token)return;art=a;draw();requestAnimationFrame(tick)}).catch(e=>{if(token===W.token)msg.textContent=e.message});
+ Promise.all(['frontier-wilderness-v145.png','frontier-sprite-player-front-v069.png','frontier-sprite-player-back-v069.png','frontier-sprite-player-left-v069.png','frontier-sprite-player-right-v069.png','frontier-tent-v130.png','frontier-shop-exteriors-v158.png','frontier-stall-v133.png'].map(load)).then(a=>{if(token!==W.token)return;art=a;draw();requestAnimationFrame(tick)}).catch(e=>{if(token===W.token)msg.textContent=e.message});
 };
 })();
 // Updated: 2026-10-25 JST / Ver1.45
@@ -36,3 +36,7 @@ W.mount=(host,rerender,actions={})=>{W.stop();W.structures=F.OPENING?.solids()||
 // Updated: 2026-10-25 JST / Ver1.48
 
 // Updated: 2026-10-25 JST / Ver1.51
+
+// Updated: 2026-10-25 13:54 JST / Ver1.57: humble plank-built starter shop exterior.
+
+// Updated: 2026-10-25 14:08 JST / Ver1.58
