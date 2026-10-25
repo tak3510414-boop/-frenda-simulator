@@ -25,15 +25,15 @@ V.run=async(visitor,{active,show,repaint=()=>{},commit=true,decide=F.simulateCus
   if(shop){const from={x:500,y:155},path=P.path(scene,from,shop.door);actor.position={...from};if(!await move(path,'town'))return null;}else if(!await wait(500))return null;
   actor.position={...m.spawn};actor.space='indoor';phase('enter',visitor.name+'が入店しました。');if(!await wait(450))return null;
   // The decision is made after browsing. Shelves cannot be sold remotely.
-  const shelves=m.shelves.filter(o=>o.slots?.some(i=>F.readSave().shelves[i]?.qty>0));let visited=0;
-  for(const shelf of shelves){phase('browse',visitor.name+'が商品棚を見ています。');if(!await walkTo(shelf))continue;visited++;if(!await wait(800))return null;}
+  const available=m.shelves.filter(o=>o.slots?.some(i=>F.readSave().shelves[i]?.qty>0)),offset=available.length?Math.floor(Math.random()*available.length):0,shelves=[...available.slice(offset),...available.slice(0,offset)].slice(0,F.CUSTOMER_BALANCE.browseShelves||2);let visited=0;
+  for(const shelf of shelves){phase('browse',visitor.name+'が商品棚を見ています。');if(!await walkTo(shelf))continue;visited++;if(!await wait(F.CUSTOMER_BALANCE.browsePauseMs||1000))return null;}
   if(!live())return null;
   let result=decide(visitor);
   if(!visited)result={...result,bought:false,reason:'商品棚へたどり着けなかった'};
   if(result.bought){const shelf=m.shelves.find(o=>o.slots?.includes(result.choice.slot));if(!shelf||!await walkTo(shelf))result={...result,bought:false,reason:'商品に手が届かなかった'};}
   if(result.bought){phase('checkout',visitor.name+'が商品を選び、会計へ向かっています。');const counter=m.objects.find(o=>o.kind==='counter');if(!counter||!await walkTo(counter))result={...result,bought:false,reason:'会計へたどり着けなかった'};}
   if(!live())return null;
-  if(result.bought){phase('pay',visitor.name+'の会計中です。');if(!await wait(1100))return null;}
+  if(result.bought){phase('pay',visitor.name+'の会計中です。');if(!await wait(F.CUSTOMER_BALANCE.checkoutPauseMs||1200))return null;}
   // Once committed, departure cancellation never rolls back a paid purchase.
   settled=commit?V.commit(id,result):result;if(!settled)return null;
   phase('exit',settled.bought?visitor.name+'が'+settled.choice.item.name+'を'+settled.choice.price+'Gで購入しました。':visitor.name+'は「'+settled.reason+'」と購入を見送りました。');
@@ -51,3 +51,5 @@ V.drawTown=(c,cam)=>{const a=V.actor;if(!a||a.key!==F.SAVE_KEY||a.space!=='town'
 // Updated: 2026-10-25 19:47 JST / Ver1.66
 
 // Updated: 2026-10-25 19:54 JST / Ver1.66
+
+// Updated: 2026-10-25 20:21 JST / Ver1.67

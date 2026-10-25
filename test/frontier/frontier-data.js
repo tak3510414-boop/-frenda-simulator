@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.44 / approved interior layouts / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.66";
+F.VERSION="1.67";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
@@ -149,7 +149,7 @@ F.TIME_PHASES=Object.freeze([
  {id:"morning",label:"朝",icon:"🌅"},{id:"day",label:"昼",icon:"☀️"},{id:"evening",label:"夕方",icon:"🌇"},{id:"night",label:"夜",icon:"🌙"}
 ]);
 F.TIME_ACTION_COSTS=Object.freeze({adventureReturn:2,shopOpen:1,rest:1});
-F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:300,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
+F.ECONOMY_RULES=Object.freeze({currency:"G",startCoins:80,shelfBase:3,customerBase:4,developmentPerSale:2,developmentPerAdventure:2});
 // Ver0.72: 不思議のダンジョン系を基準に、最初のダンジョンも「最深部を目指す深い構成」にする。
 // Ver0.96: 全ダンジョン共通の難度Tier＋深度カーブ。後続ダンジョンを追加しても第1ダンジョンの数値を作り直さない構造にする。
 F.DUNGEON_TIER_DEFS=Object.freeze({
@@ -188,7 +188,7 @@ F.dungeonBalance=(dungeonId=F.DEFAULT_DUNGEON_ID,floor=1)=>{
  return {...phase,label,phaseIndex,normalizedFloor,withinBand,effectiveDepth,tierId:tier.id,tierShort:tier.short,tierName:tier.name,tierRole:tier.role,recommendedPlus:tier.recommendedPlus,enemyMaxRarity:Math.max(0,Math.min(3,(Number(phase.enemyMaxRarity)||0)+(Number(tier.rarityBonus)||0))),enemyBase:Math.max(1,(Number(phase.enemyBase)||5)+(Number(tier.enemyCountBonus)||0)),hpRate:(Number(phase.hpRate)||1)*(Number(tier.enemyHpRate)||1),atkRate:(Number(phase.atkRate)||1)*(Number(tier.enemyAtkRate)||1),traitChance:Math.max(0,Math.min(.65,(Number(phase.traitChance)||0)+(Number(tier.traitBonus)||0))),curseChance:Math.max(0,Math.min(.28,(Number(phase.curseChance)||0)+(Number(tier.curseBonus)||0))),plusOffset:Math.max(0,Number(tier.plusOffset)||0),plusCap:Math.max(0,Number(tier.plusCap)||5),gatherRate:Math.max(.5,Number(tier.gatherRate)||1),chestBonus:Math.floor(Number(tier.chestBonus)||0),trapRate:Math.max(.5,Number(tier.trapRate)||1)};
 };
 F.dungeonFloorBand=(floor,dungeonId=F.DEFAULT_DUNGEON_ID)=>F.dungeonBalance?.(dungeonId,floor)||null;
-F.SHOP_RULES=Object.freeze({baseCustomers:4,maxPriceMultiplier:3,minPrice:10});
+F.SHOP_RULES=Object.freeze({baseCustomers:4,maxPriceMultiplier:3,minPrice:1});
 
 // Ver0.33: 施設は選んだ瞬間に完成させず、予定地→資材→骨組み→仕上げ→完成を共通工程として持つ。
 F.CONSTRUCTION_PHASES=Object.freeze([
@@ -621,10 +621,12 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 // Updated: 2026-10-25 JST / Ver1.63
 
-// Updated: 2026-10-25 JST / Ver1.66
+// Updated: 2026-10-25 JST / Ver1.67
 
-// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.66
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.67
 
-// Updated: 2026-10-25 19:47 JST / Ver1.66
+// Updated: 2026-10-25 19:47 JST / Ver1.67
 
-// Updated: 2026-10-25 19:54 JST / Ver1.66
+// Updated: 2026-10-25 19:54 JST / Ver1.67
+
+// Updated: 2026-10-25 20:21 JST / Ver1.67

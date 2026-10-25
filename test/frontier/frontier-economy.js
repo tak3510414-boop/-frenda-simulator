@@ -3,13 +3,13 @@
 const F=window.FRENDA_FRONTIER;
 // Provisional tuning values: coordinate these with loot, item prices and building costs.
 F.CUSTOMER_BALANCE=Object.freeze({
- provisional:true,slots:6,arrivalWaitMs:3500,browseWaitMs:1600,resultWaitMs:900,
- expectedByLevel:Object.freeze([0,.9,1.3,1.8,2.4,3,3.6,4.2]),
- timeFactors:Object.freeze({morning:.85,day:1,evening:1.15,night:.45}),
- populationCap:.4,reputationCap:.25,trafficCap:.25,
- budgets:Object.freeze([[60,160],[90,240],[140,360],[40,130]]),
+ provisional:true,slots:6,arrivalWaitMs:6000,browseWaitMs:2000,resultWaitMs:1000,browseShelves:2,browsePauseMs:1000,checkoutPauseMs:1200,
+ expectedByLevel:Object.freeze([0,1.2,1.7,2.2,2.8,3.4,4,4.6]),
+ timeFactors:Object.freeze({morning:.9,day:1,evening:1.1,night:.3}),
+ populationCap:.3,reputationCap:.2,trafficCap:.2,
+ budgets:Object.freeze([[30,85],[40,120],[80,200],[25,75]]),
  needs:Object.freeze([['食料','草','巻物','投げ物'],['素材'],['珍品','杖','巻物'],['食料','草','薬']]),
- basePurchase:.5,needBonus:.15,priceSensitivity:.65,maxPurchase:.9
+ basePurchase:.45,needBonus:.2,priceSensitivity:.8,maxPurchase:.85
 });
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 F.shopDemand=(s)=>{const b=F.CUSTOMER_BALANCE,t=s.development?.town||{},raw=Number(t.facilities?.shop)||0;
@@ -47,3 +47,5 @@ F.endShopSession=(visitors,sold)=>F.mutateSave(s=>{F.addHistory(s,'shop',`営業
 // Updated: 2026-10-25 JST / Ver1.60
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
+
+// Updated: 2026-10-25 20:21 JST / Ver1.67

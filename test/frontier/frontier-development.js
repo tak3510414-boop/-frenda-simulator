@@ -1,14 +1,22 @@
 /* Frenda Frontier Ver1.65 — construction, services and provisional economy. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER,P=F.TOWN_PROGRESS,O=F.OPENING,T=F.TOWN_DEVELOPMENT={};
-F.BALANCE_RULES=Object.freeze({provisional:true,customer:F.CUSTOMER_BALANCE,loot:{baseCount:6,maxCount:10,countEvery:5,minDepth:{iron:3,crystal:6,panacea:8,spark_wand:5,purify_scroll:5,big_bread:4},gatherTable:F.GATHER_TABLE,chestTable:F.DUNGEON_CHEST_TABLE},tutorial:{stallWood:2,storeWood:4,storeCoins:120},staff:{hireCost:200,wage:5,minStage:6},
- prices:{wood:30,iron:55,bread:40,big_bread:95,herb:35,antidote_herb:45,paralysis_herb:50,wake_herb:50,clarity_herb:50,panacea:160,survey_scroll:90,sleep_scroll:100,purify_scroll:130,spark_wand:100,throw_stone:15,crystal:140,oldtool:220},
- construction:[{stage:4,coins:180,items:{wood:8},steps:2},{stage:5,coins:400,items:{wood:14,iron:4},steps:2},{stage:6,coins:800,items:{wood:22,iron:6},steps:3},{stage:7,coins:1300,items:{wood:30,iron:12},steps:3},{stage:8,coins:2000,items:{wood:40,iron:18},steps:4}]
+// One tuning table controls drops, spending and town progression.
+F.BALANCE_RULES=Object.freeze({provisional:true,revision:167,customer:F.CUSTOMER_BALANCE,
+ loot:{baseCount:5,maxCount:8,countEvery:4,minDepth:{iron:3,crystal:8,panacea:10,spark_wand:6,purify_scroll:6,big_bread:4,survey_scroll:3,sleep_scroll:4},gatherTable:F.GATHER_TABLE,chestTable:F.DUNGEON_CHEST_TABLE},
+ tutorial:{stallWood:3,storeWood:6,storeCoins:150},staff:{hireCost:180,wage:8,minStage:6},services:{inn:20,forgeBase:60,forgeStep:30,forgeIron:2,marketMarkup:1.4},
+ prices:{wood:10,iron:28,bread:25,big_bread:60,herb:18,antidote_herb:24,paralysis_herb:26,wake_herb:26,clarity_herb:26,panacea:100,survey_scroll:55,sleep_scroll:60,purify_scroll:75,spark_wand:60,throw_stone:4,crystal:90,oldtool:140},
+ construction:[{stage:4,coins:180,items:{wood:10},steps:2},{stage:5,coins:420,items:{wood:18,iron:5},steps:2},{stage:6,coins:800,items:{wood:26,iron:8},steps:3},{stage:7,coins:1400,items:{wood:34,iron:12},steps:3},{stage:8,coins:2200,items:{wood:42,iron:18},steps:4}]
 });
+F.marketPrice=id=>Math.ceil((F.item(id)?.base||0)*F.BALANCE_RULES.services.marketMarkup);
+F.innCost=()=>F.BALANCE_RULES.services.inn;
+F.forgeCost=s=>{const uid=s.equipment?.equippedUids?.weapon,p=s.equipment?.instances?.find(x=>x.uid===uid)?.plus||0;return{coins:F.BALANCE_RULES.services.forgeBase+Math.max(0,p)*F.BALANCE_RULES.services.forgeStep,iron:F.BALANCE_RULES.services.forgeIron};};
 O.rules=Object.freeze({...F.BALANCE_RULES.tutorial,provisional:true});
 F.ITEMS=Object.freeze(Object.fromEntries(Object.entries(F.ITEMS).map(([id,d])=>[id,{...d,base:F.BALANCE_RULES.prices[id]??d.base}])));
-F.economyGatherTable=run=>{const depth=F.dungeonBalance(run.dungeonId,run.floor).effectiveDepth;const min=F.BALANCE_RULES.loot.minDepth;return F.BALANCE_RULES.loot.gatherTable.filter(d=>depth>=(min[d.item]||1)).map(d=>({...d,max:d.item==='spark_wand'||d.item==='throw_stone'?Math.min(3,d.max):d.max}));};
+const weights={wood:38,herb:18,bread:16,iron:20,crystal:3,panacea:1,spark_wand:2};
+const dropLimits=d=>{const min=d.item==='spark_wand'?1:d.item==='throw_stone'?2:d.min,max=d.item==='wood'?2:d.item==='spark_wand'?2:d.item==='throw_stone'?3:1;return{...d,min:Math.min(min,max),max};};
+F.economyGatherTable=run=>{const depth=F.dungeonBalance(run.dungeonId,run.floor).effectiveDepth,min=F.BALANCE_RULES.loot.minDepth;return F.BALANCE_RULES.loot.gatherTable.filter(d=>depth>=(min[d.item]||1)).map(d=>dropLimits({...d,weight:weights[d.item]??d.weight}));};
 F.economyGatherCount=run=>{const r=F.BALANCE_RULES.loot;return Math.min(r.maxCount,r.baseCount+Math.floor((F.dungeonBalance(run.dungeonId,run.floor).effectiveDepth-1)/r.countEvery));};
-F.economyChestTable=run=>{const depth=F.dungeonBalance(run.dungeonId,run.floor).effectiveDepth;const pool=F.economyGatherTable(run);return F.BALANCE_RULES.loot.chestTable.filter(d=>d.kind!=='item'||pool.some(x=>x.item===d.item));};
+F.economyChestTable=run=>{const depth=F.dungeonBalance(run.dungeonId,run.floor).effectiveDepth;const pool=F.economyGatherTable(run);return F.BALANCE_RULES.loot.chestTable.filter(d=>d.kind!=='item'||pool.some(x=>x.item===d.item)).map(d=>d.kind==='item'?dropLimits(d):d);};
 T.stage=s=>P.stageFor(s);T.rule=s=>F.BALANCE_RULES.construction.find(x=>x.stage===T.stage(s)+1)||null;
 T.status=s=>{const project=s.story?.opening?.townProject;if(!project)return null;const elapsed=Math.max(0,(s.clock?.actionCount||0)-project.startedAt);return{...project,elapsed,ready:elapsed>=project.steps};};
 T.requirements=s=>{const r=T.rule(s);if(!r)return null;const missing=[];if(s.coins<r.coins)missing.push(`${r.coins-s.coins}G`);for(const[id,n]of Object.entries(r.items))if((s.warehouse[id]||0)<n)missing.push(`${F.item(id).name} ${n-(s.warehouse[id]||0)}個`);return{...r,missing};};
@@ -31,3 +39,5 @@ F.beginShopSession=()=>F.mutateSave(s=>{F.advanceTimeState(s,Number(F.TIME_ACTIO
 // Updated: 2026-10-25 JST / Ver1.65
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
+
+// Updated: 2026-10-25 20:21 JST / Ver1.67
