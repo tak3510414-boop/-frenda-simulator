@@ -55,7 +55,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
  document.getElementById('progressZoom').onclick=()=>{F.WILDERNESS.overview=!overview;rerender()};const enter=document.getElementById('progressHome');enter.onclick=()=>{if(spec.lv>=1){if(actions.facility)actions.facility('shop');else actions.shop?.();}else msg.textContent='まだ店舗はありません。'};
  let position=P.position||{x:500,y:155};if(!scene.walkable(position.x,position.y))position={x:500,y:155};P.position=position;let route=[],cam={x:0,y:0},last=0,target=null,facing=0;
  try{const [art,players]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png'))))]);if(token!==P.token)return;
- const draw=()=>{cam={x:overview?0:Math.max(0,Math.min(1000-cv.width,position.x-cv.width/2)),y:0};const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;P.drawBackground(c,art,stage,cam);P.drawAccess(c,scene,cam);P.drawPlayer(c,players[facing],facing,position,cam);};draw();
+ const draw=()=>{cam={x:overview?0:Math.max(0,Math.min(1000-cv.width,position.x-cv.width/2)),y:0};const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;P.drawBackground(c,art,stage,cam);P.drawAccess(c,scene,cam);F.SHOP_VISITS?.drawTown(c,cam);P.drawPlayer(c,players[facing],facing,position,cam);};draw();
  cv.onclick=e=>{const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+cam.x,y:(e.clientY-b.top)/b.height*cv.height};target=scene.objects.find(o=>p.x>=o.x&&p.x<=o.x+o.w&&p.y>=o.y&&p.y<=o.y+o.h);const end=target?target.door:p;route=P.path(scene,position,end);if(route.length===1&&target&&target.kind==='building'){enter.textContent=target.name+'を利用する';const readyId=target.id;enter.onclick=()=>{if(actions.facility)actions.facility(readyId);else msg.textContent='この画面では外観と移動のみ利用できます。'};}msg.textContent=route.length?(target?target.name+'の入口へ移動中':'移動中'):'そこには進めません。道か施設の入口を選んでください。';};
  const tick=now=>{if(token!==P.token||!cv.isConnected)return;let budget=Math.min(.05,(now-last)/1000)*95;last=now;while(route.length&&budget>0){const q=route[0],dx=q.x-position.x,dy=q.y-position.y,d=Math.hypot(dx,dy);if(d<.01){route.shift();continue}facing=Math.abs(dx)>.01&&Math.abs(dy)>.01?(dy<0?(dx<0?4:5):(dx<0?6:7)):(Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1));const n=Math.min(d,budget);position.x+=dx/d*n;position.y+=dy/d*n;budget-=n;if(n===d)route.shift();if(!route.length){msg.textContent=target?target.name+'の入口に到着しました。':'到着しました。';if(target&&target.kind==='building'){enter.textContent=target.name+'を利用する';enter.onclick=()=>{if(actions.facility)actions.facility(target.id);else msg.textContent='この確認画面では外観と移動のみ利用できます。'};}}}draw();requestAnimationFrame(tick)};requestAnimationFrame(tick);
  }catch(e){if(token===P.token)msg.textContent=e.message;}
@@ -74,3 +74,7 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 // Updated: 2026-10-25 JST / Ver1.65
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
+
+// Updated: 2026-10-25 19:47 JST / Ver1.66
+
+// Updated: 2026-10-25 19:54 JST / Ver1.66

@@ -59,7 +59,7 @@ function toast(t){const e=$('toast');if(!e)return;e.textContent=t;e.classList.ad
 function ensureModal(){let m=$('frontierModal');if(m)return m;m=document.createElement('div');m.id='frontierModal';m.className='modal hidden';m.innerHTML='<div class="modalPanel"><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)closeModal()};return m}
 function modal(html,actions=[]){ensureModal();$('frontierModalBody').innerHTML=html;const a=$('frontierModalActions');a.innerHTML='';for(const x of actions){const b=document.createElement('button');b.className=x.className||'cmdBtn';b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)}$('frontierModal').classList.remove('hidden')}
 function closeModal(){$('frontierModal')?.classList.add('hidden')}
-let storeSessionToken=0;
+let storeSessionToken=0,shopVisitTestMode=false;
 function setView(v){if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore())||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(st.caption)}`}
 function sceneShell(dialogTitle,dialogText,cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dialogBox"><h3>${esc(dialogTitle)}</h3><p id="dialogText">${esc(dialogText)}</p></div><div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="${cmdId}"></div></div>`}
@@ -516,7 +516,8 @@ function chooseShelfForPrice(){const s=F.readSave(),list=s.shelves.map((sh,i)=>s
 function shopOwnerPresent(){return currentView==='store'&&!F.run?.active;}
 function shopIsOpen(){return !document.hidden&&F.shopPresence(F.readSave(),shopOwnerPresent()).open;}
 function syncShopService(){
- if(!shopIsOpen()){if(storeBusy){storeSessionToken++;storeBusy=false;}storeMessage='閉店中：店主・店員が不在です。';return}
+ if(shopVisitTestMode)return;
+ if(!shopIsOpen()){if(storeBusy){storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();}storeMessage='閉店中：店主・店員が不在です。';return}
  if(!storeBusy)runStore();
 }
 async function runStore(){
@@ -527,7 +528,7 @@ async function runStore(){
  let sold=0,visitors=0,slots=0,charged=false,demand=null;
  const active=()=>sessionToken===storeSessionToken&&F.SAVE_KEY===saveKey&&shopIsOpen();
  const show=message=>{storeMessage=message;if(active()&&shopOwnerPresent()){
-   const hint=document.querySelector('.indoorHelp');if(hint)hint.textContent=storeMessage;
+   const hint=document.querySelector('.indoorHelp');if(hint)hint.textContent=storeMessage;if(F.SHOP_VISITS?.actor?.phase==='exit')header(F.readSave());
    const stall=document.querySelector('.stallPanel p:nth-of-type(2)');if(stall)stall.textContent=storeMessage;
  }};
  const pause=async ms=>{await new Promise(resolve=>setTimeout(resolve,ms));return active()};
@@ -542,11 +543,18 @@ async function runStore(){
    slots++;
    if(F.shopVisitorArrives(demand)){
     const visitor=F.createShopVisitor(F.readSave());visitors++;
-    show(`${visitor.icon} ${visitor.name}が来店。商品を見ています。来店${visitors}人 ／ 販売${sold}件`);
-    if(!await pause(balance.browseWaitMs))break;
-    const result=F.simulateCustomer(visitor);F.applyCustomerVisit(result);if(result.bought)sold++;
+    show(`${visitor.icon} ${visitor.name}がお店へ向かっています。来店${visitors}人 ／ 販売${sold}件`);
+    let result;
+    if(F.SHOP_VISITS&&F.OPENING?.phase()==='complete'){
+     result=await F.SHOP_VISITS.run(visitor,{active,show,repaint:()=>{if(shopOwnerPresent())paintIndoor();}});
+     if(!result){if(!active())break;continue;}
+    }else{
+     if(!await pause(balance.browseWaitMs))break;
+     result=F.simulateCustomer(visitor);F.applyCustomerVisit(result);
+    }
+    if(result.bought)sold++;
     show(result.bought?`✅ ${visitor.name}が${result.choice.item.name}を${result.choice.price}Gで購入。来店${visitors}人 ／ 販売${sold}件`:`${visitor.name}は「${result.reason}」と帰りました。来店${visitors}人 ／ 販売${sold}件`);
-    if(shopOwnerPresent()){renderStore(F.readSave());header(F.readSave());}
+    if(shopOwnerPresent()){paintIndoor();const h=document.querySelector('.indoorHeading span');if(h){const q=F.readSave();h.textContent=`陳列 ${q.shelves.filter(x=>x&&x.qty>0).length}/${F.shopCapacity(q)}枠`;}header(F.readSave());}
     if(!await pause(balance.resultWaitMs))break;
    }else show(`営業中：来店を待っています。来店${visitors}人 ／ 販売${sold}件`);
    // A time block ends, but the shop stays open while someone is present.
@@ -618,11 +626,24 @@ function renderIndoor(id,s){
 
 function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),shop:()=>setView('store'),missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
 function frontierTestAllowed(){return window.FRENDA_TEST?.active!==false&&(window.FRENDA_TEST?.active===true||/\/test\//.test(window.location.pathname)||document.querySelector('.brand small')?.textContent.includes('/ TEST'));}
+async function showShopVisitorTest(){
+ try{
+  if(F.run?.active)throw new Error('探索から帰還してから確認してください。');
+  shopVisitTestMode=true;storeSessionToken++;F.SHOP_VISITS.cancel();storeBusy=false;
+  F.OPENING.switchPoint('town3');F.mutateSave(s=>{s.coins=300;s.shelves=[{itemId:'bread',qty:2,price:40},{itemId:'herb',qty:2,price:35},null];});
+  closeModal();setView('store');storeBusy=true;const token=++storeSessionToken,key=F.SAVE_KEY;
+  const show=text=>{storeMessage=text;const el=document.querySelector('.indoorHelp');if(el)el.textContent=text;if(F.SHOP_VISITS?.actor?.phase==='exit')header(F.readSave());};
+  const visitor={...F.createShopVisitor(F.readSave()),name:'動作確認のお客さん',budgetValue:200,needs:['食料','草']};
+  const result=await F.SHOP_VISITS.run(visitor,{active:()=>token===storeSessionToken&&key===F.SAVE_KEY&&shopOwnerPresent(),show,repaint:()=>{if(shopOwnerPresent())paintIndoor();},decide:v=>F.evaluateShopCustomer(F.readSave(),v,()=>0)});
+  if(token===storeSessionToken){storeBusy=false;show(result?'TEST完了：来客1人の確認が終わりました。通常プレーへはTESTメニューで時点を切り替えてください。':'TESTを中断しました。');header(F.readSave());const e=document.querySelector('.indoorHeading span');if(e)e.textContent=`陳列 ${F.readSave().shelves.filter(Boolean).length}/3枠`;}
+ }catch(e){storeBusy=false;shopVisitTestMode=false;toast(e.message);}
+}
 function showFrontierTestMenu(){
  if(!frontierTestAllowed())return;
  const points=F.OPENING?.points||[];
  modal('<h2>🧪 テストメニュー</h2><p>現在の画面から、開始時点や外観確認を選べます。探索中の時点切替は帰還後に行ってください。</p><label>開始時点・店舗レベル<select id="frontierTestPoint" style="display:block;width:100%;padding:12px;margin:10px 0">'+points.map(([id,label])=>`<option value="${esc(id)}" ${F.OPENING?.testPoint===id?'selected':''}>${esc(label)}</option>`).join('')+'</select></label>',[
- {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home');toast('切替完了：'+(points.find(p=>p[0]===id)?.[1]||id))}catch(e){toast(e.message)}}},
+ {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;shopVisitTestMode=false;storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home');toast('切替完了：'+(points.find(p=>p[0]===id)?.[1]||id))}catch(e){toast(e.message)}}},
+ {label:'来客1人の動きを確認（TEST）',close:false,fn:showShopVisitorTest},
  {label:'次の工事の材料を揃える（TEST枠限定）',close:false,fn:()=>{try{F.TOWN_DEVELOPMENT.testMaterials();renderAll();toast('次の工事の材料を揃えました。');}catch(e){toast(e.message)}}},{label:'工事時間を進める（TEST枠限定）',close:false,fn:()=>{try{F.TOWN_DEVELOPMENT.testConstructionTime();renderAll();toast('工事時間を進めました。');}catch(e){toast(e.message)}}},...(!F.OPENING?.active()?[{label:'町のレイヤー確認',fn:showTownLayerTest}]:[]),{label:'町の通行確認',fn:showTownNavTest},{label:'閉じる'}]);
 }
 function bindTestLongPress(){
@@ -641,7 +662,7 @@ function bindTestLongPress(){
 
 function renderAll(){document.body.classList.remove('progressTownActive');$('sceneMount').classList.remove('progressTownLayout');bindTestLongPress();F.WILDERNESS?.stop();$('sceneMount').classList.remove('indoorSceneLayout','stallSceneLayout');const s=F.readSave();s.development.stage=F.developmentStage(s.development.points);F.writeSave(s);document.body.classList.toggle('dungeonActive',currentView==='adventure'&&!!F.run?.active);header(s);if($('openingMissionNav'))$('openingMissionNav').textContent=F.OPENING?.active()?'📋 ミッション一覧':'🌱 開拓生活（TEST）';if(currentView!=='home')$('sceneMount').classList.remove('townSceneLayout');if(currentView!=='adventure')$('sceneMount').classList.remove('dungeonSceneLayout');if(currentView==='home')renderHome(s);else if(currentView==='store')renderStore(s);else renderAdventure(s);syncShopService()}
 function bind(){const wb=document.createElement('button');wb.id='openingMissionNav';wb.textContent='📋 ミッション一覧';wb.className='cmdBtn';wb.style.margin='6px 12px';wb.onclick=()=>{try{if(F.OPENING?.active()){modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]);return}F.OPENING?.enter();F.WILDERNESS.active=true;homeMode='town';setView('home')}catch(e){toast(e.message)}};$('sceneMount').parentNode.insertBefore(wb,$('sceneMount'));document.querySelectorAll('#mainNav button').forEach(b=>b.onclick=()=>setView(b.dataset.view));window.addEventListener('keydown',e=>{if(!F.run?.active)return;const k=String(e.key||'').toLowerCase(),m={arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0],q:[-1,-1],e:[1,-1],z:[-1,1],c:[1,1],home:[-1,-1],pageup:[1,-1],end:[-1,1],pagedown:[1,1]}[k];if(m){e.preventDefault();if(e.shiftKey)dungeonDash(...m);else move(...m);return}if(e.key===' '){e.preventDefault();swingTurn()}})}
-document.addEventListener('visibilitychange',()=>{if(document.hidden){storeSessionToken++;storeBusy=false;}else{syncShopService();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();}else{syncShopService();}});
 function init(){if(!window.FRENDA_MASTER?.records||!window.FRENDA_DATA||!R)throw new Error('Frontier共通データを読み込めませんでした。');const host=$('frontierUserHost'),badge=$('frendaActiveUserBadge');if(host&&badge)host.appendChild(badge);bind();window.addEventListener('frontier:sprites-ready',()=>renderAll());F.ensureSpriteDex?.();renderAll()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{try{init()}catch(e){console.error(e);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="modalPanel"><h2>起動エラー</h2><p>${esc(e.message)}</p></div></div>`)}});else init();
 })();
@@ -703,3 +724,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-25 JST / Ver1.65
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
+
+// Updated: 2026-10-25 19:47 JST / Ver1.66
+
+// Updated: 2026-10-25 19:54 JST / Ver1.66

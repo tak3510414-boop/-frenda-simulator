@@ -144,9 +144,9 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
   const tierH=(h-28)/2;for(let row=0;row<2;row++){const yy=y+12+row*tierH;box(x+11,yy,w-22,3,'#e2b56d');box(x+11,yy+tierH-4,w-22,4,'#3b281b');box(x+14,yy+4,w-28,Math.max(2,tierH-10),row?'#b48650':'#c5965d')}
   for(const xx of[x+7,x+w-11])box(xx,y+6,4,h-13,'#d2a367');
   const sh=o.slots?.length?s.shelves?.[o.slots[0]]:null,im=sh&&sh.qty>0?art.items?.[sh.itemId]:null;
-  if(im){const k=Math.min((w*.42)/im.naturalWidth,(tierH*.72)/im.naturalHeight);for(let row=0;row<2;row++)c.drawImage(im,x+w*.50-im.naturalWidth*k/2,y+15+row*tierH,im.naturalWidth*k,im.naturalHeight*k)}
-  else if(sh&&sh.qty>0){label(F.item(sh.itemId)?.icon||'',x+w/2,y+h*.42,18);label(F.item(sh.itemId)?.icon||'',x+w/2,y+h*.82,18)}
-  label(sh&&sh.qty>0?`${sh.price}G`:'空',x+w/2,y+h+14,Math.max(10,12));
+  if(im){const k=Math.min((w*.42)/im.naturalWidth,(tierH*.72)/im.naturalHeight);for(let row=0;row<Math.min(2,sh.qty);row++)c.drawImage(im,x+w*.50-im.naturalWidth*k/2,y+15+row*tierH,im.naturalWidth*k,im.naturalHeight*k)}
+  else if(sh&&sh.qty>0){label(F.item(sh.itemId)?.icon||'',x+w/2,y+h*.42,18);if(sh.qty>1)label(F.item(sh.itemId)?.icon||'',x+w/2,y+h*.82,18)}
+  label(sh&&sh.qty>0?`${sh.price}G ×${sh.qty}`:'空',x+w/2,y+h+14,Math.max(10,12));
  };
  const drawPlanRack=(o)=>{
   const{x,y,w,h,face}=o,sh=o.slots?.length?s.shelves?.[o.slots[0]]:null,item=sh&&sh.qty>0?F.item(sh.itemId):null,im=sh&&sh.qty>0?art.items?.[sh.itemId]:null;
@@ -160,7 +160,7 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
    }
    box(ix,iy+rowH,iw,rowGap,'#4a2e1e');
    if(item){
-    const count=6;
+    const count=Math.min(6,sh.qty);
     for(let i=0;i<count;i++){
      const row=Math.floor(i/3),inRow=Math.min(3,count-row*3),col=i%3,cy=iy+row*(rowH+rowGap)+rowH*.54,cx=ix+iw*((3-inRow)/(6)+col/3+1/6);
      if(im){const k=Math.min((iw/3*.92)/im.naturalWidth,(rowH*.88)/im.naturalHeight);c.drawImage(im,cx-im.naturalWidth*k/2,cy-im.naturalHeight*k/2,im.naturalWidth*k,im.naturalHeight*k)}
@@ -168,7 +168,7 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
     }
    }else label('空',ix+iw/2,iy+ih/2+4,Math.max(8,Math.min(11,iw*.22)));
   }
-  const text=sh&&sh.qty>0?`${sh.price}G`:'空';c.font=`bold ${m.lv===6?8:9}px sans-serif`;c.textAlign='center';c.lineWidth=2;c.strokeStyle='#29190f';c.strokeText(text,x+w/2,y+h-3);c.fillStyle='#fff0ce';c.fillText(text,x+w/2,y+h-3);
+  const text=sh&&sh.qty>0?`${sh.price}G ×${sh.qty}`:'空';c.font=`bold ${m.lv===6?8:9}px sans-serif`;c.textAlign='center';c.lineWidth=2;c.strokeStyle='#29190f';c.strokeText(text,x+w/2,y+h-3);c.fillStyle='#fff0ce';c.fillText(text,x+w/2,y+h-3);
  };
  const drawCounter=(o)=>{if(sprite('counter',o))return;box(o.x+4,o.y+o.h,o.w-8,6,'#3c281a');box(o.x,o.y+8,o.w,o.h-8,'#704326');box(o.x+3,o.y+3,o.w-6,9,'#d4a36a');box(o.x+8,o.y+14,o.w-16,4,'#8e5c34');for(let x=o.x+14;x<o.x+o.w-8;x+=24)box(x,o.y+22,3,o.h-24,'#9d6a3c');box(o.x+12,o.y+8,20,12,'#334241');box(o.x+15,o.y+10,14,7,'#8db2a7');box(o.x+o.w-28,o.y+7,16,16,'#e9d294');box(o.x+o.w-24,o.y+10,8,8,'#fff1c2')};
  const drawDiningTable=(o)=>{const chair=(cx,cy)=>{box(cx-8,cy+4,16,12,'#53351f');box(cx-8,cy,16,5,'#c38a4a');box(cx-6,cy+5,12,8,'#8e5b32')};chair(o.x+o.w/2,o.y-13);chair(o.x+o.w/2,o.y+o.h+1);chair(o.x-12,o.y+o.h/2-6);chair(o.x+o.w-4,o.y+o.h/2-6);box(o.x+o.w*.34,o.y+o.h*.62,4,14,'#55351f');box(o.x+o.w*.62,o.y+o.h*.62,4,14,'#55351f');box(o.x+7,o.y+9,o.w-14,o.h-16,'#744525');box(o.x+10,o.y+11,o.w-20,o.h-21,'#c78d4e');box(o.x+14,o.y+14,o.w-28,2,'#e4b36e');box(o.x+o.w/2-4,o.y+o.h/2-4,8,8,'#4c8d3a');box(o.x+o.w/2-2,o.y+o.h/2-2,4,4,'#e5d49a')};
@@ -194,10 +194,16 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
  }
  // Main entrance mat; drawn above the floor but below the player.
  if(!plannedRoom){const ex=m.exit.x,ey=m.exit.y;box(ex+4,ey-8,m.exit.w-8,12,'#5c432b');box(ex+8,ey-6,m.exit.w-16,8,'#d9be81')}
+ F.SHOP_VISITS?.drawIndoor(c,m,rt,true);
  const player=rt.player||m.spawn,img=art[rt.facing==='up'?'playerBack':rt.facing==='left'?'playerLeft':rt.facing==='right'?'playerRight':'playerFront'];
  box(player.x-9,player.y-1,18,4,'#0004');if(img){const sw=img.naturalWidth,sh=img.naturalHeight,dw=56,dh=68,feet=sh*.20,step=rt.moving?Math.sin(Date.now()/90)*1.4:0;c.drawImage(img,0,0,sw,sh-feet,player.x-dw/2,player.y-dh+14,dw,dh*.8);c.drawImage(img,0,sh-feet,sw/2,feet,player.x-dw/2,player.y-8-step,dw/2,15);c.drawImage(img,sw/2,sh-feet,sw/2,feet,player.x,player.y-8+step,dw/2,15)}else{box(player.x-10,player.y-32,20,16,'#b44832');box(player.x-8,player.y-16,16,16,'#33546a')}
+ F.SHOP_VISITS?.drawIndoor(c,m,rt,false);
  c.restore();return camera
 };
 })();
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
+
+// Updated: 2026-10-25 19:47 JST / Ver1.66
+
+// Updated: 2026-10-25 19:54 JST / Ver1.66
