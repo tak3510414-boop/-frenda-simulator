@@ -610,7 +610,7 @@ function showFrontierTestMenu(){
  if(!frontierTestAllowed())return;
  const points=F.OPENING?.points||[];
  modal('<h2>🧪 テストメニュー</h2><p>現在の画面から、開始時点や外観確認を選べます。探索中の時点切替は帰還後に行ってください。</p><label>開始時点・店舗レベル<select id="frontierTestPoint" style="display:block;width:100%;padding:12px;margin:10px 0">'+points.map(([id,label])=>`<option value="${esc(id)}" ${F.OPENING?.testPoint===id?'selected':''}>${esc(label)}</option>`).join('')+'</select></label>',[
- {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home')}catch(e){toast(e.message)}}},
+ {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home');toast('切替完了：'+(points.find(p=>p[0]===id)?.[1]||id))}catch(e){toast(e.message)}}},
  {label:'町のレイヤー確認',fn:showTownLayerTest},{label:'町の通行確認',fn:showTownNavTest},{label:'閉じる'}]);
 }
 function bindTestLongPress(){
@@ -619,7 +619,7 @@ function bindTestLongPress(){
  const cancel=()=>{clearTimeout(timer);timer=0;point=null};
  const start=e=>{if(!frontierTestAllowed())return;if(e.button!=null&&e.button!==0)return;if(e.touches&&e.touches.length!==1){cancel();return}cancel();fired=false;const p=e.touches?.[0]||e;point={x:p.clientX,y:p.clientY};if(e.cancelable)e.preventDefault();timer=setTimeout(()=>{timer=0;fired=true;point=null;showFrontierTestMenu();},650)};
  const move=e=>{if(!point)return;const p=e.touches?.[0]||e;if(Math.hypot(p.clientX-point.x,p.clientY-point.y)>18)cancel()};
- const finish=e=>{cancel();if(fired&&e.cancelable)e.preventDefault()};
+ const finish=e=>{const held=fired;fired=false;cancel();if(held&&e.cancelable)e.preventDefault()};
  const opts={passive:false};
  if(window.PointerEvent){target.addEventListener('pointerdown',start,opts);document.addEventListener('pointermove',move,opts);document.addEventListener('pointerup',finish,opts);document.addEventListener('pointercancel',cancel,opts);}
  else{target.addEventListener('touchstart',start,opts);target.addEventListener('touchmove',move,opts);target.addEventListener('touchend',finish,opts);target.addEventListener('touchcancel',cancel,opts);target.addEventListener('mousedown',start,opts);document.addEventListener('mousemove',move,opts);document.addEventListener('mouseup',finish,opts);}
@@ -685,3 +685,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-25 JST / Ver1.60
 
 // Updated: 2026-10-25 JST / Ver1.61
+
+// Updated: 2026-10-25 JST / Ver1.62: release long-press suppression before subsequent button taps.
