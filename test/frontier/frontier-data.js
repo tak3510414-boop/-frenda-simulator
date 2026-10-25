@@ -601,4 +601,4 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 // Updated: 2026-10-25 JST / Ver1.47
 
-// Updated: 2026-10-25 JST / Ver1.51
+// Updated: 2026-10-25 JST / Ver1.52
