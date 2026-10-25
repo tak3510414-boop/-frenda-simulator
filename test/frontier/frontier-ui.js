@@ -605,7 +605,28 @@ function renderIndoor(id,s){
 }
 
 function renderHome(s){if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),shop:()=>setView('store'),missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}])});return}if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
-function bindTestLongPress(){const target=document.querySelector('.brand');if(!target||target.dataset.testHoldBound)return;target.dataset.testHoldBound='1';let timer=0;const cancel=()=>{clearTimeout(timer);timer=0};target.addEventListener('pointerdown',()=>{if(!window.FRENDA_TEST?.active)return;timer=setTimeout(()=>{document.body.classList.toggle('test-menu-open');toast(document.body.classList.contains('test-menu-open')?'TESTメニューを表示しました':'TESTメニューを隠しました');if(currentView==='home'&&homeMode==='town')renderAll()},700)});for(const ev of ['pointerup','pointerleave','pointercancel'])target.addEventListener(ev,cancel)}
+function frontierTestAllowed(){return window.FRENDA_TEST?.active!==false&&(window.FRENDA_TEST?.active===true||/\/test\//.test(window.location.pathname)||document.querySelector('.brand small')?.textContent.includes('/ TEST'));}
+function showFrontierTestMenu(){
+ if(!frontierTestAllowed())return;
+ const points=F.OPENING?.points||[];
+ modal('<h2>🧪 テストメニュー</h2><p>現在の画面から、開始時点や外観確認を選べます。探索中の時点切替は帰還後に行ってください。</p><label>開始時点・店舗レベル<select id="frontierTestPoint" style="display:block;width:100%;padding:12px;margin:10px 0">'+points.map(([id,label])=>`<option value="${esc(id)}" ${F.OPENING?.testPoint===id?'selected':''}>${esc(label)}</option>`).join('')+'</select></label>',[
+ {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home')}catch(e){toast(e.message)}}},
+ {label:'町のレイヤー確認',fn:showTownLayerTest},{label:'町の通行確認',fn:showTownNavTest},{label:'閉じる'}]);
+}
+function bindTestLongPress(){
+ const target=document.querySelector('.brand');if(!target||target.dataset.testHoldBound)return;target.dataset.testHoldBound='1';
+ let timer=0,point=null,fired=false;
+ const cancel=()=>{clearTimeout(timer);timer=0;point=null};
+ const start=e=>{if(!frontierTestAllowed())return;if(e.button!=null&&e.button!==0)return;if(e.touches&&e.touches.length!==1){cancel();return}cancel();fired=false;const p=e.touches?.[0]||e;point={x:p.clientX,y:p.clientY};if(e.cancelable)e.preventDefault();timer=setTimeout(()=>{timer=0;fired=true;point=null;showFrontierTestMenu();},650)};
+ const move=e=>{if(!point)return;const p=e.touches?.[0]||e;if(Math.hypot(p.clientX-point.x,p.clientY-point.y)>18)cancel()};
+ const finish=e=>{cancel();if(fired&&e.cancelable)e.preventDefault()};
+ const opts={passive:false};
+ if(window.PointerEvent){target.addEventListener('pointerdown',start,opts);document.addEventListener('pointermove',move,opts);document.addEventListener('pointerup',finish,opts);document.addEventListener('pointercancel',cancel,opts);}
+ else{target.addEventListener('touchstart',start,opts);target.addEventListener('touchmove',move,opts);target.addEventListener('touchend',finish,opts);target.addEventListener('touchcancel',cancel,opts);target.addEventListener('mousedown',start,opts);document.addEventListener('mousemove',move,opts);document.addEventListener('mouseup',finish,opts);}
+ target.addEventListener('contextmenu',e=>e.preventDefault());target.addEventListener('selectstart',e=>e.preventDefault());
+ window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',cancel);
+}
+
 function renderAll(){bindTestLongPress();F.WILDERNESS?.stop();$('sceneMount').classList.remove('indoorSceneLayout','stallSceneLayout');const s=F.readSave();s.development.stage=F.developmentStage(s.development.points);F.writeSave(s);document.body.classList.toggle('dungeonActive',currentView==='adventure'&&!!F.run?.active);header(s);if($('openingMissionNav'))$('openingMissionNav').textContent=F.OPENING?.active()?'📋 ミッション一覧':'🌱 開拓生活（TEST）';if(currentView!=='home')$('sceneMount').classList.remove('townSceneLayout');if(currentView!=='adventure')$('sceneMount').classList.remove('dungeonSceneLayout');if(currentView==='home')renderHome(s);else if(currentView==='store')renderStore(s);else renderAdventure(s);syncShopService()}
 function bind(){const wb=document.createElement('button');wb.id='openingMissionNav';wb.textContent='📋 ミッション一覧';wb.className='cmdBtn';wb.style.margin='6px 12px';wb.onclick=()=>{try{if(F.OPENING?.active()){modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]);return}F.OPENING?.enter();F.WILDERNESS.active=true;homeMode='town';setView('home')}catch(e){toast(e.message)}};$('sceneMount').parentNode.insertBefore(wb,$('sceneMount'));document.querySelectorAll('#mainNav button').forEach(b=>b.onclick=()=>setView(b.dataset.view));window.addEventListener('keydown',e=>{if(!F.run?.active)return;const k=String(e.key||'').toLowerCase(),m={arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0],q:[-1,-1],e:[1,-1],z:[-1,1],c:[1,1],home:[-1,-1],pageup:[1,-1],end:[-1,1],pagedown:[1,1]}[k];if(m){e.preventDefault();if(e.shiftKey)dungeonDash(...m);else move(...m);return}if(e.key===' '){e.preventDefault();swingTurn()}})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){storeSessionToken++;storeBusy=false;}else{syncShopService();}});
@@ -662,3 +683,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-25 14:32 JST / Ver1.59
 
 // Updated: 2026-10-25 JST / Ver1.60
+
+// Updated: 2026-10-25 JST / Ver1.61
