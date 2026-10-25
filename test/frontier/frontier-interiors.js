@@ -199,3 +199,5 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
  c.restore();return camera
 };
 })();
+
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64

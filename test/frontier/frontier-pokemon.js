@@ -102,3 +102,5 @@ F.chooseDungeonBossSpecies=(dungeonId,floor)=>{const d=F.dungeonDef?.(dungeonId)
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
+
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64

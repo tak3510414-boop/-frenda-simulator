@@ -162,3 +162,5 @@ F.addHistory=(s,type,text)=>{s.history=Array.isArray(s.history)?s.history:[];s.h
 // Updated: 2026-10-24 JST / Ver1.34
 
 // Updated: 2026-10-24 JST / Ver1.37
+
+// Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.64
