@@ -22,7 +22,7 @@ V.run=async(visitor,{active,show,repaint=()=>{},commit=true,decide=F.simulateCus
  try{
   phase('approach',visitor.name+'がお店の入口へ向かっています。');
   const P=F.TOWN_PROGRESS,stage=P?.stageFor(F.readSave()),scene=stage!==null&&stage!==undefined?P.scene(stage):null,shop=scene?.objects.find(o=>o.id==='shop');
-  if(shop){const from={x:500,y:155},path=P.path(scene,from,shop.door);actor.position={...from};if(!await move(path,'town'))return null;}else if(!await wait(500))return null;
+  if(shop){const from=P.spawn(stage),path=P.path(scene,from,shop.door);actor.position={...from};if(!await move(path,'town'))return null;}else if(!await wait(500))return null;
   actor.position={...m.spawn};actor.space='indoor';phase('enter',visitor.name+'が入店しました。');if(!await wait(450))return null;
   // The decision is made after browsing. Shelves cannot be sold remotely.
   const available=m.shelves.filter(o=>o.slots?.some(i=>F.readSave().shelves[i]?.qty>0)),offset=available.length?Math.floor(Math.random()*available.length):0,shelves=[...available.slice(offset),...available.slice(0,offset)].slice(0,F.CUSTOMER_BALANCE.browseShelves||2);let visited=0;
@@ -38,7 +38,7 @@ V.run=async(visitor,{active,show,repaint=()=>{},commit=true,decide=F.simulateCus
   settled=commit?V.commit(id,result):result;if(!settled)return null;
   phase('exit',settled.bought?visitor.name+'が'+settled.choice.item.name+'を'+settled.choice.price+'Gで購入しました。':visitor.name+'は「'+settled.reason+'」と購入を見送りました。');
   if(!await walkTo(m.exit))return settled;if(!await wait(400))return settled;
-  if(shop&&live()){actor.position={...shop.door};const path=P.path(scene,actor.position,{x:500,y:155});await move(path,'town');}
+  if(shop&&live()){actor.position={...shop.door};const path=P.path(scene,actor.position,P.spawn(stage));await move(path,'town');}
   return settled;
  }finally{if(V.actor===actor)V.actor=null;repaint();}
 };
@@ -53,3 +53,7 @@ V.drawTown=(c,cam)=>{const a=V.actor;if(!a||a.key!==F.SAVE_KEY||a.space!=='town'
 // Updated: 2026-10-25 19:54 JST / Ver1.66
 
 // Updated: 2026-10-25 20:21 JST / Ver1.67
+
+// Updated: 2026-10-26 JST / Ver1.70
+
+// Updated: 2026-10-26 18:44 JST / Ver1.70
