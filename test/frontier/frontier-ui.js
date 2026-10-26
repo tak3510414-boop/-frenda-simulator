@@ -659,12 +659,48 @@ async function showShopVisitorTest(){
 function showFrontierTestMenu(){
  if(!frontierTestAllowed())return;
  const points=F.OPENING?.points||[];
- modal('<h2>🧪 テストメニュー</h2><p>現在の画面から、開始時点や外観確認を選べます。探索中の時点切替は帰還後に行ってください。</p><label>開始時点・店舗レベル<select id="frontierTestPoint" style="display:block;width:100%;padding:12px;margin:10px 0">'+points.map(([id,label])=>`<option value="${esc(id)}" ${F.OPENING?.testPoint===id?'selected':''}>${esc(label)}</option>`).join('')+'</select></label>',[
- {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;shopVisitTestMode=false;storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home');toast('切替完了：'+(points.find(p=>p[0]===id)?.[1]||id))}catch(e){toast(e.message)}}},
- {label:'職人の暮らしを確認（TEST）',fn:showResidentTest},
- {label:'収支・建築費を確認',fn:showEconomyBalance},
- {label:'選択中の町で来客を確認（TEST）',close:false,fn:showShopVisitorTest},
- {label:'次の工事の材料を揃える（TEST枠限定）',close:false,fn:()=>{try{F.TOWN_DEVELOPMENT.testMaterials();renderAll();toast('次の工事の材料を揃えました。');}catch(e){toast(e.message)}}},{label:'工事時間を進める（TEST枠限定）',close:false,fn:()=>{try{F.TOWN_DEVELOPMENT.testConstructionTime();renderAll();toast('工事時間を進めました。');}catch(e){toast(e.message)}}},...(!F.OPENING?.active()?[{label:'町のレイヤー確認',fn:showTownLayerTest}]:[]),{label:'町の通行確認',fn:showTownNavTest},{label:'閉じる'}]);
+ const town=points.filter(([id])=>/^town\d+$/.test(id));
+ const exterior=points.filter(([id])=>/^lv[3-7]$/.test(id));
+ const current=points.filter(([id])=>id==='current');
+ const mission=points.filter(([id])=>!/^town\d+$/.test(id)&&!/^lv[3-7]$/.test(id)&&id!=='current');
+ const groups=[['町の発展段階',town],['店舗の外観',exterior],['現在のプレー',current],['ミッションの途中',mission]].filter(([,items])=>items.length);
+ const options=groups.map(([name,items])=>`<optgroup label="${esc(name)}">${items.map(([id,label])=>`<option value="${esc(id)}" ${F.OPENING?.testPoint===id?'selected':''}>${esc(label.replace(/^町全体：|^外観確認：/,''))}</option>`).join('')}</optgroup>`).join('');
+ const layerTest=!F.OPENING?.active()?'<button type="button" class="cmdBtn" id="testTownLayers">町のレイヤー確認</button>':'';
+ modal(`<h2>🧪 テストメニュー</h2>
+ <p class="testMenuIntro">開始時点・外観・動作を確認できます。時点の切替はTEST用セーブに反映されます。探索中は帰還後に切り替えてください。</p>
+ <section class="testMenuSection">
+  <h3>① 確認する時点</h3>
+  <label for="frontierTestPoint">町の段階・ミッション・外観</label>
+  <select id="frontierTestPoint" class="testMenuSelect">${options}</select>
+  <button type="button" class="cmdBtn primary testMenuMainAction" id="testMenuSwitch">選んだ時点へ切り替える</button>
+ </section>
+ <section class="testMenuSection">
+  <h3>② 動き・通り道を確認</h3>
+  <div class="testMenuGrid">
+   <button type="button" class="cmdBtn" id="testShopVisitor">来客の往復</button>
+   <button type="button" class="cmdBtn" id="testResidentRoute">ミナの出勤・帰宅</button>
+   <button type="button" class="cmdBtn" id="testTownRoute">町の通行確認</button>
+  </div>
+  <p class="testMenuHint">来客の往復は、町段階③（露店）以降で確認できます。</p>
+ </section>
+ <details class="testMenuDetails">
+  <summary>③ 数値・工事の補助テスト</summary>
+  <div class="testMenuGrid">
+   <button type="button" class="cmdBtn" id="testEconomy">収支・建築費</button>
+   <button type="button" class="cmdBtn" id="testConstructionMaterials">次の工事の材料を揃える</button>
+   <button type="button" class="cmdBtn" id="testConstructionTime">工事時間を進める</button>
+   ${layerTest}
+  </div>
+ </details>`,[{label:'閉じる'}]);
+ const bind=(id,fn)=>{const el=$(id);if(el)el.onclick=fn};
+ bind('testMenuSwitch',()=>{try{const id=$('frontierTestPoint').value;shopVisitTestMode=false;storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home');toast('切替完了：'+(points.find(p=>p[0]===id)?.[1]||id))}catch(e){toast(e.message)}});
+ bind('testResidentRoute',showResidentTest);
+ bind('testEconomy',showEconomyBalance);
+ bind('testShopVisitor',showShopVisitorTest);
+ bind('testConstructionMaterials',()=>{try{F.TOWN_DEVELOPMENT.testMaterials();renderAll();toast('次の工事の材料を揃えました。')}catch(e){toast(e.message)}});
+ bind('testConstructionTime',()=>{try{F.TOWN_DEVELOPMENT.testConstructionTime();renderAll();toast('工事時間を進めました。')}catch(e){toast(e.message)}});
+ bind('testTownLayers',showTownLayerTest);
+ bind('testTownRoute',showTownNavTest);
 }
 function bindTestLongPress(){
  const target=document.querySelector('.brand');if(!target||target.dataset.testHoldBound)return;target.dataset.testHoldBound='1';
@@ -755,3 +791,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-10-25 21:08 JST / Ver1.69
 // Updated: 2026-10-26 19:31 JST / Ver1.71
+// Updated: 2026-10-26 20:26 JST / Ver1.72
