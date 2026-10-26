@@ -61,7 +61,7 @@ function modal(html,actions=[]){ensureModal();$('frontierModalBody').innerHTML=h
 function closeModal(){F.RESIDENTS?.endTalk();$('frontierModal')?.classList.add('hidden')}
 let storeSessionToken=0,shopVisitTestMode=false;
 function setView(v){if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore())||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
-function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(st.caption)}`}
+function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}
 function sceneShell(dialogTitle,dialogText,cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dialogBox"><h3>${esc(dialogTitle)}</h3><p id="dialogText">${esc(dialogText)}</p></div><div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver0.99: dungeon messages are transient overlays; full history remains available on demand.
 function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
@@ -644,13 +644,16 @@ function showEconomyBalance(){
 async function showShopVisitorTest(){
  try{
   if(F.run?.active)throw new Error('探索から帰還してから確認してください。');
+  if(!F.SAVE_KEY.includes(':mission148test:'))throw new Error('先にテストメニューで確認したい町段階を選んでください。');
+  const stage=F.TOWN_PROGRESS.stageFor(F.readSave());
+  if(!Number.isInteger(stage)||stage<2||stage>8)throw new Error('露店を開いた段階（③）以降を選ぶと、来客の動きを確認できます。');
   shopVisitTestMode=true;storeSessionToken++;F.SHOP_VISITS.cancel();storeBusy=false;
-  F.OPENING.switchPoint('town3');F.mutateSave(s=>{s.coins=300;s.shelves=[{itemId:'bread',qty:2,price:40},{itemId:'herb',qty:2,price:35},null];});
+  F.mutateSave(s=>{s.story.opening.phase='complete';s.coins=300;const cap=[0,0,3,3,4,5,6,6,9][stage];s.shelves=Array.from({length:cap},(_,i)=>i===0?{itemId:'bread',qty:2,price:40}:i===1?{itemId:'herb',qty:2,price:35}:null);});
   closeModal();setView('store');storeBusy=true;const token=++storeSessionToken,key=F.SAVE_KEY;
   const show=text=>{storeMessage=text;const el=document.querySelector('.indoorHelp');if(el)el.textContent=text;if(F.SHOP_VISITS?.actor?.phase==='exit')header(F.readSave());};
   const visitor={...F.createShopVisitor(F.readSave()),name:'動作確認のお客さん',budgetValue:200,needs:['食料','草']};
   const result=await F.SHOP_VISITS.run(visitor,{active:()=>token===storeSessionToken&&key===F.SAVE_KEY&&shopOwnerPresent(),show,repaint:()=>{if(shopOwnerPresent())paintIndoor();},decide:v=>F.evaluateShopCustomer(F.readSave(),v,()=>0)});
-  if(token===storeSessionToken){storeBusy=false;show(result?'TEST完了：来客1人の確認が終わりました。通常プレーへはTESTメニューで時点を切り替えてください。':'TESTを中断しました。');header(F.readSave());const e=document.querySelector('.indoorHeading span');if(e)e.textContent=`陳列 ${F.readSave().shelves.filter(Boolean).length}/3枠`;}
+  if(token===storeSessionToken){storeBusy=false;show(result?'TEST完了：来客1人の確認が終わりました。通常プレーへはTESTメニューで時点を切り替えてください。':'TESTを中断しました。');const s=F.readSave();header(s);const e=document.querySelector('.indoorHeading span');if(e)e.textContent=`陳列 ${s.shelves.filter(x=>x&&x.qty>0).length}/${F.shopCapacity(s)}枠`;}
  }catch(e){storeBusy=false;shopVisitTestMode=false;toast(e.message);}
 }
 function showFrontierTestMenu(){
@@ -660,7 +663,7 @@ function showFrontierTestMenu(){
  {label:'選んだ時点へ切り替える',className:'cmdBtn primary',close:false,fn:()=>{try{const id=$('frontierTestPoint').value;shopVisitTestMode=false;storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();F.OPENING.switchPoint(id);closeModal();homeMode='town';setView('home');toast('切替完了：'+(points.find(p=>p[0]===id)?.[1]||id))}catch(e){toast(e.message)}}},
  {label:'職人の暮らしを確認（TEST）',fn:showResidentTest},
  {label:'収支・建築費を確認',fn:showEconomyBalance},
- {label:'来客1人の動きを確認（TEST）',close:false,fn:showShopVisitorTest},
+ {label:'選択中の町で来客を確認（TEST）',close:false,fn:showShopVisitorTest},
  {label:'次の工事の材料を揃える（TEST枠限定）',close:false,fn:()=>{try{F.TOWN_DEVELOPMENT.testMaterials();renderAll();toast('次の工事の材料を揃えました。');}catch(e){toast(e.message)}}},{label:'工事時間を進める（TEST枠限定）',close:false,fn:()=>{try{F.TOWN_DEVELOPMENT.testConstructionTime();renderAll();toast('工事時間を進めました。');}catch(e){toast(e.message)}}},...(!F.OPENING?.active()?[{label:'町のレイヤー確認',fn:showTownLayerTest}]:[]),{label:'町の通行確認',fn:showTownNavTest},{label:'閉じる'}]);
 }
 function bindTestLongPress(){
@@ -751,3 +754,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-25 20:51 JST / Ver1.68
 
 // Updated: 2026-10-25 21:08 JST / Ver1.69
+// Updated: 2026-10-26 19:31 JST / Ver1.71
