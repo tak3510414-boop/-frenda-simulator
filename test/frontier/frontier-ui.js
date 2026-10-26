@@ -472,7 +472,7 @@ function showResident(){
 }
 async function approachResidentInside(){const N=F.RESIDENTS,rt=indoorRuntime,h=N?.indoorActor(rt.model,rt);if(!h){toast('ミナは今この部屋にいません。');return;}const path=F.interiorPath(rt.model,rt.player,h.p,{kind:'resident',x:h.p.x-8,y:h.p.y-8,w:16,h:16});if(path.length&&await indoorWalk(path[path.length-1]))showResident();}
 function showResidentTest(){
- try{if(F.run?.active)throw Error('探索から帰還してから確認してください。');shopVisitTestMode=false;storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();F.OPENING.switchPoint('town5');F.WILDERNESS.overview=false;F.TOWN_PROGRESS.position={x:335,y:100};F.RESIDENTS.startDemo();F.RESIDENTS.onChange=()=>renderAll();closeModal();homeMode='town';setView('home');toast('TEST：出勤→仕事→帰宅→夜の順に自動確認します。');}catch(e){toast(e.message);}
+ try{if(F.run?.active)throw Error('探索から帰還してから確認してください。');shopVisitTestMode=false;storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();F.OPENING.switchPoint('town5');F.WILDERNESS.overview=false;F.TOWN_PROGRESS.position={x:344,y:100};F.RESIDENTS.startDemo();F.RESIDENTS.onChange=()=>renderAll();closeModal();homeMode='town';setView('home');toast('TEST：出勤→仕事→帰宅→夜の順に自動確認します。');}catch(e){toast(e.message);}
 }
 function showShopStaff(){const s=F.readSave(),st=F.TOWN_DEVELOPMENT.staffStatus(s),r=F.BALANCE_RULES.staff;
  modal('<h2>店員の雇用・勤務</h2><p>'+(!st.hired?`まだ店員はいません。市場と酒場の完成後、${r.hireCost}Gで雇用できます。`:`店員：${st.onDuty?'勤務中':'休務中'}。`)+`<br>営業1区分ごとの賃金：${r.wage}G。所持金が不足すると勤務を休止します。店員が勤務中なら店主の不在中も営業できます。</p>`,[
@@ -749,3 +749,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-25 20:21 JST / Ver1.67
 
 // Updated: 2026-10-25 20:51 JST / Ver1.68
+
+// Updated: 2026-10-25 21:08 JST / Ver1.69
