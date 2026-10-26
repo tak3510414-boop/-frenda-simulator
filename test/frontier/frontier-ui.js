@@ -56,8 +56,19 @@ function storeShelfSummaryHtml(s){return `<div class="storeShelfList">${s.shelve
 function loadVisual(src){if(visualImgCache.has(src))return visualImgCache.get(src);const p=new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error(`画像を読み込めません: ${src}`));im.src=src});visualImgCache.set(src,p);return p}
 function loadVisualOptional(src){return loadVisual(src).catch(e=>{console.warn(e.message);return null})}
 function toast(t){const e=$('toast');if(!e)return;e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1600)}
-function ensureModal(){let m=$('frontierModal');if(m)return m;m=document.createElement('div');m.id='frontierModal';m.className='modal hidden';m.innerHTML='<div class="modalPanel"><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)closeModal()};return m}
-function modal(html,actions=[]){ensureModal();$('frontierModalBody').innerHTML=html;const a=$('frontierModalActions');a.innerHTML='';for(const x of actions){const b=document.createElement('button');b.className=x.className||'cmdBtn';b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)}$('frontierModal').classList.remove('hidden')}
+function ensureModal(){let m=$('frontierModal');if(m)return m;m=document.createElement('div');m.id='frontierModal';m.className='modal hidden';m.innerHTML='<div class="modalPanel"><div class="modalStickyClose hidden"><button type="button" class="cmdBtn modalTopClose">閉じる</button></div><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)closeModal()};return m}
+function modal(html,actions=[]){
+ const m=ensureModal(),panel=m.querySelector('.modalPanel'),body=$('frontierModalBody'),a=$('frontierModalActions');
+ body.innerHTML=html;panel.classList.remove('longListModal');
+ const list=body.querySelector('.choiceGrid,.partnerGrid,.retroBagLayout,.dungeonHistoryList'),rows=body.querySelectorAll('.choiceCard,.partnerCard,.retroBagRow,.dungeonHistoryRow').length;
+ const longList=!!list&&(rows>=6||html.length>=1800);
+ const sticky=panel.querySelector('.modalStickyClose'),topButton=sticky.querySelector('.modalTopClose');
+ sticky.classList.toggle('hidden',!longList);panel.classList.toggle('longListModal',longList);
+ const closeAction=longList?actions.find(x=>x.label==='閉じる'):null;
+ topButton.onclick=()=>{if(closeAction){if(closeAction.close!==false)closeModal();closeAction.fn?.()}else closeModal()};
+ a.innerHTML='';for(const x of actions){if(longList&&x===closeAction)continue;const b=document.createElement('button');b.className=x.className||'cmdBtn';b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)}
+ m.classList.remove('hidden')
+}
 function closeModal(){F.RESIDENTS?.endTalk();$('frontierModal')?.classList.add('hidden')}
 let storeSessionToken=0,shopVisitTestMode=false;
 function setView(v){if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore())||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
@@ -819,4 +830,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-26 19:31 JST / Ver1.71
 // Updated: 2026-10-26 20:26 JST / Ver1.72
 
-// Updated: 2026-10-26 19:08 +07 / Ver1.73
+// Updated: 2026-10-26 / Ver1.74

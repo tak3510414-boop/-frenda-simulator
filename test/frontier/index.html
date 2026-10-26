@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.73">
+<html lang="ja" data-app-version="1.74">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.73</title>
+<title>Frenda Frontier Ver1.74</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -213,10 +213,28 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
  .retroBagRow span{font-size:10px}
  .retroBagDescription{padding:7px}
 }
+/* Ver1.74: keep dungeon commands out of the active map and keep list dismissal reachable. */
+.gameScene.dungeonSceneLayout .commandBox{left:6px;right:6px;top:auto;bottom:6px;width:auto;padding:4px;border:2px solid var(--game-message-edge);border-radius:4px;background:rgba(20,17,15,.92);box-shadow:0 3px 10px #0008}
+.gameScene.dungeonSceneLayout .commandTitle{display:none}
+.gameScene.dungeonSceneLayout .cmdList{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+.gameScene.dungeonSceneLayout .cmdBtn{min-width:0;min-height:32px;padding:5px 2px;border-radius:3px;border:1px solid #e4dcc9;background:rgba(47,38,31,.96);font-size:clamp(8px,2.3vw,10px);line-height:1.15;white-space:normal;text-align:center}
+.gameScene.dungeonSceneLayout .cmdBtn.primary{background:rgba(87,63,33,.98);border-color:#f5dda0}
+.gameScene.dungeonSceneLayout .cmdBtn.warn{background:rgba(91,40,31,.98);border-color:#f1c49b}
+.gameScene.dungeonSceneLayout .cmdBtn:disabled{opacity:1;color:#ded6c8;background:#49443d;border-color:#aaa08e}
+.gameScene.dungeonSceneLayout .dungeonMessageOverlay{left:4%;right:4%;bottom:94px;min-height:56px;max-height:88px}
+.gameScene.dungeonSceneLayout .dungeonFootItemHint{bottom:164px}
+.modalPanel .choiceCard small,.modalPanel .partnerCard small{color:#f2eadb}
+.modalPanel .badge{background:#f5dda0;color:#2a2116;border:1px solid #ba9552;text-shadow:none}
+.modalPanel.longListModal{display:flex;flex-direction:column;max-height:86vh;overflow:hidden}
+.longListModal #frontierModalBody{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.modalStickyClose{flex:0 0 auto;display:flex;justify-content:flex-end;margin:-3px 0 9px;padding:0 0 8px;border-bottom:1px solid rgba(243,238,226,.58);background:rgba(23,20,18,.97);z-index:2}
+.modalPanel .modalTopClose{width:auto;min-width:86px;padding:6px 14px;text-align:center}
+.longListModal .modalActions{flex:0 0 auto;margin-top:9px;padding-top:8px;border-top:1px solid rgba(243,238,226,.45);background:rgba(23,20,18,.97)}
+.longListModal .modalActions:empty{display:none}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.73 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.74 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
  <div class="notice">🌱 テント設営後からスタート。「次にすること」に沿って、露店を開こう。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
@@ -297,4 +315,4 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 <!-- Updated: 2026-10-26 18:44 JST / Ver1.71 -->
 <!-- Updated: 2026-10-26 19:28 JST / Ver1.71 -->
 <!-- Updated: 2026-10-26 20:26 JST / Ver1.72 -->
-<!-- Updated: 2026-10-26 19:08 +07 / Ver1.73 -->
+<!-- Updated: 2026-10-26 / Ver1.74 -->
