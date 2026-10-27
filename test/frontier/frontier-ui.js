@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.44 / player-matched four-way NPC sprites / Updated: 2026-10-24 */
+/* Frenda Frontier Ver1.78 / ending scene and campaign review. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -70,6 +70,7 @@ function modal(html,actions=[]){
  m.classList.remove('hidden')
 }
 function closeModal(){F.RESIDENTS?.endTalk();$('frontierModal')?.classList.add('hidden')}
+F.presentEnding=()=>modal(`<section style="text-align:center;padding:8px 4px 12px"><div style="font-size:40px;line-height:1.2">🌲 🏘️</div><h2 style="margin:8px 0 14px;color:#174c37">開拓の物語</h2><p style="line-height:1.9">森の主の証を携えた冒険者が町へ戻ると、迷宮を目当てに集まった人々は歓声で迎えました。</p><p style="line-height:1.9">テント脇の露店から始まった店は、職人や住民の暮らしを支える町へと育ちました。店は、迷宮へ向かう人にも帰ってきた人にも、変わらず灯りをともしています。</p><p style="font-weight:900;color:#8a4a1d">ここから先も、町の人々と冒険を続けられます。</p></section>`,[{label:'町へ戻る',className:'cmdBtn primary'}]);
 let storeSessionToken=0,shopVisitTestMode=false;
 function setView(v){if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore())||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}

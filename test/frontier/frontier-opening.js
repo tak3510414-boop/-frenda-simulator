@@ -1,7 +1,7 @@
-/* Frenda Frontier Ver1.76 — guided opening, first sale and campaign milestones. */
+/* Frenda Frontier Ver1.78 — guided opening, first sale and campaign milestones. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,originalKey=F.SAVE_KEY,storyKey=originalKey+':opening147';
-const O=F.OPENING={originalKey,storyKey,rules:Object.freeze({stallWood:2,storeWood:2,storeCoins:40,provisional:true}),levels:[{level:1,name:'露店',shelves:3},{level:2,name:'店舗兼住宅',shelves:3},{level:3,name:'店舗兼住宅',shelves:4},{level:4,name:'店舗兼住宅',shelves:5},{level:5,name:'店舗兼住宅',shelves:6},{level:6,name:'店舗兼住宅',shelves:6},{level:7,name:'店舗専用＋専用住宅',shelves:9}],tentBox:{x:610,y:105,w:96,h:80},stallBox:{x:730,y:215,w:122,h:70},shopBox:{x:688,y:82,w:176,h:172}};
+const O=F.OPENING={originalKey,storyKey,rules:Object.freeze({stallWood:3,storeWood:6,storeCoins:150,provisional:true}),levels:[{level:1,name:'露店',shelves:3},{level:2,name:'店舗兼住宅',shelves:3},{level:3,name:'店舗兼住宅',shelves:4},{level:4,name:'店舗兼住宅',shelves:5},{level:5,name:'店舗兼住宅',shelves:6},{level:6,name:'店舗兼住宅',shelves:6},{level:7,name:'店舗専用＋専用住宅',shelves:9}],tentBox:{x:610,y:105,w:96,h:80},stallBox:{x:730,y:215,w:122,h:70},shopBox:{x:688,y:82,w:176,h:172}};
 const initial=()=>({phase:'arrival',woodReturned:0,goodsReturned:0,mission1:false,mission2:false,prologueVersion:1,prologueComplete:false,tentPitched:false,endingSeen:false});
 O.active=()=>F.SAVE_KEY===storyKey||F.SAVE_KEY.startsWith(originalKey+':mission148test:');
 // Approved exterior stages. The maximum shop plot stays reserved at every level.
@@ -35,7 +35,7 @@ O.guidance=()=>{
  const s=F.readSave(),p=O.phase(),stocked=s.shelves.some(sh=>sh&&sh.qty>0),wood=Number(s.warehouse.wood)||0,goods=O.goods(s);
  if(p==='arrival')return{title:'迷宮の発見が、商売のきっかけ',text:'この土地の近くで不思議な迷宮が見つかり、冒険者が集まり始めています。旅人が必要とする道具を売る店を開くため、まず拠点を作りましょう。',label:'ここにテントを張る',act:'advance'};
  if(p==='tent')return{title:'テントを拠点にしよう',text:'テントを張りました。迷宮から木材と商品を持ち帰り、最初の露店を開きましょう。',label:'開拓を始める',act:'advance'};
- if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'木材を使って、テントの脇に露店を設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:'「はじまりの森へ」から探索を開始し、B1Fで木材3個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。',label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
+ if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'木材を使って、テントの脇に露店を設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:`「はじまりの森へ」から探索を開始し、B1Fで木材${O.rules.stallWood}個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。`,label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
  if(p==='stocking')return stocked?{title:'商品が並びました。開業しましょう',text:'店頭に商品を1点並べました。露店を開業すると、最初のミッションを達成します。',label:'露店を開業する',act:'open'}:{title:'露店に商品を1点並べよう',text:'「商品を並べる」から露店へ進み、「陳列枠1：空き」を選んで、持ち帰った商品を並べましょう。',label:'商品を並べる',act:'shop'};
  if(p==='first_sale')return stocked?{title:'最初のお客さんに商品を売ろう',text:'露店へ行って営業しましょう。適正価格の商品には、迷宮帰りの冒険者が最初のお客さんとして立ち寄ります。',label:'露店へ行く',act:'shop'}:goods>0?{title:'売る商品を並べよう',text:'露店の空いている陳列枠を選び、保管中の商品を並べてから営業しましょう。',label:'商品を並べる',act:'shop'}:{title:'商品を仕入れよう',text:'商品がなくなりました。はじまりの森で商品を拾い、持ち帰って露店に並べましょう。',label:'はじまりの森へ',act:'adventure'};
  if(p==='upgrade'){
