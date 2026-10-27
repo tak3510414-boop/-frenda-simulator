@@ -401,8 +401,10 @@ F.dungeonVisibility=dungeonVisibility;
 F.isDungeonVisible=(run,x,y)=>!!dungeonVisibility(run)?.[y]?.[x];
 F.revealDungeonMap=revealDungeon;
 function randomOpen(map,blocked=new Set(),minDist=0,origin={x:1,y:1},predicate=null){const h=map?.length||0,w=map?.[0]?.length||0;for(let n=0;n<Math.max(900,w*h*5);n++){const x=F.rand(1,w-2),y=F.rand(1,h-2);if(!tileOpen(map,x,y)||blocked.has(key(x,y)))continue;if(Math.abs(x-origin.x)+Math.abs(y-origin.y)<minDist)continue;if(predicate&&!predicate(x,y))continue;return{x,y}}for(let y=h-2;y>=1;y--)for(let x=w-2;x>=1;x--)if(tileOpen(map,x,y)&&!blocked.has(key(x,y))&&(!predicate||predicate(x,y)))return{x,y};return{x:origin.x,y:origin.y}}
+// Ver1.75: traps use spare room-interior tiles only; corridor paths and room edges stay clear.
+function randomTrapRoomFloor(map,blocked,corridorTiles,rooms,origin,minDist=6){const h=map?.length||0,w=map?.[0]?.length||0,candidates=[];for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){if(map[y]?.[x]!=='floor'||blocked.has(key(x,y))||corridorTiles.has(key(x,y))||Math.abs(x-origin.x)+Math.abs(y-origin.y)<minDist)continue;if(!(rooms||[]).some(r=>x>r.x&&x<r.x+r.w-1&&y>r.y&&y<r.y+r.h-1))continue;candidates.push({x,y})}return candidates.length?candidates[F.rand(0,candidates.length-1)]:null}
 function carveRoom(map,r){for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)map[y][x]='floor'}
-function carveCorridor(map,a,b,horizontalFirst=true){let x=a.x,y=a.y;const dig=(xx,yy)=>{if(map[yy]?.[xx]!=null)map[yy][xx]='floor'};dig(x,y);if(horizontalFirst){while(x!==b.x){x+=Math.sign(b.x-x);dig(x,y)}while(y!==b.y){y+=Math.sign(b.y-y);dig(x,y)}}else{while(y!==b.y){y+=Math.sign(b.y-y);dig(x,y)}while(x!==b.x){x+=Math.sign(b.x-x);dig(x,y)}}}
+function carveCorridor(map,a,b,horizontalFirst=true,record=null){let x=a.x,y=a.y;const dig=(xx,yy)=>{if(map[yy]?.[xx]!=null){map[yy][xx]='floor';record?.add(key(xx,yy))}};dig(x,y);if(horizontalFirst){while(x!==b.x){x+=Math.sign(b.x-x);dig(x,y)}while(y!==b.y){y+=Math.sign(b.y-y);dig(x,y)}}else{while(y!==b.y){y+=Math.sign(b.y-y);dig(x,y)}while(x!==b.x){x+=Math.sign(b.x-x);dig(x,y)}}}
 function roomCenter(r){return{x:Math.floor(r.x+r.w/2),y:Math.floor(r.y+r.h/2)}}
 function frontierCombatAttack(sp){return Math.max(Number(sp?.stats?.atk)||45,Number(sp?.stats?.spAtk)||45)}
 function createEnemy(sp,floor,pos,index,dungeonId=F.DEFAULT_DUNGEON_ID){const b=F.dungeonBalance?.(dungeonId,floor)||{},depth=Math.max(1,Number(b.effectiveDepth)||Number(floor)||1),hpRate=Number(b.hpRate)||1,atkRate=Number(b.atkRate)||1,hp=Math.max(9,Math.round((9+depth*1.45+(Number(sp?.stats?.hp)||55)/20)*hpRate)),atk=Math.max(2,Math.round((2+depth*.50+frontierCombatAttack(sp)/60)*atkRate)),technique=F.enemyTechniqueForSpecies?.(sp,floor,dungeonId)||null;return{id:`e${floor}_${index}_${Date.now()%9999}`,speciesId:sp?.id||null,recordId:sp?.representativeId||null,name:sp?.name||"野生ポケモン",ai:sp?.ai||"wander",rarity:sp?.rarity||"common",move:sp?.move||"わざ",moveType:sp?.moveType||sp?.type1||"ノーマル",technique,x:pos.x,y:pos.y,hp,maxHp:hp,atk,facing:'down',step:0,specialCooldown:F.rand(0,2)}}
@@ -419,9 +421,9 @@ function generateFloor(run,s=null){
   const rw=Math.max(5,Math.min(sw-2,F.rand(5,Math.max(5,sw-2)))),rh=Math.max(4,Math.min(sh-2,F.rand(4,Math.max(4,sh-2))));
   const rx=sx+F.rand(1,Math.max(1,sw-rw-1)),ry=sy+F.rand(1,Math.max(1,sh-rh-1));rooms.push({x:rx,y:ry,w:rw,h:rh,index:rooms.length});carveRoom(map,rooms[rooms.length-1]);
  }
- const centers=rooms.map(roomCenter),links=[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5]];
- for(const [a,b] of links){if((a===1&&b===4)||(a===4&&b===5)){if(Math.random()<.45)continue}carveCorridor(map,centers[a],centers[b],Math.random()<.5)}
- for(let i=1;i<centers.length;i++)if(!allOpenConnected(map,centers[0]))carveCorridor(map,centers[i-1],centers[i],i%2===0);
+ const centers=rooms.map(roomCenter),links=[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5]],corridorTiles=new Set();
+ for(const [a,b] of links){if((a===1&&b===4)||(a===4&&b===5)){if(Math.random()<.45)continue}carveCorridor(map,centers[a],centers[b],Math.random()<.5,corridorTiles)}
+ for(let i=1;i<centers.length;i++)if(!allOpenConnected(map,centers[0]))carveCorridor(map,centers[i-1],centers[i],i%2===0,corridorTiles);
  const startIndex=F.rand(0,rooms.length-1),startRoom=rooms[startIndex],start=roomCenter(startRoom);run.rooms=rooms;run.player={x:start.x,y:start.y};run.playerFacing=run.playerFacing||'down';run.playerStep=0;run.map=map;run.seen=Array.from({length:h},()=>Array(w).fill(false));run.enemies=[];run.floorItems=[];run.traps=[];run.attackFx=null;run.enemyAttackFx=[];
  const farRooms=rooms.map((r,i)=>({i,r,c:centers[i],d:Math.abs(centers[i].x-start.x)+Math.abs(centers[i].y-start.y)})).sort((a,b)=>b.d-a.d),stairsRoom=farRooms[0]?.r||rooms[(startIndex+3)%rooms.length];
  const blocked=new Set([key(start.x,start.y)]),roomTile=(r,x,y)=>roomContains(r,x,y),stairs=randomOpen(map,blocked,10,start,(x,y)=>roomTile(stairsRoom,x,y));map[stairs.y][stairs.x]='stairs';blocked.add(key(stairs.x,stairs.y));
@@ -429,7 +431,7 @@ function generateFloor(run,s=null){
  const chestCount=Math.max(1,(normalizedFloor>=2?4:3)+(Number(floorBalance.chestBonus)||0));for(let i=0;i<chestCount;i++){const targetRoom=rooms[(startIndex+i+2)%rooms.length]||rooms[0],p=randomOpen(map,blocked,7,start,(x,y)=>roomTile(targetRoom,x,y));map[p.y][p.x]='chest';blocked.add(key(p.x,p.y))}
  // Ver0.76 TEST: trap density is intentionally high so trap discovery/activation can be verified on real devices.
  const floorNo=normalizedFloor,trapBase=floorNo>=21?14:floorNo>=11?12:10,trapCount=Math.max(4,Math.round(trapBase*(Number(floorBalance.trapRate)||1))),trapTable=F.dungeonTrapTable?.(run.floor,run.dungeonId)||F.DUNGEON_TRAP_TABLE||[];
- for(let i=0;i<trapCount;i++){const p=randomOpen(map,blocked,6,start,(x,y)=>map[y]?.[x]==='floor'),hit=F.weighted(trapTable),type=hit?.value;if(!type)continue;run.traps.push({id:`t${run.floor}_${i}`,type,x:p.x,y:p.y,revealed:false,triggered:0});blocked.add(key(p.x,p.y))}
+ for(let i=0;i<trapCount;i++){const p=randomTrapRoomFloor(map,blocked,corridorTiles,rooms,start,6);if(!p)break;const hit=F.weighted(trapTable),type=hit?.value;if(!type)continue;run.traps.push({id:`t${run.floor}_${i}`,type,x:p.x,y:p.y,revealed:false,triggered:0});blocked.add(key(p.x,p.y))}
  const isFinalFloor=run.floor>=run.maxFloor&&!!F.dungeonDef?.(run.dungeonId)?.boss,balanceBand=floorBalance,baseEnemyCount=Math.min(12,Math.max(4,Number(balanceBand.enemyBase)||5)+Math.floor((Number(balanceBand.withinBand)||0)/2)),enemyCount=isFinalFloor?Math.max(3,Math.min(5,baseEnemyCount-3)):baseEnemyCount;
  for(let enemyIndex=0;enemyIndex<enemyCount;enemyIndex++){const p=randomOpen(map,blocked,8,start),sp=F.chooseEnemySpecies?.(run.dungeonId,run.floor);if(!sp)continue;blocked.add(key(p.x,p.y));run.enemies.push(createEnemy(sp,run.floor,p,enemyIndex,run.dungeonId))}
  if(isFinalFloor){const bossSp=F.chooseDungeonBossSpecies?.(run.dungeonId,run.floor),boss=createDungeonBoss(run,bossSp,stairs);if(boss){run.enemies.push(boss);run.bossDefeated=false;run.bossAnnounced=true;blocked.add(key(stairs.x,stairs.y));}}
@@ -463,7 +465,8 @@ function triggerTrap(run){
  if(def.effect==="fullness"){const before=run.fullness;run.fullness=Math.max(0,run.fullness-Math.max(1,Number(def.power)||10));run.log.push(`⚠️ ${def.name}！ 満腹度が${before-run.fullness}減った。`);return true}
  if(def.effect==="stumble"){const ids=Object.entries(run.bag||{}).filter(([,n])=>Number(n)>0).map(([id])=>id),dirs=[...dungeonDirs8].sort(()=>Math.random()-.5);let dropped=null;if(ids.length){const id=ids[F.rand(0,ids.length-1)];for(const [dx,dy] of dirs){const x=run.player.x+dx,y=run.player.y+dy;if(floorItemPlaceable(run,x,y)){consumeBagItem(run,id,1);putFloorItem(run,id,1,x,y);dropped=F.item?.(id);break}}}if(dropped)run.log.push(`⚠️ ${def.name}！ 転んで ${dropped.icon||'📦'} ${dropped.name}を1個落とした。`);else{const dmg=Math.max(1,Number(def.power)||1);run.playerHp=Math.max(0,run.playerHp-dmg);run.log.push(`⚠️ ${def.name}！ 転んで${dmg}ダメージ。`)}return true}
  if(def.effect==="status"){run.log.push(`⚠️ ${def.name}！`);inflictStatus(run,String(def.statusId||''),null);return true}
- if(def.effect==="warp"){const blocked=new Set((run.enemies||[]).filter(e=>e.hp>0).map(e=>key(e.x,e.y)));for(const t of (run.traps||[]))blocked.add(key(t.x,t.y));blocked.add(key(run.player.x,run.player.y));let p=randomOpen(run.map,blocked,8,run.player,(x,y)=>run.map[y]?.[x]==='floor');run.player={x:p.x,y:p.y};run.playerStep=(Number(run.playerStep)||0)+1;revealDungeon(run);run.log.push(`⚠️ ${def.name}！ 冒険者は別の場所へ飛ばされた。`);return true}
+ // Ver1.75: a warp trap is consumed after one activation so it cannot keep blocking a route.
+ if(def.effect==="warp"){const blocked=new Set((run.enemies||[]).filter(e=>e.hp>0).map(e=>key(e.x,e.y)));for(const t of (run.traps||[]))blocked.add(key(t.x,t.y));blocked.add(key(run.player.x,run.player.y));let p=randomOpen(run.map,blocked,8,run.player,(x,y)=>run.map[y]?.[x]==='floor');run.player={x:p.x,y:p.y};run.playerStep=(Number(run.playerStep)||0)+1;revealDungeon(run);run.log.push(`⚠️ ${def.name}！ 冒険者は別の場所へ飛ばされた。`);run.traps=run.traps.filter(t=>t!==trap);return true}
  run.log.push(`⚠️ ${def.name}を踏んだ！`);return true
 }
 F.triggerDungeonTrap=run=>triggerTrap(run||F.run);
@@ -596,4 +599,4 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
 
-// Updated: 2026-10-25 20:21 JST / Ver1.67
+// Updated: 2026-10-27 19:24 JST / Ver1.75
