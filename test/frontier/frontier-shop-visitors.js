@@ -45,6 +45,12 @@ V.run=async(visitor,{active,show,repaint=()=>{},commit=true,decide=F.simulateCus
 V.drawActor=(c,a,size=48)=>{const p=a.position,face={down:0,left:1,right:2,up:3}[a.facing]||0,bob=a.moving?Math.sin(Date.now()/100)*1.2:0;c.save();c.imageSmoothingEnabled=false;c.fillStyle='#0004';c.beginPath();c.ellipse(p.x,p.y,9,3,0,0,Math.PI*2);c.fill();if(atlas)c.drawImage(atlas,(a.sprite*4+face)*64,0,64,80,p.x-size*.4,p.y-size+bob,size*.8,size);else{c.fillStyle='#287462';c.fillRect(p.x-8,p.y-22,16,22);c.fillStyle='#edc19b';c.fillRect(p.x-7,p.y-34,14,13);}c.font='bold 10px sans-serif';c.textAlign='center';const text=phaseNames[a.phase]||'お客さん',w=c.measureText(text).width+10;c.fillStyle='#fff7dd';c.fillRect(p.x-w/2,p.y-size-16,w,14);c.fillStyle='#264c35';c.fillText(text,p.x,p.y-size-5);c.restore();};
 V.drawIndoor=(c,m,rt,behind)=>{const a=V.actor;if(!a||a.key!==F.SAVE_KEY||a.space!=='indoor'||m.id!=='shop')return;if((a.position.y<rt.player.y)!==behind)return;V.drawActor(c,a,58);};
 V.drawTown=(c,cam)=>{const a=V.actor;if(!a||a.key!==F.SAVE_KEY||a.space!=='town')return;c.save();c.translate(-cam.x,-cam.y);V.drawActor(c,a,28);c.restore();};
+// The first reasonably priced product gets one guaranteed story sale. Later sales
+// continue to use the normal visitor and pricing probabilities.
+const opening=F.OPENING,visitorArrives=F.shopVisitorArrives,evaluate=F.evaluateShopCustomer;
+const fairOpeningStock=s=>{if(!opening?.active?.()||opening.phase()!=='first_sale')return[];return(s?.shelves||[]).slice(0,F.shopCapacity(s)).map((sh,slot)=>sh&&sh.qty>0?{...sh,slot,item:F.item(sh.itemId)}:null).filter(x=>x?.item&&x.price<=x.item.base*1.15)};
+if(visitorArrives)F.shopVisitorArrives=(d,rng)=>fairOpeningStock(F.readSave()).length?true:visitorArrives(d,rng);
+if(evaluate)F.evaluateShopCustomer=(s,customer,rng)=>{const first=fairOpeningStock(s)[0];if(first){const c=customer||{name:'迷宮帰りの冒険者',icon:'🧑‍🌾',line:'店に寄っていこう'};return{customer:c,budget:Math.max(Number(c.budgetValue)||0,first.price),choice:first,bought:true,probability:1,phase:F.timeInfo(s),reason:c.line||'商品を購入した'}}return evaluate(s,customer,rng)};
 })();
 // Updated: 2026-10-25 JST / Ver1.66
 
