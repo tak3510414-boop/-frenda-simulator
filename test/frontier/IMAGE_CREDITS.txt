@@ -1,0 +1,11 @@
+Image source: PokeAPI/sprites
+Repository: https://github.com/PokeAPI/sprites
+Pinned source commit: 1dd55c0436d2a5b6e324c0b780e1b1b416fbfb64
+Selected files: sprites/pokemon/versions/generation-v/black-white/{1..1025}.png and sprites/pokemon/versions/generation-v/black-white/back/{1..1025}.png
+
+The PokeAPI/sprites LICENCE.txt states that image contents are copyrighted by The Pokémon Company, while the repository itself is distributed under CC0 1.0 Universal. The repository README identifies the Generation V Black/White sprites with IDs above 650 as community-created custom sprites from the Smogon community and thanks their contributors. A repository-level CC0 notice does not clear the rights to the Pokémon images.
+
+The bundled files are for local development and testing. Before any public distribution, verify the rights and required credits for every included image with the applicable rights holders and contributors. This package is not a rights clearance.
+
+The Japanese sprite-name index was generated from PokeAPI/pokeapi data/v2/csv/pokemon_species_names.csv and pokemon.csv at commit 2bf639e5572812a67d2b94903fdcb9d095f5aeb2.
+Per-file source paths, sizes, and SHA-256 hashes are recorded in pokemon-sprites/manifest.json.
