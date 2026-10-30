@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.83 — story scenes, chapter milestones and guided opening. */
+/* Frenda Frontier Ver1.84 — visible tent setup action at the opening point. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,originalKey=F.SAVE_KEY,storyKey=originalKey+':opening147';
 const O=F.OPENING={originalKey,storyKey,rules:Object.freeze({stallWood:3,storeWood:6,storeCoins:150,provisional:true}),levels:[{level:1,name:'露店',shelves:3},{level:2,name:'店舗兼住宅',shelves:3},{level:3,name:'店舗兼住宅',shelves:4},{level:4,name:'店舗兼住宅',shelves:5},{level:5,name:'店舗兼住宅',shelves:6},{level:6,name:'店舗兼住宅',shelves:6},{level:7,name:'店舗専用＋専用住宅',shelves:9}],tentBox:{x:610,y:105,w:96,h:80},stallBox:{x:730,y:215,w:122,h:70},shopBox:{x:688,y:82,w:176,h:172}};
@@ -10,7 +10,7 @@ O.SCENES=Object.freeze({
   {speaker:'ナレーション',text:'フロンティアのはずれ。森の入口に、不思議な迷宮が見つかった。',icon:'🌲'},
   {speaker:'旅の冒険者',text:'奥では珍しい素材が見つかるらしい。冒険者が集まり始めているんだ。',portrait:'traveler'},
   {speaker:'開拓者',text:'戻ってきた人が、ほっとできる場所が必要だ。ここに拠点を作ろう。',portrait:'player'},
-  {speaker:'次の目的',text:'まずはテントを張り、冒険者たちを迎える準備をする。',icon:'📜'}
+  {speaker:'次の目的',text:'画面下の「テント設営」を選び、冒険者が戻れる拠点を作ろう。',icon:'📜'}
  ]},
  camp:{lines:[
   {speaker:'ナレーション',text:'小さなテントが、フロンティア最初の拠点になった。',icon:'🌲'},
@@ -88,7 +88,7 @@ O.makePoint=id=>{const s=F.freshSave();for(const k of Object.keys(s.development.
 O.switchPoint=id=>{if(!O.testEnabled())throw new Error('TEST機能は利用できません。');if(!O.points.some(p=>p[0]===id))throw new Error('選択した時点がありません。');if(F.run?.active)throw new Error('探索から帰還してから時点を切り替えてください。');if(id==='current')O.enter();else{F.SAVE_KEY=originalKey+':mission148test:'+id;O.visibleState=null;F.writeSave(O.makePoint(id));O.testPoint=id}F.run=null;if(F.WILDERNESS){F.WILDERNESS.stop();F.WILDERNESS.position={x:774,y:306};F.WILDERNESS.active=true}};
 O.guidance=()=>{
  const s=F.readSave(),p=O.phase(),stocked=s.shelves.some(sh=>sh&&sh.qty>0),wood=Number(s.warehouse.wood)||0,goods=O.goods(s);
- if(p==='arrival')return{title:'森の入口に拠点を作ろう',text:'テントを張り、冒険者が帰ってこられる場所を作る。',label:'ここにテントを張る',act:'advance'};
+ if(p==='arrival')return{title:'森の入口に拠点を作ろう',text:'テントを設営し、冒険者が帰ってこられる場所を作る。',label:'テント設営メニュー',act:'campSetup'};
  if(p==='tent')return{title:'露店の準備を始めよう',text:'森から木材と商品を持ち帰り、最初の露店を開こう。',label:'開拓を始める',act:'advance'};
  if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'木材を使って、テントの脇に露店を設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:`「はじまりの森へ」から探索を開始し、B1Fで木材${O.rules.stallWood}個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。`,label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
  if(p==='stocking')return stocked?{title:'商品が並びました。開業しましょう',text:'店頭に商品を1点並べました。露店を開業すると、最初のミッションを達成します。',label:'露店を開業する',act:'open'}:{title:'露店に商品を1点並べよう',text:'「商品を並べる」から露店へ進み、「陳列枠1：空き」を選んで、持ち帰った商品を並べましょう。',label:'商品を並べる',act:'shop'};
@@ -116,7 +116,7 @@ O.chapters=()=>{const s=F.readSave(),o=s.story.opening;return[
 O.missionsHTML=()=>`<h2>フロンティアの物語</h2><p>冒険で出会った人々の願いが、町の発展と森の謎につながっていきます。</p><div class="storyChapterList">${O.chapters().map((c,i)=>`<section class="storyChapter ${c.done?'done':c.active?'active':'locked'}"><b>${c.done?'✓':c.active?'▶':'🔒'} ${c.name}</b><small>${c.detail}</small></section>`).join('')}</div><h3>開拓ミッション</h3>${O.missions().map(m=>`<section style="padding:12px 0;border-bottom:1px solid #ccd8ce"><b>${m.name}</b><span style="float:right;font-weight:bold">${m.state}</span><ul style="padding-left:20px;line-height:1.9">${m.steps.map(([t,d])=>`<li>${d?'✓':'□'} ${t}</li>`).join('')}</ul></section>`).join('')}`;
 O.testControls=()=>!O.testEnabled()?'':`<details class="test-menu-panel" style="margin:10px 12px;padding:8px;background:#edf2fa;border:1px solid #adbed9;border-radius:8px"><summary>TEST：開始時点を切り替える</summary><label style="display:block;margin:8px 0">プレー開始時点 <select id="testStoryPoint" style="width:100%;padding:8px;margin-top:5px">${O.points.map(([id,label])=>`<option value="${id}" ${O.testPoint===id?'selected':''}>${label}</option>`).join('')}</select></label><small>切替先のTEST枠に、その時点の進行・所持品をセットします。現在のプレー枠は保持されます。探索中は帰還後に切り替えてください。</small></details>`;
 O.panel=()=>{const s=F.readSave(),r=O.rules;return `<div style="padding:10px 12px"><span>保管中：木材 ${s.warehouse.wood||0}個 ／ 所持金 ${s.coins}G</span><details style="margin-top:8px"><summary>TEST用の仮設定</summary><p>露店設営：木材${r.stallWood}個。店舗Lv2：木材${r.storeWood}個＋${r.storeCoins}G。必要数・費用は後で調整します。</p></details></div>`};
-O.bind=(rerender,actions={})=>{const g=O.guidance(),el=document.getElementById('nextActions');if(!el)return;const add=(label,fn)=>{const b=document.createElement('button');b.className='cmdBtn';b.textContent=label;b.onclick=()=>{try{fn?.()}catch(e){(document.getElementById('wildernessMessage')||document.getElementById('progressMessage')).textContent=e.message}};el.appendChild(b)};const acts={advance:()=>{O.advance();rerender()},adventure:()=>actions.adventure?.(),shop:()=>actions.shop?.(),setup:()=>{O.setupStall();rerender()},open:()=>{O.open();rerender()},build:()=>{O.build();rerender()},finish:()=>{O.advance();rerender()}};add(g.label,acts[g.act]);add('ミッション一覧',()=>actions.missions?.());const picker=document.getElementById('testStoryPoint');if(picker)picker.onchange=()=>{try{O.switchPoint(picker.value);rerender()}catch(e){picker.value=O.testPoint;(document.getElementById('wildernessMessage')||document.getElementById('progressMessage')).textContent=e.message}};O.presentPendingScene()};
+O.bind=(rerender,actions={})=>{const g=O.guidance(),el=document.getElementById('nextActions');if(!el)return;const add=(label,fn,primary=false)=>{const b=document.createElement('button');b.className='cmdBtn'+(primary?' primary':'');b.textContent=label;b.onclick=()=>{try{fn?.()}catch(e){(document.getElementById('wildernessMessage')||document.getElementById('progressMessage')).textContent=e.message}};el.appendChild(b)};const acts={advance:()=>{O.advance();rerender()},campSetup:()=>actions.campSetup?.(),adventure:()=>actions.adventure?.(),shop:()=>actions.shop?.(),setup:()=>{O.setupStall();rerender()},open:()=>{O.open();rerender()},build:()=>{O.build();rerender()},finish:()=>{O.advance();rerender()}};add(g.label,acts[g.act],g.act==='campSetup');add('ミッション一覧',()=>actions.missions?.());const picker=document.getElementById('testStoryPoint');if(picker)picker.onchange=()=>{try{O.switchPoint(picker.value);rerender()}catch(e){picker.value=O.testPoint;(document.getElementById('wildernessMessage')||document.getElementById('progressMessage')).textContent=e.message}};O.presentPendingScene()};
 
 // New 1..7 numbering is isolated to the new story save; legacy progress stays unchanged.
 const oldCapacity=F.shopCapacity;F.shopCapacity=s=>s?.story?.opening?([0,3,3,4,5,6,6,9][Number(s.development.town.facilities.shop)||0]||0):oldCapacity(s);
@@ -146,3 +146,5 @@ O.enter();
 // Updated: 2026-10-25 20:21 JST / Ver1.67
 
 // Updated: 2026-10-30 17:51 JST / Ver1.83
+
+// Updated: 2026-10-30 19:52 JST / Ver1.84: tent setup is an explicit point action.

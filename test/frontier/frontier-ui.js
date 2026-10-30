@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.83 / one-line story dialogue and chapter presentation. */
+/* Frenda Frontier Ver1.84 / opening-point tent setup menu. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -690,7 +690,7 @@ function renderIndoor(id,s){
  const planPath=(id==='shop'&&m.lv===2)?null:ROOM_PLAN_VISUALS[id]?.[m.planLv||m.lv];if(!planPath&&rt.art?.roomPlan){rt.art={...rt.art,roomPlan:null,roomPlanPath:null}}if(planPath&&rt.art?.roomPlanPath!==planPath){rt.art={...(rt.art||{}),roomPlanPath:planPath,roomPlan:null};loadVisualOptional(planPath).then(im=>{if(rt.id===id&&rt.model?.lv===m.lv){rt.art={...(rt.art||{}),roomPlan:im};paintIndoor()}})}
 }
 
-function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),shop:()=>setView('store'),missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
+function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),shop:()=>setView('store'),missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
 function frontierTestAllowed(){return window.FRENDA_TEST?.active!==false&&(window.FRENDA_TEST?.active===true||/\/test\//.test(window.location.pathname)||document.querySelector('.brand small')?.textContent.includes('/ TEST'));}
 function showEconomyBalance(){
  const s=F.readSave(),r=F.BALANCE_RULES,b=F.CUSTOMER_BALANCE;
@@ -853,3 +853,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-30 17:51 JST / Ver1.83
 
 // Updated: 2026-10-26 / Ver1.74
+
+// Updated: 2026-10-30 19:52 JST / Ver1.84: added the camp setup confirmation menu.
