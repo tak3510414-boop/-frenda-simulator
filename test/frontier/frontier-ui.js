@@ -1,9 +1,10 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.78 / ending scene and campaign review. */
+/* Frenda Frontier Ver1.83 / one-line story dialogue and chapter presentation. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
 let currentView='home',homeMode='town',talkIndex=0,storeBusy=false,storeMessage='棚に商品を並べると、店主がいる間は自動で営業します。',lastAttackFxSeq=0,lastEnemyAttackFxSeq=0;
+let storyDialogueRuntime={token:0,active:false,timer:null};
 let townMoveRuntime={token:0,moving:false,transitioning:false,areaId:null,player:null,partner:null,trail:[],message:'',tap:null,camera:null,facing:'down'};
 const townNpcRuntime={actors:new Map(),lastTick:0,rafPending:false,lastFrame:0,talk:null};
 const townRenderRuntime={art:null,loading:null,world:null,staticKey:null,areaId:null};
@@ -69,8 +70,26 @@ function modal(html,actions=[]){
  a.innerHTML='';for(const x of actions){if(longList&&x===closeAction)continue;const b=document.createElement('button');b.className=x.className||'cmdBtn';b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)}
  m.classList.remove('hidden')
 }
+function paintStoryPortrait(line,token){
+ const cv=$('storyDialoguePortrait');if(!cv)return;const c=cv.getContext('2d');if(!c)return;c.imageSmoothingEnabled=false;c.clearRect(0,0,cv.width,cv.height);
+ const pixelHuman=()=>{const traveler=line.portrait==='traveler',colors=traveler?{h:'#315783',s:'#e8bd91',c:'#426c9d',b:'#e8d7aa',k:'#4b4034'}:{h:'#784b32',s:'#efc69b',c:'#3f805c',b:'#d2ae70',k:'#594332'},rows=['....hhhh....','...hhhhhh...','...hssssh...','...hssssh...','....ssss....','...cccccc...','..cccccccc..','..ccbbbbcc..','..ccbbbbcc..','...kk..kk...','...kk..kk...'];const cell=5,left=Math.floor((cv.width-12*cell)/2),top=20,map={h:colors.h,s:colors.s,c:colors.c,b:colors.b,k:colors.k};rows.forEach((row,y)=>[...row].forEach((ch,x)=>{if(map[ch]){c.fillStyle=map[ch];c.fillRect(left+x*cell,top+y*cell,cell,cell)}}))};
+ const fallback=()=>{c.clearRect(0,0,cv.width,cv.height);if(line.portrait==='player'||line.portrait==='traveler'){pixelHuman();return}c.fillStyle='#f6e6b7';c.font='42px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(line.icon||'💬',cv.width/2,cv.height/2+2)};fallback();
+ if(line.portrait==='forest'){const colors={g:'#2e6b44',G:'#79b653',p:'#8f6a3e',P:'#b18a53',w:'#fff0ad',e:'#263927',l:'#b7d477'},rows=['....l.....l...','...ggl...lgg...','..gGGgg.gGgGGg..','.gGGGGGGGGGGGGg.','ggGGGGGGGGGGGGgg','gGGGGppppppGGGGg','gGGGppPPPPppGGGg','.gGGppwwppGGGGg.','.gGGppweppGGGg..','..gGGppppGGGg...','...gGGGGGGGg....','..ggG..gG..Ggg..','...gg..gG..gg...','....pp..pp......'];const size=4,left=Math.floor((cv.width-14*size)/2),top=16;c.fillStyle='#16231a';c.beginPath();c.ellipse(cv.width/2,cv.height-13,22,5,0,0,Math.PI*2);c.fill();rows.forEach((row,y)=>[...row].forEach((ch,x)=>{if(colors[ch]){c.fillStyle=colors[ch];c.fillRect(left+x*size,top+y*size,size,size)}}));return}
+ const paint=im=>{if(!im||token!==storyDialogueRuntime.token||!cv.isConnected)return;c.clearRect(0,0,cv.width,cv.height);if(line.portrait==='player'){const ratio=Math.min(68/(im.naturalWidth||im.width),84/(im.naturalHeight||im.height)),w=(im.naturalWidth||im.width)*ratio,h=(im.naturalHeight||im.height)*ratio;c.drawImage(im,(cv.width-w)/2,cv.height-h-3,w,h);return}if(line.portrait==='traveler'){try{drawTownWalkers(c,im,[{x:cv.width/2,y:cv.height-4,sprite:1,facing:'down',direction:1,moving:false}],Date.now())}catch(e){fallback()}}};
+ if(line.portrait==='player')loadVisualOptional('frontier-sprite-player-front-v069.png').then(paint);else if(line.portrait==='traveler')loadVisualOptional('frontier-sprite-npcs-v124.png').then(paint)
+}
+F.playStoryDialogue=(scene,onComplete=()=>{})=>{
+ const lines=Array.isArray(scene?.lines)?scene.lines:[];if(!lines.length){onComplete?.();return false}if(storyDialogueRuntime.active)return false;
+ storyDialogueRuntime.active=true;const token=++storyDialogueRuntime.token;let index=0,revealed=false;
+ const setNextLabel=()=>{const b=$('frontierModalActions')?.querySelector('button');if(b)b.textContent=revealed?(index===lines.length-1?'▶ 物語を閉じる':'▼ つづける'):'▼';};
+ const reveal=()=>{if(storyDialogueRuntime.timer){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null}const el=$('storyDialogueText');if(el)el.textContent=String(lines[index]?.text||'');revealed=true;setNextLabel()};
+ const finish=()=>{if(storyDialogueRuntime.timer){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null}storyDialogueRuntime.active=false;const m=$('frontierModal');if(m)m.onclick=e=>{if(e.target===m)closeModal()};closeModal();onComplete?.()};
+ const advance=()=>{if(token!==storyDialogueRuntime.token||!storyDialogueRuntime.active)return;if(!revealed){reveal();return}if(index<lines.length-1){index++;renderLine();return}finish()};
+ const renderLine=()=>{const line=lines[index]||{},speaker=esc(line.speaker||'ナレーション');revealed=false;modal(`<section class="storyDialogueCard" aria-live="polite"><div class="storyDialoguePortraitFrame"><canvas id="storyDialoguePortrait" class="storyDialoguePortrait" width="80" height="96"></canvas></div><div class="storyDialogueCopy"><b class="storyDialogueSpeaker">${speaker}</b><p id="storyDialogueText" class="storyDialogueText"></p><small class="storyDialogueHint">タップで全文表示、もう一度タップで次へ</small></div></section>`,[{label:'▼',className:'cmdBtn primary',close:false,fn:advance}]);const m=$('frontierModal'),card=$('frontierModalBody')?.querySelector('.storyDialogueCard');if(m)m.onclick=e=>{if(e.target===m){e.stopPropagation();advance()}};card?.addEventListener('click',e=>{if(e.target.closest('button'))return;advance()});paintStoryPortrait(line,token);const el=$('storyDialogueText'),text=String(line.text||'');let n=0;storyDialogueRuntime.timer=setInterval(()=>{if(token!==storyDialogueRuntime.token||!el?.isConnected){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null;return}n=Math.min(text.length,n+1);el.textContent=text.slice(0,n);if(n>=text.length){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null;revealed=true;setNextLabel()}},22)};
+ renderLine();return true
+};
 function closeModal(){F.RESIDENTS?.endTalk();$('frontierModal')?.classList.add('hidden')}
-F.presentEnding=()=>modal(`<section style="text-align:center;padding:8px 4px 12px"><div style="font-size:40px;line-height:1.2">🌲 🏘️</div><h2 style="margin:8px 0 14px;color:#174c37">開拓の物語</h2><p style="line-height:1.9">森の主の証を携えた冒険者が町へ戻ると、迷宮を目当てに集まった人々は歓声で迎えました。</p><p style="line-height:1.9">テント脇の露店から始まった店は、職人や住民の暮らしを支える町へと育ちました。店は、迷宮へ向かう人にも帰ってきた人にも、変わらず灯りをともしています。</p><p style="font-weight:900;color:#8a4a1d">ここから先も、町の人々と冒険を続けられます。</p></section>`,[{label:'町へ戻る',className:'cmdBtn primary'}]);
+F.presentEnding=()=>F.playStoryDialogue(F.OPENING?.SCENES?.forestEnding||{lines:[{speaker:'ナレーション',text:'森と町は、ともに歩み始めた。',icon:'🌲'}]});
 let storeSessionToken=0,shopVisitTestMode=false;
 function setView(v){if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore())||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}
@@ -830,5 +849,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-25 21:08 JST / Ver1.69
 // Updated: 2026-10-26 19:31 JST / Ver1.71
 // Updated: 2026-10-26 20:26 JST / Ver1.72
+
+// Updated: 2026-10-30 17:51 JST / Ver1.83
 
 // Updated: 2026-10-26 / Ver1.74
