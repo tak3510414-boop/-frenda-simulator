@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.92 / size the visible Pokémon sprite and remove the redundant player label. */
+/* Frenda Frontier Ver1.93 / zoom the town close view while preserving the overview. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -886,4 +886,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-10-30 19:52 JST / Ver1.84: added the camp setup confirmation menu.
 
-// Updated: 2026-10-31 22:16 JST / Ver1.92: scale Pokémon by visible sprite bounds and remove the player name label.
+// Updated: 2026-10-31 23:13 JST / Ver1.93: increase near-view town zoom; preserve full-town overview.
