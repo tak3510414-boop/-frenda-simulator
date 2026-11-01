@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.108">
+<html lang="ja" data-app-version="1.111">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.108</title>
+<title>Frenda Frontier Ver1.111</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -117,6 +117,18 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 
 .progressCommands.hasResident{grid-template-columns:repeat(4,minmax(0,1fr));padding-bottom:max(10px,env(safe-area-inset-bottom))}
 .progressCommands.hasResident .cmdBtn{font-size:10px;padding:6px 3px}
+
+/* Ver1.110: read-only eight-direction weapon pose/attack diagnostic. */
+.gearCheckHelp{font-size:12px;line-height:1.6;color:#315044;margin:7px 0}
+.gearCheckSwitch{display:flex;gap:8px;margin:8px 0}
+.gearCheckSwitch .cmdBtn{flex:1}
+.gearCheckGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gearCheckCell{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:4px;border:1px solid #9ab3a5;border-radius:9px;background:#f2f7f3;color:#173126;cursor:pointer;touch-action:manipulation}
+.gearCheckCell:active{background:#d9ebdf}
+.gearCheckLabel{font-weight:900;font-size:12px;line-height:22px;text-align:center}
+.gearCheckFrame{position:relative;display:block;isolation:isolate;overflow:hidden;height:92px;border-radius:6px;background:linear-gradient(#dceaf0 0 60%,#9ebc90 61% 100%)}
+.gearCheckFrame .humanDungeonToken{pointer-events:none}
+@media(max-width:600px){.gearCheckGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.gearCheckFrame{height:87px}}
 </style>
 <style>
 .testMenuIntro{margin:4px 0 10px;color:#43584b;font-size:13px;line-height:1.55}
@@ -256,7 +268,7 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.108 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.111 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
  <div class="notice">🌱 森の入口から物語が始まります。会話を読み進め、次の目的に沿って冒険と町づくりを進めよう。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
@@ -337,4 +349,8 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 <!-- Updated: 2026-10-26 19:28 JST / Ver1.71 -->
 <!-- Updated: 2026-10-26 20:26 JST / Ver1.72 -->
 <!-- Updated: 2026-10-27 19:24 JST / Ver1.75 -->
-<!-- Updated: 2026-11-01 / Ver1.108: move diagonal-facing weapon grips into the hand. -->
+<!-- Updated: 2026-11-01 / Ver1.109: animate the equipped weapon canvas during sword/spear attacks. -->
+
+<!-- Updated: 2026-11-01 17:51 JST / Ver1.110: TEST-only eight-direction weapon inspection. -->
+
+<!-- Updated: 2026-11-01 19:14 JST / Ver1.111: fix in-page version label and resource cache version. -->

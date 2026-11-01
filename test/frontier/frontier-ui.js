@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.108 / align equipped weapons to the right hand for each facing. */
+/* Frenda Frontier Ver1.111 / eight-direction weapon QA + approved shop stages. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -406,10 +406,29 @@ function addToken(sp,x,y,cls='partnerToken',label='',facing='down',moving=false,
  if(label){const l=document.createElement('div');l.className='tokenLabel';l.style.left=(x/cw*100)+'%';l.style.top=((y+Math.max(17,ch/14))/ch*100)+'%';l.textContent=label;layer.appendChild(l)}return d
 }
 function dungeonWeaponPlacement(facing,item){const p={'down':{left:10,top:36,angle:0,behind:false},'up':{right:12,top:29,angle:0,behind:true},'left':{left:4,top:25,angle:-35,behind:false},'right':{left:56,top:40,angle:35,behind:false},'up-left':{left:46,top:25,angle:-30,behind:true},'up-right':{left:56,top:36,angle:30,behind:false},'down-left':{left:14,top:22,angle:-30,behind:false},'down-right':{left:22,top:38,angle:30,behind:false}}[facing]||{left:4,top:36,angle:0,behind:false};const isSpear=String(item?.id||item?.defId||'').includes('spear')||String(item?.weapon?.label||'').includes('槍')||Number(item?.weapon?.range)>=2;return{...p,isSpear}}
-function addHumanToken(x,y,label='',moving=false,facing='down'){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const actualFacing=String(facing||'down'),visualFacing=spriteFacing4(actualFacing),cw=canvas.width||180,ch=canvas.height||240,d=document.createElement('div'),dest={left:(x/cw*100),top:(y/ch*100)};d.id='humanDungeonToken';d.className=`humanDungeonToken facing-${actualFacing} visual-${visualFacing} ${actualFacing.includes('-')?'diagonal':''} ${moving?'moving':''}`;const diagSrc={'up-left':'frontier-sprite-player-up-left-v152.png','up-right':'frontier-sprite-player-up-right-v152.png','down-left':'frontier-sprite-player-down-left-v152.png','down-right':'frontier-sprite-player-down-right-v152.png'},src=diagSrc[actualFacing]||(visualFacing==='up'?'frontier-sprite-player-back-v069.png':visualFacing==='down'?'frontier-sprite-player-front-v069.png':visualFacing==='left'?'frontier-sprite-player-left-v069.png':'frontier-sprite-player-right-v069.png'),appearanceRun=F.run?.active?F.run:null,armor=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'armor'):null,armorId=armor?.id||armor?.defId||appearanceRun?.equipment?.armor,cacheKey=armorId&&['leather_armor','iron_armor'].includes(armorId)?`${src}|${armorId}`:'';const img=document.createElement('img');img.alt='';img.style.position='relative';img.style.zIndex='1';if(cacheKey&&dungeonGearSpriteDataCache.has(cacheKey)){img.src=dungeonGearSpriteDataCache.get(cacheKey)||src}else if(cacheKey){img.addEventListener('load',()=>{const outfit=townPlayerSpriteForEquipment(img,null,appearanceRun);if(outfit.image===img){dungeonGearSpriteDataCache.set(cacheKey,null);return}try{const dataUrl=outfit.image.toDataURL('image/png');dungeonGearSpriteDataCache.set(cacheKey,dataUrl);img.src=dataUrl}catch(e){dungeonGearSpriteDataCache.set(cacheKey,null);console.warn('ダンジョン防具表示',e)}},{once:true});img.src=src}else img.src=src;const weapon=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'weapon'):null;let wc=null;if(weapon){const place=dungeonWeaponPlacement(actualFacing,weapon);wc=document.createElement('canvas');wc.width=18;wc.height=30;wc.className='humanHeldWeapon';wc.dataset.baseAngle=String(place.angle);wc.dataset.isSpear=String(place.isSpear);wc.style.cssText=`position:absolute;z-index:${place.behind?0:2};${place.left!==undefined?`left:${place.left}%;`:`right:${place.right}%;`}top:${place.top}%;width:${place.isSpear?30:33}%;height:${place.isSpear?52:43}%;transform:rotate(${place.angle}deg);transform-origin:center center;image-rendering:pixelated;filter:drop-shadow(0 1px 1px #0009);pointer-events:none`;drawHeldWeaponPixelArt(wc.getContext('2d'),0,0,wc.width,wc.height,weapon,actualFacing.includes('left'))}d.append(img);if(wc)d.append(wc);const old=dungeonPlayerVisual.runRef===F.run&&Number.isFinite(dungeonPlayerVisual.left)?{left:dungeonPlayerVisual.left,top:dungeonPlayerVisual.top}:null;d.style.left=(old&&moving?old.left:dest.left)+'%';d.style.top=(old&&moving?old.top:dest.top)+'%';layer.appendChild(d);if(old&&moving)d.animate([{left:old.left+'%',top:old.top+'%'},{left:dest.left+'%',top:dest.top+'%'}],{duration:125,easing:'linear'});dungeonPlayerVisual={runRef:F.run,left:dest.left,top:dest.top};return d}
-function animateHeldWeaponAttack(fx,facing,weapon){
- const held=$('humanDungeonToken')?.querySelector('.humanHeldWeapon'),weaponId=weapon?.id||weapon?.defId;
- if(!held||!weaponId||String(fx.weaponId||'')!==String(weaponId))return false;
+function humanPlayerSpriteSrc(facing){
+ const face=String(facing||'down'),diagonal={
+  'up-left':'frontier-sprite-player-up-left-v152.png',
+  'up-right':'frontier-sprite-player-up-right-v152.png',
+  'down-left':'frontier-sprite-player-down-left-v152.png',
+  'down-right':'frontier-sprite-player-down-right-v152.png'
+ };
+ const direction=spriteFacing4(face);
+ return diagonal[face]||({up:'frontier-sprite-player-back-v069.png',down:'frontier-sprite-player-front-v069.png',left:'frontier-sprite-player-left-v069.png',right:'frontier-sprite-player-right-v069.png'}[direction]);
+}
+function createHeldWeaponCanvas(facing,weapon){
+ if(!weapon)return null;
+ const place=dungeonWeaponPlacement(facing,weapon),wc=document.createElement('canvas');
+ wc.width=18;wc.height=30;wc.className='humanHeldWeapon';
+ wc.dataset.baseAngle=String(place.angle);wc.dataset.isSpear=String(place.isSpear);
+ wc.style.cssText=`position:absolute;z-index:${place.behind?0:2};${place.left!==undefined?`left:${place.left}%;`:`right:${place.right}%;`}top:${place.top}%;width:${place.isSpear?30:33}%;height:${place.isSpear?52:43}%;transform:rotate(${place.angle}deg);transform-origin:center center;image-rendering:pixelated;filter:drop-shadow(0 1px 1px #0009);pointer-events:none`;
+ drawHeldWeaponPixelArt(wc.getContext('2d'),0,0,wc.width,wc.height,weapon,String(facing).includes('left'));
+ return wc;
+}
+function addHumanToken(x,y,label='',moving=false,facing='down'){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const actualFacing=String(facing||'down'),visualFacing=spriteFacing4(actualFacing),cw=canvas.width||180,ch=canvas.height||240,d=document.createElement('div'),dest={left:(x/cw*100),top:(y/ch*100)};d.id='humanDungeonToken';d.className=`humanDungeonToken facing-${actualFacing} visual-${visualFacing} ${actualFacing.includes('-')?'diagonal':''} ${moving?'moving':''}`;const src=humanPlayerSpriteSrc(actualFacing),appearanceRun=F.run?.active?F.run:null,armor=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'armor'):null,armorId=armor?.id||armor?.defId||appearanceRun?.equipment?.armor,cacheKey=armorId&&['leather_armor','iron_armor'].includes(armorId)?`${src}|${armorId}`:'';const img=document.createElement('img');img.alt='';img.style.position='relative';img.style.zIndex='1';if(cacheKey&&dungeonGearSpriteDataCache.has(cacheKey)){img.src=dungeonGearSpriteDataCache.get(cacheKey)||src}else if(cacheKey){img.addEventListener('load',()=>{const outfit=townPlayerSpriteForEquipment(img,null,appearanceRun);if(outfit.image===img){dungeonGearSpriteDataCache.set(cacheKey,null);return}try{const dataUrl=outfit.image.toDataURL('image/png');dungeonGearSpriteDataCache.set(cacheKey,dataUrl);img.src=dataUrl}catch(e){dungeonGearSpriteDataCache.set(cacheKey,null);console.warn('ダンジョン防具表示',e)}},{once:true});img.src=src}else img.src=src;const weapon=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'weapon'):null;const wc=createHeldWeaponCanvas(actualFacing,weapon);d.append(img);if(wc)d.append(wc);const old=dungeonPlayerVisual.runRef===F.run&&Number.isFinite(dungeonPlayerVisual.left)?{left:dungeonPlayerVisual.left,top:dungeonPlayerVisual.top}:null;d.style.left=(old&&moving?old.left:dest.left)+'%';d.style.top=(old&&moving?old.top:dest.top)+'%';layer.appendChild(d);if(old&&moving)d.animate([{left:old.left+'%',top:old.top+'%'},{left:dest.left+'%',top:dest.top+'%'}],{duration:125,easing:'linear'});dungeonPlayerVisual={runRef:F.run,left:dest.left,top:dest.top};return d}
+function animateHeldWeaponAttack(fx,facing,sourceToken=null){
+ const held=sourceToken?sourceToken.querySelector('.humanHeldWeapon'):$('humanDungeonToken')?.querySelector('.humanHeldWeapon');
+ if(!held)return false;
  const type=String(fx.type||''),spear=type==='spear'||held.dataset.isSpear==='true';
  if(type!=='sword'&&type!=='spear')return false;
  held.getAnimations().forEach(a=>a.cancel());
@@ -436,7 +455,7 @@ function animateHeldWeaponAttack(fx,facing,weapon){
  const animation=held.animate(frames,{duration,easing:'cubic-bezier(.2,.7,.25,1)'}),restore=()=>{if(held.isConnected)held.style.transformOrigin=origin};
  animation.onfinish=restore;animation.oncancel=restore;return true
 }
-function addWeaponAttackFx(x,y,fx,facing='down',weapon=null){const type=String(fx?.type||''),weaponId=weapon?.id||weapon?.defId;if((type==='sword'||type==='spear')&&animateHeldWeaponAttack(fx,facing,weapon))return;if((type==='sword'||type==='spear')&&weaponId&&String(fx.weaponId||'')===String(weaponId))return;const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas||!fx)return;const cw=canvas.width||180,ch=canvas.height||240,dx=Number(fx.dx)||0,dy=Number(fx.dy)||1,angle=Math.atan2(dy,dx)*180/Math.PI,d=document.createElement('div');d.className=`weaponAttackFx weapon-${type||'unarmed'} ${fx.hit===false?'miss':''} ${fx.critical?'critical':''}`;d.style.left=(x/cw*100)+'%';d.style.top=(y/ch*100)+'%';d.style.setProperty('--attack-angle',angle+'deg');d.style.setProperty('--attack-distance',Math.max(13,Math.min(55,(Number(fx.range)||1)*17))+'px');d.innerHTML='<i></i>';layer.appendChild(d);setTimeout(()=>d.remove(),260)}
+function addWeaponAttackFx(x,y,fx,facing='down',weapon=null){const type=String(fx?.type||''),weaponId=weapon?.id||weapon?.defId;if((type==='sword'||type==='spear')&&animateHeldWeaponAttack(fx,facing))return;if((type==='sword'||type==='spear')&&weaponId&&String(fx.weaponId||'')===String(weaponId))return;const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas||!fx)return;const cw=canvas.width||180,ch=canvas.height||240,dx=Number(fx.dx)||0,dy=Number(fx.dy)||1,angle=Math.atan2(dy,dx)*180/Math.PI,d=document.createElement('div');d.className=`weaponAttackFx weapon-${type||'unarmed'} ${fx.hit===false?'miss':''} ${fx.critical?'critical':''}`;d.style.left=(x/cw*100)+'%';d.style.top=(y/ch*100)+'%';d.style.setProperty('--attack-angle',angle+'deg');d.style.setProperty('--attack-distance',Math.max(13,Math.min(55,(Number(fx.range)||1)*17))+'px');d.innerHTML='<i></i>';layer.appendChild(d);setTimeout(()=>d.remove(),260)}
 function addEnemyAttackFx(source,target,fx,delay=0){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas||!fx)return;const cw=canvas.width||180,ch=canvas.height||240;setTimeout(()=>{const enemy=fx.enemyId?layer.querySelector(`.enemyToken[data-entity-id="${CSS.escape(String(fx.enemyId))}"]`):null,human=$('humanDungeonToken'),isRanged=String(fx.type||'').includes('ranged'),isSpecial=String(fx.type||'').includes('special');if(enemy){enemy.style.setProperty('--enemy-lunge-x',((Number(fx.dx)||0)*(isRanged?5:9))+'px');enemy.style.setProperty('--enemy-lunge-y',((Number(fx.dy)||0)*(isRanged?5:9))+'px');enemy.classList.remove('attacking');void enemy.offsetWidth;enemy.classList.add('attacking')}if(human){human.classList.remove('enemyHit');void human.offsetWidth;human.classList.add('enemyHit')}const burst=document.createElement('div');burst.className=`enemyAttackBurst ${isRanged?'ranged':''} ${isSpecial?'special':''}`;burst.style.left=(target.x/cw*100)+'%';burst.style.top=(target.y/ch*100)+'%';burst.textContent=isSpecial?'✦':isRanged?'✧':'✹';layer.appendChild(burst);let move=null;if(isSpecial&&fx.moveName){move=document.createElement('div');move.className='enemyMoveName';move.style.left=(source.x/cw*100)+'%';move.style.top=((source.y-17)/ch*100)+'%';move.textContent=String(fx.moveName);layer.appendChild(move)}const pop=document.createElement('div');pop.className='damagePopup';pop.style.left=(target.x/cw*100)+'%';pop.style.top=((target.y-10)/ch*100)+'%';pop.textContent=`-${Math.max(0,Number(fx.damage)||0)}`;layer.appendChild(pop);let status=null;if(fx.statusName){status=document.createElement('div');status.className='statusPopup';status.style.left=(target.x/cw*100)+'%';status.style.top=((target.y+12)/ch*100)+'%';status.textContent=`${fx.statusIcon||'⚠️'} ${fx.statusName}`;layer.appendChild(status)}setTimeout(()=>{burst.remove();pop.remove();status?.remove();move?.remove();enemy?.classList.remove('attacking');human?.classList.remove('enemyHit')},520)},Math.max(0,delay))}
 function addFloorItemLabel(x,y,text){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const cw=canvas.width||180,ch=canvas.height||240,l=document.createElement('div');l.className='floorItemLabel';l.style.left=(x/cw*100)+'%';l.style.top=((y+10)/ch*100)+'%';l.textContent=text;layer.appendChild(l)}
 function addEnemyTelegraphLabel(x,y,text){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const cw=canvas.width||180,ch=canvas.height||240,l=document.createElement('div');l.className='enemyTelegraphLabel';l.style.left=(x/cw*100)+'%';l.style.top=((y-24)/ch*100)+'%';l.textContent=`⚠️ ${text}`;layer.appendChild(l)}
@@ -787,13 +806,47 @@ async function showShopVisitorTest(){
   if(token===storeSessionToken){storeBusy=false;show(result?'TEST完了：来客1人の確認が終わりました。通常プレーへはTESTメニューで時点を切り替えてください。':'TESTを中断しました。');const s=F.readSave();header(s);const e=document.querySelector('.indoorHeading span');if(e)e.textContent=`陳列 ${s.shelves.filter(x=>x&&x.qty>0).length}/${F.shopCapacity(s)}枠`;}
  }catch(e){storeBusy=false;shopVisitTestMode=false;toast(e.message);}
 }
+// TEST-only: inspect all eight directions without changing equipment, dungeon progress or save data.
+function showWeaponDirectionsTest(){
+ if(!frontierTestAllowed())return;
+ modal(`<h2>⚔️ 装備・8方向の表示確認</h2>
+ <p class="gearCheckHelp">剣・槍を切り替え、各方向をタップすると「手に持っている武器そのもの」が動きます。セーブデータは変更しません。</p>
+ <div class="gearCheckSwitch"><button type="button" id="gearCheckSword" class="cmdBtn primary">剣</button><button type="button" id="gearCheckSpear" class="cmdBtn">槍</button></div>
+ <div class="gearCheckGrid" id="gearCheckGrid"></div>
+ <p class="gearCheckHelp">確認点：右手の位置／柄と手が接するか／背面・前面の重なり／攻撃中に武器が2本にならないか。</p>`,[{label:'閉じる'}]);
+ const faces=[['down','正面'],['up','背面'],['left','左'],['right','右'],['up-left','左上'],['up-right','右上'],['down-left','左下'],['down-right','右下']];
+ let kind='sword';
+ const draw=()=>{
+  const grid=$('gearCheckGrid');if(!grid)return;
+  grid.replaceChildren();
+  const weapon=kind==='spear'?{id:'test_spear',weapon:{label:'槍',range:2}}:{id:'test_sword',weapon:{label:'剣',range:1}};
+  $('gearCheckSword')?.classList.toggle('primary',kind==='sword');
+  $('gearCheckSpear')?.classList.toggle('primary',kind==='spear');
+  for(const [face,name] of faces){
+   const btn=document.createElement('button');btn.type='button';btn.className='gearCheckCell';btn.title=`${name}向き：${kind==='spear'?'槍を突く':'剣を振る'}`;
+   const label=document.createElement('span');label.className='gearCheckLabel';label.textContent=name;
+   const frame=document.createElement('span');frame.className='gearCheckFrame';
+   const token=document.createElement('span');token.className=`humanDungeonToken facing-${face} visual-${spriteFacing4(face)} ${face.includes('-')?'diagonal':''}`;
+   token.style.left='50%';token.style.top='78%';
+   const img=document.createElement('img');img.alt='';img.src=humanPlayerSpriteSrc(face);img.style.position='relative';img.style.zIndex='1';
+   const held=createHeldWeaponCanvas(face,weapon);
+   token.appendChild(img);if(held)token.appendChild(held);
+   frame.appendChild(token);btn.appendChild(label);btn.appendChild(frame);
+   btn.onclick=()=>animateHeldWeaponAttack({type:kind},face,token);
+   grid.appendChild(btn);
+  }
+ };
+ $('gearCheckSword').onclick=()=>{kind='sword';draw()};
+ $('gearCheckSpear').onclick=()=>{kind='spear';draw()};
+ draw();
+}
 function showFrontierTestMenu(){
  if(!frontierTestAllowed())return;
  const points=F.OPENING?.points||[];
  const town=points.filter(([id])=>/^town\d+$/.test(id));
- const exterior=points.filter(([id])=>/^lv[3-7]$/.test(id));
+ const exterior=points.filter(([id])=>/^lv[3-6]$/.test(id));
  const current=points.filter(([id])=>id==='current');
- const mission=points.filter(([id])=>!/^town\d+$/.test(id)&&!/^lv[3-7]$/.test(id)&&id!=='current');
+ const mission=points.filter(([id])=>!/^town\d+$/.test(id)&&!/^lv[3-6]$/.test(id)&&id!=='current');
  const groups=[['町の発展段階',town],['店舗の外観',exterior],['現在のプレー',current],['ミッションの途中',mission]].filter(([,items])=>items.length);
  const options=groups.map(([name,items])=>`<optgroup label="${esc(name)}">${items.map(([id,label])=>`<option value="${esc(id)}" ${F.OPENING?.testPoint===id?'selected':''}>${esc(label.replace(/^町全体：|^外観確認：/,''))}</option>`).join('')}</optgroup>`).join('');
  const layerTest=!F.OPENING?.active()?'<button type="button" class="cmdBtn" id="testTownLayers">町のレイヤー確認</button>':'';
@@ -811,6 +864,7 @@ function showFrontierTestMenu(){
    <button type="button" class="cmdBtn" id="testShopVisitor">来客の往復</button>
    <button type="button" class="cmdBtn" id="testResidentRoute">ミナの出勤・帰宅</button>
    <button type="button" class="cmdBtn" id="testTownRoute">町の通行確認</button>
+    <button type="button" class="cmdBtn" id="testWeaponDirections">武器の8方向・攻撃確認</button>
   </div>
   <p class="testMenuHint">来客の往復は、町段階③（露店）以降で確認できます。</p>
  </section>
@@ -832,6 +886,7 @@ function showFrontierTestMenu(){
  bind('testConstructionTime',()=>{try{F.TOWN_DEVELOPMENT.testConstructionTime();renderAll();toast('工事時間を進めました。')}catch(e){toast(e.message)}});
  bind('testTownLayers',showTownLayerTest);
  bind('testTownRoute',showTownNavTest);
+  bind('testWeaponDirections',showWeaponDirectionsTest);
 }
 function bindTestLongPress(){
  const target=document.querySelector('.brand');if(!target||target.dataset.testHoldBound)return;target.dataset.testHoldBound='1';
@@ -933,4 +988,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-10-31 23:13 JST / Ver1.93: increase near-view town zoom; preserve full-town overview.
 // Updated: 2026-11-01 08:57 JST / Ver1.94: overlay equipped weapon, armor, and charm on the town player.
 // Updated: 2026-11-01 / Ver1.97: equipped armor changes the town player sprite.
-// Updated: 2026-11-01 / Ver1.108: move diagonal-facing weapon grips into the hand.
+// Updated: 2026-11-01 / Ver1.109: animate the equipped weapon canvas instead of requiring an FX weapon ID match.
+
+// Updated: 2026-11-01 17:51 JST / Ver1.110: TEST menu previews all eight held-weapon poses and attacks; gameplay/save unchanged.
+
+// Updated: 2026-11-01 19:14 JST / Ver1.111: show only Lv3-Lv6 story test points.

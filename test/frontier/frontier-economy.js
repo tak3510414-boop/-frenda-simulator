@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.59: arrivals and purchases are separate. */
+/* Frenda Frontier Ver1.111: arrivals, purchases and canonical Lv6 peak traffic. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER;
 // Provisional tuning values: coordinate these with loot, item prices and building costs.
@@ -19,7 +19,8 @@ F.shopDemand=(s)=>{const b=F.CUSTOMER_BALANCE,t=s.development?.town||{},raw=Numb
  const cleared=Object.values(s.dungeons?.cleared||{}).filter(Boolean).length;
  const population=1+Math.min(b.populationCap,residents*.025),reputationFactor=1+Math.min(b.reputationCap,reputation/600),traffic=1+Math.min(b.trafficCap,cleared*.06+(s.story?.firstReturn? .04:0));
  const phase=F.timeInfo(s).id,time=b.timeFactors[phase]??1;
- const expected=clamp(b.expectedByLevel[lv]*population*reputationFactor*traffic*time,0,b.slots*.95);
+ const expectedBase=s.story?.opening&&lv===6?b.expectedByLevel[7]:b.expectedByLevel[lv];
+  const expected=clamp(expectedBase*population*reputationFactor*traffic*time,0,b.slots*.95);
  return{level:lv,expected,arrivalChance:expected/b.slots,slots:b.slots,phase,residents,population,reputationFactor,traffic};};
 F.shopVisitorArrives=(d,rng=Math.random)=>rng()<d.arrivalChance;
 F.createShopVisitor=(s,rng=Math.random)=>{const d=F.shopDemand(s),b=F.CUSTOMER_BALANCE;
@@ -49,3 +50,5 @@ F.endShopSession=(visitors,sold)=>F.mutateSave(s=>{F.addHistory(s,'shop',`営業
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
 
 // Updated: 2026-10-25 20:21 JST / Ver1.67
+
+// Updated: 2026-11-01 19:14 JST / Ver1.111: preserve max-level shop visits after story Lv7 migration.

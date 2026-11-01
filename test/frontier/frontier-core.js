@@ -528,7 +528,48 @@ function openChest(run){let testEquipmentIndex=0,r;if(run.testLoot===true&&run.f
 function onTile(run){const t=run.map[run.player.y][run.player.x];if(t==="gather"){let drop=floorItemAt(run,run.player.x,run.player.y);if(!drop){const g=F.weighted(F.economyGatherTable?.(run)||F.GATHER_TABLE||[]);if(g)drop={x:run.player.x,y:run.player.y,itemId:g.item,qty:F.rand(Number(g.min)||1,Number(g.max)||1)}}if(drop&&addBag(run,drop.itemId,Number(drop.qty)||1)){const it=F.item(drop.itemId);run.log.push(`${it?.icon||'📦'} ${it?.name||drop.itemId} ×${Number(drop.qty)||1}を拾った！`);run.floorItems=(run.floorItems||[]).filter(it=>!(it.x===run.player.x&&it.y===run.player.y));run.map[run.player.y][run.player.x]="floor"}}else if(t==="chest"&&openChest(run)){run.map[run.player.y][run.player.x]="floor"}return t}
 function advanceRunTurn(run,triggerTile=true){run.turn++;revealDungeon(run);ensureStatuses(run);const fullnessTickEvery=Math.max(1,Number(run.fullnessTickEvery)||10),fullnessTick=run.turn%fullnessTickEvery===0,saveEvery=combatBonuses(run).foodSaveEvery,saveFullness=fullnessTick&&saveEvery>0&&run.turn%saveEvery===0;if(fullnessTick&&!saveFullness)run.fullness=Math.max(0,run.fullness-1);if(run.fullness<=0){run.playerHp=Math.max(0,run.playerHp-1);run.log.push("🍽️ おなかが空いてHPが減った！")}if(statusActive(run,'poison')){const pt=poisonTickProfile(run);if(run.turn%pt.every===0){run.playerHp=Math.max(0,run.playerHp-pt.damage);run.log.push(`☠️ どくでHPが${pt.damage}減った！`)}}const healEvery=Math.max(1,Number(run.naturalHealEvery)||5);if(!statusActive(run,'poison')&&run.fullness>0&&run.playerHp>0&&run.playerHp<run.playerMaxHp&&run.turn%healEvery===0)run.playerHp=Math.min(run.playerMaxHp,run.playerHp+1);if(triggerTile)triggerTrap(run);if(run.playerHp<=0){F.finishRun(false,"defeat");return F.run}decayStatuses(run);enemyTurn(run);if(triggerTile)onTile(run);if(run.playerHp<=0){F.finishRun(false,"defeat");return F.run}return run}
 F.move=(dx,dy)=>{const run=F.run;if(!run?.active)return run;dx=Math.sign(Number(dx)||0);dy=Math.sign(Number(dy)||0);if(!dx&&!dy)return run;const pre=prePlayerAction(run,'move',dx,dy);if(pre.blocked)return advanceRunTurn(run,false);dx=pre.dx;dy=pre.dy;run.playerFacing=facingFromDelta(dx,dy,run.playerFacing||'down');const nx=run.player.x+dx,ny=run.player.y+dy;if(!dungeonCanStep(run.map,run.player.x,run.player.y,dx,dy)){run.log.push(dx&&dy?"壁の角がふさがっていて斜めには進めない。":"そこには進めない。");return pre.reason==='confusion'?advanceRunTurn(run,false):run}const e=entityAt(run,nx,ny);if(e){const can=weaponCanAttack(run,nx,ny);if(!can.ok){run.log.push(can.reason);return pre.reason==='confusion'?advanceRunTurn(run,false):run}e.facing=facingFromDelta(run.player.x-e.x,run.player.y-e.y,e.facing||'down');const fx=setAttackFx(run,can.profile,can.vector),result=playerAttack(run,e);fx.hit=result.hit;fx.critical=result.critical}else{run.player.x=nx;run.player.y=ny;run.playerStep=(Number(run.playerStep)||0)+1}return advanceRunTurn(run,true)};
-F.swingDungeon=()=>{const run=F.run;if(!run?.active)return{attempted:false,reason:"探索中ではない。"};const pre=prePlayerAction(run,'attack',0,0);if(pre.blocked){advanceRunTurn(run,false);return{attempted:true,blocked:true,reason:pre.reason}}let face=run.playerFacing||'down';if(statusActive(run,'confusion')){const d=dungeonDirs8[F.rand(0,dungeonDirs8.length-1)];face=facingFromDelta(d[0],d[1],run.playerFacing||'down');run.playerFacing=face;run.log.push('💫 混乱して別の方向へ武器を振った！')}const [dx,dy]=facingVector(face),tx=run.player.x+dx,ty=run.player.y+dy,e=entityAt(run,tx,ty);if(e){const can=weaponCanAttack(run,tx,ty);if(can.ok){e.facing=facingFromDelta(-dx,-dy,e.facing||'down');const fx=setAttackFx(run,can.profile,can.vector),result=playerAttack(run,e);fx.hit=result.hit;fx.critical=result.critical;advanceRunTurn(run,false);return{attempted:true,enemy:true,...result}}}const p=weaponProfile(run),fx=setAttackFx(run,p,{sx:dx,sy:dy,dist:1});fx.hit=false;fx.critical=false;const trap=trapAt(run,tx,ty);if(trap&&!trap.revealed){trap.revealed=true;const def=F.dungeonTrap?.(trap.type)||{name:'罠'};run.log.push(`👀 素振りで ${def.name}を見つけた！`)}else run.log.push(`⚔️ ${p.weapon?.name||'素手'}を振った。`);advanceRunTurn(run,false);return{attempted:true,enemy:false,revealed:!!trap}};
+// Ver1.111: normal attack uses the currently equipped weapon's actual straight-line range.
+// Swords still attack adjacent squares; spears reach two cardinal tiles; bows up to four tiles.
+F.swingDungeon=()=>{
+ const run=F.run;
+ if(!run?.active)return{attempted:false,reason:'探索中ではない。'};
+ const pre=prePlayerAction(run,'attack',0,0);
+ if(pre.blocked){advanceRunTurn(run,false);return{attempted:true,blocked:true,reason:pre.reason}}
+ let face=run.playerFacing||'down';
+ if(statusActive(run,'confusion')){
+  const d=dungeonDirs8[F.rand(0,dungeonDirs8.length-1)];
+  face=facingFromDelta(d[0],d[1],face);run.playerFacing=face;
+  run.log.push('💫 混乱して別の方向へ武器を振った！');
+ }
+ const [dx,dy]=facingVector(face),p=weaponProfile(run);
+ const maxDist=dx&&dy&&p.directions===4?1:p.range;
+ let target=null;
+ for(let dist=1;dist<=maxDist;dist++){
+  const px=run.player.x+(dist-1)*dx,py=run.player.y+(dist-1)*dy;
+  if(!dungeonCanStep(run.map,px,py,dx,dy))break;
+  const tx=run.player.x+dist*dx,ty=run.player.y+dist*dy,e=entityAt(run,tx,ty);
+  if(!e)continue;
+  target=weaponCanAttack(run,tx,ty);
+  break; // The first living enemy blocks every one behind it.
+ }
+ if(target?.ok){
+  const e=target.enemy;e.facing=facingFromDelta(-dx,-dy,e.facing||'down');
+  const fx=setAttackFx(run,target.profile,target.vector),result=playerAttack(run,e);
+  fx.hit=result.hit;fx.critical=result.critical;
+  advanceRunTurn(run,false);
+  return{attempted:true,enemy:true,...result};
+ }
+ // A swing into empty space still consumes exactly one turn. Trap search stays adjacent.
+ const tx=run.player.x+dx,ty=run.player.y+dy,fx=setAttackFx(run,p,{sx:dx,sy:dy,dist:1});
+ fx.hit=false;fx.critical=false;
+ const trap=trapAt(run,tx,ty);
+ if(trap&&!trap.revealed){
+  trap.revealed=true;const def=F.dungeonTrap?.(trap.type)||{name:'罠'};
+  run.log.push(`👀 素振りで ${def.name}を見つけた！`);
+ }else run.log.push(`⚔️ ${p.weapon?.name||'素手'}を振った。`);
+ advanceRunTurn(run,false);
+ return{attempted:true,enemy:false,revealed:!!trap};
+};
 F.attackAt=(tx,ty)=>{const run=F.run;if(!run?.active)return{attempted:false,reason:"探索中ではない。"};const pre=prePlayerAction(run,'attack',0,0);if(pre.blocked){advanceRunTurn(run,false);return{attempted:true,blocked:true,reason:pre.reason}}tx=Math.floor(Number(tx));ty=Math.floor(Number(ty));if(statusActive(run,'confusion')){const d=dungeonDirs8[F.rand(0,dungeonDirs8.length-1)],rx=run.player.x+d[0],ry=run.player.y+d[1];run.playerFacing=facingFromDelta(d[0],d[1],run.playerFacing||'down');const e=entityAt(run,rx,ry);if(!e){run.log.push('💫 混乱して違う方向へ武器を振った！');advanceRunTurn(run,false);return{attempted:true,hit:false,confused:true}}tx=rx;ty=ry;run.log.push('💫 混乱して狙いがずれた！')}const can=weaponCanAttack(run,tx,ty);if(!can.ok){run.log.push(can.reason);return{attempted:false,reason:can.reason}}const dx=tx-run.player.x,dy=ty-run.player.y;run.playerFacing=facingFromDelta(dx,dy,run.playerFacing||'down');can.enemy.facing=facingFromDelta(-dx,-dy,can.enemy.facing||'down');const fx=setAttackFx(run,can.profile,can.vector),result=playerAttack(run,can.enemy);fx.hit=result.hit;fx.critical=result.critical;advanceRunTurn(run,false);return{attempted:true,...result}};
 // Ver0.85: scroll / wand / throwing-item layer inspired by classic Mystery Dungeon resource play.
 function consumeBagItem(run,id,n=1){run.bag[id]=(Number(run.bag[id])||0)-n;if(run.bag[id]<=0)delete run.bag[id]}
@@ -600,3 +641,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
 
 // Updated: 2026-10-27 19:24 JST / Ver1.75
+
+// Updated: 2026-11-01 19:14 JST / Ver1.111: swing attack checks equipped weapon range.
