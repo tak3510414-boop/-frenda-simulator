@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.116 — playable prologue: investigation, clues, camp, first expedition. */
+/* Frenda Frontier Ver1.117 — one mission at a time, location-based opening. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,originalKey=F.SAVE_KEY,storyKey=originalKey+':opening147';
 const O=F.OPENING={originalKey,storyKey,rules:Object.freeze({stallWood:3,storeWood:6,storeCoins:150,provisional:true}),levels:[{level:1,name:'露店',shelves:3},{level:2,name:'小屋',shelves:3},{level:3,name:'木造店舗',shelves:4},{level:4,name:'拡張店舗',shelves:5},{level:5,name:'店舗兼住宅',shelves:6},{level:6,name:'店舗専用＋専用住宅',shelves:9}],tentBox:{x:610,y:105,w:96,h:80},stallBox:{x:730,y:215,w:122,h:70},shopBox:{x:688,y:82,w:176,h:172}};
@@ -14,7 +14,7 @@ O.SCENES=Object.freeze({
   {speaker:'旅の冒険者',text:'中へ入った仲間は戻ったが、食料も道具も底をついていた。帰る場所さえあればな。',portrait:'traveler'},
   {speaker:'ナレーション',text:'風が止んだ一瞬、階段の奥で青白い光がまたたいた。',icon:'✨'},
   {speaker:'開拓者',text:'まずは入口を調べよう。それから、みんなが帰ってこられる場所を作る。',portrait:'player'},
-  {speaker:'次の目的',text:'「森の入口を調べる」を押して、発見された迷宮を確かめよう。',icon:'📜'}
+  {speaker:'次の目的',text:'北の道を登り、森の入口にある古い石を調べよう。',icon:'📜'}
  ]},
  entranceClue:{chapter:'序章',title:'青白い光の手がかり',icon:'✨',lines:[
   {speaker:'ナレーション',text:'入口には古い石の欠片が落ちていた。表面には、木の根と小さな光を描いた模様がある。',icon:'🪨'},
@@ -22,7 +22,7 @@ O.SCENES=Object.freeze({
   {speaker:'旅の冒険者',text:'森の奥では「森の主」が道を守る……そんな昔話がある。確かなことは誰も知らない。',portrait:'traveler'},
   {speaker:'開拓者',text:'調べるのはあとでもできる。先に、安全に帰ってこられる目印が必要だ。',portrait:'player'},
   {speaker:'ナレーション',text:'開けた草地にテントを張れば、迷宮帰りの旅人を迎えられそうだ。',icon:'⛺'},
-  {speaker:'次の目的',text:'「テントを設営する」を選んで、最初の拠点を作ろう。',icon:'📜'}
+  {speaker:'次の目的',text:'草地のテント予定地へ歩いていき、そこで設営しよう。',icon:'📜'}
  ]},
  camp:{chapter:'序章',title:'はじめての拠点',icon:'⛺',lines:[
   {speaker:'ナレーション',text:'草地に一本の杭が打たれ、やがて小さなテントが立った。',icon:'⛺'},
@@ -30,7 +30,7 @@ O.SCENES=Object.freeze({
   {speaker:'開拓者',text:'でも、休むだけでは足りない。薬草や食べ物を置ける店も必要だ。',portrait:'player'},
   {speaker:'旅の冒険者',text:'最初は露店でいい。木材さえ集まれば、誰かの役に立つ店になる。',portrait:'traveler'},
   {speaker:'ナレーション',text:'森の入口にはまだ建物も人通りもない。それでも、小さな町の一歩が始まった。',icon:'🌱'},
-  {speaker:'次の目的',text:'「開拓を始める」を押して、最初の探索へ進もう。',icon:'📜'}
+  {speaker:'次の目的',text:'北の道を登り、はじまりの森へ入ろう。',icon:'📜'}
  ]},
  firstDeparture:{chapter:'序章',title:'最初の探索へ',icon:'🗡️',lines:[
   {speaker:'開拓者',text:'露店を作るため、木材を三つ。それから売るための商品を一つ以上。',portrait:'player'},
@@ -39,7 +39,7 @@ O.SCENES=Object.freeze({
   {speaker:'開拓者',text:'帰るときはロープだね。拾ったものを持ち帰れなければ、店は作れない。',portrait:'player'},
   {speaker:'旅の冒険者',text:'そのとおり。今回は深く潜る必要はない。B1Fで材料を集めたら帰ってこよう。',portrait:'traveler'},
   {speaker:'ナレーション',text:'テントの向こうに、はじまりの森へ続く道が見える。',icon:'🌲'},
-  {speaker:'次の目的',text:'「はじまりの森へ」→ B1Fで木材3個・商品1点を拾う → 「ロープ」で帰還。',icon:'📜'}
+  {speaker:'次の目的',text:'北の道からはじまりの森へ。B1Fで木材3個と商品1点を拾い、ロープで帰ろう。',icon:'📜'}
  ]},
  firstReturn:{chapter:'第1章',title:'最初の収穫',icon:'🪵',lines:[
   {speaker:'ナレーション',text:'冒険から戻ると、テントの前に旅人が集まっていた。',icon:'⛺'},
@@ -88,8 +88,10 @@ O.ensureSceneState=o=>{if(!Array.isArray(o.sceneQueue))o.sceneQueue=[];if(!o.sce
 O.enqueueSceneInSave=(s,id)=>{const o=O.ensureSceneState(s?.story?.opening||{});if(!s?.story?.opening||!O.SCENES[id]||o.sceneSeen[id]||o.sceneQueue.includes(id))return false;o.sceneQueue.push(id);return true};
 O.enqueueScene=id=>{if(!O.active()||O.isTestPoint())return false;let queued=false;F.mutateSave(s=>{queued=O.enqueueSceneInSave(s,id)});return queued};
 O.completeScene=id=>{F.mutateSave(s=>{const o=O.ensureSceneState(s?.story?.opening||{});if(!s?.story?.opening)return;o.sceneQueue=o.sceneQueue.filter(x=>x!==id);o.sceneSeen[id]=true});O.presentingScene=false;
+ const afterCamp=id==='camp'&&O.active()&&!O.isTestPoint()&&O.phase()==='tent';
+ if(afterCamp){O.advance();O.onWorldChanged?.()}
  // Multiple scenes can be queued on the same event. Continue only after the previous dialogue closes.
- if(O.active()&&!O.isTestPoint())setTimeout(()=>O.presentPendingScene(),0);
+ if(O.active()&&!O.isTestPoint()&&!afterCamp)setTimeout(()=>O.presentPendingScene(),0);
 };
 O.presentPendingScene=()=>{if(!O.active()||O.isTestPoint()||O.presentingScene||typeof F.playStoryDialogue!=='function')return false;const o=O.ensureSceneState(F.readSave().story?.opening||{}),id=o.sceneQueue[0],scene=O.SCENES[id];if(!scene)return false;O.presentingScene=true;F.playStoryDialogue(scene,()=>O.completeScene(id));return true};
 // Approved exterior stages. The maximum shop plot stays reserved at every level.
@@ -123,13 +125,13 @@ O.makePoint=id=>{const s=F.freshSave();for(const k of Object.keys(s.development.
 O.switchPoint=id=>{if(!O.testEnabled())throw new Error('TEST機能は利用できません。');if(!O.points.some(p=>p[0]===id))throw new Error('選択した時点がありません。');if(F.run?.active)throw new Error('探索から帰還してから時点を切り替えてください。');if(id==='current')O.enter();else{F.SAVE_KEY=originalKey+':mission148test:'+id;O.visibleState=null;F.writeSave(O.makePoint(id));O.testPoint=id}F.run=null;if(F.WILDERNESS){F.WILDERNESS.stop();F.WILDERNESS.position={x:774,y:306};F.WILDERNESS.active=true}};
 O.guidance=()=>{
  const s=F.readSave(),p=O.phase(),stocked=s.shelves.some(sh=>sh&&sh.qty>0),wood=Number(s.warehouse.wood)||0,goods=O.goods(s);
- if(p==='arrival')return s.story.opening.entranceInspected?{title:'森の入口を確認しました',text:'青白い光と古い石の手がかりが見つかりました。まずは冒険者たちの帰る場所を作りましょう。',label:'テントを設営する',act:'campSetup'}:{title:'森の入口に何がある？',text:'森の奥に続く階段が見つかりました。テントを張る前に、迷宮の入口と周辺を確かめましょう。',label:'🔎 森の入口を調べる',act:'inspect'};
- if(p==='tent')return{title:'露店の準備を始めよう',text:'森から木材と商品を持ち帰り、最初の露店を開こう。',label:'開拓を始める',act:'advance'};
- if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'木材を使って、テントの脇に露店を設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:`「はじまりの森へ」から探索を開始し、B1Fで木材${O.rules.stallWood}個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。`,label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
- if(p==='stocking')return stocked?{title:'商品が並びました。開業しましょう',text:'店頭に商品を1点並べました。露店を開業すると、最初のミッションを達成します。',label:'露店を開業する',act:'open'}:{title:'露店に商品を1点並べよう',text:'「商品を並べる」から露店へ進み、「陳列枠1：空き」を選んで、持ち帰った商品を並べましょう。',label:'商品を並べる',act:'shop'};
- if(p==='first_sale')return stocked?{title:'最初のお客さんに商品を売ろう',text:'露店へ行って営業しましょう。適正価格の商品には、迷宮帰りの冒険者が最初のお客さんとして立ち寄ります。',label:'露店へ行く',act:'shop'}:goods>0?{title:'売る商品を並べよう',text:'露店の空いている陳列枠を選び、保管中の商品を並べてから営業しましょう。',label:'商品を並べる',act:'shop'}:{title:'商品を仕入れよう',text:'商品がなくなりました。はじまりの森で商品を拾い、持ち帰って露店に並べましょう。',label:'はじまりの森へ',act:'adventure'};
+ if(p==='arrival')return s.story.opening.entranceInspected?{title:'森の入口を確認しました',text:'青白い光と古い石の手がかりが見つかりました。草地のテント予定地に歩いていき、そこで設営しましょう。',label:'テントを設営する',act:'campSetup'}:{title:'森の入口に何がある？',text:'森の奥に続く階段が見つかりました。北の道を登り、古い石のある森の入口を調べましょう。',label:'🔎 森の入口を調べる',act:'inspect'};
+ if(p==='tent')return{title:'露店の準備を始めよう',text:'北の道を登ると、はじまりの森です。まず木材と商品を集めましょう。',label:'開拓を始める',act:'advance'};
+ if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'テントのそばの露店予定地に近づき、木材で設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:`北の道を登って探索を開始し、B1Fで木材${O.rules.stallWood}個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。`,label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
+ if(p==='stocking')return stocked?{title:'商品が並びました。開業しましょう',text:'露店の近くで開業しましょう。最初のミッションを達成できます。',label:'露店を開業する',act:'open'}:{title:'露店に商品を1点並べよう',text:'露店のそばまで歩き、「商品を並べる」から商品を1点陳列しましょう。',label:'商品を並べる',act:'shop'};
+ if(p==='first_sale')return stocked?{title:'最初のお客さんに商品を売ろう',text:'露店の前まで歩き、営業しましょう。適正価格の商品には、迷宮帰りの冒険者が最初のお客さんとして立ち寄ります。',label:'露店へ行く',act:'shop'}:goods>0?{title:'売る商品を並べよう',text:'露店の空いている陳列枠を選び、保管中の商品を並べてから営業しましょう。',label:'商品を並べる',act:'shop'}:{title:'商品を仕入れよう',text:'商品がなくなりました。はじまりの森で商品を拾い、持ち帰って露店に並べましょう。',label:'はじまりの森へ',act:'adventure'};
  if(p==='upgrade'){
-  if(O.ready())return{title:'店舗Lv2を建てられます',text:'木材と建築費を渡すと、テントと露店に代わる店舗兼住宅の建築が始まります。',label:'店舗Lv2を建築する',act:'build'};
+  if(O.ready())return{title:'店舗Lv2を建てられます',text:'店舗予定地まで歩き、材料と建築費を渡して建築を始めましょう。',label:'店舗Lv2を建築する',act:'build'};
   const stockedGoods=stocked||goods>0,needWood=wood<O.rules.storeWood,needMoney=s.coins<O.rules.storeCoins;
   const act=needWood||(!stockedGoods&&needMoney)?'adventure':'shop';
   const missing=[];if(needWood)missing.push(`木材 ${wood}/${O.rules.storeWood}個`);if(needMoney)missing.push(`所持金 ${s.coins}/${O.rules.storeCoins}G`);if(!stockedGoods)missing.push('販売商品なし');
@@ -140,7 +142,7 @@ O.guidance=()=>{
  if(p==='complete'&&s.story?.opening?.forestLordDefeated)return{title:'エピローグ：森と町の新しい暮らし',text:'森の主との出会いを経て、町と森はともに歩み始めました。ここからも冒険と町づくりを続けられます。',label:'町の店へ戻る',act:'shop'};
  return{title:'店舗Lv2の小屋が完成しました',text:'テントと露店を片付けました。店内の3棚へ商品を並べて営業できます。',label:'店舗Lv2に入る',act:'shop'}
 };
-O.guide=()=>{const g=O.guidance(),o=O.state(),intro=!o.prologueComplete,step=o.entranceInspected?(o.tentPitched?3:2):1;return `<section class="frontierStoryGuide"><div class="frontierStoryEyebrow">${intro?'序章　森の入口に拠点を':'開拓の物語'}${intro?`<span>STEP ${step} / 3</span>`:''}</div><b class="frontierStoryObjective">${g.title}</b><p>${g.text}</p><div id="nextActions" class="frontierStoryActions"></div></section>`};
+O.guide=()=>{const g=O.guidance(),o=O.state();return `<section class="frontierStoryGuide frontierStoryGuideCompact" aria-label="現在の目標"><b class="frontierStoryObjective">次にすること：${g.title}</b><p>${g.text}</p></section>`};
 O.missions=()=>{const s=F.readSave(),o=s.story.opening,lv=Number(s.development.town.facilities.shop)||0,stocked=s.shelves.some(sh=>sh&&sh.qty>0),done1=o.mission1,done2=o.mission2,done3=o.phase==='complete',prologueDone=!!o.prologueComplete;return[{name:'導入：迷宮のそばに拠点を作る',state:prologueDone?'達成':'進行中',steps:[['不思議な迷宮の発見を知る',true],['森の入口を調べて手がかりを見つける',!!o.entranceInspected],['旅人向けの店を開くためテントを張る',!!o.tentPitched],['テントを拠点に開拓を始める',prologueDone]]},{name:'ミッション 1：はじめての露店を開こう',state:done1?'達成':prologueDone?'進行中':'未解放',steps:[['設営用の木材を持ち帰る',done1||lv>=1||o.woodReturned>=O.rules.stallWood],['売る商品を持ち帰る',done1||o.goodsReturned>0],['テントの脇に露店Lv1を設営する',done1||lv>=1],['商品を1点以上並べる',done1||stocked],['露店を開業する',done1]]},{name:'ミッション 2：初めて商品を売ろう',state:done2?'達成':done1?'進行中':'未解放',steps:[['露店で商品を1件以上売る',done2]]},{name:'ミッション 3：店舗Lv2の小屋を建てよう',state:done3?'達成':done2?'進行中':'未解放',steps:[['木材と建築費を揃える',done3||o.phase==='building'||(done2&&O.ready())],['材料を渡して建築を開始する',done3||o.phase==='building'],['工事を進めて完成を確認する',done3]]}]};
 O.chapters=()=>{const s=F.readSave(),o=s.story.opening;return[
  {name:'序章：森の入口に拠点を',done:!!o.prologueComplete,active:!o.prologueComplete,detail:'迷宮のそばにテントを張り、冒険者を迎える。'},
@@ -148,7 +150,8 @@ O.chapters=()=>{const s=F.readSave(),o=s.story.opening;return[
  {name:'第2章：森の奥の光',done:!!o.forestLordDefeated,active:!!s.story?.rumor&&!o.forestLordDefeated,detail:s.story?.rumor?'はじまりの森の最深部を調べる。':'町に広がる噂を集める。'},
  {name:'終章：森の主',done:!!o.forestLordDefeated,active:!!s.story?.rumor&&!o.forestLordDefeated,detail:o.forestLordDefeated?'森と町がともに歩み始めた。':'最深部で森を守る主と向き合う。'}
  ]};
-O.missionsHTML=()=>`<h2>フロンティアの物語</h2><p>冒険で出会った人々の願いが、町の発展と森の謎につながっていきます。</p><div class="storyChapterList">${O.chapters().map((c,i)=>`<section class="storyChapter ${c.done?'done':c.active?'active':'locked'}"><b>${c.done?'✓':c.active?'▶':'🔒'} ${c.name}</b><small>${c.detail}</small></section>`).join('')}</div><h3>開拓ミッション</h3>${O.missions().map(m=>`<section style="padding:12px 0;border-bottom:1px solid #ccd8ce"><b>${m.name}</b><span style="float:right;font-weight:bold">${m.state}</span><ul style="padding-left:20px;line-height:1.9">${m.steps.map(([t,d])=>`<li>${d?'✓':'□'} ${t}</li>`).join('')}</ul></section>`).join('')}`;
+O.currentMission=()=>{const list=O.missions(),current=list.find(m=>m.state==='進行中');if(current)return current;const g=O.guidance();return{name:g.title,state:'進行中',steps:[[g.text,false]]}};
+O.missionsHTML=()=>{const m=O.currentMission();return `<h2>📋 現在のミッション</h2><section class="storyCurrentMission"><b>${m.name}</b><ul>${m.steps.map(([t,d])=>`<li>${d?'✓':'□'} ${t}</li>`).join('')}</ul></section>`};
 // Replaying the opening is presentation-only, including TEST checkpoints.
 O.replayScene=id=>typeof F.playStoryDialogue==='function'?F.playStoryDialogue(O.SCENES[id]||O.SCENES.arrival,()=>{}):false;
 // Completed dialogue is available to reread without changing story or saves.
@@ -156,8 +159,10 @@ O.storyArchiveHTML=()=>{const o=O.state(),ids=Object.keys(O.SCENES).filter(id=>o
 const oldMissionsHTML=O.missionsHTML;O.missionsHTML=()=>oldMissionsHTML()+O.storyArchiveHTML();
 O.testControls=()=>!O.testEnabled()?'':`<details class="test-menu-panel" style="margin:10px 12px;padding:8px;background:#edf2fa;border:1px solid #adbed9;border-radius:8px"><summary>TEST：開始時点を切り替える</summary><label style="display:block;margin:8px 0">プレー開始時点 <select id="testStoryPoint" style="width:100%;padding:8px;margin-top:5px">${O.points.map(([id,label])=>`<option value="${id}" ${O.testPoint===id?'selected':''}>${label}</option>`).join('')}</select></label><small>切替先のTEST枠に、その時点の進行・所持品をセットします。現在のプレー枠は保持されます。探索中は帰還後に切り替えてください。</small></details>`;
 O.panel=()=>{const s=F.readSave(),r=O.rules;return `<div style="padding:10px 12px"><span>保管中：木材 ${s.warehouse.wood||0}個 ／ 所持金 ${s.coins}G</span><details style="margin-top:8px"><summary>TEST用の仮設定</summary><p>露店設営：木材${r.stallWood}個。店舗Lv2：木材${r.storeWood}個＋${r.storeCoins}G。必要数・費用は後で調整します。</p></details></div>`};
-O.bind=(rerender,actions={})=>{const g=O.guidance(),el=document.getElementById('nextActions');if(!el)return;const add=(label,fn,primary=false)=>{const b=document.createElement('button');b.className='cmdBtn'+(primary?' primary':'');b.textContent=label;b.onclick=()=>{try{fn?.()}catch(e){(document.getElementById('wildernessMessage')||document.getElementById('progressMessage')).textContent=e.message}};el.appendChild(b)};const acts={inspect:()=>{O.inspectEntrance();rerender()},advance:()=>{O.advance();rerender()},campSetup:()=>actions.campSetup?.(),adventure:()=>actions.adventure?.(),shop:()=>actions.shop?.(),setup:()=>{O.setupStall();rerender()},open:()=>{O.open();rerender()},build:()=>{O.build();rerender()},finish:()=>{O.advance();rerender()}};add(g.label,acts[g.act],['inspect','campSetup'].includes(g.act));add('ミッション一覧',()=>actions.missions?.());if(['arrival','tent','mission1'].includes(O.phase()))add('🎬 序章を見直す',()=>O.replayScene('arrival'));const picker=document.getElementById('testStoryPoint');if(picker)picker.onchange=()=>{try{O.switchPoint(picker.value);rerender()}catch(e){picker.value=O.testPoint;(document.getElementById('wildernessMessage')||document.getElementById('progressMessage')).textContent=e.message}};O.presentPendingScene()};
-
+O.bind=(rerender,actions={})=>{const picker=document.getElementById('testStoryPoint');if(picker)picker.onchange=()=>{try{O.switchPoint(picker.value);rerender()}catch(e){picker.value=O.testPoint;const msg=document.getElementById('wildernessMessage');if(msg)msg.textContent=e.message}};
+// All campaign actions are now triggered near their map locations instead of using guide buttons.
+// The map calls O.presentPendingScene only after its artwork has loaded.
+};
 // Ver1.111: story and normal game both use the approved shop maximum Lv6.
 // Old opening Lv7 is folded into Lv6, preserving all nine stocked shelves.
 const storyShelfCapacity=Object.freeze([0,3,3,4,5,6,9]);
@@ -224,3 +229,5 @@ O.enter();
 // Updated: 2026-11-01 19:47 JST / Ver1.113: included from Ver1.112 unchanged logic for cumulative TEST release.
 
 // Updated: 2026-11-01 20:27 JST / Ver1.116: interactive opening investigation, scene sequence and replayable journal.
+
+// Updated: 2026-11-01 21:10 JST / Ver1.117 — current mission only; location actions and automatic first-exploration transition.

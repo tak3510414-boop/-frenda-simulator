@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.116">
+<html lang="ja" data-app-version="1.117">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.116</title>
+<title>Frenda Frontier Ver1.117</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -282,6 +282,32 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 .storyArchiveEntry>div{padding:4px 11px 10px;border-top:1px solid #736247}
 .storyArchiveEntry p{margin:10px 0;line-height:1.55;font-size:12px}
 .storyArchiveEntry b{color:#f2d58e}
+
+/* Ver1.117: compact objective, actual on-map destinations and construction visibility. */
+.frontierStoryGuideCompact{padding:9px 12px;background:#f5eed3;border-bottom:1px solid #bdaa81;line-height:1.45}
+.frontierStoryGuideCompact .frontierStoryObjective{font-size:13px}
+.frontierStoryGuideCompact p{font-size:12px;margin:3px 0 0;line-height:1.5}
+.wildernessStage{position:relative;overflow:hidden;background:#253b25}
+.wildernessPrompt{position:absolute;left:9px;right:9px;bottom:8px;z-index:12;background:rgba(23,20,18,.96);border:2px solid #f2dda6;color:#fff7df;border-radius:5px;padding:9px;box-shadow:0 2px 14px #0009}
+.wildernessPrompt[hidden]{display:none!important}
+.wildernessPrompt b{display:block;font-size:14px;color:#f2dda6;margin-bottom:4px}
+.wildernessPrompt p{font-size:12px;line-height:1.45;margin:4px 0 8px}
+.wildernessPromptActions{display:flex;gap:7px;flex-wrap:wrap}
+.wildernessPromptActions button{flex:1 1 100px;padding:8px;min-height:38px}
+.wildernessBusy .frontierStoryGuide{visibility:hidden}
+.wildernessMiniBar{padding:7px 11px;background:#172d22;color:#f4ecd7;display:flex;justify-content:space-between;gap:6px;font-size:11px}
+.wildernessMiniHelp{padding:7px 11px;font-size:11px;line-height:1.45;color:#243d31;background:#eef1e5}
+#frontierModal.storyModal{background:rgba(4,10,7,.13);place-items:end center;align-content:end;padding:8px 8px max(9px,env(safe-area-inset-bottom));}
+#frontierModal.storyModal .modalPanel{width:min(520px,100%);max-height:min(44vh,44dvh);min-height:0;overflow-y:auto;padding:10px 12px;background:rgba(23,20,18,.98)}
+#frontierModal.storyModal .storyDialogueCard{min-height:0;padding:6px;grid-template-columns:66px minmax(0,1fr);gap:8px}
+#frontierModal.storyModal .storyDialoguePortraitFrame,#frontierModal.storyModal .storyDialoguePortrait{width:60px;height:72px}
+#frontierModal.storyModal .storyDialogueText{font-size:clamp(13px,3.8vw,16px);line-height:1.43;min-height:2.8em}
+#frontierModal.storyModal .storyDialogueSpeaker{margin-bottom:4px;font-size:12px}
+#frontierModal.storyModal .storyDialogueHint{font-size:9px;margin-top:2px}
+#frontierModal.storyModal .modalActions{margin-top:6px}
+#frontierModal.storyModal .modalActions button{min-height:35px}
+.storyCurrentMission{border:1px solid #bba56d;padding:10px;background:rgba(255,255,255,.06);border-radius:5px}
+.storyCurrentMission ul{padding-left:20px;line-height:1.7}
 </style>
 <style>
 .storyDialogueCard{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:end;min-height:128px;padding:12px;border:2px solid #f3eee2;border-radius:5px;background:rgba(20,17,15,.94);color:#fffdf5;box-shadow:0 3px 12px #0008}
@@ -303,7 +329,7 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.116 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.117 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
  <div class="notice">🌱 森の入口から物語が始まります。会話を読み進め、次の目的に沿って冒険と町づくりを進めよう。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
@@ -399,3 +425,5 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 <!-- Updated: 2026-11-01 20:25 JST / Ver1.115: aligned menu columns and inline bag actions. -->
 
 <!-- Updated: 2026-11-01 20:27 JST / Ver1.116: playable story prologue and chapter presentation. -->
+
+<!-- Updated: 2026-11-01 21:10 JST / Ver1.117: location-based prologue and compact story overlays. -->
