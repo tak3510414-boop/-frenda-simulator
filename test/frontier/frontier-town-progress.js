@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.94 — town camera zoom and visible player equipment. */
+/* Frenda Frontier Ver1.97 — town armor appearance follows equipped gear. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{},P=F.TOWN_PROGRESS={width:1000,height:480,token:0};
 P.stages=[
  {name:'① 未開拓地',lv:0,point:'gather',added:'構築物なし。自然の草地と踏み跡だけです。'},
@@ -14,7 +14,7 @@ P.stages=[
 const crops=[[12,90,1000,475],[12,610,1000,475],[12,1130,1000,395]],names=['frontier-town-stages-a-v163.png','frontier-town-stages-b-v163.png','frontier-town-stages-c-v163.png'];
 const cache=new Map();P.image=src=>{if(!cache.has(src))cache.set(src,new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('画像を読み込めません：'+src));im.src=src}));return cache.get(src)};
 P.spriteCrops=[[2, 3, 43, 68], [2, 4, 43, 67], [2, 7, 43, 64], [2, 4, 43, 67], [170, 37, 307, 486], [183, 23, 297, 486], [85, 5, 307, 471], [155, 54, 304, 471]];
-P.drawPlayer=(c,im,i,p,cam={x:0,y:0},s=null,equipmentArt=null)=>{const crop=P.spriteCrops[i],h=34,w=Math.min(34,h*crop[2]/crop[3]),pos={x:p.x-cam.x,y:p.y-cam.y};c.drawImage(im,...crop,pos.x-w/2,pos.y-h,w,h);F.drawTownEquipmentOverlay?.(c,pos,['down','up','left','right','up-left','up-right','down-left','down-right'][i]||'down',s,equipmentArt,h)};
+P.drawPlayer=(c,im,i,p,cam={x:0,y:0},s=null,equipmentArt=null)=>{const crop=P.spriteCrops[i],h=34,w=Math.min(34,h*crop[2]/crop[3]),pos={x:p.x-cam.x,y:p.y-cam.y},outfit=F.townPlayerSpriteForEquipment?.(im,s)||{image:im,armorApplied:false};c.drawImage(outfit.image||im,...crop,pos.x-w/2,pos.y-h,w,h);F.drawTownEquipmentOverlay?.(c,pos,['down','up','left','right','up-left','up-right','down-left','down-right'][i]||'down',s,equipmentArt,h,outfit.armorApplied)};
 P.art=()=>Promise.all(names.map(P.image));P.stop=()=>{P.token++;P.resizeCleanup?.();P.resizeCleanup=null;};
 P.stageFor=s=>{const o=s?.story?.opening;if(!o)return null;if(Number.isInteger(o.townPreviewStage))return Math.max(0,Math.min(8,o.townPreviewStage));if(o.phase==='arrival')return 0;if(['tent','mission1'].includes(o.phase))return 1;if(['stocking','first_sale','upgrade'].includes(o.phase))return 2;if(o.phase==='building')return 2;return Math.max(3,Math.min(8,(Number(s.development?.town?.facilities?.shop)||2)+1))};
 const navMasks=new Map();
