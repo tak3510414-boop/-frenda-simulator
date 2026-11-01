@@ -180,3 +180,5 @@ O.enter();
 // Updated: 2026-11-01 19:14 JST / Ver1.111: canonical shop Lv1-6 and safe old Lv7 shelf migration.
 
 // Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.
+
+// Updated: 2026-11-01 19:47 JST / Ver1.113: included from Ver1.112 unchanged logic for cumulative TEST release.

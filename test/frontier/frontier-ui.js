@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.112 / minimal dungeon HUD (HP/EXP/fullness) + full menu information. */
+/* Frenda Frontier Ver1.113 / durable dungeon progression and minimal status HUD. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -1016,3 +1016,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-01 19:30 JST / Ver1.112: minimal HUD, EXP progress, HP gauge, fullness percent; other stats moved to information menu.
 
 // Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.
+
+// Updated: 2026-11-01 19:44 JST / Ver1.113: same HUD; EXP gauge now receives rollover values from dungeon-core.

@@ -54,3 +54,5 @@ F.endShopSession=(visitors,sold)=>F.mutateSave(s=>{F.addHistory(s,'shop',`営業
 // Updated: 2026-11-01 19:14 JST / Ver1.111: preserve max-level shop visits after story Lv7 migration.
 
 // Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.
+
+// Updated: 2026-11-01 19:47 JST / Ver1.113: included from Ver1.112 unchanged logic for cumulative TEST release.
