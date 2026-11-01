@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.113 / durable dungeon progression and minimal status HUD. */
+/* Frenda Frontier Ver1.114 / persistent close header for all menus. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -86,17 +86,24 @@ async function loadTownEquipmentArt(s){const gear=equippedTownGear(s),ids=[...ne
 function drawTownEquipmentOverlay(c,pos,facing,s,art,playerHeight=73,armorApplied=false,phase='front'){const gear=equippedTownGear(s);if(!Object.keys(gear).length)return;const h=Math.max(30,Number(playerHeight)||73),f=String(facing||'down'),left=f.includes('left'),hand={down:{x:-.25,y:-.58,behind:false},up:{x:.25,y:-.58,behind:true},left:{x:.10,y:-.58,behind:true},right:{x:.02,y:-.42,behind:false},'up-left':{x:.18,y:-.57,behind:true},'up-right':{x:.18,y:-.42,behind:false},'down-left':{x:-.18,y:-.57,behind:true},'down-right':{x:-.18,y:-.42,behind:false}}[f]||{x:-.25,y:-.58,behind:false},draw=(slot,x,y,w,hh)=>{const item=gear[slot];if(!item)return;const im=art?.equipment?.[item.id];c.save();c.imageSmoothingEnabled=false;if(im?.naturalWidth){const k=Math.min(w/im.naturalWidth,hh/im.naturalHeight),dw=im.naturalWidth*k,dh=im.naturalHeight*k;c.drawImage(im,x-dw/2,y-dh/2,dw,dh)}else{c.font=`${Math.max(8,Math.round(hh))}px sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(item.icon||({weapon:'⚔️',armor:'🛡️',charm:'🔮'}[slot]),x,y)}c.restore()};const drawWeapon=()=>drawHeldWeaponPixelArt(c,pos.x+h*hand.x,pos.y+h*hand.y,h*.19,h*.42,gear.weapon,left);if(phase==='behind'){if(gear.weapon&&hand.behind)drawWeapon();return}if(gear.armor&&!armorApplied)draw('armor',pos.x,pos.y-h*.49,h*.31,h*.29);if(gear.weapon&&!hand.behind)drawWeapon();if(gear.charm)draw('charm',pos.x,pos.y-h*.69,h*.15,h*.15)}
 F.loadTownEquipmentArt=loadTownEquipmentArt;F.drawTownEquipmentOverlay=drawTownEquipmentOverlay;F.townPlayerSpriteForEquipment=townPlayerSpriteForEquipment;
 function toast(t){const e=$('toast');if(!e)return;e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1600)}
-function ensureModal(){let m=$('frontierModal');if(m)return m;m=document.createElement('div');m.id='frontierModal';m.className='modal hidden';m.innerHTML='<div class="modalPanel"><div class="modalStickyClose hidden"><button type="button" class="cmdBtn modalTopClose">閉じる</button></div><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)closeModal()};return m}
+function ensureModal(){let m=$('frontierModal');if(m)return m;m=document.createElement('div');m.id='frontierModal';m.className='modal hidden';m.innerHTML='<div class="modalPanel"><div class="modalStickyClose hidden"><button type="button" class="cmdBtn modalTopClose">閉じる</button></div><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!m.classList.contains('hidden')&&m.querySelector('.modalPanel')?.classList.contains('menuModal')){e.preventDefault();m.querySelector('.modalTopClose')?.click()}});return m}
 function modal(html,actions=[]){
  const m=ensureModal(),panel=m.querySelector('.modalPanel'),body=$('frontierModalBody'),a=$('frontierModalActions');
  body.innerHTML=html;panel.classList.remove('longListModal');
+ // Ver1.114: all menus use one non-scrolling close header; only the menu body scrolls.
+ // Story dialogue remains separate: its buttons advance the story rather than dismissing it.
+ const isStoryDialogue=!!body.querySelector('.storyDialogueCard');
  const list=body.querySelector('.choiceGrid,.partnerGrid,.retroBagLayout,.dungeonHistoryList'),rows=body.querySelectorAll('.choiceCard,.partnerCard,.retroBagRow,.dungeonHistoryRow').length;
  const longList=!!list&&(rows>=6||html.length>=1800);
  const sticky=panel.querySelector('.modalStickyClose'),topButton=sticky.querySelector('.modalTopClose');
- sticky.classList.toggle('hidden',!longList);panel.classList.toggle('longListModal',longList);
- const closeAction=longList?actions.find(x=>x.label==='閉じる'):null;
+ panel.classList.toggle('menuModal',!isStoryDialogue);
+ panel.classList.toggle('longListModal',longList&&!isStoryDialogue);
+ sticky.classList.toggle('hidden',isStoryDialogue);
+ const closeAction=!isStoryDialogue?actions.find(x=>x.label==='閉じる'):null;
  topButton.onclick=()=>{if(closeAction){if(closeAction.close!==false)closeModal();closeAction.fn?.()}else closeModal()};
- a.innerHTML='';for(const x of actions){if(longList&&x===closeAction)continue;const b=document.createElement('button');b.className=x.className||'cmdBtn';b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)}
+ a.innerHTML='';for(const x of actions){if(x===closeAction)continue;const b=document.createElement('button');b.className=x.className||'cmdBtn';b.textContent=x.label;b.onclick=()=>{if(x.close!==false)closeModal();x.fn?.()};a.appendChild(b)}
+ a.classList.toggle('manyActions',!isStoryDialogue&&a.children.length>=5);
+ body.scrollTop=0;a.scrollTop=0;
  m.classList.remove('hidden')
 }
 function paintStoryPortrait(line,token){
@@ -922,7 +929,7 @@ function bindTestLongPress(){
 }
 
 function renderAll(){if(currentView!=='home'||homeMode!=='town')townNpcRuntime.talk=null;F.RESIDENTS?.stopIndoor();F.RESIDENTS?.ensure(F.readSave());document.body.classList.remove('progressTownActive');$('sceneMount').classList.remove('progressTownLayout');bindTestLongPress();F.WILDERNESS?.stop();$('sceneMount').classList.remove('indoorSceneLayout','stallSceneLayout');const s=F.readSave();s.development.stage=F.developmentStage(s.development.points);F.writeSave(s);document.body.classList.toggle('dungeonActive',currentView==='adventure'&&!!F.run?.active);header(s);if($('openingMissionNav'))$('openingMissionNav').textContent=F.OPENING?.active()?'📋 ミッション一覧':'🌱 開拓生活（TEST）';if(currentView!=='home')$('sceneMount').classList.remove('townSceneLayout');if(currentView!=='adventure')$('sceneMount').classList.remove('dungeonSceneLayout');if(currentView==='home')renderHome(s);else if(currentView==='store')renderStore(s);else renderAdventure(s);syncShopService()}
-function bind(){const wb=document.createElement('button');wb.id='openingMissionNav';wb.textContent='📋 ミッション一覧';wb.className='cmdBtn';wb.style.margin='6px 12px';wb.onclick=()=>{try{if(F.OPENING?.active()){modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]);return}F.OPENING?.enter();F.WILDERNESS.active=true;homeMode='town';setView('home')}catch(e){toast(e.message)}};$('sceneMount').parentNode.insertBefore(wb,$('sceneMount'));document.querySelectorAll('#mainNav button').forEach(b=>b.onclick=()=>setView(b.dataset.view));window.addEventListener('keydown',e=>{if(!F.run?.active)return;const k=String(e.key||'').toLowerCase(),m={arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0],q:[-1,-1],e:[1,-1],z:[-1,1],c:[1,1],home:[-1,-1],pageup:[1,-1],end:[-1,1],pagedown:[1,1]}[k];if(m){e.preventDefault();if(e.shiftKey)dungeonDash(...m);else move(...m);return}if(e.key===' '){e.preventDefault();swingTurn()}})}
+function bind(){const wb=document.createElement('button');wb.id='openingMissionNav';wb.textContent='📋 ミッション一覧';wb.className='cmdBtn';wb.style.margin='6px 12px';wb.onclick=()=>{try{if(F.OPENING?.active()){modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]);return}F.OPENING?.enter();F.WILDERNESS.active=true;homeMode='town';setView('home')}catch(e){toast(e.message)}};$('sceneMount').parentNode.insertBefore(wb,$('sceneMount'));document.querySelectorAll('#mainNav button').forEach(b=>b.onclick=()=>setView(b.dataset.view));window.addEventListener('keydown',e=>{if(!F.run?.active||($('frontierModal')&&!$('frontierModal').classList.contains('hidden'))||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName||''))return;const k=String(e.key||'').toLowerCase(),m={arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0],q:[-1,-1],e:[1,-1],z:[-1,1],c:[1,1],home:[-1,-1],pageup:[1,-1],end:[-1,1],pagedown:[1,1]}[k];if(m){e.preventDefault();if(e.shiftKey)dungeonDash(...m);else move(...m);return}if(e.key===' '){e.preventDefault();swingTurn()}})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){storeSessionToken++;storeBusy=false;F.SHOP_VISITS?.cancel();}else{syncShopService();}});
 function init(){if(!window.FRENDA_MASTER?.records||!window.FRENDA_DATA||!R)throw new Error('Frontier共通データを読み込めませんでした。');const host=$('frontierUserHost'),badge=$('frendaActiveUserBadge');if(host&&badge)host.appendChild(badge);bind();if(F.restoreDungeonRun?.()){currentView='adventure';document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view==='adventure'));toast('前回のダンジョン探索を再開しました。')}window.addEventListener('frontier:sprites-ready',()=>renderAll());F.ensureSpriteDex?.();renderAll()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{try{init()}catch(e){console.error(e);document.body.insertAdjacentHTML('beforeend',`<div class="modal"><div class="modalPanel"><h2>起動エラー</h2><p>${esc(e.message)}</p></div></div>`)}});else init();
@@ -1018,3 +1025,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.
 
 // Updated: 2026-11-01 19:44 JST / Ver1.113: same HUD; EXP gauge now receives rollover values from dungeon-core.
+
+// Updated: 2026-11-01 20:05 JST / Ver1.114: persistent top close for every menu, scrollable body, Escape support, no dungeon movement behind dialogs.
