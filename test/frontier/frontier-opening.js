@@ -178,3 +178,5 @@ O.enter();
 // Updated: 2026-10-30 19:52 JST / Ver1.84: tent setup is an explicit point action.
 
 // Updated: 2026-11-01 19:14 JST / Ver1.111: canonical shop Lv1-6 and safe old Lv7 shelf migration.
+
+// Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.

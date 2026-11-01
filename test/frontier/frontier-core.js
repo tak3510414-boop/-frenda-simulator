@@ -643,3 +643,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 // Updated: 2026-10-27 19:24 JST / Ver1.75
 
 // Updated: 2026-11-01 19:14 JST / Ver1.111: swing attack checks equipped weapon range.
+
+// Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.

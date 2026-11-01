@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.44 / approved interior layouts / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.111";
+F.VERSION="1.112";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
@@ -641,3 +641,7 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 // Updated: 2026-10-27 19:24 JST / Ver1.75
 
 // Updated: 2026-11-01 19:14 JST / Ver1.111: align appVersion with deployed TEST build.
+
+// Updated: 2026-11-01 19:34 JST / Ver1.112: synchronize internal TEST version with minimalist dungeon HUD.
+
+// Updated: 2026-11-01 19:35 JST / Ver1.112 cumulative release; HUD redesigned (index/UI/data), previous mechanics retained.
