@@ -93,7 +93,7 @@ O.completeScene=id=>{F.mutateSave(s=>{const o=O.ensureSceneState(s?.story?.openi
  // Multiple scenes can be queued on the same event. Continue only after the previous dialogue closes.
  if(O.active()&&!O.isTestPoint()&&!afterCamp)setTimeout(()=>O.presentPendingScene(),0);
 };
-O.presentPendingScene=()=>{if(!O.active()||O.isTestPoint()||O.presentingScene||typeof F.playStoryDialogue!=='function')return false;const o=O.ensureSceneState(F.readSave().story?.opening||{}),id=o.sceneQueue[0],scene=O.SCENES[id];if(!scene)return false;O.presentingScene=true;F.playStoryDialogue(scene,()=>O.completeScene(id));return true};
+O.presentPendingScene=()=>{if(O.cinematicActive)return false;if(!O.active()||O.isTestPoint()||O.presentingScene||typeof F.playStoryDialogue!=='function')return false;const o=O.ensureSceneState(F.readSave().story?.opening||{}),id=o.sceneQueue[0],scene=O.SCENES[id];if(!scene)return false;O.presentingScene=true;F.playStoryDialogue(scene,()=>O.completeScene(id));return true};
 // Approved exterior stages. The maximum shop plot stays reserved at every level.
 O.exteriorCrops=[[60,140,310,260],[425,125,410,290],[850,110,420,310],[1275,110,499,310],[8,500,557,320],[570,500,600,320],[1220,520,260,300],[1530,580,230,240]];
 O.currentLevel=()=>Math.max(2,Math.min(6,Number((O.visibleState||F.readSave()).development.town.facilities.shop)||2));
@@ -231,3 +231,5 @@ O.enter();
 // Updated: 2026-11-01 20:27 JST / Ver1.116: interactive opening investigation, scene sequence and replayable journal.
 
 // Updated: 2026-11-01 21:10 JST / Ver1.117 — current mission only; location actions and automatic first-exploration transition.
+
+// Updated: 2026-11-01 21:30 JST / Ver1.118: suppress blocking dialogues while the opening cinematic is moving.
