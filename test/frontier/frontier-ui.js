@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.94 / show equipped gear on the town player sprite. */
+/* Frenda Frontier Ver1.95 / keep dungeon command buttons tappable on mobile. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -404,7 +404,7 @@ function addEnemyAttackFx(source,target,fx,delay=0){const layer=$('tokenLayer'),
 function addFloorItemLabel(x,y,text){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const cw=canvas.width||180,ch=canvas.height||240,l=document.createElement('div');l.className='floorItemLabel';l.style.left=(x/cw*100)+'%';l.style.top=((y+10)/ch*100)+'%';l.textContent=text;layer.appendChild(l)}
 function addEnemyTelegraphLabel(x,y,text){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const cw=canvas.width||180,ch=canvas.height||240,l=document.createElement('div');l.className='enemyTelegraphLabel';l.style.left=(x/cw*100)+'%';l.style.top=((y-24)/ch*100)+'%';l.textContent=`⚠️ ${text}`;layer.appendChild(l)}
 function addEnemyInfoOverlay(info){const mount=$('sceneMount');if(!mount||!info)return;mount.querySelector('.enemyInfoOverlay')?.remove();const d=document.createElement('div');d.className='enemyInfoOverlay';const warn=info.telegraph?`<b class="danger">⚠️ 次：${esc(info.telegraph.moveName)}</b>`:(info.dangerous?`<b class="danger">⚠️ ${esc(info.dangerLabel)}</b>`:'');d.innerHTML=`<b>${esc(info.name)}</b><span>HP目安 ${info.hpPercent}%（${esc(info.hpLabel)}）</span><span>${esc(info.aiLabel)} / ${esc(info.moveName)} / 射程${info.rangeMax}</span>${warn}`;mount.appendChild(d);setTimeout(()=>{if(d.isConnected)d.remove()},3600)}
-function fillCmd(id,items){const box=$(id);for(const c of items){const b=document.createElement('button');b.className='cmdBtn '+(c.c||'');b.textContent=c.t;b.disabled=!!c.disabled;b.onclick=c.fn;box.appendChild(b)}}
+function fillCmd(id,items){const box=$(id);for(const c of items){const b=document.createElement('button');b.type='button';b.className='cmdBtn '+(c.c||'');b.textContent=c.t;b.disabled=!!c.disabled;b.onclick=c.fn;box.appendChild(b)}}
 function showFrontierDex(){
  const s=F.readSave(),stats=F.pokemonSpeciesStats?.()||{},entries=F.frontierDexEntries?.(s)||[],seen=entries.filter(x=>x.encountered),friends=entries.filter(x=>x.companion),ids=new Set([...friends.map(x=>x.species.id),...(s.pokemon?.firstSeenOrder||[])]),shown=[...ids].map(id=>entries.find(x=>x.species.id===id)).filter(Boolean).slice(0,90);
  let html=`<h2>📖 Frontier ポケモン図鑑</h2><p><b>種族 ${stats.species||0}</b>（MasterDB ${stats.masterRecords||0}件を種族単位へ統合）<br>遭遇 ${seen.length}種 ／ 町で活躍可能 ${friends.length}種<br><small>表示サイズは図鑑の高さをもとにした相対比です。</small></p>`;
@@ -893,3 +893,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-10-31 23:13 JST / Ver1.93: increase near-view town zoom; preserve full-town overview.
 // Updated: 2026-11-01 08:57 JST / Ver1.94: overlay equipped weapon, armor, and charm on the town player.
+// Updated: 2026-11-01 09:11 JST / Ver1.95: raise mobile dungeon command hit targets above visual overlays.
