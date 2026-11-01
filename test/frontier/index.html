@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.115">
+<html lang="ja" data-app-version="1.116">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.115</title>
+<title>Frenda Frontier Ver1.116</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -267,6 +267,21 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 @media(max-width:640px){.modal{padding:8px;padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(8px,env(safe-area-inset-bottom))}.modalPanel.menuModal{max-height:92vh;max-height:92dvh}}
 .gameScene .commandBox{z-index:40;pointer-events:auto}
 .gameScene .commandBox .cmdBtn{pointer-events:auto;touch-action:manipulation}
+/* Ver1.116 — introduction and scene presentation */
+.frontierStoryGuide{margin:0;padding:13px 14px 15px;background:linear-gradient(145deg,#fff8df,#e5efdc);border-bottom:2px solid #b7a476;color:#283522}
+.frontierStoryEyebrow{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#626a4f;font-size:11px;letter-spacing:.06em;font-weight:900;margin-bottom:6px}
+.frontierStoryEyebrow span{background:#e0e9d2;border:1px solid #99aa7b;padding:2px 6px;border-radius:3px;white-space:nowrap}
+.frontierStoryObjective{font-size:18px;line-height:1.4;display:block;color:#263d29}
+.frontierStoryGuide p{font-size:13px;line-height:1.65;margin:8px 0 11px}
+.frontierStoryActions{display:flex;gap:8px;flex-wrap:wrap}
+.frontierStoryActions .cmdBtn{flex:1 1 160px;min-height:38px}
+.storySceneHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:900;color:#f2d58e;margin-bottom:10px;line-height:1.4}
+.storySceneHeader small{flex:0 0 auto;color:#f3eee2;background:#493f33;border:1px solid #b7a476;border-radius:3px;padding:2px 7px;font-size:10px}
+.storyArchiveEntry{margin:9px 0;border:1px solid #736247;border-radius:4px;background:#29251f;color:#fdf5dd}
+.storyArchiveEntry>summary{padding:11px 9px;cursor:pointer;font-weight:850;line-height:1.5}
+.storyArchiveEntry>div{padding:4px 11px 10px;border-top:1px solid #736247}
+.storyArchiveEntry p{margin:10px 0;line-height:1.55;font-size:12px}
+.storyArchiveEntry b{color:#f2d58e}
 </style>
 <style>
 .storyDialogueCard{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:end;min-height:128px;padding:12px;border:2px solid #f3eee2;border-radius:5px;background:rgba(20,17,15,.94);color:#fffdf5;box-shadow:0 3px 12px #0008}
@@ -288,7 +303,7 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 </style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.115 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.116 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
  <div class="notice">🌱 森の入口から物語が始まります。会話を読み進め、次の目的に沿って冒険と町づくりを進めよう。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
@@ -382,3 +397,5 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 <!-- Updated: 2026-11-01 19:44 JST / Ver1.113: prevent double rewards, carry EXP, preserve Ver1.112 HUD. -->
 
 <!-- Updated: 2026-11-01 20:25 JST / Ver1.115: aligned menu columns and inline bag actions. -->
+
+<!-- Updated: 2026-11-01 20:27 JST / Ver1.116: playable story prologue and chapter presentation. -->
