@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.114 / persistent close header for all menus. */
+/* Frenda Frontier Ver1.115 / clearer menu layout and inline item actions. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -659,9 +659,38 @@ function showStrengthModal(){
  const wp=F.weaponProfile?.(run)||{range:1,accuracy:.9,label:'武器'},bonus=Number(c?.accuracyBonus)||0;
  const extra=d=>[d?.traitText?`✨ ${esc(d.trait?.name||'特殊効果')}：${esc(d.traitText)}`:'',d?.curseText?`💀 ${esc(d.curseText)}`:''].filter(Boolean).join('<br>');
  const statusList=F.dungeonStatusList?.(run)||[],fs=F.dungeonFloorStatus?.(run)||{turn:run.turn||0,gather:0,chests:0,enemies:0};
- const lv=Math.max(1,Number(run.playerLv)||1),exp=Math.max(0,Number(run.playerExp)||0);
+ const lv=Math.max(1,Number(run.playerLv)||1),exp=Math.max(0,Number(run.playerExp)||0),need=lv*5;
  const statusText=statusList.length?statusList.map(st=>`${esc(st.icon)}${esc(st.name)}（残り${Number(st.turns)||0}ターン）`).join('、'):'なし';
- modal(`<h2>📋 冒険情報</h2><p><b>B${run.floor}F / Lv ${lv}</b><br>経験値 ${exp} / ${lv*5}（次のレベルまで${Math.max(0,lv*5-exp)}）<br>❤️ HP ${run.playerHp} / ${run.playerMaxHp}<br>🍞 満腹度 ${run.fullness} / ${run.fullnessMax}<br>🪙 所持金 ${Number(F.readSave()?.coins||0).toLocaleString('ja-JP')}G<br>⚔️ 攻撃 ${run.playerAttack} / 🛡️ 防御 ${run.playerDefense}<br>☁️ 状態異常：${statusText}</p><h3>フロアと所持品</h3><p>🎒 バッグ ${F.bagSlots(run.bag)} / ${run.bagLimit}枠<br>🌿 採集地点 ${fs.gather} / 🎁 宝箱 ${fs.chests} / 👣 敵 ${fs.enemies}<br>🔄 経過ターン ${fs.turn}<br><small>探索済みの地点をタップすると自動移動できます。</small></p><h3>装備</h3><p><b>武器：</b>${esc(w?.name||'なし')}<br>${esc(wp.label||'武器')} / 射程 ${wp.range} / 命中 ${Math.round(Math.min(.99,wp.accuracy+bonus)*100)}%<br><small>${esc(w?.desc||'')}${extra(w)?`<br>${extra(w)}`:''}</small></p><p><b>防具：</b>${esc(a?.name||'なし')}<br><small>${esc(a?.desc||'')}${extra(a)?`<br>${extra(a)}`:''}</small></p><p><b>お守り：</b>${esc(c?.name||'なし')}<br><small>${esc(c?.desc||'')}${extra(c)?`<br>${extra(c)}`:''}</small></p>`,[{label:'閉じる'}]);
+ modal(`<h2>📋 冒険情報</h2>
+ <section class="infoSection">
+  <h3>基本情報</h3>
+  <div class="infoGrid twoCol">
+   <div class="infoRow"><b>階層</b><span>B${run.floor}F / Lv ${lv}</span></div>
+   <div class="infoRow"><b>経験値</b><span>${exp} / ${need} <small>（次まで${Math.max(0,need-exp)}）</small></span></div>
+   <div class="infoRow"><b>HP</b><span>${run.playerHp} / ${run.playerMaxHp}</span></div>
+   <div class="infoRow"><b>満腹度</b><span>${run.fullness} / ${run.fullnessMax}</span></div>
+   <div class="infoRow"><b>所持金</b><span>${Number(F.readSave()?.coins||0).toLocaleString('ja-JP')}G</span></div>
+   <div class="infoRow"><b>能力</b><span>攻撃 ${run.playerAttack} / 防御 ${run.playerDefense}</span></div>
+   <div class="infoRow full"><b>状態異常</b><span>${statusText}</span></div>
+  </div>
+ </section>
+ <section class="infoSection">
+  <h3>フロアと所持品</h3>
+  <div class="infoGrid twoCol compact">
+   <div class="infoRow"><b>バッグ</b><span>${F.bagSlots(run.bag)} / ${run.bagLimit}枠</span></div>
+   <div class="infoRow"><b>採集地点</b><span>${fs.gather}</span></div>
+   <div class="infoRow"><b>宝箱</b><span>${fs.chests}</span></div>
+   <div class="infoRow"><b>敵</b><span>${fs.enemies}</span></div>
+   <div class="infoRow"><b>経過ターン</b><span>${fs.turn}</span></div>
+  </div>
+  <p class="infoHint">探索済みの地点をタップすると自動移動できます。</p>
+ </section>
+ <section class="infoSection">
+  <h3>装備</h3>
+  <div class="equipInfoCard"><b>武器</b><span>${esc(w?.name||'なし')}</span><small>${esc(wp.label||'武器')} / 射程 ${wp.range} / 命中 ${Math.round(Math.min(.99,wp.accuracy+bonus)*100)}%</small><small>${esc(w?.desc||'')}${extra(w)?`<br>${extra(w)}`:''}</small></div>
+  <div class="equipInfoCard"><b>防具</b><span>${esc(a?.name||'なし')}</span><small>${esc(a?.desc||'')}${extra(a)?`<br>${extra(a)}`:''}</small></div>
+  <div class="equipInfoCard"><b>お守り</b><span>${esc(c?.name||'なし')}</span><small>${esc(c?.desc||'')}${extra(c)?`<br>${extra(c)}`:''}</small></div>
+ </section>`,[{label:'閉じる'}]);
 }
 function showWarehouse(){const s=F.readSave(),e=Object.entries(s.warehouse).filter(([,n])=>Number(n)>0);let html='<h2>📦 倉庫</h2>';if(!e.length)html+='<p>まだ何もありません。冒険で持ち帰りましょう。</p>';else html+='<div class="choiceGrid">'+e.map(([id,n])=>{const it=F.item(id);return `<div class="choiceCard"><div>${itemVisualHtml(it,44)}</div><span><b>${esc(it.name)}</b><small>${esc(it.kind)} / 相場 ${it.base}G${it.effectText?` / ${esc(it.effectText)}`:''}</small><div class="badge">×${n}</div></span></div>`}).join('')+'</div>';modal(html,[{label:'閉じる'}])}
 function showStory(){const s=F.readSave(),step=F.storyStep(s);let html='<h2>📖 物語</h2><div class="choiceGrid">';for(const x of F.STORY)html+=`<div class="choiceCard" style="grid-template-columns:1fr"><span><b>${x.at<=step?'✅':'🔒'} ${esc(x.title)}</b><small>${esc(x.text)}</small></span></div>`;html+='</div>';modal(html,[{label:'閉じる'}])}
@@ -732,28 +761,37 @@ function showBag(){
  let category=bagRows.length?'items':'gear',selectedKey=(category==='items'?bagRows[0]?.id:gearRows[0]?.uid)||'';
  const rows=()=>category==='items'?bagRows:gearRows;
  const selected=()=>rows().find(x=>(category==='items'?x.id:x.uid)===selectedKey)||null;
+ const activateGear=row=>{if(!row)return;const r=F.dungeonEquipItem?.(row.uid);if(r?.ok){closeModal();renderAll();if(r.cursed)toast('💀 呪われていた！ おはらいするまで外せません');else if(r.trait)toast(`✨ 特殊効果「${r.trait.name}」が判明！`);else toast(`${r.item.name}を装備しました`);if(F.run&&!F.run.active)runResultModal()}else if(r?.reason)toast(r.reason)};
+ const itemActionButtons=row=>{if(!row)return '';const it=F.item(row.id),canUse=!!it?.dungeonUse&&row.id!=='throw_stone';return `<div class="retroInlineActions">${canUse?'<button type="button" class="cmdBtn primary" data-retro-item-act="use">使う</button>':''}<button type="button" class="cmdBtn" data-retro-item-act="throw">投げる</button><button type="button" class="cmdBtn" data-retro-item-act="place">置く</button></div><small class="retroInlineHint">※ 選んだ道具をそのまま操作できます。</small>`};
+ const gearActionButtons=(row,isEquipped)=>!row?'':`<div class="retroInlineActions"><button type="button" class="cmdBtn ${isEquipped?'':'primary'}" data-retro-gear-act="equip" ${isEquipped?'disabled':''}>${isEquipped?'装備中':'装備する'}</button></div>`;
  const describe=row=>{
   if(!row)return '<div class="retroBagEmpty">この欄に持ち物はありません。</div>';
-  if(category==='items'){const it=F.item(row.id);return `<div class="retroBagItemDetail">${itemVisualHtml(it,42)}<div><b>${esc(it?.name||row.id)}　×${row.count}</b><small>${esc(it?.kind||'道具')}</small><p>${esc(it?.desc||it?.effectText||'詳しい説明はありません。')}</p>${it?.effectText?`<small>${esc(it.effectText)}</small>`:''}</div></div>`}
+  if(category==='items'){
+   const it=F.item(row.id);
+   return `<div class="retroBagItemDetail">${itemVisualHtml(it,42)}<div><b>${esc(it?.name||row.id)}</b><div class="retroMetaLine"><span>${esc(it?.kind||'道具')}</span><span>×${row.count}</span></div><p>${esc(it?.desc||it?.effectText||'詳しい説明はありません。')}</p>${it?.effectText?`<small>${esc(it.effectText)}</small>`:''}${itemActionButtons(row)}</div></div>`
+  }
   const d=equipmentDisplayView(row),actual=F.equipmentInstanceView?.(row),on=run.equippedUids?.[actual?.slot]===row.uid,unknown=row.identified===false,extra=equipmentKnowledgeText(row,actual),cmp=equipmentCompareText(d,F.dungeonEquippedView?.(run,actual?.slot));
-  return `<div class="retroBagItemDetail">${equipmentVisualHtml(d,42)}<div><b>${esc(d?.name||row.defId)}${on?' ✅':''}${unknown?' ❓':''}</b><small>${esc(actual?.slot||'装備')} ／ ${esc(equipmentStatText(d))}</small><p>${esc(cmp)}${extra?`<br>${extra}`:''}</p><small>${unknown?'未鑑定':'鑑定済み'}${on?' ／ 現在装備中':''}</small></div></div>`
+  return `<div class="retroBagItemDetail">${equipmentVisualHtml(d,42)}<div><b>${esc(d?.name||row.defId)}${on?' ✅':''}${unknown?' ❓':''}</b><div class="retroMetaLine"><span>${esc(actual?.slot||'装備')}</span><span>${esc(equipmentStatText(d))}</span></div><p>${esc(cmp)}${extra?`<br>${extra}`:''}</p><small>${unknown?'未鑑定':'鑑定済み'}${on?' ／ 現在装備中':''}</small>${gearActionButtons(row,on)}</div></div>`
  };
- const activate=()=>{const row=selected();if(!row){toast('選べる持ち物がありません');return}if(category==='items'){closeModal();showDungeonItemActions(row.id);return}const r=F.dungeonEquipItem?.(row.uid);if(r?.ok){closeModal();renderAll();if(r.cursed)toast('💀 呪われていた！ おはらいするまで外せません');else if(r.trait)toast(`✨ 特殊効果「${r.trait.name}」が判明！`);else toast(`${r.item.name}を装備しました`);if(F.run&&!F.run.active)runResultModal()}else if(r?.reason)toast(r.reason)};
- modal('<h2>🎒 持ち物</h2><div class="retroBagLayout"><nav class="retroBagCategories" id="retroBagCategories"></nav><div class="retroBagMain"><div class="retroBagItems" id="retroBagItems"></div><div class="retroBagDescription" id="retroBagDescription"></div></div></div>',[
-  {label:'決定',className:'cmdBtn primary retroBagAction',close:false,fn:activate},
-  {label:'閉じる'}
- ]);
+ const bindInlineActions=row=>{
+  document.querySelectorAll('[data-retro-item-act]').forEach(btn=>btn.onclick=()=>{if(!row)return;const act=btn.dataset.retroItemAct,it=F.item(row.id);if(act==='use'){if(F.useDungeonItem?.(row.id)){closeModal();renderAll();if(F.run&&!F.run.active)runResultModal()}else toast('今は使えません');return}if(act==='throw'){const r=F.throwDungeonItem?.(row.id);dungeonActionResult(r,r?.hit?'敵に命中しました':'投げました');return}if(act==='place'){const r=F.placeDungeonItem?.(row.id);dungeonActionResult(r,r?.ok?`${it?.name||'アイテム'}を足元に置きました`:'');return}});
+  document.querySelectorAll('[data-retro-gear-act="equip"]').forEach(btn=>btn.onclick=()=>activateGear(row));
+ };
+ modal('<h2>🎒 持ち物</h2><div class="retroBagLayout"><nav class="retroBagCategories" id="retroBagCategories"></nav><div class="retroBagMain"><div class="retroBagItems" id="retroBagItems"></div><div class="retroBagDescription" id="retroBagDescription"></div></div></div>',[{label:'閉じる'}]);
  const draw=()=>{
   const nav=$('retroBagCategories'),list=$('retroBagItems'),detail=$('retroBagDescription');if(!nav||!list||!detail)return;
   nav.innerHTML=`<button type="button" class="retroBagCategory ${category==='items'?'on':''}" data-retro-category="items"><b>道具</b><small>${bagRows.length}種類</small></button><button type="button" class="retroBagCategory ${category==='gear'?'on':''}" data-retro-category="gear"><b>装備</b><small>${gearRows.length}個</small></button>`;
   const current=rows();if(!current.some(x=>(category==='items'?x.id:x.uid)===selectedKey))selectedKey=category==='items'?(bagRows[0]?.id||''):(gearRows[0]?.uid||'');
-  list.innerHTML=current.length?current.map(row=>{const key=category==='items'?row.id:row.uid,isSelected=key===selectedKey,label=category==='items'?(F.item(row.id)?.name||row.id):(equipmentDisplayView(row)?.name||row.defId),sub=category==='items'?`×${row.count}`:(row.identified===false?'未鑑定':'装備');return `<button type="button" class="retroBagRow ${isSelected?'on':''}" data-retro-select="${esc(key)}"><span>${esc(label)}</span><small>${esc(sub)}</small></button>`}).join(''):'<div class="retroBagEmpty">持ち物はありません。</div>';
-  detail.innerHTML=describe(selected());const action=document.querySelector('.retroBagAction');if(action){const row=selected(),isEquipped=category==='gear'&&row&&run.equippedUids?.[F.equipmentInstanceView?.(row)?.slot]===row.uid;action.textContent=category==='items'?'操作する':isEquipped?'装備中':'装備する';action.disabled=!row||!!isEquipped}
+  list.innerHTML=current.length?current.map(row=>{const key=category==='items'?row.id:row.uid,isSelected=key===selectedKey,label=category==='items'?(F.item(row.id)?.name||row.id):(equipmentDisplayView(row)?.name||row.defId),sub=category==='items'?`×${row.count}`:(row.identified===false?'未鑑定':equipmentStatText(equipmentDisplayView(row)));return `<button type="button" class="retroBagRow ${isSelected?'on':''}" data-retro-select="${esc(key)}"><span>${esc(label)}</span><small>${esc(sub)}</small></button>`}).join(''):'<div class="retroBagEmpty">持ち物はありません。</div>';
+  const row=selected();
+  detail.innerHTML=describe(row);
+  bindInlineActions(row);
   nav.querySelectorAll('[data-retro-category]').forEach(btn=>btn.onclick=()=>{category=btn.dataset.retroCategory;selectedKey=category==='items'?(bagRows[0]?.id||''):(gearRows[0]?.uid||'');draw()});
   list.querySelectorAll('[data-retro-select]').forEach(btn=>btn.onclick=()=>{selectedKey=btn.dataset.retroSelect;draw()});
  };
  draw();
-}function showFootItemExchange(){const run=F.run,foot=F.dungeonFootItemAction?.();if(!run?.active||!foot?.item){toast('足元に交換するアイテムはありません');return}if(foot.mode!=='exchange'){pickupFootItem();return}const rows=Object.entries(run.bag||{}).filter(([,n])=>Number(n)>0);let html=`<h2>🔄 足元のアイテムと交換</h2><div class="itemFocusRow"><div>${itemVisualHtml(foot.item,58)}</div><span><b>${esc(foot.item.name)} ×${foot.qty}</b><small>バッグが${foot.slots}/${foot.limit}枠でいっぱいです。<br>足元のアイテムを拾う代わりに、バッグ内の1種類を足元へ置きます。</small></span></div><p><small>※現在のバッグは同じ種類をまとめて1枠で管理しています。×2以上の種類を選んだ場合、その種類は<b>全部まとめて</b>足元へ置きます。交換は1ターン消費します。</small></p><div class="choiceGrid">${rows.map(([id,n])=>{const it=F.item(id);return `<button class="choiceCard" data-exchange-item="${esc(id)}"><div>${itemVisualHtml(it,44)}</div><span><b>${esc(it?.name||id)} ×${n}</b><small>${Number(n)>1?`×${n}を全部置いて交換`:'1個を置いて交換'}</small></span></button>`}).join('')}</div>`;modal(html,[{label:'やめる'}]);document.querySelectorAll('[data-exchange-item]').forEach(b=>b.onclick=()=>{const r=F.exchangeDungeonItem?.(b.dataset.exchangeItem);if(r?.ok){closeModal();renderAll();toast(`${r.received?.name||'アイテム'}と交換しました`);if(F.run&&!F.run.active)runResultModal()}else if(r?.reason)toast(r.reason)})}
+}
+function showFootItemExchange(){const run=F.run,foot=F.dungeonFootItemAction?.();if(!run?.active||!foot?.item){toast('足元に交換するアイテムはありません');return}if(foot.mode!=='exchange'){pickupFootItem();return}const rows=Object.entries(run.bag||{}).filter(([,n])=>Number(n)>0);let html=`<h2>🔄 足元のアイテムと交換</h2><div class="itemFocusRow"><div>${itemVisualHtml(foot.item,58)}</div><span><b>${esc(foot.item.name)} ×${foot.qty}</b><small>バッグが${foot.slots}/${foot.limit}枠でいっぱいです。<br>足元のアイテムを拾う代わりに、バッグ内の1種類を足元へ置きます。</small></span></div><p><small>※現在のバッグは同じ種類をまとめて1枠で管理しています。×2以上の種類を選んだ場合、その種類は<b>全部まとめて</b>足元へ置きます。交換は1ターン消費します。</small></p><div class="choiceGrid">${rows.map(([id,n])=>{const it=F.item(id);return `<button class="choiceCard" data-exchange-item="${esc(id)}"><div>${itemVisualHtml(it,44)}</div><span><b>${esc(it?.name||id)} ×${n}</b><small>${Number(n)>1?`×${n}を全部置いて交換`:'1個を置いて交換'}</small></span></button>`}).join('')}</div>`;modal(html,[{label:'やめる'}]);document.querySelectorAll('[data-exchange-item]').forEach(b=>b.onclick=()=>{const r=F.exchangeDungeonItem?.(b.dataset.exchangeItem);if(r?.ok){closeModal();renderAll();toast(`${r.received?.name||'アイテム'}と交換しました`);if(F.run&&!F.run.active)runResultModal()}else if(r?.reason)toast(r.reason)})}
 function pickupFootItem(){const action=F.dungeonFootItemAction?.();if(action?.mode==='exchange'){showFootItemExchange();return}const r=F.pickupDungeonItem?.();if(r?.ok){renderAll();toast(`${r.item?.name||'アイテム'}を拾いました`);if(F.run&&!F.run.active)runResultModal()}else{renderAll();if(r?.reason)toast(r.reason)}}
 function runResultModal(){const r=F.run?.result;if(!r)return;const items=Object.entries(r.delivered||{}).map(([id,n])=>`${F.item(id)?.name||id}×${n}`).join('、')||'なし',gear=(r.deliveredEquipment||[]).map(x=>x.name||F.equipmentInstanceName?.(x)||x.defId).join('、'),ti=r.time?.phase,rewards=(r.clearRewards||[]).map(x=>`${F.item(x.itemId)?.icon||'🎁'} ${F.item(x.itemId)?.name||x.itemId}×${x.qty}`).join('、'),next=(r.nextUnlocked||[]).map(id=>F.dungeonDef?.(id)).filter(d=>d&&F.dungeonPlayable?.(F.readSave(),d)),clear=r.success&&r.reason==='clear';modal(`<h2>${clear?'🏆 ダンジョン踏破！':r.success?'🏠 無事帰還！':'😵 冒険失敗'}</h2>${clear?`<p><b>${esc(F.dungeonDef?.(r.dungeonId)?.name||'ダンジョン')}</b>を踏破しました！</p>`:''}<p>持ち帰った素材：<b>${esc(items)}</b></p>${gear?`<p>新しい装備：<b>${esc(gear)}</b><br><small>+値・特殊効果・呪いを個体ごとに保持します。未鑑定品は町で装備を試すと判別できます。</small></p>`:''}${rewards?`<p>🎁 踏破報酬：<b>${esc(rewards)}</b></p>`:''}${next.length?`<p>🗺️ 新しい道：<b>${next.map(d=>`${d.icon||'🗺️'} ${d.name}`).join('、')}</b> が解放されました。</p>`:''}${ti?`<p>時間：${ti.icon}${esc(ti.label)}</p>`:''}<p><b>次：</b>${clear&&next.length?'冒険画面で次のダンジョンを確認できます。':(F.OPENING?.active()?F.OPENING.guidance().text:'装備を確認するか、お店で素材を売って町を育てよう。')}</p>`,[{label:'冒険へ',className:clear?'cmdBtn primary':'',fn:()=>setView('adventure')},{label:'拠点へ',className:F.OPENING?.active()?'cmdBtn primary':'',fn:()=>setView('home')},{label:'装備を見る',fn:()=>{setView('adventure');showEquipmentModal()}},{label:'お店へ',fn:()=>setView('store')}])}
 function swingTurn(){if(!F.run?.active)return;const r=F.swingDungeon?.();renderAll();if(F.run&&!F.run.active)runResultModal();return r}
@@ -1026,4 +1064,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-11-01 19:44 JST / Ver1.113: same HUD; EXP gauge now receives rollover values from dungeon-core.
 
-// Updated: 2026-11-01 20:05 JST / Ver1.114: persistent top close for every menu, scrollable body, Escape support, no dungeon movement behind dialogs.
+// Updated: 2026-11-01 20:25 JST / Ver1.115: clearer aligned menu layouts and inline item actions in the bag.
