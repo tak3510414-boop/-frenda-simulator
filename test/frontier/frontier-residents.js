@@ -34,7 +34,7 @@ N.indoorActor=(m,rt)=>{const a=N.actor;if(!a||a.inside!==m.id||!['forge','house'
 N.drawIndoor=(c,m,rt,behind)=>{const h=N.indoorActor(m,rt);if(!h||((h.p.y<rt.player.y)!==behind))return;N.draw(c,h.p,m.id==='forge'?'up':'down',false,64,h.a.name+' '+h.a.mode,m.id==='forge');};
 N.hitTown=p=>{const a=N.actor;return !!(a&&!a.inside&&Math.abs(p.x-a.position.x)<22&&p.y>a.position.y-53&&p.y<a.position.y+10);};
 N.hitIndoor=(p,m,rt)=>{const h=N.indoorActor(m,rt);return !!(h&&Math.abs(p.x-h.p.x)<28&&p.y>h.p.y-76&&p.y<h.p.y+12);};
-N.talk=()=>{if(!N.eligible(F.readSave()))return null;N.ensure(F.readSave());const first=!F.readSave().story.settlers.forge_mina.introduced;if(first)F.mutateSave(s=>{s.story.settlers.forge_mina.introduced=true;F.addHistory(s,'resident','鍛冶職人ミナと自己紹介をした。');});N.paused=true;return{first,title:'ミナ／鍛冶職人',text:first?'「はじめまして、鍛冶職人のミナです。この町に家と工房ができたと聞いて、引っ越してきました。朝から昼は工房で仕事をして、夕方には家へ帰ります。」':'「武器を強くしたいなら、工房へどうぞ。強化費と鉄のかけらが必要です。木材と鉄は、建築に使う分も残しておくと安心ですよ。」',status:N.status()};};
+N.talk=()=>{if(!N.eligible(F.readSave()))return null;N.ensure(F.readSave());const first=!F.readSave().story.settlers.forge_mina.introduced;if(first)F.mutateSave(s=>{s.story.settlers.forge_mina.introduced=true;F.addHistory(s,'resident','鍛冶職人ミナと自己紹介をした。');});N.paused=true;return{first,title:'ミナ／鍛冶職人',text:first?(F.readSave().story?.opening?.lv3Met?'「約束どおり、この町に住むことになりました！ 朝から昼は工房、夕方は家に帰ります。これからもよろしくお願いします。」':'「はじめまして、鍛冶職人のミナです。この町に家と工房ができたと聞いて、引っ越してきました。朝から昼は工房で仕事をして、夕方には家へ帰ります。」'):'「武器を強くしたいなら、工房へどうぞ。強化費と鉄のかけらが必要です。木材と鉄は、建築に使う分も残しておくと安心ですよ。」',status:N.status()};};
 N.endTalk=()=>{N.paused=false;N.pauseUntil=Date.now()+500;};
 N.startDemo=()=>{if(!F.SAVE_KEY.includes(':mission148test:'))throw Error('TEST時点を選んでください。');N.reset();F.mutateSave(s=>{s.clock.phaseIndex=0;});N.ensure(F.readSave());N.demo={key:F.SAVE_KEY,step:'commute'};};
 N.stopIndoor=()=>{N.indoorToken=(N.indoorToken||0)+1;};
@@ -48,3 +48,5 @@ N.ensure(N.cached);
 // Updated: 2026-10-25 JST / Ver1.68
 
 // Updated: 2026-10-25 20:51 JST / Ver1.68
+
+// Updated: 2026-11-02 21:59 JST / Ver1.125: continuity of Mina meeting and settlement dialogue.

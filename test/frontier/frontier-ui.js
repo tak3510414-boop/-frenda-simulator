@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.122 / illustrated return results and town forest gate integration. */
+/* Frenda Frontier Ver1.124 / illustrated return results and town forest gate integration. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -12,7 +12,7 @@ const townNow=()=>window.performance?.now?.()||Date.now();
 // Ver0.78: dungeon dash runtime for keyboard Shift+direction.
 // Ver0.79: stepping onto stairs automatically opens the next-floor / return choice.
 // Ver0.80: pointer controls use single tap/click = one step, double tap/double click = safe auto-move to the selected explored tile.
-let dungeonDashRuntime={token:0,moving:false},dungeonPlayerVisual={runRef:null,x:null,y:null},dungeonEnemyInfoRuntime={enemyId:null},dungeonMessageRuntime={runRef:null,lastLogLength:0,visibleUntil:0,token:0,timer:null,text:''};
+let dungeonDashRuntime={token:0,moving:false,target:null,remaining:0},dungeonPlayerVisual={runRef:null,x:null,y:null},dungeonEnemyInfoRuntime={enemyId:null},dungeonMessageRuntime={runRef:null,lastLogLength:0,visibleUntil:0,token:0,timer:null,text:''};
 const rec=id=>F.speciesRecord?.(id)||F.pickRecord(id), species=id=>F.speciesById?.(id)||null;
 const TYPE_ICON={ノーマル:'◉',ほのお:'🔥',みず:'💧',でんき:'⚡',くさ:'🍃',こおり:'❄️',かくとう:'✊',どく:'☠️',じめん:'⛰️',ひこう:'🪽',エスパー:'✦',むし:'🐞',いわ:'◆',ゴースト:'👻',ドラゴン:'◇',あく:'☾',はがね:'⬡',フェアリー:'✿'};
 function speciesAvatar(sp,small=false){if(F.speciesVisualHtml)return F.speciesVisualHtml(sp,{small});if(!sp)return '<span class="speciesAvatar unknown">?</span>';const icon=TYPE_ICON[sp.type1]||'🐾';return `<span class="speciesAvatar ${small?'small':''}" data-type="${esc(sp.type1||'') }"><b>${icon}</b><i>${esc(String(sp.name||'?').slice(0,1))}</i></span>`}
@@ -87,7 +87,26 @@ function drawTownEquipmentOverlay(c,pos,facing,s,art,playerHeight=73,armorApplie
 F.loadTownEquipmentArt=loadTownEquipmentArt;F.drawTownEquipmentOverlay=drawTownEquipmentOverlay;F.townPlayerSpriteForEquipment=townPlayerSpriteForEquipment;
 function toast(t){const e=$('toast');if(!e)return;e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1600)}
 function ensureModal(){let m=$('frontierModal');if(m)return m;m=document.createElement('div');m.id='frontierModal';m.className='modal hidden';m.innerHTML='<div class="modalPanel"><div class="modalStickyClose hidden"><button type="button" class="cmdBtn modalTopClose">閉じる</button></div><div id="frontierModalBody"></div><div class="modalActions" id="frontierModalActions"></div></div>';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!m.classList.contains('hidden')&&m.querySelector('.modalPanel')?.classList.contains('menuModal')){e.preventDefault();m.querySelector('.modalTopClose')?.click()}});return m}
+// Ver1.123: cancel asynchronous movement before presenting any interactive menu.
+function cancelDungeonTravel(){
+ if(!dungeonDashRuntime.moving)return false;
+ ++dungeonDashRuntime.token;
+ dungeonDashRuntime.moving=false;
+ dungeonDashRuntime.target=null;
+ dungeonDashRuntime.remaining=0;
+ return true;
+}
+function dungeonMoveOverlay(run,meta){
+ const t=dungeonDashRuntime.target,layer=$('tokenLayer');
+ if(!dungeonDashRuntime.moving||!run?.active||!layer)return;
+ if(t&&t.map===run.map&&t.floor===run.floor&&t.x>=meta.camX&&t.y>=meta.camY&&t.x<meta.camX+meta.viewCols&&t.y<meta.camY+meta.viewRows){
+  const x=meta.ox+(t.x-meta.camX+.5)*meta.t,y=meta.oy+(t.y-meta.camY+.5)*meta.t;
+  const marker=document.createElement('div');marker.className='dungeonMoveTarget';marker.setAttribute('aria-label','移動先');
+  marker.style.left=(x/180*100)+'%';marker.style.top=(y/240*100)+'%';marker.textContent='◎';layer.appendChild(marker);
+ }
+}
 function modal(html,actions=[]){
+ if(cancelDungeonTravel()&&F.run?.active&&currentView==='adventure')renderAll();
  const m=ensureModal(),panel=m.querySelector('.modalPanel'),body=$('frontierModalBody'),a=$('frontierModalActions');
  body.innerHTML=html;panel.classList.remove('longListModal');
  // Ver1.114: all menus use one non-scrolling close header; only the menu body scrolls.
@@ -132,7 +151,7 @@ function setView(v){if(v==='adventure'&&F.OPENING?.active()&&F.WILDERNESS?.activ
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}
 function sceneShell(dialogTitle,dialogText,cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dialogBox"><h3>${esc(dialogTitle)}</h3><p id="dialogText">${esc(dialogText)}</p></div><div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver0.99: dungeon messages are transient overlays; full history remains available on demand.
-function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
+function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
 function dungeonMessageDuration(text){return /⚠️|☠️|💀|😵|💤|⚡|💫/.test(String(text||''))?3400:2600}
 function syncDungeonMessage(run){const box=$('dungeonMessageOverlay'),txt=$('dungeonMessageText');if(!box||!txt||!run)return;const logs=Array.isArray(run.log)?run.log:[];if(dungeonMessageRuntime.runRef!==run){dungeonMessageRuntime.runRef=run;dungeonMessageRuntime.lastLogLength=Math.max(0,logs.length-1);dungeonMessageRuntime.visibleUntil=0;dungeonMessageRuntime.text=''}const changed=logs.length>dungeonMessageRuntime.lastLogLength;if(changed){const fresh=logs.slice(dungeonMessageRuntime.lastLogLength),shown=fresh.slice(-2);dungeonMessageRuntime.lastLogLength=logs.length;dungeonMessageRuntime.text=shown.join('\n');dungeonMessageRuntime.visibleUntil=Date.now()+dungeonMessageDuration(dungeonMessageRuntime.text);dungeonMessageRuntime.token++;if(dungeonMessageRuntime.timer)clearTimeout(dungeonMessageRuntime.timer);const token=dungeonMessageRuntime.token;dungeonMessageRuntime.timer=setTimeout(()=>{if(token!==dungeonMessageRuntime.token)return;dungeonMessageRuntime.visibleUntil=0;const live=$('dungeonMessageOverlay');if(live)live.classList.remove('on')},dungeonMessageDuration(dungeonMessageRuntime.text)+80)}txt.textContent=dungeonMessageRuntime.text||'';box.classList.toggle('on',!!dungeonMessageRuntime.text&&Date.now()<dungeonMessageRuntime.visibleUntil);box.classList.toggle('danger',/⚠️|☠️|💀|😵|💤|⚡|💫/.test(dungeonMessageRuntime.text||''))}
 function showDungeonHistory(){const run=F.run;if(!run?.active){toast('探索中のログはありません');return}const logs=Array.isArray(run.log)?run.log:[],recent=logs.slice(-80);let html=`<h2>📜 冒険ログ</h2><p>B${run.floor}F ／ ${recent.length}${logs.length>recent.length?` / 全${logs.length}`:''}件を表示</p>`;html+=recent.length?`<div class="dungeonHistoryList">${recent.map((line,i)=>`<div class="dungeonHistoryRow"><span>${logs.length-recent.length+i+1}</span><b>${esc(line)}</b></div>`).join('')}</div>`:'<p>まだログはありません。</p>';modal(html,[{label:'閉じる'}]);const list=document.querySelector('.dungeonHistoryList');if(list)list.scrollTop=list.scrollHeight}
@@ -615,14 +634,76 @@ function openShopConstructionSite(){
  }
  toast('現在、ここで始められる工事はありません。');
 }
+// Ver1.124: Lv3 construction is initiated in town, never from a generic mission button.
+function openLv3Site(){
+ const O=F.OPENING,st=O?.lv3Status?.(),cost=O?.LV3_COST;if(!st||!cost){toast('職人ミナが見つかりません');return}
+ const dispatch=(fn,msg)=>{try{fn();closeModal();renderAll();setTimeout(()=>O.presentPendingScene?.(),90);if(msg)toast(msg)}catch(e){toast(e.message)}};
+ if(st.phase==='meet'){
+  modal('<h2>🛠 旅の職人ミナ</h2><p>店の東側で道具袋を持った職人が、店の棚を眺めています。</p>',[
+   {label:'ミナに話しかける',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.meetLv3())},{label:'閉じる'}]);return;
+ }
+ if(st.phase==='gather'||st.phase==='ready'){
+  const woodOk=st.wood>=cost.wood,coinOk=st.coins>=cost.coins;
+  modal(`<h2>🏗 店舗Lv3の増築</h2><p>ミナ「売り場を広げて、四つ目の棚を作りましょう！」</p><div class="choiceGrid"><div class="choiceCard" style="grid-template-columns:1fr"><span><b>${woodOk?'✅':'▫️'} 木材 ${st.wood} / ${cost.wood}個</b><br><b>${coinOk?'✅':'▫️'} 建築費 ${st.coins} / ${cost.coins}G</b><small>木材は森から持ち帰り、費用は商品販売で集めます。</small></span></div></div>`,[
+   ...(st.phase==='ready'?[{label:'ミナと店舗Lv3の工事を始める',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.startLv3Build(),'🏗 店舗Lv3の工事を開始しました。')}]:[]),{label:'閉じる'}]);return;
+ }
+ if(st.phase==='building'||st.phase==='finish'){
+  modal(`<h2>🏗 店舗Lv3の増築工事</h2><p>工事の進行：<b>${Math.min(st.elapsed,st.steps)} / ${st.steps}</b></p><p>${st.phase==='finish'?'棚の増設が完了しました。ミナと一緒に完成を確認しましょう。':'森へ出かけるなどして、時間を進めましょう。'}</p>`,[
+   ...(st.phase==='finish'?[{label:'完成した店舗を確認する',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.finishLv3Build(),'🏪 店舗Lv3が完成しました！')}]:[]),{label:'閉じる'}]);return;
+ }
+ toast('いまは店舗Lv3の工事を進める段階ではありません。');
+}
+// Ver1.125: start and complete forge, residence and Lv4 shop construction at the west site.
+function openLv4Site(){
+ const O=F.OPENING,st=O?.lv4Status?.(),cost=O?.LV4_COST;
+ if(!st||!cost){toast('工房の進行状態が不明です。');return}
+ const dispatch=(fn,msg)=>{try{fn();closeModal();renderAll();setTimeout(()=>O.presentPendingScene?.(),90);if(msg)toast(msg)}catch(e){toast(e.message)}};
+ if(st.phase==='meet'){
+  modal('<h2>⚒️ 西の工房予定地</h2><p>ミナが道の西側を見ながら、工房と住居を建てる計画を考えています。</p>',[
+   {label:'ミナと将来の工房について話す',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.meetLv4())},{label:'閉じる'}]);return;
+ }
+ if(st.phase==='gather'||st.phase==='ready'){
+  const okWood=st.wood>=cost.wood,okIron=st.iron>=cost.iron,okCoins=st.coins>=cost.coins;
+  modal(`<h2>🏗 鍛冶屋・住居・店舗Lv4</h2><p>ミナ「工房に炉を置いて、隣に家を作ります。お店には五つ目の棚を増やしましょう。」</p><div class="choiceGrid"><div class="choiceCard" style="grid-template-columns:1fr"><span><b>${okWood?'✅':'▫️'} 木材　${st.wood} / ${cost.wood}個</b><br><b>${okIron?'✅':'▫️'} 鉄のかけら　${st.iron} / ${cost.iron}個</b><br><b>${okCoins?'✅':'▫️'} 建築費　${st.coins} / ${cost.coins}G</b><small>不足分は森の探索・店の販売で集めましょう。</small></span></div></div>`,[
+   ...(st.phase==='ready'?[{label:'ここに工房と家を建てる',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.startLv4Build(),'🏗 工房と店舗Lv4の工事を開始しました。')}]:[]),{label:'閉じる'}]);return;
+ }
+ if(st.phase==='building'||st.phase==='finish'){
+  modal(`<h2>🏗 工房と店舗Lv4の建築</h2><p>工事進行：<b>${Math.min(st.elapsed,st.steps)} / ${st.steps}</b></p><p>${st.phase==='finish'?'鍛冶屋と住居が完成しました。ミナと確認しましょう。':'森の探索などで時間を進め、再びこの場所に来ましょう。'}</p>`,[
+   ...(st.phase==='finish'?[{label:'新しい工房の完成を確認する',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.finishLv4Build(),'⚒️ 鍛冶屋と店舗Lv4が完成しました！')}]:[]),{label:'閉じる'}]);return;
+ }
+ toast('現在、ここで進められる工事はありません。');
+}
+// Ver1.126: visit the east market site in person; one mission at a time.
+function openLv5Site(){
+ const O=F.OPENING,st=O?.lv5Status?.(),cost=O?.LV5_COST;
+ if(!st||!cost){toast('市場と酒場の建築状況を確認できません。');return}
+ const dispatch=(fn,msg)=>{try{fn();closeModal();renderAll();setTimeout(()=>O.presentPendingScene?.(),90);if(msg)toast(msg)}catch(e){toast(e.message)}};
+ if(st.phase==='meet'){
+  modal('<h2>🧺 東の街道の旅商人</h2><p>荷車を停めた旅商人が、森へ向かう冒険者を眺めています。</p>',[
+   {label:'旅商人リオに話しかける',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.meetLv5())},{label:'閉じる'}]);return;
+ }
+ if(st.phase==='gather'||st.phase==='ready'){
+  const okWood=st.wood>=cost.wood,okIron=st.iron>=cost.iron,okCoins=st.coins>=cost.coins;
+  modal(`<h2>🏗️ 市場・酒場・店舗Lv5</h2><p>リオ「市場と酒場ができれば、旅人たちが安心して森を調べられます。掲示板も置きましょう。」</p><div class="choiceGrid"><div class="choiceCard" style="grid-template-columns:1fr"><span><b>${okWood?'✅':'▫️'} 木材　${st.wood} / ${cost.wood}個</b><br><b>${okIron?'✅':'▫️'} 鉄のかけら　${st.iron} / ${cost.iron}個</b><br><b>${okCoins?'✅':'▫️'} 建築費　${st.coins} / ${cost.coins}G</b><small>森から素材を持ち帰り、商品を売って費用を集めましょう。</small></span></div></div>`,[
+   ...(st.phase==='ready'?[{label:'市場と酒場の工事を始める',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.startLv5Build(),'🏗 市場と酒場の工事が始まりました。')}]:[]),{label:'閉じる'}]);return;
+ }
+ if(st.phase==='building'||st.phase==='finish'){
+  modal(`<h2>🏗️ 旅人の町を建設中</h2><p>工事進行：<b>${Math.min(st.elapsed,st.steps)} / ${st.steps}</b></p><p>${st.phase==='finish'?'市場・酒場兼宿屋・掲示板・店舗Lv5の工事が終わりました。':'森で探索するなど、町の時間を進めてから戻りましょう。'}</p>`,[
+   ...(st.phase==='finish'?[{label:'完成した町を確認する',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.finishLv5Build(),'🏮 店舗Lv5と市場・酒場が完成しました！')}]:[]),{label:'閉じる'}]);return;
+ }
+ toast('ここで進められる工事はありません。');
+}
 function openProgressFacility(id){
  const aliases={house2:'house',house3:'house'},fid=aliases[id]||id;
  if(fid==='house')indoorRuntime.residentHomeId=id;const P=F.TOWN_PROGRESS;if(P)P.returnEntry={...(P.position||{x:500,y:155})};
  if(fid==='shop'){homeMode='town';setView('store');return}
  if(fid==='tent'){modal('<h2>テントで休む</h2><p>翌朝まで休みます。</p>',[{label:'休む',fn:()=>{F.mutateSave(s=>{let n=0;do{F.advanceTimeState(s,1,'campRest');n++}while(F.timeInfo(s).id!=='morning'&&n<4)});renderAll()}},{label:'閉じる'}]);return}
+ if(fid==='forge')F.OPENING?.visitLv4Workshop?.();
+ if(fid==='inn'&&F.facilityLevel(F.readSave(),'inn')>=1)F.OPENING?.visitLv5Tavern?.();
  if(fid==='adventure_board'){modal(F.OPENING.missionsHTML(),[{label:'探索へ',fn:()=>setView('adventure')},{label:'閉じる'}]);return}
  if(F.facilityLevel(F.readSave(),fid)<1){toast('この施設はまだ完成していません。');return}
  openTownFacility(fid);
+ if(fid==='inn')setTimeout(()=>F.OPENING?.presentPendingScene?.(),120);
 }
 function showResident(){
  const N=F.RESIDENTS;if(!N?.eligible(F.readSave()))return;const d=N.talk();if(!d)return;
@@ -859,7 +940,7 @@ function dungeonNearbySpecial(run,dx,dy){const dirs=F.dungeonDirections8||[[0,-1
 function dungeonDashStopBefore(run,dx,dy,step){if(!run?.active)return 'end';if(step>0&&dungeonCorridorBranch(run,dx,dy))return 'branch';if(dungeonAdjacentEnemy(run,dx,dy))return 'enemy';const nx=run.player.x+dx,ny=run.player.y+dy;if(!F.dungeonCanStep?.(run.map,run.player.x,run.player.y,dx,dy))return 'wall';if((run.enemies||[]).some(e=>e.hp>0&&e.x===nx&&e.y===ny))return 'enemy';if(run.seen?.[ny]?.[nx]&&dungeonSpecialAt(run,nx,ny))return 'feature';return ''}
 function dungeonDashStopAfter(run,dx,dy,before){if(!run?.active)return 'end';if(run.playerHp<before.hp)return 'damage';if(run.player.x!==before.x+dx||run.player.y!==before.y+dy)return 'trap';const triggered=(run.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0);if(triggered>before.triggered)return 'trap';if(dungeonAdjacentEnemy(run,dx,dy))return 'enemy';if(dungeonNearbySpecial(run,dx,dy))return 'feature';if(dungeonCorridorBranch(run,dx,dy))return 'branch';return ''}
 function dashStopMessage(reason){return {enemy:'敵の気配でダッシュ停止',feature:'アイテム・階段などを発見',branch:'分かれ道でダッシュ停止',trap:'罠でダッシュ停止',damage:'攻撃を受けてダッシュ停止'}[reason]||''}
-async function dungeonDash(dx,dy){dx=Math.sign(Number(dx)||0);dy=Math.sign(Number(dy)||0);if((!dx&&!dy)||dungeonDashRuntime.moving||!F.run?.active)return;if(F.dungeonHasDisruptiveStatus?.(F.run)){toast('状態異常中はダッシュできません');return;}const token=++dungeonDashRuntime.token;dungeonDashRuntime.moving=true;let reason='',steps=0;try{while(token===dungeonDashRuntime.token&&F.run?.active&&steps<48){const run=F.run;reason=dungeonDashStopBefore(run,dx,dy,steps);if(reason)break;const before={x:run.player.x,y:run.player.y,hp:run.playerHp,triggered:(run.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0)};F.move(dx,dy);steps++;renderAll();if(F.run&&!F.run.active){runResultModal();reason='end';break}if(F.isOnStairs?.()){reason='stairs';break}reason=dungeonDashStopAfter(F.run,dx,dy,before);if(reason)break;await new Promise(r=>setTimeout(r,82))}}finally{if(token===dungeonDashRuntime.token)dungeonDashRuntime.moving=false}if(reason==='stairs'&&F.run?.active){stairsChoice();return}const msg=dashStopMessage(reason);if(msg&&steps>0)toast(msg)}
+async function dungeonDash(dx,dy){dx=Math.sign(Number(dx)||0);dy=Math.sign(Number(dy)||0);if((!dx&&!dy)||dungeonDashRuntime.moving||!F.run?.active)return;if(F.dungeonHasDisruptiveStatus?.(F.run)){toast('状態異常中はダッシュできません');return;}const token=++dungeonDashRuntime.token;dungeonDashRuntime.moving=true;dungeonDashRuntime.target=null;dungeonDashRuntime.remaining=0;renderAll();let reason='',steps=0;try{while(token===dungeonDashRuntime.token&&F.run?.active&&steps<48){const run=F.run;reason=dungeonDashStopBefore(run,dx,dy,steps);if(reason)break;const before={x:run.player.x,y:run.player.y,hp:run.playerHp,triggered:(run.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0)};F.move(dx,dy);steps++;renderAll();if(F.run&&!F.run.active){runResultModal();reason='end';break}if(F.isOnStairs?.()){reason='stairs';break}reason=dungeonDashStopAfter(F.run,dx,dy,before);if(reason)break;await new Promise(r=>setTimeout(r,82))}}finally{if(token===dungeonDashRuntime.token){dungeonDashRuntime.moving=false;dungeonDashRuntime.target=null;dungeonDashRuntime.remaining=0;if(F.run?.active&&currentView==='adventure')renderAll()}}if(token!==dungeonDashRuntime.token)return;if(reason==='stairs'&&F.run?.active){stairsChoice();return}const msg=dashStopMessage(reason);if(msg&&steps>0)toast(msg)}
 function dungeonTileFromEvent(canvas,meta,run,e){const r=canvas.getBoundingClientRect(),lx=(e.clientX-r.left)/r.width*180,ly=(e.clientY-r.top)/r.height*240,vx=Math.floor((lx-meta.ox)/meta.t),vy=Math.floor((ly-meta.oy)/meta.t);if(vx<0||vy<0||vx>=meta.viewCols||vy>=meta.viewRows)return null;const tx=meta.camX+vx,ty=meta.camY+vy;if(tx<0||ty<0||ty>=run.map.length||tx>=run.map[0].length)return null;return{tx,ty}}
 function dungeonFirstStep(run,tx,ty){const sx=run.player.x,sy=run.player.y,directDx=tx-sx,directDy=ty-sy;if(tx===sx&&ty===sy)return[0,0];if(Math.max(Math.abs(directDx),Math.abs(directDy))===1)return[Math.sign(directDx),Math.sign(directDy)];if(!run.seen?.[ty]?.[tx])return[Math.sign(directDx),Math.sign(directDy)];const blocked=(x,y)=>run.map[y]?.[x]==='wall',q=[[sx,sy]],prev=new Map([[sx+','+sy,null]]),dirs=F.dungeonDirections8||[[0,-1],[-1,0],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];let found=false;while(q.length&&!found){const [x,y]=q.shift();for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy,k=nx+','+ny;if(nx<0||ny<0||ny>=run.map.length||nx>=run.map[0].length||blocked(nx,ny)||prev.has(k)||!run.seen?.[ny]?.[nx])continue;if(F.dungeonCanStep&&!F.dungeonCanStep(run.map,x,y,dx,dy))continue;prev.set(k,[x,y]);if(nx===tx&&ny===ty){found=true;break}q.push([nx,ny])}}if(!found)return[Math.sign(directDx),Math.sign(directDy)];let cx=tx,cy=ty,p=prev.get(cx+','+cy);while(p&&!(p[0]===sx&&p[1]===sy)){cx=p[0];cy=p[1];p=prev.get(cx+','+cy)}return[cx-sx,cy-sy]}
 function dungeonVisibleEnemy(run){const vis=F.dungeonVisibility?.(run)||[];return (run?.enemies||[]).find(e=>e.hp>0&&vis?.[e.y]?.[e.x])||null}
@@ -892,7 +973,7 @@ function dungeonPathTo(run,tx,ty){
  if(!result)return null;
  const reversed=[];for(let cur=result;cur;cur=cur.parent)reversed.push([cur.x,cur.y]);return reversed.reverse();
 }
-function autoMoveStopMessage(reason){return {enemy:'敵を発見したので自動移動を停止',feature:'アイテム・階段などがあるので自動移動を停止',trap:'罠が発動したので自動移動を停止',damage:'攻撃を受けたので自動移動を停止',status:'状態異常になったので自動移動を停止',blocked:'進路が変わったので自動移動を停止'}[reason]||''}
+function autoMoveStopMessage(reason){return {enemy:'敵を発見したので自動移動を停止',feature:'アイテム・階段などがあるので自動移動を停止',trap:'罠が発動したので自動移動を停止',damage:'攻撃を受けたので自動移動を停止',status:'状態異常になったので自動移動を停止',blocked:'進路が変わったので自動移動を停止',limit:'安全のため長距離移動を一時停止しました。再度目的地をタップしてください'}[reason]||''}
 async function dungeonAutoMoveTo(tx,ty){
  if(dungeonDashRuntime.moving||!F.run?.active)return;
  const start=F.run;if(F.dungeonHasDisruptiveStatus?.(start)){toast('状態異常中は自動移動できません');return}
@@ -900,7 +981,8 @@ async function dungeonAutoMoveTo(tx,ty){
  const token=++dungeonDashRuntime.token;dungeonDashRuntime.moving=true;
  // Plan a single stable route instead of picking a different BFS tie on every step.
  let route=dungeonPathTo(start,tx,ty),routeIndex=1;
- if(!route||route.length<2){dungeonDashRuntime.moving=false;toast('目的地までの道が見つかりません');return}
+ if(!route||route.length<2){dungeonDashRuntime.moving=false;dungeonDashRuntime.target=null;toast('目的地までの道が見つかりません');return}
+ dungeonDashRuntime.target={x:tx,y:ty,floor:start.floor,map:start.map};dungeonDashRuntime.remaining=route.length-1;renderAll();
  let reason='',steps=0;
  try{
   while(token===dungeonDashRuntime.token&&F.run?.active&&steps<96){
@@ -917,10 +999,11 @@ async function dungeonAutoMoveTo(tx,ty){
     [nx,ny]=route[1];dx=nx-run.player.x;dy=ny-run.player.y;
     if((run.enemies||[]).some(e=>e.hp>0&&e.x===nx&&e.y===ny)){reason='enemy';break}
    }
+   dungeonDashRuntime.remaining=Math.max(1,route.length-routeIndex);
    const isTarget=nx===tx&&ny===ty;
    if(!isTarget&&dungeonSpecialAt(run,nx,ny)){reason='feature';break}
    const before={x:run.player.x,y:run.player.y,hp:run.playerHp,triggered:(run.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0)};
-   F.move(dx,dy);steps++;renderAll();
+   F.move(dx,dy);steps++;dungeonDashRuntime.remaining=Math.max(0,route.length-routeIndex-1);renderAll();
    if(F.run&&!F.run.active){runResultModal();reason='end';break}
    const after=F.run,triggered=(after.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0);
    // The staircase menu can only appear after an ACTUAL move onto the staircase.
@@ -933,21 +1016,33 @@ async function dungeonAutoMoveTo(tx,ty){
    if(after.player.x===tx&&after.player.y===ty){reason='arrived';break}
    await new Promise(r=>setTimeout(r,170));
   }
- }finally{if(token===dungeonDashRuntime.token)dungeonDashRuntime.moving=false}
+  if(!reason&&steps>=96)reason='limit';
+ }finally{
+  if(token===dungeonDashRuntime.token){
+   dungeonDashRuntime.moving=false;dungeonDashRuntime.target=null;dungeonDashRuntime.remaining=0;
+   if(F.run?.active&&currentView==='adventure')renderAll();
+  }
+ }
  if(token!==dungeonDashRuntime.token)return;
  if(reason==='stairs'&&F.run?.active){stairsChoice();return}
  const msg=autoMoveStopMessage(reason);if(msg)toast(msg)
+}
+function updateDungeonTravelStatus(){
+ const el=$('dungeonTravelStatus');if(!el)return;
+ const moving=dungeonDashRuntime.moving,remaining=Math.max(0,Number(dungeonDashRuntime.remaining)||0);
+ el.classList.toggle('hidden',!moving);
+ if(moving)el.textContent=dungeonDashRuntime.target?`🎯 自動歩行中（残り約${remaining}マス）`:'👣 ダッシュ中';
 }
 function renderAdventure(s){const run=F.run;$('sceneMount').classList.toggle('dungeonSceneLayout',!!run?.active);if(!run?.active){const defs=F.DUNGEON_DEFS||[],d=F.dungeonDef?.(F.DEFAULT_DUNGEON_ID)||defs[0]||{name:'はじまりの森',maxFloor:30},tier=F.dungeonTierDef?.(d.balanceTier)||{short:'T1',name:'基礎',recommendedPlus:'+0〜+5'},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'},gear=F.equipmentStats?.(s)||{attack:0,defense:0,hp:0,items:{}};$('sceneMount').innerHTML=sceneShell('🗺️ ダンジョン選択',`挑むダンジョンを選びます。
 ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み':(F.OPENING?.active()&&F.OPENING.phase()!=='complete'?'B1Fで木材と商品を拾い、脱出して帰還しよう。':'まずは、はじまりの森のB30Fを目指そう。')} / 現在：${ti.icon}${ti.label}`,'cmdAdv');R.renderAdventurePreview($('sceneCanvas'),s);$('sceneHud').innerHTML=`<span class="hudPill">${esc(tier.short)} ${esc(tier.name)}</span><span class="hudPill">🧑 HP${36+gear.hp}</span><span class="hudPill">⚔️ ${esc(gear.items?.weapon?.name||'なし')}</span><span class="hudPill">🛡️ ${esc(gear.items?.armor?.name||'なし')}</span>`;addHumanToken(91,132,'',false,'down');const cmds=[];for(const dd of defs.filter(dungeon=>dungeon.implementationStatus!=='preview')){const unlocked=!!F.dungeonUnlocked?.(s,dd),playable=!!F.dungeonPlayable?.(s,dd),cleared=!!F.dungeonCleared?.(s,dd.id);cmds.push({t:unlocked?`${dd.icon||'🗺️'} ${dd.name}${cleared?' ✓':''}`:`🔒 ${dd.name}`,fn:()=>{if(!unlocked){toast('前のダンジョンを踏破すると解放されます');return}if(!playable){toast(`${dd.name}は現在利用できません`);return}try{F.startRun(dd.id);renderAll()}catch(e){toast(e.message)}},c:playable?'primary':'',disabled:!unlocked});}if(window.FRENDA_TEST?.active&&document.body.classList.contains('test-menu-open'))cmds.push({t:'🧪 B30ボス確認',fn:()=>{try{F.testJumpToFinalFloor?.('beginner_forest');renderAll();toast('B30F最深部へ移動しました')}catch(e){toast(e.message)}},c:'warn'});cmds.push({t:'装備',fn:showEquipmentModal,c:'primary'},{t:'ポケモン',fn:showPartnerModal},{t:'図鑑',fn:showFrontierDex},{t:'倉庫',fn:showWarehouse},{t:'拠点',fn:()=>setView('home')});fillCmd('cmdAdv',cmds);return}
  $('sceneMount').innerHTML=dungeonSceneShell('cmdAdv');syncDungeonMessage(run);
  const meta=R.renderDungeon($('sceneCanvas'),run),weapon=F.dungeonEquippedView?.(run,'weapon');
- $('sceneHud').innerHTML=dungeonHudMarkup(run,s.coins);
- if(meta){const screenPos=(x,y)=>({x:meta.ox+(x-meta.camX)*meta.t+meta.t/2,y:meta.oy+(y-meta.camY)*meta.t+meta.t/2,visible:x>=meta.camX&&y>=meta.camY&&x<meta.camX+meta.viewCols&&y<meta.camY+meta.viewRows,currentVisible:!!meta.visibility?.[y]?.[x]}),pp=screenPos(run.player.x,run.player.y);if(run.playerHp>0&&pp.visible)addHumanToken(pp.x,pp.y,'',Number(run.playerStep)>0,run.playerFacing||'down');for(const e of run.enemies.filter(e=>e.hp>0)){const esp=F.speciesById?.(e.speciesId),p=screenPos(e.x,e.y);if(p.visible&&p.currentVisible){addToken(esp,p.x,p.y,`enemyToken${e.boss?' bossEnemyToken':''}`,`${e.boss?'👑 ':''}${e.name} HP${e.hp}/${e.maxHp}${Number(e.sleepTurns)>0?' 💤':''}${e.telegraph?' ⚠️':''}`,e.facing||'down',Number(e.step)>0,e.id||'');if(e.telegraph)addEnemyTelegraphLabel(p.x,p.y,e.telegraph.moveName||'危険技')}}for(const it of (run.floorItems||[])){const p=screenPos(it.x,it.y),dist=Math.max(Math.abs(it.x-run.player.x),Math.abs(it.y-run.player.y)),def=F.item?.(it.itemId);if(p.visible&&p.currentVisible&&dist<=2&&def)addFloorItemLabel(p.x,p.y,def.id==='herb'?`${def.name}（HP+14/満腹+5）`:def.id==='bread'?`${def.name}（満腹+50）`:def.id==='big_bread'?`${def.name}（満腹+100）`:def.name)}const fx=run.attackFx;if(fx&&Number(fx.seq)>lastAttackFxSeq&&pp.visible){lastAttackFxSeq=Number(fx.seq);addWeaponAttackFx(pp.x,pp.y,fx,run.playerFacing||'down',weapon)}const enemyFx=(run.enemyAttackFx||[]).filter(x=>Number(x.seq)>lastEnemyAttackFxSeq);let enemyFxDelay=40;for(const ef of enemyFx){const sp=screenPos(ef.x,ef.y),tp=screenPos(ef.targetX,ef.targetY);if(sp.visible&&sp.currentVisible&&tp.visible)addEnemyAttackFx(sp,tp,ef,enemyFxDelay);lastEnemyAttackFxSeq=Math.max(lastEnemyAttackFxSeq,Number(ef.seq)||0);enemyFxDelay+=180}}
+ $('sceneHud').innerHTML=dungeonHudMarkup(run,s.coins);updateDungeonTravelStatus();
+ if(meta){dungeonMoveOverlay(run,meta);const screenPos=(x,y)=>({x:meta.ox+(x-meta.camX)*meta.t+meta.t/2,y:meta.oy+(y-meta.camY)*meta.t+meta.t/2,visible:x>=meta.camX&&y>=meta.camY&&x<meta.camX+meta.viewCols&&y<meta.camY+meta.viewRows,currentVisible:!!meta.visibility?.[y]?.[x]}),pp=screenPos(run.player.x,run.player.y);if(run.playerHp>0&&pp.visible)addHumanToken(pp.x,pp.y,'',Number(run.playerStep)>0,run.playerFacing||'down');for(const e of run.enemies.filter(e=>e.hp>0)){const esp=F.speciesById?.(e.speciesId),p=screenPos(e.x,e.y);if(p.visible&&p.currentVisible){addToken(esp,p.x,p.y,`enemyToken${e.boss?' bossEnemyToken':''}`,`${e.boss?'👑 ':''}${e.name} HP${e.hp}/${e.maxHp}${Number(e.sleepTurns)>0?' 💤':''}${e.telegraph?' ⚠️':''}`,e.facing||'down',Number(e.step)>0,e.id||'');if(e.telegraph)addEnemyTelegraphLabel(p.x,p.y,e.telegraph.moveName||'危険技')}}for(const it of (run.floorItems||[])){const p=screenPos(it.x,it.y),dist=Math.max(Math.abs(it.x-run.player.x),Math.abs(it.y-run.player.y)),def=F.item?.(it.itemId);if(p.visible&&p.currentVisible&&dist<=2&&def)addFloorItemLabel(p.x,p.y,def.id==='herb'?`${def.name}（HP+14/満腹+5）`:def.id==='bread'?`${def.name}（満腹+50）`:def.id==='big_bread'?`${def.name}（満腹+100）`:def.name)}const fx=run.attackFx;if(fx&&Number(fx.seq)>lastAttackFxSeq&&pp.visible){lastAttackFxSeq=Number(fx.seq);addWeaponAttackFx(pp.x,pp.y,fx,run.playerFacing||'down',weapon)}const enemyFx=(run.enemyAttackFx||[]).filter(x=>Number(x.seq)>lastEnemyAttackFxSeq);let enemyFxDelay=40;for(const ef of enemyFx){const sp=screenPos(ef.x,ef.y),tp=screenPos(ef.targetX,ef.targetY);if(sp.visible&&sp.currentVisible&&tp.visible)addEnemyAttackFx(sp,tp,ef,enemyFxDelay);lastEnemyAttackFxSeq=Math.max(lastEnemyAttackFxSeq,Number(ef.seq)||0);enemyFxDelay+=180}}
  const selectedEnemy=(run.enemies||[]).find(e=>e.hp>0&&e.id===dungeonEnemyInfoRuntime.enemyId);if(selectedEnemy){const info=F.dungeonEnemyInfo?.(run,selectedEnemy);if(info)addEnemyInfoOverlay(info)}
  const footAction=F.dungeonFootItemAction?.(),footItem=footAction?F.floorItemAt?.(run,run.player.x,run.player.y):null,contextCmd=footAction?{t:footAction.mode==='exchange'?'交換':'拾う',fn:pickupFootItem,c:'primary'}:{t:'階段',fn:stairsChoice,c:F.isOnStairs()?'primary':'',disabled:!F.isOnStairs()};
  const footHint=$('dungeonFootItemHint');if(footHint&&footAction?.item){footHint.classList.remove('hidden');footHint.innerHTML=`${itemVisualHtml(footAction.item,28,'footHintVisual')}<span><b>${esc(footAction.item.name)}${footAction.qty>1?` ×${footAction.qty}`:''}</b><small>${footAction.mode==='exchange'?'バッグ満杯：交換':'足元：拾える'}</small></span>`}
- fillCmd('cmdAdv',[{t:'どうぐ',fn:showBag},{t:'装備',fn:showEquipmentModal},{t:'情報',fn:showStrengthModal},{t:'向き',fn:showFacingModal},{t:'素振り',fn:swingTurn},contextCmd,{t:'履歴',fn:showDungeonHistory},{t:'ロープ',fn:()=>{if(F.escape()){renderAll();runResultModal()}},c:'warn',disabled:run.escape<=0}]);
+ if(dungeonDashRuntime.moving){fillCmd('cmdAdv',[{t:'■ 移動を止める',fn:()=>{cancelDungeonTravel();renderAll();toast('自動移動を停止しました');},c:'warn'}]);$('cmdAdv').style.gridTemplateColumns='1fr';}else{fillCmd('cmdAdv',[{t:'どうぐ',fn:showBag},{t:'装備',fn:showEquipmentModal},{t:'情報',fn:showStrengthModal},{t:'向き',fn:showFacingModal},{t:'素振り',fn:swingTurn},contextCmd,{t:'履歴',fn:showDungeonHistory},{t:'ロープ',fn:()=>{if(F.escape()){renderAll();runResultModal()}},c:'warn',disabled:run.escape<=0}]);}
  // Ver1.51: tapping a known destination follows the explored route automatically;
  // fog-of-war exploration and adjacent tactical moves still use one turn per tap.
  const canvas=$('sceneCanvas');canvas.style.touchAction='none';
@@ -957,7 +1052,7 @@ ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み'
  canvas.addEventListener('pointerdown',e=>{pointerOrigin={x:e.clientX,y:e.clientY};pointerDragged=false;});
  canvas.addEventListener('pointermove',e=>{if(pointerOrigin&&Math.hypot(e.clientX-pointerOrigin.x,e.clientY-pointerOrigin.y)>14)pointerDragged=true;});
  canvas.addEventListener('pointercancel',()=>{pointerDragged=true;pointerOrigin=null;});
- canvas.onclick=e=>{if(pointerDragged){pointerDragged=false;pointerOrigin=null;return}pointerOrigin=null;if(dungeonDashRuntime.moving){dungeonDashRuntime.token++;dungeonDashRuntime.moving=false}const active=F.run||run,hit=dungeonTileFromEvent(canvas,meta,active,e);if(!hit)return;const{tx,ty}=hit,enemy=(active.enemies||[]).find(en=>en.hp>0&&en.x===tx&&en.y===ty),visibility=F.dungeonVisibility?.(active)||meta.visibility;if(enemy&&visibility?.[ty]?.[tx]){dungeonEnemyInfoRuntime.enemyId=enemy.id;const a=F.attackAt?.(tx,ty);if(a?.attempted){renderAll();if(F.run&&!F.run.active)runResultModal()}else{renderAll();if(a?.reason)toast(a.reason)}return}dungeonEnemyInfoRuntime.enemyId=null;if(tx===active.player.x&&ty===active.player.y){waitTurn();return}const distance=Math.max(Math.abs(tx-active.player.x),Math.abs(ty-active.player.y));if(active.seen?.[ty]?.[tx]&&distance>1){dungeonAutoMoveTo(tx,ty);return}const[dx,dy]=dungeonFirstStep(active,tx,ty);if(!dx&&!dy){waitTurn();return}move(dx,dy)};
+ canvas.onclick=e=>{if(pointerDragged){pointerDragged=false;pointerOrigin=null;return}pointerOrigin=null;if(dungeonDashRuntime.moving)cancelDungeonTravel();const active=F.run||run,hit=dungeonTileFromEvent(canvas,meta,active,e);if(!hit)return;const{tx,ty}=hit,enemy=(active.enemies||[]).find(en=>en.hp>0&&en.x===tx&&en.y===ty),visibility=F.dungeonVisibility?.(active)||meta.visibility;if(enemy&&visibility?.[ty]?.[tx]){dungeonEnemyInfoRuntime.enemyId=enemy.id;const a=F.attackAt?.(tx,ty);if(a?.attempted){renderAll();if(F.run&&!F.run.active)runResultModal()}else{renderAll();if(a?.reason)toast(a.reason)}return}dungeonEnemyInfoRuntime.enemyId=null;if(tx===active.player.x&&ty===active.player.y){waitTurn();return}const distance=Math.max(Math.abs(tx-active.player.x),Math.abs(ty-active.player.y));if(active.seen?.[ty]?.[tx]&&distance>1){dungeonAutoMoveTo(tx,ty);return}const[dx,dy]=dungeonFirstStep(active,tx,ty);if(!dx&&!dy){waitTurn();return}move(dx,dy)};
 }
 function exitIndoor(){if(F.TOWN_PROGRESS?.returnEntry){F.TOWN_PROGRESS.position={...F.TOWN_PROGRESS.returnEntry};F.TOWN_PROGRESS.returnEntry=null;}if(F.OPENING?.active())F.WILDERNESS.active=true;indoorRuntime.token++;indoorRuntime.id=null;homeMode='town';setView('home')}
 function indoorShelf(slot){const s=F.readSave(),sh=s.shelves[slot];if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal'){modal('<h2>陳列枠'+(slot+1)+'</h2><p>表示プリセットです。商品の操作は通常の町へ戻して行ってください。</p>',[{label:'閉じる'}]);return}if(!sh){stockChooser(slot);return}const it=F.item(sh.itemId);modal(`<h2>陳列枠${slot+1} ${esc(it?.name||'')}</h2>${itemVisualHtml(it,52)}<p>${sh.price}G</p><label>価格 <input id="indoorPrice" type="number" min="10" value="${sh.price}"></label>`,[{label:'価格を変更',fn:()=>{F.changePrice(slot,$('indoorPrice')?.value||sh.price);renderAll()}},{label:'倉庫へ戻す',fn:()=>{F.unstockShelf(slot);renderAll()}},{label:'閉じる'}])}
@@ -977,7 +1072,7 @@ function renderIndoor(id,s){
  const planPath=(id==='shop'&&m.lv===2)?null:ROOM_PLAN_VISUALS[id]?.[m.planLv||m.lv];if(!planPath&&rt.art?.roomPlan){rt.art={...rt.art,roomPlan:null,roomPlanPath:null}}if(planPath&&rt.art?.roomPlanPath!==planPath){rt.art={...(rt.art||{}),roomPlanPath:planPath,roomPlan:null};loadVisualOptional(planPath).then(im=>{if(rt.id===id&&rt.model?.lv===m.lv){rt.art={...(rt.art||{}),roomPlan:im};paintIndoor()}})}
 }
 
-function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),startDungeon:()=>{try{if(!F.OPENING?.canExplore()){toast('先にテントを設営してください');return}F.startRun('beginner_forest');setView('adventure')}catch(e){toast(e.message)}},shop:()=>setView('store'),construction:openShopConstructionSite,missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
+function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),startDungeon:()=>{try{if(!F.OPENING?.canExplore()){toast('先にテントを設営してください');return}F.startRun('beginner_forest');setView('adventure')}catch(e){toast(e.message)}},shop:()=>setView('store'),construction:openShopConstructionSite,lv3Site:openLv3Site,lv4Site:openLv4Site,lv5Site:openLv5Site,missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
 function frontierTestAllowed(){return window.FRENDA_TEST?.active!==false&&(window.FRENDA_TEST?.active===true||/\/test\//.test(window.location.pathname)||document.querySelector('.brand small')?.textContent.includes('/ TEST'));}
 function showEconomyBalance(){
  const s=F.readSave(),r=F.BALANCE_RULES,b=F.CUSTOMER_BALANCE;
@@ -1207,3 +1302,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-02 20:30 JST / Ver1.121: auto-walk paced for visual tracking.
 
 // Updated: 2026-11-02 21:13 JST / Ver1.122: correct displayed tile, camera-safe movement and stable destination routing.
+
+// Updated: 2026-11-02 21:40 JST / Ver1.123: stopable auto movement, clear destination marker, menu-safe cancellation.
+
+// Updated: 2026-11-02 21:50 JST / Ver1.124: on-site Lv3 building dialog and mission interaction.
+
+// Updated: 2026-11-02 21:59 JST / Ver1.125: Lv4 on-site construction, resource display and story scenes.
+
+// Updated: 2026-11-02 22:02 JST / Ver1.125: final forge-visit quest.
+
+// Updated: 2026-11-03 03:50 JST / Ver1.126: traveler market/inn build workflow and tavern visit.
+
+// Updated: 2026-11-03 03:53 JST / Ver1.126 release.
+
+// Updated: 2026-11-03 03:55 JST / Ver1.126 release.
