@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.116 / prologue chapter heading, dialogue progress. */
+/* Frenda Frontier Ver1.119 / illustrated return results and town forest gate integration. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -794,7 +794,31 @@ function showBag(){
 }
 function showFootItemExchange(){const run=F.run,foot=F.dungeonFootItemAction?.();if(!run?.active||!foot?.item){toast('足元に交換するアイテムはありません');return}if(foot.mode!=='exchange'){pickupFootItem();return}const rows=Object.entries(run.bag||{}).filter(([,n])=>Number(n)>0);let html=`<h2>🔄 足元のアイテムと交換</h2><div class="itemFocusRow"><div>${itemVisualHtml(foot.item,58)}</div><span><b>${esc(foot.item.name)} ×${foot.qty}</b><small>バッグが${foot.slots}/${foot.limit}枠でいっぱいです。<br>足元のアイテムを拾う代わりに、バッグ内の1種類を足元へ置きます。</small></span></div><p><small>※現在のバッグは同じ種類をまとめて1枠で管理しています。×2以上の種類を選んだ場合、その種類は<b>全部まとめて</b>足元へ置きます。交換は1ターン消費します。</small></p><div class="choiceGrid">${rows.map(([id,n])=>{const it=F.item(id);return `<button class="choiceCard" data-exchange-item="${esc(id)}"><div>${itemVisualHtml(it,44)}</div><span><b>${esc(it?.name||id)} ×${n}</b><small>${Number(n)>1?`×${n}を全部置いて交換`:'1個を置いて交換'}</small></span></button>`}).join('')}</div>`;modal(html,[{label:'やめる'}]);document.querySelectorAll('[data-exchange-item]').forEach(b=>b.onclick=()=>{const r=F.exchangeDungeonItem?.(b.dataset.exchangeItem);if(r?.ok){closeModal();renderAll();toast(`${r.received?.name||'アイテム'}と交換しました`);if(F.run&&!F.run.active)runResultModal()}else if(r?.reason)toast(r.reason)})}
 function pickupFootItem(){const action=F.dungeonFootItemAction?.();if(action?.mode==='exchange'){showFootItemExchange();return}const r=F.pickupDungeonItem?.();if(r?.ok){renderAll();toast(`${r.item?.name||'アイテム'}を拾いました`);if(F.run&&!F.run.active)runResultModal()}else{renderAll();if(r?.reason)toast(r.reason)}}
-function runResultModal(){const r=F.run?.result;if(!r)return;const items=Object.entries(r.delivered||{}).map(([id,n])=>`${F.item(id)?.name||id}×${n}`).join('、')||'なし',gear=(r.deliveredEquipment||[]).map(x=>x.name||F.equipmentInstanceName?.(x)||x.defId).join('、'),ti=r.time?.phase,rewards=(r.clearRewards||[]).map(x=>`${F.item(x.itemId)?.icon||'🎁'} ${F.item(x.itemId)?.name||x.itemId}×${x.qty}`).join('、'),next=(r.nextUnlocked||[]).map(id=>F.dungeonDef?.(id)).filter(d=>d&&F.dungeonPlayable?.(F.readSave(),d)),clear=r.success&&r.reason==='clear';modal(`<h2>${clear?'🏆 ダンジョン踏破！':r.success?'🏠 無事帰還！':'😵 冒険失敗'}</h2>${clear?`<p><b>${esc(F.dungeonDef?.(r.dungeonId)?.name||'ダンジョン')}</b>を踏破しました！</p>`:''}<p>持ち帰った素材：<b>${esc(items)}</b></p>${gear?`<p>新しい装備：<b>${esc(gear)}</b><br><small>+値・特殊効果・呪いを個体ごとに保持します。未鑑定品は町で装備を試すと判別できます。</small></p>`:''}${rewards?`<p>🎁 踏破報酬：<b>${esc(rewards)}</b></p>`:''}${next.length?`<p>🗺️ 新しい道：<b>${next.map(d=>`${d.icon||'🗺️'} ${d.name}`).join('、')}</b> が解放されました。</p>`:''}${ti?`<p>時間：${ti.icon}${esc(ti.label)}</p>`:''}<p><b>次：</b>${clear&&next.length?'冒険画面で次のダンジョンを確認できます。':(F.OPENING?.active()?F.OPENING.guidance().text:'装備を確認するか、お店で素材を売って町を育てよう。')}</p>`,[{label:'冒険へ',className:clear?'cmdBtn primary':'',fn:()=>setView('adventure')},{label:'拠点へ',className:F.OPENING?.active()?'cmdBtn primary':'',fn:()=>setView('home')},{label:'装備を見る',fn:()=>{setView('adventure');showEquipmentModal()}},{label:'お店へ',fn:()=>setView('store')}])}
+// Ver1.119: illustrated, aligned, count-first inventory summary on return.
+function runResultModal(){
+ const r=F.run?.result;if(!r)return;
+ const delivered=Object.entries(r.delivered||{}).filter(([,n])=>Number(n)>0).sort((a,b)=>{const order={wood:0,iron:1,crystal:2,bread:3,big_bread:4,herb:5};return (order[a[0]]??20)-(order[b[0]]??20)});
+ const total=delivered.reduce((sum,[,n])=>sum+Number(n),0);
+ const itemCard=([id,n])=>{const it=F.item?.(id);return `<div class="returnLootCard">${itemVisualHtml(it||id,48)}<span class="returnLootInfo"><b>${esc(it?.name||id)}</b><small>${esc(it?.kind||'アイテム')}</small></span><strong class="returnLootQty">×${Math.floor(Number(n)||0)}</strong></div>`};
+ const goods=delivered.length?`<div class="returnLootGrid">${delivered.map(itemCard).join('')}</div>`:'<p class="returnLootNone">持ち帰った素材はありません。</p>';
+ const gear=(r.deliveredEquipment||[]).map(x=>{const d=F.equipmentInstanceView?.(x)||F.equipment?.(x.defId)||x;return `<div class="returnLootCard">${equipmentVisualHtml(d,46)}<span class="returnLootInfo"><b>${esc(x.name||d.name||x.defId||'装備')}</b><small>持ち帰った装備</small></span><strong class="returnLootQty">×1</strong></div>`}).join('');
+ const rewards=(r.clearRewards||[]).filter(x=>x.qty>0).map(x=>itemCard([x.itemId,x.qty])).join('');
+ const next=(r.nextUnlocked||[]).map(id=>F.dungeonDef?.(id)).filter(d=>d&&F.dungeonPlayable?.(F.readSave(),d));
+ const clear=!!(r.success&&r.reason==='clear'),ti=r.time?.phase;
+ modal(`<h2>${clear?'🏆 ダンジョン踏破！':r.success?'🏠 無事帰還！':'😵 冒険失敗'}</h2>
+ ${clear?`<p><b>${esc(F.dungeonDef?.(r.dungeonId)?.name||'ダンジョン')}</b>を踏破しました！</p>`:''}
+ <section class="returnLootSection"><div class="returnLootHeading"><h3>🎒 持ち帰った素材</h3><span>${delivered.length}種類／合計${total}個</span></div>${goods}</section>
+ ${gear?`<section class="returnLootSection"><h3>⚔️ 新しい装備</h3><div class="returnLootGrid">${gear}</div><p class="returnLootHint">強化値・特殊効果・呪いは個体ごとに保持されます。</p></section>`:''}
+ ${rewards?`<section class="returnLootSection"><h3>🎁 踏破報酬</h3><div class="returnLootGrid">${rewards}</div></section>`:''}
+ ${next.length?`<p>🗺️ 新しい道：<b>${next.map(d=>`${d.icon||'🗺️'} ${esc(d.name)}`).join('、')}</b> が解放されました。</p>`:''}
+ ${ti?`<p>🕒 時間：${esc(ti.icon||'')}${esc(ti.label)}</p>`:''}
+ <p class="returnLootNext"><b>次にすること</b><span>${esc(clear&&next.length?'冒険画面で次のダンジョンを確認できます。':F.OPENING?.active()?F.OPENING.guidance().text:'装備を確認するか、お店で素材を売って町を育てよう。')}</span></p>`,[
+  {label:'冒険へ',className:clear?'cmdBtn primary':'',fn:()=>setView('adventure')},
+  {label:'拠点へ',className:F.OPENING?.active()?'cmdBtn primary':'',fn:()=>setView('home')},
+  {label:'装備を見る',fn:()=>{setView('adventure');showEquipmentModal()}},
+  {label:'お店へ',fn:()=>setView('store')}
+ ]);
+}
 function swingTurn(){if(!F.run?.active)return;const r=F.swingDungeon?.();renderAll();if(F.run&&!F.run.active)runResultModal();return r}
 function stairsChoice(){const run=F.run;if(!run?.active||!F.isOnStairs?.())return;const last=run.floor>=run.maxFloor,next=Math.min(run.maxFloor,run.floor+1),bossAlive=!!F.dungeonBossAlive?.(run),body=`<h2>🪜 階段</h2><p>${last?(bossAlive?`👑 最深部の主が出口を守っています。先に倒してください。`:`B${run.maxFloor}F・最深部を制しました。踏破して拠点へ帰還しますか？`):`階段に到着しました。B${next}Fへ進むか、ここで拠点へ帰還するか選んでください。`}<br><small>現在 B${run.floor}F / 全${run.maxFloor}F</small></p>`;if(last){modal(body,bossAlive?[{label:'戦いに戻る'}]:[{label:'踏破して帰還',className:'cmdBtn primary',fn:()=>{F.nextFloor();renderAll();if(!F.run?.active)runResultModal()}},{label:'まだ探索する'}]);return}modal(body,[{label:`B${next}Fへ進む`,className:'cmdBtn primary',fn:()=>{F.nextFloor();renderAll();if(!F.run?.active)runResultModal()}},{label:'ここで帰還する',fn:()=>{F.finishRun(true,'return');renderAll();runResultModal()}},{label:'まだ探索する'}])}
 function move(dx,dy){if(dungeonDashRuntime.moving)return;F.move(dx,dy);renderAll();if(F.run&&!F.run.active){runResultModal();return}if(F.isOnStairs?.())stairsChoice()}
@@ -1070,3 +1094,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-01 20:27 JST / Ver1.116: chapter and dialogue progress shown in story scenes.
 
 // Updated: 2026-11-01 21:10 JST / Ver1.117 — route entry to dungeon from the northern forest path.
+
+// Updated: 2026-11-02 19:25 JST / Ver1.119: return inventory card layout with existing item images.
