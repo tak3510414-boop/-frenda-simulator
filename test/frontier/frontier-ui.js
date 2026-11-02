@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.119 / illustrated return results and town forest gate integration. */
+/* Frenda Frontier Ver1.120 / illustrated return results and town forest gate integration. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -587,6 +587,22 @@ function showTownLayerDetails(){
 
 function showTownGrowth(){const s=F.readSave(),g=F.townGrowthState(s);modal(`<h2>🧭 開拓の道すじ</h2><p>現在：<b>${esc(g.current.label)}</b><br>冒険の成果を販売し、資金と資材で工事を進めます。</p><div class="choiceGrid">${F.TOWN_GROWTH_STAGES.map((st,i)=>`<div class="choiceCard" style="grid-template-columns:1fr"><span><b>${i<=g.index?'✓ ':i===g.index+1?'▶ ':''}${esc(st.label)}</b><small>${Object.entries(st.facilities).map(([id,lv])=>`${esc(F.FACILITY_DEFS.find(f=>f.id===id)?.name||id)} Lv${lv}`).join('・')||'テント・焚き火・資材置き場'}${st.residents?`<br>入居者${st.residents}人`:''}</small></span></div>`).join('')}</div>`,[{label:'建設へ',fn:showDevelopment},{label:'閉じる'}])}
 function showTownMarket(){const s=F.readSave(),lv=F.facilityLevel(s,'market'),ids=lv>=2?['bread','herb','antidote_herb','big_bread','panacea','survey_scroll']:['bread','herb','antidote_herb'];modal('<h2>🧺 行商人の市場</h2><p>冒険用品を購入できます。各商品は1日2個までです。</p>',[...ids.map(id=>({label:`${F.item(id).name} ${F.marketPrice(id)}G`,fn:()=>{try{F.townBuySupply(id);renderAll();toast('購入して保管しました');showTownMarket()}catch(e){toast(e.message)}}})),{label:'閉じる'}])}
+function openShopConstructionSite(){
+ const O=F.OPENING,s=F.readSave(),o=s?.story?.opening;
+ if(!O?.active?.()||!o){toast('ここでは建築できません。');return}
+ const rules=O.rules||{storeWood:6,storeCoins:150};
+ if(o.phase==='upgrade'){
+  const wood=Math.max(0,Number(s.warehouse?.wood)||0),coins=Math.max(0,Number(s.coins)||0),ready=!!O.ready?.();
+  modal(`<h2>🏗 店舗Lv2 建築予定地</h2><p>テントと露店を改築して、冒険者が利用できる小さな店を建てます。</p><div class="choiceGrid"><div class="choiceCard" style="grid-template-columns:1fr"><span><b>🪵 木材　${wood} / ${rules.storeWood}個</b><br><b>🪙 建築費　${coins} / ${rules.storeCoins}G</b><small>${ready?'資材が揃いました。ここで着工できます。':'不足分を冒険と商売で集めましょう。'}</small></span></div></div>`,[
+   ...(ready?[{label:'ここに店舗Lv2を建てる',className:'cmdBtn primary',close:false,fn:()=>{try{if(!O.ready?.())throw new Error('建築条件が変わりました。再確認してください。');O.build();closeModal();renderAll();toast('🏗 店舗Lv2の建築を開始しました。森で時間を進めましょう。')}catch(e){toast(e.message)}}}]:[]),{label:'閉じる'}]);return
+ }
+ if(o.phase==='building'){
+  const project=o.townProject,elapsed=Math.max(0,(Number(s.clock?.actionCount)||0)-(Number(project?.startedAt)||0)),steps=Math.max(1,Number(project?.steps)||1),finished=!!project&&elapsed>=steps;
+  modal(`<h2>🏗 店舗Lv2 建築中</h2><p>建築の進行：<b>${Math.min(steps,elapsed)} / ${steps}</b></p><p>${finished?'建物が完成しました。完成を確認すると新しい店舗に切り替わります。':'森へ出かけ、冒険で時間を進めると工事が進みます。'}</p>`,[
+   ...(finished?[{label:'完成した店舗を確認する',className:'cmdBtn primary',close:false,fn:()=>{try{O.advance();closeModal();renderAll();toast('🏠 店舗Lv2が完成しました！')}catch(e){toast(e.message)}}}]:[]),{label:'閉じる'}]);return
+ }
+ toast('現在、ここで始められる工事はありません。');
+}
 function openProgressFacility(id){
  const aliases={house2:'house',house3:'house'},fid=aliases[id]||id;
  if(fid==='house')indoorRuntime.residentHomeId=id;const P=F.TOWN_PROGRESS;if(P)P.returnEntry={...(P.position||{x:500,y:155})};
@@ -872,7 +888,7 @@ function renderIndoor(id,s){
  const planPath=(id==='shop'&&m.lv===2)?null:ROOM_PLAN_VISUALS[id]?.[m.planLv||m.lv];if(!planPath&&rt.art?.roomPlan){rt.art={...rt.art,roomPlan:null,roomPlanPath:null}}if(planPath&&rt.art?.roomPlanPath!==planPath){rt.art={...(rt.art||{}),roomPlanPath:planPath,roomPlan:null};loadVisualOptional(planPath).then(im=>{if(rt.id===id&&rt.model?.lv===m.lv){rt.art={...(rt.art||{}),roomPlan:im};paintIndoor()}})}
 }
 
-function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),startDungeon:()=>{try{if(!F.OPENING?.canExplore()){toast('先にテントを設営してください');return}F.startRun('beginner_forest');setView('adventure')}catch(e){toast(e.message)}},shop:()=>setView('store'),missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
+function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),startDungeon:()=>{try{if(!F.OPENING?.canExplore()){toast('先にテントを設営してください');return}F.startRun('beginner_forest');setView('adventure')}catch(e){toast(e.message)}},shop:()=>setView('store'),construction:openShopConstructionSite,missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
 function frontierTestAllowed(){return window.FRENDA_TEST?.active!==false&&(window.FRENDA_TEST?.active===true||/\/test\//.test(window.location.pathname)||document.querySelector('.brand small')?.textContent.includes('/ TEST'));}
 function showEconomyBalance(){
  const s=F.readSave(),r=F.BALANCE_RULES,b=F.CUSTOMER_BALANCE;
@@ -1096,3 +1112,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-01 21:10 JST / Ver1.117 — route entry to dungeon from the northern forest path.
 
 // Updated: 2026-11-02 19:25 JST / Ver1.119: return inventory card layout with existing item images.
+
+// Updated: 2026-11-02 19:58 JST / Ver1.120: build and finish Lv2 store by reaching construction site.

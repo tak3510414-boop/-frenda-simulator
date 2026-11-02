@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.119 — approved town stages and north forest gate access. */
+/* Frenda Frontier Ver1.120 — accessible Lv2 building site, start and finish construction. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{},P=F.TOWN_PROGRESS={width:1000,height:480,token:0};
 P.stages=[
  {name:'① 未開拓地',lv:0,point:'gather',added:'構築物なし。自然の草地と踏み跡だけです。'},
@@ -59,6 +59,8 @@ P.path=(scene,from,to)=>{from=P.nearest(scene,from,32);to=P.nearest(scene,to,12)
  const ok=(x,y)=>x>=0&&x<cols&&y>=0&&y<rows&&scene.walkable(x*step+4,y*step+4);if(!ok(tx,ty))return[];const queue=[start],prev=new Map([[start,-1]]);for(let i=0;i<queue.length;i++){const k=queue[i];if(k===goal)break;const x=k%cols,y=Math.floor(k/cols);for(const[d,e]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const nx=x+d,ny=y+e,n=ny*cols+nx;if(!ok(nx,ny)||prev.has(n)||(d&&e&&(!ok(x+d,y)||!ok(x,y+e))))continue;prev.set(n,k);queue.push(n)}}if(!prev.has(goal))return[];const a=[];for(let k=goal;k!==-1;k=prev.get(k))a.push({x:k%cols*step+4,y:Math.floor(k/cols)*step+4});return a.reverse();};
 // Ver1.119: the forest gate remains in the same northern road at every town level.
 P.FOREST_GATE=Object.freeze({x:355,y:36});
+// Lv2 storefront project: construction is started or completed on-site, not at the existing stall.
+P.SHOP_BUILD_SITE=Object.freeze({x:500,y:171});
 P.forestPath=(stage,from)=>{const scene=P.scene(stage),end=P.nearest(scene,P.FOREST_GATE,70);return end?P.path(scene,from,end):[]};
 P.drawAccess=(c,scene,cam)=>{c.save();c.lineWidth=3;c.strokeStyle='#dcc494';for(const o of scene.objects.filter(o=>o.kind==='building')){c.beginPath();c.moveTo(o.door.x-cam.x,o.door.y-10-cam.y);c.lineTo(o.door.x-cam.x,o.door.y+6-cam.y);c.stroke()}c.restore()};
 // Keep the same horizontal zoom; crop vertically to the real visible viewport.
@@ -70,15 +72,32 @@ P.fitCanvas=(host,cv,overview)=>{const height=e=>e?.getBoundingClientRect?.().he
 P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readSave(),stage=P.stageFor(s),spec=P.stages[stage],scene=P.scene(stage),overview=F.WILDERNESS?.overview??false;
  const storyPreview=Number.isInteger(s.story?.opening?.townPreviewStage);
  const canEnterForest=()=>!!actions.startDungeon&&!storyPreview&&(!F.OPENING?.active?.()||!!F.OPENING.canExplore?.());
+ const constructionActive=()=>!!actions.construction&&!storyPreview&&['upgrade','building'].includes(F.OPENING?.phase?.());
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout');document.body.classList.add('progressTownActive');const guidance=F.OPENING?.guidance?.();
  host.innerHTML=(guidance?`<details class="progressGuide"><summary>次にすること<span>${guidance.title}</span></summary>${F.OPENING.guide()}</details>`:'')+`<canvas id="progressCanvas" style="display:block;width:100%;height:auto;touch-action:manipulation;background:#183927" aria-label="${spec.name}の町マップ"></canvas><p id="progressMessage" class="progressMessage" role="status">${canEnterForest()?'北の道の「⬆ はじまりの森」をタップして、歩いて森へ入れます。':'施設をタップして入口へ移動し、下のボタンから利用できます。'}</p><div class="progressCommands ${F.RESIDENTS?.eligible(s)?'hasResident':''}"><button id="progressZoom" class="cmdBtn">${overview?'近くを見る':'町全体'}</button><button id="progressHome" class="cmdBtn">${spec.lv>=1?'店舗へ':'店舗は未設営'}</button><button id="progressMissions" class="cmdBtn">ミッション</button>${F.RESIDENTS?.eligible(s)?'<button id="progressResident" class="cmdBtn">ミナのところへ</button>':''}</div>`;
  if(document.getElementById('nextActions'))F.OPENING?.bind?.(rerender,actions);const cv=document.getElementById('progressCanvas'),msg=document.getElementById('progressMessage');cv.width=overview?1000:480;cv.height=480;document.getElementById('viewTitle').textContent=spec.name;document.getElementById('viewSubtitle').textContent=spec.added;document.getElementById('viewMeta').textContent='施設 '+scene.objects.filter(o=>o.kind==='building').length;document.getElementById('progressMissions').hidden=!actions.missions;document.getElementById('progressMissions').onclick=()=>actions.missions?.();
  document.getElementById('progressZoom').onclick=()=>{F.WILDERNESS.overview=!overview;rerender()};const enter=document.getElementById('progressHome');enter.onclick=()=>{if(spec.lv>=1){if(actions.facility)actions.facility('shop');else actions.shop?.();}else msg.textContent='まだ店舗はありません。'};
  const fit=()=>P.fitCanvas(host,cv,overview);fit();window.addEventListener('resize',fit);window.visualViewport?.addEventListener?.('resize',fit);host.querySelector('.progressGuide')?.addEventListener?.('toggle',fit);P.resizeCleanup=()=>{window.removeEventListener?.('resize',fit);window.visualViewport?.removeEventListener?.('resize',fit);};
  let position=P.position&&scene.walkable(P.position.x,P.position.y)?{...P.position}:P.spawn(stage);if(!position)throw Error('町の開始地点を確認してください。');P.position=position;let route=[],cam={x:0,y:0},last=0,target=null,facing=0;
+ const arriveAtConstruction=()=>{route=[];target=null;P.position={...position};msg.textContent='店舗Lv2の予定地に到着しました。';actions.construction?.();};
+ const routeToConstruction=()=>{if(!constructionActive())return;const end=P.nearest(scene,P.SHOP_BUILD_SITE,28);if(!end){msg.textContent='建築予定地を見つけられません。';return;}const path=P.path(scene,position,end);if(!path.length){msg.textContent='建築予定地へ通れる道がありません。';return;}target={id:'shop_l2_construction',name:'店舗Lv2建築予定地',kind:'construction',door:end};route=path;msg.textContent='🏗 店舗Lv2の予定地へ歩いて移動中……';if(route.length<=1)arriveAtConstruction();};
+ if(constructionActive()){enter.textContent='🏗 店舗Lv2の建築場所へ';enter.onclick=routeToConstruction;}
+
  const residentButton=document.getElementById('progressResident');if(residentButton)residentButton.onclick=()=>{const N=F.RESIDENTS;N.step();const a=N.actor;if(!a)return;N.pauseUntil=Date.now()+20000;const o=a.inside?scene.objects.find(x=>x.id===(a.inside==='forge'?'forge':N.homeId(F.readSave()))):null;target=o?{...o,kind:'residentRoom'}:{id:a.id,name:a.name,kind:'resident',door:{...a.position}};route=P.path(scene,position,target.door);if(target.kind==='resident')while(route.length>1&&Math.hypot(route[route.length-1].x-target.door.x,route[route.length-1].y-target.door.y)<28)route.pop();msg.textContent='ミナのところへ移動中';if(route.length===1){route=[];if(target.kind==='resident')actions.resident?.();else actions.facility?.(target.id);}};
  try{const [art,players]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png'))))]);if(token!==P.token)return;
  const draw=()=>{const focus=F.RESIDENTS?.demo&&!route.length&&F.RESIDENTS.actor?F.RESIDENTS.actor.position:position;cam={x:overview?0:Math.max(0,Math.min(1000-cv.width,focus.x-cv.width/2)),y:overview?0:Math.max(0,Math.min(480-cv.height,focus.y-cv.height/2))};const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;P.drawBackground(c,art,stage,cam);P.drawAccess(c,scene,cam);
+ if(constructionActive()){
+  const site=P.SHOP_BUILD_SITE,x=site.x-cam.x,y=site.y-cam.y,buildingNow=F.OPENING?.phase?.()==='building';
+  // Once work begins, a translucent wooden frame surrounds the future Lv2 shop footprint.
+  if(buildingNow){const bx=449-cam.x,by=25-cam.y;c.save();c.strokeStyle='#f7ce80';c.lineWidth=4;c.setLineDash([8,5]);c.strokeRect(bx,by,105,78);c.setLineDash([]);c.strokeStyle='#76502b';c.lineWidth=5;for(const xx of [bx+6,bx+99]){c.beginPath();c.moveTo(xx,by+3);c.lineTo(xx,by+77);c.stroke()}c.restore()}
+  if(x>=-110&&x<=cv.width+110&&y>=-35&&y<=cv.height+35){
+   c.save();c.fillStyle='rgba(70,48,27,.96)';c.strokeStyle='#f8de9f';c.lineWidth=2;
+   c.fillRect(x-96,y-41,192,30);c.strokeRect(x-96,y-41,192,30);
+   c.fillStyle='#fff4cd';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText(buildingNow?'🏗 店舗Lv2 工事中':'🏗 店舗Lv2 建築予定地',x,y-21);
+   c.fillStyle='#f8dd90';c.beginPath();c.moveTo(x-7,y-7);c.lineTo(x+7,y-7);c.lineTo(x,y+2);c.closePath();c.fill();c.restore();
+  }
+ }
+
  if(canEnterForest()){
   const gx=P.FOREST_GATE.x-cam.x,gy=83-cam.y;
   if(gx>=-90&&gx<=cv.width+90&&gy>=-20&&gy<=cv.height+30){
@@ -89,6 +108,8 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
  }
  F.SHOP_VISITS?.drawTown(c,cam);F.RESIDENTS?.drawTown(c,cam,position,true);P.drawPlayer(c,players[facing],facing,position,cam);F.RESIDENTS?.drawTown(c,cam,position,false);};draw();
  cv.onclick=e=>{const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+cam.x,y:(e.clientY-b.top)/b.height*cv.height};// Tap the northern path or the forest sign; route there first, then enter.
+  // The future store is beside the existing stall. Tapping its marker or shop opens the site workflow.
+  if(constructionActive()&&((Math.abs(p.x-P.SHOP_BUILD_SITE.x)<105&&Math.abs(p.y-P.SHOP_BUILD_SITE.y)<61)||(p.x>=448&&p.x<=580&&p.y>=18&&p.y<=140))){routeToConstruction();return;}
   if(canEnterForest()&&p.y<=155&&Math.abs(p.x-P.FOREST_GATE.x)<=83){
    const end=P.nearest(scene,P.FOREST_GATE,70);
    route=end?P.path(scene,position,end):[];
@@ -99,7 +120,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
    return;
   }
   const npc=F.RESIDENTS?.hitTown(p);if(npc)F.RESIDENTS.pauseUntil=Date.now()+15000;target=npc?{id:'forge_mina',kind:'resident',name:'ミナ',door:{...F.RESIDENTS.actor.position}}:scene.objects.find(o=>p.x>=o.x&&p.x<=o.x+o.w&&p.y>=o.y&&p.y<=o.y+o.h);if(target?.kind==='decoration'){msg.textContent='道を選んでください。';return;}const end=target?target.door:(P.nearest(scene,p,18)||p);route=P.path(scene,position,end);if(npc)while(route.length>1&&Math.hypot(route[route.length-1].x-end.x,route[route.length-1].y-end.y)<28)route.pop();if(route.length===1&&target?.kind==='resident'){route=[];actions.resident?.();}if(route.length===1&&target&&target.kind==='building'){enter.textContent=target.name+'を利用する';const readyId=target.id;enter.onclick=()=>{if(actions.facility)actions.facility(readyId);else msg.textContent='この画面では外観と移動のみ利用できます。'};}msg.textContent=route.length?(target?.kind==='resident'?'ミナの近くへ移動中':target?target.name+'の入口へ移動中':'移動中'):'そこには進めません。道か施設の入口を選んでください。';};
- const tick=now=>{if(token!==P.token||!cv.isConnected)return;F.RESIDENTS?.step(Date.now(),position);let budget=Math.min(.05,(now-last)/1000)*95;last=now;while(route.length&&budget>0){const q=route[0],dx=q.x-position.x,dy=q.y-position.y,d=Math.hypot(dx,dy);if(d<.01){route.shift();continue}facing=Math.abs(dx)>.01&&Math.abs(dy)>.01?(dy<0?(dx<0?4:5):(dx<0?6:7)):(Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1));const n=Math.min(d,budget);position.x+=dx/d*n;position.y+=dy/d*n;budget-=n;if(n===d)route.shift();if(!route.length){if(target?.kind==='forest'){P.position={...position};target=null;msg.textContent='はじまりの森へ入ります。';actions.startDungeon?.();return;}msg.textContent=target?.kind==='resident'?'ミナの近くに着きました。':target?target.name+'の入口に到着しました。':'到着しました。';if(target?.kind==='resident')actions.resident?.();if(target?.kind==='residentRoom')actions.facility?.(target.id);if(target&&target.kind==='building'){enter.textContent=target.name+'を利用する';enter.onclick=()=>{if(actions.facility)actions.facility(target.id);else msg.textContent='この確認画面では外観と移動のみ利用できます。'};}}}draw();requestAnimationFrame(tick)};requestAnimationFrame(tick);
+ const tick=now=>{if(token!==P.token||!cv.isConnected)return;F.RESIDENTS?.step(Date.now(),position);let budget=Math.min(.05,(now-last)/1000)*95;last=now;while(route.length&&budget>0){const q=route[0],dx=q.x-position.x,dy=q.y-position.y,d=Math.hypot(dx,dy);if(d<.01){route.shift();continue}facing=Math.abs(dx)>.01&&Math.abs(dy)>.01?(dy<0?(dx<0?4:5):(dx<0?6:7)):(Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1));const n=Math.min(d,budget);position.x+=dx/d*n;position.y+=dy/d*n;budget-=n;if(n===d)route.shift();if(!route.length){if(target?.kind==='construction'){arriveAtConstruction();return;}if(target?.kind==='forest'){P.position={...position};target=null;msg.textContent='はじまりの森へ入ります。';actions.startDungeon?.();return;}msg.textContent=target?.kind==='resident'?'ミナの近くに着きました。':target?target.name+'の入口に到着しました。':'到着しました。';if(target?.kind==='resident')actions.resident?.();if(target?.kind==='residentRoom')actions.facility?.(target.id);if(target&&target.kind==='building'){enter.textContent=target.name+'を利用する';enter.onclick=()=>{if(actions.facility)actions.facility(target.id);else msg.textContent='この確認画面では外観と移動のみ利用できます。'};}}}draw();requestAnimationFrame(tick)};requestAnimationFrame(tick);
  }catch(e){if(token===P.token)msg.textContent=e.message;}
 };
 // Stage switching uses isolated test saves. Real mission requirements are unchanged.
@@ -130,3 +151,5 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 // Updated: 2026-10-26 18:44 JST / Ver1.70
 
 // Updated: 2026-11-02 19:25 JST / Ver1.119: walk into the northern forest entrance at every live town stage.
+
+// Updated: 2026-11-02 19:58 JST / Ver1.120: construction site path, build/finish event trigger.
