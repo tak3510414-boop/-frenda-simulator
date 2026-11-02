@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja" data-app-version="1.126">
+<html lang="ja" data-app-version="1.128">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Frenda Frontier Ver1.126</title>
+<title>Frenda Frontier Ver1.128</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif;background:#e7eee8;color:#173126}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 :root{--green:#1b6b43;--line:#c9d8cc;--navy:#0d203b;--navy2:#18365f}
@@ -353,9 +353,20 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 .storyChapter.locked{opacity:.72}
 @media(max-width:420px){.storyDialogueCard{grid-template-columns:64px minmax(0,1fr);gap:8px;padding:9px;min-height:116px}.storyDialoguePortraitFrame,.storyDialoguePortrait{width:62px;height:78px}.storyDialogueSpeaker{font-size:12px}.storyDialogueText{font-size:15px}}
 </style>
+<style>
+/* Ver1.128 — player-controlled story pacing. Keep the game world visible. */
+.frontierOpeningStage .openingSpeech{pointer-events:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:9px;align-items:end}
+.frontierOpeningStage .openingSpeech small{grid-column:1 / -1}
+.frontierOpeningStage .openingSpeech p{grid-column:1;min-width:0;max-height:6.3em;overflow-y:auto;line-height:1.56}
+.frontierOpeningStage .openingContinue{grid-column:2;align-self:end;flex:none;border:1px solid #f6daa0;border-radius:4px;background:#654b27;color:#fff8dd;padding:8px 9px;min-width:84px;min-height:38px;font-size:12px;font-weight:900;cursor:pointer;touch-action:manipulation}
+.frontierOpeningStage .openingContinue:focus-visible{outline:3px solid #f7d775;outline-offset:2px}
+@media(max-width:380px){.frontierOpeningStage .openingSpeech{grid-template-columns:1fr}.frontierOpeningStage .openingSpeech p{grid-column:1;max-height:6.5em}.frontierOpeningStage .openingContinue{grid-column:1;justify-self:end;margin-top:6px}}
+#frontierModal.storyModal .storyDialogueHint{font-size:11px;line-height:1.5;color:#f7e3b6}
+#frontierModal.storyModal .storyDialogueText{line-height:1.6}
+</style>
 </head>
 <body>
-<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.126 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
+<header><div class="head"><div id="frontierUserHost"></div><div class="brand"><b>Frenda Frontier</b><small>Ver1.128 / TEST</small></div><div class="headStats" id="headStats"></div></div></header>
 <main>
  <div class="notice">🌱 森の入口から物語が始まります。会話を読み進め、次の目的に沿って冒険と町づくりを進めよう。</div>
  <div class="topNav" id="mainNav"><button class="on" data-view="home">🏠 拠点</button><button data-view="adventure">🗺️ 冒険</button><button data-view="store">🏪 お店</button></div>
@@ -474,3 +485,8 @@ body.progressTownActive .gameHeader #viewMeta{white-space:nowrap}
 <!-- Updated: 2026-11-03 03:53 JST / Ver1.126 release. -->
 
 <!-- Updated: 2026-11-03 03:55 JST / Ver1.126 release. -->
+
+<!-- Updated: 2026-11-03 JST / Ver1.127: store Lv6 and town story. -->
+
+<!-- Updated: 2026-11-03 04:38 JST / Ver1.128: story dialogue readability. -->
+<!-- Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128. -->

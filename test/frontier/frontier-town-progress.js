@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.126 — east market / tavern construction site and Lv5 chapter. */
+/* Frenda Frontier Ver1.127 — Lv6 construction, detached home and final town artwork. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{},P=F.TOWN_PROGRESS={width:1000,height:480,token:0};
 P.stages=[
  {name:'① 未開拓地',lv:0,point:'gather',added:'構築物なし。自然の草地と踏み跡だけです。'},
@@ -8,15 +8,15 @@ P.stages=[
  {name:'⑤ 店舗 Lv3・倉庫',lv:3,point:'lv3',added:'店舗を拡張し、隣の区画に倉庫を設置。工房の工事が始まります。'},
  {name:'⑥ 店舗 Lv4・職人の定住',lv:4,point:'lv4',added:'鍛冶屋と職人の住居。主要路と橋を整備します。'},
  {name:'⑦ 店舗 Lv5・旅人の町',lv:5,point:'lv5',added:'市場・酒場兼宿屋・冒険掲示板。広場にベンチと花壇を設置します。'},
- {name:'⑧ 店舗 Lv6・冒険の拠点',lv:6,point:'lv6',added:'預かり所・噴水・街灯・住居を整備。掲示板は噴水のそばです。'},
- {name:'⑨ 店舗 Lv7・完成した町',lv:7,point:'lv7',added:'店舗専用化と店主の専用住宅。倉庫、市場、鍛冶屋、酒場、広場が最終形になります。'}
+ {name:'⑧ 店舗 Lv6 建設中',lv:5,point:'lv5',added:'店主の住宅と新店舗の建設が進んでいます。'},
+ {name:'⑨ 店舗 Lv6・完成した町',lv:6,point:'lv6',added:'店舗は9棚・住居は別棟。預かり所と広場も完成した町。'}
 ];
 const crops=[[12,90,1000,475],[12,610,1000,475],[12,1130,1000,395]],names=['frontier-town-stages-a-v163.png','frontier-town-stages-b-v163.png','frontier-town-stages-c-v163.png'];
 const cache=new Map();P.image=src=>{if(!cache.has(src))cache.set(src,new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('画像を読み込めません：'+src));im.src=src}));return cache.get(src)};
 P.spriteCrops=[[2, 3, 43, 68], [2, 4, 43, 67], [2, 7, 43, 64], [2, 4, 43, 67], [170, 37, 307, 486], [183, 23, 297, 486], [85, 5, 307, 471], [155, 54, 304, 471]];
 P.drawPlayer=(c,im,i,p,cam={x:0,y:0})=>{const crop=P.spriteCrops[i],h=34,w=Math.min(34,h*crop[2]/crop[3]);c.drawImage(im,...crop,p.x-cam.x-w/2,p.y-cam.y-h,w,h)};
 P.art=()=>Promise.all(names.map(P.image));P.stop=()=>{P.token++;P.resizeCleanup?.();P.resizeCleanup=null;};
-P.stageFor=s=>{const o=s?.story?.opening;if(!o)return null;if(Number.isInteger(o.townPreviewStage))return Math.max(0,Math.min(8,o.townPreviewStage));if(o.phase==='arrival')return 0;if(['tent','mission1'].includes(o.phase))return 1;if(['stocking','first_sale','upgrade'].includes(o.phase))return 2;if(o.phase==='building')return 2;return Math.max(3,Math.min(8,(Number(s.development?.town?.facilities?.shop)||2)+1))};
+P.stageFor=s=>{const o=s?.story?.opening;if(!o)return null;if(Number.isInteger(o.townPreviewStage))return Math.max(0,Math.min(8,o.townPreviewStage));if(o.phase==='arrival')return 0;if(['tent','mission1'].includes(o.phase))return 1;if(['stocking','first_sale','upgrade'].includes(o.phase))return 2;if(o.phase==='building')return 2;if(o.lv6Project)return 7;const shop=Number(s.development?.town?.facilities?.shop)||2;return shop>=6?8:Math.max(3,Math.min(6,shop+1))};
 const navMasks=new Map();
 P.drawBackground=(c,art,stage,cam={x:0,y:0})=>{c.drawImage(art[Math.floor(stage/3)],...crops[stage%3],-cam.x,-cam.y,P.width,P.height);if(P.debugNav){if(!navMasks.has(stage)){const cv=document.createElement('canvas');cv.width=1000;cv.height=480;const q=cv.getContext('2d'),scene=P.scene(stage);for(let y=0;y<480;y+=8)for(let x=0;x<1000;x+=8){q.fillStyle=scene.walkable(x+4,y+4)?'rgba(0,200,100,.40)':'rgba(220,30,30,.30)';q.fillRect(x,y,8,8)}navMasks.set(stage,cv)}c.drawImage(navMasks.get(stage),-cam.x,-cam.y)}};
 const box=(id,name,x,y,w,h,kind='building')=>({id,name,x,y,w,h,kind,door:{x:x+w/2,y:y+h+12}});
@@ -63,7 +63,8 @@ P.FOREST_GATE=Object.freeze({x:355,y:36});
 P.SHOP_BUILD_SITE=Object.freeze({x:500,y:171});
 P.LV3_SITE=Object.freeze({x:608,y:145}); // East side of the Lv2 shop, on an existing public road.
 P.LV4_SITE=Object.freeze({x:355,y:180}); // West road, outside the planned forge footprint.
-P.LV5_SITE=Object.freeze({x:816,y:173}); // East public road; future inn/mart stand nearby after completion.
+P.LV5_SITE=Object.freeze({x:816,y:173});
+P.LV6_SITE=Object.freeze({x:641,y:146}); // Public central road, accessible from stages 6 and 7. // East public road; future inn/mart stand nearby after completion.
 P.forestPath=(stage,from)=>{const scene=P.scene(stage),end=P.nearest(scene,P.FOREST_GATE,70);return end?P.path(scene,from,end):[]};
 P.drawAccess=(c,scene,cam)=>{c.save();c.lineWidth=3;c.strokeStyle='#dcc494';for(const o of scene.objects.filter(o=>o.kind==='building')){c.beginPath();c.moveTo(o.door.x-cam.x,o.door.y-10-cam.y);c.lineTo(o.door.x-cam.x,o.door.y+6-cam.y);c.stroke()}c.restore()};
 // Keep the same horizontal zoom; crop vertically to the real visible viewport.
@@ -79,6 +80,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
  const lv3Active=()=>!!actions.lv3Site&&!storyPreview&&['meet','gather','ready','building','finish'].includes(F.OPENING?.lv3Status?.(F.readSave()).phase);
  const lv4Active=()=>!!actions.lv4Site&&!storyPreview&&['meet','gather','ready','building','finish'].includes(F.OPENING?.lv4Status?.(F.readSave()).phase);
  const lv5Active=()=>!!actions.lv5Site&&!storyPreview&&['meet','gather','ready','building','finish'].includes(F.OPENING?.lv5Status?.(F.readSave()).phase);
+ const lv6Active=()=>!!actions.lv6Site&&!storyPreview&&['meet','gather','ready','building','finish'].includes(F.OPENING?.lv6Status?.(F.readSave()).phase);
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout');document.body.classList.add('progressTownActive');const guidance=F.OPENING?.guidance?.();
  host.innerHTML=(guidance?`<details class="progressGuide"><summary>次にすること<span>${guidance.title}</span></summary>${F.OPENING.guide()}</details>`:'')+`<canvas id="progressCanvas" style="display:block;width:100%;height:auto;touch-action:manipulation;background:#183927" aria-label="${spec.name}の町マップ"></canvas><p id="progressMessage" class="progressMessage" role="status">${canEnterForest()?'北の道の「⬆ はじまりの森」をタップして、歩いて森へ入れます。':'施設をタップして入口へ移動し、下のボタンから利用できます。'}</p><div class="progressCommands ${F.RESIDENTS?.eligible(s)?'hasResident':''}"><button id="progressZoom" class="cmdBtn">${overview?'近くを見る':'町全体'}</button><button id="progressHome" class="cmdBtn">${spec.lv>=1?'店舗へ':'店舗は未設営'}</button><button id="progressMissions" class="cmdBtn">ミッション</button>${F.RESIDENTS?.eligible(s)?'<button id="progressResident" class="cmdBtn">ミナのところへ</button>':''}</div>`;
  if(document.getElementById('nextActions'))F.OPENING?.bind?.(rerender,actions);const cv=document.getElementById('progressCanvas'),msg=document.getElementById('progressMessage');cv.width=overview?1000:480;cv.height=480;document.getElementById('viewTitle').textContent=spec.name;document.getElementById('viewSubtitle').textContent=spec.added;document.getElementById('viewMeta').textContent='施設 '+scene.objects.filter(o=>o.kind==='building').length;document.getElementById('progressMissions').hidden=!actions.missions;document.getElementById('progressMissions').onclick=()=>actions.missions?.();
@@ -94,14 +96,20 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
  const arriveAtLv3=()=>{route=[];target=null;P.position={...position};msg.textContent='ミナのところに到着しました。';actions.lv3Site?.();};
  const arriveAtLv4=()=>{route=[];target=null;P.position={...position};msg.textContent='工房の予定地に着きました。';actions.lv4Site?.();};
  const arriveAtLv5=()=>{route=[];target=null;P.position={...position};msg.textContent='東の建設予定地に着きました。';actions.lv5Site?.();};
+ const arriveAtLv6=()=>{route=[];target=null;P.position={...position};msg.textContent='最後の建築予定地へ到着しました。';actions.lv6Site?.();};
  const routeToLv3=()=>{if(!lv3Active())return;const end=P.nearest(scene,P.LV3_SITE,30);if(!end){msg.textContent='ミナのいる道を見つけられません。';return;}const path=P.path(scene,position,end);if(!path.length){msg.textContent='ミナのところへ通れる道がありません。';return;}target={id:'lv3_carpenter_mina',kind:'lv3Site',name:'旅の職人ミナ',door:end};route=path;msg.textContent='🛠 ミナのところへ歩いています……';if(route.length<=1)arriveAtLv3();};
  const routeToLv4=()=>{if(!lv4Active())return;const end=P.nearest(scene,P.LV4_SITE,35);if(!end){msg.textContent='工房予定地に通れる道がありません。';return;}const path=P.path(scene,position,end);if(!path.length){msg.textContent='工房予定地までの道を確認できません。';return;}target={id:'lv4_carpenter_mina',kind:'lv4Site',name:'ミナと工房予定地',door:end};route=path;msg.textContent='⚒️ 工房予定地へ歩いています……';if(route.length<=1)arriveAtLv4();};
+ const homeVisitPending=()=>!!actions.facility&&!storyPreview&&!!F.readSave()?.story?.opening?.lv6Finished&&!F.readSave()?.story?.opening?.lv6HomeVisited;
+ const routeToOwnerHome=()=>{const home=scene.objects.find(x=>x.id==='owner_home');if(!home){msg.textContent='専用住宅がまだ表示されていません。';return;}const end=P.nearest(scene,home.door,36);const path=end?P.path(scene,position,end):[];if(!path.length){msg.textContent='専用住宅への道が見つかりません。';return;}target={id:'owner_home',kind:'ownerHome',name:'店主の専用住宅',door:end};route=path;msg.textContent='🏡 店主の専用住宅へ向かっています……';if(route.length<=1){route=[];target=null;actions.facility?.('owner_home')}};
+ const routeToLv6=()=>{if(!lv6Active())return;const end=P.nearest(scene,P.LV6_SITE,56);if(!end){msg.textContent='中央の予定地が見つかりません。';return;}const path=P.path(scene,position,end);if(!path.length){msg.textContent='中央の予定地まで通れる道がありません。';return;}target={id:'lv6_final_construction',kind:'lv6Site',name:'店舗Lv6と店主の家',door:end};route=path;msg.textContent='🏡 中央の建築予定地へ歩いています……';if(route.length<=1)arriveAtLv6();};
  const routeToLv5=()=>{if(!lv5Active())return;const end=P.nearest(scene,P.LV5_SITE,48);if(!end){msg.textContent='旅商人のいる道を見つけられません。';return;}const path=P.path(scene,position,end);if(!path.length){msg.textContent='東の建設予定地まで通れる道がありません。';return;}target={id:'lv5_market_merchant',kind:'lv5Site',name:'旅商人リオと建設予定地',door:end};route=path;msg.textContent='🧺 旅商人リオのところへ歩いています……';if(route.length<=1)arriveAtLv5();};
  const routeToConstruction=()=>{if(!constructionActive())return;const end=P.nearest(scene,P.SHOP_BUILD_SITE,28);if(!end){msg.textContent='建築予定地を見つけられません。';return;}const path=P.path(scene,position,end);if(!path.length){msg.textContent='建築予定地へ通れる道がありません。';return;}target={id:'shop_l2_construction',name:'店舗Lv2建築予定地',kind:'construction',door:end};route=path;msg.textContent='🏗 店舗Lv2の予定地へ歩いて移動中……';if(route.length<=1)arriveAtConstruction();};
  if(constructionActive()){enter.textContent='🏗 店舗Lv2の建築場所へ';enter.onclick=routeToConstruction;}
  if(lv3Active()){enter.textContent='🛠 ミナのところへ';enter.onclick=routeToLv3;}
  if(lv4Active()){enter.textContent='⚒️ 工房予定地へ';enter.onclick=routeToLv4;}
  if(lv5Active()){enter.textContent='🧺 東の建築予定地へ';enter.onclick=routeToLv5;}
+ if(lv6Active()){enter.textContent='🏡 最後の建築予定地へ';enter.onclick=routeToLv6;}
+ if(homeVisitPending()){enter.textContent='🏡 店主の専用住宅へ';enter.onclick=routeToOwnerHome;}
 
  const residentButton=document.getElementById('progressResident');if(residentButton)residentButton.onclick=()=>{const N=F.RESIDENTS;N.step();const a=N.actor;if(!a)return;N.pauseUntil=Date.now()+20000;const o=a.inside?scene.objects.find(x=>x.id===(a.inside==='forge'?'forge':N.homeId(F.readSave()))):null;target=o?{...o,kind:'residentRoom'}:{id:a.id,name:a.name,kind:'resident',door:{...a.position}};route=P.path(scene,position,target.door);if(target.kind==='resident')while(route.length>1&&Math.hypot(route[route.length-1].x-target.door.x,route[route.length-1].y-target.door.y)<28)route.pop();msg.textContent='ミナのところへ移動中';if(route.length===1){route=[];if(target.kind==='resident')actions.resident?.();else actions.facility?.(target.id);}};
  try{const [art,players]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png'))))]);if(token!==P.token)return;
@@ -146,6 +154,16 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
    c.fillText(st?.phase==='finish'?'🏮 市場・酒場の工事完成':st?.phase==='building'?'🏗 市場・酒場を建築中':'🧺 旅商人リオ／建設予定地',x,y-35);c.restore();
   }
  }
+ if(lv6Active()){
+  const x=P.LV6_SITE.x-cam.x,y=P.LV6_SITE.y-cam.y,st=F.OPENING?.lv6Status?.();
+  if(x>=-130&&x<=cv.width+130&&y>=-70&&y<=cv.height+70){
+   c.save();c.fillStyle='rgba(35,29,24,.96)';c.strokeStyle='#f3d99d';c.lineWidth=2;
+   c.fillRect(x-113,y-54,226,30);c.strokeRect(x-113,y-54,226,30);
+   c.fillStyle='#fff1c4';c.textAlign='center';c.font='bold 12px sans-serif';
+   c.fillText(st?.phase==='finish'?'🏡 最後の工事が完成':st?.phase==='building'?'🏗 店舗Lv6・住宅 建築中':'🏡 最後の建築予定地：ミナ',x,y-35);
+   c.fillStyle='#f0d495';c.beginPath();c.moveTo(x-7,y-16);c.lineTo(x+7,y-16);c.lineTo(x,y-5);c.closePath();c.fill();c.restore();
+  }
+ }
  if(canEnterForest()){
   const gx=P.FOREST_GATE.x-cam.x,gy=83-cam.y;
   if(gx>=-90&&gx<=cv.width+90&&gy>=-20&&gy<=cv.height+30){
@@ -157,6 +175,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
  F.SHOP_VISITS?.drawTown(c,cam);F.RESIDENTS?.drawTown(c,cam,position,true);P.drawPlayer(c,players[facing],facing,position,cam);F.RESIDENTS?.drawTown(c,cam,position,false);};draw();
  cv.onclick=e=>{const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+cam.x,y:(e.clientY-b.top)/b.height*cv.height};// Tap the northern path or the forest sign; route there first, then enter.
   // The future store is beside the existing stall. Tapping its marker or shop opens the site workflow.
+  if(lv6Active()&&Math.abs(p.x-P.LV6_SITE.x)<116&&Math.abs(p.y-(P.LV6_SITE.y-20))<70){routeToLv6();return;}
   if(lv5Active()&&Math.abs(p.x-P.LV5_SITE.x)<113&&Math.abs(p.y-(P.LV5_SITE.y-20))<70){routeToLv5();return;}
   if(lv4Active()&&Math.abs(p.x-P.LV4_SITE.x)<104&&Math.abs(p.y-(P.LV4_SITE.y-19))<64){routeToLv4();return;}
   if(lv3Active()&&Math.abs(p.x-P.LV3_SITE.x)<84&&Math.abs(p.y-(P.LV3_SITE.y-17))<59){routeToLv3();return;}
@@ -171,7 +190,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
    return;
   }
   const npc=F.RESIDENTS?.hitTown(p);if(npc)F.RESIDENTS.pauseUntil=Date.now()+15000;target=npc?{id:'forge_mina',kind:'resident',name:'ミナ',door:{...F.RESIDENTS.actor.position}}:scene.objects.find(o=>p.x>=o.x&&p.x<=o.x+o.w&&p.y>=o.y&&p.y<=o.y+o.h);if(target?.kind==='decoration'){msg.textContent='道を選んでください。';return;}const end=target?target.door:(P.nearest(scene,p,18)||p);route=P.path(scene,position,end);if(npc)while(route.length>1&&Math.hypot(route[route.length-1].x-end.x,route[route.length-1].y-end.y)<28)route.pop();if(route.length===1&&target?.kind==='resident'){route=[];actions.resident?.();}if(route.length===1&&target&&target.kind==='building'){enter.textContent=target.name+'を利用する';const readyId=target.id;enter.onclick=()=>{if(actions.facility)actions.facility(readyId);else msg.textContent='この画面では外観と移動のみ利用できます。'};}msg.textContent=route.length?(target?.kind==='resident'?'ミナの近くへ移動中':target?target.name+'の入口へ移動中':'移動中'):'そこには進めません。道か施設の入口を選んでください。';};
- const completeRoute=()=>{if(target?.kind==='lv5Site'){arriveAtLv5();return true;}if(target?.kind==='lv4Site'){arriveAtLv4();return true;}if(target?.kind==='lv3Site'){arriveAtLv3();return true;}if(target?.kind==='construction'){arriveAtConstruction();return true;}if(target?.kind==='forest'){P.position={...position};target=null;msg.textContent='はじまりの森へ入ります。';actions.startDungeon?.();return true;}msg.textContent=target?.kind==='resident'?'ミナの近くに着きました。':target?target.name+'の入口に到着しました。':'到着しました。';if(target?.kind==='resident')actions.resident?.();if(target?.kind==='residentRoom')actions.facility?.(target.id);if(target&&target.kind==='building'){enter.textContent=target.name+'を利用する';enter.onclick=()=>{if(actions.facility)actions.facility(target.id);else msg.textContent='この確認画面では外観と移動のみ利用できます。'};}return false;};
+ const completeRoute=()=>{if(target?.kind==='ownerHome'){route=[];target=null;actions.facility?.('owner_home');return true;}if(target?.kind==='lv6Site'){arriveAtLv6();return true;}if(target?.kind==='lv5Site'){arriveAtLv5();return true;}if(target?.kind==='lv4Site'){arriveAtLv4();return true;}if(target?.kind==='lv3Site'){arriveAtLv3();return true;}if(target?.kind==='construction'){arriveAtConstruction();return true;}if(target?.kind==='forest'){P.position={...position};target=null;msg.textContent='はじまりの森へ入ります。';actions.startDungeon?.();return true;}msg.textContent=target?.kind==='resident'?'ミナの近くに着きました。':target?target.name+'の入口に到着しました。':'到着しました。';if(target?.kind==='resident')actions.resident?.();if(target?.kind==='residentRoom')actions.facility?.(target.id);if(target&&target.kind==='building'){enter.textContent=target.name+'を利用する';enter.onclick=()=>{if(actions.facility)actions.facility(target.id);else msg.textContent='この確認画面では外観と移動のみ利用できます。'};}return false;};
  const tick=now=>{if(token!==P.token||!cv.isConnected)return;F.RESIDENTS?.step(Date.now(),position);let budget=Math.min(.05,(now-last)/1000)*95;last=now;while(route.length&&budget>0){const q=route[0],dx=q.x-position.x,dy=q.y-position.y,d=Math.hypot(dx,dy);if(d<.01){route.shift();if(!route.length&&completeRoute())return;continue}facing=Math.abs(dx)>.01&&Math.abs(dy)>.01?(dy<0?(dx<0?4:5):(dx<0?6:7)):(Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1));const n=Math.min(d,budget);position.x+=dx/d*n;position.y+=dy/d*n;P.position={...position};budget-=n;if(n===d)route.shift();if(!route.length&&completeRoute())return;}draw();requestAnimationFrame(tick)};requestAnimationFrame(tick);
  }catch(e){if(token===P.token)msg.textContent=e.message;}
 };
@@ -179,7 +198,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
 if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
  O.points.unshift(...P.stages.map((x,i)=>['town'+i,'町全体：'+x.name]));
  O.makePoint=id=>{if(!/^town[0-8]$/.test(id))return make(id);const n=Number(id.slice(4)),s=make(P.stages[n].point);s.story.opening.townPreviewStage=n;if(n===0)s.story.opening.phase='arrival';s.development.town.facilities.shop=P.stages[n].lv;
- Object.assign(s.development.town.facilities,{warehouse:n>=4?Math.min(2,n-3):0,forge:n>=5?Math.min(6,(n-4)*2):0,house:n>=5?Math.min(6,(n-4)*2):0,market:n>=6?(n===8?2:1):0,inn:n>=6?(n===8?6:1):0,adventure_board:n>=6?(n>=7?2:1):0,plaza:n>=6?(n>=7?2:1):0,bank:n>=7?1:0,owner_home:n>=8?1:0});s.shelves=Array([0,3,3,4,5,6,6,9][P.stages[n].lv]).fill(null);return s;};
+ Object.assign(s.development.town.facilities,{warehouse:n>=4?Math.min(2,n-3):0,forge:n>=5?Math.min(6,(n-4)*2):0,house:n>=5?Math.min(6,(n-4)*2):0,market:n>=6?(n===8?2:1):0,inn:n>=6?(n===8?6:1):0,adventure_board:n>=6?(n>=7?2:1):0,plaza:n>=6?(n>=7?2:1):0,bank:n>=7?1:0,owner_home:n>=8?1:0});s.shelves=Array([0,3,3,4,5,6,9][P.stages[n].lv]).fill(null);return s;};
  O.switchPoint=id=>{P.stop();P.position=null;sw(id)};
  const old=F.WILDERNESS.mount,stop=F.WILDERNESS.stop;F.WILDERNESS.stop=()=>{P.stop();stop()};F.WILDERNESS.mount=(...args)=>{const stage=P.stageFor(F.readSave());if(stage!==null)return P.mount(...args);return old(...args)};
 }
@@ -219,3 +238,6 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 // Updated: 2026-11-03 03:53 JST / Ver1.126: subpixel route completion invokes arrival callback exactly once.
 
 // Updated: 2026-11-03 03:55 JST / Ver1.126 release.
+
+// Updated: 2026-11-03 JST / Ver1.127: final stage 8 maps to store Lv6, on-site event.
+// Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.

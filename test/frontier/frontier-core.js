@@ -656,3 +656,4 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 // Updated: 2026-11-01 19:44 JST / Ver1.113: idempotent dungeon finish and EXP rollover.
 
 // Updated: 2026-11-02 20:30 JST / Ver1.121: stepping on a tile triggers its trap; attacking without movement does not.
+// Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.

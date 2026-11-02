@@ -1,8 +1,8 @@
-/* Frenda Frontier Ver1.118 / animated prologue on the approved town map. */
+/* Frenda Frontier Ver1.128 / player-paced story and cinematic prologue. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:118};
+const C=F.OPENING_CINEMATIC={active:false,revision:128};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
 C.north=north;C.camp=camp;
@@ -14,12 +14,12 @@ C.mount=async(host,rerender,actions={})=>{
  const s=F.readSave(),o=s.story.opening,auto=(o.phase==='arrival'&&!o.cinematicComplete)||(o.phase==='tent'&&!o.cinematicComplete);
  let stage=o.phase==='arrival'?0:1,scene=P.scene(stage),position=P.position&&scene.walkable(P.position.x,P.position.y)?{...P.position}:P.spawn(stage);
  if(!position)position=P.spawn(stage)||{x:500,y:146};P.position=position;
- let artwork=null,players=null,cam={x:0,y:0},facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,locked=auto,cinematicFinished=false;
+ let artwork=null,players=null,cam={x:0,y:0},facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,locked=auto,cinematicFinished=false,pendingCaption=null;
  C.active=auto;O.cinematicActive=auto;
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout','frontierOpeningStage');document.body.classList.add('progressTownActive');
  const g=O.guidance();
- host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングでは主人公が自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><p id="openingWords"></p></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。主人公が自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${W.overview?'近くを見る':'地図全体'}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
- const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip');
+ host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングでは主人公が自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。主人公が自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${W.overview?'近くを見る':'地図全体'}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
+ const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip');
  const size=()=>{const w=Math.max(280,Math.min(980,wrap.getBoundingClientRect().width||window.innerWidth||390)),h=window.visualViewport?.height||window.innerHeight||780,available=Math.max(220,Math.min(610,h-290)),cssHeight=W.overview?w*.48:Math.min(available,w);cv.width=W.overview?1000:480;cv.height=W.overview?480:Math.max(200,Math.min(480,Math.round(cssHeight*480/w)));cv.style.width='100%';cv.style.height=`${cssHeight}px`;};
  size();window.addEventListener('resize',size);window.visualViewport?.addEventListener?.('resize',size);
  const cleanup=()=>{window.removeEventListener('resize',size);window.visualViewport?.removeEventListener?.('resize',size);};
@@ -40,43 +40,78 @@ C.mount=async(host,rerender,actions={})=>{
   draw(now);requestAnimationFrame(tick);
  };
  const wait=ms=>new Promise(resolve=>setTimeout(()=>resolve(active()),ms));
- const caption=async(who,line,ms=2300)=>{if(!active())return false;speaker.textContent=who;words.textContent=line;speech.hidden=false;return wait(ms)};
+ // Ver1.128: conversation never advances on a timer. The player chooses when
+ // to read the next line, while movement and building remain cinematic.
+ const caption=(who,line,progress='')=>new Promise(resolve=>{
+  if(!active()){resolve(false);return;}
+  speaker.textContent=progress?`${progress}　${who}`:who;
+  words.textContent=line;speech.hidden=false;
+  continueBtn.textContent='▶ つづける';
+  const advance=()=>{if(!pendingCaption||pendingCaption.done)return;pendingCaption.done=true;pendingCaption=null;continueBtn.onclick=null;speech.onclick=null;speech.hidden=true;resolve(active())};
+  pendingCaption={done:false,advance,resolve};
+  continueBtn.onclick=advance;
+  speech.onclick=e=>{if(e.target===continueBtn)return;advance()};
+ });
+ const chapter=async id=>{
+  const scene=O.SCENES[id];if(!scene)return true;
+  for(let i=0;i<scene.lines.length;i++){
+   const line=scene.lines[i];
+   if(!await caption(line.speaker||'ナレーション',line.text,`${scene.chapter||'物語'} ${i+1}/${scene.lines.length}`))return false;
+  }
+  return true;
+ };
  const walk=async(p,label)=>{if(!active())return false;const target=P.nearest(scene,p,40);if(!target)throw Error(`${label}への道が見つかりません。`);route=P.path(scene,position,target);if(!route.length)throw Error(`${label}への通路がつながっていません。`);if(route.length===1){position={...route[0]};route=[];return true}return new Promise(resolve=>movingResolve=resolve)};
- const markSeen=()=>F.mutateSave(s=>{const o=O.ensureSceneState(s.story.opening);for(const id of ['arrival','entranceClue','camp','firstDeparture']){o.sceneSeen[id]=true;o.sceneQueue=o.sceneQueue.filter(x=>x!==id)}o.cinematicComplete=true;o.prologueVersion=Math.max(2,Number(o.prologueVersion)||2)});
- const finish=()=>{if(!active()||cinematicFinished)return;cinematicFinished=true;cleanup();route=[];movingResolve?.(false);movingResolve=null;const phase=O.phase();try{
-  if(phase==='arrival'){if(!O.state().entranceInspected)O.inspectEntrance();O.advance();}
-  if(O.phase()==='tent')O.advance();markSeen();
-  C.active=false;O.cinematicActive=false;locked=false;speech.hidden=true;skip.hidden=true;hint.textContent='テントが完成しました。北の道を進むと「はじまりの森」に入れます。';
-  rerender();
- }catch(err){C.active=false;O.cinematicActive=false;locked=false;skip.hidden=true;hint.textContent=`進行を確認してください：${err.message}`;}};
+ const markSeen=(skipped=false)=>F.mutateSave(s=>{
+  const o=O.ensureSceneState(s.story.opening);o.sceneSkipped=o.sceneSkipped||{};
+  for(const id of ['arrival','entranceClue','camp','firstDeparture']){
+   if(skipped)o.sceneSkipped[id]=true;else o.sceneSeen[id]=true;
+   o.sceneQueue=o.sceneQueue.filter(x=>x!==id);
+  }
+  o.cinematicComplete=true;o.prologueVersion=Math.max(2,Number(o.prologueVersion)||2);
+ });
+ const finish=(skipped=false)=>{
+  if(!active()||cinematicFinished)return;
+  cinematicFinished=true;cleanup();route=[];
+  if(pendingCaption){pendingCaption.done=true;pendingCaption.resolve(false);pendingCaption=null;}
+  continueBtn.onclick=null;speech.onclick=null;
+  movingResolve?.(false);movingResolve=null;
+  try{
+   if(O.phase()==='arrival'){if(!O.state().entranceInspected)O.inspectEntrance();O.advance()}
+   if(O.phase()==='tent')O.advance();
+   markSeen(skipped);
+   C.active=false;O.cinematicActive=false;locked=false;speech.hidden=true;skip.hidden=true;
+   hint.textContent='テントが完成しました。北の道を進むと「はじまりの森」に入れます。';
+   rerender();
+  }catch(err){C.active=false;O.cinematicActive=false;locked=false;skip.hidden=true;hint.textContent=`進行を確認してください：${err.message}`;}
+ };
  const play=async()=>{try{
   if(!active())return;
   if(O.phase()==='arrival'){
-   await caption('ナレーション','森の入口に、昨日までなかった迷宮が現れた。',2400);
-   if(!active())return;
+   const opening=O.SCENES.arrival;
+   // The protagonist starts walking as the first observations are read.
+   if(!await caption('ナレーション',opening.lines[0].text,'序章 1/'+opening.lines.length))return;
    const approach=walk(north,'森の入口');
-   await caption('旅の冒険者','あの森の奥で、青白い光が見えたんだ。',2650);
+   for(let i=1;i<opening.lines.length;i++)if(!await caption(opening.lines[i].speaker,opening.lines[i].text,`序章 ${i+1}/${opening.lines.length}`))return;
    if(!await approach||!active())return;
-   await caption('開拓者','古い石に、木の根と光の模様……。一体何だろう？',2700);
-   if(!active())return;
    if(!O.state().entranceInspected)O.inspectEntrance();
-   await caption('旅の冒険者','迷宮から帰ってくる人には、休める場所が必要だ。',2450);
-   if(!active())return;
+   if(!await chapter('entranceClue'))return;
    const returnWalk=walk(camp,'テント予定地');
-   await caption('開拓者','ここならテントを張れそう。小さな拠点を作ろう！',2500);
+   if(!await caption('ナレーション','ふたりは森の入口に背を向け、風をしのげる草地へ戻った。','テント設営'))return;
+   if(!await caption('開拓者','まずは小さくてもいい。ここを、無事に帰ってきた人の目印にしよう。','テント設営'))return;
    if(!await returnWalk||!active())return;
-   await caption('ナレーション','杭を打ち、ロープを張って、布を広げる。',1500);
-   if(!active())return;
-   speech.hidden=true;building=true;buildAt=performance.now();hint.textContent='テントを設営中……';
-   await wait(1900);if(!active())return;
-   building=false;O.advance();stage=1;scene=P.scene(1);artwork=artwork;hint.textContent='テントが完成しました！';
+   if(!await caption('ナレーション','地面を確かめ、杭を打ち、ロープを張る。布が風を受けて少しずつ形を作っていく。','テント設営'))return;
+   speech.hidden=true;building=true;buildAt=performance.now();hint.textContent='テントを設営しています……';
+   if(!await wait(2100)||!active())return;
+   building=false;O.advance();stage=1;scene=P.scene(1);hint.textContent='テントが完成しました！';
   }
   if(O.phase()==='tent'){
-   await caption('旅の冒険者','立派な拠点だ！ これで帰ってくる場所ができた。',2350);
-   await caption('開拓者','次は、食料や薬草を置ける小さな店を作りたい。',2450);
-   await caption('旅の冒険者','木材を3つ、商品を1つ。森で集めたらロープで戻ろう。',2800);
+   if(!await chapter('camp'))return;
+   O.advance();
   }
-  finish();
+  if(O.phase()==='mission1'&&auto){
+   if(!await chapter('firstDeparture'))return;
+  }
+  finish(false);
  }catch(err){if(active()){C.active=false;O.cinematicActive=false;locked=false;skip.hidden=true;speech.hidden=true;hint.textContent=`演出を続けられません：${err.message}。地図から手動で進めてください。`;}}};
  const enterForest=()=>{if(!O.canExplore()){hint.textContent='先に拠点を作りましょう。';return}actions.startDungeon?.()};
  const interact=()=>{if(!active()||locked)return;const phase=O.phase();if(phase==='arrival'&&!O.state().entranceInspected&&Math.hypot(position.x-north.x,position.y-north.y)<28){O.inspectEntrance();rerender();return}
@@ -97,7 +132,7 @@ C.mount=async(host,rerender,actions={})=>{
  document.getElementById('openingMissions').onclick=()=>{if(locked)return;actions.missions?.()};
  document.getElementById('openingOverview').onclick=()=>{if(locked)return;W.overview=!W.overview;rerender()};
  document.getElementById('openingReplay').onclick=()=>{try{O.switchPoint('opening-arrival');P.position=null;rerender()}catch(err){hint.textContent=err.message}};
- skip.onclick=()=>{if(!active())return;finish()};
+ skip.onclick=()=>{if(!active())return;finish(true)};
  try{
   [artwork,players]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png'))))]);
   if(!active())return;draw();requestAnimationFrame(tick);if(auto)play();else {O.cinematicActive=false;C.active=false;}
@@ -105,3 +140,6 @@ C.mount=async(host,rerender,actions={})=>{
 };
 })();
 // Updated: 2026-11-01 21:25 JST / Ver1.118
+
+// Updated: 2026-11-03 04:38 JST / Ver1.128: manual-paced dialogue, stage-by-stage opening, save-safe skip.
+// Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.

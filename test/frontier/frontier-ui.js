@@ -137,11 +137,11 @@ function paintStoryPortrait(line,token){
 F.playStoryDialogue=(scene,onComplete=()=>{})=>{
  const lines=Array.isArray(scene?.lines)?scene.lines:[];if(!lines.length){onComplete?.();return false}if(storyDialogueRuntime.active)return false;
  storyDialogueRuntime.active=true;const token=++storyDialogueRuntime.token;let index=0,revealed=false;
- const setNextLabel=()=>{const b=$('frontierModalActions')?.querySelector('button');if(b)b.textContent=revealed?(index===lines.length-1?'▶ 物語を閉じる':'▼ つづける'):'▼';};
+ const setNextLabel=()=>{const b=$('frontierModalActions')?.querySelector('button');if(b)b.textContent=revealed?(index===lines.length-1?'▶ 会話を終える':'▶ 次の台詞へ'):'全文を表示';};
  const reveal=()=>{if(storyDialogueRuntime.timer){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null}const el=$('storyDialogueText');if(el)el.textContent=String(lines[index]?.text||'');revealed=true;setNextLabel()};
  const finish=()=>{if(storyDialogueRuntime.timer){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null}storyDialogueRuntime.active=false;const m=$('frontierModal');if(m)m.onclick=e=>{if(e.target===m)closeModal()};closeModal();onComplete?.()};
  const advance=()=>{if(token!==storyDialogueRuntime.token||!storyDialogueRuntime.active)return;if(!revealed){reveal();return}if(index<lines.length-1){index++;renderLine();return}finish()};
- const renderLine=()=>{const line=lines[index]||{},speaker=esc(line.speaker||'ナレーション');revealed=false;modal(`<div class="storySceneHeader"><span>${esc(scene.icon||'📖')} ${esc(scene.chapter||'物語')}　${esc(scene.title||'物語')}</span><small>${index+1} / ${lines.length}</small></div><section class="storyDialogueCard" aria-live="polite"><div class="storyDialoguePortraitFrame"><canvas id="storyDialoguePortrait" class="storyDialoguePortrait" width="80" height="96"></canvas></div><div class="storyDialogueCopy"><b class="storyDialogueSpeaker">${speaker}</b><p id="storyDialogueText" class="storyDialogueText"></p><small class="storyDialogueHint">タップで全文表示、もう一度タップで次へ</small></div></section>`,[{label:'▼',className:'cmdBtn primary',close:false,fn:advance}]);const m=$('frontierModal'),card=$('frontierModalBody')?.querySelector('.storyDialogueCard');if(m)m.onclick=e=>{if(e.target===m){e.stopPropagation();advance()}};card?.addEventListener('click',e=>{if(e.target.closest('button'))return;advance()});paintStoryPortrait(line,token);const el=$('storyDialogueText'),text=String(line.text||'');let n=0;storyDialogueRuntime.timer=setInterval(()=>{if(token!==storyDialogueRuntime.token||!el?.isConnected){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null;return}n=Math.min(text.length,n+1);el.textContent=text.slice(0,n);if(n>=text.length){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null;revealed=true;setNextLabel()}},22)};
+ const renderLine=()=>{const line=lines[index]||{},speaker=esc(line.speaker||'ナレーション');revealed=false;modal(`<div class="storySceneHeader"><span>${esc(scene.icon||'📖')} ${esc(scene.chapter||'物語')}　${esc(scene.title||'物語')}</span><small>${index+1} / ${lines.length}</small></div><section class="storyDialogueCard" aria-live="polite"><div class="storyDialoguePortraitFrame"><canvas id="storyDialoguePortrait" class="storyDialoguePortrait" width="80" height="96"></canvas></div><div class="storyDialogueCopy"><b class="storyDialogueSpeaker">${speaker}</b><p id="storyDialogueText" class="storyDialogueText"></p><small class="storyDialogueHint">台詞は自動で進みません。読んだら「次の台詞へ」を押してください。</small></div></section>`,[{label:'▼',className:'cmdBtn primary',close:false,fn:advance}]);const m=$('frontierModal'),card=$('frontierModalBody')?.querySelector('.storyDialogueCard');if(m)m.onclick=e=>{if(e.target===m){e.stopPropagation();advance()}};card?.addEventListener('click',e=>{if(e.target.closest('button'))return;advance()});paintStoryPortrait(line,token);const el=$('storyDialogueText'),text=String(line.text||'');let n=0;storyDialogueRuntime.timer=setInterval(()=>{if(token!==storyDialogueRuntime.token||!el?.isConnected){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null;return}n=Math.min(text.length,n+1);el.textContent=text.slice(0,n);if(n>=text.length){clearInterval(storyDialogueRuntime.timer);storyDialogueRuntime.timer=null;revealed=true;setNextLabel()}},22)};
  renderLine();return true
 };
 function closeModal(){partnerHeightObserver?.disconnect();partnerHeightObserver=null;F.RESIDENTS?.endTalk();$('frontierModal')?.classList.add('hidden')}
@@ -693,6 +693,25 @@ function openLv5Site(){
  }
  toast('ここで進められる工事はありません。');
 }
+function openLv6Site(){
+ const O=F.OPENING,st=O?.lv6Status?.(),cost=O?.LV6_COST;
+ if(!st||!cost){toast('最終建築の情報を確認できません。');return}
+ const dispatch=(fn,msg)=>{try{fn();closeModal();renderAll();setTimeout(()=>O.presentPendingScene?.(),90);if(msg)toast(msg)}catch(e){toast(e.message)}};
+ if(st.phase==='meet'){
+  modal('<h2>🏡 最後の増築の相談</h2><p>職人ミナが町の中央で建設図面を広げています。<br>「お店を広げて、店主の家を別棟に建てませんか？」</p>',[
+   {label:'ミナと相談する',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.meetLv6())},{label:'閉じる'}]);return;
+ }
+ if(['gather','ready'].includes(st.phase)){
+  const items=[['木材',st.wood,cost.wood],['鉄のかけら',st.iron,cost.iron],['建築費',st.coins,cost.coins]];
+  const html=`<h2>🏗️ 店舗Lv6・店主の専用住宅</h2><p>店を売場専用にし、店主の家・預かり所・広場を整えます。</p><div class="choiceGrid">${items.map(([name,n,target])=>`<div class="choiceCard" style="grid-template-columns:1fr"><span><b>${n>=target?'✅':'▫️'} ${name}　${n} / ${target}${name==='建築費'?'G':'個'}</b></span></div>`).join('')}</div>`;
+  modal(html,[...(st.phase==='ready'?[{label:'最後の建築を開始する',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.startLv6Build(),'🏗 工事が始まりました。')}]:[]),{label:'閉じる'}]);return;
+ }
+ if(['building','finish'].includes(st.phase)){
+  modal(`<h2>🏗️ 店舗と住居を建設中</h2><p>進捗 <b>${Math.min(st.elapsed,st.steps)} / ${st.steps}</b></p><p>${st.phase==='finish'?'工事が終わりました。完成した町を確認しましょう。':'冒険や商売で時間を進めてから戻りましょう。'}</p>`,[
+   ...(st.phase==='finish'?[{label:'完成を確認する',className:'cmdBtn primary',close:false,fn:()=>dispatch(()=>O.finishLv6Build(),'🏡 店舗Lv6と店主の専用住宅が完成！')}]:[]),{label:'閉じる'}]);return;
+ }
+ toast('この場所で進める工事はありません。');
+}
 function openProgressFacility(id){
  const aliases={house2:'house',house3:'house'},fid=aliases[id]||id;
  if(fid==='house')indoorRuntime.residentHomeId=id;const P=F.TOWN_PROGRESS;if(P)P.returnEntry={...(P.position||{x:500,y:155})};
@@ -700,10 +719,11 @@ function openProgressFacility(id){
  if(fid==='tent'){modal('<h2>テントで休む</h2><p>翌朝まで休みます。</p>',[{label:'休む',fn:()=>{F.mutateSave(s=>{let n=0;do{F.advanceTimeState(s,1,'campRest');n++}while(F.timeInfo(s).id!=='morning'&&n<4)});renderAll()}},{label:'閉じる'}]);return}
  if(fid==='forge')F.OPENING?.visitLv4Workshop?.();
  if(fid==='inn'&&F.facilityLevel(F.readSave(),'inn')>=1)F.OPENING?.visitLv5Tavern?.();
+ if(fid==='owner_home'&&F.facilityLevel(F.readSave(),'owner_home')>=1)F.OPENING?.visitLv6Home?.();
  if(fid==='adventure_board'){modal(F.OPENING.missionsHTML(),[{label:'探索へ',fn:()=>setView('adventure')},{label:'閉じる'}]);return}
  if(F.facilityLevel(F.readSave(),fid)<1){toast('この施設はまだ完成していません。');return}
  openTownFacility(fid);
- if(fid==='inn')setTimeout(()=>F.OPENING?.presentPendingScene?.(),120);
+ if(fid==='inn'||fid==='owner_home')setTimeout(()=>F.OPENING?.presentPendingScene?.(),120);
 }
 function showResident(){
  const N=F.RESIDENTS;if(!N?.eligible(F.readSave()))return;const d=N.talk();if(!d)return;
@@ -1072,7 +1092,7 @@ function renderIndoor(id,s){
  const planPath=(id==='shop'&&m.lv===2)?null:ROOM_PLAN_VISUALS[id]?.[m.planLv||m.lv];if(!planPath&&rt.art?.roomPlan){rt.art={...rt.art,roomPlan:null,roomPlanPath:null}}if(planPath&&rt.art?.roomPlanPath!==planPath){rt.art={...(rt.art||{}),roomPlanPath:planPath,roomPlan:null};loadVisualOptional(planPath).then(im=>{if(rt.id===id&&rt.model?.lv===m.lv){rt.art={...(rt.art||{}),roomPlan:im};paintIndoor()}})}
 }
 
-function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),startDungeon:()=>{try{if(!F.OPENING?.canExplore()){toast('先にテントを設営してください');return}F.startRun('beginner_forest');setView('adventure')}catch(e){toast(e.message)}},shop:()=>setView('store'),construction:openShopConstructionSite,lv3Site:openLv3Site,lv4Site:openLv4Site,lv5Site:openLv5Site,missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
+function renderHome(s){if(homeMode!=='town'){renderIndoor(homeMode==='bedroom'?'shop':homeMode,s);return}if(F.WILDERNESS?.active){townMoveRuntime.token++;townMoveRuntime.moving=false;F.WILDERNESS.mount($('sceneMount'),renderAll,{adventure:()=>setView('adventure'),startDungeon:()=>{try{if(!F.OPENING?.canExplore()){toast('先にテントを設営してください');return}F.startRun('beginner_forest');setView('adventure')}catch(e){toast(e.message)}},shop:()=>setView('store'),construction:openShopConstructionSite,lv3Site:openLv3Site,lv4Site:openLv4Site,lv5Site:openLv5Site,lv6Site:openLv6Site,missions:()=>modal(F.OPENING.missionsHTML(),[{label:'閉じる'}]),facility:openProgressFacility,resident:showResident,campSetup:()=>modal('<h2>⛺ テント設営</h2><p>森の入口にテントを張り、冒険者が帰ってこられる拠点を作ります。</p><p>この場所に設営しますか？</p>',[{label:'テントを設営する',className:'cmdBtn primary',fn:()=>{F.OPENING.advance();renderAll()}},{label:'あとで'}])});return}$('sceneMount').classList.add('townSceneLayout');$('sceneMount').innerHTML=visualTownShell(s);drawTownVisual(s);setupTownMovement();const mb=$('townMenuBtn');if(mb)mb.onclick=showTownMenu}
 function frontierTestAllowed(){return window.FRENDA_TEST?.active!==false&&(window.FRENDA_TEST?.active===true||/\/test\//.test(window.location.pathname)||document.querySelector('.brand small')?.textContent.includes('/ TEST'));}
 function showEconomyBalance(){
  const s=F.readSave(),r=F.BALANCE_RULES,b=F.CUSTOMER_BALANCE;
@@ -1316,3 +1336,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-03 03:53 JST / Ver1.126 release.
 
 // Updated: 2026-11-03 03:55 JST / Ver1.126 release.
+
+// Updated: 2026-11-03 JST / Ver1.127: Lv6 on-site construction and owner home visit.
+
+// Updated: 2026-11-03 04:38 JST / Ver1.128: explicit story read/advance labels, no automatic dialogue progression.
+// Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.

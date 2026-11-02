@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.126 — Lv5 visitors, market, tavern and single active mission. */
+/* Frenda Frontier Ver1.128 — character-driven story, gradual mysteries and story pacing. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,originalKey=F.SAVE_KEY,storyKey=originalKey+':opening147';
 const O=F.OPENING={originalKey,storyKey,rules:Object.freeze({stallWood:3,storeWood:6,storeCoins:150,provisional:true}),levels:[{level:1,name:'露店',shelves:3},{level:2,name:'小屋',shelves:3},{level:3,name:'木造店舗',shelves:4},{level:4,name:'拡張店舗',shelves:5},{level:5,name:'店舗兼住宅',shelves:6},{level:6,name:'店舗専用＋専用住宅',shelves:9}],tentBox:{x:610,y:105,w:96,h:80},stallBox:{x:730,y:215,w:122,h:70},shopBox:{x:688,y:82,w:176,h:172}};
@@ -364,7 +364,7 @@ O.makePoint=id=>{
 };
 O.replayScene=id=>typeof F.playStoryDialogue==='function'?F.playStoryDialogue(O.SCENES[id]||O.SCENES.arrival,()=>{}):false;
 // Completed dialogue is available to reread without changing story or saves.
-O.storyArchiveHTML=()=>{const o=O.state(),ids=Object.keys(O.SCENES).filter(id=>o.sceneSeen?.[id]);const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));return `<h3>📖 これまでの物語</h3>${ids.length?ids.map(id=>{const scene=O.SCENES[id];return `<details class="storyArchiveEntry"><summary>${esc(scene.icon||'📜')} ${esc(scene.chapter||'物語')}：${esc(scene.title||id)}</summary><div>${scene.lines.map(line=>`<p><b>${esc(line.speaker||'ナレーション')}</b>　${esc(line.text)}</p>`).join('')}</div></details>`}).join(''):'<p>物語を進めると、見終わった会話をここから読み返せます。</p>'}`};
+O.storyArchiveHTML=()=>{const o=O.state(),ids=Object.keys(O.SCENES).filter(id=>o.sceneSeen?.[id]||o.sceneSkipped?.[id]);const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));return `<h3>📖 これまでの物語</h3>${ids.length?ids.map(id=>{const scene=O.SCENES[id];return `<details class="storyArchiveEntry"><summary>${esc(scene.icon||'📜')} ${esc(scene.chapter||'物語')}：${esc(scene.title||id)}${o.sceneSkipped?.[id]&&!o.sceneSeen?.[id]?'（スキップ・読み返せます）':''}</summary><div>${scene.lines.map(line=>`<p><b>${esc(line.speaker||'ナレーション')}</b>　${esc(line.text)}</p>`).join('')}</div></details>`}).join(''):'<p>物語を進めると、見終わった会話をここから読み返せます。</p>'}`};
 const oldMissionsHTML=O.missionsHTML;O.missionsHTML=()=>oldMissionsHTML()+O.storyArchiveHTML();
 O.testControls=()=>!O.testEnabled()?'':`<details class="test-menu-panel" style="margin:10px 12px;padding:8px;background:#edf2fa;border:1px solid #adbed9;border-radius:8px"><summary>TEST：開始時点を切り替える</summary><label style="display:block;margin:8px 0">プレー開始時点 <select id="testStoryPoint" style="width:100%;padding:8px;margin-top:5px">${O.points.map(([id,label])=>`<option value="${id}" ${O.testPoint===id?'selected':''}>${label}</option>`).join('')}</select></label><small>切替先のTEST枠に、その時点の進行・所持品をセットします。現在のプレー枠は保持されます。探索中は帰還後に切り替えてください。</small></details>`;
 O.panel=()=>{const s=F.readSave(),r=O.rules;return `<div style="padding:10px 12px"><span>保管中：木材 ${s.warehouse.wood||0}個 ／ 所持金 ${s.coins}G</span><details style="margin-top:8px"><summary>TEST用の仮設定</summary><p>露店設営：木材${r.stallWood}個。店舗Lv2：木材${r.storeWood}個＋${r.storeCoins}G。必要数・費用は後で調整します。</p></details></div>`};
@@ -430,11 +430,259 @@ O.guidance=()=>{
  if(st.phase==='finished'&&o.lv5TavernVisited&&!o.forestLordDefeated)return{title:'森の奥の光を調べよう',text:'酒場で森の最深部の噂を聞きました。装備と食料を整え、町の北の道からはじまりの森へ向かいましょう。'};
  return earlierGuidance126();
 };
+// Ver1.127 — final shop, detached home, and the town's completion story.
+// Store these flags alongside older opening progress, without changing save schema.
+O.LV6_COST=Object.freeze({wood:12,iron:5,coins:700,steps:5,shopShelves:9});
+O.SCENES=Object.freeze({...O.SCENES,
+ lv6Meet:{chapter:'第1章',title:'最後の店づくり',icon:'🏡',lines:[
+  {speaker:'ナレーション',text:'市場と酒場が賑わう一方、店には冒険者の道具があふれ、店主が休む場所も手狭になっていた。',icon:'🏮'},
+  {speaker:'ミナ',text:'お店は売り場だけにして、休むための家は別に建てましょう。そうすれば棚をもっと増やせます。',portrait:'traveler'},
+  {speaker:'旅商人リオ',text:'預かり所と広場も整えれば、旅人たちは安心して次の冒険に向かえます。',portrait:'traveler'},
+  {speaker:'開拓者',text:'商売だけでなく、帰ってこられる町にしよう。ここが最後の大きな建築だ。',portrait:'player'},
+  {speaker:'次の目的',text:'木材12個、鉄のかけら5個、700Gを用意して町の中央の建築予定地へ。',icon:'📜'}
+ ]},
+ lv6Start:{chapter:'第1章',title:'新しい家とお店の工事',icon:'🏗️',lines:[
+  {speaker:'ミナ',text:'これから店を広げ、店主の家と預かり所を建てます。危ないから工事中は道を空けてくださいね。',portrait:'traveler'},
+  {speaker:'旅商人リオ',text:'広場には旅人が集まる場所を作ります。町が完成するのが楽しみです。',portrait:'traveler'},
+  {speaker:'次の目的',text:'冒険や商売で時間を進めて、中央の予定地で完成を確認しよう。',icon:'📜'}
+ ]},
+ lv6Finish:{chapter:'第1章',title:'帰ってこられる町',icon:'🏘️',lines:[
+  {speaker:'ナレーション',text:'朝の光が町を照らす。九つの棚が並ぶ新しい店、店主の家、預かり所、そして旅人が集う広場が完成した。',icon:'✨'},
+  {speaker:'ミナ',text:'店主さんの家はお店とは別棟です。これで夜もゆっくり休めますね。',portrait:'traveler'},
+  {speaker:'旅商人リオ',text:'遠くの街道からも旅人が訪れます。この町の物語は、ここからも続きます。',portrait:'traveler'},
+  {speaker:'開拓者',text:'次は森の奥に残された謎だ。この町を守るため、準備をして向かおう。',portrait:'player'},
+  {speaker:'次の目的',text:'店主の専用住宅へ行き、完成した暮らしを確かめよう。',icon:'🏡'}
+ ]},
+ lv6Home:{chapter:'第1章',title:'店主の新しい家',icon:'🏡',lines:[
+  {speaker:'ナレーション',text:'お店から少し離れた新しい家。窓の外には、賑やかな町の灯りが見える。',icon:'🌙'},
+  {speaker:'開拓者',text:'みんなが帰れる場所を作れた。今度は森の主と向き合う準備をしよう。',portrait:'player'},
+  {speaker:'次の目的',text:'北の道からはじまりの森へ向かい、森の主の謎を解こう。',icon:'🌲'}
+ ]},
+ lv6Finale:{chapter:'エピローグ',title:'森と町の新しい朝',icon:'🌅',lines:[
+  {speaker:'ナレーション',text:'森の主との約束を経て、森からの風が完成した町の広場を通り抜けた。',icon:'🌲'},
+  {speaker:'ミナ',text:'鍛冶の音も、旅人たちの足音も、ここでは毎日の暮らしになりました。',portrait:'traveler'},
+  {speaker:'開拓者',text:'不思議な迷宮を見つけたあの日から、こんな町になるなんて。今日もみんなを迎えよう。',portrait:'player'},
+  {speaker:'ナレーション',text:'第1部 完。町での商売と冒険は引き続き楽しめます。',icon:'✨'}
+ ]}
+});
+O.lv6Status=(s=F.readSave())=>{
+ const o=s?.story?.opening||{},lv=Math.max(0,Number(s?.development?.town?.facilities?.shop)||0);
+ const wood=Math.max(0,Number(s?.warehouse?.wood)||0),iron=Math.max(0,Number(s?.warehouse?.iron)||0),coins=Math.max(0,Number(s?.coins)||0);
+ if(lv>=6||o.lv6Finished)return{phase:'finished',lv,wood,iron,coins};
+ if(o.phase!=='complete'||lv<5||!o.lv5TavernVisited)return{phase:'locked',lv,wood,iron,coins};
+ const pr=o.lv6Project;
+ if(pr){const elapsed=Math.max(0,(Number(s?.clock?.actionCount)||0)-(Number(pr.startedAt)||0)),steps=Math.max(1,Number(pr.steps)||O.LV6_COST.steps);
+  return{phase:elapsed>=steps?'finish':'building',lv,wood,iron,coins,elapsed,steps};}
+ if(!o.lv6Met)return{phase:'meet',lv,wood,iron,coins};
+ return{phase:wood>=O.LV6_COST.wood&&iron>=O.LV6_COST.iron&&coins>=O.LV6_COST.coins?'ready':'gather',lv,wood,iron,coins};
+};
+O.meetLv6=()=>F.mutateSave(s=>{
+ if(O.lv6Status(s).phase!=='meet')throw new Error('酒場で旅人の噂を聞いてから、最後の増築を始めましょう。');
+ s.story.opening.lv6Met=true;O.enqueueSceneInSave(s,'lv6Meet');F.addHistory(s,'story','市場と酒場の次に、店主の家と店舗Lv6の最終建築を決めた。');
+});
+O.startLv6Build=()=>F.mutateSave(s=>{
+ if(O.lv6Status(s).phase!=='ready')throw new Error('木材12個・鉄5個・700Gとミナとの相談が必要です。');
+ const cost=O.LV6_COST,w=s.warehouse;
+ w.wood-=cost.wood;if(w.wood<=0)delete w.wood;
+ w.iron-=cost.iron;if(w.iron<=0)delete w.iron;
+ s.coins-=cost.coins;
+ s.story.opening.lv6Project={startedAt:Number(s.clock?.actionCount)||0,steps:cost.steps,paid:true};
+ O.enqueueSceneInSave(s,'lv6Start');F.addHistory(s,'construction','店舗Lv6・店主の住宅・預かり所・広場の建設を開始した。');
+});
+O.maybeLv6Finale=()=>{
+ let added=false;
+ F.mutateSave(s=>{
+  const o=s.story?.opening;
+  if(!o||o.lv6FinaleSeen||!o.lv6HomeVisited||!o.forestLordDefeated)return;
+  o.lv6FinaleSeen=true;O.enqueueSceneInSave(s,'lv6Finale');
+  F.addHistory(s,'story','森の主との約束と町の完成を迎え、第1部を締めくくった。');added=true;
+ });return added;
+};
+O.finishLv6Build=()=>{
+ F.mutateSave(s=>{
+  if(O.lv6Status(s).phase!=='finish')throw new Error('工事はまだ完成していません。');
+  const o=s.story.opening,t=s.development.town,f=t.facilities||{};
+  delete o.lv6Project;o.lv6Finished=true;
+  f.shop=Math.max(6,Number(f.shop)||0);f.owner_home=Math.max(1,Number(f.owner_home)||0);
+  f.bank=Math.max(1,Number(f.bank)||0);f.plaza=Math.max(2,Number(f.plaza)||0);
+  f.adventure_board=Math.max(2,Number(f.adventure_board)||0);
+  t.facilities=f;t.shopLevel=f.shop;
+  // Preserve quantity, price and order in all existing slots.
+  s.shelves=Array.isArray(s.shelves)?s.shelves:[];
+  while(s.shelves.length<O.LV6_COST.shopShelves)s.shelves.push(null);
+  O.enqueueSceneInSave(s,'lv6Finish');F.addHistory(s,'construction','店舗Lv6・店主の別棟住宅・預かり所・広場が完成。売場は9棚となった。');
+ });
+};
+O.visitLv6Home=()=>{
+ let seen=false;
+ F.mutateSave(s=>{
+  const o=s.story?.opening;
+  if(!o||o.lv6HomeVisited||Number(s.development?.town?.facilities?.shop)<6||Number(s.development?.town?.facilities?.owner_home)<1)return;
+  o.lv6HomeVisited=true;O.enqueueSceneInSave(s,'lv6Home');F.addHistory(s,'story','新しい店主の専用住宅を訪れた。');seen=true;
+ });
+ if(seen)O.maybeLv6Finale();return seen;
+};
+// The newest chapter takes priority over the older Lv5 forest guidance.
+const previousLv6Mission=O.currentMission;
+O.currentMission=()=>{
+ const s=F.readSave(),o=s.story?.opening||{},st=O.lv6Status(s),cost=O.LV6_COST;
+ if(st.phase==='meet')return{name:'ミッション15：ミナと最後の増築を相談',state:'進行中',steps:[['酒場で森の噂を聞いた',true],['中央の建築予定地でミナと話す',false]]};
+ if(['gather','ready'].includes(st.phase))return{name:'ミッション16：店舗Lv6の資材集め',state:'進行中',steps:[[`木材 ${st.wood}/${cost.wood}`,st.wood>=cost.wood],[`鉄のかけら ${st.iron}/${cost.iron}`,st.iron>=cost.iron],[`建築費 ${st.coins}/${cost.coins}G`,st.coins>=cost.coins],['中央の予定地で着工する',false]]};
+ if(['building','finish'].includes(st.phase))return{name:'ミッション17：最後の建築',state:'進行中',steps:[['工事開始',true],[`進行 ${Math.min(st.elapsed,st.steps)}/${st.steps}`,st.phase==='finish'],['中央の現場で完成を確認する',false]]};
+ if(st.phase==='finished'&&o.lv6Finished&&!o.lv6HomeVisited)return{name:'ミッション18：新しい家を訪ねよう',state:'進行中',steps:[['店舗Lv6と別棟住宅が完成',true],['店主の専用住宅に入る',false]]};
+ if(st.phase==='finished'&&o.lv6HomeVisited&&!o.forestLordDefeated)return{name:'ミッション19：森の主と向き合おう',state:'進行中',steps:[['町の最終整備を完了する',true],['森の最深部B30Fを踏破する',false]]};
+ if(st.phase==='finished'&&o.lv6HomeVisited&&o.forestLordDefeated)return{name:'第1部 完：森と町の約束',state:'達成',steps:[['町の完成',true],['森の主との約束',true]]};
+ return previousLv6Mission();
+};
+const previousLv6Guidance=O.guidance;
+O.guidance=()=>{
+ const s=F.readSave(),o=s.story?.opening||{},st=O.lv6Status(s),cost=O.LV6_COST;
+ if(st.phase==='meet')return{title:'ミナと最後の建築を相談しよう',text:'町の中央の建築予定地にいるミナを訪ね、店と住居を分ける相談をしましょう。'};
+ if(['gather','ready'].includes(st.phase))return{title:'店主の家と店舗Lv6の資材を集めよう',text:`木材 ${st.wood}/${cost.wood}・鉄 ${st.iron}/${cost.iron}・所持金 ${st.coins}/${cost.coins}G。揃ったら中央の建築予定地へ。`};
+ if(st.phase==='building')return{title:'店舗Lv6と住宅を建設中',text:`工事 ${Math.min(st.elapsed,st.steps)}/${st.steps}。冒険や商売で時間を進め、中央の現場に戻りましょう。`};
+ if(st.phase==='finish')return{title:'最後の工事が完成しました',text:'町の中央でミナに完成を確認してもらいましょう。'};
+ if(st.phase==='finished'&&o.lv6Finished&&!o.lv6HomeVisited)return{title:'店主の新しい家へ行こう',text:'完成した町の東にある店主の専用住宅へ入りましょう。'};
+ if(st.phase==='finished'&&o.lv6HomeVisited&&!o.forestLordDefeated)return{title:'北の道から森の最深部へ',text:'新しい町を守るため、はじまりの森B30Fの森の主と向き合いましょう。'};
+ if(st.phase==='finished'&&o.lv6HomeVisited&&o.forestLordDefeated)return{title:'第1部の物語を完了しました',text:'森と町の約束が結ばれました。商売・開拓・冒険は引き続き楽しめます。'};
+ return previousLv6Guidance();
+};
+// Replay and testing checkpoints are isolated from the regular save.
+O.points.push(['lv6-meet','店舗Lv5完成・最終建築の相談前'],['lv6-ready','店舗Lv6の建築資材が揃った時'],['lv6-building','店舗Lv6の工事中'],['lv6-finish','店舗Lv6の完成確認待ち'],['lv6-home','店舗Lv6完成・住宅訪問前']);
+const previousLv6MakePoint=O.makePoint;
+O.makePoint=id=>{
+ if(!/^lv6-(meet|ready|building|finish|home)$/.test(id))return previousLv6MakePoint(id);
+ const s=previousLv6MakePoint('lv5-tavern'),o=s.story.opening,t=s.development.town;
+ o.lv5TavernVisited=true;o.lv6Met=id!=='lv6-meet';
+ s.clock.actionCount=0;s.warehouse={};s.coins=300;
+ if(id==='lv6-ready'){s.warehouse={wood:O.LV6_COST.wood,iron:O.LV6_COST.iron};s.coins=O.LV6_COST.coins;}
+ if(['lv6-building','lv6-finish'].includes(id))o.lv6Project={startedAt:0,steps:O.LV6_COST.steps,paid:true};
+ if(id==='lv6-finish')s.clock.actionCount=O.LV6_COST.steps;
+ if(id==='lv6-home'){o.lv6Finished=true;t.facilities.shop=6;t.shopLevel=6;t.facilities.owner_home=1;t.facilities.bank=1;t.facilities.plaza=2;s.shelves=Array(9).fill(null);}
+ return s;
+};
+
+// Ver1.128: Additional dialogue beats are inserted BEFORE each scene's current objective.
+// This is presentation-only: scene IDs, triggers, save flags and construction prices remain unchanged.
+const O_STORY_BEATS_128={
+ firstReturn:[
+  ['開拓者','迷宮の中では、木材一本だって貴重だった。帰り道を忘れたらと思うと怖かったよ。'],
+  ['旅の冒険者','怖いと思えたなら、ちゃんと周りを見ていた証拠だ。今日は無事に帰れた。それが一番だよ。'],
+  ['開拓者','この木材が、次に帰ってくる誰かの助けになる。そう考えると、少し誇らしいね。']
+ ],
+ stallOpen:[
+  ['ナレーション','値札を並べ、風で飛ばないよう棚に紐を結ぶ。小さな工夫ばかりだが、どれも初めての仕事だった。'],
+  ['開拓者','本当に買ってくれる人がいるかな。必要な物を、必要な値段で届けたい。'],
+  ['旅の冒険者','店を開けて、待ってみよう。お客さんの声を聞くことも大事な仕事だ。']
+ ],
+ firstSale:[
+  ['ナレーション','初めて受け取った硬貨は、手の中で小さな音を立てた。店の品が誰かの冒険を支えたのだ。'],
+  ['開拓者','売れたことも嬉しいけれど、「助かった」と言ってもらえたのが何より嬉しい。'],
+  ['旅の冒険者','帰ってきた人がまた出かける。ここは、そのための場所になり始めているんだね。']
+ ],
+ shopComplete:[
+  ['ナレーション','雨が降っても商品を守れる屋根。閉店後に道具を片づけられる棚。露店では難しかったことが、少しずつできる。'],
+  ['開拓者','もっと大きな町になるのはまだ先だろうけど、まずはこの店を大切にしよう。']
+ ],
+ lv3Visitor:[
+  ['ミナ','ここに来るまで、いくつもの町で修業してきました。でも、しばらく落ち着いて働ける場所は見つからなくて。'],
+  ['開拓者','この町もまだ始まったばかりだよ。だからこそ、これからどんな場所にするか、一緒に決められる。'],
+  ['ミナ','それなら、まず棚づくりから手伝わせてください。腕前で信用してもらえるよう、丁寧に仕上げます。']
+ ],
+ lv3Start:[
+  ['ナレーション','ミナは柱のゆがみを直し、棚板を一枚ずつ確かめていった。仕事の速さより、使う人の安全を優先している。']
+ ],
+ lv3Finished:[
+  ['ミナ','旅の途中では、作った物がその後どう使われるか、なかなか見届けられませんでした。'],
+  ['開拓者','ここなら、明日も来月も同じ棚を見られる。壊れたら一緒に直そう。'],
+  ['ミナ','それって、素敵ですね。私も少しずつ、この町の一員になれたらいいな。']
+ ],
+ lv4Invite:[
+  ['ミナ','迷宮帰りの人の剣は、刃が欠けたり、柄が緩んだりしています。直せる人がいないまま、また森へ出るのは危険です。'],
+  ['開拓者','店が品を届け、工房が道具を直す。別々の仕事だけど、どちらも旅人が帰ってくるために必要なんだね。'],
+  ['ミナ','はい。それに、ここで暮らせたら、直した道具が誰を助けたのかも分かります。']
+ ],
+ lv4Finished:[
+  ['ナレーション','炉に火が入ると、鍛冶屋から一定のリズムで金槌の音が聞こえ始めた。帰る家のある職人が、この町で働いている。'],
+  ['開拓者','帰る場所を作るつもりが、暮らす人の町にもなってきたんだ。']
+ ],
+ lv5Merchant:[
+  ['旅商人リオ','私はリオ。荷を運びながら町を巡っています。ここの道は、以前よりずっと人が増えました。'],
+  ['旅商人リオ','でも日が暮れると、休める場所を探して困る人がまだいます。食料の買い足しにも長い道を戻らなければなりません。'],
+  ['開拓者','帰還する場所だけでなく、次の旅に出るまで過ごせる場所にしたいね。'],
+  ['旅商人リオ','それなら、市場と泊まれる酒場を一緒に作りましょう。私は道具を運び、人を呼びます。']
+ ],
+ lv5Finished:[
+  ['ナレーション','市場では朝から品物の声が響き、夜になると酒場に灯りがともる。町には、一日の流れが生まれた。'],
+  ['開拓者','今夜は休んでいく人もいるんだね。もう、ただの立ち寄り場所ではない。']
+ ],
+ lv5Tavern:[
+  ['ナレーション','酒場の片隅で、森から帰った冒険者たちが地図を広げている。'],
+  ['旅商人リオ','光は見た人によって場所が違います。でも、みんな「木の根のような模様があった」と話します。'],
+  ['開拓者','入口に落ちていた古い石と同じ模様だ。偶然とは思えない。'],
+  ['旅商人リオ','ただ、最深部まで行って戻れた人は少ないそうです。焦って結論を出さず、準備をして確かめましょう。']
+ ],
+ forestRumor:[
+  ['ナレーション','何度も聞いた話の中には、はっきりしない部分も多かった。森の主が敵なのか、何かを守っているのかも分からない。'],
+  ['開拓者','だからこそ、自分の目で見たい。森を荒らさずに進む方法があるかもしれない。']
+ ],
+ lv6Meet:[
+  ['ミナ','はじめはテントひとつだったのに、いまは店も工房もあります。次は働く場所と休む場所をきちんと分けましょう。'],
+  ['開拓者','この店で人と出会って、町が育ってきた。これからは、誰もが長く暮らせる町にしたい。']
+ ],
+ lv6Finish:[
+  ['ナレーション','かつて草しかなかった広場を、冒険者と商人が行き交う。工房の槌音と子どもの笑い声が重なる。'],
+  ['開拓者','ここを通る人にとっては、これが毎日の景色になる。あの日の選択が、少しずつ形になったんだ。']
+ ],
+ lv6Home:[
+  ['ナレーション','窓からは店の灯りが見える。働いたあとに帰る家があるという当たり前のことが、今日は少し特別に思えた。'],
+  ['開拓者','森の謎が解けなくても、ここまで来た時間は無駄じゃない。それだけは忘れないでおこう。']
+ ],
+ forestEnding:[
+  ['ナレーション','倒れた森の主に近づくと、青白い光がその足元の古い石へと流れ込んだ。森を傷つけるための力には見えなかった。'],
+  ['開拓者','この光は、森を生かすためのものだったんだ。自分たちは何を守ろうとしていたのだろう。'],
+  ['ナレーション','森の主は静かに身を起こし、道をあける。言葉はなくても、こちらを拒んでいないことだけは伝わった。']
+ ],
+ lv6Finale:[
+  ['旅商人リオ','私はまた街道へ出ます。でもここに戻れば、みんなの顔が見られる。それが商人には一番嬉しいことです。'],
+  ['開拓者','森の入口にテントを張ったのは、たった一人でも無事に帰ってこられる場所が欲しかったから。'],
+  ['ナレーション','その小さな願いは、いまでは町の人たちの暮らしを支えている。物語は終わりではなく、次の日へ続く。']
+ ]
+};
+O.SCENES=Object.freeze(Object.fromEntries(Object.entries(O.SCENES).map(([id,scene])=>{
+ const beats=O_STORY_BEATS_128[id];if(!beats)return[id,scene];
+ const lines=scene.lines.slice();
+ const newLines=beats.map(([speaker,text])=>({speaker,text,portrait:speaker==='開拓者'?'player':speaker==='ナレーション'?undefined:'traveler'}));
+ // The guardian's discovery must occur before he steps aside, and the final
+ // reflection must occur BEFORE the ending card; other scenes keep the goal last.
+ if(id==='forestEnding'){
+  const at=lines.findIndex(x=>/森の主は道をあけた/.test(x.text));
+  lines.splice(at>=0?at:Math.max(0,lines.length-1),0,...newLines);
+ }else if(id==='lv6Finale'){
+  const at=lines.findIndex(x=>/第1部 完/.test(x.text));
+  lines.splice(at>=0?at:lines.length,0,...newLines);
+ }else{
+  const at=lines[lines.length-1]?.speaker==='次の目的'?lines.length-1:lines.length;
+  lines.splice(at,0,...newLines);
+ }
+ return[id,Object.freeze({...scene,lines:Object.freeze(lines)})];
+})));
+// Introduce the forest mystery over the course of town development, not right
+// after the first sale. The archived scene ID stays the same.
+const enqueueSceneBefore128=O.enqueueSceneInSave;
+O.enqueueSceneInSave=(save,id)=>id==='forestRumor'&&!save?.story?.opening?.lv5TavernVisited?false:enqueueSceneBefore128(save,id);
+const visitTavernBefore128=O.visitLv5Tavern;
+O.visitLv5Tavern=(...args)=>{const result=visitTavernBefore128(...args);const save=F.readSave();if(save.story?.opening?.lv5TavernVisited&&save.story?.rumor){O.enqueueScene('forestRumor')}return result};
+
 const startRun=F.startRun,finishRun=F.finishRun,visit=F.applyCustomerVisit;
 O.tutorialSupplies=s=>{const o=s.story?.opening;if(o?.phase!=='mission1')return[];const wood=Math.max(0,O.rules.stallWood-(Number(o.woodReturned)||0)),goods=Math.max(0,1-(Number(o.goodsReturned)||0));return[...(wood?[['wood',wood]]:[]),...(goods?[['bread',1]]:[])];};
 F.startRun=(...args)=>{if(O.active()&&!O.canExplore())throw new Error('拠点の「次にすること」を確認してください。');const supplies=O.active()?O.tutorialSupplies(F.readSave()):[],run=startRun(...args);if(supplies.length){const candidates=[];for(let y=1;y<run.map.length-1;y++)for(let x=1;x<run.map[y].length-1;x++){const d=Math.abs(x-run.player.x)+Math.abs(y-run.player.y);if(d>=1&&run.map[y][x]==='floor'&&!run.enemies.some(e=>e.x===x&&e.y===y)&&!(run.traps||[]).some(t=>t.x===x&&t.y===y))candidates.push({x,y,d});}candidates.sort((a,b)=>a.d-b.d);supplies.forEach(([itemId,qty],i)=>{const p=candidates[i];if(p){run.floorItems.push({x:p.x,y:p.y,itemId,qty,openingSupply:true});run.map[p.y][p.x]='gather';}});run.log.push('露店設営に必要な木材と商品を探そう。持ち帰った分は追加配置されません。');}return run;};
 F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[,q])=>n+q,0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0)O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.()}return result};
 F.applyCustomerVisit=result=>{const saved=F.readSave(),soldBefore=saved.sales.count,rumorBefore=!!saved.story?.rumor,value=visit(result),after=F.readSave(),sold=Number(after.sales?.count)||0;if(O.active()&&O.phase()==='first_sale'&&sold>soldBefore)F.mutateSave(s=>{s.story.opening.mission2=true;s.story.opening.phase='upgrade';O.enqueueSceneInSave(s,'firstSale');if(!rumorBefore&&s.story?.rumor)O.enqueueSceneInSave(s,'forestRumor');F.addHistory(s,'mission','ミッション②達成：初めて商品を売ろう。')});else if(O.active()&&!rumorBefore&&after.story?.rumor)O.enqueueScene('forestRumor');return value};
+// The final epilogue is also available if the boss was defeated before shop Lv6 completion.
+const previousFinishRun127=F.finishRun;
+F.finishRun=(...args)=>{const result=previousFinishRun(...args);if(result&&O.active()&&!O.isTestPoint()){
+ const s=F.readSave();if(s.story?.opening?.lv6HomeVisited&&s.story?.opening?.forestLordDefeated)O.maybeLv6Finale();
+ }return result;};
 O.enter();
 })();
 // Updated: 2026-10-25 JST / Ver1.47
@@ -478,3 +726,8 @@ O.enter();
 // Updated: 2026-11-03 03:53 JST / Ver1.126 release.
 
 // Updated: 2026-11-03 03:55 JST / Ver1.126 release.
+
+// Updated: 2026-11-03 JST / Ver1.127: Lv6 development, detached home, single active mission.
+
+// Updated: 2026-11-03 04:38 JST / Ver1.128: character arcs and forest mystery paced across chapters; no save-schema changes.
+// Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.

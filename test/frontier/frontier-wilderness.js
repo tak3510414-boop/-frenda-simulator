@@ -172,3 +172,4 @@ W.mount=(host,rerender,actions={})=>{
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
 
 // Updated: 2026-11-01 21:10 JST / Ver1.117 — north forest entrance, in-world camp/stall interactions, animated tent placement.
+// Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
