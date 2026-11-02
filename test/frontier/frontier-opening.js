@@ -7,18 +7,18 @@ O.active=()=>F.SAVE_KEY===storyKey||F.SAVE_KEY.startsWith(originalKey+':mission1
 O.isTestPoint=()=>F.SAVE_KEY.includes(':mission148test:');
 O.SCENES=Object.freeze({
  arrival:{chapter:'序章',title:'森の入口に、まだ名のない町',icon:'🌲',lines:[
-  {speaker:'ナレーション',text:'旅人の道が途切れる場所。人の住まない平原の先に、古い森が広がっていた。',icon:'🌲'},
-  {speaker:'ナレーション',text:'その朝、森の奥に続く地面が崩れ、長い階段が姿を現した。',icon:'🪜'},
+  {speaker:'ナレーション',text:'旅人の道が途切れる場所。木々の手前に、大きな荷物を背負った旅の冒険者が立っている。',icon:'🌲'},
+  {speaker:'ナレーション',text:'旅の冒険者は、森の奥へ伸びる道を心配そうに見つめていた。昨日、この先に見慣れない階段が現れたという。',icon:'🪜'},
   {speaker:'旅の冒険者',text:'あんたも、あの穴を見に来たのか？　昨日まで何もなかった場所だ。',portrait:'traveler'},
   {speaker:'開拓者',text:'迷宮……？　こんなところに、どうして。',portrait:'player'},
   {speaker:'旅の冒険者',text:'中へ入った仲間は戻ったが、食料も道具も底をついていた。帰る場所さえあればな。',portrait:'traveler'},
-  {speaker:'ナレーション',text:'風が止んだ一瞬、階段の奥で青白い光がまたたいた。',icon:'✨'},
+  {speaker:'ナレーション',text:'ふたりが北の道を進むと、草むらに埋もれた古い石が見えた。刻まれた模様が、青白くまたたいている。',icon:'✨'},
   {speaker:'開拓者',text:'まずは入口を調べよう。それから、みんなが帰ってこられる場所を作る。',portrait:'player'},
   {speaker:'次の目的',text:'北の道を登り、森の入口にある古い石を調べよう。',icon:'📜'}
  ]},
  entranceClue:{chapter:'序章',title:'青白い光の手がかり',icon:'✨',lines:[
-  {speaker:'ナレーション',text:'入口には古い石の欠片が落ちていた。表面には、木の根と小さな光を描いた模様がある。',icon:'🪨'},
-  {speaker:'開拓者',text:'奥から光が見えたのは、この模様と関係があるのかな。',portrait:'player'},
+  {speaker:'ナレーション',text:'道の脇に、腰ほどの高さの古い石が立っていた。割れた表面には木の根のような模様が刻まれ、そのすき間が青白く光っている。',icon:'🪨'},
+  {speaker:'開拓者',text:'光っているのは、この石そのもの……？　木の根の模様が、森の奥を指しているようにも見える。',portrait:'player'},
   {speaker:'旅の冒険者',text:'森の奥では「森の主」が道を守る……そんな昔話がある。確かなことは誰も知らない。',portrait:'traveler'},
   {speaker:'開拓者',text:'調べるのはあとでもできる。先に、安全に帰ってこられる目印が必要だ。',portrait:'player'},
   {speaker:'ナレーション',text:'開けた草地にテントを張れば、迷宮帰りの旅人を迎えられそうだ。',icon:'⛺'},
@@ -731,3 +731,5 @@ O.enter();
 
 // Updated: 2026-11-03 04:38 JST / Ver1.128: character arcs and forest mystery paced across chapters; no save-schema changes.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
+
+// Updated: 2026-11-03 08:47 JST / Ver1.131: dialogue matched to visible scene objects.

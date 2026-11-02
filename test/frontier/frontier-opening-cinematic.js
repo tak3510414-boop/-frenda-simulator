@@ -1,10 +1,13 @@
-/* Frenda Frontier Ver1.130 / player-paced prologue with close-up follow camera. */
+/* Frenda Frontier Ver1.131 / visible traveler and runestone, paced scene choreography. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:129};
+const C=F.OPENING_CINEMATIC={active:false,revision:131};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
+// Visible landmarks have stable world positions, distinct from the existing Pokémon rescue spot.
+const traveler={x:427,y:173},meetTraveler={x:447,y:148},stone={x:433,y:83},inspectStone={x:355,y:84};
+C.landmarks={traveler:{...traveler},stone:{...stone}};
 C.north=north;C.camp=camp;
 C.isOpening=s=>{const o=s?.story?.opening;return !!o&&!Number.isInteger(o.townPreviewStage)&&['arrival','tent','mission1'].includes(o.phase)};
 const inheritedMount=W.mount;
@@ -14,7 +17,8 @@ C.mount=async(host,rerender,actions={})=>{
  const s=F.readSave(),o=s.story.opening,auto=(o.phase==='arrival'&&!o.cinematicComplete)||(o.phase==='tent'&&!o.cinematicComplete);
  let stage=o.phase==='arrival'?0:1,scene=P.scene(stage),position=P.position&&scene.walkable(P.position.x,P.position.y)?{...P.position}:P.spawn(stage);
  if(!position)position=P.spawn(stage)||{x:500,y:146};P.position=position;
- let artwork=null,players=null,cam={x:0,y:0},facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,locked=auto,cinematicFinished=false,pendingCaption=null;
+ let artwork=null,players=null,travelerAtlas=null,cam={x:0,y:0},cameraReady=false,facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,locked=auto,cinematicFinished=false,pendingCaption=null;
+ let shot='wide',stoneRevealed=!!o.entranceInspected,travelerGreeting=false;
  C.active=auto;O.cinematicActive=auto;
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout','frontierOpeningStage');document.body.classList.add('progressTownActive');
  const g=O.guidance();
@@ -24,15 +28,77 @@ C.mount=async(host,rerender,actions={})=>{
  size();window.addEventListener('resize',size);window.visualViewport?.addEventListener?.('resize',size);
  const cleanup=()=>{window.removeEventListener('resize',size);window.visualViewport?.removeEventListener?.('resize',size);};
  const stopIfDead=()=>{if(active())return false;cleanup();C.active=false;O.cinematicActive=false;return true};
+ // World-space pixel-art landmark. No new image files or network access required.
+ const drawStone=(c,x,y,now,scale=1,glow=false)=>{
+  c.save();c.translate(x,y);c.scale(scale,scale);
+  const pulse=.55+.45*Math.sin(now/300);
+  c.fillStyle='rgba(18,26,29,.50)';c.beginPath();c.ellipse(0,6,26,8,0,0,Math.PI*2);c.fill();
+  if(glow){const h=c.createRadialGradient(0,-17,4,0,-17,43);h.addColorStop(0,`rgba(157,251,255,${.37+.18*pulse})`);h.addColorStop(1,'rgba(84,208,255,0)');c.fillStyle=h;c.fillRect(-46,-64,92,85)}
+  // Broken monolith, with cracks, roots and a cyan inlaid rune.
+  c.fillStyle='#253a40';c.beginPath();c.moveTo(-23,6);c.lineTo(-19,-20);c.lineTo(-11,-44);c.lineTo(12,-47);c.lineTo(24,-31);c.lineTo(21,2);c.lineTo(10,8);c.closePath();c.fill();
+  c.fillStyle='#65767a';c.beginPath();c.moveTo(-17,-22);c.lineTo(-9,-40);c.lineTo(5,-41);c.lineTo(3,-2);c.lineTo(-16,3);c.closePath();c.fill();
+  c.fillStyle='#a6a8a0';c.fillRect(-12,-38,14,3);c.fillStyle='#384c50';c.fillRect(11,-29,8,26);
+  c.strokeStyle='#243c42';c.lineWidth=2;c.beginPath();c.moveTo(0,-39);c.lineTo(-4,-25);c.lineTo(0,-13);c.lineTo(-8,-7);c.stroke();
+  c.lineCap='round';c.lineJoin='round';c.strokeStyle=glow?`rgba(134,247,255,${.75+.25*pulse})`:'#8ed2d5';c.lineWidth=2.7;
+  c.beginPath();c.moveTo(-3,-30);c.lineTo(2,-23);c.lineTo(0,-10);c.moveTo(2,-23);c.lineTo(9,-30);c.moveTo(0,-10);c.lineTo(-8,-18);c.moveTo(0,-10);c.lineTo(9,-13);c.stroke();
+  c.fillStyle='#bafaff';c.fillRect(-3,-33,4,4);c.fillRect(-11,-19,4,4);c.fillRect(7,-15,4,4);
+  c.restore();
+ };
+ const drawTraveler=(c,now)=>{
+  // Remains present in the world whenever the introductory traveler speaks.
+  if(stage>1)return;
+  const x=traveler.x-cam.x,y=traveler.y-cam.y;
+  if(x<-75||x>cv.width+75||y<-70||y>cv.height+70)return;
+  c.save();c.imageSmoothingEnabled=false;
+  c.fillStyle='rgba(10,29,23,.45)';c.beginPath();c.ellipse(x,y+2,16,5,0,0,Math.PI*2);c.fill();
+  const atlasW=travelerAtlas?.naturalWidth||travelerAtlas?.width||0;
+  if(atlasW>=320){
+   const sx=atlasW>=768?4*64:64;
+   c.drawImage(travelerAtlas,sx,0,64,80,Math.round(x-22),Math.round(y-55),44,55);
+  }else{
+   // No atlas? Keep a clearly recognizable traveler instead of an invisible NPC.
+   const X=Math.round(x),Y=Math.round(y);
+   c.fillStyle='#543e2d';c.fillRect(X-19,Y-22,6,25);c.fillRect(X+14,Y-22,6,25); // pack straps
+   c.fillStyle='#76553b';c.fillRect(X-12,Y-24,24,25);
+   c.fillStyle='#406889';c.fillRect(X-13,Y-26,26,13);
+   c.fillStyle='#d8ae87';c.fillRect(X-9,Y-40,18,16);
+   c.fillStyle='#273c50';c.fillRect(X-14,Y-46,28,9);c.fillRect(X-8,Y-52,16,10);
+   c.fillStyle='#1b2931';c.fillRect(X-5,Y-33,3,3);c.fillRect(X+4,Y-33,3,3);
+   c.fillStyle='#403c35';c.fillRect(X-10,Y+1,8,5);c.fillRect(X+3,Y+1,8,5);
+   c.fillStyle='#e6c69c';c.fillRect(X+12,Y-25,5,11);
+  }
+  // An unmistakable name label, not a dialogue that refers to someone off screen.
+  const label='旅の冒険者',w=101,bx=Math.round(x-w/2),by=Math.round(y-73);
+  if(by>=-5){c.fillStyle='rgba(17,42,35,.93)';c.strokeStyle='#efdfa9';c.lineWidth=1.5;c.fillRect(bx,by,w,20);c.strokeRect(bx,by,w,20);c.fillStyle='#fff3d6';c.textAlign='center';c.font='bold 12px sans-serif';c.fillText(label,x,by+14)}
+  if(!travelerGreeting&&locked){c.fillStyle='#ffe58c';c.font='bold 22px sans-serif';c.textAlign='center';c.fillText('!',x+22,y-54)}
+  c.restore();
+ };
+ const drawStoneDetail=(c,now)=>{
+  if(stage!==0||shot!=='stone')return;
+  const w=Math.min(151,cv.width*.46),h=139,x=10,y=10;
+  c.save();c.fillStyle='rgba(18,32,34,.96)';c.fillRect(x,y,w,h);c.strokeStyle='#a8eced';c.lineWidth=2;c.strokeRect(x+1,y+1,w-2,h-2);
+  drawStone(c,x+w/2,y+95,now,1.25,true);
+  c.fillStyle='#e8fbfa';c.textAlign='center';c.font='bold 12px sans-serif';c.fillText('古い石',x+w/2,y+16);
+  c.font='bold 10px sans-serif';c.fillStyle='#b0f1f0';c.fillText('木の根のような模様',x+w/2,y+119);c.fillText('青白くまたたく光',x+w/2,y+133);
+  c.restore();
+ };
  const draw=now=>{
   if(!artwork||!players)return;
-  const focus=position;cam={x:W.overview?0:Math.max(0,Math.min(1000-cv.width,focus.x-cv.width/2)),y:W.overview?0:Math.max(0,Math.min(480-cv.height,focus.y-cv.height/2))};
+  // Gentle cinematic focus keeps the speaker, stone and player in the same view.
+  const subject=shot==='traveler'?traveler:shot==='stone'?stone:shot==='pokemon'?F.POKEMON_CARE?.RESCUE_POINT:null;
+  const focus=subject?{x:position.x*.50+subject.x*.50,y:position.y*.50+subject.y*.50}:position;
+  const toX=W.overview?0:Math.max(0,Math.min(1000-cv.width,focus.x-cv.width/2));
+  const toY=W.overview?0:Math.max(0,Math.min(480-cv.height,focus.y-cv.height/2));
+  if(!cameraReady){cam={x:toX,y:toY};cameraReady=true}else{cam.x+=(toX-cam.x)*.14;cam.y+=(toY-cam.y)*.14}
   const c=cv.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,cv.width,cv.height);
   P.drawBackground(c,artwork,stage,cam);
   if(building){const t=Math.min(1,Math.max(0,(now-buildAt)/1750));c.save();c.globalAlpha=t*t*(3-2*t);P.drawBackground(c,artwork,1,cam);c.restore();}
   if(!locked){const p=stage===1?north:null;if(p){const x=p.x-cam.x,y=p.y-cam.y;c.save();c.fillStyle='#fff4c0';c.strokeStyle='#163b2c';c.lineWidth=3;c.beginPath();c.arc(x,y,10,0,Math.PI*2);c.fill();c.stroke();c.font='bold 12px sans-serif';c.textAlign='center';c.fillStyle='#102a1d';c.fillText('▼ 森の入口',x,y-17);c.restore();}}
+  if(stage===0){drawStone(c,stone.x-cam.x,stone.y-cam.y,now,1,stoneRevealed);if(stoneRevealed&&shot!=='stone'){const sx=stone.x-cam.x,sy=stone.y-cam.y;c.save();c.fillStyle='#d9ffff';c.font='bold 12px sans-serif';c.textAlign='center';c.shadowColor='#003948';c.shadowBlur=4;c.fillText('✦ 模様のある石',sx,sy-57);c.restore()}}
+  drawTraveler(c,now);
   F.POKEMON_CARE?.drawAtEntrance?.(c,cam,stage);
   F.RESIDENTS?.drawTown?.(c,cam,position,true);P.drawPlayer(c,players[facing],facing,position,cam);F.RESIDENTS?.drawTown?.(c,cam,position,false);
+  drawStoneDetail(c,now);
   if(stage===1&&F.POKEMON_CARE?.canInteract?.()&&!locked){
    const p=F.POKEMON_CARE.interactionPoint(),x=p.x-cam.x,y=p.y-cam.y;
    if(x>=-90&&x<cv.width+90&&y>=0&&y<cv.height+50){c.save();c.fillStyle='rgba(20,52,32,.94)';c.strokeStyle='#f9dfac';c.lineWidth=2;c.fillRect(x-95,y-61,190,24);c.strokeRect(x-95,y-61,190,24);c.font='bold 12px sans-serif';c.fillStyle='#fff5ce';c.textAlign='center';c.fillText(F.POKEMON_CARE.canTreatVisual()?'🌿 ニャオハを手当て':F.POKEMON_CARE.visual()?.status==='healthy'?'🐾 ニャオハに話す':'🌿 薬草を探そう',x,y-44);c.restore()}
@@ -47,8 +113,9 @@ C.mount=async(host,rerender,actions={})=>{
  const wait=ms=>new Promise(resolve=>setTimeout(()=>resolve(active()),ms));
  // Ver1.128: conversation never advances on a timer. The player chooses when
  // to read the next line, while movement and building remain cinematic.
- const caption=(who,line,progress='')=>new Promise(resolve=>{
+ const caption=(who,line,progress='',focusMode=null)=>new Promise(resolve=>{
   if(!active()){resolve(false);return;}
+  if(focusMode)shot=focusMode;else if(who==='旅の冒険者'&&stage===0&&shot!=='stone'&&shot!=='pokemon')shot='traveler';
   speaker.textContent=progress?`${progress}　${who}`:who;
   words.textContent=line;speech.hidden=false;
   continueBtn.textContent='▶ つづける';
@@ -59,9 +126,11 @@ C.mount=async(host,rerender,actions={})=>{
  });
  const chapter=async id=>{
   const scene=O.SCENES[id];if(!scene)return true;
+  const focusMode=id==='entranceClue'?'stone':id==='pokemonFound'||id==='pokemonRescue'?'pokemon':null;
+  if(focusMode==='stone')stoneRevealed=true;
   for(let i=0;i<scene.lines.length;i++){
    const line=scene.lines[i];
-   if(!await caption(line.speaker||'ナレーション',line.text,`${scene.chapter||'物語'} ${i+1}/${scene.lines.length}`))return false;
+   if(!await caption(line.speaker||'ナレーション',line.text,`${scene.chapter||'物語'} ${i+1}/${scene.lines.length}`,focusMode))return false;
   }
   return true;
  };
@@ -94,11 +163,17 @@ C.mount=async(host,rerender,actions={})=>{
   if(!active())return;
   if(O.phase()==='arrival'){
    const opening=O.SCENES.arrival;
-   // The protagonist starts walking as the first observations are read.
-   if(!await caption('ナレーション',opening.lines[0].text,'序章 1/'+opening.lines.length))return;
-   const approach=walk(north,'森の入口');
-   for(let i=1;i<opening.lines.length;i++)if(!await caption(opening.lines[i].speaker,opening.lines[i].text,`序章 ${i+1}/${opening.lines.length}`))return;
-   if(!await approach||!active())return;
+   // Do not introduce the traveler before putting them visibly in the frame.
+   if(!await caption('ナレーション',opening.lines[0].text,`序章 1/${opening.lines.length}`,'wide'))return;
+   if(!await caption('ナレーション',opening.lines[1].text,`序章 2/${opening.lines.length}`,'wide'))return;
+   shot='traveler';hint.textContent='道の先に旅の冒険者がいる。近づいて話を聞こう。';
+   if(!await walk(meetTraveler,'旅の冒険者')||!active())return;
+   travelerGreeting=true;
+   for(let i=2;i<=4;i++)if(!await caption(opening.lines[i].speaker,opening.lines[i].text,`序章 ${i+1}/${opening.lines.length}`,'traveler'))return;
+   shot='stone';stoneRevealed=true;
+   hint.textContent='北の道の先に、模様のある古い石が見える。';
+   if(!await walk(inspectStone,'古い石')||!active())return;
+   for(let i=5;i<opening.lines.length;i++)if(!await caption(opening.lines[i].speaker,opening.lines[i].text,`序章 ${i+1}/${opening.lines.length}`,'stone'))return;
    if(!O.state().entranceInspected)O.inspectEntrance();
    if(!await chapter('entranceClue'))return;
    if(F.POKEMON_CARE?.enabled()){
@@ -107,6 +182,7 @@ C.mount=async(host,rerender,actions={})=>{
     F.POKEMON_CARE.rescue();
     if(!await chapter('pokemonRescue'))return;
    }
+   shot='wide';
    const returnWalk=walk(camp,'テント予定地');
    if(!await caption('ナレーション','ふたりは森の入口に背を向け、風をしのげる草地へ戻った。','テント設営'))return;
    if(!await caption('開拓者','まずは小さくてもいい。ここを、無事に帰ってきた人の目印にしよう。','テント設営'))return;
@@ -164,7 +240,7 @@ C.mount=async(host,rerender,actions={})=>{
  document.getElementById('openingReplay').onclick=()=>{try{O.switchPoint('opening-arrival');P.position=null;rerender()}catch(err){hint.textContent=err.message}};
  skip.onclick=()=>{if(!active())return;finish(true)};
  try{
-  [artwork,players]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png'))))]);
+  [artwork,players,travelerAtlas]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png')))),P.image('frontier-sprite-npcs-v124.png').catch(()=>null)]);
   if(!active())return;draw();requestAnimationFrame(tick);if(auto)play();else {O.cinematicActive=false;C.active=false;}
  }catch(err){C.active=false;O.cinematicActive=false;locked=false;skip.hidden=true;hint.textContent=`必要な画像を読み込めません：${err.message}`;}
 };
@@ -179,3 +255,5 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 06:59 JST / Ver1.129 
 
 // Updated: 2026-11-03 07:32 JST / Ver1.130: same world-camera zoom as the playable town.
+
+// Updated: 2026-11-03 08:47 JST / Ver1.131: traveler, luminous stone, close-up, staged dialogue.
