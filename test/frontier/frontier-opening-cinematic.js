@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.129 / rescue and player-paced cinematic prologue. */
+/* Frenda Frontier Ver1.130 / player-paced prologue with close-up follow camera. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
@@ -18,9 +18,9 @@ C.mount=async(host,rerender,actions={})=>{
  C.active=auto;O.cinematicActive=auto;
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout','frontierOpeningStage');document.body.classList.add('progressTownActive');
  const g=O.guidance();
- host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングでは主人公が自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。主人公が自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${W.overview?'近くを見る':'地図全体'}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
+ host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングでは主人公が自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。主人公が自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${P.zoomLabel(W.overview)}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
  const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip'),careChoices=document.getElementById('openingCareChoices');
- const size=()=>{const w=Math.max(280,Math.min(980,wrap.getBoundingClientRect().width||window.innerWidth||390)),h=window.visualViewport?.height||window.innerHeight||780,available=Math.max(220,Math.min(610,h-290)),cssHeight=W.overview?w*.48:Math.min(available,w);cv.width=W.overview?1000:480;cv.height=W.overview?480:Math.max(200,Math.min(480,Math.round(cssHeight*480/w)));cv.style.width='100%';cv.style.height=`${cssHeight}px`;};
+ const size=()=>{const w=Math.max(280,Math.min(980,wrap.getBoundingClientRect().width||window.innerWidth||390)),h=window.visualViewport?.height||window.innerHeight||780,available=Math.max(220,Math.min(610,h-290)),cssHeight=W.overview?w*.48:Math.min(available,w);const worldWidth=P.worldWidth(W.overview);cv.width=worldWidth;cv.height=W.overview?480:Math.min(480,Math.max(120,Math.round(cssHeight*worldWidth/w)));cv.style.width='100%';cv.style.height=`${cssHeight}px`;};
  size();window.addEventListener('resize',size);window.visualViewport?.addEventListener?.('resize',size);
  const cleanup=()=>{window.removeEventListener('resize',size);window.visualViewport?.removeEventListener?.('resize',size);};
  const stopIfDead=()=>{if(active())return false;cleanup();C.active=false;O.cinematicActive=false;return true};
@@ -160,7 +160,7 @@ C.mount=async(host,rerender,actions={})=>{
  document.getElementById('pokemonChooseTown').onclick=()=>chooseCare('town');
  document.getElementById('pokemonChooseForest').onclick=()=>chooseCare('forest');
  document.getElementById('openingMissions').onclick=()=>{if(locked)return;actions.missions?.()};
- document.getElementById('openingOverview').onclick=()=>{if(locked)return;W.overview=!W.overview;rerender()};
+ document.getElementById('openingOverview').onclick=()=>{if(locked)return;P.nextZoom();rerender()};
  document.getElementById('openingReplay').onclick=()=>{try{O.switchPoint('opening-arrival');P.position=null;rerender()}catch(err){hint.textContent=err.message}};
  skip.onclick=()=>{if(!active())return;finish(true)};
  try{
@@ -177,3 +177,5 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 06:55 JST / Ver1.129: injured Pokemon rescue, care location and choice.
 
 // Updated: 2026-11-03 06:59 JST / Ver1.129 
+
+// Updated: 2026-11-03 07:32 JST / Ver1.130: same world-camera zoom as the playable town.

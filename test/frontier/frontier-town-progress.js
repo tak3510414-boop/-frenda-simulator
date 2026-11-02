@@ -1,5 +1,12 @@
-/* Frenda Frontier Ver1.127 — Lv6 construction, detached home and final town artwork. */
+/* Frenda Frontier Ver1.130 — close-follow camera for town and opening; accurate hit testing. */
 (()=>{'use strict';const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{},P=F.TOWN_PROGRESS={width:1000,height:480,token:0};
+// The camera zoom is visual only. Never modify the world coordinates, navigation,
+// map geometry or persisted player position when zooming.
+P.ZOOM_WIDTHS=Object.freeze({near:320,closer:240});
+P.zoomMode='near';
+P.worldWidth=overview=>overview?1000:P.ZOOM_WIDTHS[P.zoomMode]||320;
+P.zoomLabel=overview=>overview?'近くを見る':P.zoomMode==='near'?'さらに拡大':'町全体';
+P.nextZoom=()=>{const W=F.WILDERNESS;if(W?.overview){W.overview=false;P.zoomMode='near';}else if(P.zoomMode==='near'){P.zoomMode='closer';}else{W.overview=true;}return {overview:!!W?.overview,zoomMode:P.zoomMode};};
 P.stages=[
  {name:'① 未開拓地',lv:0,point:'gather',added:'構築物なし。自然の草地と踏み跡だけです。'},
  {name:'② テントで野営',lv:0,point:'gather',added:'テントと焚き火を設置。将来の施設区画は空けておきます。'},
@@ -68,7 +75,15 @@ P.LV6_SITE=Object.freeze({x:641,y:146}); // Public central road, accessible from
 P.forestPath=(stage,from)=>{const scene=P.scene(stage),end=P.nearest(scene,P.FOREST_GATE,70);return end?P.path(scene,from,end):[]};
 P.drawAccess=(c,scene,cam)=>{c.save();c.lineWidth=3;c.strokeStyle='#dcc494';for(const o of scene.objects.filter(o=>o.kind==='building')){c.beginPath();c.moveTo(o.door.x-cam.x,o.door.y-10-cam.y);c.lineTo(o.door.x-cam.x,o.door.y+6-cam.y);c.stroke()}c.restore()};
 // Keep the same horizontal zoom; crop vertically to the real visible viewport.
-P.viewportPlan=(width,viewportHeight,overhead,overview)=>{const cssHeight=overview?width*.48:Math.min(width,Math.max(150,viewportHeight-overhead));return{cssHeight,width:overview?1000:480,height:overview?480:Math.max(160,Math.round(cssHeight*480/Math.max(1,width)))};};
+P.viewportPlan=(width,viewportHeight,overhead,overview)=>{
+ const cssHeight=overview?width*.48:Math.min(width,Math.max(150,viewportHeight-overhead));
+ const worldWidth=P.worldWidth(overview);
+ // Keep the canvas CSS aspect ratio equal to the world-coordinate aspect ratio.
+ // This is critical: touch positions, camera pan, sprite and building positions
+ // are all defined in world units; CSS-only scaling would break hit testing.
+ const worldHeight=overview?480:Math.min(480,Math.max(120,Math.round(cssHeight*worldWidth/Math.max(1,width))));
+ return{cssHeight,width:worldWidth,height:worldHeight};
+};
 P.fitCanvas=(host,cv,overview)=>{const height=e=>e?.getBoundingClientRect?.().height||0,width=cv.getBoundingClientRect().width||390;
  const overhead=height(document.querySelector('header'))+height(document.getElementById('mainNav'))+height(document.querySelector('.gameHeader'))+height(host.querySelector('.progressGuide'))+height(document.getElementById('progressMessage'))+height(host.querySelector('.progressCommands'))+28;
  const plan=P.viewportPlan(width,window.visualViewport?.height||window.innerHeight||800,overhead,overview);cv.width=plan.width;cv.height=plan.height;cv.style.height=plan.cssHeight+'px';return plan;
@@ -82,9 +97,9 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
  const lv5Active=()=>!!actions.lv5Site&&!storyPreview&&['meet','gather','ready','building','finish'].includes(F.OPENING?.lv5Status?.(F.readSave()).phase);
  const lv6Active=()=>!!actions.lv6Site&&!storyPreview&&['meet','gather','ready','building','finish'].includes(F.OPENING?.lv6Status?.(F.readSave()).phase);
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout');document.body.classList.add('progressTownActive');const guidance=F.OPENING?.guidance?.();
- host.innerHTML=(guidance?`<details class="progressGuide"><summary>次にすること<span>${guidance.title}</span></summary>${F.OPENING.guide()}</details>`:'')+`<canvas id="progressCanvas" style="display:block;width:100%;height:auto;touch-action:manipulation;background:#183927" aria-label="${spec.name}の町マップ"></canvas><p id="progressMessage" class="progressMessage" role="status">${canEnterForest()?'北の道の「⬆ はじまりの森」をタップして、歩いて森へ入れます。':'施設をタップして入口へ移動し、下のボタンから利用できます。'}</p><div class="progressCommands ${F.RESIDENTS?.eligible(s)?'hasResident':''}"><button id="progressZoom" class="cmdBtn">${overview?'近くを見る':'町全体'}</button><button id="progressHome" class="cmdBtn">${spec.lv>=1?'店舗へ':'店舗は未設営'}</button><button id="progressMissions" class="cmdBtn">ミッション</button>${F.RESIDENTS?.eligible(s)?'<button id="progressResident" class="cmdBtn">ミナのところへ</button>':''}</div>`;
+ host.innerHTML=(guidance?`<details class="progressGuide"><summary>次にすること<span>${guidance.title}</span></summary>${F.OPENING.guide()}</details>`:'')+`<canvas id="progressCanvas" style="display:block;width:100%;height:auto;touch-action:manipulation;background:#183927" aria-label="${spec.name}の町マップ"></canvas><p id="progressMessage" class="progressMessage" role="status">${canEnterForest()?'北の道の「⬆ はじまりの森」をタップして、歩いて森へ入れます。':'施設をタップして入口へ移動し、下のボタンから利用できます。'}</p><div class="progressCommands ${F.RESIDENTS?.eligible(s)?'hasResident':''}"><button id="progressZoom" class="cmdBtn">${P.zoomLabel(overview)}</button><button id="progressHome" class="cmdBtn">${spec.lv>=1?'店舗へ':'店舗は未設営'}</button><button id="progressMissions" class="cmdBtn">ミッション</button>${F.RESIDENTS?.eligible(s)?'<button id="progressResident" class="cmdBtn">ミナのところへ</button>':''}</div>`;
  if(document.getElementById('nextActions'))F.OPENING?.bind?.(rerender,actions);const cv=document.getElementById('progressCanvas'),msg=document.getElementById('progressMessage');cv.width=overview?1000:480;cv.height=480;document.getElementById('viewTitle').textContent=spec.name;document.getElementById('viewSubtitle').textContent=spec.added;document.getElementById('viewMeta').textContent='施設 '+scene.objects.filter(o=>o.kind==='building').length;document.getElementById('progressMissions').hidden=!actions.missions;document.getElementById('progressMissions').onclick=()=>actions.missions?.();
- document.getElementById('progressZoom').onclick=()=>{F.WILDERNESS.overview=!overview;rerender()};const enter=document.getElementById('progressHome');enter.onclick=()=>{if(spec.lv>=1){if(actions.facility)actions.facility('shop');else actions.shop?.();}else msg.textContent='まだ店舗はありません。'};
+ document.getElementById('progressZoom').onclick=()=>{P.nextZoom();rerender()};const enter=document.getElementById('progressHome');enter.onclick=()=>{if(spec.lv>=1){if(actions.facility)actions.facility('shop');else actions.shop?.();}else msg.textContent='まだ店舗はありません。'};
  const fit=()=>P.fitCanvas(host,cv,overview);fit();window.addEventListener('resize',fit);window.visualViewport?.addEventListener?.('resize',fit);host.querySelector('.progressGuide')?.addEventListener?.('toggle',fit);P.resizeCleanup=()=>{window.removeEventListener?.('resize',fit);window.visualViewport?.removeEventListener?.('resize',fit);};
  // Ver1.121: Keep the previous position when a stage changes. If a building occupies it,
  // choose the closest road instead of abruptly returning to the stage spawn.
@@ -241,3 +256,5 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 
 // Updated: 2026-11-03 JST / Ver1.127: final stage 8 maps to store Lv6, on-site event.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
+
+// Updated: 2026-11-03 07:32 JST / Ver1.130: 1.5x near / 2x closer camera and full-town overview.
