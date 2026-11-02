@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.121 / illustrated return results and town forest gate integration. */
+/* Frenda Frontier Ver1.122 / illustrated return results and town forest gate integration. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -433,7 +433,19 @@ function createHeldWeaponCanvas(facing,weapon){
  drawHeldWeaponPixelArt(wc.getContext('2d'),0,0,wc.width,wc.height,weapon,String(facing).includes('left'));
  return wc;
 }
-function addHumanToken(x,y,label='',moving=false,facing='down'){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const actualFacing=String(facing||'down'),visualFacing=spriteFacing4(actualFacing),cw=canvas.width||180,ch=canvas.height||240,d=document.createElement('div'),dest={left:(x/cw*100),top:(y/ch*100)};d.id='humanDungeonToken';d.className=`humanDungeonToken facing-${actualFacing} visual-${visualFacing} ${actualFacing.includes('-')?'diagonal':''} ${moving?'moving':''}`;const src=humanPlayerSpriteSrc(actualFacing),appearanceRun=F.run?.active?F.run:null,armor=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'armor'):null,armorId=armor?.id||armor?.defId||appearanceRun?.equipment?.armor,cacheKey=armorId&&['leather_armor','iron_armor'].includes(armorId)?`${src}|${armorId}`:'';const img=document.createElement('img');img.alt='';img.style.position='relative';img.style.zIndex='1';if(cacheKey&&dungeonGearSpriteDataCache.has(cacheKey)){img.src=dungeonGearSpriteDataCache.get(cacheKey)||src}else if(cacheKey){img.addEventListener('load',()=>{const outfit=townPlayerSpriteForEquipment(img,null,appearanceRun);if(outfit.image===img){dungeonGearSpriteDataCache.set(cacheKey,null);return}try{const dataUrl=outfit.image.toDataURL('image/png');dungeonGearSpriteDataCache.set(cacheKey,dataUrl);img.src=dataUrl}catch(e){dungeonGearSpriteDataCache.set(cacheKey,null);console.warn('ダンジョン防具表示',e)}},{once:true});img.src=src}else img.src=src;const weapon=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'weapon'):null;const wc=createHeldWeaponCanvas(actualFacing,weapon);d.append(img);if(wc)d.append(wc);const old=dungeonPlayerVisual.runRef===F.run&&Number.isFinite(dungeonPlayerVisual.left)?{left:dungeonPlayerVisual.left,top:dungeonPlayerVisual.top}:null;d.style.left=(old&&moving?old.left:dest.left)+'%';d.style.top=(old&&moving?old.top:dest.top)+'%';layer.appendChild(d);if(old&&moving)d.animate([{left:old.left+'%',top:old.top+'%'},{left:dest.left+'%',top:dest.top+'%'}],{duration:125,easing:'linear'});dungeonPlayerVisual={runRef:F.run,left:dest.left,top:dest.top};return d}
+function addHumanToken(x,y,label='',moving=false,facing='down'){const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const actualFacing=String(facing||'down'),visualFacing=spriteFacing4(actualFacing),cw=canvas.width||180,ch=canvas.height||240,d=document.createElement('div'),dest={left:(x/cw*100),top:(y/ch*100)};d.id='humanDungeonToken';d.className=`humanDungeonToken facing-${actualFacing} visual-${visualFacing} ${actualFacing.includes('-')?'diagonal':''} ${moving?'moving':''}`;const src=humanPlayerSpriteSrc(actualFacing),appearanceRun=F.run?.active?F.run:null,armor=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'armor'):null,armorId=armor?.id||armor?.defId||appearanceRun?.equipment?.armor,cacheKey=armorId&&['leather_armor','iron_armor'].includes(armorId)?`${src}|${armorId}`:'';const img=document.createElement('img');img.alt='';img.style.position='relative';img.style.zIndex='1';if(cacheKey&&dungeonGearSpriteDataCache.has(cacheKey)){img.src=dungeonGearSpriteDataCache.get(cacheKey)||src}else if(cacheKey){img.addEventListener('load',()=>{const outfit=townPlayerSpriteForEquipment(img,null,appearanceRun);if(outfit.image===img){dungeonGearSpriteDataCache.set(cacheKey,null);return}try{const dataUrl=outfit.image.toDataURL('image/png');dungeonGearSpriteDataCache.set(cacheKey,dataUrl);img.src=dataUrl}catch(e){dungeonGearSpriteDataCache.set(cacheKey,null);console.warn('ダンジョン防具表示',e)}},{once:true});img.src=src}else img.src=src;const weapon=appearanceRun?F.dungeonEquippedView?.(appearanceRun,'weapon'):null;const wc=createHeldWeaponCanvas(actualFacing,weapon);d.append(img);if(wc)d.append(wc);const run=F.run,previous=dungeonPlayerVisual.runRef===run?dungeonPlayerVisual:null;
+ // Ver1.122: the inline CSS position is the FINAL tile, not the previous tile.
+ d.style.left=dest.left+'%';d.style.top=dest.top+'%';layer.appendChild(d);
+ if(previous&&previous.floor===run?.floor&&previous.map===run?.map&&Number.isFinite(previous.x)&&Number.isFinite(previous.y)&&
+    Math.max(Math.abs(previous.x-run.player.x),Math.abs(previous.y-run.player.y))===1&&typeof d.animate==='function'){
+   // Reproject previous WORLD position into the NEW follow-camera coordinate system.
+   const sx=previous.x-run.player.x,sy=previous.y-run.player.y;
+   const tile=15,canvasW=canvas.width||180,canvasH=canvas.height||240;
+   const fromLeft=dest.left+sx*tile/canvasW*100;
+   const fromTop=dest.top+sy*tile/canvasH*100;
+   d.animate([{left:fromLeft+'%',top:fromTop+'%'},{left:dest.left+'%',top:dest.top+'%'}],{duration:125,easing:'linear'});
+ }
+ dungeonPlayerVisual={runRef:run,map:run?.map,floor:run?.floor,x:run?.player?.x,y:run?.player?.y,left:dest.left,top:dest.top};return d}
 function animateHeldWeaponAttack(fx,facing,sourceToken=null){
  const held=sourceToken?sourceToken.querySelector('.humanHeldWeapon'):$('humanDungeonToken')?.querySelector('.humanHeldWeapon');
  if(!held)return false;
@@ -852,9 +864,80 @@ function dungeonTileFromEvent(canvas,meta,run,e){const r=canvas.getBoundingClien
 function dungeonFirstStep(run,tx,ty){const sx=run.player.x,sy=run.player.y,directDx=tx-sx,directDy=ty-sy;if(tx===sx&&ty===sy)return[0,0];if(Math.max(Math.abs(directDx),Math.abs(directDy))===1)return[Math.sign(directDx),Math.sign(directDy)];if(!run.seen?.[ty]?.[tx])return[Math.sign(directDx),Math.sign(directDy)];const blocked=(x,y)=>run.map[y]?.[x]==='wall',q=[[sx,sy]],prev=new Map([[sx+','+sy,null]]),dirs=F.dungeonDirections8||[[0,-1],[-1,0],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];let found=false;while(q.length&&!found){const [x,y]=q.shift();for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy,k=nx+','+ny;if(nx<0||ny<0||ny>=run.map.length||nx>=run.map[0].length||blocked(nx,ny)||prev.has(k)||!run.seen?.[ny]?.[nx])continue;if(F.dungeonCanStep&&!F.dungeonCanStep(run.map,x,y,dx,dy))continue;prev.set(k,[x,y]);if(nx===tx&&ny===ty){found=true;break}q.push([nx,ny])}}if(!found)return[Math.sign(directDx),Math.sign(directDy)];let cx=tx,cy=ty,p=prev.get(cx+','+cy);while(p&&!(p[0]===sx&&p[1]===sy)){cx=p[0];cy=p[1];p=prev.get(cx+','+cy)}return[cx-sx,cy-sy]}
 function dungeonVisibleEnemy(run){const vis=F.dungeonVisibility?.(run)||[];return (run?.enemies||[]).find(e=>e.hp>0&&vis?.[e.y]?.[e.x])||null}
 function dungeonAdjacentVisibleEnemy(run){const vis=F.dungeonVisibility?.(run)||[];return (run?.enemies||[]).find(e=>e.hp>0&&vis?.[e.y]?.[e.x]&&Math.max(Math.abs(e.x-run.player.x),Math.abs(e.y-run.player.y))<=1)||null}
-function dungeonPathTo(run,tx,ty){if(!run?.active||!run.map||!run.seen?.[ty]?.[tx])return null;const sx=run.player.x,sy=run.player.y;if(sx===tx&&sy===ty)return[[sx,sy]];const dirs=F.dungeonDirections8||[[0,-1],[-1,0],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]],vis=F.dungeonVisibility?.(run)||[],enemyKeys=new Set((run.enemies||[]).filter(e=>e.hp>0&&vis?.[e.y]?.[e.x]).map(e=>e.x+','+e.y)),q=[[sx,sy]],prev=new Map([[sx+','+sy,null]]);let found=false;while(q.length&&!found){const [x,y]=q.shift();for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy,k=nx+','+ny;if(nx<0||ny<0||ny>=run.map.length||nx>=run.map[0].length||prev.has(k)||!run.seen?.[ny]?.[nx]||run.map[ny]?.[nx]==='wall'||enemyKeys.has(k))continue;if(F.dungeonCanStep&&!F.dungeonCanStep(run.map,x,y,dx,dy))continue;prev.set(k,[x,y]);if(nx===tx&&ny===ty){found=true;break}q.push([nx,ny])}}if(!found)return null;const rev=[[tx,ty]];let cur=prev.get(tx+','+ty);while(cur){rev.push(cur);cur=prev.get(cur[0]+','+cur[1])}return rev.reverse()}
+function dungeonPathTo(run,tx,ty){
+ if(!run?.active||!run.map||!run.seen?.[ty]?.[tx])return null;
+ const sx=run.player.x,sy=run.player.y;if(sx===tx&&sy===ty)return[[sx,sy]];
+ const directions=F.dungeonDirections8||[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+ const visibility=F.dungeonVisibility?.(run)||[];
+ const blockedEnemy=new Set((run.enemies||[]).filter(e=>e.hp>0&&visibility?.[e.y]?.[e.x]).map(e=>e.x+','+e.y));
+ const octile=(x,y)=>{const dx=Math.abs(tx-x),dy=Math.abs(ty-y);return 10*Math.max(dx,dy)+4*Math.min(dx,dy)};
+ const start={x:sx,y:sy,dir:-1,g:0,f:octile(sx,sy),parent:null};
+ const queue=[start],best=new Map([[''+sx+','+sy+',-1',0]]);
+ let result=null;
+ // Direction-specific states avoid sacrificing straight, natural routes for arbitrary BFS ties.
+ for(let iterations=0;queue.length&&iterations<8000;iterations++){
+  let bestIndex=0;for(let i=1;i<queue.length;i++)if(queue[i].f<queue[bestIndex].f)bestIndex=i;
+  const cur=queue.splice(bestIndex,1)[0];const curKey=cur.x+','+cur.y+','+cur.dir;
+  if(cur.g!==best.get(curKey))continue;
+  if(cur.x===tx&&cur.y===ty){result=cur;break}
+  for(let i=0;i<directions.length;i++){
+   const [dx,dy]=directions[i],nx=cur.x+dx,ny=cur.y+dy;
+   if(!run.seen?.[ny]?.[nx]||run.map[ny]?.[nx]==='wall'||blockedEnemy.has(nx+','+ny))continue;
+   if(F.dungeonCanStep&&!F.dungeonCanStep(run.map,cur.x,cur.y,dx,dy))continue;
+   const g=cur.g+(dx&&dy?14:10)+(cur.dir>=0&&cur.dir!==i?3:0);
+   const key=nx+','+ny+','+i;if(g>=(best.get(key)??Infinity))continue;
+   best.set(key,g);queue.push({x:nx,y:ny,dir:i,g,f:g+octile(nx,ny),parent:cur});
+  }
+ }
+ if(!result)return null;
+ const reversed=[];for(let cur=result;cur;cur=cur.parent)reversed.push([cur.x,cur.y]);return reversed.reverse();
+}
 function autoMoveStopMessage(reason){return {enemy:'敵を発見したので自動移動を停止',feature:'アイテム・階段などがあるので自動移動を停止',trap:'罠が発動したので自動移動を停止',damage:'攻撃を受けたので自動移動を停止',status:'状態異常になったので自動移動を停止',blocked:'進路が変わったので自動移動を停止'}[reason]||''}
-async function dungeonAutoMoveTo(tx,ty){if(dungeonDashRuntime.moving||!F.run?.active)return;const start=F.run;if(F.dungeonHasDisruptiveStatus?.(start)){toast('状態異常中は自動移動できません');return}if(!start.seen?.[ty]?.[tx]){toast('未探索の場所までは自動移動できません');return}const token=++dungeonDashRuntime.token;dungeonDashRuntime.moving=true;toast('探索済みの場所へ自動移動中。マップをタップすると停止します。');let reason='',steps=0;try{while(token===dungeonDashRuntime.token&&F.run?.active&&steps<96){const run=F.run;if(run.player.x===tx&&run.player.y===ty){reason='arrived';break}if(dungeonAdjacentVisibleEnemy(run)){reason='enemy';break}const path=dungeonPathTo(run,tx,ty);if(!path||path.length<2){reason='blocked';break}const[nx,ny]=path[1],dx=nx-run.player.x,dy=ny-run.player.y,isTarget=nx===tx&&ny===ty;if(!isTarget&&dungeonSpecialAt(run,nx,ny)){reason='feature';break}const before={x:run.player.x,y:run.player.y,hp:run.playerHp,triggered:(run.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0)};F.move(dx,dy);steps++;renderAll();if(F.run&&!F.run.active){runResultModal();reason='end';break}if(F.isOnStairs?.()){reason='stairs';break}const after=F.run,triggered=(after.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0);if(after.playerHp<before.hp){reason='damage';break}if(F.dungeonHasDisruptiveStatus?.(after)){reason='status';break}if(triggered>before.triggered||after.player.x!==nx||after.player.y!==ny){reason='trap';break}if(dungeonAdjacentVisibleEnemy(after)){reason='enemy';break}if(after.player.x===tx&&after.player.y===ty){reason='arrived';break}await new Promise(r=>setTimeout(r,170))}}finally{if(token===dungeonDashRuntime.token)dungeonDashRuntime.moving=false}if(reason==='stairs'&&F.run?.active){stairsChoice();return}const msg=autoMoveStopMessage(reason);if(msg)toast(msg)}
+async function dungeonAutoMoveTo(tx,ty){
+ if(dungeonDashRuntime.moving||!F.run?.active)return;
+ const start=F.run;if(F.dungeonHasDisruptiveStatus?.(start)){toast('状態異常中は自動移動できません');return}
+ if(!start.seen?.[ty]?.[tx]){toast('未探索の場所までは自動移動できません');return}
+ const token=++dungeonDashRuntime.token;dungeonDashRuntime.moving=true;
+ // Plan a single stable route instead of picking a different BFS tie on every step.
+ let route=dungeonPathTo(start,tx,ty),routeIndex=1;
+ if(!route||route.length<2){dungeonDashRuntime.moving=false;toast('目的地までの道が見つかりません');return}
+ let reason='',steps=0;
+ try{
+  while(token===dungeonDashRuntime.token&&F.run?.active&&steps<96){
+   const run=F.run;
+   if(run.player.x===tx&&run.player.y===ty){reason='arrived';break}
+   if(dungeonAdjacentVisibleEnemy(run)){reason='enemy';break}
+   if(!route?.[routeIndex]||route[routeIndex-1]?.[0]!==run.player.x||route[routeIndex-1]?.[1]!==run.player.y){route=dungeonPathTo(run,tx,ty);routeIndex=1}
+   if(!route||!route[routeIndex]){reason='blocked';break}
+   let [nx,ny]=route[routeIndex],dx=nx-run.player.x,dy=ny-run.player.y;
+   const enemyOnNext=(run.enemies||[]).some(e=>e.hp>0&&e.x===nx&&e.y===ny);
+   if(enemyOnNext||!F.dungeonCanStep?.(run.map,run.player.x,run.player.y,dx,dy)){
+    route=dungeonPathTo(run,tx,ty);routeIndex=1;
+    if(!route||!route[1]){reason='blocked';break}
+    [nx,ny]=route[1];dx=nx-run.player.x;dy=ny-run.player.y;
+    if((run.enemies||[]).some(e=>e.hp>0&&e.x===nx&&e.y===ny)){reason='enemy';break}
+   }
+   const isTarget=nx===tx&&ny===ty;
+   if(!isTarget&&dungeonSpecialAt(run,nx,ny)){reason='feature';break}
+   const before={x:run.player.x,y:run.player.y,hp:run.playerHp,triggered:(run.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0)};
+   F.move(dx,dy);steps++;renderAll();
+   if(F.run&&!F.run.active){runResultModal();reason='end';break}
+   const after=F.run,triggered=(after.traps||[]).reduce((n,t)=>n+(Number(t.triggered)||0),0);
+   // The staircase menu can only appear after an ACTUAL move onto the staircase.
+   if(F.isOnStairs?.()&&after.player.x===nx&&after.player.y===ny){reason='stairs';break}
+   if(after.playerHp<before.hp){reason='damage';break}
+   if(F.dungeonHasDisruptiveStatus?.(after)){reason='status';break}
+   if(triggered>before.triggered||after.player.x!==nx||after.player.y!==ny){reason='trap';break}
+   routeIndex++;
+   if(dungeonAdjacentVisibleEnemy(after)){reason='enemy';break}
+   if(after.player.x===tx&&after.player.y===ty){reason='arrived';break}
+   await new Promise(r=>setTimeout(r,170));
+  }
+ }finally{if(token===dungeonDashRuntime.token)dungeonDashRuntime.moving=false}
+ if(token!==dungeonDashRuntime.token)return;
+ if(reason==='stairs'&&F.run?.active){stairsChoice();return}
+ const msg=autoMoveStopMessage(reason);if(msg)toast(msg)
+}
 function renderAdventure(s){const run=F.run;$('sceneMount').classList.toggle('dungeonSceneLayout',!!run?.active);if(!run?.active){const defs=F.DUNGEON_DEFS||[],d=F.dungeonDef?.(F.DEFAULT_DUNGEON_ID)||defs[0]||{name:'はじまりの森',maxFloor:30},tier=F.dungeonTierDef?.(d.balanceTier)||{short:'T1',name:'基礎',recommendedPlus:'+0〜+5'},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'},gear=F.equipmentStats?.(s)||{attack:0,defense:0,hp:0,items:{}};$('sceneMount').innerHTML=sceneShell('🗺️ ダンジョン選択',`挑むダンジョンを選びます。
 ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み':(F.OPENING?.active()&&F.OPENING.phase()!=='complete'?'B1Fで木材と商品を拾い、脱出して帰還しよう。':'まずは、はじまりの森のB30Fを目指そう。')} / 現在：${ti.icon}${ti.label}`,'cmdAdv');R.renderAdventurePreview($('sceneCanvas'),s);$('sceneHud').innerHTML=`<span class="hudPill">${esc(tier.short)} ${esc(tier.name)}</span><span class="hudPill">🧑 HP${36+gear.hp}</span><span class="hudPill">⚔️ ${esc(gear.items?.weapon?.name||'なし')}</span><span class="hudPill">🛡️ ${esc(gear.items?.armor?.name||'なし')}</span>`;addHumanToken(91,132,'',false,'down');const cmds=[];for(const dd of defs.filter(dungeon=>dungeon.implementationStatus!=='preview')){const unlocked=!!F.dungeonUnlocked?.(s,dd),playable=!!F.dungeonPlayable?.(s,dd),cleared=!!F.dungeonCleared?.(s,dd.id);cmds.push({t:unlocked?`${dd.icon||'🗺️'} ${dd.name}${cleared?' ✓':''}`:`🔒 ${dd.name}`,fn:()=>{if(!unlocked){toast('前のダンジョンを踏破すると解放されます');return}if(!playable){toast(`${dd.name}は現在利用できません`);return}try{F.startRun(dd.id);renderAll()}catch(e){toast(e.message)}},c:playable?'primary':'',disabled:!unlocked});}if(window.FRENDA_TEST?.active&&document.body.classList.contains('test-menu-open'))cmds.push({t:'🧪 B30ボス確認',fn:()=>{try{F.testJumpToFinalFloor?.('beginner_forest');renderAll();toast('B30F最深部へ移動しました')}catch(e){toast(e.message)}},c:'warn'});cmds.push({t:'装備',fn:showEquipmentModal,c:'primary'},{t:'ポケモン',fn:showPartnerModal},{t:'図鑑',fn:showFrontierDex},{t:'倉庫',fn:showWarehouse},{t:'拠点',fn:()=>setView('home')});fillCmd('cmdAdv',cmds);return}
  $('sceneMount').innerHTML=dungeonSceneShell('cmdAdv');syncDungeonMessage(run);
@@ -1122,3 +1205,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-02 19:58 JST / Ver1.120: build and finish Lv2 store by reaching construction site.
 
 // Updated: 2026-11-02 20:30 JST / Ver1.121: auto-walk paced for visual tracking.
+
+// Updated: 2026-11-02 21:13 JST / Ver1.122: correct displayed tile, camera-safe movement and stable destination routing.
