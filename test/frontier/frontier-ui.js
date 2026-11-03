@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.139 / dungeon Pokemon footprint cap and in-dungeon Pokédex. */
+/* Frenda Frontier Ver1.140 / hard-capped dungeon monster image dimensions, species-specific scale. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -31,38 +31,49 @@ function scaledHeightPixels(meters,referencePixels,referenceMeters,minPixels,max
 const spriteVisibleMetricsCache=new Map();
 function measureSpriteVisibleMetrics(src){if(!src)return Promise.resolve(null);if(spriteVisibleMetricsCache.has(src))return spriteVisibleMetricsCache.get(src);const promise=new Promise(resolve=>{const probe=new Image();probe.crossOrigin='anonymous';probe.onload=()=>{try{const side=96,canvas=document.createElement('canvas');canvas.width=side;canvas.height=side;const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx){resolve(null);return}ctx.clearRect(0,0,side,side);ctx.drawImage(probe,0,0,side,side);const pixels=ctx.getImageData(0,0,side,side).data;let minX=side,minY=side,maxX=-1,maxY=-1;for(let y=0;y<side;y++)for(let x=0;x<side;x++)if(pixels[(y*side+x)*4+3]>24){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}if(maxX<minX||maxY<minY){resolve(null);return}const heightRatio=(maxY-minY+1)/side,widthRatio=(maxX-minX+1)/side,imageAspect=probe.naturalWidth/Math.max(1,probe.naturalHeight);resolve({heightRatio,widthRatio,imageAspect,visibleAspect:imageAspect*widthRatio/heightRatio,xCenter:(minX+maxX+1)/(2*side),bottomGap:1-(maxY+1)/side})}catch{resolve(null)}};probe.onerror=()=>resolve(null);try{probe.src=src}catch{resolve(null)}});spriteVisibleMetricsCache.set(src,promise);return promise}
 function bindSpeciesHeightRows(speciesList){const cards=[...document.querySelectorAll('#frontierModalBody [data-species-height-row]')];if(!cards.length)return;partnerHeightObserver?.disconnect();partnerHeightObserver=null;const apply=async card=>{const sp=speciesList[Number(card.dataset.speciesHeightRow)],label=card.querySelector('.partnerHeightLabel');if(!sp)return;const info=await pokemonHeightInfo(sp);if(!card.isConnected)return;if(!info){if(label)label.textContent='高さデータ未取得';return}const size=scaledHeightPixels(info.meters,52,.4,24,128),visual=card.querySelector('.speciesVisual,.speciesAvatar');let displaySize=size,visualWidth=size;if(visual){visual.style.width=size+'px';visual.style.height=size+'px';const img=visual.querySelector('.pokemonSpriteImg'),src=img?.currentSrc||img?.src;if(img&&src){let metrics=await measureSpriteVisibleMetrics(src);if(!metrics&&info.dex===25)metrics={heightRatio:.58,widthRatio:.44,imageAspect:(img.naturalWidth||1)/(img.naturalHeight||1),visibleAspect:.76,xCenter:.5,bottomGap:.02};if(!card.isConnected)return;if(metrics){const aspect=Math.max(.25,metrics.visibleAspect);displaySize=Math.min(size,128,176/aspect);const imageHeight=displaySize/Math.max(.12,metrics.heightRatio),imageWidth=imageHeight*metrics.imageAspect;visualWidth=Math.max(24,Math.min(176,Math.round(displaySize*aspect)));img.style.inset='auto';img.style.left=`${visualWidth/2-metrics.xCenter*imageWidth}px`;img.style.top='auto';img.style.right='auto';img.style.bottom=`${-metrics.bottomGap*imageHeight}px`;img.style.width=`${imageWidth}px`;img.style.height=`${imageHeight}px`;img.style.maxWidth='none';img.style.transform=visual.classList.contains('facing-left')?'scaleX(-1)':'none'}visual.style.height=displaySize+'px'}visual.style.width=visualWidth+'px'}card.style.gridTemplateColumns=`${visualWidth}px minmax(0,1fr)`;if(label){label.textContent=`高さ ${info.meters.toFixed(1)}m`;label.title='PokéAPIの高さ情報'}card.dataset.pokemonHeightM=String(info.meters)};if(typeof IntersectionObserver==='function'){let remaining=cards.length;partnerHeightObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;partnerHeightObserver.unobserve(entry.target);remaining--;apply(entry.target);if(remaining<=0){partnerHeightObserver.disconnect();partnerHeightObserver=null}}},{root:null,rootMargin:'120px 0px'});cards.forEach(card=>partnerHeightObserver.observe(card))}else cards.slice(0,8).forEach(apply)}
-// Ver1.139: keep enemy artwork within a readable footprint on the dungeon grid.
-// The sprite's transparent source margins are accounted for in visibleAspect.
-// Bosses have a separate, modest allowance; catalogue previews remain unchanged.
-function dungeonPokemonSize(meters,metrics,boss=false){
- const maxW=boss?84:66,maxH=boss?57:48;
- const n=Number(meters),height=Math.max(26,Math.min(maxH,Math.round(25+11*(Number.isFinite(n)&&n>0?n:1))));
+// Ver1.140: use the ACTUAL tile size on screen to make large enemies readable.
+// Previously, the measured image was allowed to overhang its token box;
+// the token now clips those transparent margins and any unexpected overshoot.
+// Only dungeon tokens are affected; Pokédex and town artwork stay unchanged.
+function dungeonPokemonSize(meters,metrics,boss=false,sp=null,tileCss=32){
+ const name=[sp?.name,sp?.name_ja,sp?.representative?.name,sp?.species?.name].filter(Boolean).join('/');
+ const revavroom=name.includes('ブロロローム')||directDexNumber(sp)===966;
+ const tile=Number.isFinite(Number(tileCss))&&Number(tileCss)>=12?Math.min(80,Number(tileCss)):32;
+ const maxW=Math.max(24,Math.round(Math.min(revavroom?(boss?47:43):(boss?60:52),tile*(revavroom?(boss?1.42:1.30):(boss?1.65:1.50)))));
+ const maxH=Math.max(24,Math.round(Math.min(revavroom?38:(boss?50:43),tile*(revavroom?1.10:(boss?1.48:1.25)))));
+ const n=Number(meters),naturalH=Math.max(24,Math.min(maxH,Math.round(25+10*(Number.isFinite(n)&&n>0?n:1))));
  const a=Number(metrics?.visibleAspect),aspect=Number.isFinite(a)&&a>.12?Math.min(6,Math.max(.35,a)):1;
- const dw=Math.max(1,Math.round(Math.min(maxW,height*aspect)));
- const dh=Math.max(1,Math.round(Math.min(height,maxW/aspect)));
- return {width:dw,height:dh};
+ // Keep alpha-visible proportions while limiting both dimensions.
+ const height=Math.max(1,Math.min(naturalH,maxW/aspect));
+ const width=Math.max(1,Math.min(maxW,height*aspect));
+ return {width:Math.round(width),height:Math.round(height),maxWidth:maxW,maxHeight:maxH,revavroom};
 }
-function scaleWorldPokemon(node,sp){
+function scaleWorldPokemon(node,sp,tileCss=32){
  const visual=node.querySelector('.speciesVisual,.speciesAvatar'),img=visual?.querySelector('.pokemonSpriteImg');
  const boss=node.classList.contains('bossEnemyToken');
- // Apply a safe footprint immediately, even without PokeAPI connectivity.
  const apply=(dimensions,metrics=null,meters=null)=>{
   if(!node.isConnected)return;
   const {width,height}=dimensions;
   node.style.width=width+'px';node.style.height=height+'px';
+  // The old overflow:visible allowed a much wider image to obscure adjacent tiles.
+  node.style.overflow='hidden';
+  node.dataset.pokemonFootprint=width+'x'+height;
+  node.dataset.pokemonSpecial=dimensions.revavroom?'revavroom':'standard';
   if(visual){visual.style.width='100%';visual.style.height='100%'}
   if(img){
    const left=visual?.classList.contains('facing-left');
-   if(metrics&&metrics.heightRatio>.08){
+   if(metrics&&metrics.heightRatio>.08&&Number.isFinite(metrics.imageAspect)){
     const imgH=height/metrics.heightRatio,imgW=imgH*metrics.imageAspect;
     const cx=left?1-metrics.xCenter:metrics.xCenter;
     img.style.inset='auto';img.style.left=(width/2-cx*imgW)+'px';img.style.top='auto';img.style.right='auto';
     img.style.bottom=(-metrics.bottomGap*imgH)+'px';img.style.width=imgW+'px';img.style.height=imgH+'px';
-    img.style.maxWidth='none';img.style.transform=left?'scaleX(-1)':'none';
+    img.style.maxWidth='none';img.style.maxHeight='none';
+    img.style.objectFit='fill';img.style.transform=left?'scaleX(-1)':'none';
    }else{
-    // Retain a contained image before visible-metrics arrive.
+    // Missing/inaccessible image metrics: the entire source is fitted inside the box.
     img.style.inset='0';img.style.width='100%';img.style.height='100%';
-    img.style.maxWidth='100%';img.style.objectFit='contain';img.style.transform=left?'scaleX(-1)':'none';
+    img.style.maxWidth='100%';img.style.maxHeight='100%';
+    img.style.objectFit='contain';img.style.transform=left?'scaleX(-1)':'none';
    }
   }
   const label=node.nextElementSibling;
@@ -72,15 +83,14 @@ function scaleWorldPokemon(node,sp){
   }
   if(meters)node.title=`${sp?.name||'ポケモン'}／図鑑高 ${Number(meters).toFixed(1)}m`;
  };
- apply(dungeonPokemonSize(1,null,boss));
+ apply(dungeonPokemonSize(1,null,boss,sp,tileCss));
  pokemonHeightInfo(sp).then(async info=>{
   if(!info||!node.isConnected)return;
   const src=img?.currentSrc||img?.src,metrics=src?await measureSpriteVisibleMetrics(src):null;
   if(!node.isConnected)return;
-  apply(dungeonPokemonSize(info.meters,metrics,boss),metrics,info.meters);
+  apply(dungeonPokemonSize(info.meters,metrics,boss,sp,tileCss),metrics,info.meters);
  }).catch(e=>console.warn('ダンジョン表示サイズ:',e));
 }
-
 
 const talkLines=['この先の森には、めずらしい素材があるらしいよ。','店の商品が増えると、旅人も少しずつ集まってくるんだ。','鍛冶屋がにぎわうと、もっと奥の森の噂も聞けるかもね。','森へ行くなら、武器と防具を忘れずにね。町のポケモンたちも施設で力を貸してくれるはずだよ。'];
 const visualImgCache=new Map();
@@ -516,13 +526,13 @@ async function drawTownVisual(s){
 function visualHouseHotspots(){addHotspot('町へ',75,55,21,6,()=>{homeMode='town';renderAll()});addHotspot('ポケモン',75,62,21,6,showPartnerModal);addHotspot('倉庫',75,69,21,6,showWarehouse);addHotspot('物語',75,76,21,6,showStory);addHotspot('冒険',75,83,21,6,()=>setView('adventure'))}
 function visualStoreHotspots(){addHotspot('棚1',75,59,21,6,()=>stockChooser(0));addHotspot('棚2',75,66,21,6,()=>stockChooser(1));addHotspot('棚3',75,73,21,6,()=>stockChooser(2));addHotspot('ねだん',75,80,21,6,chooseShelfForPrice);addHotspot('営業',75,87,21,6,runStore);addHotspot('倉庫',75,94,21,5,showWarehouse)}
 function spriteFacing4(face){face=String(face||'down');if(face.includes('left'))return'left';if(face.includes('right'))return'right';if(face.startsWith('up'))return'up';return'down'}
-function addToken(sp,x,y,cls='partnerToken',label='',facing='down',moving=false,entityId=''){
+function addToken(sp,x,y,cls='partnerToken',label='',facing='down',moving=false,entityId='',tileCanvasPx=15){
  if(!sp)return;const layer=$('tokenLayer'),canvas=$('sceneCanvas');if(!layer||!canvas)return;const cw=canvas.width||180,ch=canvas.height||240,d=document.createElement('div');
  d.className=`pokemonToken ${cls} ${moving?'moving':''}`;if(entityId)d.dataset.entityId=entityId;d.dataset.anchorY=String(y);d.dataset.canvasHeight=String(ch);d.style.left=(x/cw*100)+'%';d.style.top=(y/ch*100)+'%';
  const visualFacing=spriteFacing4(facing);d.innerHTML=F.speciesVisualHtml?F.speciesVisualHtml(sp,{small:true,facing:visualFacing}):speciesAvatar(sp,true);
  // The small sprite class has a fixed 44px box; force it to follow the scaled token.
  const visual=d.querySelector('.speciesVisual,.speciesAvatar');if(visual){visual.style.width='100%';visual.style.height='100%'}
- layer.appendChild(d);scaleWorldPokemon(d,sp);
+ layer.appendChild(d);const cssTile=Number(tileCanvasPx)*(canvas.getBoundingClientRect().width||canvas.clientWidth||360)/Math.max(1,cw);scaleWorldPokemon(d,sp,cssTile);
  if(label){const l=document.createElement('div');l.className='tokenLabel';l.style.left=(x/cw*100)+'%';l.style.top=((y+Math.max(17,ch/14))/ch*100)+'%';l.textContent=label;layer.appendChild(l)}return d
 }
 function dungeonWeaponPlacement(facing,item){const p={'down':{left:10,top:36,angle:0,behind:false},'up':{right:12,top:29,angle:0,behind:true},'left':{left:4,top:25,angle:-35,behind:false},'right':{left:56,top:40,angle:35,behind:false},'up-left':{left:46,top:25,angle:-30,behind:true},'up-right':{left:56,top:36,angle:30,behind:false},'down-left':{left:14,top:22,angle:-30,behind:false},'down-right':{left:22,top:38,angle:30,behind:false}}[facing]||{left:4,top:36,angle:0,behind:false};const isSpear=String(item?.id||item?.defId||'').includes('spear')||String(item?.weapon?.label||'').includes('槍')||Number(item?.weapon?.range)>=2;return{...p,isSpear}}
@@ -1196,7 +1206,7 @@ ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み'
  const meta=R.renderDungeon($('sceneCanvas'),run),weapon=F.dungeonEquippedView?.(run,'weapon');
  $('sceneHud').innerHTML=dungeonHudMarkup(run,s.coins);updateDungeonTravelStatus();renderDungeonTutorial(run);
  const dungeonDexButton=$('dungeonDexToggle');if(dungeonDexButton)dungeonDexButton.onclick=showFrontierDex;
- if(meta){dungeonMoveOverlay(run,meta);const screenPos=(x,y)=>({x:meta.ox+(x-meta.camX)*meta.t+meta.t/2,y:meta.oy+(y-meta.camY)*meta.t+meta.t/2,visible:x>=meta.camX&&y>=meta.camY&&x<meta.camX+meta.viewCols&&y<meta.camY+meta.viewRows,currentVisible:!!meta.visibility?.[y]?.[x]}),pp=screenPos(run.player.x,run.player.y);if(run.playerHp>0&&pp.visible)addHumanToken(pp.x,pp.y,'',Number(run.playerStep)>0,run.playerFacing||'down');for(const e of run.enemies.filter(e=>e.hp>0)){const esp=F.speciesById?.(e.speciesId),p=screenPos(e.x,e.y);if(p.visible&&p.currentVisible){addToken(esp,p.x,p.y,`enemyToken${e.boss?' bossEnemyToken':''}`,`${e.boss?'👑 ':''}${e.name} HP${e.hp}/${e.maxHp}${Number(e.sleepTurns)>0?' 💤':''}${e.telegraph?' ⚠️':''}`,e.facing||'down',Number(e.step)>0,e.id||'');if(e.telegraph)addEnemyTelegraphLabel(p.x,p.y,e.telegraph.moveName||'危険技')}}for(const it of (run.floorItems||[])){const p=screenPos(it.x,it.y),dist=Math.max(Math.abs(it.x-run.player.x),Math.abs(it.y-run.player.y)),def=F.item?.(it.itemId);if(p.visible&&p.currentVisible&&dist<=2&&def)addFloorItemLabel(p.x,p.y,def.id==='herb'?`${def.name}（HP+14/満腹+5）`:def.id==='bread'?`${def.name}（満腹+50）`:def.id==='big_bread'?`${def.name}（満腹+100）`:def.name)}const fx=run.attackFx;if(fx&&Number(fx.seq)>lastAttackFxSeq&&pp.visible){lastAttackFxSeq=Number(fx.seq);addWeaponAttackFx(pp.x,pp.y,fx,run.playerFacing||'down',weapon)}const enemyFx=(run.enemyAttackFx||[]).filter(x=>Number(x.seq)>lastEnemyAttackFxSeq);let enemyFxDelay=40;for(const ef of enemyFx){const sp=screenPos(ef.x,ef.y),tp=screenPos(ef.targetX,ef.targetY);if(sp.visible&&sp.currentVisible&&tp.visible)addEnemyAttackFx(sp,tp,ef,enemyFxDelay);lastEnemyAttackFxSeq=Math.max(lastEnemyAttackFxSeq,Number(ef.seq)||0);enemyFxDelay+=180}}
+ if(meta){dungeonMoveOverlay(run,meta);const screenPos=(x,y)=>({x:meta.ox+(x-meta.camX)*meta.t+meta.t/2,y:meta.oy+(y-meta.camY)*meta.t+meta.t/2,visible:x>=meta.camX&&y>=meta.camY&&x<meta.camX+meta.viewCols&&y<meta.camY+meta.viewRows,currentVisible:!!meta.visibility?.[y]?.[x]}),pp=screenPos(run.player.x,run.player.y);if(run.playerHp>0&&pp.visible)addHumanToken(pp.x,pp.y,'',Number(run.playerStep)>0,run.playerFacing||'down');for(const e of run.enemies.filter(e=>e.hp>0)){const esp=F.speciesById?.(e.speciesId),p=screenPos(e.x,e.y);if(p.visible&&p.currentVisible){addToken(esp,p.x,p.y,`enemyToken${e.boss?' bossEnemyToken':''}`,`${e.boss?'👑 ':''}${e.name} HP${e.hp}/${e.maxHp}${Number(e.sleepTurns)>0?' 💤':''}${e.telegraph?' ⚠️':''}`,e.facing||'down',Number(e.step)>0,e.id||'',meta.t);if(e.telegraph)addEnemyTelegraphLabel(p.x,p.y,e.telegraph.moveName||'危険技')}}for(const it of (run.floorItems||[])){const p=screenPos(it.x,it.y),dist=Math.max(Math.abs(it.x-run.player.x),Math.abs(it.y-run.player.y)),def=F.item?.(it.itemId);if(p.visible&&p.currentVisible&&dist<=2&&def)addFloorItemLabel(p.x,p.y,def.id==='herb'?`${def.name}（HP+14/満腹+5）`:def.id==='bread'?`${def.name}（満腹+50）`:def.id==='big_bread'?`${def.name}（満腹+100）`:def.name)}const fx=run.attackFx;if(fx&&Number(fx.seq)>lastAttackFxSeq&&pp.visible){lastAttackFxSeq=Number(fx.seq);addWeaponAttackFx(pp.x,pp.y,fx,run.playerFacing||'down',weapon)}const enemyFx=(run.enemyAttackFx||[]).filter(x=>Number(x.seq)>lastEnemyAttackFxSeq);let enemyFxDelay=40;for(const ef of enemyFx){const sp=screenPos(ef.x,ef.y),tp=screenPos(ef.targetX,ef.targetY);if(sp.visible&&sp.currentVisible&&tp.visible)addEnemyAttackFx(sp,tp,ef,enemyFxDelay);lastEnemyAttackFxSeq=Math.max(lastEnemyAttackFxSeq,Number(ef.seq)||0);enemyFxDelay+=180}}
  const selectedEnemy=(run.enemies||[]).find(e=>e.hp>0&&e.id===dungeonEnemyInfoRuntime.enemyId);if(selectedEnemy){const info=F.dungeonEnemyInfo?.(run,selectedEnemy);if(info)addEnemyInfoOverlay(info)}
  const footAction=F.dungeonFootItemAction?.(),footItem=footAction?F.floorItemAt?.(run,run.player.x,run.player.y):null,contextCmd=footAction?{t:footAction.mode==='exchange'?'交換':'拾う',fn:pickupFootItem,c:'primary'}:{t:'階段',fn:stairsChoice,c:F.isOnStairs()?'primary':'',disabled:!F.isOnStairs()};
  const footHint=$('dungeonFootItemHint');if(footHint&&footAction?.item){footHint.classList.remove('hidden');footHint.innerHTML=`${itemVisualHtml(footAction.item,28,'footHintVisual')}<span><b>${esc(footAction.item.name)}${footAction.qty>1?` ×${footAction.qty}`:''}</b><small>${footAction.mode==='exchange'?'バッグ満杯：交換':'足元：拾える'}</small></span>`}
@@ -1488,3 +1498,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-03 10:45 JST / Ver1.138: independent Pokémon follower in progression town and opening.
 
 // Updated: 2026-11-03 13:30 JST / Ver1.139: constrain visible dungeon enemy footprints; add shared Pokédex toggle.
+
+// Updated: 2026-11-03 16:17 JST / Ver1.140: tile-relative monster footprint cap, Revavroom-specific limit, image-overflow protection.
