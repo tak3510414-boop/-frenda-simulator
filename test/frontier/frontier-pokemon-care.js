@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.129 — rescue, treatment, trust and voluntary coexistence.
+/* Frenda Frontier Ver1.137 — rescue, treatment, trust and voluntary coexistence.
    Updated: 2026-11-03 06:55 JST
    New-campaign only. Existing saves without pokemonCare remain unchanged. */
 (()=>{'use strict';
@@ -134,12 +134,12 @@ if(typeof Image!=='undefined'){
 }
 function fallback(c,x,y,size){c.save();c.translate(x,y);c.scale(size/36,size/36);c.fillStyle='#284f38';c.fillRect(-12,-12,24,19);c.fillRect(-17,-22,9,14);c.fillRect(7,-22,9,14);c.fillStyle='#8ac586';c.fillRect(-10,-10,20,15);c.fillStyle='#f6ead8';c.fillRect(-8,-3,16,8);c.fillStyle='#305040';c.fillRect(-6,-5,3,3);c.fillRect(4,-5,3,3);c.restore()}
 PC.drawAt=(ctx,x,y,size=35)=>{if(pokeImage?.complete&&pokeImage.naturalWidth)ctx.drawImage(pokeImage,x-size/2,y-size*.72,size,size);else fallback(ctx,x,y-size*.15,size)};
-PC.drawAtEntrance=(ctx,cam,stage)=>{const care=PC.visual();if(!care||stage!==0||!['unseen','found'].includes(care.status))return;PC.drawAt(ctx,PC.RESCUE_POINT.x-cam.x,PC.RESCUE_POINT.y-cam.y,37)};
+PC.drawAtEntrance=(ctx,cam,stage)=>{const care=PC.visual();if(!care||stage!==0||!['unseen','found'].includes(care.status))return;PC.drawAt(ctx,PC.RESCUE_POINT.x-cam.x,PC.RESCUE_POINT.y-cam.y,52)};
 P.drawPlayer=function(ctx,im,i,p,cam){const result=originalDrawPlayer.call(this,ctx,im,i,p,cam),c=PC.visual();if(!c)return result;
  const atCamp=['recovering','healthy'].includes(c.status);
- if(c.status==='rescued')PC.drawAt(ctx,p.x-cam.x+18,p.y-cam.y+8,23);
- else if(atCamp)PC.drawAt(ctx,PC.CAMP_POINT.x-cam.x,PC.CAMP_POINT.y-cam.y,35);
- else if(c.status==='trusted')PC.drawAt(ctx,p.x-cam.x-29,p.y-cam.y+9,27);
+ if(c.status==='rescued')PC.drawAt(ctx,p.x-cam.x+20,p.y-cam.y+10,32);
+ else if(atCamp)PC.drawAt(ctx,PC.CAMP_POINT.x-cam.x,PC.CAMP_POINT.y-cam.y,50);
+ else if(c.status==='trusted')PC.drawAt(ctx,p.x-cam.x-31,p.y-cam.y+11,36);
  return result};
 PC.interactionPoint=()=>PC.CAMP_POINT;
 // Endgame links are opt-in for campaigns that actually completed the rescue.
@@ -157,3 +157,5 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 })();
 
 // Updated: 2026-11-03 06:59 JST / Ver1.129: new story-based rescue and coexistence.
+
+// Updated: 2026-11-03 10:14 JST / Ver1.137: enlarge Nyahoja on entrance, camp and trusted-follow states.

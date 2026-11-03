@@ -1,8 +1,8 @@
-/* Frenda Frontier Ver1.132 / consistent character proportions and properly located forest runestone. */
+/* Frenda Frontier Ver1.137 / clearer stall guidance and larger Nyahoja camp visibility. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:133};
+const C=F.OPENING_CINEMATIC={active:false,revision:137};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
 // Visible landmarks have stable world positions, distinct from the existing Pokémon rescue spot.
@@ -88,6 +88,25 @@ C.mount=async(host,rerender,actions={})=>{
   c.font='bold 10px sans-serif';c.fillStyle='#b0f1f0';c.fillText('木の根のような模様',x+w/2,y+119);c.fillText('青白くまたたく光',x+w/2,y+133);
   c.restore();
  };
+ const drawObjectiveMarker=(c,point,primary,secondary,now,accent='#f7e6a7')=>{
+  if(!point)return;
+  const x=point.x-cam.x,y=point.y-cam.y;
+  if(x<-130||x>cv.width+130||y<-110||y>cv.height+120)return;
+  const pulse=.6+.4*Math.sin(now/220),ring=18+pulse*7;
+  c.save();
+  c.strokeStyle=`rgba(255,245,184,${.72+.22*pulse})`;
+  c.lineWidth=3;c.beginPath();c.arc(x,y,ring,0,Math.PI*2);c.stroke();
+  c.fillStyle='rgba(255,244,195,.96)';c.strokeStyle='#173827';c.lineWidth=2;
+  c.beginPath();c.moveTo(x,y-ring-24);c.lineTo(x-11,y-ring-4);c.lineTo(x+11,y-ring-4);c.closePath();c.fill();c.stroke();
+  c.beginPath();c.arc(x,y,8+Math.sin(now/180)*1.5,0,Math.PI*2);c.fill();c.stroke();
+  const boxW=Math.max(124,Math.min(210,Math.max(primary.length*14,secondary?secondary.length*7.8:0)+20));
+  const boxH=secondary?38:24,bx=Math.round(x-boxW/2),by=Math.round(y-ring-62);
+  c.fillStyle='rgba(18,44,33,.94)';c.strokeStyle=accent;c.lineWidth=2;
+  c.fillRect(bx,by,boxW,boxH);c.strokeRect(bx,by,boxW,boxH);
+  c.textAlign='center';c.fillStyle='#fff4cf';c.font='bold 12px sans-serif';c.fillText(primary,x,by+15);
+  if(secondary){c.fillStyle='#d7f6df';c.font='11px sans-serif';c.fillText(secondary,x,by+30);}
+  c.restore();
+ };
  const draw=now=>{
   if(!artwork||!players)return;
   // Gentle cinematic focus keeps the speaker, stone and player in the same view.
@@ -103,6 +122,9 @@ C.mount=async(host,rerender,actions={})=>{
   if(stage===1&&stoneRevealed)C.drawRunestone(c,cam,now);
   if(stage===0){drawStone(c,stone.x-cam.x,stone.y-cam.y,now,.67,stoneRevealed);if(stoneRevealed&&shot!=='stone'){const sx=stone.x-cam.x,sy=stone.y-cam.y;c.save();c.fillStyle='#d9ffff';c.font='bold 12px sans-serif';c.textAlign='center';c.shadowColor='#003948';c.shadowBlur=4;c.fillText('✦ 模様のある石',sx,sy-43);c.restore()}}
   drawTraveler(c,now);
+  const phase=O.phase();
+  if(stage===1&&phase==='mission1')drawObjectiveMarker(c,stall,O.stallReady()?'⭐ ここで露店を設営':'⭐ 露店予定地','テントの右どなり',now);
+  if(stage===1&&phase==='tent')drawObjectiveMarker(c,camp,'⛺ テント予定地','ここを最初の拠点にする',now,'#b6f0d5');
   F.POKEMON_CARE?.drawAtEntrance?.(c,cam,stage);
   F.RESIDENTS?.drawTown?.(c,cam,position,true);P.drawPlayer(c,players[facing],facing,position,cam);F.RESIDENTS?.drawTown?.(c,cam,position,false);
   drawStoneDetail(c,now);
@@ -227,7 +249,7 @@ C.mount=async(host,rerender,actions={})=>{
   }if(phase==='arrival'&&!O.state().entranceInspected&&Math.hypot(position.x-north.x,position.y-north.y)<28){O.inspectEntrance();rerender();return}
   if(phase==='arrival'&&O.state().entranceInspected&&Math.hypot(position.x-camp.x,position.y-camp.y)<32){O.advance();rerender();return}
   if(phase==='tent'&&Math.hypot(position.x-camp.x,position.y-camp.y)<35){O.advance();rerender();return}
-  if(phase==='mission1'&&O.stallReady()&&Math.hypot(position.x-stall.x,position.y-stall.y)<40){O.setupStall();rerender();return}
+  if(phase==='mission1'&&Math.hypot(position.x-stall.x,position.y-stall.y)<44){if(O.stallReady()){O.setupStall();rerender();return}hint.textContent='ここが露店予定地です。テントの右どなりで、木材と売る商品がそろったら設営できます。';return}
   if(phase==='mission1'&&Math.hypot(position.x-north.x,position.y-north.y)<32)enterForest();};
  cv.onclick=e=>{if(locked)return;const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+cam.x,y:(e.clientY-b.top)/b.height*cv.height};const phase=O.phase();let destination=p;
   if(phase==='mission1'&&F.POKEMON_CARE?.canInteract?.()&&Math.hypot(p.x-F.POKEMON_CARE.interactionPoint().x,p.y-F.POKEMON_CARE.interactionPoint().y)<90)destination=F.POKEMON_CARE.interactionPoint();
@@ -236,7 +258,7 @@ C.mount=async(host,rerender,actions={})=>{
   else if(phase==='mission1'&&O.stallReady()&&Math.hypot(p.x-stall.x,p.y-stall.y)<50)destination=stall;
   const dest=P.nearest(scene,destination,35);if(!dest){hint.textContent='通れる道を選んでください。';return}route=P.path(scene,position,dest);if(!route.length){hint.textContent='その地点へは歩けません。';return}
   if(route.length<=1){route=[];interact();return}
-  hint.textContent=destination===north?'北の森へ向かっています。':F.POKEMON_CARE?.canInteract?.()&&Math.hypot(destination.x-F.POKEMON_CARE.interactionPoint().x,destination.y-F.POKEMON_CARE.interactionPoint().y)<1?'ニャオハのところへ移動しています。':destination===camp?'テントのそばへ移動します。':'移動中……';
+  hint.textContent=destination===north?'北の森へ向かっています。':F.POKEMON_CARE?.canInteract?.()&&Math.hypot(destination.x-F.POKEMON_CARE.interactionPoint().x,destination.y-F.POKEMON_CARE.interactionPoint().y)<1?'ニャオハのところへ移動しています。':destination===camp?'テントのそばへ移動します。':destination===stall?'露店予定地へ向かっています。':'移動中……';
   // User route interaction is invoked at the end of movement by the regular animation loop.
   movingResolve=ok=>{if(ok){hint.textContent='目的地に着きました。';interact();}};
  };
@@ -267,3 +289,5 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 08:47 JST / Ver1.131: traveler, luminous stone, close-up, staged dialogue.
 // Updated: 2026-11-03 09:05 JST / Ver1.132: traveler player-scale, forest-road runestone, safe distance to Nyahoja.
 // Updated: 2026-11-03 09:28 JST / Ver1.133: clearer premise, road-side traveler staging, stone inspection pose.
+
+// Updated: 2026-11-03 10:14 JST / Ver1.137: stall marker, stall-site guidance text, clearer tap destination feedback.
