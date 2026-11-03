@@ -11,10 +11,10 @@ O.SCENES=Object.freeze({
   {speaker:'ナレーション',text:'旅人の道が途切れる場所。木々の手前、北へ伸びる道の脇で、大きな荷物を背負った旅の冒険者が森の入口を見張っている。',icon:'🪜'},
   {speaker:'旅の冒険者',text:'止まってくれ。あんたも噂を聞いて来たのか？　昨日まで何もなかった場所に、突然、穴へ続く階段が現れた。',portrait:'traveler'},
   {speaker:'開拓者',text:'ああ。帰ってきた旅人が困っているって聞いた。危険の正体を確かめて、必要なら休める場所も作りたい。',portrait:'player'},
-  {speaker:'旅の冒険者',text:'なら、まずは北の道を少し上がった左手を見てくれ。青白く光る古い石が立っていて、その先に例の階段がある。',portrait:'traveler'},
-  {speaker:'ナレーション',text:'旅人にうながされ、開拓者は北の道を進んだ。森の入口近く、道の左脇で、古い石の模様が青白くまたたいていた。',icon:'✨'},
-  {speaker:'開拓者',text:'この石が手がかりか。まずは入口を確かめよう。それから、みんなが無事に帰ってこられる場所を作る。',portrait:'player'},
-  {speaker:'次の目的',text:'北の道を登り、森の入口にある古い石を調べよう。',icon:'📜'}
+  {speaker:'旅の冒険者',text:'森のもっと奥に、青く光る石と地下へのかいだんがあるんだ。行くときは、持ち物のじゅんびをわすれないで。',portrait:'traveler'},
+  {speaker:'ナレーション',text:'旅人の話を聞いていると、森へつづく道の草むらから、小さな声が聞こえた。',icon:'✨'},
+  {speaker:'開拓者',text:'何の声だろう。近くに何かいるのかな。',portrait:'player'},
+  {speaker:'次の目的',text:'小さな声がした草むらを見てみよう。古い石は、出発の前に調べよう。',icon:'📜'}
  ]},
  entranceClue:{chapter:'序章',title:'青白い光の手がかり',icon:'✨',lines:[
   {speaker:'ナレーション',text:'北の道の左脇に、腰ほどの高さの古い石が立っていた。割れた表面には木の根のような模様が刻まれ、そのすき間が青白く光っている。',icon:'🪨'},
@@ -245,7 +245,7 @@ O.currentShopBox=()=>{const lv=O.currentLevel(),w=[0,0,148,190,220,260,260][lv],
 O.ownerHomeBox={x:926,y:142,w:88,h:112};O.ownerWarehouseBox={x:1034,y:176,w:70,h:78};
 O.enter=()=>{if(F.SAVE_KEY!==storyKey&&F.run?.active)throw new Error('探索から帰還してから切り替えてください。');F.SAVE_KEY=storyKey;O.testPoint='current';let s=F.readSave();if(!s.story?.opening){s=F.freshSave();for(const id of Object.keys(s.development.town.facilities))s.development.town.facilities[id]=0;s.development.town.projects={};s.development.town.order=[];s.development.town.shopLevel=0;s.shelves=[];s.story.opening=initial();O.enqueueSceneInSave(s,'arrival');F.writeSave(s)}else{const o=O.ensureSceneState(s.story.opening);let changed=false;if(!o.prologueVersion){if(o.phase==='mission1'&&!o.woodReturned&&!o.goodsReturned&&!(Number(s.development.town.facilities.shop)||0))o.phase='arrival';else if(!['arrival','tent'].includes(o.phase))o.prologueComplete=true;o.prologueVersion=1;changed=true}if(Number(o.prologueVersion)<2){o.entranceInspected=true;o.prologueVersion=2;changed=true}if(o.entranceInspected==null){o.entranceInspected=o.phase!=='arrival';changed=true}if(o.phase==='arrival'&&!o.prologueComplete&&!o.sceneSeen.arrival&&!o.sceneQueue.includes('arrival')){O.enqueueSceneInSave(s,'arrival');changed=true}if(changed||!Array.isArray(s.story.opening.sceneQueue))F.writeSave(s)}};
 // Investigation is a one-time active step for new campaigns. Returning players retain their progress.
-O.inspectEntrance=()=>F.mutateSave(s=>{const o=s.story?.opening;if(!o||o.phase!=='arrival')throw new Error('今は入口を調べる段階ではありません。');if(o.entranceInspected)return false;o.entranceInspected=true;O.enqueueSceneInSave(s,'entranceClue');F.addHistory(s,'story','森の入口で、木の根と光の模様が刻まれた古い石を見つけた。');return true});
+O.inspectEntrance=()=>F.mutateSave(s=>{const o=s.story?.opening;if(!o||o.phase!=='arrival')throw new Error('今は入口を調べる段階ではありません。');if(o.entranceInspected)return false;o.entranceInspected=true;F.addHistory(s,'story','旅人から森へつづく道を聞いた。ふしぎな石は森の入口で調べる。');return true});
 O.leave=()=>{if(F.run?.active)throw new Error('探索から帰還してから切り替えてください。');F.SAVE_KEY=originalKey};
 O.state=()=>F.readSave().story.opening||initial();O.phase=()=>O.state().phase;
 O.canStore=()=>['stocking','first_sale','upgrade','complete'].includes(O.phase());
@@ -275,7 +275,7 @@ O.makePoint=id=>{const s=F.freshSave();for(const k of Object.keys(s.development.
 O.switchPoint=id=>{if(!O.testEnabled())throw new Error('TEST機能は利用できません。');if(!O.points.some(p=>p[0]===id))throw new Error('選択した時点がありません。');if(F.run?.active)throw new Error('探索から帰還してから時点を切り替えてください。');if(id==='current')O.enter();else{F.SAVE_KEY=originalKey+':mission148test:'+id;O.visibleState=null;F.writeSave(O.makePoint(id));O.testPoint=id}F.run=null;if(F.WILDERNESS){F.WILDERNESS.stop();F.WILDERNESS.position={x:774,y:306};F.WILDERNESS.active=true}};
 O.guidance=()=>{
  const s=F.readSave(),p=O.phase(),stocked=s.shelves.some(sh=>sh&&sh.qty>0),wood=Number(s.warehouse.wood)||0,goods=O.goods(s);
- if(p==='arrival')return s.story.opening.entranceInspected?{title:'森の入口を確認しました',text:'青白い光と古い石の手がかりが見つかりました。草地のテント予定地に歩いていき、そこで設営しましょう。',label:'テントを設営する',act:'campSetup'}:{title:'森の入口に何がある？',text:'森の奥に続く階段が見つかりました。北の道を登り、古い石のある森の入口を調べましょう。',label:'🔎 森の入口を調べる',act:'inspect'};
+ if(p==='arrival')return s.story.opening.entranceInspected?{title:'森の入口を確認しました',text:'森の入口へつづく道がわかりました。まずは、草地でテントを立てましょう。',label:'テントを設営する',act:'campSetup'}:{title:'森の入口に何がある？',text:'森の奥に続く階段が見つかりました。北の道を登り、古い石のある森の入口を調べましょう。',label:'🔎 森の入口を調べる',act:'inspect'};
  if(p==='tent')return{title:'露店の準備を始めよう',text:'北の道を登ると、はじまりの森です。まず木材と商品を集めましょう。',label:'開拓を始める',act:'advance'};
  if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'テントのそばの露店予定地に近づき、木材で設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:`北の道を登って探索を開始し、B1Fで木材${O.rules.stallWood}個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。`,label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
  if(p==='stocking')return stocked?{title:'商品が並びました。開業しましょう',text:'露店の近くで開業しましょう。最初のミッションを達成できます。',label:'露店を開業する',act:'open'}:{title:'露店に商品を1点並べよう',text:'露店のそばまで歩き、「商品を並べる」から商品を1点陳列しましょう。',label:'商品を並べる',act:'shop'};
@@ -676,7 +676,7 @@ O.visitLv5Tavern=(...args)=>{const result=visitTavernBefore128(...args);const sa
 const startRun=F.startRun,finishRun=F.finishRun,visit=F.applyCustomerVisit;
 O.tutorialSupplies=s=>{const o=s.story?.opening;if(o?.phase!=='mission1')return[];const wood=Math.max(0,O.rules.stallWood-(Number(o.woodReturned)||0)),goods=Math.max(0,1-(Number(o.goodsReturned)||0));return[...(wood?[['wood',wood]]:[]),...(goods?[['bread',1]]:[])];};
 F.startRun=(...args)=>{if(O.active()&&!O.canExplore())throw new Error('拠点の「次にすること」を確認してください。');const supplies=O.active()?O.tutorialSupplies(F.readSave()):[],run=startRun(...args);if(supplies.length){const candidates=[];for(let y=1;y<run.map.length-1;y++)for(let x=1;x<run.map[y].length-1;x++){const d=Math.abs(x-run.player.x)+Math.abs(y-run.player.y);if(d>=1&&run.map[y][x]==='floor'&&!run.enemies.some(e=>e.x===x&&e.y===y)&&!(run.traps||[]).some(t=>t.x===x&&t.y===y))candidates.push({x,y,d});}candidates.sort((a,b)=>a.d-b.d);supplies.forEach(([itemId,qty],i)=>{const p=candidates[i];if(p){run.floorItems.push({x:p.x,y:p.y,itemId,qty,openingSupply:true});run.map[p.y][p.x]='gather';}});run.log.push('露店設営に必要な木材と商品を探そう。持ち帰った分は追加配置されません。');}return run;};
-F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[,q])=>n+q,0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0)O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.()}return result};
+F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[id,q])=>n+Math.max(0,Number(q)-(Number(runBefore?.startingBag?.[id])||0)),0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0)O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.()}return result};
 F.applyCustomerVisit=result=>{const saved=F.readSave(),soldBefore=saved.sales.count,rumorBefore=!!saved.story?.rumor,value=visit(result),after=F.readSave(),sold=Number(after.sales?.count)||0;if(O.active()&&O.phase()==='first_sale'&&sold>soldBefore)F.mutateSave(s=>{s.story.opening.mission2=true;s.story.opening.phase='upgrade';O.enqueueSceneInSave(s,'firstSale');if(!rumorBefore&&s.story?.rumor)O.enqueueSceneInSave(s,'forestRumor');F.addHistory(s,'mission','ミッション②達成：初めて商品を売ろう。')});else if(O.active()&&!rumorBefore&&after.story?.rumor)O.enqueueScene('forestRumor');return value};
 // The final epilogue is also available if the boss was defeated before shop Lv6 completion.
 const previousFinishRun127=F.finishRun;
@@ -740,3 +740,7 @@ O.enter();
 // Updated: 2026-11-03 10:00 JST / Ver1.136: correct the final-epilogue wrapper reference to previousFinishRun127.
 
 // Updated: 2026-11-03 17:19 JST / Ver1.142: storefront-first chapter framing and Mina introduction.
+
+// Updated: 2026-11-03 20:50 JST / Ver1.145: mysterious stone is no longer inspected in the town introduction.
+
+// Updated: 2026-11-03 20:50 JST / Ver1.145: separate stone storyline; carried provisions do not count as newly gathered goods.

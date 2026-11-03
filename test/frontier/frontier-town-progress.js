@@ -130,7 +130,7 @@ P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readS
 
  const residentButton=document.getElementById('progressResident');if(residentButton)residentButton.onclick=()=>{const N=F.RESIDENTS;N.step();const a=N.actor;if(!a)return;N.pauseUntil=Date.now()+20000;const o=a.inside?scene.objects.find(x=>x.id===(a.inside==='forge'?'forge':N.homeId(F.readSave()))):null;target=o?{...o,kind:'residentRoom'}:{id:a.id,name:a.name,kind:'resident',door:{...a.position}};route=P.path(scene,position,target.door);if(target.kind==='resident')while(route.length>1&&Math.hypot(route[route.length-1].x-target.door.x,route[route.length-1].y-target.door.y)<28)route.pop();msg.textContent='ミナのところへ移動中';if(route.length===1){route=[];if(target.kind==='resident')actions.resident?.();else actions.facility?.(target.id);}};
  try{const [art,players]=await Promise.all([P.art(),Promise.all(['front','back','left','right','up-left','up-right','down-left','down-right'].map((d,i)=>P.image('frontier-sprite-player-'+d+(i<4?'-v069.png':'-v152.png'))))]);if(token!==P.token)return;
- const draw=()=>{const focus=position;cam={x:overview?0:Math.max(0,Math.min(1000-cv.width,focus.x-cv.width/2)),y:overview?0:Math.max(0,Math.min(480-cv.height,focus.y-cv.height/2))};const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;P.drawBackground(c,art,stage,cam);if(stage>=1&&s.story?.opening?.entranceInspected)F.OPENING_CINEMATIC?.drawRunestone?.(c,cam);P.drawAccess(c,scene,cam);
+ const draw=()=>{const focus=position;cam={x:overview?0:Math.max(0,Math.min(1000-cv.width,focus.x-cv.width/2)),y:overview?0:Math.max(0,Math.min(480-cv.height,focus.y-cv.height/2))};const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;P.drawBackground(c,art,stage,cam);P.drawAccess(c,scene,cam);
  if(constructionActive()){
   const site=P.SHOP_BUILD_SITE,x=site.x-cam.x,y=site.y-cam.y,buildingNow=F.OPENING?.phase?.()==='building';
   // Once work begins, a translucent wooden frame surrounds the future Lv2 shop footprint.
@@ -277,3 +277,5 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 // Updated: 2026-11-03 10:45 JST / Ver1.138: expose active progress-town stage for follower reset after construction.
 
 // Updated: 2026-11-03 17:14 JST / Ver1.142: 26px street shoulders, narrower forest/site tap targets, shop-first stage signs.
+
+// Updated: 2026-11-03 20:50 JST / Ver1.145: no ancient stone on the town map; stone lives only in the gateway.

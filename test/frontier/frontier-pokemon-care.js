@@ -12,7 +12,7 @@ const STATE=['unseen','found','rescued','recovering','healthy','trusted','releas
 // New story scenes appear only after their gameplay events; skipped scenes remain readable in the archive.
 O.SCENES=Object.freeze({...O.SCENES,
  pokemonFound:{chapter:'序章',title:'草むらの小さな声',icon:'🐾',lines:[
-  {speaker:'ナレーション',text:'古い石を調べ終えると、そばの草むらがかすかに揺れた。',icon:'🌿'},
+  {speaker:'ナレーション',text:'旅人と話していると、森へつづく道の草むらがかすかにゆれた。',icon:'🌿'},
   {speaker:'開拓者',text:'……今、声がした？　あそこに何かいる。',portrait:'player'},
   {speaker:'旅の冒険者',text:'ニャオハだ。足を痛めているみたいだな。驚かせないよう、ゆっくり近づこう。',portrait:'traveler'},
   {speaker:'ナレーション',text:'小さなニャオハは逃げようとしたが、力が入らず、地面に伏せてしまった。',icon:'🐾'},
@@ -257,3 +257,5 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-03 10:45 JST / Ver1.138: autonomous lagged waypoint following, own position, idle stop, turn orientation and scene reset.
 
 // Updated: 2026-11-03 19:37 JST / Ver1.144: story dialogue supplied by kid-readable narrative layer; unchanged save state.
+
+// Updated: 2026-11-03 20:50 JST / Ver1.145: the rescue starts in the town before visiting the remote stone.

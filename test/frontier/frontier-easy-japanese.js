@@ -4,17 +4,17 @@
    Updated: 2026-11-03 18:55 JST */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,O=F?.OPENING;if(!F||!O||!O.SCENES)return;
-const E=F.EASY_JAPANESE={VERSION:'1.144'};
+const E=F.EASY_JAPANESE={VERSION:'1.145'};
 // The opening sequence uses fixed line indices, so keep exactly eight beats.
 const FIRST_STORY=[
  "主人公は、森にできたという、ふしぎなかいだんを見に来た。",
  "森へつづく道に、旅人が立っている。森の中を、じっと見ている。",
  "あぶないよ。この先に、きのうまでなかったかいだんができたんだ。",
  "ぼくも、そのうわさを聞いて来たよ。中へ入った人はいるの？",
- "入った人は帰ってきたよ。でも、道の左がわで青く光る石を見たんだ。見たことがない石なんだ。",
- "主人公は、旅人に教えられた北の道を歩く。道の左がわに、青い光が見えた。",
- "あれがその石かな。どうして光るんだろう。近くで見てみよう。",
- "道の左がわにある、青く光る石をしらべよう。"
+ "森へつづく道の、もっと奥に青く光る石がある。かいだんも、その近くなんだ。",
+ "主人公は、旅人が教えてくれた森の方を見た。そのとき、草の中で小さな声がした。",
+ "……今の声は何だろう。あっちに何かいるのかな。",
+ "声がした草むらをしらべよう。青い石は、森へ出かける前に見に行こう。"
 ];
 const WORDS=[
  ['ここで帰還する','ここで町に帰る'],
@@ -846,3 +846,5 @@ if(typeof MutationObserver!=='undefined'){
 // Updated: 2026-11-03 18:55 JST / Ver1.143: third-grade-friendly story and UI display text.
 
 // Updated: 2026-11-03 19:37 JST / Ver1.144: motivated prologue, rescue-first story, consistent town and forest arc.
+
+// Updated: 2026-11-03 20:50 JST / Ver1.145: town dialogue introduces but does not show the stone.
