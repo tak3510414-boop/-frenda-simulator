@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.137 — rescue, treatment, trust and voluntary coexistence.
+/* Frenda Frontier Ver1.138 — independent world-space follower with delayed path tracking.
    Updated: 2026-11-03 06:55 JST
    New-campaign only. Existing saves without pokemonCare remain unchanged. */
 (()=>{'use strict';
@@ -83,7 +83,7 @@ PC.canTreatVisual=()=>PC.visual()?.status==='recovering'&&PC.visualHerbs>=1;
 PC.enabled=()=>!!careOf(F.readSave());
 PC.begin=()=>{if(!O.active())return false;const s=F.readSave();if(!initialEligible(s)||careOf(s))return false;
  F.mutateSave(v=>{if(initialEligible(v)&&!careOf(v))v.story.opening.pokemonCare=fresh()});PC.refreshVisual();return PC.enabled();};
-function update(fn){if(!O.active())return false;let changed=false;F.mutateSave(s=>{const c=careOf(s);if(c)changed=!!fn(s,c)});if(changed)PC.refreshVisual();return changed;}
+function update(fn){if(!O.active())return false;let changed=false;F.mutateSave(s=>{const c=careOf(s);if(c)changed=!!fn(s,c)});if(changed){PC.refreshVisual();PC.resetFollower?.()}return changed;}
 PC.find=()=>update((s,c)=>{if(c.status!=='unseen')return false;c.status='found';c.trust=10;F.addHistory(s,'pokemon','森の入口で傷ついたニャオハを見つけた。');return true});
 PC.rescue=()=>update((s,c)=>{if(c.status==='unseen'){c.status='found';c.trust=10}if(c.status!=='found')return false;c.status='rescued';c.trust=25;F.addHistory(s,'pokemon','ニャオハを驚かせないように抱き上げ、救助した。');return true});
 PC.placeCamp=()=>update((s,c)=>{if(c.status!=='rescued')return false;c.status='recovering';c.trust=35;F.addHistory(s,'pokemon','ニャオハをテントの安全な場所で休ませた。');return true});
@@ -107,7 +107,7 @@ PC.bond=choice=>{if(!['town','forest'].includes(choice))throw Error('一緒に�
 // The rescue is never forced on saves that have already left the opening.
 O.makePoint=function(id){const s=originalMakePoint.call(this,id);if(id==='opening-arrival'){s.story.opening.pokemonCare=fresh();}return s};
 O.enter=function(...args){const result=originalEnter.apply(this,args);PC.begin();PC.refreshVisual();return result};
-if(typeof originalSwitchPoint==='function')O.switchPoint=function(...args){const result=originalSwitchPoint.apply(this,args);PC.refreshVisual();return result};
+if(typeof originalSwitchPoint==='function')O.switchPoint=function(...args){const result=originalSwitchPoint.apply(this,args);PC.refreshVisual();PC.resetFollower?.();return result};
 PC.begin();PC.refreshVisual();
 // A single current mission; no disclosure of future objectives.
 O.currentMission=function(){const s=F.readSave(),c=careOf(s);if(c&&s.story.opening.phase==='mission1'){
@@ -135,12 +135,106 @@ if(typeof Image!=='undefined'){
 function fallback(c,x,y,size){c.save();c.translate(x,y);c.scale(size/36,size/36);c.fillStyle='#284f38';c.fillRect(-12,-12,24,19);c.fillRect(-17,-22,9,14);c.fillRect(7,-22,9,14);c.fillStyle='#8ac586';c.fillRect(-10,-10,20,15);c.fillStyle='#f6ead8';c.fillRect(-8,-3,16,8);c.fillStyle='#305040';c.fillRect(-6,-5,3,3);c.fillRect(4,-5,3,3);c.restore()}
 PC.drawAt=(ctx,x,y,size=35)=>{if(pokeImage?.complete&&pokeImage.naturalWidth)ctx.drawImage(pokeImage,x-size/2,y-size*.72,size,size);else fallback(ctx,x,y-size*.15,size)};
 PC.drawAtEntrance=(ctx,cam,stage)=>{const care=PC.visual();if(!care||stage!==0||!['unseen','found'].includes(care.status))return;PC.drawAt(ctx,PC.RESCUE_POINT.x-cam.x,PC.RESCUE_POINT.y-cam.y,52)};
-P.drawPlayer=function(ctx,im,i,p,cam){const result=originalDrawPlayer.call(this,ctx,im,i,p,cam),c=PC.visual();if(!c)return result;
+// Follower has its own position and a delayed copy of the player's walk route.
+// No save writes or localStorage reads per frame; the position is visual/runtime-only.
+PC.FOLLOW_RULES=Object.freeze({startDistance:68,stopDistance:34,walkSpeed:118,sampleSpacing:4,maxTrail:420,teleportDistance:175});
+PC.followState=null;
+PC.resetFollower=()=>{PC.followState=null};
+const followDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const followerSpawn=(player,facing,stage)=>{
+ const hints=({0:[[0,-39],[-34,0],[34,0],[0,39]],1:[[0,39],[-34,0],[34,0],[0,-39]],2:[[38,0],[0,39],[0,-39],[-38,0]],3:[[-38,0],[0,39],[0,-39],[38,0]]})[facing]||[[0,39],[-38,0],[38,0],[0,-39]];
+ const candidates=[...hints,[-26,28],[26,28],[-26,-28],[26,-28]];
+ // The opening and developed town share P.scene walkability; select a path tile.
+ const scene=Number.isInteger(stage)&&P.scene?.(stage);
+ for(const [dx,dy] of candidates){const desired={x:player.x+dx,y:player.y+dy};
+  const point=scene?P.nearest(scene,desired,24):desired;
+  if(point&&followDistance(point,player)>=25&&followDistance(point,player)<=68)return point;
+ }
+ return {x:player.x-30,y:player.y+22};
+};
+PC.stepFollower=(player,now=performance.now(),facing=0)=>{
+ if(PC.visual()?.status!=='trusted'){PC.resetFollower();return null}
+ const key=F.SAVE_KEY,stage=P.activeStage,rule=PC.FOLLOW_RULES;
+ let a=PC.followState;
+ const invalid=!a||a.key!==key||a.stage!==stage||
+  followDistance(player,a.lastPlayer)>rule.teleportDistance||
+  !Number.isFinite(player.x)||!Number.isFinite(player.y);
+ if(invalid){
+  const initial=followerSpawn(player,facing,stage);
+  // Seed the route along navigable tiles, including the companion's first step
+  // from its standing position toward the player's initial path.
+  const scene=Number.isInteger(stage)?P.scene?.(stage):null;
+  const route=scene?P.path?.(scene,initial,player):null;
+  const initialTrail=route?.length>1?route.slice(1).map(v=>({x:v.x,y:v.y})):[{x:player.x,y:player.y}];
+  a=PC.followState={key,stage,x:initial.x,y:initial.y,moving:false,face:1,lastNow:now,
+    lastPlayer:{x:player.x,y:player.y},stillFor:0,trail:initialTrail};
+  return a;
+ }
+ const dt=Math.max(0,Math.min(.060,(now-a.lastNow)/1000));a.lastNow=now;
+ // Record positions sampled along actual travel, rather than aiming directly
+ // at the character. Turns therefore follow the same path and avoid shortcuts.
+ const prev=a.trail[a.trail.length-1],delta=followDistance(prev,player);
+ if(delta>=rule.sampleSpacing){
+  const n=Math.min(80,Math.ceil(delta/rule.sampleSpacing));
+  for(let j=1;j<=n;j++)a.trail.push({x:prev.x+(player.x-prev.x)*j/n,y:prev.y+(player.y-prev.y)*j/n});
+ }
+ while(a.trail.length>rule.maxTrail)a.trail.shift();
+ const playerMoved=followDistance(a.lastPlayer,player);
+ a.stillFor=playerMoved>.25?0:Math.min(3,(a.stillFor||0)+dt);
+ a.lastPlayer={x:player.x,y:player.y};
+ const separation=followDistance(a,player),wasMoving=a.moving;
+ // Also catch up after a short walk once the player has stood still briefly.
+ if(separation>rule.startDistance||(a.stillFor>.34&&separation>rule.stopDistance+11))a.moving=true;
+ if(separation<=rule.stopDistance+.75)a.moving=false;
+ if(!a.moving){
+  // Preserve the path while the player is just starting to walk.
+  // Drop old waypoints only AFTER the follower has actually caught up.
+  if(wasMoving&&separation<=rule.stopDistance+.75)a.trail=[{x:player.x,y:player.y}];
+  return a;
+ }
+ let budget=Math.min((rule.walkSpeed+Math.max(0,separation-65)*.30)*dt,Math.max(0,separation-rule.stopDistance));
+ const oldX=a.x;
+ while(budget>.001&&a.trail.length){
+  const target=a.trail[0],d=followDistance(a,target);
+  if(d<=2){a.trail.shift();continue}
+  const distance=Math.min(budget,d);
+  a.x+=(target.x-a.x)*distance/d;a.y+=(target.y-a.y)*distance/d;
+  budget-=distance;
+  if(distance>=d-.001)a.trail.shift();
+ }
+ if(a.trail.length===0&&budget>.001){
+  const d=followDistance(a,player);
+  if(d>rule.stopDistance){const move=Math.min(budget,d-rule.stopDistance);a.x+=(player.x-a.x)*move/d;a.y+=(player.y-a.y)*move/d}
+ }
+ if(Math.abs(a.x-oldX)>.1)a.face=a.x<oldX?-1:1;
+ if(followDistance(a,player)<=rule.stopDistance+.75)a.moving=false;
+ return a;
+};
+PC.followerSnapshot=()=>{const a=PC.followState;return a?{x:a.x,y:a.y,moving:a.moving,face:a.face,trailSize:a.trail.length}:null};
+const drawWalkingCompanion=(ctx,follower,cam,now)=>{
+ ctx.save();ctx.translate(follower.x-(cam?.x||0),follower.y-(cam?.y||0));
+ if(follower.face<0)ctx.scale(-1,1);
+ const bob=follower.moving?Math.sin(now/76)*1.1:0;
+ PC.drawAt(ctx,0,bob,36);ctx.restore();
+};
+P.drawPlayer=function(ctx,im,i,p,cam={x:0,y:0}){
+ const c=PC.visual(),now=performance.now();
+ if(c?.status==='trusted'){
+  const follower=PC.stepFollower(p,now,i);
+  // Sort visually: a companion north of the player is behind them; south is in front.
+  if(follower&&follower.y<p.y)drawWalkingCompanion(ctx,follower,cam,now);
+  const result=originalDrawPlayer.call(this,ctx,im,i,p,cam);
+  if(follower&&follower.y>=p.y)drawWalkingCompanion(ctx,follower,cam,now);
+  return result;
+ }
+ PC.resetFollower();
+ const result=originalDrawPlayer.call(this,ctx,im,i,p,cam);
+ if(!c)return result;
  const atCamp=['recovering','healthy'].includes(c.status);
  if(c.status==='rescued')PC.drawAt(ctx,p.x-cam.x+20,p.y-cam.y+10,32);
  else if(atCamp)PC.drawAt(ctx,PC.CAMP_POINT.x-cam.x,PC.CAMP_POINT.y-cam.y,50);
- else if(c.status==='trusted')PC.drawAt(ctx,p.x-cam.x-31,p.y-cam.y+11,36);
- return result};
+ return result;
+};
 PC.interactionPoint=()=>PC.CAMP_POINT;
 // Endgame links are opt-in for campaigns that actually completed the rescue.
 const previousTavern=O.visitLv5Tavern;
@@ -159,3 +253,5 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-03 06:59 JST / Ver1.129: new story-based rescue and coexistence.
 
 // Updated: 2026-11-03 10:14 JST / Ver1.137: enlarge Nyahoja on entrance, camp and trusted-follow states.
+
+// Updated: 2026-11-03 10:45 JST / Ver1.138: autonomous lagged waypoint following, own position, idle stop, turn orientation and scene reset.

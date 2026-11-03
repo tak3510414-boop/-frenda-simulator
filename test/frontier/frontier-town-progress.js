@@ -88,7 +88,7 @@ P.fitCanvas=(host,cv,overview)=>{const height=e=>e?.getBoundingClientRect?.().he
  const overhead=height(document.querySelector('header'))+height(document.getElementById('mainNav'))+height(document.querySelector('.gameHeader'))+height(host.querySelector('.progressGuide'))+height(document.getElementById('progressMessage'))+height(host.querySelector('.progressCommands'))+28;
  const plan=P.viewportPlan(width,window.visualViewport?.height||window.innerHeight||800,overhead,overview);cv.width=plan.width;cv.height=plan.height;cv.style.height=plan.cssHeight+'px';return plan;
 };
-P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readSave(),stage=P.stageFor(s),spec=P.stages[stage],scene=P.scene(stage),overview=F.WILDERNESS?.overview??false;
+P.mount=async(host,rerender,actions={})=>{P.stop();const token=P.token,s=F.readSave(),stage=P.stageFor(s),spec=P.stages[stage],scene=P.scene(stage),overview=F.WILDERNESS?.overview??false;P.activeStage=stage;
  const storyPreview=Number.isInteger(s.story?.opening?.townPreviewStage);
  const canEnterForest=()=>!!actions.startDungeon&&!storyPreview&&(!F.OPENING?.active?.()||!!F.OPENING.canExplore?.());
  const constructionActive=()=>!!actions.construction&&!storyPreview&&['upgrade','building'].includes(F.OPENING?.phase?.());
@@ -260,3 +260,5 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 // Updated: 2026-11-03 07:32 JST / Ver1.130: 1.5x near / 2x closer camera and full-town overview.
 
 // Updated: 2026-11-03 09:05 JST / Ver1.132: preserve the discovered runestone in the same location after camp.
+
+// Updated: 2026-11-03 10:45 JST / Ver1.138: expose active progress-town stage for follower reset after construction.

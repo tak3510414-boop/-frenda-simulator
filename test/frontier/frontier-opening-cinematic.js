@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:137};
+const C=F.OPENING_CINEMATIC={active:false,revision:138};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
 // Visible landmarks have stable world positions, distinct from the existing Pokémon rescue spot.
@@ -15,7 +15,7 @@ W.mount=function(host,rerender,actions={}){return C.isOpening(F.readSave())?C.mo
 C.mount=async(host,rerender,actions={})=>{
  P.stop();const token=P.token;const active=()=>token===P.token&&document.getElementById('frontierCinematicCanvas')?.isConnected;
  const s=F.readSave(),o=s.story.opening,auto=(o.phase==='arrival'&&!o.cinematicComplete)||(o.phase==='tent'&&!o.cinematicComplete);
- let stage=o.phase==='arrival'?0:1,scene=P.scene(stage),position=P.position&&scene.walkable(P.position.x,P.position.y)?{...P.position}:P.spawn(stage);
+ let stage=o.phase==='arrival'?0:1,scene=P.scene(stage),position=P.position&&scene.walkable(P.position.x,P.position.y)?{...P.position}:P.spawn(stage);P.activeStage=stage;
  if(!position)position=P.spawn(stage)||{x:500,y:146};P.position=position;
  let artwork=null,players=null,travelerAtlas=null,cam={x:0,y:0},cameraReady=false,facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,locked=auto,cinematicFinished=false,pendingCaption=null;
  let shot='wide',stoneRevealed=!!o.entranceInspected,travelerGreeting=false;
@@ -220,7 +220,7 @@ C.mount=async(host,rerender,actions={})=>{
    if(!await caption('ナレーション','地面を確かめ、杭を打ち、ロープを張る。布が風を受けて少しずつ形を作っていく。','テント設営'))return;
    speech.hidden=true;building=true;buildAt=performance.now();hint.textContent='テントを設営しています……';
    if(!await wait(2100)||!active())return;
-   building=false;O.advance();stage=1;scene=P.scene(1);hint.textContent='テントが完成しました！';
+   building=false;O.advance();stage=1;P.activeStage=stage;scene=P.scene(1);hint.textContent='テントが完成しました！';
    if(F.POKEMON_CARE?.enabled()){
     F.POKEMON_CARE.placeCamp();
     if(!await chapter('pokemonCamp'))return;
@@ -291,3 +291,5 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 09:28 JST / Ver1.133: clearer premise, road-side traveler staging, stone inspection pose.
 
 // Updated: 2026-11-03 10:14 JST / Ver1.137: stall marker, stall-site guidance text, clearer tap destination feedback.
+
+// Updated: 2026-11-03 10:45 JST / Ver1.138: active stage exposed to independent companion follower.

@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.137 / illustrated return results, guaranteed return to camp. */
+/* Frenda Frontier Ver1.139 / dungeon Pokemon footprint cap and in-dungeon Pokédex. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -31,7 +31,56 @@ function scaledHeightPixels(meters,referencePixels,referenceMeters,minPixels,max
 const spriteVisibleMetricsCache=new Map();
 function measureSpriteVisibleMetrics(src){if(!src)return Promise.resolve(null);if(spriteVisibleMetricsCache.has(src))return spriteVisibleMetricsCache.get(src);const promise=new Promise(resolve=>{const probe=new Image();probe.crossOrigin='anonymous';probe.onload=()=>{try{const side=96,canvas=document.createElement('canvas');canvas.width=side;canvas.height=side;const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx){resolve(null);return}ctx.clearRect(0,0,side,side);ctx.drawImage(probe,0,0,side,side);const pixels=ctx.getImageData(0,0,side,side).data;let minX=side,minY=side,maxX=-1,maxY=-1;for(let y=0;y<side;y++)for(let x=0;x<side;x++)if(pixels[(y*side+x)*4+3]>24){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}if(maxX<minX||maxY<minY){resolve(null);return}const heightRatio=(maxY-minY+1)/side,widthRatio=(maxX-minX+1)/side,imageAspect=probe.naturalWidth/Math.max(1,probe.naturalHeight);resolve({heightRatio,widthRatio,imageAspect,visibleAspect:imageAspect*widthRatio/heightRatio,xCenter:(minX+maxX+1)/(2*side),bottomGap:1-(maxY+1)/side})}catch{resolve(null)}};probe.onerror=()=>resolve(null);try{probe.src=src}catch{resolve(null)}});spriteVisibleMetricsCache.set(src,promise);return promise}
 function bindSpeciesHeightRows(speciesList){const cards=[...document.querySelectorAll('#frontierModalBody [data-species-height-row]')];if(!cards.length)return;partnerHeightObserver?.disconnect();partnerHeightObserver=null;const apply=async card=>{const sp=speciesList[Number(card.dataset.speciesHeightRow)],label=card.querySelector('.partnerHeightLabel');if(!sp)return;const info=await pokemonHeightInfo(sp);if(!card.isConnected)return;if(!info){if(label)label.textContent='高さデータ未取得';return}const size=scaledHeightPixels(info.meters,52,.4,24,128),visual=card.querySelector('.speciesVisual,.speciesAvatar');let displaySize=size,visualWidth=size;if(visual){visual.style.width=size+'px';visual.style.height=size+'px';const img=visual.querySelector('.pokemonSpriteImg'),src=img?.currentSrc||img?.src;if(img&&src){let metrics=await measureSpriteVisibleMetrics(src);if(!metrics&&info.dex===25)metrics={heightRatio:.58,widthRatio:.44,imageAspect:(img.naturalWidth||1)/(img.naturalHeight||1),visibleAspect:.76,xCenter:.5,bottomGap:.02};if(!card.isConnected)return;if(metrics){const aspect=Math.max(.25,metrics.visibleAspect);displaySize=Math.min(size,128,176/aspect);const imageHeight=displaySize/Math.max(.12,metrics.heightRatio),imageWidth=imageHeight*metrics.imageAspect;visualWidth=Math.max(24,Math.min(176,Math.round(displaySize*aspect)));img.style.inset='auto';img.style.left=`${visualWidth/2-metrics.xCenter*imageWidth}px`;img.style.top='auto';img.style.right='auto';img.style.bottom=`${-metrics.bottomGap*imageHeight}px`;img.style.width=`${imageWidth}px`;img.style.height=`${imageHeight}px`;img.style.maxWidth='none';img.style.transform=visual.classList.contains('facing-left')?'scaleX(-1)':'none'}visual.style.height=displaySize+'px'}visual.style.width=visualWidth+'px'}card.style.gridTemplateColumns=`${visualWidth}px minmax(0,1fr)`;if(label){label.textContent=`高さ ${info.meters.toFixed(1)}m`;label.title='PokéAPIの高さ情報'}card.dataset.pokemonHeightM=String(info.meters)};if(typeof IntersectionObserver==='function'){let remaining=cards.length;partnerHeightObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;partnerHeightObserver.unobserve(entry.target);remaining--;apply(entry.target);if(remaining<=0){partnerHeightObserver.disconnect();partnerHeightObserver=null}}},{root:null,rootMargin:'120px 0px'});cards.forEach(card=>partnerHeightObserver.observe(card))}else cards.slice(0,8).forEach(apply)}
-function scaleWorldPokemon(node,sp){pokemonHeightInfo(sp).then(async info=>{if(!info||!node.isConnected)return;const wantedHeight=Math.max(24,Math.min(72,Math.round(18+16*info.meters))),visual=node.querySelector('.speciesVisual,.speciesAvatar'),img=visual?.querySelector('.pokemonSpriteImg'),src=img?.currentSrc||img?.src;let displayHeight=wantedHeight,displayWidth=wantedHeight,metrics=null;if(img&&src)metrics=await measureSpriteVisibleMetrics(src);if(!node.isConnected)return;if(metrics){const aspect=Math.max(.25,metrics.visibleAspect),scale=Math.min(1,120/(wantedHeight*aspect));displayHeight=wantedHeight*scale;displayWidth=Math.max(24,Math.round(displayHeight*aspect));const imageHeight=displayHeight/Math.max(.12,metrics.heightRatio),imageWidth=imageHeight*metrics.imageAspect,xCenter=visual.classList.contains('facing-left')?1-metrics.xCenter:metrics.xCenter;img.style.inset='auto';img.style.left=`${displayWidth/2-xCenter*imageWidth}px`;img.style.top='auto';img.style.right='auto';img.style.bottom=`${-metrics.bottomGap*imageHeight}px`;img.style.width=`${imageWidth}px`;img.style.height=`${imageHeight}px`;img.style.maxWidth='none';img.style.transform=visual.classList.contains('facing-left')?'scaleX(-1)':'none'}else if(img){img.style.transform=visual.classList.contains('facing-left')?'scaleX(-1) scale(1.25)':'scale(1.25)'}node.style.width=displayWidth+'px';node.style.height=displayHeight+'px';if(visual){visual.style.width='100%';visual.style.height='100%'}const label=node.nextElementSibling;if(label?.classList.contains('tokenLabel')){const anchorY=Number(node.dataset.anchorY),canvasHeight=Number(node.dataset.canvasHeight);if(Number.isFinite(anchorY)&&canvasHeight>0)label.style.top=((anchorY+Math.max(17,canvasHeight/14,displayHeight*.42+5))/canvasHeight*100)+'%'}node.title=`${sp?.name||'ポケモン'}／図鑑高 ${info.meters.toFixed(1)}m`;node.dataset.pokemonHeightM=String(info.meters)})}
+// Ver1.139: keep enemy artwork within a readable footprint on the dungeon grid.
+// The sprite's transparent source margins are accounted for in visibleAspect.
+// Bosses have a separate, modest allowance; catalogue previews remain unchanged.
+function dungeonPokemonSize(meters,metrics,boss=false){
+ const maxW=boss?84:66,maxH=boss?57:48;
+ const n=Number(meters),height=Math.max(26,Math.min(maxH,Math.round(25+11*(Number.isFinite(n)&&n>0?n:1))));
+ const a=Number(metrics?.visibleAspect),aspect=Number.isFinite(a)&&a>.12?Math.min(6,Math.max(.35,a)):1;
+ const dw=Math.max(1,Math.round(Math.min(maxW,height*aspect)));
+ const dh=Math.max(1,Math.round(Math.min(height,maxW/aspect)));
+ return {width:dw,height:dh};
+}
+function scaleWorldPokemon(node,sp){
+ const visual=node.querySelector('.speciesVisual,.speciesAvatar'),img=visual?.querySelector('.pokemonSpriteImg');
+ const boss=node.classList.contains('bossEnemyToken');
+ // Apply a safe footprint immediately, even without PokeAPI connectivity.
+ const apply=(dimensions,metrics=null,meters=null)=>{
+  if(!node.isConnected)return;
+  const {width,height}=dimensions;
+  node.style.width=width+'px';node.style.height=height+'px';
+  if(visual){visual.style.width='100%';visual.style.height='100%'}
+  if(img){
+   const left=visual?.classList.contains('facing-left');
+   if(metrics&&metrics.heightRatio>.08){
+    const imgH=height/metrics.heightRatio,imgW=imgH*metrics.imageAspect;
+    const cx=left?1-metrics.xCenter:metrics.xCenter;
+    img.style.inset='auto';img.style.left=(width/2-cx*imgW)+'px';img.style.top='auto';img.style.right='auto';
+    img.style.bottom=(-metrics.bottomGap*imgH)+'px';img.style.width=imgW+'px';img.style.height=imgH+'px';
+    img.style.maxWidth='none';img.style.transform=left?'scaleX(-1)':'none';
+   }else{
+    // Retain a contained image before visible-metrics arrive.
+    img.style.inset='0';img.style.width='100%';img.style.height='100%';
+    img.style.maxWidth='100%';img.style.objectFit='contain';img.style.transform=left?'scaleX(-1)':'none';
+   }
+  }
+  const label=node.nextElementSibling;
+  if(label?.classList.contains('tokenLabel')){
+   const y=Number(node.dataset.anchorY),ch=Number(node.dataset.canvasHeight);
+   if(Number.isFinite(y)&&ch>0)label.style.top=((y+Math.max(17,ch/14,height*.42+5))/ch*100)+'%';
+  }
+  if(meters)node.title=`${sp?.name||'ポケモン'}／図鑑高 ${Number(meters).toFixed(1)}m`;
+ };
+ apply(dungeonPokemonSize(1,null,boss));
+ pokemonHeightInfo(sp).then(async info=>{
+  if(!info||!node.isConnected)return;
+  const src=img?.currentSrc||img?.src,metrics=src?await measureSpriteVisibleMetrics(src):null;
+  if(!node.isConnected)return;
+  apply(dungeonPokemonSize(info.meters,metrics,boss),metrics,info.meters);
+ }).catch(e=>console.warn('ダンジョン表示サイズ:',e));
+}
+
 
 const talkLines=['この先の森には、めずらしい素材があるらしいよ。','店の商品が増えると、旅人も少しずつ集まってくるんだ。','鍛冶屋がにぎわうと、もっと奥の森の噂も聞けるかもね。','森へ行くなら、武器と防具を忘れずにね。町のポケモンたちも施設で力を貸してくれるはずだよ。'];
 const visualImgCache=new Map();
@@ -151,7 +200,7 @@ function setView(v){if(v==='adventure'&&F.OPENING?.active()&&F.WILDERNESS?.activ
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}
 function sceneShell(dialogTitle,dialogText,cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dialogBox"><h3>${esc(dialogTitle)}</h3><p id="dialogText">${esc(dialogText)}</p></div><div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver0.99: dungeon messages are transient overlays; full history remains available on demand.
-function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><button type="button" class="dungeonHelpToggle" id="dungeonHelpToggle" aria-label="ダンジョンの遊び方を開く">？ 遊び方</button><section id="dungeonTutorial" class="dungeonTutorial hidden" aria-label="はじめてのダンジョン案内" aria-live="polite"><div class="dungeonTutorialTop"><span id="dungeonTutorialCount"></span><button type="button" id="dungeonTutorialClose" aria-label="案内を閉じる">✕ 閉じる</button></div><b id="dungeonTutorialTitle"></b><p id="dungeonTutorialText"></p><div class="dungeonTutorialActions"><button type="button" id="dungeonTutorialBack">前へ</button><button type="button" id="dungeonTutorialNext" class="primary">次へ</button></div></section><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
+function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><button type="button" class="dungeonDexToggle" id="dungeonDexToggle" aria-label="ポケモン図鑑を開く">📖 図鑑</button><button type="button" class="dungeonHelpToggle" id="dungeonHelpToggle" aria-label="ダンジョンの遊び方を開く">？ 遊び方</button><section id="dungeonTutorial" class="dungeonTutorial hidden" aria-label="はじめてのダンジョン案内" aria-live="polite"><div class="dungeonTutorialTop"><span id="dungeonTutorialCount"></span><button type="button" id="dungeonTutorialClose" aria-label="案内を閉じる">✕ 閉じる</button></div><b id="dungeonTutorialTitle"></b><p id="dungeonTutorialText"></p><div class="dungeonTutorialActions"><button type="button" id="dungeonTutorialBack">前へ</button><button type="button" id="dungeonTutorialNext" class="primary">次へ</button></div></section><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver1.134: one lesson at a time, without hiding the whole dungeon.
 // A separate localStorage flag means older save formats are not modified.
 const dungeonTutorialState={key:'',seen:false,shown:false,open:false,step:0};
@@ -1146,6 +1195,7 @@ ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み'
  $('sceneMount').innerHTML=dungeonSceneShell('cmdAdv');syncDungeonMessage(run);
  const meta=R.renderDungeon($('sceneCanvas'),run),weapon=F.dungeonEquippedView?.(run,'weapon');
  $('sceneHud').innerHTML=dungeonHudMarkup(run,s.coins);updateDungeonTravelStatus();renderDungeonTutorial(run);
+ const dungeonDexButton=$('dungeonDexToggle');if(dungeonDexButton)dungeonDexButton.onclick=showFrontierDex;
  if(meta){dungeonMoveOverlay(run,meta);const screenPos=(x,y)=>({x:meta.ox+(x-meta.camX)*meta.t+meta.t/2,y:meta.oy+(y-meta.camY)*meta.t+meta.t/2,visible:x>=meta.camX&&y>=meta.camY&&x<meta.camX+meta.viewCols&&y<meta.camY+meta.viewRows,currentVisible:!!meta.visibility?.[y]?.[x]}),pp=screenPos(run.player.x,run.player.y);if(run.playerHp>0&&pp.visible)addHumanToken(pp.x,pp.y,'',Number(run.playerStep)>0,run.playerFacing||'down');for(const e of run.enemies.filter(e=>e.hp>0)){const esp=F.speciesById?.(e.speciesId),p=screenPos(e.x,e.y);if(p.visible&&p.currentVisible){addToken(esp,p.x,p.y,`enemyToken${e.boss?' bossEnemyToken':''}`,`${e.boss?'👑 ':''}${e.name} HP${e.hp}/${e.maxHp}${Number(e.sleepTurns)>0?' 💤':''}${e.telegraph?' ⚠️':''}`,e.facing||'down',Number(e.step)>0,e.id||'');if(e.telegraph)addEnemyTelegraphLabel(p.x,p.y,e.telegraph.moveName||'危険技')}}for(const it of (run.floorItems||[])){const p=screenPos(it.x,it.y),dist=Math.max(Math.abs(it.x-run.player.x),Math.abs(it.y-run.player.y)),def=F.item?.(it.itemId);if(p.visible&&p.currentVisible&&dist<=2&&def)addFloorItemLabel(p.x,p.y,def.id==='herb'?`${def.name}（HP+14/満腹+5）`:def.id==='bread'?`${def.name}（満腹+50）`:def.id==='big_bread'?`${def.name}（満腹+100）`:def.name)}const fx=run.attackFx;if(fx&&Number(fx.seq)>lastAttackFxSeq&&pp.visible){lastAttackFxSeq=Number(fx.seq);addWeaponAttackFx(pp.x,pp.y,fx,run.playerFacing||'down',weapon)}const enemyFx=(run.enemyAttackFx||[]).filter(x=>Number(x.seq)>lastEnemyAttackFxSeq);let enemyFxDelay=40;for(const ef of enemyFx){const sp=screenPos(ef.x,ef.y),tp=screenPos(ef.targetX,ef.targetY);if(sp.visible&&sp.currentVisible&&tp.visible)addEnemyAttackFx(sp,tp,ef,enemyFxDelay);lastEnemyAttackFxSeq=Math.max(lastEnemyAttackFxSeq,Number(ef.seq)||0);enemyFxDelay+=180}}
  const selectedEnemy=(run.enemies||[]).find(e=>e.hp>0&&e.id===dungeonEnemyInfoRuntime.enemyId);if(selectedEnemy){const info=F.dungeonEnemyInfo?.(run,selectedEnemy);if(info)addEnemyInfoOverlay(info)}
  const footAction=F.dungeonFootItemAction?.(),footItem=footAction?F.floorItemAt?.(run,run.player.x,run.player.y):null,contextCmd=footAction?{t:footAction.mode==='exchange'?'交換':'拾う',fn:pickupFootItem,c:'primary'}:{t:'階段',fn:stairsChoice,c:F.isOnStairs()?'primary':'',disabled:!F.isOnStairs()};
@@ -1434,3 +1484,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-03 09:53 JST / Ver1.135: stairs and rope return immediately to town, show loot, handle failures, clear resume data.
 
 // Updated: 2026-11-03 10:00 JST / Ver1.137: return flow regression-tested with actual opening finishRun wrapper.
+
+// Updated: 2026-11-03 10:45 JST / Ver1.138: independent Pokémon follower in progression town and opening.
+
+// Updated: 2026-11-03 13:30 JST / Ver1.139: constrain visible dungeon enemy footprints; add shared Pokédex toggle.

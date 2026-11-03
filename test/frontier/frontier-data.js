@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.44 / approved interior layouts / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.137";
+F.VERSION="1.139";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
@@ -695,3 +695,7 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 // Updated: 2026-11-03 09:53 JST / Ver1.135: version alignment; save schema unchanged.
 
 // Updated: 2026-11-03 10:00 JST / Ver1.137: version alignment; save data structure unchanged.
+
+// Updated: 2026-11-03 10:45 JST / Ver1.138: version alignment; no save format changes.
+
+// Updated: 2026-11-03 13:31 JST / Ver1.139: version alignment, no save migration.
