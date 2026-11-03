@@ -275,7 +275,7 @@ function currentTownAreaId(s){return F.areaDef?.(s?.townMovement?.areaId)?s.town
 // Ver1.16: facility levels and saved projects are the source of truth for the town.
 F.townPopulation=s=>{s=F.townPreviewState(s);const t=F.townState(s);return{customers:t.facilities.shop>0&&!t.projects.shop,residents:t.facilities.house>0&&!t.projects.house?Math.min(Number(s.development.town.residentCount)||0,t.facilities.house*2):0}};
 F.inviteTownResident=()=>F.mutateSave(s=>{if(s.settings?.townLayerTest?.scenePreset&&s.settings.townLayerTest.scenePreset!=='normal')throw new Error('通常の町へ戻して入居を確定してください。');if(F.facilityLevel(s,'house')<1||F.facilityLevel(s,'forge')<1)throw new Error('職人の住居と鍛冶工房を完成させてください。');if((Number(s.development.town.residentCount)||0)>=2)throw new Error('現在迎えられる担当者は入居済みです。');if((Number(s.development.town.residentCount)||0)>=1&&F.facilityLevel(s,'inn')<1)throw new Error('次の入居者には酒場兼宿屋が必要です。');s.development.town.residentCount=Math.min((Number(s.development.town.residentCount)||0)+1,F.facilityLevel(s,'house')*2)});
-F.townPathOutline=(from,to,stone=false,seed=0)=>{const pts=[],dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,width=stone?22:18,nx=-dy/len,ny=dx/len;for(const side of [1,-1])for(let j=0;j<=70;j++){const t=(side===1?j:70-j)/70,x=(1-t)*(1-t)*from.x+2*(1-t)*t*from.x+t*t*to.x,y=(1-t)*(1-t)*from.y+2*(1-t)*t*from.y+t*t*to.y,w=width+Math.sin(t*43+seed)*.8;pts.push([x+nx*w*side,y+ny*w*side])}return pts};
+F.townPathOutline=(from,to,stone=false,seed=0)=>{const pts=[],dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,width=stone?29:26,nx=-dy/len,ny=dx/len;for(const side of [1,-1])for(let j=0;j<=70;j++){const t=(side===1?j:70-j)/70,x=(1-t)*(1-t)*from.x+2*(1-t)*t*from.x+t*t*to.x,y=(1-t)*(1-t)*from.y+2*(1-t)*t*from.y+t*t*to.y,w=width+Math.sin(t*43+seed)*.8;pts.push([x+nx*w*side,y+ny*w*side])}return pts};
 // A narrow settlement lane with short access spurs.
 F.townRoadPaths=model=>{const built=model.facilities.filter(f=>f.state!=='vacant'),stone=model.points>=24;if(!built.length)return[];const paths=[{from:{x:295,y:0},to:{x:295,y:842},stone,seed:1}];for(const f of built){const e=f.entrance,join={x:295,y:e.y};paths.push({from:join,to:e,stone,seed:f.site.x});paths.push({from:e,to:{x:f.site.x+f.site.w/2,y:f.site.y+f.site.h-12},stone,seed:f.site.y})}return paths};
 F.townSceneModel=s=>{s=F.townPreviewState(s);
@@ -657,3 +657,5 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 
 // Updated: 2026-11-02 20:30 JST / Ver1.121: stepping on a tile triggers its trap; attacking without movement does not.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
+
+// Updated: 2026-11-03 17:14 JST / Ver1.142: broader town walk corridors with existing building exclusion intact.

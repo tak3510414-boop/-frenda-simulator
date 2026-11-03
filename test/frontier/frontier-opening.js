@@ -102,17 +102,17 @@ O.SCENES=Object.freeze({
   {speaker:'ミナ',text:'私もこの町で暮らして働きたい。工房と住む家、それにお店を少し広げるための材料を集めてくれませんか？',portrait:'traveler'},
   {speaker:'次の目的',text:'木材8個・鉄のかけら3個・350Gを集め、西の工房予定地でミナと相談する。',icon:'📜'}
  ]},
- lv4Start:{chapter:'第1章',title:'鍛冶の火を灯すために',icon:'🏗️',lines:[
-  {speaker:'ミナ',text:'集めてくれた材料で、工房と小さな家を建てます。お店にも五つ目の棚を作りますね。',portrait:'traveler'},
-  {speaker:'開拓者',text:'新しい町の景色が見えてきたね。',portrait:'player'},
-  {speaker:'次の目的',text:'森を探索するなどして時間を進め、西の工房予定地で完成を確認する。',icon:'📜'}
+ lv4Start:{chapter:'第1章',title:'まずは自分のお店を大きく',icon:'🏗️',lines:[
+  {speaker:'開拓者',text:'まずはぼくたちの店を広げたい。みんなが買い物できる、町の中心にしよう。',portrait:'player'},
+  {speaker:'ミナ',text:'もちろん。お店に五つ目の棚を作るのが先です。そのあとで、私の工房と小さな住まいを整えます。',portrait:'traveler'},
+  {speaker:'次の目的',text:'工事が終わったら、完成したあなたのお店Lv4を見に行こう。',icon:'📜'}
  ]},
- lv4Finished:{chapter:'第1章',title:'職人の住む町',icon:'⚒️',lines:[
-  {speaker:'ナレーション',text:'金床が響く音と、炉の火が町に新しい朝を告げる。工房の隣にはミナの住まいもできた。',icon:'🏠'},
-  {speaker:'ミナ',text:'これからはこの町の職人です。朝から昼は鍛冶屋で仕事をして、夕方には家に戻ります。',portrait:'traveler'},
-  {speaker:'開拓者',text:'みんなが戻れる場所がまた一つ増えた。ありがとう、ミナ。',portrait:'player'},
-  {speaker:'ミナ',text:'装備中の武器なら工房で強化できます。鉄のかけらと加工費を忘れずに。',portrait:'traveler'},
-  {speaker:'次の目的',text:'工房でミナの仕事を確認し、冒険の装備を整えよう。',icon:'📜'}
+ lv4Finished:{chapter:'第1章',title:'自分たちの店から広がる町',icon:'🏪',lines:[
+  {speaker:'ナレーション',text:'まず、自分たちの店舗Lv4が完成した。五つ目の棚が並び、町の中心に新しい店の姿が現れた。',icon:'🏪'},
+  {speaker:'開拓者',text:'ようやくここまで育った。最初は小さな露店だったのに、自分たちのお店になったね。',portrait:'player'},
+  {speaker:'ミナ',text:'お店が立派になったからこそ、私もここで仕事を始められます。町の西には小さな鍛冶工房と私の住まいを用意しました。',portrait:'traveler'},
+  {speaker:'ミナ',text:'私はミナ。鍛冶職人です。昼は工房で剣を手入れして、夕方は家に帰ります。これからよろしくお願いします。',portrait:'traveler'},
+  {speaker:'次の目的',text:'まず自分の店Lv4を見てから、鍛冶工房でミナの仕事を確かめよう。',icon:'📜'}
  ]},
  lv5Merchant:{chapter:'第1章',title:'旅商人の約束',icon:'🧺',lines:[
   {speaker:'ナレーション',text:'工房から金床の音が聞こえる昼下がり。東の街道を荷車がゆっくりと近づいてきた。',icon:'🛞'},
@@ -738,3 +738,5 @@ O.enter();
 // Updated: 2026-11-03 09:28 JST / Ver1.133: protagonist motivation clarified; stone scene speaker continuity improved.
 
 // Updated: 2026-11-03 10:00 JST / Ver1.136: correct the final-epilogue wrapper reference to previousFinishRun127.
+
+// Updated: 2026-11-03 17:19 JST / Ver1.142: storefront-first chapter framing and Mina introduction.
