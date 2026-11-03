@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.135 / illustrated return results, guaranteed return to camp. */
+/* Frenda Frontier Ver1.136 / illustrated return results, guaranteed return to camp. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -1432,3 +1432,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-11-03 09:45 JST / Ver1.134: first-entry dungeon guide, one step at a time, revisitable, no save schema change.
 // Updated: 2026-11-03 09:53 JST / Ver1.135: stairs and rope return immediately to town, show loot, handle failures, clear resume data.
+
+// Updated: 2026-11-03 10:00 JST / Ver1.136: return flow regression-tested with actual opening finishRun wrapper.

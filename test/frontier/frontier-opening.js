@@ -680,7 +680,7 @@ F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runI
 F.applyCustomerVisit=result=>{const saved=F.readSave(),soldBefore=saved.sales.count,rumorBefore=!!saved.story?.rumor,value=visit(result),after=F.readSave(),sold=Number(after.sales?.count)||0;if(O.active()&&O.phase()==='first_sale'&&sold>soldBefore)F.mutateSave(s=>{s.story.opening.mission2=true;s.story.opening.phase='upgrade';O.enqueueSceneInSave(s,'firstSale');if(!rumorBefore&&s.story?.rumor)O.enqueueSceneInSave(s,'forestRumor');F.addHistory(s,'mission','ミッション②達成：初めて商品を売ろう。')});else if(O.active()&&!rumorBefore&&after.story?.rumor)O.enqueueScene('forestRumor');return value};
 // The final epilogue is also available if the boss was defeated before shop Lv6 completion.
 const previousFinishRun127=F.finishRun;
-F.finishRun=(...args)=>{const result=previousFinishRun(...args);if(result&&O.active()&&!O.isTestPoint()){
+F.finishRun=(...args)=>{const result=previousFinishRun127(...args);if(result&&O.active()&&!O.isTestPoint()){
  const s=F.readSave();if(s.story?.opening?.lv6HomeVisited&&s.story?.opening?.forestLordDefeated)O.maybeLv6Finale();
  }return result;};
 O.enter();
@@ -736,3 +736,5 @@ O.enter();
 
 // Updated: 2026-11-03 09:05 JST / Ver1.132: stone narrative location synchronized to northern forest trail.
 // Updated: 2026-11-03 09:28 JST / Ver1.133: protagonist motivation clarified; stone scene speaker continuity improved.
+
+// Updated: 2026-11-03 10:00 JST / Ver1.136: correct the final-epilogue wrapper reference to previousFinishRun127.
