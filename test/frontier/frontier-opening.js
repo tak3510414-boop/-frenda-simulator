@@ -12,12 +12,12 @@ O.SCENES=Object.freeze({
   {speaker:'旅の冒険者',text:'あんたも、あの穴を見に来たのか？　昨日まで何もなかった場所だ。',portrait:'traveler'},
   {speaker:'開拓者',text:'迷宮……？　こんなところに、どうして。',portrait:'player'},
   {speaker:'旅の冒険者',text:'中へ入った仲間は戻ったが、食料も道具も底をついていた。帰る場所さえあればな。',portrait:'traveler'},
-  {speaker:'ナレーション',text:'ふたりが北の道を進むと、草むらに埋もれた古い石が見えた。刻まれた模様が、青白くまたたいている。',icon:'✨'},
+  {speaker:'ナレーション',text:'旅人の話を聞いた開拓者は北の道を進んだ。森の入口近く、道の左脇に古い石がある。刻まれた模様が、青白くまたたいていた。',icon:'✨'},
   {speaker:'開拓者',text:'まずは入口を調べよう。それから、みんなが帰ってこられる場所を作る。',portrait:'player'},
   {speaker:'次の目的',text:'北の道を登り、森の入口にある古い石を調べよう。',icon:'📜'}
  ]},
  entranceClue:{chapter:'序章',title:'青白い光の手がかり',icon:'✨',lines:[
-  {speaker:'ナレーション',text:'道の脇に、腰ほどの高さの古い石が立っていた。割れた表面には木の根のような模様が刻まれ、そのすき間が青白く光っている。',icon:'🪨'},
+  {speaker:'ナレーション',text:'北の道の左脇に、腰ほどの高さの古い石が立っていた。割れた表面には木の根のような模様が刻まれ、そのすき間が青白く光っている。',icon:'🪨'},
   {speaker:'開拓者',text:'光っているのは、この石そのもの……？　木の根の模様が、森の奥を指しているようにも見える。',portrait:'player'},
   {speaker:'旅の冒険者',text:'森の奥では「森の主」が道を守る……そんな昔話がある。確かなことは誰も知らない。',portrait:'traveler'},
   {speaker:'開拓者',text:'調べるのはあとでもできる。先に、安全に帰ってこられる目印が必要だ。',portrait:'player'},
@@ -733,3 +733,5 @@ O.enter();
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
 
 // Updated: 2026-11-03 08:47 JST / Ver1.131: dialogue matched to visible scene objects.
+
+// Updated: 2026-11-03 09:05 JST / Ver1.132: stone narrative location synchronized to northern forest trail.

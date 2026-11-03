@@ -1,12 +1,12 @@
-/* Frenda Frontier Ver1.131 / visible traveler and runestone, paced scene choreography. */
+/* Frenda Frontier Ver1.132 / consistent character proportions and properly located forest runestone. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:131};
+const C=F.OPENING_CINEMATIC={active:false,revision:132};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
 // Visible landmarks have stable world positions, distinct from the existing Pokémon rescue spot.
-const traveler={x:427,y:173},meetTraveler={x:447,y:148},stone={x:433,y:83},inspectStone={x:355,y:84};
+const traveler={x:427,y:173},meetTraveler={x:447,y:148},stone={x:310,y:92},inspectStone={x:347,y:96};
 C.landmarks={traveler:{...traveler},stone:{...stone}};
 C.north=north;C.camp=camp;
 C.isOpening=s=>{const o=s?.story?.opening;return !!o&&!Number.isInteger(o.townPreviewStage)&&['arrival','tent','mission1'].includes(o.phase)};
@@ -32,6 +32,8 @@ C.mount=async(host,rerender,actions={})=>{
  const drawStone=(c,x,y,now,scale=1,glow=false)=>{
   c.save();c.translate(x,y);c.scale(scale,scale);
   const pulse=.55+.45*Math.sin(now/300);
+  // A small bare-earth patch anchors the stone in the grass beside the trail.
+  c.fillStyle='rgba(141,125,79,.52)';c.beginPath();c.ellipse(0,6,29,13,0,0,Math.PI*2);c.fill();
   c.fillStyle='rgba(18,26,29,.50)';c.beginPath();c.ellipse(0,6,26,8,0,0,Math.PI*2);c.fill();
   if(glow){const h=c.createRadialGradient(0,-17,4,0,-17,43);h.addColorStop(0,`rgba(157,251,255,${.37+.18*pulse})`);h.addColorStop(1,'rgba(84,208,255,0)');c.fillStyle=h;c.fillRect(-46,-64,92,85)}
   // Broken monolith, with cracks, roots and a cyan inlaid rune.
@@ -44,20 +46,24 @@ C.mount=async(host,rerender,actions={})=>{
   c.fillStyle='#bafaff';c.fillRect(-3,-33,4,4);c.fillRect(-11,-19,4,4);c.fillRect(7,-15,4,4);
   c.restore();
  };
+ C.drawRunestone=(c,cam={x:0,y:0},now=performance.now())=>drawStone(c,stone.x-cam.x,stone.y-cam.y,now,.67,true);
  const drawTraveler=(c,now)=>{
   // Remains present in the world whenever the introductory traveler speaks.
   if(stage>1)return;
   const x=traveler.x-cam.x,y=traveler.y-cam.y;
   if(x<-75||x>cv.width+75||y<-70||y>cv.height+70)return;
   c.save();c.imageSmoothingEnabled=false;
-  c.fillStyle='rgba(10,29,23,.45)';c.beginPath();c.ellipse(x,y+2,16,5,0,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(10,29,23,.45)';c.beginPath();c.ellipse(x,y+2,11,4,0,0,Math.PI*2);c.fill();
   const atlasW=travelerAtlas?.naturalWidth||travelerAtlas?.width||0;
   if(atlasW>=320){
    const sx=atlasW>=768?4*64:64;
-   c.drawImage(travelerAtlas,sx,0,64,80,Math.round(x-22),Math.round(y-55),44,55);
+   // Match the player world sprite height (P.drawPlayer: 34 world pixels).
+   c.drawImage(travelerAtlas,sx,0,64,80,Math.round(x-14),Math.round(y-34),28,34);
   }else{
    // No atlas? Keep a clearly recognizable traveler instead of an invisible NPC.
-   const X=Math.round(x),Y=Math.round(y);
+   // Scale the pixel-art fallback by exactly the same ratio as the atlas.
+   c.save();c.translate(Math.round(x),Math.round(y));c.scale(34/55,34/55);
+   const X=0,Y=0;
    c.fillStyle='#543e2d';c.fillRect(X-19,Y-22,6,25);c.fillRect(X+14,Y-22,6,25); // pack straps
    c.fillStyle='#76553b';c.fillRect(X-12,Y-24,24,25);
    c.fillStyle='#406889';c.fillRect(X-13,Y-26,26,13);
@@ -65,12 +71,12 @@ C.mount=async(host,rerender,actions={})=>{
    c.fillStyle='#273c50';c.fillRect(X-14,Y-46,28,9);c.fillRect(X-8,Y-52,16,10);
    c.fillStyle='#1b2931';c.fillRect(X-5,Y-33,3,3);c.fillRect(X+4,Y-33,3,3);
    c.fillStyle='#403c35';c.fillRect(X-10,Y+1,8,5);c.fillRect(X+3,Y+1,8,5);
-   c.fillStyle='#e6c69c';c.fillRect(X+12,Y-25,5,11);
+   c.fillStyle='#e6c69c';c.fillRect(X+12,Y-25,5,11);c.restore();
   }
   // An unmistakable name label, not a dialogue that refers to someone off screen.
-  const label='旅の冒険者',w=101,bx=Math.round(x-w/2),by=Math.round(y-73);
-  if(by>=-5){c.fillStyle='rgba(17,42,35,.93)';c.strokeStyle='#efdfa9';c.lineWidth=1.5;c.fillRect(bx,by,w,20);c.strokeRect(bx,by,w,20);c.fillStyle='#fff3d6';c.textAlign='center';c.font='bold 12px sans-serif';c.fillText(label,x,by+14)}
-  if(!travelerGreeting&&locked){c.fillStyle='#ffe58c';c.font='bold 22px sans-serif';c.textAlign='center';c.fillText('!',x+22,y-54)}
+  const label='旅の冒険者',w=87,bx=Math.round(x-w/2),by=Math.round(y-55);
+  if(by>=-5){c.fillStyle='rgba(17,42,35,.93)';c.strokeStyle='#efdfa9';c.lineWidth=1;c.fillRect(bx,by,w,17);c.strokeRect(bx,by,w,17);c.fillStyle='#fff3d6';c.textAlign='center';c.font='bold 11px sans-serif';c.fillText(label,x,by+12)}
+  if(!travelerGreeting&&locked){c.fillStyle='#ffe58c';c.font='bold 15px sans-serif';c.textAlign='center';c.fillText('!',x+14,y-37)}
   c.restore();
  };
  const drawStoneDetail=(c,now)=>{
@@ -94,7 +100,8 @@ C.mount=async(host,rerender,actions={})=>{
   P.drawBackground(c,artwork,stage,cam);
   if(building){const t=Math.min(1,Math.max(0,(now-buildAt)/1750));c.save();c.globalAlpha=t*t*(3-2*t);P.drawBackground(c,artwork,1,cam);c.restore();}
   if(!locked){const p=stage===1?north:null;if(p){const x=p.x-cam.x,y=p.y-cam.y;c.save();c.fillStyle='#fff4c0';c.strokeStyle='#163b2c';c.lineWidth=3;c.beginPath();c.arc(x,y,10,0,Math.PI*2);c.fill();c.stroke();c.font='bold 12px sans-serif';c.textAlign='center';c.fillStyle='#102a1d';c.fillText('▼ 森の入口',x,y-17);c.restore();}}
-  if(stage===0){drawStone(c,stone.x-cam.x,stone.y-cam.y,now,1,stoneRevealed);if(stoneRevealed&&shot!=='stone'){const sx=stone.x-cam.x,sy=stone.y-cam.y;c.save();c.fillStyle='#d9ffff';c.font='bold 12px sans-serif';c.textAlign='center';c.shadowColor='#003948';c.shadowBlur=4;c.fillText('✦ 模様のある石',sx,sy-57);c.restore()}}
+  if(stage===1&&stoneRevealed)C.drawRunestone(c,cam,now);
+  if(stage===0){drawStone(c,stone.x-cam.x,stone.y-cam.y,now,.67,stoneRevealed);if(stoneRevealed&&shot!=='stone'){const sx=stone.x-cam.x,sy=stone.y-cam.y;c.save();c.fillStyle='#d9ffff';c.font='bold 12px sans-serif';c.textAlign='center';c.shadowColor='#003948';c.shadowBlur=4;c.fillText('✦ 模様のある石',sx,sy-43);c.restore()}}
   drawTraveler(c,now);
   F.POKEMON_CARE?.drawAtEntrance?.(c,cam,stage);
   F.RESIDENTS?.drawTown?.(c,cam,position,true);P.drawPlayer(c,players[facing],facing,position,cam);F.RESIDENTS?.drawTown?.(c,cam,position,false);
@@ -257,3 +264,4 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 07:32 JST / Ver1.130: same world-camera zoom as the playable town.
 
 // Updated: 2026-11-03 08:47 JST / Ver1.131: traveler, luminous stone, close-up, staged dialogue.
+// Updated: 2026-11-03 09:05 JST / Ver1.132: traveler player-scale, forest-road runestone, safe distance to Nyahoja.
