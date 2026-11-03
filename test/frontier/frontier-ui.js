@@ -1,5 +1,5 @@
 // Ver1.44: approved room plans, live shop stock and matching tap targets. Updated 2026-10-24 JST
-/* Frenda Frontier Ver1.124 / illustrated return results and town forest gate integration. */
+/* Frenda Frontier Ver1.135 / illustrated return results, guaranteed return to camp. */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER,R=window.FRENDA_FRONTIER_RENDERER,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let indoorRuntime={id:null,model:null,player:null,token:0,moving:false,facing:'up',camera:null};
@@ -993,7 +993,51 @@ function runResultModal(){
  ]);
 }
 function swingTurn(){if(!F.run?.active)return;const r=F.swingDungeon?.();renderAll();if(F.run&&!F.run.active)runResultModal();return r}
-function stairsChoice(){const run=F.run;if(!run?.active||!F.isOnStairs?.())return;const last=run.floor>=run.maxFloor,next=Math.min(run.maxFloor,run.floor+1),bossAlive=!!F.dungeonBossAlive?.(run),body=`<h2>🪜 階段</h2><p>${last?(bossAlive?`👑 最深部の主が出口を守っています。先に倒してください。`:`B${run.maxFloor}F・最深部を制しました。踏破して拠点へ帰還しますか？`):`階段に到着しました。B${next}Fへ進むか、ここで拠点へ帰還するか選んでください。`}<br><small>現在 B${run.floor}F / 全${run.maxFloor}F</small></p>`;if(last){modal(body,bossAlive?[{label:'戦いに戻る'}]:[{label:'踏破して帰還',className:'cmdBtn primary',fn:()=>{F.nextFloor();renderAll();if(!F.run?.active)runResultModal()}},{label:'まだ探索する'}]);return}modal(body,[{label:`B${next}Fへ進む`,className:'cmdBtn primary',fn:()=>{F.nextFloor();renderAll();if(!F.run?.active)runResultModal()}},{label:'ここで帰還する',fn:()=>{F.finishRun(true,'return');renderAll();runResultModal()}},{label:'まだ探索する'}])}
+// Ver1.135: a successful return always leaves the dungeon screen. Keeping the
+// adventure tab after completion was indistinguishable from continuing exploration.
+function returnToCampFromStairs(){
+ if(!F.run?.active){toast('探索はすでに終了しています。');return false}
+ cancelDungeonTravel();
+ let result=null;
+ try{result=F.finishRun(true,'return')}
+ catch(error){
+  // If the final-save callback threw after core completion, do not reward twice.
+  if(!F.run?.active&&F.run?.result)result=F.run.result;
+  else{toast(`帰還できませんでした：${error?.message||'処理エラー'}`);return false}
+ }
+ if(!result||F.run?.active){toast('帰還が完了していません。もう一度確認してください。');return false}
+ // Persistence code normally clears this itself; doing so here also prevents
+ // a finished run from being resumed after iPhone Safari is reloaded.
+ F.clearDungeonRun?.();
+ dungeonPlayerVisual={runRef:null,x:null,y:null};
+ dungeonDashRuntime.target=null;dungeonDashRuntime.remaining=0;
+ try{
+  homeMode='town';
+  setView('home');
+  runResultModal();
+ }catch(error){
+  toast(`帰還済みです。画面更新に失敗しました：${error?.message||'表示エラー'}`);
+  return true;
+ }
+ return true;
+}
+function stairsChoice(){
+ const run=F.run;
+ if(!run?.active||!F.isOnStairs?.())return;
+ const last=run.floor>=run.maxFloor,next=Math.min(run.maxFloor,run.floor+1),bossAlive=!!F.dungeonBossAlive?.(run);
+ const body=`<h2>🪜 階段</h2><p>${last?(bossAlive?`👑 最深部の主が出口を守っています。先に倒してください。`:`B${run.maxFloor}F・最深部を制しました。踏破して拠点へ帰還しますか？`):`階段に到着しました。B${next}Fへ進むか、ここで拠点へ帰還するか選んでください。`}<br><small>現在 B${run.floor}F / 全${run.maxFloor}F</small></p>`;
+ if(last){
+  modal(body,bossAlive?[{label:'戦いに戻る'}]:[
+   {label:'踏破して帰還',className:'cmdBtn primary',fn:()=>{if(F.nextFloor()){renderAll();if(!F.run?.active){F.clearDungeonRun?.();homeMode='town';setView('home');runResultModal()}}else toast('ボスが残っています。')}} ,
+   {label:'まだ探索する'}
+  ]);return;
+ }
+ modal(body,[
+  {label:`B${next}Fへ進む`,className:'cmdBtn primary',fn:()=>{if(F.nextFloor())renderAll();else toast('次の階へ進めませんでした。')}},
+  {label:'ここで帰還する',className:'cmdBtn primary',fn:returnToCampFromStairs},
+  {label:'まだ探索する'}
+ ]);
+}
 function move(dx,dy){if(dungeonDashRuntime.moving)return;F.move(dx,dy);renderAll();if(F.run&&!F.run.active){runResultModal();return}if(F.isOnStairs?.())stairsChoice()}
 function waitTurn(){if(dungeonDashRuntime.moving)return;F.waitTurn?.();renderAll();if(F.run&&!F.run.active)runResultModal()}
 function dungeonRoomAt(run,x,y){return (run?.rooms||[]).find(r=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h)||null}
@@ -1106,7 +1150,7 @@ ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み'
  const selectedEnemy=(run.enemies||[]).find(e=>e.hp>0&&e.id===dungeonEnemyInfoRuntime.enemyId);if(selectedEnemy){const info=F.dungeonEnemyInfo?.(run,selectedEnemy);if(info)addEnemyInfoOverlay(info)}
  const footAction=F.dungeonFootItemAction?.(),footItem=footAction?F.floorItemAt?.(run,run.player.x,run.player.y):null,contextCmd=footAction?{t:footAction.mode==='exchange'?'交換':'拾う',fn:pickupFootItem,c:'primary'}:{t:'階段',fn:stairsChoice,c:F.isOnStairs()?'primary':'',disabled:!F.isOnStairs()};
  const footHint=$('dungeonFootItemHint');if(footHint&&footAction?.item){footHint.classList.remove('hidden');footHint.innerHTML=`${itemVisualHtml(footAction.item,28,'footHintVisual')}<span><b>${esc(footAction.item.name)}${footAction.qty>1?` ×${footAction.qty}`:''}</b><small>${footAction.mode==='exchange'?'バッグ満杯：交換':'足元：拾える'}</small></span>`}
- if(dungeonDashRuntime.moving){fillCmd('cmdAdv',[{t:'■ 移動を止める',fn:()=>{cancelDungeonTravel();renderAll();toast('自動移動を停止しました');},c:'warn'}]);$('cmdAdv').style.gridTemplateColumns='1fr';}else{fillCmd('cmdAdv',[{t:'どうぐ',fn:showBag},{t:'装備',fn:showEquipmentModal},{t:'情報',fn:showStrengthModal},{t:'向き',fn:showFacingModal},{t:'素振り',fn:swingTurn},contextCmd,{t:'履歴',fn:showDungeonHistory},{t:'ロープ',fn:()=>{if(F.escape()){renderAll();runResultModal()}},c:'warn',disabled:run.escape<=0}]);}
+ if(dungeonDashRuntime.moving){fillCmd('cmdAdv',[{t:'■ 移動を止める',fn:()=>{cancelDungeonTravel();renderAll();toast('自動移動を停止しました');},c:'warn'}]);$('cmdAdv').style.gridTemplateColumns='1fr';}else{fillCmd('cmdAdv',[{t:'どうぐ',fn:showBag},{t:'装備',fn:showEquipmentModal},{t:'情報',fn:showStrengthModal},{t:'向き',fn:showFacingModal},{t:'素振り',fn:swingTurn},contextCmd,{t:'履歴',fn:showDungeonHistory},{t:'ロープ',fn:()=>{if(F.escape()){F.clearDungeonRun?.();homeMode='town';setView('home');runResultModal()}else toast('ロープで帰還できませんでした。')},c:'warn',disabled:run.escape<=0}]);}
  // Ver1.51: tapping a known destination follows the explored route automatically;
  // fog-of-war exploration and adjacent tactical moves still use one turn per tap.
  const canvas=$('sceneCanvas');canvas.style.touchAction='none';
@@ -1387,3 +1431,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
 
 // Updated: 2026-11-03 09:45 JST / Ver1.134: first-entry dungeon guide, one step at a time, revisitable, no save schema change.
+// Updated: 2026-11-03 09:53 JST / Ver1.135: stairs and rope return immediately to town, show loot, handle failures, clear resume data.
