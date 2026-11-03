@@ -1,20 +1,20 @@
-/* Frenda Frontier Ver1.143
+/* Frenda Frontier Ver1.144
    Easy Japanese: elementary third-grade level, short readable dialogue.
    Keeps game IDs, data records, controls and saved state unchanged.
    Updated: 2026-11-03 18:55 JST */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,O=F?.OPENING;if(!F||!O||!O.SCENES)return;
-const E=F.EASY_JAPANESE={VERSION:'1.143'};
+const E=F.EASY_JAPANESE={VERSION:'1.144'};
 // The opening sequence uses fixed line indices, so keep exactly eight beats.
 const FIRST_STORY=[
- '主人公は森へやって来た。「森に、ふしぎなかいだんができた」と聞いたからだ。',
- '森へつづく道に、大きな荷物をもった旅人が立っている。',
- '気をつけて！　きのう、森の中にかいだんができたんだ。',
- 'こまっている人を助けたい。まずは、森を見てこよう。',
- '北の道を進んで。左がわに青く光る石があるよ。',
- '主人公は北へ歩いた。道の左がわで、古い石が光っている。',
- 'この石は何だろう？　まず、よく見てみよう。',
- '北の道の左がわにある、青く光る石をしらべよう。'
+ "主人公は、森にできたという、ふしぎなかいだんを見に来た。",
+ "森へつづく道に、旅人が立っている。森の中を、じっと見ている。",
+ "あぶないよ。この先に、きのうまでなかったかいだんができたんだ。",
+ "ぼくも、そのうわさを聞いて来たよ。中へ入った人はいるの？",
+ "入った人は帰ってきたよ。でも、道の左がわで青く光る石を見たんだ。見たことがない石なんだ。",
+ "主人公は、旅人に教えられた北の道を歩く。道の左がわに、青い光が見えた。",
+ "あれがその石かな。どうして光るんだろう。近くで見てみよう。",
+ "道の左がわにある、青く光る石をしらべよう。"
 ];
 const WORDS=[
  ['ここで帰還する','ここで町に帰る'],
@@ -298,9 +298,503 @@ function simplify(s){
 }
 E.simplify=simplify;
 E.firstStory=FIRST_STORY;
+// Ver1.144: complete narrative beats follow actual gameplay events.
+E.revisedScenes={
+ "entranceClue": {
+  "title": "青い石のひみつ",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "石には、木の根のような線がほられている。青い光が、小さく明るくなった。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "この石、いつからここにあるんだろう。かいだんと、何かつながりがあるのかな。"
+   },
+   {
+    "speaker": "おはなし",
+    "text": "その時、近くの草がゆれた。かすかな声が聞こえる。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "今の声は何だろう。草の中を見てみよう。"
+   }
+  ]
+ },
+ "pokemonFound": {
+  "title": "草の中の小さな声",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "草の中に、ニャオハがいた。前足をかばっている。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ニャオハ？　足がいたいの？"
+   },
+   {
+    "speaker": "旅人",
+    "text": "あわてて近づくと、こわがるよ。ゆっくり声をかけよう。"
+   },
+   {
+    "speaker": "おはなし",
+    "text": "ニャオハは立とうとした。でも、うまく歩けない。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "だいじょうぶ。ここにいるよ。いたい所を見せてくれる？"
+   }
+  ]
+ },
+ "pokemonRescue": {
+  "title": "ニャオハを助けよう",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "主人公が手を出すと、ニャオハは少しずつ近づいてきた。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "このまま森にいたら、足がもっといたくなるかもしれない。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "道の先に、風が弱い草地があるよ。そこで休ませよう。ぼくも手つだうよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "うん。まず、あの子が安心して休める場所を作ろう。"
+   },
+   {
+    "speaker": "おはなし",
+    "text": "主人公はニャオハをそっとだき上げた。旅人は、草地へつづく道を教えてくれた。"
+   }
+  ]
+ },
+ "pokemonCamp": {
+  "title": "テントでひと休み",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "テントにやわらかいぬのをしいた。ニャオハが、しずかに目をとじた。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "少し、ほっとしたかな。でも、足の手当てをしたい。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "森のあさい所に薬草があるよ。ぼくはここでニャオハを見ているね。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ありがとう。まず薬草を一つ見つけて、すぐに帰るよ。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "森の1階で薬草をひろい、ロープでテントに帰ろう。"
+   }
+  ]
+ },
+ "pokemonFirstDeparture": {
+  "title": "薬草をさがす、はじめての森",
+  "lines": [
+   {
+    "speaker": "主人公",
+    "text": "ニャオハを早く元気にしたい。薬草をさがしてくるね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "足もとに気をつけて。あぶない時は、ロープで帰っておいで。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "木や食べ物もあったらひろっていいけど、薬草が一番だよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "うん。薬草を見つけたら、むりをしないで帰る。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "森の1階で薬草を一つ手に入れよう。"
+   }
+  ]
+ },
+ "firstReturn": {
+  "title": "森から帰ってきた日",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "主人公は、森で集めたものを持ってテントへ帰った。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "おかえり！　けがをしなくてよかった。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "もって帰ったものを見よう。薬草があれば、先にニャオハの手当てをしよう。"
+   },
+   {
+    "speaker": "おはなし",
+    "text": "テントの中では、ニャオハがしずかに休んでいる。"
+   }
+  ]
+ },
+ "pokemonRecovered": {
+  "title": "ニャオハが立てた！",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "薬草で手当てすると、ニャオハはゆっくり立ち上がった。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "よかった。足を動かせるようになったね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "よくがんばったね。これからどこにいたいか、ニャオハのようすを見よう。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "テントのそばで、ニャオハにもう一度話しかけよう。"
+   }
+  ]
+ },
+ "pokemonCoexist": {
+  "title": "ニャオハのえらんだ場所",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "ニャオハは森を見た。それから、主人公のそばにすわった。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ここが好きなの？　いっしょにいたいなら、いてもいいよ。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "ニャオハが自分でえらんだんだね。安心できる場所にしよう。"
+   },
+   {
+    "speaker": "おはなし",
+    "text": "ニャオハは、小さく元気な声でないた。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "テントに来る人のために、食べ物や道具をおける小さなお店を作ろう。"
+   }
+  ]
+ },
+ "pokemonFarewell": {
+  "title": "ニャオハが森へ帰る日",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "ニャオハは森の方へ歩いた。少し進むと、こちらをふり返った。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "もう歩けるんだね。森で元気にくらしてね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "森に帰ることも、ニャオハがえらんだんだよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "うん。ぼくは、ここをまた来られる場所にしたい。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "旅人が休めるように、食べ物や道具をおける小さなお店を作ろう。"
+   }
+  ]
+ },
+ "camp": {
+  "title": "はじめてのテント",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "森のそばに、小さなテントが立った。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "ここなら、森から帰った人が少し休めるね。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "食べ物や道具もあれば、もっと安心だね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "森で木を集めて、小さなお店を作ってみようか。"
+   }
+  ]
+ },
+ "firstDeparture": {
+  "title": "はじめての森",
+  "lines": [
+   {
+    "speaker": "主人公",
+    "text": "森で木と食べ物をさがしてみよう。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "あぶない時はロープで帰っておいで。森のあさい所からでいいよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "うん。むりをしないで、少しずつしらべるよ。"
+   }
+  ]
+ },
+ "stallOpen": {
+  "title": "小さなお店ができた",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "テントのとなりに、小さなお店ができた。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "森から帰る時、ここに食べ物があったら助かるね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "使ってみたい人が来るかもしれないね。まず品物をならべよう。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "小さなお店に品物を一つならべよう。"
+   }
+  ]
+ },
+ "firstSale": {
+  "title": "はじめて売れた！",
+  "lines": [
+   {
+    "speaker": "旅人",
+    "text": "食べ物を買えて助かったよ。これでまた森へ行ける。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ぼくの店が、だれかの役に立ったんだね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "帰ってくる人がふえたら、もう少し大きい店がほしいね。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "うん。少しずつ店を育てよう。"
+   }
+  ]
+ },
+ "shopComplete": {
+  "title": "木のお店ができた",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "小さなお店が、雨をよけられる木のお店になった。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "今までより、食べ物や道具をしまっておけるね。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "森から帰った人が、安心して休めるね。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "店を使いながら、森のことも少しずつしらべよう。"
+   }
+  ]
+ },
+ "lv3Visitor": {
+  "title": "もの作りが好きなミナ",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "木のお店に、道具をもったミナが来た。"
+   },
+   {
+    "speaker": "ミナ",
+    "text": "わたしはミナ。木でたなを作るのがとくいなんだ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "お店がせまくなってきたんだ。手つだってくれる？"
+   },
+   {
+    "speaker": "ミナ",
+    "text": "もちろん。木とお金があれば、たなをふやせるよ。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "木を5こ、220Gを集めて、ミナに話しかけよう。"
+   }
+  ]
+ },
+ "lv4Invite": {
+  "title": "ミナがこの町にいたいわけ",
+  "lines": [
+   {
+    "speaker": "ミナ",
+    "text": "森から帰った人の、こわれたぶきを見たんだ。なおす場所がほしいな。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "お店には道具をおける。でも、なおす場所はまだないね。"
+   },
+   {
+    "speaker": "ミナ",
+    "text": "ここで仕事をしたい。小さなかじ屋と、わたしの家を作ってもいい？"
+   },
+   {
+    "speaker": "主人公",
+    "text": "お店も、もっと大きくしたいな。いっしょに工事をしよう。"
+   },
+   {
+    "speaker": "次にすること",
+    "text": "木8こ、鉄3こ、350Gを集めて、ミナと話そう。"
+   }
+  ]
+ },
+ "lv5Merchant": {
+  "title": "旅のしょう人リオ",
+  "lines": [
+   {
+    "speaker": "リオ",
+    "text": "ぼくはリオ。遠くの町から、食べ物や道具を運んでいるよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ぼくの店だけでは、たくさんの人に品物をわたせないんだ。"
+   },
+   {
+    "speaker": "リオ",
+    "text": "人が集まるいちばと、休める場所を作ればいいよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "いいね。森へ行く人も、町に来た人も休めるようにしたい。"
+   }
+  ]
+ },
+ "lv5Tavern": {
+  "title": "森の光について聞いたこと",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "旅人が集まる場所で、森の話が聞こえてきた。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "青い光が強い日は、森のポケモンがこわがるみたいだ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ニャオハのけがも、この光とつながっているのかな。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "森のいちばん奥で、何が起きているか見てみよう。"
+   }
+  ]
+ },
+ "forestRumor": {
+  "title": "森の光とポケモン",
+  "lines": [
+   {
+    "speaker": "旅人",
+    "text": "森の中で、青い光を見た人がふえているよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "光る石と、何かつながっているのかな。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "森の奥に「森の主」がいるって話もある。でも、まだ本当か分からない。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "決めつけないで、自分の目でたしかめよう。"
+   }
+  ]
+ },
+ "pokemonForestClue": {
+  "title": "森のポケモンのために",
+  "lines": [
+   {
+    "speaker": "リオ",
+    "text": "森のポケモンが、青い光からにげているそうだよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ニャオハがけがをしたのも、同じことがもとかな。"
+   },
+   {
+    "speaker": "ミナ",
+    "text": "森の主が、わるいとはかぎらないよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "森の奥をしらべて、みんなが安心できるようにしたい。"
+   }
+  ]
+ },
+ "lv6Meet": {
+  "title": "お店と家を分けよう",
+  "lines": [
+   {
+    "speaker": "ミナ",
+    "text": "店が大きくなったね。でも、人がふえて、休む場所が足りないよ。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "お店と、くらす家を分けたいな。"
+   },
+   {
+    "speaker": "ミナ",
+    "text": "いいね。町で安心してくらせる場所を、作ろう。"
+   }
+  ]
+ },
+ "lv6Finale": {
+  "title": "森と町の新しい朝",
+  "lines": [
+   {
+    "speaker": "おはなし",
+    "text": "はじめは森のふしぎなかいだんを見に来ただけだった。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "ニャオハに出会って、休める場所を作ったんだ。"
+   },
+   {
+    "speaker": "旅人",
+    "text": "そこから小さなお店ができて、町になったね。"
+   },
+   {
+    "speaker": "ミナ",
+    "text": "人もポケモンも、安心してすごせる町にしよう。"
+   },
+   {
+    "speaker": "主人公",
+    "text": "これからも森を大切にして、みんなでくらしていきたい。"
+   }
+  ]
+ }
+};
 const original=O.SCENES;
 O.SCENES=Object.freeze(Object.fromEntries(Object.entries(original).map(([id,scene])=>{
- const originalLines=scene.lines||[];
+ const rewrite=E.revisedScenes[id];
+ const originalLines=rewrite?rewrite.lines:(scene.lines||[]);
  let lines=originalLines.map((line,i)=>({
    ...line,
    speaker:simplify(line.speaker),
@@ -314,7 +808,7 @@ O.SCENES=Object.freeze(Object.fromEntries(Object.entries(original).map(([id,scen
    if(parts.length<2)return[line];
    return parts.map(text=>({...line,text}));
  });
- return[id,Object.freeze({...scene,title:simplify(scene.title),chapter:simplify(scene.chapter),lines:Object.freeze(lines)})];
+ return[id,Object.freeze({...scene,title:simplify(rewrite?.title||scene.title),chapter:simplify(scene.chapter),lines:Object.freeze(lines)})];
 })));
 // Lightweight UI text simplifier. It does not change input values, game state,
 // Canvas coordinates, source code, attributes or text inside editable controls.
@@ -350,3 +844,5 @@ if(typeof MutationObserver!=='undefined'){
 }
 })();
 // Updated: 2026-11-03 18:55 JST / Ver1.143: third-grade-friendly story and UI display text.
+
+// Updated: 2026-11-03 19:37 JST / Ver1.144: motivated prologue, rescue-first story, consistent town and forest arc.

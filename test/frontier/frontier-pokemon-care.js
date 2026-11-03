@@ -255,3 +255,5 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-03 10:14 JST / Ver1.137: enlarge Nyahoja on entrance, camp and trusted-follow states.
 
 // Updated: 2026-11-03 10:45 JST / Ver1.138: autonomous lagged waypoint following, own position, idle stop, turn orientation and scene reset.
+
+// Updated: 2026-11-03 19:37 JST / Ver1.144: story dialogue supplied by kid-readable narrative layer; unchanged save state.
