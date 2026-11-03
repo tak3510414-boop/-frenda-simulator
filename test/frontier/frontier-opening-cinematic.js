@@ -214,10 +214,10 @@ C.mount=async(host,rerender,actions={})=>{
    }
    shot='wide';
    const returnWalk=walk(camp,'テント予定地');
-   if(!await caption('ナレーション','ふたりは森の入口に背を向け、風をしのげる草地へ戻った。','テント設営'))return;
-   if(!await caption('開拓者','まずは小さくてもいい。ここを、無事に帰ってきた人の目印にしよう。','テント設営'))return;
+   if(!await caption('ナレーション','ふたりは森から少しはなれ、風の弱い草むらに帰った。','テント設営'))return;
+   if(!await caption('開拓者','小さなテントを立てよう。みんなが帰る時のめじるしになる。','テント設営'))return;
    if(!await returnWalk||!active())return;
-   if(!await caption('ナレーション','地面を確かめ、杭を打ち、ロープを張る。布が風を受けて少しずつ形を作っていく。','テント設営'))return;
+   if(!await caption('ナレーション','地面をならし、木のぼうを立てる。大きなぬのをかけると、テントの形になった。','テント設営'))return;
    speech.hidden=true;building=true;buildAt=performance.now();hint.textContent='テントを設営しています……';
    if(!await wait(2100)||!active())return;
    building=false;O.advance();stage=1;P.activeStage=stage;scene=P.scene(1);hint.textContent='テントが完成しました！';
@@ -293,3 +293,5 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 10:14 JST / Ver1.137: stall marker, stall-site guidance text, clearer tap destination feedback.
 
 // Updated: 2026-11-03 10:45 JST / Ver1.138: active stage exposed to independent companion follower.
+
+// Updated: 2026-11-03 18:55 JST / Ver1.143: simpler opening-building captions for third-grade readers.
