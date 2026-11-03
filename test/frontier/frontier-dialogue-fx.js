@@ -1,4 +1,4 @@
-/* Frenda Frontier Ver1.146 - portrait, readable typewriter text, optional dialog blips.
+/* Frenda Frontier Ver1.147 - portrait, readable typewriter text, optional dialog blips.
    Updated: 2026-11-03 JST / Ver1.146.
 */
 (()=>{'use strict';
@@ -6,7 +6,7 @@
  const FX=F.DIALOGUE_FX={enabled:true,delay:38};
  let audio=null,unlocked=false,lastSound=0;
  const portraits={
-  player:'frontier-portrait-player-v146.png',traveler:'frontier-portrait-traveler-v146.png',
+  player:'frontier-portrait-player-v147.png',traveler:'frontier-portrait-traveler-v147.png',
   nyahoja:'frontier-portrait-nyahoja-v146.png'};
  FX.portraitFor=who=>{const str=String(who||'');return /ニャオハ/.test(str)?portraits.nyahoja:/旅人|旅の冒険者|ミナ|リオ/.test(str)?portraits.traveler:/主人公|開拓者/.test(str)?portraits.player:''};
  FX.unlock=()=>{if(!FX.enabled)return;try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!audio)audio=new Audio();if(audio.state==='suspended')audio.resume()?.catch?.(()=>{});unlocked=audio.state==='running'}catch(_){unlocked=false}};
@@ -26,3 +26,5 @@
 })();
 
 // Updated: 2026-11-03 21:43 JST / Ver1.146: integrated scene art, portrait dialogues, tick sound.
+
+// Updated: 2026-11-04 07:28 JST / Ver1.147: illustrated protagonist and traveler portraits.

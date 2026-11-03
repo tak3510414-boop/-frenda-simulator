@@ -4,7 +4,7 @@
    Updated: 2026-11-03 18:55 JST */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,O=F?.OPENING;if(!F||!O||!O.SCENES)return;
-const E=F.EASY_JAPANESE={VERSION:'1.145'};
+const E=F.EASY_JAPANESE={VERSION:'1.147'};
 // The opening sequence uses fixed line indices, so keep exactly eight beats.
 const FIRST_STORY=[
  "主人公は、森にできたという、ふしぎなかいだんを見に来た。",
@@ -817,6 +817,9 @@ function applyTextNode(node){
  if(!node||node.nodeType!==3)return;
  const parent=node.parentElement;
  if(!parent||/^(SCRIPT|STYLE|TEXTAREA|CODE|PRE|OPTION)$/.test(parent.tagName)||parent.isContentEditable)return;
+ // Typed dialogue is already simplified in O.SCENES; mutating its text nodes
+ // while the typewriter is running breaks its completed-text state.
+ if(parent.closest?.('#openingWords,#gatewayWords,.storyDialogueText'))return;
  const old=node.nodeValue,updated=simplify(old);
  if(old!==updated)node.nodeValue=updated;
 }
@@ -848,3 +851,5 @@ if(typeof MutationObserver!=='undefined'){
 // Updated: 2026-11-03 19:37 JST / Ver1.144: motivated prologue, rescue-first story, consistent town and forest arc.
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: town dialogue introduces but does not show the stone.
+
+// Updated: 2026-11-04 07:31 JST / Ver1.147: do not rewrite live typewriter text nodes.

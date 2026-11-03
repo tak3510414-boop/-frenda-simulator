@@ -1539,6 +1539,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: forest gateway replaces direct dungeon start; expedition preparation before entry.
 
-// Updated: 2026-11-03 JST / Ver1.146: portrait and sound feedback for story dialogue.
+// Updated: 2026-11-03 JST / Ver1.147: portrait and sound feedback for story dialogue.
 
-// Updated: 2026-11-03 21:43 JST / Ver1.146: integrated scene art, portrait dialogues, tick sound.
+// Updated: 2026-11-03 21:43 JST / Ver1.147: integrated scene art, portrait dialogues, tick sound.
+
+// Updated: 2026-11-04 07:28 JST / Ver1.147: opening animation repair and portrait updates.

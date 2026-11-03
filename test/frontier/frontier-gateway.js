@@ -4,7 +4,7 @@
 */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER;if(!F)return;
-const G=F.GATEWAY={VERSION:'1.146',LIMIT_TYPES:4,LIMIT_TOTAL:8,LIMIT_EACH:3};
+const G=F.GATEWAY={VERSION:'1.147',LIMIT_TYPES:4,LIMIT_TOTAL:8,LIMIT_EACH:3};
 let plan={},selected='beginner_forest',key='';
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const count=()=>Object.values(plan).reduce((n,v)=>n+v,0);
@@ -82,7 +82,7 @@ G.mount=(host,actions={})=>{
   <button id="gatewayStairsTarget" type="button" class="gatewayStairsTarget" aria-label="森のかいだんからダンジョンを選ぶ"><span>▼</span></button>
  </div>
  <div class="gatewayDialogue" id="gatewayDialogue" aria-live="off"><span class="gatewaySpeaker" id="gatewaySpeaker">主人公</span>
-  <img id="gatewayPortrait" class="gatewayPortrait" src="frontier-portrait-player-v146.png" alt="話している人の顔">
+  <img id="gatewayPortrait" class="gatewayPortrait" src="frontier-portrait-player-v147.png" alt="話している人の顔">
   <p id="gatewayWords" class="gatewayWords"></p>
   <button id="gatewayNext" type="button" class="gatewayNext" aria-label="メッセージを全部読む">▶</button></div>
  <div class="gatewayVoiceRow"><span>文字がひとつずつ出るよ</span><button id="gatewaySound" type="button">🔊 文字の音 ${FX?.enabled===false?'OFF':'ON'}</button></div>
@@ -98,7 +98,7 @@ G.mount=(host,actions={})=>{
  let reveal=null,completed=true;
  const say=(who,text)=>{
   const words=$('#gatewayWords'),whoNode=$('#gatewaySpeaker'),portrait=$('#gatewayPortrait');if(!words)return;
-  whoNode.textContent=who;portrait.src=FX?.portraitFor?.(who)||'frontier-portrait-player-v146.png';portrait.alt=`${who}の顔`;
+  whoNode.textContent=who;portrait.src=FX?.portraitFor?.(who)||'frontier-portrait-player-v147.png';portrait.alt=`${who}の顔`;
   words.textContent='';completed=false;
   const finished=()=>{completed=true};
   reveal=FX?.type?FX.type(words,text,finished):(()=>{words.textContent=text;completed=true});
@@ -136,3 +136,5 @@ G.mount=(host,actions={})=>{
 })();
 
 // Updated: 2026-11-03 21:43 JST / Ver1.146: integrated scene art, portrait dialogues, tick sound.
+
+// Updated: 2026-11-04 07:28 JST / Ver1.147: portrait reference alignment.

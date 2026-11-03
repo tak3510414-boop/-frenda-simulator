@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.44 / approved interior layouts / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.146";
+F.VERSION="1.147";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
@@ -711,6 +711,8 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: connector map and departure loadout (existing bag limit remains 10 types).
 
-// Updated: 2026-11-03 JST / Ver1.146: dynamic illustrated gateway and dialogue effects.
+// Updated: 2026-11-03 JST / Ver1.147: dynamic illustrated gateway and dialogue effects.
 
-// Updated: 2026-11-03 21:43 JST / Ver1.146: integrated scene art, portrait dialogues, tick sound.
+// Updated: 2026-11-03 21:43 JST / Ver1.147: integrated scene art, portrait dialogues, tick sound.
+
+// Updated: 2026-11-04 07:28 JST / Ver1.147: opening animation repair and portrait updates.
