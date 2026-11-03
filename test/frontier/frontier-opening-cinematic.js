@@ -29,8 +29,8 @@ C.mount=async(host,rerender,actions={})=>{
  C.active=auto;O.cinematicActive=auto;
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout','frontierOpeningStage');document.body.classList.add('progressTownActive');
  const g=O.guidance();
- host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングでは主人公が自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。主人公が自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${P.zoomLabel(W.overview)}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
- const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip'),careChoices=document.getElementById('openingCareChoices');
+ host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングでは主人公が自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><img id="openingPortrait" class="openingPortrait" alt="話している人の顔" hidden><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。主人公が自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${P.zoomLabel(W.overview)}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
+ const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),portrait=document.getElementById('openingPortrait'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip'),careChoices=document.getElementById('openingCareChoices');
  const size=()=>{const w=Math.max(280,Math.min(980,wrap.getBoundingClientRect().width||window.innerWidth||390)),h=window.visualViewport?.height||window.innerHeight||780,available=Math.max(220,Math.min(610,h-290)),cssHeight=W.overview?w*.48:Math.min(available,w);const worldWidth=P.worldWidth(W.overview);cv.width=worldWidth;cv.height=W.overview?480:Math.min(480,Math.max(120,Math.round(cssHeight*worldWidth/w)));cv.style.width='100%';cv.style.height=`${cssHeight}px`;};
  size();window.addEventListener('resize',size);window.visualViewport?.addEventListener?.('resize',size);
  const cleanup=()=>{window.removeEventListener('resize',size);window.visualViewport?.removeEventListener?.('resize',size);};
@@ -133,9 +133,11 @@ C.mount=async(host,rerender,actions={})=>{
   if((who==='旅人'||who==='旅の冒険者'||who==='主人公')&&shot==='traveler'&&travelerGreeting)faceEachOther();
   if(shot==='pokemon'&&F.POKEMON_CARE?.RESCUE_POINT)bothLookAt(F.POKEMON_CARE.RESCUE_POINT);
   speaker.textContent=progress?`${progress}　${who}`:who;
-  words.textContent=line;speech.hidden=false;
+  const src=F.DIALOGUE_FX?.portraitFor?.(who);if(src){portrait.src=src;portrait.hidden=false;portrait.alt=who+'の顔'}else portrait.hidden=true;
+  speech.hidden=false;let reveal=F.DIALOGUE_FX?.type?.(words,line);
+  if(!reveal)words.textContent=line;
   continueBtn.textContent='▶ つづける';
-  const advance=()=>{if(!pendingCaption||pendingCaption.done)return;pendingCaption.done=true;pendingCaption=null;continueBtn.onclick=null;speech.onclick=null;speech.hidden=true;resolve(active())};
+  const advance=()=>{if(!pendingCaption||pendingCaption.done)return;if(reveal&&words.textContent!==line){reveal();return}F.DIALOGUE_FX?.stop?.(words);pendingCaption.done=true;pendingCaption=null;continueBtn.onclick=null;speech.onclick=null;speech.hidden=true;resolve(active())};
   pendingCaption={done:false,advance,resolve};
   continueBtn.onclick=advance;
   speech.onclick=e=>{if(e.target===continueBtn)return;advance()};
@@ -161,7 +163,7 @@ C.mount=async(host,rerender,actions={})=>{
  const finish=(skipped=false)=>{
   if(!active()||cinematicFinished)return;
   cinematicFinished=true;cleanup();route=[];
-  if(pendingCaption){pendingCaption.done=true;pendingCaption.resolve(false);pendingCaption=null;}
+  if(pendingCaption){F.DIALOGUE_FX?.stop?.(words);pendingCaption.done=true;pendingCaption.resolve(false);pendingCaption=null;}
   continueBtn.onclick=null;speech.onclick=null;
   movingResolve?.(false);movingResolve=null;
   try{
@@ -288,3 +290,7 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-03 19:37 JST / Ver1.144: facing dialogue, pointing to stone, rescue approach, traveler walking to camp.
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: stone moved from town to separate forest-gateway map.
+
+// Updated: 2026-11-03 JST / Ver1.146: speaking portraits, tick sound, typewriter for cinematic dialogue.
+
+// Updated: 2026-11-03 21:43 JST / Ver1.146: integrated scene art, portrait dialogues, tick sound.
