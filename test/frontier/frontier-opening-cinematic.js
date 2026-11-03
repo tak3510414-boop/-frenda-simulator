@@ -2,11 +2,11 @@
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:132};
+const C=F.OPENING_CINEMATIC={active:false,revision:133};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
 // Visible landmarks have stable world positions, distinct from the existing Pokémon rescue spot.
-const traveler={x:427,y:173},meetTraveler={x:447,y:148},stone={x:310,y:92},inspectStone={x:347,y:96};
+const traveler={x:366,y:150},meetTraveler={x:367,y:191},stone={x:296,y:88},inspectStone={x:322,y:118};
 C.landmarks={traveler:{...traveler},stone:{...stone}};
 C.north=north;C.camp=camp;
 C.isOpening=s=>{const o=s?.story?.opening;return !!o&&!Number.isInteger(o.townPreviewStage)&&['arrival','tent','mission1'].includes(o.phase)};
@@ -74,9 +74,9 @@ C.mount=async(host,rerender,actions={})=>{
    c.fillStyle='#e6c69c';c.fillRect(X+12,Y-25,5,11);c.restore();
   }
   // An unmistakable name label, not a dialogue that refers to someone off screen.
-  const label='旅の冒険者',w=87,bx=Math.round(x-w/2),by=Math.round(y-55);
+  const label='旅の冒険者',w=87,bx=Math.round(x-w/2),by=Math.round(y-61);
   if(by>=-5){c.fillStyle='rgba(17,42,35,.93)';c.strokeStyle='#efdfa9';c.lineWidth=1;c.fillRect(bx,by,w,17);c.strokeRect(bx,by,w,17);c.fillStyle='#fff3d6';c.textAlign='center';c.font='bold 11px sans-serif';c.fillText(label,x,by+12)}
-  if(!travelerGreeting&&locked){c.fillStyle='#ffe58c';c.font='bold 15px sans-serif';c.textAlign='center';c.fillText('!',x+14,y-37)}
+  if(!travelerGreeting&&locked){c.fillStyle='#ffe58c';c.font='bold 15px sans-serif';c.textAlign='center';c.fillText('!',x,y-41)}
   c.restore();
  };
  const drawStoneDetail=(c,now)=>{
@@ -173,13 +173,14 @@ C.mount=async(host,rerender,actions={})=>{
    // Do not introduce the traveler before putting them visibly in the frame.
    if(!await caption('ナレーション',opening.lines[0].text,`序章 1/${opening.lines.length}`,'wide'))return;
    if(!await caption('ナレーション',opening.lines[1].text,`序章 2/${opening.lines.length}`,'wide'))return;
-   shot='traveler';hint.textContent='道の先に旅の冒険者がいる。近づいて話を聞こう。';
+   shot='traveler';hint.textContent='道の脇で入口を見張る旅の冒険者がいる。近づいて話を聞こう。';
    if(!await walk(meetTraveler,'旅の冒険者')||!active())return;
    travelerGreeting=true;
    for(let i=2;i<=4;i++)if(!await caption(opening.lines[i].speaker,opening.lines[i].text,`序章 ${i+1}/${opening.lines.length}`,'traveler'))return;
    shot='stone';stoneRevealed=true;
-   hint.textContent='北の道の先に、模様のある古い石が見える。';
+   hint.textContent='旅人に教えられた古い石が、北の道の左脇で青白く光っている。';
    if(!await walk(inspectStone,'古い石')||!active())return;
+   facing=6;
    for(let i=5;i<opening.lines.length;i++)if(!await caption(opening.lines[i].speaker,opening.lines[i].text,`序章 ${i+1}/${opening.lines.length}`,'stone'))return;
    if(!O.state().entranceInspected)O.inspectEntrance();
    if(!await chapter('entranceClue'))return;
@@ -265,3 +266,4 @@ C.mount=async(host,rerender,actions={})=>{
 
 // Updated: 2026-11-03 08:47 JST / Ver1.131: traveler, luminous stone, close-up, staged dialogue.
 // Updated: 2026-11-03 09:05 JST / Ver1.132: traveler player-scale, forest-road runestone, safe distance to Nyahoja.
+// Updated: 2026-11-03 09:28 JST / Ver1.133: clearer premise, road-side traveler staging, stone inspection pose.

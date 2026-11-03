@@ -7,19 +7,19 @@ O.active=()=>F.SAVE_KEY===storyKey||F.SAVE_KEY.startsWith(originalKey+':mission1
 O.isTestPoint=()=>F.SAVE_KEY.includes(':mission148test:');
 O.SCENES=Object.freeze({
  arrival:{chapter:'序章',title:'森の入口に、まだ名のない町',icon:'🌲',lines:[
-  {speaker:'ナレーション',text:'旅人の道が途切れる場所。木々の手前に、大きな荷物を背負った旅の冒険者が立っている。',icon:'🌲'},
-  {speaker:'ナレーション',text:'旅の冒険者は、森の奥へ伸びる道を心配そうに見つめていた。昨日、この先に見慣れない階段が現れたという。',icon:'🪜'},
-  {speaker:'旅の冒険者',text:'あんたも、あの穴を見に来たのか？　昨日まで何もなかった場所だ。',portrait:'traveler'},
-  {speaker:'開拓者',text:'迷宮……？　こんなところに、どうして。',portrait:'player'},
-  {speaker:'旅の冒険者',text:'中へ入った仲間は戻ったが、食料も道具も底をついていた。帰る場所さえあればな。',portrait:'traveler'},
-  {speaker:'ナレーション',text:'旅人の話を聞いた開拓者は北の道を進んだ。森の入口近く、道の左脇に古い石がある。刻まれた模様が、青白くまたたいていた。',icon:'✨'},
-  {speaker:'開拓者',text:'まずは入口を調べよう。それから、みんなが帰ってこられる場所を作る。',portrait:'player'},
+  {speaker:'ナレーション',text:'街道の休み場で、「森の入口に一夜で階段が現れた」「戻った旅人が休む場所もなく困っている」――そんな噂を聞いた開拓者は、確かめるためにこの平原まで来ていた。',icon:'🌲'},
+  {speaker:'ナレーション',text:'旅人の道が途切れる場所。木々の手前、北へ伸びる道の脇で、大きな荷物を背負った旅の冒険者が森の入口を見張っている。',icon:'🪜'},
+  {speaker:'旅の冒険者',text:'止まってくれ。あんたも噂を聞いて来たのか？　昨日まで何もなかった場所に、突然、穴へ続く階段が現れた。',portrait:'traveler'},
+  {speaker:'開拓者',text:'ああ。帰ってきた旅人が困っているって聞いた。危険の正体を確かめて、必要なら休める場所も作りたい。',portrait:'player'},
+  {speaker:'旅の冒険者',text:'なら、まずは北の道を少し上がった左手を見てくれ。青白く光る古い石が立っていて、その先に例の階段がある。',portrait:'traveler'},
+  {speaker:'ナレーション',text:'旅人にうながされ、開拓者は北の道を進んだ。森の入口近く、道の左脇で、古い石の模様が青白くまたたいていた。',icon:'✨'},
+  {speaker:'開拓者',text:'この石が手がかりか。まずは入口を確かめよう。それから、みんなが無事に帰ってこられる場所を作る。',portrait:'player'},
   {speaker:'次の目的',text:'北の道を登り、森の入口にある古い石を調べよう。',icon:'📜'}
  ]},
  entranceClue:{chapter:'序章',title:'青白い光の手がかり',icon:'✨',lines:[
   {speaker:'ナレーション',text:'北の道の左脇に、腰ほどの高さの古い石が立っていた。割れた表面には木の根のような模様が刻まれ、そのすき間が青白く光っている。',icon:'🪨'},
   {speaker:'開拓者',text:'光っているのは、この石そのもの……？　木の根の模様が、森の奥を指しているようにも見える。',portrait:'player'},
-  {speaker:'旅の冒険者',text:'森の奥では「森の主」が道を守る……そんな昔話がある。確かなことは誰も知らない。',portrait:'traveler'},
+  {speaker:'ナレーション',text:'少し下の道から、旅の冒険者の声が届く。「森の奥では『森の主』が道を守る……そんな昔話がある。確かなことは誰も知らない」',icon:'🗣️'},
   {speaker:'開拓者',text:'調べるのはあとでもできる。先に、安全に帰ってこられる目印が必要だ。',portrait:'player'},
   {speaker:'ナレーション',text:'開けた草地にテントを張れば、迷宮帰りの旅人を迎えられそうだ。',icon:'⛺'},
   {speaker:'次の目的',text:'草地のテント予定地へ歩いていき、そこで設営しよう。',icon:'📜'}
@@ -735,3 +735,4 @@ O.enter();
 // Updated: 2026-11-03 08:47 JST / Ver1.131: dialogue matched to visible scene objects.
 
 // Updated: 2026-11-03 09:05 JST / Ver1.132: stone narrative location synchronized to northern forest trail.
+// Updated: 2026-11-03 09:28 JST / Ver1.133: protagonist motivation clarified; stone scene speaker continuity improved.
