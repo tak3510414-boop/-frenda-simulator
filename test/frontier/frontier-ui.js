@@ -151,7 +151,51 @@ function setView(v){if(v==='adventure'&&F.OPENING?.active()&&F.WILDERNESS?.activ
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'はじまりの森',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}
 function sceneShell(dialogTitle,dialogText,cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dialogBox"><h3>${esc(dialogTitle)}</h3><p id="dialogText">${esc(dialogText)}</p></div><div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver0.99: dungeon messages are transient overlays; full history remains available on demand.
-function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
+function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><button type="button" class="dungeonHelpToggle" id="dungeonHelpToggle" aria-label="ダンジョンの遊び方を開く">？ 遊び方</button><section id="dungeonTutorial" class="dungeonTutorial hidden" aria-label="はじめてのダンジョン案内" aria-live="polite"><div class="dungeonTutorialTop"><span id="dungeonTutorialCount"></span><button type="button" id="dungeonTutorialClose" aria-label="案内を閉じる">✕ 閉じる</button></div><b id="dungeonTutorialTitle"></b><p id="dungeonTutorialText"></p><div class="dungeonTutorialActions"><button type="button" id="dungeonTutorialBack">前へ</button><button type="button" id="dungeonTutorialNext" class="primary">次へ</button></div></section><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
+// Ver1.134: one lesson at a time, without hiding the whole dungeon.
+// A separate localStorage flag means older save formats are not modified.
+const dungeonTutorialState={key:'',seen:false,shown:false,open:false,step:0};
+function dungeonTutorialKey(){return String(F.SAVE_KEY||'default')+':first-dungeon-guide-v134'}
+function dungeonTutorialLessons(){
+ const first=F.OPENING?.active?.()&&F.OPENING?.phase?.()==='mission1';
+ return [
+  {icon:'🌲',title:'はじめての「はじまりの森」',text:first?'まずはB1Fで木材を3個と、売る商品を1個集めよう。ニャオハの手当て用に薬草も1個探そう。奥へ進むのは次の冒険で大丈夫。':'ここでは道具を集めながら森を探索する。最初はB1Fを歩いて操作に慣れよう。無理に奥へ進まなくて大丈夫。'},
+  {icon:'👣',title:'歩く・調べる',text:'行きたい床をタップすると主人公が歩く。探索済みの遠い床なら自動で進む。「■ 移動を止める」で途中停止できる。'},
+  {icon:'🪵',title:'木材・薬草などを拾う',text:'床の「木材」「薬草」などへ近づき、アイテムのあるマスに立ったら下の「拾う」を押そう。拾った品は「どうぐ」で確認できる。'},
+  {icon:'⚔️',title:'敵と戦う',text:'見えている敵をタップすると射程内なら攻撃する。「素振り」でも正面の敵を攻撃できる。1回行動すると敵も動くので、HPに注意しよう。'},
+  {icon:'❤️',title:'HPと満腹度を確認',text:'画面上のHPと満腹度が大切。薬草はHP、パンは満腹度を回復する。「どうぐ」から選んで「使う」。危ないときは無理をしない。'},
+  {icon:'🏠',title:'素材を持って帰ろう',text:'最初はB1Fで十分。木材などを拾ったら下の「ロープ」で拠点へ帰還しよう。「階段」は次の階へ進むときに使う。ロープは回数に限りがあるよ。'}
+ ];
+}
+function renderDungeonTutorial(run){
+ if(!run?.active)return;
+ const key=dungeonTutorialKey(),st=dungeonTutorialState;
+ if(st.key!==key){
+  st.key=key;st.seen=false;st.shown=false;st.open=false;st.step=0;
+  try{st.seen=localStorage.getItem(key)==='1'}catch(_e){}
+ }
+ if(!st.seen&&!st.shown&&run.floor===1&&run.dungeonId==='beginner_forest'){
+  st.shown=true;st.open=true;st.step=0;
+ }
+ const panel=$('dungeonTutorial'),toggle=$('dungeonHelpToggle');if(!panel||!toggle)return;
+ const lessons=dungeonTutorialLessons(),step=Math.min(Math.max(0,st.step),lessons.length-1),lesson=lessons[step];
+ const close=()=>{st.open=false;st.seen=true;try{localStorage.setItem(st.key,'1')}catch(_e){};panel.classList.add('hidden')};
+ const draw=()=>{
+  panel.classList.toggle('hidden',!st.open);
+  toggle.setAttribute('aria-expanded',String(st.open));
+  if(!st.open)return;
+  $('dungeonTutorialCount').textContent=`案内 ${st.step+1} / ${lessons.length}　旅の冒険者`;
+  const current=lessons[st.step];$('dungeonTutorialTitle').textContent=`${current.icon} ${current.title}`;
+  $('dungeonTutorialText').textContent=current.text;
+  $('dungeonTutorialBack').disabled=st.step===0;
+  $('dungeonTutorialNext').textContent=st.step===lessons.length-1?'探索を始める':'次へ ▶';
+ };
+ toggle.onclick=()=>{st.open=!st.open;if(st.open){st.shown=true;st.step=0;}else close();draw()};
+ $('dungeonTutorialClose').onclick=()=>{close();draw()};
+ $('dungeonTutorialBack').onclick=()=>{st.step=Math.max(0,st.step-1);draw()};
+ $('dungeonTutorialNext').onclick=()=>{if(st.step<lessons.length-1){st.step++;draw()}else{close();draw()}};
+ draw();
+}
 function dungeonMessageDuration(text){return /⚠️|☠️|💀|😵|💤|⚡|💫/.test(String(text||''))?3400:2600}
 function syncDungeonMessage(run){const box=$('dungeonMessageOverlay'),txt=$('dungeonMessageText');if(!box||!txt||!run)return;const logs=Array.isArray(run.log)?run.log:[];if(dungeonMessageRuntime.runRef!==run){dungeonMessageRuntime.runRef=run;dungeonMessageRuntime.lastLogLength=Math.max(0,logs.length-1);dungeonMessageRuntime.visibleUntil=0;dungeonMessageRuntime.text=''}const changed=logs.length>dungeonMessageRuntime.lastLogLength;if(changed){const fresh=logs.slice(dungeonMessageRuntime.lastLogLength),shown=fresh.slice(-2);dungeonMessageRuntime.lastLogLength=logs.length;dungeonMessageRuntime.text=shown.join('\n');dungeonMessageRuntime.visibleUntil=Date.now()+dungeonMessageDuration(dungeonMessageRuntime.text);dungeonMessageRuntime.token++;if(dungeonMessageRuntime.timer)clearTimeout(dungeonMessageRuntime.timer);const token=dungeonMessageRuntime.token;dungeonMessageRuntime.timer=setTimeout(()=>{if(token!==dungeonMessageRuntime.token)return;dungeonMessageRuntime.visibleUntil=0;const live=$('dungeonMessageOverlay');if(live)live.classList.remove('on')},dungeonMessageDuration(dungeonMessageRuntime.text)+80)}txt.textContent=dungeonMessageRuntime.text||'';box.classList.toggle('on',!!dungeonMessageRuntime.text&&Date.now()<dungeonMessageRuntime.visibleUntil);box.classList.toggle('danger',/⚠️|☠️|💀|😵|💤|⚡|💫/.test(dungeonMessageRuntime.text||''))}
 function showDungeonHistory(){const run=F.run;if(!run?.active){toast('探索中のログはありません');return}const logs=Array.isArray(run.log)?run.log:[],recent=logs.slice(-80);let html=`<h2>📜 冒険ログ</h2><p>B${run.floor}F ／ ${recent.length}${logs.length>recent.length?` / 全${logs.length}`:''}件を表示</p>`;html+=recent.length?`<div class="dungeonHistoryList">${recent.map((line,i)=>`<div class="dungeonHistoryRow"><span>${logs.length-recent.length+i+1}</span><b>${esc(line)}</b></div>`).join('')}</div>`:'<p>まだログはありません。</p>';modal(html,[{label:'閉じる'}]);const list=document.querySelector('.dungeonHistoryList');if(list)list.scrollTop=list.scrollHeight}
@@ -1057,7 +1101,7 @@ function renderAdventure(s){const run=F.run;$('sceneMount').classList.toggle('du
 ${F.dungeonCleared?.(s,'beginner_forest')?'🏆 はじまりの森 踏破済み':(F.OPENING?.active()&&F.OPENING.phase()!=='complete'?'B1Fで木材と商品を拾い、脱出して帰還しよう。':'まずは、はじまりの森のB30Fを目指そう。')} / 現在：${ti.icon}${ti.label}`,'cmdAdv');R.renderAdventurePreview($('sceneCanvas'),s);$('sceneHud').innerHTML=`<span class="hudPill">${esc(tier.short)} ${esc(tier.name)}</span><span class="hudPill">🧑 HP${36+gear.hp}</span><span class="hudPill">⚔️ ${esc(gear.items?.weapon?.name||'なし')}</span><span class="hudPill">🛡️ ${esc(gear.items?.armor?.name||'なし')}</span>`;addHumanToken(91,132,'',false,'down');const cmds=[];for(const dd of defs.filter(dungeon=>dungeon.implementationStatus!=='preview')){const unlocked=!!F.dungeonUnlocked?.(s,dd),playable=!!F.dungeonPlayable?.(s,dd),cleared=!!F.dungeonCleared?.(s,dd.id);cmds.push({t:unlocked?`${dd.icon||'🗺️'} ${dd.name}${cleared?' ✓':''}`:`🔒 ${dd.name}`,fn:()=>{if(!unlocked){toast('前のダンジョンを踏破すると解放されます');return}if(!playable){toast(`${dd.name}は現在利用できません`);return}try{F.startRun(dd.id);renderAll()}catch(e){toast(e.message)}},c:playable?'primary':'',disabled:!unlocked});}if(window.FRENDA_TEST?.active&&document.body.classList.contains('test-menu-open'))cmds.push({t:'🧪 B30ボス確認',fn:()=>{try{F.testJumpToFinalFloor?.('beginner_forest');renderAll();toast('B30F最深部へ移動しました')}catch(e){toast(e.message)}},c:'warn'});cmds.push({t:'装備',fn:showEquipmentModal,c:'primary'},{t:'ポケモン',fn:showPartnerModal},{t:'図鑑',fn:showFrontierDex},{t:'倉庫',fn:showWarehouse},{t:'拠点',fn:()=>setView('home')});fillCmd('cmdAdv',cmds);return}
  $('sceneMount').innerHTML=dungeonSceneShell('cmdAdv');syncDungeonMessage(run);
  const meta=R.renderDungeon($('sceneCanvas'),run),weapon=F.dungeonEquippedView?.(run,'weapon');
- $('sceneHud').innerHTML=dungeonHudMarkup(run,s.coins);updateDungeonTravelStatus();
+ $('sceneHud').innerHTML=dungeonHudMarkup(run,s.coins);updateDungeonTravelStatus();renderDungeonTutorial(run);
  if(meta){dungeonMoveOverlay(run,meta);const screenPos=(x,y)=>({x:meta.ox+(x-meta.camX)*meta.t+meta.t/2,y:meta.oy+(y-meta.camY)*meta.t+meta.t/2,visible:x>=meta.camX&&y>=meta.camY&&x<meta.camX+meta.viewCols&&y<meta.camY+meta.viewRows,currentVisible:!!meta.visibility?.[y]?.[x]}),pp=screenPos(run.player.x,run.player.y);if(run.playerHp>0&&pp.visible)addHumanToken(pp.x,pp.y,'',Number(run.playerStep)>0,run.playerFacing||'down');for(const e of run.enemies.filter(e=>e.hp>0)){const esp=F.speciesById?.(e.speciesId),p=screenPos(e.x,e.y);if(p.visible&&p.currentVisible){addToken(esp,p.x,p.y,`enemyToken${e.boss?' bossEnemyToken':''}`,`${e.boss?'👑 ':''}${e.name} HP${e.hp}/${e.maxHp}${Number(e.sleepTurns)>0?' 💤':''}${e.telegraph?' ⚠️':''}`,e.facing||'down',Number(e.step)>0,e.id||'');if(e.telegraph)addEnemyTelegraphLabel(p.x,p.y,e.telegraph.moveName||'危険技')}}for(const it of (run.floorItems||[])){const p=screenPos(it.x,it.y),dist=Math.max(Math.abs(it.x-run.player.x),Math.abs(it.y-run.player.y)),def=F.item?.(it.itemId);if(p.visible&&p.currentVisible&&dist<=2&&def)addFloorItemLabel(p.x,p.y,def.id==='herb'?`${def.name}（HP+14/満腹+5）`:def.id==='bread'?`${def.name}（満腹+50）`:def.id==='big_bread'?`${def.name}（満腹+100）`:def.name)}const fx=run.attackFx;if(fx&&Number(fx.seq)>lastAttackFxSeq&&pp.visible){lastAttackFxSeq=Number(fx.seq);addWeaponAttackFx(pp.x,pp.y,fx,run.playerFacing||'down',weapon)}const enemyFx=(run.enemyAttackFx||[]).filter(x=>Number(x.seq)>lastEnemyAttackFxSeq);let enemyFxDelay=40;for(const ef of enemyFx){const sp=screenPos(ef.x,ef.y),tp=screenPos(ef.targetX,ef.targetY);if(sp.visible&&sp.currentVisible&&tp.visible)addEnemyAttackFx(sp,tp,ef,enemyFxDelay);lastEnemyAttackFxSeq=Math.max(lastEnemyAttackFxSeq,Number(ef.seq)||0);enemyFxDelay+=180}}
  const selectedEnemy=(run.enemies||[]).find(e=>e.hp>0&&e.id===dungeonEnemyInfoRuntime.enemyId);if(selectedEnemy){const info=F.dungeonEnemyInfo?.(run,selectedEnemy);if(info)addEnemyInfoOverlay(info)}
  const footAction=F.dungeonFootItemAction?.(),footItem=footAction?F.floorItemAt?.(run,run.player.x,run.player.y):null,contextCmd=footAction?{t:footAction.mode==='exchange'?'交換':'拾う',fn:pickupFootItem,c:'primary'}:{t:'階段',fn:stairsChoice,c:F.isOnStairs()?'primary':'',disabled:!F.isOnStairs()};
@@ -1341,3 +1385,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 // Updated: 2026-11-03 04:38 JST / Ver1.128: explicit story read/advance labels, no automatic dialogue progression.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
+
+// Updated: 2026-11-03 09:45 JST / Ver1.134: first-entry dungeon guide, one step at a time, revisitable, no save schema change.
