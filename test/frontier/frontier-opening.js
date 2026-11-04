@@ -14,7 +14,7 @@ O.SCENES=Object.freeze({
   {speaker:'旅の冒険者',text:'森のもっと奥に、青く光る石と地下へのかいだんがあるんだ。行くときは、持ち物のじゅんびをわすれないで。',portrait:'traveler'},
   {speaker:'ナレーション',text:'旅人の話を聞いていると、森へつづく道の草むらから、小さな声が聞こえた。',icon:'✨'},
   {speaker:'開拓者',text:'何の声だろう。近くに何かいるのかな。',portrait:'player'},
-  {speaker:'次の目的',text:'小さな声がした草むらを見てみよう。古い石は、出発の前に調べよう。',icon:'📜'}
+  {speaker:'次の目的',text:'小さな声がした草むらを見てみよう。',icon:'📜'}
  ]},
  entranceClue:{chapter:'序章',title:'青白い光の手がかり',icon:'✨',lines:[
   {speaker:'ナレーション',text:'北の道の左脇に、腰ほどの高さの古い石が立っていた。割れた表面には木の根のような模様が刻まれ、そのすき間が青白く光っている。',icon:'🪨'},
@@ -744,3 +744,5 @@ O.enter();
 // Updated: 2026-11-03 20:50 JST / Ver1.145: mysterious stone is no longer inspected in the town introduction.
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: separate stone storyline; carried provisions do not count as newly gathered goods.
+
+// Updated: 2026-11-04 18:38 JST / Ver1.148: shorten opening goal text; story sequence unchanged.

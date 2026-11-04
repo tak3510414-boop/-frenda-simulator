@@ -187,7 +187,7 @@ function modal(html,actions=[]){
 }
 function paintStoryPortrait(line,token){
  const cv=$('storyDialoguePortrait');if(!cv)return;const c=cv.getContext('2d');if(!c)return;c.imageSmoothingEnabled=false;c.clearRect(0,0,cv.width,cv.height);
- const newPortrait=F.DIALOGUE_FX?.portraitFor?.(line.speaker);
+ const newPortrait=F.DIALOGUE_FX?.portraitFor?.(line.portrait==='nyahoja'?'ニャオハ':line.speaker);
  if(newPortrait){const img=new Image();img.onload=()=>{if(token===storyDialogueRuntime.token&&cv.isConnected){c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=true;c.drawImage(img,0,0,cv.width,cv.height)}};img.onerror=()=>{};img.src=newPortrait;return;}
  const pixelHuman=()=>{const traveler=line.portrait==='traveler',colors=traveler?{h:'#315783',s:'#e8bd91',c:'#426c9d',b:'#e8d7aa',k:'#4b4034'}:{h:'#784b32',s:'#efc69b',c:'#3f805c',b:'#d2ae70',k:'#594332'},rows=['....hhhh....','...hhhhhh...','...hssssh...','...hssssh...','....ssss....','...cccccc...','..cccccccc..','..ccbbbbcc..','..ccbbbbcc..','...kk..kk...','...kk..kk...'];const cell=5,left=Math.floor((cv.width-12*cell)/2),top=20,map={h:colors.h,s:colors.s,c:colors.c,b:colors.b,k:colors.k};rows.forEach((row,y)=>[...row].forEach((ch,x)=>{if(map[ch]){c.fillStyle=map[ch];c.fillRect(left+x*cell,top+y*cell,cell,cell)}}))};
  const fallback=()=>{c.clearRect(0,0,cv.width,cv.height);if(line.portrait==='player'||line.portrait==='traveler'){pixelHuman();return}c.fillStyle='#f6e6b7';c.font='42px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(line.icon||'💬',cv.width/2,cv.height/2+2)};fallback();
@@ -221,7 +221,7 @@ function dungeonTutorialLessons(){
  const first=F.OPENING?.active?.()&&F.OPENING?.phase?.()==='mission1';
  return [
   {icon:'🌲',title:'はじめての「はじまりの森」',text:first?'まずはB1Fで木材を3個と、売る商品を1個集めよう。ニャオハの手当て用に薬草も1個探そう。奥へ進むのは次の冒険で大丈夫。':'ここでは道具を集めながら森を探索する。最初はB1Fを歩いて操作に慣れよう。無理に奥へ進まなくて大丈夫。'},
-  {icon:'👣',title:'歩く・調べる',text:'行きたい床をタップすると主人公が歩く。探索済みの遠い床なら自動で進む。「■ 移動を止める」で途中停止できる。'},
+  {icon:'👣',title:'歩く・調べる',text:'行きたい床をタップするとヤマトが歩く。探索済みの遠い床なら自動で進む。「■ 移動を止める」で途中停止できる。'},
   {icon:'🪵',title:'木材・薬草などを拾う',text:'床の「木材」「薬草」などへ近づき、アイテムのあるマスに立ったら下の「拾う」を押そう。拾った品は「どうぐ」で確認できる。'},
   {icon:'⚔️',title:'敵と戦う',text:'見えている敵をタップすると射程内なら攻撃する。「素振り」でも正面の敵を攻撃できる。1回行動すると敵も動くので、HPに注意しよう。'},
   {icon:'❤️',title:'HPと満腹度を確認',text:'画面上のHPと満腹度が大切。薬草はHP、パンは満腹度を回復する。「どうぐ」から選んで「使う」。危ないときは無理をしない。'},
@@ -1544,3 +1544,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-03 21:43 JST / Ver1.147: integrated scene art, portrait dialogues, tick sound.
 
 // Updated: 2026-11-04 07:28 JST / Ver1.147: opening animation repair and portrait updates.
+
+// Updated: 2026-11-04 18:38 JST / Ver1.148: honor explicit Pokemon portraits in story dialogues.

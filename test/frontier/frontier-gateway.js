@@ -76,12 +76,12 @@ G.mount=(host,actions={})=>{
  <div class="gatewayObjective">📋 <b>今すること：</b><span>${seen?'行き先と持ち物を えらぼう':'青い石を しらべよう'}</span></div>
  <div class="gatewayVisual" id="gatewayVisual">
   <canvas id="gatewayCanvas" width="903" height="721" aria-label="森の入口。青く光る石と森のかいだんが見える。"></canvas>
-  <img id="gatewayHero" class="gatewayExplorer" src="frontier-gateway-player-v146.png" alt="森を見ている主人公">
-  ${companion?'<img id="gatewayCompanion" class="gatewayCompanion" src="frontier-gateway-nyahoja-v146.png" alt="主人公と歩くニャオハ">':''}
+  <img id="gatewayHero" class="gatewayExplorer" src="frontier-gateway-player-v146.png" alt="森を見ているヤマト">
+  ${companion?'<img id="gatewayCompanion" class="gatewayCompanion" src="frontier-gateway-nyahoja-v146.png" alt="ヤマトと歩くニャオハ">':''}
   <button id="gatewayStoneTarget" type="button" class="gatewayStoneTarget" aria-label="青い石をしらべる"><span>✦</span></button>
   <button id="gatewayStairsTarget" type="button" class="gatewayStairsTarget" aria-label="森のかいだんからダンジョンを選ぶ"><span>▼</span></button>
  </div>
- <div class="gatewayDialogue" id="gatewayDialogue" aria-live="off"><span class="gatewaySpeaker" id="gatewaySpeaker">主人公</span>
+ <div class="gatewayDialogue" id="gatewayDialogue" aria-live="off"><span class="gatewaySpeaker" id="gatewaySpeaker">ヤマト</span>
   <img id="gatewayPortrait" class="gatewayPortrait" src="frontier-portrait-player-v147.png" alt="話している人の顔">
   <p id="gatewayWords" class="gatewayWords"></p>
   <button id="gatewayNext" type="button" class="gatewayNext" aria-label="メッセージを全部読む">▶</button></div>
@@ -104,13 +104,13 @@ G.mount=(host,actions={})=>{
   reveal=FX?.type?FX.type(words,text,finished):(()=>{words.textContent=text;completed=true});
   if(!FX?.type){reveal()}
  };
- const goPreparation=()=>{$('#gatewayDestinations')?.scrollIntoView?.({block:'start',behavior:'smooth'});say('主人公','どこへ行こう？ 出かける前に、道具も見ておこう。')};
+ const goPreparation=()=>{$('#gatewayDestinations')?.scrollIntoView?.({block:'start',behavior:'smooth'});say('ヤマト','どこへ行こう？ 出かける前に、道具も見ておこう。')};
  const showStone=()=>{
   const player=$('#gatewayHero'),cat=$('#gatewayCompanion');
   if(player){player.classList.add('nearStone');cat?.classList.add('nearStone')}
   G.inspectStone();
   const objective=$('.gatewayObjective span');if(objective)objective.textContent='行き先と持ち物を えらぼう';
-  say('主人公','石に、木の根みたいな もようがあるね。森のかいだんと、何かつながっているのかな。');
+  say('ヤマト','石に、木の根みたいな もようがあるね。森のかいだんと、何かつながっているのかな。');
   $('#gatewayStairsTarget')?.classList.add('highlight');
  };
  $('#gatewayStone').onclick=showStone;$('#gatewayStoneTarget').onclick=showStone;
@@ -131,10 +131,12 @@ G.mount=(host,actions={})=>{
  $('#gatewayDepart').onclick=()=>{try{G.depart(selected);actions.depart?.()}catch(e){actions.message?.(e.message)}};
  // Only the real companion appears. Before rescue, Nyahoja is still in the story.
  if(companion)say('ニャオハ',seen?'行く前に、持ち物を見ておこう！':'あの石、青くひかっているね。しらべてみよう！');
- else say('主人公',seen?'また森へ行くんだ。先にじゅんびをしておこう。':'あの青い石、なんだろう。近くで見てみよう。');
+ else say('ヤマト',seen?'また森へ行くんだ。先にじゅんびをしておこう。':'あの青い石、なんだろう。近くで見てみよう。');
 };
 })();
 
 // Updated: 2026-11-03 21:43 JST / Ver1.146: integrated scene art, portrait dialogues, tick sound.
 
 // Updated: 2026-11-04 07:28 JST / Ver1.147: portrait reference alignment.
+
+// Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato display name in gateway messages.

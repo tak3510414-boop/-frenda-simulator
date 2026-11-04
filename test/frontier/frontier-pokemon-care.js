@@ -19,7 +19,7 @@ O.SCENES=Object.freeze({...O.SCENES,
   {speaker:'開拓者',text:'大丈夫。君を捕まえたいんじゃない。まず、痛いところを見せてくれるかな。',portrait:'player'}
  ]},
  pokemonRescue:{chapter:'序章',title:'ここから始まる約束',icon:'🌱',lines:[
-  {speaker:'ナレーション',text:'主人公が手を差し出すと、ニャオハはしばらく見つめ、そっと身を寄せた。',icon:'🐾'},
+  {speaker:'ナレーション',text:'ヤマトが手を差し出すと、ニャオハはしばらく見つめ、そっと身を寄せた。',icon:'🐾'},
   {speaker:'旅の冒険者',text:'森の中は危険だ。雨を避けられる場所を作ろう。ニャオハにも休息が必要だ。',portrait:'traveler'},
   {speaker:'開拓者',text:'この子を安心して休ませたい。冒険者だけでなく、森で暮らすポケモンにも安全な場所が必要なんだ。',portrait:'player'},
   {speaker:'ナレーション',text:'ニャオハの息づかいを確かめながら、ふたりは草地へゆっくり戻った。',icon:'🌿'}
@@ -39,21 +39,21 @@ O.SCENES=Object.freeze({...O.SCENES,
   {speaker:'次の目的',text:'北の道からはじまりの森B1Fへ。薬草1個を拾い、ロープでテントへ戻ろう。',icon:'📜'}
  ]},
  pokemonRecovered:{chapter:'第1章',title:'薬草を届けた日',icon:'🌿',lines:[
-  {speaker:'ナレーション',text:'主人公が薬草を使って手当てすると、ニャオハは体を起こし、ゆっくりと前足を伸ばした。',icon:'🌿'},
+  {speaker:'ナレーション',text:'ヤマトが薬草を使って手当てすると、ニャオハは体を起こし、ゆっくりと前足を伸ばした。',icon:'🌿'},
   {speaker:'開拓者',text:'よかった……！　少し楽になったみたい。',portrait:'player'},
   {speaker:'旅の冒険者',text:'自分で歩けるようになったね。でも、急いで連れていかないで。ニャオハがどうしたいか、確かめよう。',portrait:'traveler'},
-  {speaker:'ナレーション',text:'ニャオハは主人公の足元に近づいて、小さく鳴いた。',icon:'🐾'},
+  {speaker:'ナレーション',text:'ニャオハはヤマトの足元に近づいて、小さく鳴いた。',icon:'🐾'},
   {speaker:'次の目的',text:'テントのそばでニャオハにもう一度話しかけよう。',icon:'📜'}
  ]},
  pokemonCoexist:{chapter:'第1章',title:'ともに暮らす選択',icon:'🐾',lines:[
-  {speaker:'ナレーション',text:'ニャオハは森へ続く道を見つめたあと、主人公の隣にちょこんと座った。',icon:'🐾'},
+  {speaker:'ナレーション',text:'ニャオハは森へ続く道を見つめたあと、ヤマトの隣にちょこんと座った。',icon:'🐾'},
   {speaker:'開拓者',text:'ここで暮らしてみる？　嫌になったら、いつでも森に遊びに行けるよ。',portrait:'player'},
   {speaker:'旅の冒険者',text:'それがいい。ポケモンは道具じゃない。人もポケモンも、安心して帰れる町にしたいね。',portrait:'traveler'},
   {speaker:'ナレーション',text:'ニャオハは元気よく鳴いた。町に、はじめてのポケモンの住民が増えた。',icon:'🌱'},
   {speaker:'次の目的',text:'ニャオハの居場所ができた。次は木材と商品を集めて、町の露店を作ろう。',icon:'📜'}
  ]},
  pokemonFarewell:{chapter:'第1章',title:'森との小さなつながり',icon:'🍃',lines:[
-  {speaker:'ナレーション',text:'ニャオハは一度振り返って主人公を見つめたあと、森の奥へ走っていった。',icon:'🌲'},
+  {speaker:'ナレーション',text:'ニャオハは一度振り返ってヤマトを見つめたあと、森の奥へ走っていった。',icon:'🌲'},
   {speaker:'開拓者',text:'元気でね。森が危なくなったら、いつでもここに戻っておいで。',portrait:'player'},
   {speaker:'旅の冒険者',text:'守ることは、引き留めることだけじゃない。あの子が自分で選べるようにしたんだね。',portrait:'traveler'},
   {speaker:'次の目的',text:'森と町、どちらにも居場所がある。木材と商品を集めて、旅人のための露店を作ろう。',icon:'📜'}
@@ -259,3 +259,5 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-03 19:37 JST / Ver1.144: story dialogue supplied by kid-readable narrative layer; unchanged save state.
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: the rescue starts in the town before visiting the remote stone.
+
+// Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato name in Pokemon care dialogue.
