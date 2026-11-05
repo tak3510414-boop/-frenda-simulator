@@ -138,8 +138,8 @@ C.mount=async(host,rerender,actions={})=>{
   if((who==='旅人'||who==='旅の冒険者'||who==='ヤマト')&&shot==='traveler'&&travelerGreeting)faceEachOther();
   if(shot==='pokemon'&&F.POKEMON_CARE?.RESCUE_POINT)bothLookAt(F.POKEMON_CARE.RESCUE_POINT);
   speaker.textContent=progress?`${progress}　${who}`:who;
-  const faceWho=portraitKey==='nyahoja'?'ニャオハ':/^(ナレーション|おはなし|次の目的)$/.test(who)?'ヤマト':who;
-  const src=F.DIALOGUE_FX?.portraitFor?.(faceWho);if(src){portrait.src=src;portrait.hidden=false;portrait.alt=faceWho+'の顔'}else portrait.hidden=true;
+  const faceWho=portraitKey||(/^(ナレーション|おはなし|次の目的|次にすること)$/.test(who)?'none':who);
+  const src=F.DIALOGUE_FX?.portraitFor?.(faceWho);speech.classList.toggle('noPortrait',!src);if(src){portrait.src=src;portrait.hidden=false;portrait.alt=faceWho+'の顔'}else portrait.hidden=true;
   // Never compare visible DOM text to the source line. Easy Japanese rewriting can
   // change the displayed characters while text is being typed, causing a deadlock.
   let typingDone=false;
@@ -323,3 +323,9 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-04 07:28 JST / Ver1.147: opening portraits, four-direction traveler sprites, guaranteed route completion.
 
 // Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato name, per-line Pokemon portrait, no completed-tent site marker.
+
+// Updated: 2026-11-05 JST / Ver1.149: narration hides portrait unless a line explicitly names a face.
+
+// Updated: 2026-11-05 JST / Ver1.150: per-scene emotional faces and narration handling.
+
+// Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).

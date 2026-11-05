@@ -1,5 +1,5 @@
-/* Frenda Frontier Ver1.138 — independent world-space follower with delayed path tracking.
-   Updated: 2026-11-03 06:55 JST
+/* Frenda Frontier Ver1.149 — independent world-space follower with delayed path tracking.
+   Updated: 2026-11-05 JST
    New-campaign only. Existing saves without pokemonCare remain unchanged. */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, O=F?.OPENING, P=F?.TOWN_PROGRESS;
@@ -15,17 +15,17 @@ O.SCENES=Object.freeze({...O.SCENES,
   {speaker:'ナレーション',text:'旅人と話していると、森へつづく道の草むらがかすかにゆれた。',icon:'🌿'},
   {speaker:'開拓者',text:'……今、声がした？　あそこに何かいる。',portrait:'player'},
   {speaker:'旅の冒険者',text:'ニャオハだ。足を痛めているみたいだな。驚かせないよう、ゆっくり近づこう。',portrait:'traveler'},
-  {speaker:'ナレーション',text:'小さなニャオハは逃げようとしたが、力が入らず、地面に伏せてしまった。',icon:'🐾'},
+  {speaker:'ナレーション',text:'小さなニャオハは立とうとしたが、うまく歩けず、その場にしゃがみこんでしまった。',portrait:'nyahoja_hurt',icon:'🐾'},
   {speaker:'開拓者',text:'大丈夫。君を捕まえたいんじゃない。まず、痛いところを見せてくれるかな。',portrait:'player'}
  ]},
  pokemonRescue:{chapter:'序章',title:'ここから始まる約束',icon:'🌱',lines:[
-  {speaker:'ナレーション',text:'ヤマトが手を差し出すと、ニャオハはしばらく見つめ、そっと身を寄せた。',icon:'🐾'},
+  {speaker:'ナレーション',text:'ヤマトがそっと手を差し出すと、ニャオハはしばらく見つめたあと、少しだけ身を寄せた。',icon:'🐾'},
   {speaker:'旅の冒険者',text:'森の中は危険だ。雨を避けられる場所を作ろう。ニャオハにも休息が必要だ。',portrait:'traveler'},
   {speaker:'開拓者',text:'この子を安心して休ませたい。冒険者だけでなく、森で暮らすポケモンにも安全な場所が必要なんだ。',portrait:'player'},
   {speaker:'ナレーション',text:'ニャオハの息づかいを確かめながら、ふたりは草地へゆっくり戻った。',icon:'🌿'}
  ]},
  pokemonCamp:{chapter:'序章',title:'小さな患者',icon:'⛺',lines:[
-  {speaker:'ナレーション',text:'テントに柔らかな布を敷くと、ニャオハはようやく目を閉じた。',icon:'⛺'},
+  {speaker:'ナレーション',text:'テントに柔らかな布を敷くと、ニャオハは安心したように、しずかに横になった。',icon:'⛺'},
   {speaker:'旅の冒険者',text:'重いけがではなさそうだけど、薬草で手当てできれば安心だ。森の浅いところで見つかるはず。',portrait:'traveler'},
   {speaker:'開拓者',text:'最初の冒険で薬草を探してこよう。木材や商品のことは、そのあとでもいい。',portrait:'player'},
   {speaker:'旅の冒険者',text:'うん。ニャオハが休めるように、私はここで見守っているよ。',portrait:'traveler'},

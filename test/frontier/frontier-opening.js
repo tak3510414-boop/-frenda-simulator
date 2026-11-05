@@ -11,7 +11,7 @@ O.SCENES=Object.freeze({
   {speaker:'ナレーション',text:'旅人の道が途切れる場所。木々の手前、北へ伸びる道の脇で、大きな荷物を背負った旅の冒険者が森の入口を見張っている。',icon:'🪜'},
   {speaker:'旅の冒険者',text:'止まってくれ。あんたも噂を聞いて来たのか？　昨日まで何もなかった場所に、突然、穴へ続く階段が現れた。',portrait:'traveler'},
   {speaker:'開拓者',text:'ああ。帰ってきた旅人が困っているって聞いた。危険の正体を確かめて、必要なら休める場所も作りたい。',portrait:'player'},
-  {speaker:'旅の冒険者',text:'森のもっと奥に、青く光る石と地下へのかいだんがあるんだ。行くときは、持ち物のじゅんびをわすれないで。',portrait:'traveler'},
+  {speaker:'旅の冒険者',text:'今朝ひとり、中へ入った人がいた。でも、まだ戻っていない。森のもっと奥には、青く光る石と地下へのかいだんがあるんだ。行くときは、持ち物のじゅんびをわすれないで。',portrait:'traveler'},
   {speaker:'ナレーション',text:'旅人の話を聞いていると、森へつづく道の草むらから、小さな声が聞こえた。',icon:'✨'},
   {speaker:'開拓者',text:'何の声だろう。近くに何かいるのかな。',portrait:'player'},
   {speaker:'次の目的',text:'小さな声がした草むらを見てみよう。',icon:'📜'}
@@ -22,7 +22,7 @@ O.SCENES=Object.freeze({
   {speaker:'ナレーション',text:'少し下の道から、旅の冒険者の声が届く。「森の奥では『森の主』が道を守る……そんな昔話がある。確かなことは誰も知らない」',icon:'🗣️'},
   {speaker:'開拓者',text:'調べるのはあとでもできる。先に、安全に帰ってこられる目印が必要だ。',portrait:'player'},
   {speaker:'ナレーション',text:'開けた草地にテントを張れば、迷宮帰りの旅人を迎えられそうだ。',icon:'⛺'},
-  {speaker:'次の目的',text:'草地のテント予定地へ歩いていき、そこで設営しよう。',icon:'📜'}
+  {speaker:'次の目的',text:'草地のテントを立てる場所へ歩いていき、そこで設営しよう。',icon:'📜'}
  ]},
  camp:{chapter:'序章',title:'はじめての拠点',icon:'⛺',lines:[
   {speaker:'ナレーション',text:'草地に一本の杭が打たれ、やがて小さなテントが立った。',icon:'⛺'},
@@ -746,3 +746,5 @@ O.enter();
 // Updated: 2026-11-03 20:50 JST / Ver1.145: separate stone storyline; carried provisions do not count as newly gathered goods.
 
 // Updated: 2026-11-04 18:38 JST / Ver1.148: shorten opening goal text; story sequence unchanged.
+
+// Updated: 2026-11-05 JST / Ver1.149: arrival dialogue now answers Yamato's question; opening guidance wording adjusted.

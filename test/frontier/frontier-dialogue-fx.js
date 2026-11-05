@@ -7,8 +7,21 @@
  let audio=null,unlocked=false,lastSound=0;
  const portraits={
   player:'frontier-portrait-player-v147.png',traveler:'frontier-portrait-traveler-v147.png',
-  nyahoja:'frontier-portrait-nyahoja-v146.png'};
- FX.portraitFor=who=>{const str=String(who||'');return /ニャオハ/.test(str)?portraits.nyahoja:/旅人|旅の冒険者|ミナ|リオ/.test(str)?portraits.traveler:/ヤマト|主人公|開拓者/.test(str)?portraits.player:''};
+  nyahoja:'frontier-portrait-nyahoja-happy-v150.png',
+  nyahojaHurt:'frontier-portrait-nyahoja-hurt-v150.png',
+  nyahojaWorried:'frontier-portrait-nyahoja-worried-v150.png',
+  nyahojaResting:'frontier-portrait-nyahoja-resting-v150.png',
+  nyahojaRecovered:'frontier-portrait-nyahoja-recovered-v150.png',
+  nyahojaHappy:'frontier-portrait-nyahoja-happy-v150.png'};
+ FX.portraitFor=who=>{const str=String(who||'');
+  if(!str||/^(none|narration|icon)$/i.test(str))return '';
+  const mood=str.match(/^nyahoja_(hurt|worried|resting|recovered|happy)$/i);
+  if(mood)return portraits['nyahoja'+mood[1][0].toUpperCase()+mood[1].slice(1).toLowerCase()];
+  if(/nyahoja|ニャオハ/.test(str))return portraits.nyahoja;
+  if(/^(traveler)$/i.test(str)||/旅人|旅の冒険者|ミナ|リオ/.test(str))return portraits.traveler;
+  if(/^(player)$/i.test(str)||/ヤマト|主人公|開拓者/.test(str))return portraits.player;
+  return '';
+ };
  FX.unlock=()=>{if(!FX.enabled)return;try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!audio)audio=new Audio();if(audio.state==='suspended')audio.resume()?.catch?.(()=>{});unlocked=audio.state==='running'}catch(_){unlocked=false}};
  // Must be triggered by a real tap/click; silent fallback when iOS blocks autoplay.
  document.addEventListener('pointerdown',()=>FX.unlock(),{passive:true});
@@ -30,3 +43,7 @@
 // Updated: 2026-11-04 07:28 JST / Ver1.147: illustrated protagonist and traveler portraits.
 
 // Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato dialogue portraits.
+
+// Updated: 2026-11-05 JST / Ver1.150: per-scene emotional faces and narration handling.
+
+// Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).

@@ -1,18 +1,18 @@
-/* Frenda Frontier Ver1.144
+/* Frenda Frontier Ver1.149
    Easy Japanese: elementary third-grade level, short readable dialogue.
    Keeps game IDs, data records, controls and saved state unchanged.
-   Updated: 2026-11-03 18:55 JST */
+   Updated: 2026-11-05 JST */
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER,O=F?.OPENING;if(!F||!O||!O.SCENES)return;
-const E=F.EASY_JAPANESE={VERSION:'1.148'};
+const E=F.EASY_JAPANESE={VERSION:'1.150'};
 // The opening sequence uses fixed line indices, so keep exactly eight beats.
 const FIRST_STORY=[
- "ヤマトは、森にできたという、ふしぎなかいだんを見に来た。",
+ "森に、ふしぎなかいだんができたと聞いて、ヤマトはたしかめに来た。",
  "森へつづく道に、旅人が立っている。森の中を、じっと見ている。",
  "あぶないよ。この先に、きのうまでなかったかいだんができたんだ。",
  "ぼくも、そのうわさを聞いて来たよ。中へ入った人はいるの？",
- "森へつづく道の、もっと奥に青く光る石がある。かいだんも、その近くなんだ。",
- "ヤマトは、旅人が教えてくれた森の方を見た。そのとき、草の中で小さな声がした。",
+ "今朝、ひとり入ったよ。でも、まだもどっていない。青く光る石は、そのもっと奥にあるんだ。",
+ "ヤマトが森の方を見ると、そのとき草の中で小さな声がした。",
  "……今の声は何だろう。あっちに何かいるのかな。",
  "声がした草むらをしらべよう。"
 ];
@@ -340,7 +340,7 @@ E.revisedScenes={
    {
     "speaker": "おはなし",
     "text": "ニャオハは立とうとした。でも、うまく歩けない。",
-    "portrait": "nyahoja"
+    "portrait": "nyahoja_hurt"
    },
    {
     "speaker": "ヤマト",
@@ -353,7 +353,7 @@ E.revisedScenes={
   "lines": [
    {
     "speaker": "おはなし",
-    "text": "ヤマトが手を出すと、ニャオハは少しずつ近づいてきた。"
+    "text": "ヤマトがそっと手を出すと、ニャオハはこわがりながらも、少しずつ近づいてきた。"
    },
    {
     "speaker": "ヤマト",
@@ -378,7 +378,7 @@ E.revisedScenes={
   "lines": [
    {
     "speaker": "おはなし",
-    "text": "テントにやわらかいぬのをしいた。ニャオハが、しずかに目をとじた。"
+    "text": "テントにやわらかいぬのをしいた。ニャオハは、しずかに横になった。"
    },
    {
     "speaker": "ヤマト",
@@ -793,12 +793,28 @@ E.revisedScenes={
   ]
  }
 };
+// The narrator has no human portrait by default. Specific scenes may deliberately
+// show the character being described; this is important for Nyahoja's injury arc.
+// Indexes refer to the original beats *before* long sentences are split.
+const SCENE_PORTRAITS={
+ arrival:{0:'player'},
+ pokemonFound:{0:'nyahoja_hurt',3:'nyahoja_hurt'},
+ pokemonRescue:{0:'nyahoja_worried',4:'nyahoja_worried'},
+ pokemonCamp:{0:'nyahoja_resting'},
+ firstReturn:{3:'nyahoja_resting'},
+ pokemonRecovered:{0:'nyahoja_recovered'},
+ pokemonCoexist:{0:'nyahoja_recovered',3:'nyahoja_happy'},
+ pokemonFarewell:{0:'nyahoja_recovered'},
+ pokemonForestHarmony:{3:'nyahoja_happy'}
+};
 const original=O.SCENES;
 O.SCENES=Object.freeze(Object.fromEntries(Object.entries(original).map(([id,scene])=>{
  const rewrite=E.revisedScenes[id];
  const originalLines=rewrite?rewrite.lines:(scene.lines||[]);
  let lines=originalLines.map((line,i)=>({
    ...line,
+   // Explicit emotion cues override the older generic smiling portrait.
+   ...(SCENE_PORTRAITS[id]&&SCENE_PORTRAITS[id][i]?{portrait:SCENE_PORTRAITS[id][i]}:{}),
    speaker:simplify(line.speaker),
    text:id==='arrival'&&FIRST_STORY[i]!==undefined?FIRST_STORY[i]:simplify(line.text)
  }));
@@ -857,3 +873,7 @@ if(typeof MutationObserver!=='undefined'){
 // Updated: 2026-11-04 07:31 JST / Ver1.147: do not rewrite live typewriter text nodes.
 
 // Updated: 2026-11-04 18:38 JST / Ver1.148: rename player to Yamato, remove redundant forest wording, add Nyahoja portrait metadata.
+
+// Updated: 2026-11-05 JST / Ver1.150: Nyahoja expression assignment follows five emotional stages; narrated scenes show icons by default.
+
+// Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
