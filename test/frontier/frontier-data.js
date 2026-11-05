@@ -2,7 +2,7 @@
 /* Frenda Frontier Ver1.44 / approved interior layouts / Updated: 2026-10-24 */
 (()=>{"use strict";
 const F=window.FRENDA_FRONTIER=window.FRENDA_FRONTIER||{};
-F.VERSION="1.150";
+F.VERSION="1.151";
 F.SHOP_CAPACITY=Object.freeze([0,3,4,5,6,6,9]);
 F.shopCapacity=s=>F.SHOP_CAPACITY[Math.max(0,Math.min(6,Number(s?.development?.town?.facilities?.shop)||0))]||0;
 F.SAVE_KEY="frenda:frontier:v1";
@@ -722,3 +722,5 @@ F.weighted=list=>{const sum=list.reduce((n,x)=>n+x.weight,0);let r=Math.random()
 // Updated: 2026-11-05 JST / Ver1.150: version number matches expression assets and Safari cache.
 
 // Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
+
+// Updated: 2026-11-05 20:18 JST / Ver1.151: versioned cache for progression and return changes.

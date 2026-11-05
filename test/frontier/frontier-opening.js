@@ -49,6 +49,18 @@ O.SCENES=Object.freeze({
   {speaker:'ナレーション',text:'集めた素材が、冒険者たちの暮らしにつながっていく。',icon:'🌱'},
   {speaker:'次の目的',text:'木材3個で露店を設営し、商品を1点以上並べて開業しよう。',icon:'📜'}
  ]},
+ stallPlan:{chapter:'第1章',title:'小さな店を作ろう',icon:'🪵',lines:[
+  {speaker:'おはなし',text:'森から持ち帰った木材が、テントのそばに積まれている。',icon:'🪵'},
+  {speaker:'旅人',text:'ここで休む人がふえてきたね。食べ物や薬草を置ける小さな店があると、みんな助かりそうだ。',portrait:'traveler'},
+  {speaker:'ヤマト',text:'それなら、この木で柱を立てて、屋根をかけよう。持ってきた品も並べられるね。',portrait:'player'},
+  {speaker:'次の目的',text:'テントの右どなりで、木材3個を使って小さな露店を建てよう。',icon:'📜'}
+ ]},
+ stallBuilt:{chapter:'第1章',title:'露店ができた！',icon:'🏮',lines:[
+  {speaker:'おはなし',text:'柱を立てて屋根をかけ、木箱を棚にした。テントのとなりに、小さな露店ができた。',icon:'🏮'},
+  {speaker:'旅人',text:'いい店になったね。でも、まだ棚は空っぽだよ。',portrait:'traveler'},
+  {speaker:'ヤマト',text:'森で持ち帰った品を並べよう。お客さんが来たら、ここで売れるね。',portrait:'player'},
+  {speaker:'次の目的',text:'露店の棚に商品を1点並べよう。',icon:'📜'}
+ ]},
  stallOpen:{chapter:'第1章',title:'はじめての店',icon:'🏮',lines:[
   {speaker:'ナレーション',text:'木の棚に商品を並べると、森の入口に小さな露店が開いた。',icon:'🏮'},
   {speaker:'旅の冒険者',text:'こんな場所に店ができるなんて。これなら次の冒険も安心だ。',portrait:'traveler'},
@@ -230,11 +242,13 @@ O.visitLv5Tavern=()=>F.mutateSave(s=>{const o=s.story?.opening;if(!o||o.lv5Taver
 O.ensureSceneState=o=>{if(!Array.isArray(o.sceneQueue))o.sceneQueue=[];if(!o.sceneSeen||typeof o.sceneSeen!=='object')o.sceneSeen={};return o};
 O.enqueueSceneInSave=(s,id)=>{const o=O.ensureSceneState(s?.story?.opening||{});if(!s?.story?.opening||!O.SCENES[id]||o.sceneSeen[id]||o.sceneQueue.includes(id))return false;o.sceneQueue.push(id);return true};
 O.enqueueScene=id=>{if(!O.active()||O.isTestPoint())return false;let queued=false;F.mutateSave(s=>{queued=O.enqueueSceneInSave(s,id)});return queued};
+// A plan is offered only after the care decision and material return; never for unfinished rescue.
+O.maybeQueueStallPlan=()=>{if(!O.active()||O.isTestPoint()||!O.stallMaterialsReady())return false;const s=F.readSave(),o=s.story.opening,c=o.pokemonCare;if(c&&!['trusted','released'].includes(c.status))return false;if(o.sceneSeen?.stallPlan||o.sceneQueue?.includes('stallPlan'))return false;return O.enqueueScene('stallPlan');};
 O.completeScene=id=>{F.mutateSave(s=>{const o=O.ensureSceneState(s?.story?.opening||{});if(!s?.story?.opening)return;o.sceneQueue=o.sceneQueue.filter(x=>x!==id);o.sceneSeen[id]=true});O.presentingScene=false;
  const afterCamp=id==='camp'&&O.active()&&!O.isTestPoint()&&O.phase()==='tent';
  if(afterCamp){O.advance();O.onWorldChanged?.()}
  // Multiple scenes can be queued on the same event. Continue only after the previous dialogue closes.
- if(O.active()&&!O.isTestPoint()&&!afterCamp)setTimeout(()=>O.presentPendingScene(),0);
+ if(O.active()&&!O.isTestPoint()&&!afterCamp){if(['pokemonCoexist','pokemonFarewell','firstReturn'].includes(id))O.maybeQueueStallPlan?.();setTimeout(()=>O.presentPendingScene(),0);}
 };
 O.presentPendingScene=()=>{if(O.cinematicActive)return false;if(!O.active()||O.isTestPoint()||O.presentingScene||typeof F.playStoryDialogue!=='function')return false;const o=O.ensureSceneState(F.readSave().story?.opening||{}),id=o.sceneQueue[0],scene=O.SCENES[id];if(!scene)return false;O.presentingScene=true;F.playStoryDialogue(scene,()=>O.completeScene(id));return true};
 // Approved exterior stages. The maximum shop plot stays reserved at every level.
@@ -251,10 +265,12 @@ O.state=()=>F.readSave().story.opening||initial();O.phase=()=>O.state().phase;
 O.canStore=()=>['stocking','first_sale','upgrade','complete'].includes(O.phase());
 O.canExplore=()=>['mission1','stocking','first_sale','upgrade','building','complete'].includes(O.phase());
 O.goods=s=>Object.entries(s.warehouse||{}).filter(([id,n])=>id!=='wood'&&n>0&&F.item(id)).reduce((n,[,qty])=>n+qty,0);
-O.stallReady=()=>{const s=F.readSave(),o=s.story.opening;return o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0&&(s.warehouse.wood||0)>=O.rules.stallWood&&O.goods(s)>0};
+O.stallMaterialsReady=()=>{const s=F.readSave(),o=s.story.opening;return o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0&&(s.warehouse.wood||0)>=O.rules.stallWood&&O.goods(s)>0};
+// The stall site is revealed only after a conversation and after Nyahoja's care is resolved.
+O.stallReady=()=>{if(!O.stallMaterialsReady())return false;const s=F.readSave(),o=s.story.opening,c=o.pokemonCare;return (!c||['trusted','released'].includes(c.status))&&(!!o.sceneSeen?.stallPlan||O.isTestPoint());};
 O.ready=()=>{const s=F.readSave();return s.story.opening.phase==='upgrade'&&s.story.opening.mission2&&(s.warehouse.wood||0)>=O.rules.storeWood&&s.coins>=O.rules.storeCoins};
 O.advance=()=>F.mutateSave(s=>{const o=s.story.opening;if(o.phase==='arrival'){if(!o.entranceInspected)throw new Error('先に森の入口を調べてください。');o.phase='tent';o.tentPitched=true;O.enqueueSceneInSave(s,'camp');F.addHistory(s,'story','森の入口にテントを張り、冒険者が戻れる拠点を作り始めた。')}else if(o.phase==='tent'){o.phase='mission1';o.prologueComplete=true;O.enqueueSceneInSave(s,'firstDeparture');F.addHistory(s,'opening','テントを拠点に、露店を開く準備を始めた。')}else if(o.phase==='building'){const p=o.townProject,elapsed=Math.max(0,(s.clock?.actionCount||0)-(p?.startedAt||0));if(!p||elapsed<(Number(p.steps)||1))throw new Error('建築中です。探索で時間を進めてください。');o.phase='complete';s.development.town.facilities.shop=2;s.development.town.shopLevel=2;delete o.townProject;O.enqueueSceneInSave(s,'shopComplete');F.addHistory(s,'opening','店舗Lv2の小屋が完成。テントと露店を撤去した。')}else throw new Error('今は次へ進めません。')});
-O.setupStall=()=>{if(!O.stallReady())throw new Error('ダンジョンから設営用の木材と売る商品を持ち帰ってください。');return F.mutateSave(s=>{s.warehouse.wood-=O.rules.stallWood;if(!s.warehouse.wood)delete s.warehouse.wood;s.story.opening.phase='stocking';s.development.town.facilities.shop=1;s.development.town.shopLevel=1;s.shelves=[null,null,null];F.addHistory(s,'opening','木材で露店Lv1を設営した。商品を並べて開業しよう。')})};
+O.setupStall=()=>{if(!O.stallReady())throw new Error('まずニャオハの世話を終えて、露店の準備を相談し、必要な木材を集めましょう。');return F.mutateSave(s=>{s.warehouse.wood-=O.rules.stallWood;if(!s.warehouse.wood)delete s.warehouse.wood;s.story.opening.phase='stocking';s.development.town.facilities.shop=1;s.development.town.shopLevel=1;s.shelves=[null,null,null];O.enqueueSceneInSave(s,'stallBuilt');F.addHistory(s,'opening','木材で露店Lv1を設営した。商品を並べて開業しよう。')})};
 O.open=()=>F.mutateSave(s=>{const o=s.story.opening;if(o.phase!=='stocking')throw new Error('露店はすでに開業済みです。');if(!s.shelves.some(sh=>sh&&sh.qty>0&&F.item(sh.itemId)))throw new Error('商品を1点以上並べてください。');o.mission1=true;o.phase='first_sale';O.enqueueSceneInSave(s,'stallOpen');F.addHistory(s,'mission','ミッション①達成：はじめての露店を開こう。次は初めての商品販売。')});
 O.build=()=>{if(!O.ready())throw new Error('初売り達成と木材・建築費が必要です。');return F.mutateSave(s=>{s.warehouse.wood-=O.rules.storeWood;if(!s.warehouse.wood)delete s.warehouse.wood;s.coins-=O.rules.storeCoins;s.story.opening.phase='building';s.story.opening.townProject={stage:3,steps:1,startedAt:Number(s.clock?.actionCount)||0,paid:true};F.addHistory(s,'opening','店舗Lv2の小屋の建築を開始した。探索で工事を進めよう。')})};
 O.originalSolids=()=>{if(!O.active())return[];const p=O.phase();return p==='arrival'?[]:['tent','mission1'].includes(p)?[O.tentBox]:['stocking','first_sale','upgrade'].includes(p)?[O.tentBox,O.stallBox]:p==='building'?[O.tentBox,O.shopBox]:[O.shopBox]};
@@ -276,7 +292,7 @@ O.switchPoint=id=>{if(!O.testEnabled())throw new Error('TEST機能は利用で�
 O.guidance=()=>{
  const s=F.readSave(),p=O.phase(),stocked=s.shelves.some(sh=>sh&&sh.qty>0),wood=Number(s.warehouse.wood)||0,goods=O.goods(s);
  if(p==='arrival')return s.story.opening.entranceInspected?{title:'森の入口を確認しました',text:'森の入口へつづく道がわかりました。まずは、草地でテントを立てましょう。',label:'テントを設営する',act:'campSetup'}:{title:'森の入口に何がある？',text:'森の奥に続く階段が見つかりました。北の道を登り、古い石のある森の入口を調べましょう。',label:'🔎 森の入口を調べる',act:'inspect'};
- if(p==='tent')return{title:'露店の準備を始めよう',text:'北の道を登ると、はじまりの森です。まず木材と商品を集めましょう。',label:'開拓を始める',act:'advance'};
+ if(p==='tent')return{title:'ニャオハを休ませ、森へ行く準備をしよう',text:'ニャオハのけがを治すため、まず森で薬草を探しましょう。',label:'森へ行く準備',act:'advance'};
  if(p==='mission1')return O.stallReady()?{title:'資材と商品が揃いました',text:'テントのそばの露店予定地に近づき、木材で設営しましょう。',label:'露店を設営する',act:'setup'}:{title:'まずは露店を開く準備をしよう',text:`北の道を登って探索を開始し、B1Fで木材${O.rules.stallWood}個と売る商品を1点以上拾いましょう。集めたら「ロープ」で拠点へ持ち帰れます。`,label:F.run?.active?'探索を再開する':'はじまりの森へ',act:'adventure'};
  if(p==='stocking')return stocked?{title:'商品が並びました。開業しましょう',text:'露店の近くで開業しましょう。最初のミッションを達成できます。',label:'露店を開業する',act:'open'}:{title:'露店に商品を1点並べよう',text:'露店のそばまで歩き、「商品を並べる」から商品を1点陳列しましょう。',label:'商品を並べる',act:'shop'};
  if(p==='first_sale')return stocked?{title:'最初のお客さんに商品を売ろう',text:'露店の前まで歩き、営業しましょう。適正価格の商品には、迷宮帰りの冒険者が最初のお客さんとして立ち寄ります。',label:'露店へ行く',act:'shop'}:goods>0?{title:'売る商品を並べよう',text:'露店の空いている陳列枠を選び、保管中の商品を並べてから営業しましょう。',label:'商品を並べる',act:'shop'}:{title:'商品を仕入れよう',text:'商品がなくなりました。はじまりの森で商品を拾い、持ち帰って露店に並べましょう。',label:'はじまりの森へ',act:'adventure'};
@@ -675,8 +691,8 @@ O.visitLv5Tavern=(...args)=>{const result=visitTavernBefore128(...args);const sa
 
 const startRun=F.startRun,finishRun=F.finishRun,visit=F.applyCustomerVisit;
 O.tutorialSupplies=s=>{const o=s.story?.opening;if(o?.phase!=='mission1')return[];const wood=Math.max(0,O.rules.stallWood-(Number(o.woodReturned)||0)),goods=Math.max(0,1-(Number(o.goodsReturned)||0));return[...(wood?[['wood',wood]]:[]),...(goods?[['bread',1]]:[])];};
-F.startRun=(...args)=>{if(O.active()&&!O.canExplore())throw new Error('拠点の「次にすること」を確認してください。');const supplies=O.active()?O.tutorialSupplies(F.readSave()):[],run=startRun(...args);if(supplies.length){const candidates=[];for(let y=1;y<run.map.length-1;y++)for(let x=1;x<run.map[y].length-1;x++){const d=Math.abs(x-run.player.x)+Math.abs(y-run.player.y);if(d>=1&&run.map[y][x]==='floor'&&!run.enemies.some(e=>e.x===x&&e.y===y)&&!(run.traps||[]).some(t=>t.x===x&&t.y===y))candidates.push({x,y,d});}candidates.sort((a,b)=>a.d-b.d);supplies.forEach(([itemId,qty],i)=>{const p=candidates[i];if(p){run.floorItems.push({x:p.x,y:p.y,itemId,qty,openingSupply:true});run.map[p.y][p.x]='gather';}});run.log.push('露店設営に必要な木材と商品を探そう。持ち帰った分は追加配置されません。');}return run;};
-F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[id,q])=>n+Math.max(0,Number(q)-(Number(runBefore?.startingBag?.[id])||0)),0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0)O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.()}return result};
+F.startRun=(...args)=>{if(O.active()&&!O.canExplore())throw new Error('拠点の「次にすること」を確認してください。');const supplies=O.active()?O.tutorialSupplies(F.readSave()):[],run=startRun(...args);if(supplies.length){const candidates=[];for(let y=1;y<run.map.length-1;y++)for(let x=1;x<run.map[y].length-1;x++){const d=Math.abs(x-run.player.x)+Math.abs(y-run.player.y);if(d>=1&&run.map[y][x]==='floor'&&!run.enemies.some(e=>e.x===x&&e.y===y)&&!(run.traps||[]).some(t=>t.x===x&&t.y===y))candidates.push({x,y,d});}candidates.sort((a,b)=>a.d-b.d);supplies.forEach(([itemId,qty],i)=>{const p=candidates[i];if(p){run.floorItems.push({x:p.x,y:p.y,itemId,qty,openingSupply:true});run.map[p.y][p.x]='gather';}});run.log.push(F.readSave().story?.opening?.pokemonCare?.status==='recovering'?'けがをしたニャオハのため、まず薬草を探そう。木材や食べ物は持ち帰れるよ。':'木材と売る品を探そう。持ち帰った分は追加配置されません。');}return run;};
+F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[id,q])=>n+Math.max(0,Number(q)-(Number(runBefore?.startingBag?.[id])||0)),0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0)O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.();if(result.success)O.maybeQueueStallPlan?.()}return result};
 F.applyCustomerVisit=result=>{const saved=F.readSave(),soldBefore=saved.sales.count,rumorBefore=!!saved.story?.rumor,value=visit(result),after=F.readSave(),sold=Number(after.sales?.count)||0;if(O.active()&&O.phase()==='first_sale'&&sold>soldBefore)F.mutateSave(s=>{s.story.opening.mission2=true;s.story.opening.phase='upgrade';O.enqueueSceneInSave(s,'firstSale');if(!rumorBefore&&s.story?.rumor)O.enqueueSceneInSave(s,'forestRumor');F.addHistory(s,'mission','ミッション②達成：初めて商品を売ろう。')});else if(O.active()&&!rumorBefore&&after.story?.rumor)O.enqueueScene('forestRumor');return value};
 // The final epilogue is also available if the boss was defeated before shop Lv6 completion.
 const previousFinishRun127=F.finishRun;
@@ -748,3 +764,5 @@ O.enter();
 // Updated: 2026-11-04 18:38 JST / Ver1.148: shorten opening goal text; story sequence unchanged.
 
 // Updated: 2026-11-05 JST / Ver1.149: arrival dialogue now answers Yamato's question; opening guidance wording adjusted.
+
+// Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.

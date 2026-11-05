@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER, P=F.TOWN_PROGRESS, O=F.OPENING, W=F.WILDERNESS;
 if(!F||!P||!O||!W)return;
-const C=F.OPENING_CINEMATIC={active:false,revision:148};
+const C=F.OPENING_CINEMATIC={active:false,revision:151};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
 const north={x:355,y:24},camp={x:500,y:115},stall={x:548,y:139};
 // Visible landmarks have stable world positions, distinct from the existing Pokémon rescue spot.
@@ -18,7 +18,7 @@ C.mount=async(host,rerender,actions={})=>{
  const s=F.readSave(),o=s.story.opening,auto=(o.phase==='arrival'&&!o.cinematicComplete)||(o.phase==='tent'&&!o.cinematicComplete);
  let stage=o.phase==='arrival'?0:1,scene=P.scene(stage),position=P.position&&scene.walkable(P.position.x,P.position.y)?{...P.position}:P.spawn(stage);P.activeStage=stage;
  if(!position)position=P.spawn(stage)||{x:500,y:146};P.position=position;
- let artwork=null,players=null,travelerAtlas=null,travelerSprites=null,cam={x:0,y:0},cameraReady=false,facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,locked=auto,cinematicFinished=false,pendingCaption=null;
+ let artwork=null,players=null,travelerAtlas=null,travelerSprites=null,cam={x:0,y:0},cameraReady=false,facing=0,route=[],movingResolve=null,lastFrame=0,buildAt=0,building=false,stallBuilding=false,stallBuildAt=0,locked=auto,cinematicFinished=false,pendingCaption=null;
  let shot='wide',travelerGreeting=false;
  // Actor positions, routes and directions are independent of dialogue text.
  let travelerPosition=stage===1?{x:468,y:148}:{...traveler};
@@ -29,8 +29,8 @@ C.mount=async(host,rerender,actions={})=>{
  C.active=auto;O.cinematicActive=auto;
  host.classList.remove('townSceneLayout');host.classList.add('progressTownLayout','frontierOpeningStage');document.body.classList.add('progressTownActive');
  const g=O.guidance();
- host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングではヤマトが自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><img id="openingPortrait" class="openingPortrait" alt="話している人の顔" hidden><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。ヤマトが自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${P.zoomLabel(W.overview)}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
- const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),portrait=document.getElementById('openingPortrait'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip'),careChoices=document.getElementById('openingCareChoices');
+ host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングではヤマトが自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><img id="openingPortrait" class="openingPortrait" alt="話している人の顔" hidden><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><div class="openingStallConfirm" id="openingStallConfirm" hidden><b>🏮 小さな露店を建てよう</b><p>木材3個を使って、柱・屋根・棚を作るよ。ここに建てる？</p><div><button type="button" id="openingStallBuild" class="cmdBtn primary">ここに露店を建てる</button><button type="button" id="openingStallCancel" class="cmdBtn">あとで</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。ヤマトが自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${P.zoomLabel(W.overview)}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
+ const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),portrait=document.getElementById('openingPortrait'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip'),careChoices=document.getElementById('openingCareChoices'),stallConfirm=document.getElementById('openingStallConfirm');
  const size=()=>{const w=Math.max(280,Math.min(980,wrap.getBoundingClientRect().width||window.innerWidth||390)),h=window.visualViewport?.height||window.innerHeight||780,available=Math.max(220,Math.min(610,h-290)),cssHeight=W.overview?w*.48:Math.min(available,w);const worldWidth=P.worldWidth(W.overview);cv.width=worldWidth;cv.height=W.overview?480:Math.min(480,Math.max(120,Math.round(cssHeight*worldWidth/w)));cv.style.width='100%';cv.style.height=`${cssHeight}px`;};
  size();window.addEventListener('resize',size);window.visualViewport?.addEventListener?.('resize',size);
  const cleanup=()=>{window.removeEventListener('resize',size);window.visualViewport?.removeEventListener?.('resize',size);};
@@ -108,10 +108,11 @@ C.mount=async(host,rerender,actions={})=>{
   const c=cv.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,cv.width,cv.height);
   P.drawBackground(c,artwork,stage,cam);
   if(building){const t=Math.min(1,Math.max(0,(now-buildAt)/1750));c.save();c.globalAlpha=t*t*(3-2*t);P.drawBackground(c,artwork,1,cam);c.restore();}
+  if(stallBuilding){const t=Math.min(1,Math.max(0,(now-stallBuildAt)/3000));c.save();c.globalAlpha=t*t*(3-2*t);P.drawBackground(c,artwork,2,cam);c.restore();}
   if(!locked){const p=stage===1?north:null;if(p){const x=p.x-cam.x,y=p.y-cam.y;c.save();c.fillStyle='#fff4c0';c.strokeStyle='#163b2c';c.lineWidth=3;c.beginPath();c.arc(x,y,10,0,Math.PI*2);c.fill();c.stroke();c.font='bold 12px sans-serif';c.textAlign='center';c.fillStyle='#102a1d';c.fillText('▼ 森の入口',x,y-17);c.restore();}}
   drawTraveler(c,now);
   const phase=O.phase();
-  if(stage===1&&phase==='mission1')drawObjectiveMarker(c,stall,O.stallReady()?'⭐ ここで露店を設営':'⭐ 露店予定地','テントの右どなり',now);
+  if(stage===1&&phase==='mission1'&&O.stallReady()&&!stallBuilding)drawObjectiveMarker(c,stall,'⭐ ここに小さな店を作る','木材3個で建てよう',now);
   // The tent already exists in stage 1. Do not cover it with a construction-site marker.
   F.POKEMON_CARE?.drawAtEntrance?.(c,cam,stage);
   F.RESIDENTS?.drawTown?.(c,cam,position,true);P.drawPlayer(c,players[facing],facing,position,cam);F.RESIDENTS?.drawTown?.(c,cam,position,false);
@@ -251,6 +252,22 @@ C.mount=async(host,rerender,actions={})=>{
   }
   finish(false);
  }catch(err){if(active()){C.active=false;O.cinematicActive=false;locked=false;skip.hidden=true;speech.hidden=true;hint.textContent=`演出を続けられません：${err.message}。地図から手動で進めてください。`;}}};
+ // A player-approved construction sequence: no stall appears from merely walking nearby.
+ document.getElementById('openingStallCancel').onclick=()=>{stallConfirm.hidden=true;hint.textContent='あとで露店を建てられます。';};
+ document.getElementById('openingStallBuild').onclick=()=>{
+  if(!active()||locked||!O.stallReady()){stallConfirm.hidden=true;hint.textContent='まだ露店を建てる準備ができていません。';return;}
+  stallConfirm.hidden=true;locked=true;route=[];stallBuilding=true;stallBuildAt=performance.now();
+  const buildStep=()=>{
+   if(!active()){stallBuilding=false;locked=false;return;}
+   const elapsed=performance.now()-stallBuildAt;
+   hint.textContent=elapsed<950?'① 木材を並べて、柱を立てています……':elapsed<1900?'② 柱に屋根をかけています……':'③ 木箱を並べて、棚を作っています……';
+   if(elapsed<3000){requestAnimationFrame(buildStep);return;}
+   stallBuilding=false;locked=false;
+   try{O.setupStall();hint.textContent='露店ができた！ 次は商品を棚に並べよう。';rerender();setTimeout(()=>O.presentPendingScene?.(),180)}
+   catch(e){hint.textContent=e.message;}
+  };
+  requestAnimationFrame(buildStep);
+ };
  const enterForest=()=>{if(!O.canExplore()){hint.textContent='先に拠点を作りましょう。';return}actions.startDungeon?.()};
  const interact=()=>{if(!active()||locked)return;const phase=O.phase();
   const care=F.POKEMON_CARE;
@@ -265,7 +282,7 @@ C.mount=async(host,rerender,actions={})=>{
   }if(phase==='arrival'&&!O.state().entranceInspected&&Math.hypot(position.x-north.x,position.y-north.y)<28){O.inspectEntrance();rerender();return}
   if(phase==='arrival'&&O.state().entranceInspected&&Math.hypot(position.x-camp.x,position.y-camp.y)<32){O.advance();rerender();return}
   if(phase==='tent'&&Math.hypot(position.x-camp.x,position.y-camp.y)<35){O.advance();rerender();return}
-  if(phase==='mission1'&&Math.hypot(position.x-stall.x,position.y-stall.y)<44){if(O.stallReady()){O.setupStall();rerender();return}hint.textContent='ここが露店予定地です。テントの右どなりで、木材と売る商品がそろったら設営できます。';return}
+  if(phase==='mission1'&&O.stallReady()&&Math.hypot(position.x-stall.x,position.y-stall.y)<44){stallConfirm.hidden=false;hint.textContent='木材を使って、小さな露店を建てよう。';return}
   if(phase==='mission1'&&Math.hypot(position.x-north.x,position.y-north.y)<32)enterForest();};
  cv.onclick=e=>{if(locked)return;const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+cam.x,y:(e.clientY-b.top)/b.height*cv.height};const phase=O.phase();let destination=p;
   if(phase==='mission1'&&F.POKEMON_CARE?.canInteract?.()&&Math.hypot(p.x-F.POKEMON_CARE.interactionPoint().x,p.y-F.POKEMON_CARE.interactionPoint().y)<90)destination=F.POKEMON_CARE.interactionPoint();
@@ -274,7 +291,7 @@ C.mount=async(host,rerender,actions={})=>{
   else if(phase==='mission1'&&O.stallReady()&&Math.hypot(p.x-stall.x,p.y-stall.y)<50)destination=stall;
   const dest=P.nearest(scene,destination,35);if(!dest){hint.textContent='通れる道を選んでください。';return}route=P.path(scene,position,dest);if(!route.length){hint.textContent='その地点へは歩けません。';return}
   if(route.length<=1){route=[];interact();return}
-  hint.textContent=destination===north?'北の森へ向かっています。':F.POKEMON_CARE?.canInteract?.()&&Math.hypot(destination.x-F.POKEMON_CARE.interactionPoint().x,destination.y-F.POKEMON_CARE.interactionPoint().y)<1?'ニャオハのところへ移動しています。':destination===camp?'テントのそばへ移動します。':destination===stall?'露店予定地へ向かっています。':'移動中……';
+  hint.textContent=destination===north?'北の森へ向かっています。':F.POKEMON_CARE?.canInteract?.()&&Math.hypot(destination.x-F.POKEMON_CARE.interactionPoint().x,destination.y-F.POKEMON_CARE.interactionPoint().y)<1?'ニャオハのところへ移動しています。':destination===camp?'テントのそばへ移動します。':destination===stall?'小さな露店を建てる場所へ向かっています。':'移動中……';
   // User route interaction is invoked at the end of movement by the regular animation loop.
   movingResolve=ok=>{if(ok){hint.textContent='目的地に着きました。';interact();}};
  };
@@ -329,3 +346,5 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-05 JST / Ver1.150: per-scene emotional faces and narration handling.
 
 // Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
+
+// Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.

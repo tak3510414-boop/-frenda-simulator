@@ -221,7 +221,7 @@ function dungeonTutorialKey(){return String(F.SAVE_KEY||'default')+':first-dunge
 function dungeonTutorialLessons(){
  const first=F.OPENING?.active?.()&&F.OPENING?.phase?.()==='mission1';
  return [
-  {icon:'🌲',title:'はじめての「はじまりの森」',text:first?'まずはB1Fで木材を3個と、売る商品を1個集めよう。ニャオハの手当て用に薬草も1個探そう。奥へ進むのは次の冒険で大丈夫。':'ここでは道具を集めながら森を探索する。最初はB1Fを歩いて操作に慣れよう。無理に奥へ進まなくて大丈夫。'},
+  {icon:'🌲',title:'はじめての「はじまりの森」',text:first?'まずはB1Fで薬草を1個探そう。けがをしたニャオハが待っているよ。木材や食べ物は見つけたら持ち帰ろう。奥へ進むのは次の冒険で大丈夫。':'ここでは道具を集めながら森を探索する。最初はB1Fを歩いて操作に慣れよう。無理に奥へ進まなくて大丈夫。'},
   {icon:'👣',title:'歩く・調べる',text:'行きたい床をタップするとヤマトが歩く。探索済みの遠い床なら自動で進む。「■ 移動を止める」で途中停止できる。'},
   {icon:'🪵',title:'木材・薬草などを拾う',text:'床の「木材」「薬草」などへ近づき、アイテムのあるマスに立ったら下の「拾う」を押そう。拾った品は「どうぐ」で確認できる。'},
   {icon:'⚔️',title:'敵と戦う',text:'見えている敵をタップすると射程内なら攻撃する。「素振り」でも正面の敵を攻撃できる。1回行動すると敵も動くので、HPに注意しよう。'},
@@ -1079,10 +1079,7 @@ function runResultModal(){
  ${next.length?`<p>🗺️ 新しい道：<b>${next.map(d=>`${d.icon||'🗺️'} ${esc(d.name)}`).join('、')}</b> が解放されました。</p>`:''}
  ${ti?`<p>🕒 時間：${esc(ti.icon||'')}${esc(ti.label)}</p>`:''}
  <p class="returnLootNext"><b>次にすること</b><span>${esc(clear&&next.length?'冒険画面で次のダンジョンを確認できます。':F.OPENING?.active()?F.OPENING.guidance().text:'装備を確認するか、お店で素材を売って町を育てよう。')}</span></p>`,[
-  {label:'冒険へ',className:clear?'cmdBtn primary':'',fn:()=>setView('adventure')},
-  {label:'拠点へ',className:F.OPENING?.active()?'cmdBtn primary':'',fn:()=>setView('home')},
-  {label:'装備を見る',fn:()=>{setView('adventure');showEquipmentModal()}},
-  {label:'お店へ',fn:()=>setView('store')}
+  {label:'閉じる',fn:()=>{homeMode='town';setView('home');F.OPENING?.maybeQueueStallPlan?.();setTimeout(()=>F.OPENING?.presentPendingScene?.(),180)}}
  ]);
 }
 function swingTurn(){if(!F.run?.active)return;const r=F.swingDungeon?.();renderAll();if(F.run&&!F.run.active)runResultModal();return r}
@@ -1553,3 +1550,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-05 JST / Ver1.150: per-scene emotional faces and narration handling.
 
 // Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
+
+// Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.

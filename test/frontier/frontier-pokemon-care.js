@@ -94,7 +94,7 @@ PC.treat=()=>{if(!PC.canTreat())throw Error('薬草が1個必要です。はじ�
   c.status='healthy';c.trust=65;c.helpedAtDay=s.day;
   O.enqueueSceneInSave(s,'pokemonRecovered');F.addHistory(s,'pokemon','薬草1個でニャオハを手当てした。少しずつ元気を取り戻した。');return true});};
 PC.bond=choice=>{if(!['town','forest'].includes(choice))throw Error('一緒に暮らすか、森へ帰るか選択してください。');
- return update((s,c)=>{if(c.status!=='healthy')return false;
+ const updated=update((s,c)=>{if(c.status!=='healthy')return false;
   c.status=choice==='town'?'trusted':'released';c.choice=choice;c.trust=choice==='town'?100:80;
   if(choice==='town'){
    s.pokemon=s.pokemon||{};s.pokemon.storyCompanions=Array.isArray(s.pokemon.storyCompanions)?s.pokemon.storyCompanions:[];
@@ -103,7 +103,9 @@ PC.bond=choice=>{if(!['town','forest'].includes(choice))throw Error('一緒に�
    s.pokemon.companionUnlocks[PC.SPECIES_ID]=s.pokemon.companionUnlocks[PC.SPECIES_ID]||{source:'frontier_rescue',day:s.day};
   }
   O.enqueueSceneInSave(s,choice==='town'?'pokemonCoexist':'pokemonFarewell');
-  F.addHistory(s,'pokemon',choice==='town'?'ニャオハが自分の意思で町に残り、仲間になった。':'ニャオハは森へ帰り、町とのつながりを残した。');return true});};
+  F.addHistory(s,'pokemon',choice==='town'?'ニャオハが自分の意思で町に残り、仲間になった。':'ニャオハは森へ帰り、町とのつながりを残した。');return true});
+ if(updated)O.maybeQueueStallPlan?.();
+ return updated;};
 // The rescue is never forced on saves that have already left the opening.
 O.makePoint=function(id){const s=originalMakePoint.call(this,id);if(id==='opening-arrival'){s.story.opening.pokemonCare=fresh();}return s};
 O.enter=function(...args){const result=originalEnter.apply(this,args);PC.begin();PC.refreshVisual();return result};
@@ -261,3 +263,5 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-03 20:50 JST / Ver1.145: the rescue starts in the town before visiting the remote stone.
 
 // Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato name in Pokemon care dialogue.
+
+// Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.

@@ -113,7 +113,7 @@ W.mount=(host,rerender,actions={})=>{
     if(!F.OPENING?.canExplore()){msg.textContent='まずはテントを作りましょう。';return}
     actions.startDungeon?.();return;
    }
-   if(kind==='stall'){F.OPENING.setupStall();rerender();return}
+   if(kind==='stall'){msg.textContent='木材で柱を立て、屋根をかけ、棚を作っています……';activityLocked=true;host.classList.add('wildernessBusy');setTimeout(()=>{if(token!==W.token)return;try{F.OPENING.setupStall();activityLocked=false;host.classList.remove('wildernessBusy');rerender();setTimeout(()=>F.OPENING?.presentPendingScene?.(),180)}catch(e){activityLocked=false;host.classList.remove('wildernessBusy');msg.textContent=e.message}},2200);return}
    if(kind==='shop'){actions.shop?.();return}
    if(kind==='build'){F.OPENING.build();rerender();return}
    if(kind==='building'){
@@ -173,3 +173,5 @@ W.mount=(host,rerender,actions={})=>{
 
 // Updated: 2026-11-01 21:10 JST / Ver1.117 — north forest entrance, in-world camp/stall interactions, animated tent placement.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
+
+// Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.
