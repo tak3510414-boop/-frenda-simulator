@@ -11,3 +11,4 @@ for(const name of mutators){const fn=F[name];if(typeof fn!=='function'||fn.__per
 window.addEventListener?.('pagehide',F.persistDungeonRun);
 document.addEventListener?.('visibilitychange',()=>{if(document.hidden)F.persistDungeonRun()});
 })();
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

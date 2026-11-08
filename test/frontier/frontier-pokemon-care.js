@@ -125,9 +125,29 @@ O.guidance=function(){const s=F.readSave(),c=careOf(s);if(c&&s.story.opening.pha
  return originalGuidance.call(this);
 };
 // Tutorial pickup is placed only once per dungeon attempt and does not create warehouse items.
-O.tutorialSupplies=function(s){const supplied=originalSupplies.call(this,s),c=careOf(s);if(c?.status==='recovering'&&Number(s.warehouse?.herb||0)<1&&!supplied.some(x=>x[0]==='herb'))supplied.push(['herb',1]);return supplied};
+O.tutorialSupplies=function(s){const supplied=originalSupplies.call(this,s),c=careOf(s);if(c?.status==='recovering'&&Number(s.warehouse?.herb||0)<1)return [['herb',1],...supplied.filter(x=>x[0]!=='herb')];return supplied};
+// Derive the current action from the actual save and bag; no new progress flag or reset.
+PC.firstAidGoal=(s=F.readSave(),run=F.run)=>{
+ const c=careOf(s);
+ if(!O.active()||O.isTestPoint()||s.story?.opening?.phase!=='mission1'||c?.status!=='recovering')return null;
+ const atTown=Number(s.warehouse?.herb||0)>=1;
+ if(!run?.active)return atTown?{id:'treat',title:'ニャオハを手当てしよう',text:'テントのそばのニャオハに話しかけ、薬草を1個使おう。'}:{id:'depart',title:'薬草を探しに行こう',text:'はじまりの森B1Fで薬草を1個拾おう。'};
+ if(atTown||Number(run.bag?.herb||0)>=1)return{id:'return',title:'薬草を持って町へもどろう',text:Number(run.escape)>0?'下の「ロープ」で帰還しよう。薬草はニャオハのために残しておこう。':'階段から「ここで帰還する」をえらぼう。薬草は使わずに持ち帰ろう。'};
+ const foot=(run.floorItems||[]).find(it=>it.itemId==='herb'&&Number(it.qty)>0&&it.x===run.player?.x&&it.y===run.player?.y);
+ if(foot)return{id:'pickup',title:'足元の薬草を拾おう',text:F.dungeonFootItemAction?.()?.mode==='exchange'?'バッグがいっぱい。「交換」で薬草を入れよう。':'下の「拾う」を押そう。拾った薬草は「どうぐ」で見られるよ。'};
+ return{id:'find',title:'B1Fで薬草を1個探そう',text:'近くの「薬草」のマスまで歩こう。木材や商品は、あとでも大丈夫。'};
+};
+PC.firstAidStairs=(s=F.readSave(),run=F.run)=>!!PC.firstAidGoal(s,run)&&!!run?.active&&run.dungeonId==='beginner_forest'&&Number(run.floor)===1;
+const nextFloorBefore152=F.nextFloor;
+F.nextFloor=function(...args){if(PC.firstAidStairs()){F.run.log.push(PC.firstAidGoal().id==='return'?'ニャオハが待っている。薬草を持って、まず町へ帰ろう。':'まずB1Fで薬草を1個拾おう。危ないときは、町へ帰っても大丈夫。');return false;}return nextFloorBefore152.apply(this,args)};
 // New campaigns can explore for healing; other saved games retain previous behavior.
-O.canExplore=function(...args){return originalCanExplore.apply(this,args)};
+O.canExplore=function(...args){
+ const s=F.readSave(),c=careOf(s);
+ if(O.active()&&!O.isTestPoint()&&!F.run?.active&&s.story?.opening?.phase==='mission1'&&c){
+  if(c.status==='healthy'||c.status==='recovering'&&Number(s.warehouse?.herb||0)>=1)return false;
+ }
+ return originalCanExplore.apply(this,args);
+};
 O.setupStall=function(...args){const c=PC.read();if(c&&['rescued','recovering','healthy'].includes(c.status))throw Error('まずニャオハの手当てと、その後の気持ちを確かめましょう。');return originalSetupStall.apply(this,args)};
 // Sprite: use the same PokeAPI sprites family used elsewhere; always draw a local fallback.
 let pokeImage=null;
@@ -265,3 +285,8 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato name in Pokemon care dialogue.
 
 // Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.
+
+// Updated: 2026-11-08 22:31 JST / Ver1.152: state-based first-aid goals and B1F rescue progression.
+
+// Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

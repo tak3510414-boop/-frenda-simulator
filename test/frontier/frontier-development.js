@@ -45,3 +45,4 @@ F.beginShopSession=()=>F.mutateSave(s=>{F.advanceTimeState(s,Number(F.TIME_ACTIO
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
 
 // Updated: 2026-10-25 20:21 JST / Ver1.67
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

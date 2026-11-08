@@ -209,3 +209,4 @@ R.renderInterior=(canvas,m,s,rt,art={})=>{
 // Updated: 2026-10-25 19:54 JST / Ver1.66
 
 // Updated: 2026-10-25 20:51 JST / Ver1.68
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

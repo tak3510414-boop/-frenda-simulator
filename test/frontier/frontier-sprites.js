@@ -113,3 +113,4 @@ F.ensureSpriteDex=()=>{if(ready)return Promise.resolve({ready:true,count:dex.siz
 /* Updated: 2026-10-23 20:00 JST / Ver1.16 */
 
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

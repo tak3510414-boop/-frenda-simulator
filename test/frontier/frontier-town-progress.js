@@ -279,3 +279,4 @@ if(F.OPENING){const O=F.OPENING,make=O.makePoint,sw=O.switchPoint;
 // Updated: 2026-11-03 17:14 JST / Ver1.142: 26px street shoulders, narrower forest/site tap targets, shop-first stage signs.
 
 // Updated: 2026-11-03 20:50 JST / Ver1.145: no ancient stone on the town map; stone lives only in the gateway.
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

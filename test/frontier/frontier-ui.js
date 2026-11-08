@@ -209,17 +209,17 @@ F.playStoryDialogue=(scene,onComplete=()=>{})=>{
 function closeModal(){partnerHeightObserver?.disconnect();partnerHeightObserver=null;F.RESIDENTS?.endTalk();$('frontierModal')?.classList.add('hidden')}
 F.presentEnding=()=>F.playStoryDialogue(F.OPENING?.SCENES?.forestEnding||{lines:[{speaker:'ナレーション',text:'森と町は、ともに歩み始めた。',icon:'🌲'}]});
 let storeSessionToken=0,shopVisitTestMode=false;
-function setView(v){if(v==='adventure'&&F.OPENING?.active()&&!F.run?.active&&!F.OPENING.canExplore()){toast('まず町でテントを立ててください。');return;}if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore()&&F.OPENING_CINEMATIC?.active)||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
+function setView(v){if(v==='adventure'&&F.OPENING?.active()&&!F.run?.active&&!F.OPENING.canExplore()){toast(F.OPENING.guidance().text||'町の次の目的を確認してね。');return;}if(F.OPENING?.active()&&((v==='store'&&!F.OPENING.canStore()&&F.OPENING_CINEMATIC?.active)||(v==='adventure'&&!F.OPENING.canExplore()))){toast('拠点の「次にすること」を確認してください。');return}if(v!==currentView)indoorRuntime.id=null;indoorRuntime.token++;indoorRuntime.moving=false;currentView=v;document.querySelectorAll('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderAll()}
 function header(s){const st={...F.stageInfo(s.development.stage),name:F.townGrowthState(s).current.label},as=F.areaStats?.(s)||{usable:1,total:1},ti=F.timeInfo?.(s)||{icon:'☀️',label:'昼'};$('headStats').innerHTML=`<span class="pill">🪙 ${Number(s.coins||0).toLocaleString('ja-JP')}</span><span class="pill">📅 ${s.day}日目 ${ti.icon}${esc(ti.label)}</span><span class="pill">🏘️ ${esc(st.name)}</span>`;const title={home:'拠点',adventure:'冒険',store:'お店'},area=F.areaDef?.(s?.townMovement?.areaId||s?.townWorld?.currentAreaId||'core');const sub={home:homeMode==='house'?'家の中':homeMode!=='town'?(F.FACILITY_DEFS.find(f=>f.id===homeMode)?.name||'施設')+'の中':'1つの町を育てる（追従マップ）',adventure:F.run?.active?'ダンジョン探索中':'森の入口・出発じゅんび',store:F.shopPresence(s,shopOwnerPresent()).open?'店の中（営業中）':'店の中（開店準備）'};const previewLocation=shopVisitTestMode&&currentView==='store'?F.TOWN_PROGRESS?.stages?.[F.TOWN_PROGRESS.stageFor(s)]?.name:null;$('viewTitle').textContent=title[currentView];$('viewSubtitle').textContent=sub[currentView];$('viewMeta').textContent=currentView==='home'&&homeMode==='town'?`現在地：${esc(area?.name||'中心開拓地')}`:`現在地：${esc(previewLocation||st.caption)}`}
 function sceneShell(dialogTitle,dialogText,cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dialogBox"><h3>${esc(dialogTitle)}</h3><p id="dialogText">${esc(dialogText)}</p></div><div class="commandBox"><div class="commandTitle">▶ コマンド</div><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver0.99: dungeon messages are transient overlays; full history remains available on demand.
-function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><button type="button" class="dungeonDexToggle" id="dungeonDexToggle" aria-label="ポケモン図鑑を開く">📖 図鑑</button><button type="button" class="dungeonHelpToggle" id="dungeonHelpToggle" aria-label="ダンジョンの遊び方を開く">？ 遊び方</button><section id="dungeonTutorial" class="dungeonTutorial hidden" aria-label="はじめてのダンジョン案内" aria-live="polite"><div class="dungeonTutorialTop"><span id="dungeonTutorialCount"></span><button type="button" id="dungeonTutorialClose" aria-label="案内を閉じる">✕ 閉じる</button></div><b id="dungeonTutorialTitle"></b><p id="dungeonTutorialText"></p><div class="dungeonTutorialActions"><button type="button" id="dungeonTutorialBack">前へ</button><button type="button" id="dungeonTutorialNext" class="primary">次へ</button></div></section><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
+function dungeonSceneShell(cmdId){return `<canvas class="sceneCanvas" id="sceneCanvas"></canvas><div class="sceneHud" id="sceneHud"></div><div id="tokenLayer"></div><div class="dungeonTravelStatus hidden" id="dungeonTravelStatus" aria-live="off"></div><div class="dungeonFootItemHint hidden" id="dungeonFootItemHint"></div><div class="dungeonMessageOverlay" id="dungeonMessageOverlay" aria-live="polite"><div id="dungeonMessageText"></div></div><button type="button" class="dungeonDexToggle" id="dungeonDexToggle" aria-label="ポケモン図鑑を開く">📖 図鑑</button><aside id="dungeonFirstAidGoal" class="dungeonFirstAidGoal hidden" aria-live="polite"></aside><button type="button" class="dungeonHelpToggle" id="dungeonHelpToggle" aria-label="ダンジョンの遊び方を開く">？ 遊び方</button><section id="dungeonTutorial" class="dungeonTutorial hidden" aria-label="はじめてのダンジョン案内" aria-live="polite"><div class="dungeonTutorialTop"><span id="dungeonTutorialCount"></span><button type="button" id="dungeonTutorialClose" aria-label="案内を閉じる">✕ 閉じる</button></div><b id="dungeonTutorialTitle"></b><p id="dungeonTutorialText"></p><div class="dungeonTutorialActions"><button type="button" id="dungeonTutorialBack">前へ</button><button type="button" id="dungeonTutorialNext" class="primary">次へ</button></div></section><div class="commandBox dungeonCommandBox"><div class="cmdList" id="${cmdId}"></div></div>`}
 // Ver1.134: one lesson at a time, without hiding the whole dungeon.
 // A separate localStorage flag means older save formats are not modified.
 const dungeonTutorialState={key:'',seen:false,shown:false,open:false,step:0};
 function dungeonTutorialKey(){return String(F.SAVE_KEY||'default')+':first-dungeon-guide-v134'}
 function dungeonTutorialLessons(){
- const first=F.OPENING?.active?.()&&F.OPENING?.phase?.()==='mission1';
+ const first=!!F.POKEMON_CARE?.firstAidGoal?.();
  return [
   {icon:'🌲',title:'はじめての「はじまりの森」',text:first?'まずはB1Fで薬草を1個探そう。けがをしたニャオハが待っているよ。木材や食べ物は見つけたら持ち帰ろう。奥へ進むのは次の冒険で大丈夫。':'ここでは道具を集めながら森を探索する。最初はB1Fを歩いて操作に慣れよう。無理に奥へ進まなくて大丈夫。'},
   {icon:'👣',title:'歩く・調べる',text:'行きたい床をタップするとヤマトが歩く。探索済みの遠い床なら自動で進む。「■ 移動を止める」で途中停止できる。'},
@@ -245,6 +245,9 @@ function renderDungeonTutorial(run){
  const draw=()=>{
   panel.classList.toggle('hidden',!st.open);
   toggle.setAttribute('aria-expanded',String(st.open));
+  const goalNode=$('dungeonFirstAidGoal'),goal=F.POKEMON_CARE?.firstAidGoal?.(F.readSave(),run);
+  if(goalNode){goalNode.classList.toggle('hidden',st.open||!goal);if(goal){const text=goal.title+'\n'+goal.text;if(goalNode.textContent!==text)goalNode.textContent=text;}}
+
   if(!st.open)return;
   $('dungeonTutorialCount').textContent=`案内 ${st.step+1} / ${lessons.length}　旅の冒険者`;
   const current=lessons[st.step];$('dungeonTutorialTitle').textContent=`${current.icon} ${current.title}`;
@@ -1114,6 +1117,13 @@ function returnToCampFromStairs(){
 function stairsChoice(){
  const run=F.run;
  if(!run?.active||!F.isOnStairs?.())return;
+ if(F.POKEMON_CARE?.firstAidStairs?.()){
+  const goal=F.POKEMON_CARE.firstAidGoal();
+  modal(`<h2>🌿 ニャオハのための初探索</h2><p>${esc(goal.id==='return'?'薬草が手に入ったね。奥へ進む前に、町へ帰って手当てしよう。':'ニャオハが待っているよ。まずB1Fで薬草を1個拾おう。危ないときは町へ帰って、もう一度出直せるよ。')}</p>`,[
+   {label:goal.id==='return'?'薬草を持って町へ帰る':'安全のため町へ帰る',className:'cmdBtn primary',fn:returnToCampFromStairs},
+   {label:goal.id==='return'?'まだB1Fを歩く':'B1Fで薬草を探す'}
+  ]);return;
+ }
  const last=run.floor>=run.maxFloor,next=Math.min(run.maxFloor,run.floor+1),bossAlive=!!F.dungeonBossAlive?.(run);
  const body=`<h2>🪜 階段</h2><p>${last?(bossAlive?`👑 最深部の主が出口を守っています。先に倒してください。`:`B${run.maxFloor}F・最深部を制しました。踏破して拠点へ帰還しますか？`):`階段に到着しました。B${next}Fへ進むか、ここで拠点へ帰還するか選んでください。`}<br><small>現在 B${run.floor}F / 全${run.maxFloor}F</small></p>`;
  if(last){
@@ -1552,3 +1562,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 // Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
 
 // Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.
+
+// Updated: 2026-11-08 22:31 JST / Ver1.152: live first-aid objective and guided first-floor return.
+
+// Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

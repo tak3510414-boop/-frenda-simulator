@@ -28,7 +28,7 @@ G.validate=(s=F.readSave(),dungeonId=selected)=>{
  sync();const d=F.dungeonDef?.(dungeonId);
  if(!d||!F.dungeonPlayable?.(s,d))throw Error('このダンジョンへはまだ行けません。');
  if(F.run?.active)throw Error('今のぼうけんを終えてから出発してください。');
- if(F.OPENING?.active?.()&&!F.OPENING?.canExplore?.())throw Error('まず町でテントを立ててください。');
+ if(F.OPENING?.active?.()&&!F.OPENING?.canExplore?.())throw Error(F.OPENING.guidance().text||'町の次の目的を確認してね。');
  if(!G.stoneSeen(s))throw Error('出発する前に、青い石をしらべてね。');
  if(kinds()>G.LIMIT_TYPES||count()>G.LIMIT_TOTAL)throw Error('道具が多すぎます。');
  for(const [id,qty] of Object.entries(plan)){
@@ -140,3 +140,8 @@ G.mount=(host,actions={})=>{
 // Updated: 2026-11-04 07:28 JST / Ver1.147: portrait reference alignment.
 
 // Updated: 2026-11-04 18:38 JST / Ver1.148: Yamato display name in gateway messages.
+
+// Updated: 2026-11-08 22:34 JST / Ver1.152: show the current care objective before departure.
+
+// Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

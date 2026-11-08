@@ -691,8 +691,36 @@ O.visitLv5Tavern=(...args)=>{const result=visitTavernBefore128(...args);const sa
 
 const startRun=F.startRun,finishRun=F.finishRun,visit=F.applyCustomerVisit;
 O.tutorialSupplies=s=>{const o=s.story?.opening;if(o?.phase!=='mission1')return[];const wood=Math.max(0,O.rules.stallWood-(Number(o.woodReturned)||0)),goods=Math.max(0,1-(Number(o.goodsReturned)||0));return[...(wood?[['wood',wood]]:[]),...(goods?[['bread',1]]:[])];};
-F.startRun=(...args)=>{if(O.active()&&!O.canExplore())throw new Error('拠点の「次にすること」を確認してください。');const supplies=O.active()?O.tutorialSupplies(F.readSave()):[],run=startRun(...args);if(supplies.length){const candidates=[];for(let y=1;y<run.map.length-1;y++)for(let x=1;x<run.map[y].length-1;x++){const d=Math.abs(x-run.player.x)+Math.abs(y-run.player.y);if(d>=1&&run.map[y][x]==='floor'&&!run.enemies.some(e=>e.x===x&&e.y===y)&&!(run.traps||[]).some(t=>t.x===x&&t.y===y))candidates.push({x,y,d});}candidates.sort((a,b)=>a.d-b.d);supplies.forEach(([itemId,qty],i)=>{const p=candidates[i];if(p){run.floorItems.push({x:p.x,y:p.y,itemId,qty,openingSupply:true});run.map[p.y][p.x]='gather';}});run.log.push(F.readSave().story?.opening?.pokemonCare?.status==='recovering'?'けがをしたニャオハのため、まず薬草を探そう。木材や食べ物は持ち帰れるよ。':'木材と売る品を探そう。持ち帰った分は追加配置されません。');}return run;};
-F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[id,q])=>n+Math.max(0,Number(q)-(Number(runBefore?.startingBag?.[id])||0)),0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0)O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.();if(result.success)O.maybeQueueStallPlan?.()}return result};
+// Reachable path distance, rather than distance through walls, selects tutorial pickups.
+O.tutorialSupplyTiles=run=>{
+ if(!run?.map||!run.player)return[];
+ const key=(x,y)=>`${x},${y}`,blocked=new Set([
+  ...(run.enemies||[]).filter(e=>e.hp>0).map(e=>key(e.x,e.y)),
+  ...(run.traps||[]).map(t=>key(t.x,t.y))
+ ]),occupied=new Set((run.floorItems||[]).map(t=>key(t.x,t.y)));
+ const q=[{x:run.player.x,y:run.player.y,d:0}],seen=new Set([key(run.player.x,run.player.y)]),out=[];
+ for(let i=0;i<q.length;i++){
+  const p=q[i];
+  if(p.d>0&&run.map[p.y]?.[p.x]==='floor'&&!occupied.has(key(p.x,p.y)))out.push(p);
+  for(const [dx,dy] of [[0,-1],[-1,0],[1,0],[0,1]]){
+   const x=p.x+dx,y=p.y+dy,k=key(x,y),tile=run.map[y]?.[x];
+   if(!tile||tile==='wall'||tile==='stairs'||blocked.has(k)||seen.has(k))continue;
+   seen.add(k);q.push({x,y,d:p.d+1});
+  }
+ }
+ return out;
+};
+F.startRun=(...args)=>{
+ if(O.active()&&!O.canExplore())throw new Error(O.guidance().text||'拠点の「次にすること」を確認してください。');
+ const supplies=O.active()?O.tutorialSupplies(F.readSave()):[],run=startRun(...args);
+ if(supplies.length){
+  const candidates=O.tutorialSupplyTiles(run);
+  supplies.forEach(([itemId,qty],i)=>{const p=candidates[i];if(p){run.floorItems.push({x:p.x,y:p.y,itemId,qty,openingSupply:true});run.map[p.y][p.x]='gather';}});
+  run.log.push(F.readSave().story?.opening?.pokemonCare?.status==='recovering'?'けがをしたニャオハのため、まず薬草を探そう。木材や食べ物は持ち帰れるよ。':'木材と売る品を探そう。持ち帰った分は追加配置されません。');
+ }
+ return run;
+};
+F.finishRun=(...args)=>{const runBefore=F.run,wasActive=!!runBefore?.active,runId=runBefore?.dungeonId,runFloor=Number(runBefore?.floor)||0,runMax=Number(runBefore?.maxFloor)||0,result=finishRun(...args);if(wasActive&&result&&O.active()){F.mutateSave(s=>{const o=s.story.opening;O.ensureSceneState(o);o.woodReturned+=Number(result.delivered?.wood)||0;o.goodsReturned+=Object.entries(result.delivered||{}).filter(([id])=>id!=='wood'&&F.item(id)).reduce((n,[id,q])=>n+Math.max(0,Number(q)-(Number(runBefore?.startingBag?.[id])||0)),0);if(result.success&&o.phase==='mission1'&&o.woodReturned>=O.rules.stallWood&&o.goodsReturned>0&&(!o.pokemonCare||['trusted','released'].includes(o.pokemonCare.status)))O.enqueueSceneInSave(s,'firstReturn');if(result.success&&result.reason==='clear'&&runId==='beginner_forest'&&runFloor>=runMax&&!o.forestLordDefeated){o.forestLordDefeated=true;o.endingSeen=true;O.enqueueSceneInSave(s,'forestEnding');F.addHistory(s,'story','森の主と向き合い、森と町をつなぐ道を見つけた。')}});if(result.reason==='clear')O.syncEnding?.();if(result.success)O.maybeQueueStallPlan?.()}return result};
 F.applyCustomerVisit=result=>{const saved=F.readSave(),soldBefore=saved.sales.count,rumorBefore=!!saved.story?.rumor,value=visit(result),after=F.readSave(),sold=Number(after.sales?.count)||0;if(O.active()&&O.phase()==='first_sale'&&sold>soldBefore)F.mutateSave(s=>{s.story.opening.mission2=true;s.story.opening.phase='upgrade';O.enqueueSceneInSave(s,'firstSale');if(!rumorBefore&&s.story?.rumor)O.enqueueSceneInSave(s,'forestRumor');F.addHistory(s,'mission','ミッション②達成：初めて商品を売ろう。')});else if(O.active()&&!rumorBefore&&after.story?.rumor)O.enqueueScene('forestRumor');return value};
 // The final epilogue is also available if the boss was defeated before shop Lv6 completion.
 const previousFinishRun127=F.finishRun;
@@ -766,3 +794,8 @@ O.enter();
 // Updated: 2026-11-05 JST / Ver1.149: arrival dialogue now answers Yamato's question; opening guidance wording adjusted.
 
 // Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.
+
+// Updated: 2026-11-08 22:31 JST / Ver1.152: reachable tutorial supplies and care-first return story.
+
+// Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

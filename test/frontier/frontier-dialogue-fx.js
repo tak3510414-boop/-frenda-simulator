@@ -47,3 +47,4 @@
 // Updated: 2026-11-05 JST / Ver1.150: per-scene emotional faces and narration handling.
 
 // Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.

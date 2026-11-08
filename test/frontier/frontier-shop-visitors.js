@@ -63,3 +63,4 @@ if(evaluate)F.evaluateShopCustomer=(s,customer,rng)=>{const first=fairOpeningSto
 // Updated: 2026-10-26 JST / Ver1.70
 
 // Updated: 2026-10-26 18:44 JST / Ver1.70
+// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
