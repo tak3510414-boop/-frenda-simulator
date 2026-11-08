@@ -51,4 +51,4 @@ N.ensure(N.cached);
 
 // Updated: 2026-11-02 21:59 JST / Ver1.125: continuity of Mina meeting and settlement dialogue.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

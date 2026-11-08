@@ -175,4 +175,4 @@ W.mount=(host,rerender,actions={})=>{
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
 
 // Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

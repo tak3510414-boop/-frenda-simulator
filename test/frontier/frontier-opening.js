@@ -798,4 +798,4 @@ O.enter();
 // Updated: 2026-11-08 22:31 JST / Ver1.152: reachable tutorial supplies and care-first return story.
 
 // Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

@@ -31,7 +31,7 @@ C.mount=async(host,rerender,actions={})=>{
  const g=O.guidance();
  host.innerHTML=`<div class="openingObjective" id="openingObjective"><span>序章</span><b>次にすること：${esc(g.title)}</b></div><div class="openingCanvasWrap" id="openingCanvasWrap"><canvas id="frontierCinematicCanvas" aria-label="開拓地。オープニングではヤマトが自動で移動します。終了後は道をタップすると移動します。"></canvas><div id="openingSpeech" class="openingSpeech" hidden><small id="openingSpeaker"></small><img id="openingPortrait" class="openingPortrait" alt="話している人の顔" hidden><p id="openingWords"></p><button type="button" id="openingContinue" class="openingContinue">▶ つづける</button></div><button id="openingSkip" class="openingSkip" ${auto?'':'hidden'} type="button">演出をスキップ</button></div><div class="openingCareChoices" id="openingCareChoices" hidden aria-label="ニャオハのこれから"><b>ニャオハは、これからどうしたいのだろう？</b><p>無理に引き留めず、気持ちを尊重して選びましょう。</p><div><button type="button" id="pokemonChooseTown">一緒に町で暮らす</button><button type="button" id="pokemonChooseForest">森へ戻るのを見守る</button></div></div><div class="openingStallConfirm" id="openingStallConfirm" hidden><b>🏮 小さな露店を建てよう</b><p>木材3個を使って、柱・屋根・棚を作るよ。ここに建てる？</p><div><button type="button" id="openingStallBuild" class="cmdBtn primary">ここに露店を建てる</button><button type="button" id="openingStallCancel" class="cmdBtn">あとで</button></div></div><p class="openingLocationHelp" id="openingHint" role="status">${auto?'物語が始まります。ヤマトが自動で移動します。':'北の道を登ると「はじまりの森」へ入れます。'}</p><div class="openingSecondary"><button id="openingOverview" class="cmdBtn" type="button">${P.zoomLabel(W.overview)}</button><button id="openingMissions" class="cmdBtn" type="button">現在のミッション</button><details><summary>TEST・その他</summary><button id="openingReplay" class="cmdBtn" type="button">序章から見直す（TEST）</button></details></div>`;
  const cv=document.getElementById('frontierCinematicCanvas'),wrap=document.getElementById('openingCanvasWrap'),speech=document.getElementById('openingSpeech'),speaker=document.getElementById('openingSpeaker'),words=document.getElementById('openingWords'),portrait=document.getElementById('openingPortrait'),continueBtn=document.getElementById('openingContinue'),hint=document.getElementById('openingHint'),skip=document.getElementById('openingSkip'),careChoices=document.getElementById('openingCareChoices'),stallConfirm=document.getElementById('openingStallConfirm');
- const size=()=>{const w=Math.max(280,Math.min(980,wrap.getBoundingClientRect().width||window.innerWidth||390)),h=window.visualViewport?.height||window.innerHeight||780,available=Math.max(220,Math.min(610,h-290)),cssHeight=W.overview?w*.48:Math.min(available,w);const worldWidth=P.worldWidth(W.overview);cv.width=worldWidth;cv.height=W.overview?480:Math.min(480,Math.max(120,Math.round(cssHeight*worldWidth/w)));cv.style.width='100%';cv.style.height=`${cssHeight}px`;};
+ const size=()=>{const w=Math.max(1,wrap.clientWidth||390),h=Math.max(1,wrap.clientHeight||300);const worldWidth=W.overview?Math.max(1000,480*w/h):P.worldWidth(false);cv.width=Math.round(worldWidth);cv.height=Math.max(60,Math.round(h*worldWidth/w));cv.style.width='100%';cv.style.height='100%';};C.resize=size;
  size();window.addEventListener('resize',size);window.visualViewport?.addEventListener?.('resize',size);
  const cleanup=()=>{window.removeEventListener('resize',size);window.visualViewport?.removeEventListener?.('resize',size);};
  const stopIfDead=()=>{if(active())return false;cleanup();C.active=false;O.cinematicActive=false;return true};
@@ -121,7 +121,7 @@ C.mount=async(host,rerender,actions={})=>{
    if(x>=-90&&x<cv.width+90&&y>=0&&y<cv.height+50){c.save();c.fillStyle='rgba(20,52,32,.94)';c.strokeStyle='#f9dfac';c.lineWidth=2;c.fillRect(x-95,y-61,190,24);c.strokeRect(x-95,y-61,190,24);c.font='bold 12px sans-serif';c.fillStyle='#fff5ce';c.textAlign='center';c.fillText(F.POKEMON_CARE.canTreatVisual()?'🌿 ニャオハを手当て':F.POKEMON_CARE.visual()?.status==='healthy'?'🐾 ニャオハに話す':'🌿 薬草を探そう',x,y-44);c.restore()}
   }
  };
- const tick=now=>{if(stopIfDead())return;const dt=lastFrame?Math.min(.05,Math.max(0,(now-lastFrame)/1000)):0;lastFrame=now;let budget=(locked?190:100)*dt;
+ const tick=now=>{if(stopIfDead())return;const dt=lastFrame?Math.min(.05,Math.max(0,(now-lastFrame)/1000)):0;lastFrame=now;let budget=(locked?190:150)*dt;if(P.manualInput&&!locked){route=[];movingResolve=null;P.userGoal=null;const d=P.manualInput;position=P.walkStep(scene,position,d.dx,d.dy,budget);facing=d.dx?(d.dx<0?2:3):(d.dy<0?1:0);budget=0;}
   while(route.length&&budget>0){const p=route[0],dx=p.x-position.x,dy=p.y-position.y,d=Math.hypot(dx,dy);if(d<.2){route.shift();continue}facing=Math.abs(dx)>Math.abs(dy)?dx<0?2:3:dy<0?1:0;const n=Math.min(d,budget);position.x+=dx/d*n;position.y+=dy/d*n;budget-=n;if(n>=d)route.shift();}
   P.position=position;
   let npcBudget=(locked?124:84)*dt;
@@ -285,16 +285,17 @@ C.mount=async(host,rerender,actions={})=>{
   if(phase==='mission1'&&O.stallReady()&&Math.hypot(position.x-stall.x,position.y-stall.y)<44){stallConfirm.hidden=false;hint.textContent='木材を使って、小さな露店を建てよう。';return}
   if(phase==='mission1'&&Math.hypot(position.x-north.x,position.y-north.y)<32)enterForest();};
  cv.onclick=e=>{if(locked)return;const b=cv.getBoundingClientRect(),p={x:(e.clientX-b.left)/b.width*cv.width+cam.x,y:(e.clientY-b.top)/b.height*cv.height};const phase=O.phase();let destination=p;
-  if(phase==='mission1'&&F.POKEMON_CARE?.canInteract?.()&&Math.hypot(p.x-F.POKEMON_CARE.interactionPoint().x,p.y-F.POKEMON_CARE.interactionPoint().y)<90)destination=F.POKEMON_CARE.interactionPoint();
+  if(phase==='mission1'&&F.POKEMON_CARE?.canInteract?.()&&(Math.hypot(p.x-F.POKEMON_CARE.interactionPoint().x,p.y-F.POKEMON_CARE.interactionPoint().y)<30||(Math.abs(p.x-F.POKEMON_CARE.interactionPoint().x)<95&&p.y>=F.POKEMON_CARE.interactionPoint().y-61&&p.y<=F.POKEMON_CARE.interactionPoint().y-37)))destination=F.POKEMON_CARE.interactionPoint();
   else if(Math.hypot(p.x-north.x,p.y-north.y)<65)destination=north;
   else if(Math.hypot(p.x-camp.x,p.y-camp.y)<62)destination=camp;
   else if(phase==='mission1'&&O.stallReady()&&Math.hypot(p.x-stall.x,p.y-stall.y)<50)destination=stall;
-  const dest=P.nearest(scene,destination,35);if(!dest){hint.textContent='通れる道を選んでください。';return}route=P.path(scene,position,dest);if(!route.length){hint.textContent='その地点へは歩けません。';return}
+  const dest=P.nearest(scene,destination,64);if(!dest){hint.textContent='通れる道を選んでください。';return}route=P.path(scene,position,dest);P.userGoal=route.length?{...route[route.length-1]}:null;if(!route.length){hint.textContent='その地点へは歩けません。';return}
   if(route.length<=1){route=[];interact();return}
   hint.textContent=destination===north?'北の森へ向かっています。':F.POKEMON_CARE?.canInteract?.()&&Math.hypot(destination.x-F.POKEMON_CARE.interactionPoint().x,destination.y-F.POKEMON_CARE.interactionPoint().y)<1?'ニャオハのところへ移動しています。':destination===camp?'テントのそばへ移動します。':destination===stall?'小さな露店を建てる場所へ向かっています。':'移動中……';
   // User route interaction is invoked at the end of movement by the regular animation loop.
   movingResolve=ok=>{if(ok){hint.textContent='目的地に着きました。';interact();}};
  };
+ P.installWalkPad?.(wrap,cv,()=>!locked,()=>{route=[];movingResolve=null;});
  const chooseCare=choice=>{try{if(!F.POKEMON_CARE?.bond?.(choice))return;careChoices.hidden=true;hint.textContent=choice==='town'?'ニャオハは自分の意思で町に残りました。':'ニャオハは森へ帰ることを選びました。';rerender();setTimeout(()=>O.presentPendingScene?.(),100)}catch(e){hint.textContent=e.message}};
  document.getElementById('pokemonChooseTown').onclick=()=>chooseCare('town');
  document.getElementById('pokemonChooseForest').onclick=()=>chooseCare('forest');
@@ -348,4 +349,6 @@ C.mount=async(host,rerender,actions={})=>{
 // Updated: 2026-11-05 12:32 JST / Ver1.150 (Nyahoja emotion routing and portrait race fix).
 
 // Updated: 2026-11-05 20:18 JST / Ver1.151: consent-based stall introduction/construction and single-action return summary.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+
+// Updated: 2026-11-08 23:29 JST / Ver1.155: viewport-sized opening and precise companion interaction.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

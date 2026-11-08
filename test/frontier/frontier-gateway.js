@@ -5,11 +5,11 @@
 (()=>{'use strict';
 const F=window.FRENDA_FRONTIER;if(!F)return;
 const G=F.GATEWAY={VERSION:'1.147',LIMIT_TYPES:4,LIMIT_TOTAL:8,LIMIT_EACH:3};
-let plan={},selected='beginner_forest',key='';
+let plan={},selected='beginner_forest',key='';G.page='entrance';
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const count=()=>Object.values(plan).reduce((n,v)=>n+v,0);
 const kinds=()=>Object.values(plan).filter(v=>v>0).length;
-const sync=()=>{if(key!==F.SAVE_KEY){key=F.SAVE_KEY;plan={};selected=F.DEFAULT_DUNGEON_ID||'beginner_forest';}};
+const sync=()=>{if(key!==F.SAVE_KEY){key=F.SAVE_KEY;plan={};G.itemPage=0;selected=F.DEFAULT_DUNGEON_ID||'beginner_forest';G.page='entrance';}};
 const canCarry=id=>!!F.item?.(id)?.dungeonUse;
 G.packable=s=>Object.entries(s.warehouse||{}).filter(([id,n])=>canCarry(id)&&Number(n)>0).map(([id,n])=>({id,qty:Math.floor(Number(n)),item:F.item(id)}));
 G.plan=()=>{sync();return {...plan}};
@@ -94,6 +94,17 @@ G.mount=(host,actions={})=>{
  <p class="gatewayLimits">4種類まで／ぜんぶで8個まで／同じ道具は3個まで。ぼうけん中のかばんは10種類まで。ロープは別に1回ぶんあるよ。</p>
  <div class="gatewayItems" id="gatewayItems">${G.packable(s).length?G.packable(s).map(({id,qty,item})=>`<div class="gatewayItem"><div class="gatewayItemTitle"><b>${esc(item.icon||'🎒')} ${esc(item.name)}</b><small>そうこに${qty}個</small></div><div class="gatewayCounter"><button type="button" data-pack-down="${esc(id)}" aria-label="${esc(item.name)}を1つへらす" ${plan[id]?'':'disabled'}>−</button><span>${Number(plan[id])||0}</span><button type="button" data-pack-up="${esc(id)}" aria-label="${esc(item.name)}を1つふやす" ${Number(plan[id]||0)>=Math.min(qty,G.LIMIT_EACH)?'disabled':''}>＋</button></div></div>`).join(''):'<p>そうこに道具はありません。持ち物なしでも出発できるよ。</p>'}</div>
  <div class="gatewayFooter"><div class="gatewayBagPreview"><b>出発する時の道具</b><span>${Object.entries(plan).length?Object.entries(plan).map(([id,qty])=>esc(`${F.item(id)?.name||id} ×${qty}`)).join(' ・ '):'まだえらんでいません'}</span></div><button class="gatewayDepart" type="button" id="gatewayDepart">🌲 ${esc(F.dungeonDef?.(selected)?.name||'森')}へ出発</button><button type="button" class="gatewaySecondary" id="gatewayBackBottom">町にもどる</button></div></section>`;
+ const entrance=host.querySelector('.gatewayScene'),preparation=host.querySelector('.gatewayPreparation'),parts=[...preparation.children];
+ entrance.classList.add('gatewayPage');entrance.dataset.gatewayPage='entrance';
+ const destinations=document.createElement('section'),packing=document.createElement('section');
+ for(const [el,id] of [[destinations,'destinations'],[packing,'packing']]){el.className='gatewayPreparation gatewayPage';el.dataset.gatewayPage=id;}
+ parts.slice(0,5).forEach(el=>destinations.append(el));parts.slice(5,8).forEach(el=>packing.append(el));
+ const footer=parts[8];preparation.remove();
+ const tabs=document.createElement('nav');tabs.className='gatewayTabs';tabs.setAttribute('aria-label','森へ出発する準備');
+ for(const [id,label] of [['entrance','① 森の入口'],['destinations','② 行き先'],['packing','③ 持ち物']]){const b=document.createElement('button');b.type='button';b.dataset.gatewayTab=id;b.textContent=label;tabs.append(b)}
+ host.prepend(tabs);host.append(destinations,packing,footer);
+ const showPage=id=>{G.page=id;host.querySelectorAll('[data-gateway-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.gatewayPage!==id));tabs.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.gatewayTab===id);b.setAttribute('aria-pressed',String(b.dataset.gatewayTab===id))});const b=host.querySelector('#gatewayDepart');b.textContent=id==='entrance'?'🧭 行き先をえらぶ':id==='destinations'?'🎒 持ち物をえらぶ':`🌲 ${F.dungeonDef?.(selected)?.name||'森'}へ出発`;F.SCREEN?.request?.();};
+ tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>showPage(b.dataset.gatewayTab));showPage(G.page);
  const $=q=>host.querySelector(q),canvas=$('#gatewayCanvas');if(canvas)sceneDraw(canvas);
  let reveal=null,completed=true;
  const say=(who,text)=>{
@@ -104,7 +115,7 @@ G.mount=(host,actions={})=>{
   reveal=FX?.type?FX.type(words,text,finished):(()=>{words.textContent=text;completed=true});
   if(!FX?.type){reveal()}
  };
- const goPreparation=()=>{$('#gatewayDestinations')?.scrollIntoView?.({block:'start',behavior:'smooth'});say('ヤマト','どこへ行こう？ 出かける前に、道具も見ておこう。')};
+ const goPreparation=()=>{showPage('destinations');say('ヤマト','どこへ行こう？ 出かける前に、道具も見ておこう。')};
  const showStone=()=>{
   const player=$('#gatewayHero'),cat=$('#gatewayCompanion');
   if(player){player.classList.add('nearStone');cat?.classList.add('nearStone')}
@@ -128,7 +139,7 @@ G.mount=(host,actions={})=>{
  const change=(id,delta)=>{try{G.setCount(id,(Number(plan[id])||0)+delta);G.mount(host,actions)}catch(e){actions.message?.(e.message)}};
  host.querySelectorAll('[data-pack-up]').forEach(b=>b.onclick=()=>change(b.dataset.packUp,1));
  host.querySelectorAll('[data-pack-down]').forEach(b=>b.onclick=()=>change(b.dataset.packDown,-1));
- $('#gatewayDepart').onclick=()=>{try{G.depart(selected);actions.depart?.()}catch(e){actions.message?.(e.message)}};
+ $('#gatewayDepart').onclick=()=>{if(G.page==='entrance'){if(!G.stoneSeen()){say('ヤマト','出かける前に、青い石をしらべてみよう。');return;}showPage('destinations');return;}if(G.page==='destinations'){showPage('packing');return;}try{G.depart(selected);actions.depart?.()}catch(e){actions.message?.(e.message)}};
  // Only the real companion appears. Before rescue, Nyahoja is still in the story.
  if(companion)say('ニャオハ',seen?'行く前に、持ち物を見ておこう！':'あの石、青くひかっているね。しらべてみよう！');
  else say('ヤマト',seen?'また森へ行くんだ。先にじゅんびをしておこう。':'あの青い石、なんだろう。近くで見てみよう。');
@@ -144,4 +155,6 @@ G.mount=(host,actions={})=>{
 // Updated: 2026-11-08 22:34 JST / Ver1.152: show the current care objective before departure.
 
 // Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+
+// Updated: 2026-11-08 JST / Ver1.155: entrance, destination and packing are separate full-screen steps.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

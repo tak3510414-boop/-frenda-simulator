@@ -57,4 +57,4 @@ F.endShopSession=(visitors,sold)=>F.mutateSave(s=>{F.addHistory(s,'shop',`営業
 
 // Updated: 2026-11-01 19:47 JST / Ver1.113: included from Ver1.112 unchanged logic for cumulative TEST release.
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

@@ -659,4 +659,4 @@ F.finishShopSession=()=>F.mutateSave(s=>{const time=F.advanceTimeState(s,Number(
 // Bundle updated: 2026-11-03 04:47 JST / Frenda Frontier Ver1.128.
 
 // Updated: 2026-11-03 17:14 JST / Ver1.142: broader town walk corridors with existing building exclusion intact.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

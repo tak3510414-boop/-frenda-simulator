@@ -1,0 +1,108 @@
+/* Frenda Frontier Ver1.155: one viewport, paged content, accessible movement. */
+:root{--frontier-vh:100dvh;--frontier-edge:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;width:100%;overflow:hidden;overscroll-behavior:none}
+body{height:var(--frontier-vh);min-height:0;display:flex;flex-direction:column}
+body>header{position:relative;flex:0 0 auto;padding:5px 8px}
+header .head{max-width:980px;gap:5px}.brand b{font-size:16px}.brand small{font-size:9px}.headStats{gap:3px}.pill{font-size:9px;padding:3px 6px}
+main{width:100%;max-width:980px;flex:1 1 0;min-height:0;display:flex;flex-direction:column;padding:5px 6px max(5px,var(--frontier-edge));overflow:hidden}
+main>.notice{display:none}.topNav{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:0 0 5px;overflow:visible}
+.topNav button,#openingMissionNav{display:block!important;width:auto;min-width:0;margin:0!important;padding:7px 2px!important;min-height:34px;font-size:10px!important;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gameFrame{flex:1 1 0;min-height:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden}
+.gameHeader{flex:0 0 auto;min-height:28px;padding:5px 8px!important;align-items:center}.gameHeader h2{font-size:12px!important;line-height:1.2}.gameHeader .sub{display:none!important}
+.sceneHolder{position:relative;flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#sceneMount.gameScene{position:relative;flex:1 1 0;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;margin:0;display:flex;flex-direction:column;overflow:hidden!important}
+.progressGuide{flex:0 0 auto}.progressGuide>summary{padding:5px 8px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progressGuide[open]{position:absolute;inset:0;z-index:46;display:flex;flex-direction:column;overflow:hidden;background:#173c2b}.progressGuide[open]>summary{flex:none;min-height:36px}
+.progressGuide[open]>section{flex:1;min-height:0;overflow:hidden}
+#progressCanvas{flex:1 1 0;min-height:0!important;width:100%!important;height:auto!important;touch-action:none!important}
+.progressMessage,.openingLocationHelp{flex:0 0 auto;margin:0!important;min-height:28px;padding:5px 8px!important;font-size:11px!important;line-height:1.4;max-height:42px;overflow:hidden}
+.progressCommands{flex:0 0 auto;gap:4px;padding:4px 5px!important}.progressCommands .cmdBtn{min-height:36px;padding:5px 3px;font-size:10px}
+.frontierOpeningStage .openingObjective{flex:none;margin:0;padding:5px 8px;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frontierOpeningStage .openingCanvasWrap{position:relative;flex:1 1 0;min-height:0!important;width:100%;overflow:hidden}
+#frontierCinematicCanvas{display:block;width:100%!important;height:100%!important;touch-action:none}
+.frontierOpeningStage .openingSecondary{flex:none;display:flex;flex-wrap:nowrap;gap:4px;padding:4px 5px}.frontierOpeningStage .openingSecondary>.cmdBtn{flex:1;min-width:0;min-height:34px;font-size:10px;padding:5px}
+.frontierOpeningStage .openingSecondary details{flex:0 0 auto;position:relative;font-size:10px}.frontierOpeningStage .openingSecondary details[open]>.cmdBtn{position:absolute;bottom:36px;right:0;width:160px;z-index:60}
+.frontierOpeningStage .openingCareChoices,.frontierOpeningStage .openingStallConfirm{position:absolute;left:6px;right:6px;bottom:76px;z-index:65;padding:9px;font-size:12px;line-height:1.4;border:2px solid #e3d5ae;box-shadow:0 5px 18px #0008}
+.frontierOpeningStage .openingCareChoices>div,.frontierOpeningStage .openingStallConfirm>div{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.frontierOpeningStage .openingCareChoices button{min-height:40px;padding:8px 3px;font-size:11px}
+.frontierOpeningStage .openingSpeech{left:5px;right:5px;bottom:5px;padding:8px;max-height:none;grid-template-columns:48px minmax(0,1fr);gap:4px 7px}
+.frontierOpeningStage .openingPortrait{width:46px;height:52px}.frontierOpeningStage .openingSpeech p{max-height:none!important;overflow:visible!important;font-size:13px;line-height:1.45;min-height:0!important}
+.frontierOpeningStage .openingContinue{grid-column:2;grid-row:3;min-height:34px;padding:5px 8px;margin:0!important}
+.townWalkPad{position:absolute;z-index:25;right:7px;bottom:7px;display:grid;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(3,31px);gap:2px;padding:3px;border-radius:12px;background:#102b28b8;touch-action:none;user-select:none;-webkit-user-select:none}
+.townWalkPad button{padding:0;border:1px solid #e2dbc0;border-radius:7px;background:#274635e8;color:#fff6d5;font-size:20px;line-height:1;touch-action:none}.townWalkPad button:active,.townWalkPad button.pressed{background:#936c35}
+.townWalkPad [data-walk="up"]{grid-column:2;grid-row:1}.townWalkPad [data-walk="left"]{grid-column:1;grid-row:2}.townWalkPad [data-walk="stop"]{grid-column:2;grid-row:2;font-size:13px}.townWalkPad [data-walk="right"]{grid-column:3;grid-row:2}.townWalkPad [data-walk="down"]{grid-column:2;grid-row:3}
+.frontierOpeningStage:has(.openingSpeech:not([hidden])) .townWalkPad,.frontierOpeningStage:has(#openingSkip:not([hidden])) .townWalkPad{display:none}
+.gatewayTabs{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:5px;background:#173c2b}.gatewayTabs button{min-height:34px;border:1px solid #879b83;border-radius:5px;background:#263e30;color:#fff6df;font-size:12px}.gatewayTabs button.on{background:#72572e;border-color:#f1d495}
+.gatewayPage{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.gatewayScene{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden}.gatewayIntro,.gatewayObjective{flex:none;padding:5px 8px;font-size:11px}.gatewayIntro b{font-size:13px}.gatewayIntro span{font-size:10px}
+.gatewayVisual{flex:1 1 0;min-height:60px;max-height:none!important;overflow:hidden}.gatewayVisual canvas{height:100%!important;width:100%!important;object-fit:cover}
+.gatewayDialogue{flex:none;padding:6px 8px;grid-template-columns:43px minmax(0,1fr) 22px;gap:3px 6px;min-height:74px}.gatewayPortrait{height:48px;width:43px}.gatewaySpeaker{font-size:10px}.gatewayWords{font-size:13px;min-height:0;line-height:1.4}.gatewayVoiceRow{flex:none;padding:3px 8px;font-size:10px}.gatewaySceneActions{flex:none;padding:5px;gap:5px}.gatewaySceneActions button{min-height:34px;padding:5px;font-size:12px}
+.gatewayPreparation{padding:7px;gap:6px}.gatewayHeading{flex:none;padding:3px 0}.gatewayHeading h3{font-size:14px}.gatewayHeading small{font-size:10px}.gatewayLimits{flex:none;font-size:11px;margin:2px 0}
+.gatewayDestinations,.gatewayItems{min-height:0;flex:1 1 0;align-content:start;gap:5px;grid-template-columns:repeat(2,minmax(0,1fr));overflow:hidden}
+.gatewayDestination{padding:7px;min-height:54px}.gatewayDestination b{font-size:12px}.gatewayDestination small{font-size:10px}
+.gatewayEquipment{flex:none;gap:4px}.gatewayEquipment>span{padding:5px}.gatewayEquipment b,.gatewayEquipment small{font-size:10px}.gatewaySecondary{min-height:34px;padding:5px;font-size:12px}
+.gatewayItem{padding:5px;gap:3px}.gatewayItemTitle b{font-size:11px}.gatewayItemTitle small{font-size:10px}.gatewayCounter button{min-width:27px;height:32px}
+.gatewayFooter{flex:none;gap:5px;padding:5px;border-top:1px solid #a39b73;background:#1e3528}.gatewayFooter>.gatewaySecondary{display:none}.gatewayBagPreview{padding:4px 7px;font-size:10px;gap:2px}.gatewayBagPreview b,.gatewayBagPreview span{font-size:10px;line-height:1.3}.gatewayDepart{min-height:38px;font-size:13px;padding:6px}
+.screenPagedOut,.screenEmptyGroup{display:none!important}
+.screenPager{display:flex!important;flex:0 0 auto!important;align-items:center;justify-content:space-between;gap:6px;margin:0!important;padding:5px 0!important;min-height:37px;background:inherit;color:inherit}
+.screenPager button{min-height:32px;min-width:68px;padding:4px 8px;border:1px solid #d7c89d;border-radius:5px;background:#51442d;color:#fff7e2;font-size:12px}.screenPager span{font-size:11px;white-space:nowrap}.screenPager button:disabled{opacity:.35}
+#sceneMount.dungeonSceneLayout{display:block}
+.gameScene.dungeonSceneLayout .sceneCanvas,.gameScene.dungeonSceneLayout #tokenLayer{position:absolute;inset:0!important;width:100%!important;height:100%!important;aspect-ratio:auto!important;max-height:none}
+.gameScene.dungeonSceneLayout .commandBox{left:5px!important;right:5px!important;top:auto!important;bottom:5px!important;width:auto!important;padding:4px!important;border-width:1px}
+.gameScene.dungeonSceneLayout .commandTitle{display:none!important}.gameScene.dungeonSceneLayout .cmdList{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px}
+.gameScene.dungeonSceneLayout .cmdBtn{font-size:11px;min-height:33px;padding:4px 1px;white-space:nowrap}.sceneHud{left:6px;right:6px;top:5px}
+.dungeonFirstAidGoal{top:43px;left:6px;right:75px;padding:5px 7px;font-size:10px;line-height:1.35;white-space:pre-line}
+.gameScene.dungeonSceneLayout .dungeonHelpToggle{top:42px;right:5px;font-size:10px;min-height:29px;padding:4px}.gameScene.dungeonSceneLayout .dungeonTutorial{top:76px;padding:8px;max-height:none}.dungeonTutorial p{font-size:12px!important}
+.dungeonMessageOverlay{bottom:82px!important;left:6px;right:6px;padding:6px 8px;min-height:0!important;max-height:57px}.dungeonMessageOverlay #dungeonMessageText{font-size:12px;line-height:1.4}.dungeonFootItemHint{bottom:83px}
+.dungeonDexToggle{right:6px!important;top:7px!important;font-size:10px!important;min-height:26px!important}
+.indoorRoom{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.indoorHeading{flex:none;padding:5px 8px;font-size:12px}.indoorHeading span{font-size:10px}#indoorCanvas{flex:1;min-height:0;width:100%;height:auto;object-fit:contain}.indoorHelp{flex:none;font-size:11px;padding:5px 8px;max-height:44px;overflow:hidden}.indoorCommands{flex:none;padding:4px 6px;gap:4px}.indoorCommands button{min-height:34px;font-size:11px}
+.stallPanel{display:flex;flex:1;flex-direction:column;min-height:0;padding:8px;overflow:hidden}.stallPanel h3{font-size:15px}.stallPanel p{font-size:12px;margin:5px 0}.stallArtwork{max-height:65px;object-fit:contain;margin:3px auto}.stallCommands{flex:none;margin:5px 0;gap:5px}.stallCommands .cmdBtn,.stallStock .cmdBtn{min-height:34px;font-size:12px;padding:5px}.stallStock{min-height:0;overflow:hidden}
+.modal{padding:7px;padding-bottom:max(7px,var(--frontier-edge))}
+.modal .modalPanel,.modalPanel.menuModal,.modalPanel.longListModal{height:calc(var(--frontier-vh) - 16px)!important;max-height:calc(var(--frontier-vh) - 16px)!important;min-height:0!important;display:flex!important;flex-direction:column;overflow:hidden!important;padding:9px!important}
+.modalStickyClose{flex:none!important;min-height:32px!important}.modalTopClose{min-height:30px!important;font-size:12px!important}
+#frontierModalBody{flex:1 1 0!important;min-height:0!important;overflow:hidden!important;max-height:none!important}.modalPanel h2{font-size:17px;margin:4px 0 7px}.modalPanel h3{font-size:14px}.modalPanel p{font-size:13px;line-height:1.5}
+.modalActions,.modalActions.manyActions{flex:none!important;max-height:none!important;overflow:hidden!important;margin-top:4px!important;padding-top:4px!important;gap:4px}.modalActions .cmdBtn{min-height:34px;font-size:12px;padding:5px 8px}
+#frontierModalBody .choiceGrid,#frontierModalBody .partnerGrid{gap:5px}.choiceCard,.partnerCard{padding:5px!important;min-height:55px;border-radius:6px!important;font-size:12px}
+#frontierModalBody .dungeonHistoryList,#frontierModalBody .worldMapWrap,#frontierModalBody .layerTestList,#frontierModalBody .storyChapterList{overflow:hidden!important;max-height:none!important}
+.retroBagLayout{height:100%!important;max-height:none!important;min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}.retroBagCategories{flex:none!important;display:flex!important;gap:4px}.retroBagMain{flex:1;min-height:0!important;display:grid!important;grid-template-rows:minmax(70px,1fr) minmax(130px,1fr);grid-template-columns:1fr!important;overflow:hidden}
+.retroBagItems,.retroBagDescription{min-height:0!important;overflow:hidden!important;max-height:none!important}.retroBagItems{position:relative;padding-bottom:38px!important}.retroBagItems>.screenPager{position:absolute;bottom:0;left:0;right:0;background:#24251f;padding:4px!important}.retroBagRow{min-height:33px;padding:5px!important}.retroInlineActions{gap:4px!important}.retroInlineActions button{min-height:32px!important;padding:4px!important;font-size:11px!important}
+#frontierModal.storyModal .modalPanel{height:auto!important;max-height:calc(var(--frontier-vh) - 20px)!important;min-height:0!important;overflow:hidden!important;display:flex!important}.storyModal #frontierModalBody{flex:none!important}.storyDialogueText{overflow:visible!important;max-height:none!important;font-size:13px!important;line-height:1.45!important}.storyDialogueHint{font-size:9px!important}.storyDialogueCard{min-height:0!important;padding:4px!important}
+.dungeonEntry{position:fixed;inset:0;z-index:160;display:grid;place-content:center;gap:14px;text-align:center;background:radial-gradient(ellipse at 50% 35%,#223e38,#081612 70%);color:#fff4d4;pointer-events:all;overflow:hidden;animation:entryAppear .22s ease-out}
+.dungeonEntry:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 29px,#86a99115 30px 31px);animation:entrySteps 1.2s ease-out both;pointer-events:none}
+.entryArch{width:106px;height:112px;margin:auto;border:10px solid #617268;border-radius:65px 65px 4px 4px;background:linear-gradient(#102c25,#020806);box-shadow:0 0 45px #87bb7a22,inset 0 0 20px #000}
+.entryStairs{width:80px;height:58px;margin:37px auto 0;background:repeating-linear-gradient(0deg,#1b2924 0 8px,#7e8470 9px 12px);clip-path:polygon(32% 0,68% 0,100% 100%,0 100%)}
+.dungeonEntry small{font-size:12px;letter-spacing:.2em}.dungeonEntry h2{font-size:clamp(22px,6vw,34px);margin:0;letter-spacing:.12em}.dungeonEntry p{font-size:14px;margin:0}.dungeonEntry.leaving{opacity:0;transition:opacity .35s ease-out}
+@keyframes entryAppear{from{opacity:0}to{opacity:1}}@keyframes entrySteps{from{transform:translateY(-50px) scale(1.15)}to{transform:translateY(0) scale(1)}}
+@media(max-height:570px){header .brand b{font-size:13px}.headStats{display:none}.gameHeader{min-height:23px;padding:3px 7px!important}.topNav button,#openingMissionNav{min-height:30px;padding:5px 2px!important}.progressMessage,.openingLocationHelp{font-size:10px!important;min-height:22px;max-height:32px}.openingSecondary>.cmdBtn,.progressCommands .cmdBtn{min-height:30px!important}.gatewayDialogue{min-height:65px}.gatewayWords{font-size:12px}.gatewayPortrait{width:35px;height:39px}.gatewayLimits{font-size:10px}.gatewayItem{padding:3px}.gatewayCounter button{height:29px}.dungeonFirstAidGoal{font-size:9px}.gameScene.dungeonSceneLayout .cmdBtn{min-height:29px;font-size:10px}.townWalkPad{grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,27px)}.modalPanel p{font-size:12px;line-height:1.4}}
+@media(prefers-reduced-motion:reduce){.dungeonEntry,.dungeonEntry:before{animation:none}.dungeonEntry.leaving{transition:none}}
+/* Updated: 2026-11-08 JST / Ver1.155 */
+/* Complete the compact gateway and inventory after real 390px viewport inspection. */
+header .head{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:3px 5px!important}
+#frontierUserHost{grid-column:1/-1;font-size:9px;line-height:1}
+header .brand{grid-column:1;grid-row:2;min-width:0;white-space:nowrap}header .headStats{grid-column:2;grid-row:2;max-width:150px}
+header .headStats .pill:last-child{display:none}
+#sceneMount .gatewayScene.gatewayPictureScene .gatewayIntro{min-height:0;padding:5px 8px!important;font-size:10px;gap:4px}
+#sceneMount .gatewayScene.gatewayPictureScene .gatewayIntro b{font-size:13px}
+#sceneMount .gatewayScene.gatewayPictureScene .gatewayIntro span{font-size:10px}
+#sceneMount .gatewayScene.gatewayPictureScene .gatewayObjective{min-height:0;padding:5px 8px!important;font-size:11px;line-height:1.3}
+#sceneMount .gatewayScene.gatewayPictureScene .gatewaySceneActions{padding:5px!important;gap:5px}
+#sceneMount .gatewayScene.gatewayPictureScene .gatewaySceneActions button{min-height:34px!important;padding:5px!important;font-size:12px!important}
+#sceneMount .gatewayScene .gatewayVoiceRow{padding:3px 8px!important;min-height:25px;font-size:10px}
+#sceneMount .gatewayScene .gatewayVoiceRow button{min-height:25px;padding:3px 5px;font-size:10px}
+#frontierModalBody:has(.retroBagLayout){display:flex!important;flex-direction:column}
+#frontierModalBody:has(.retroBagLayout)>h2{flex:none}
+#frontierModalBody .retroBagLayout{height:auto!important;flex:1;min-height:0!important}
+.retroBagCategories>.retroBagCategory{flex:1;min-height:34px!important;padding:5px!important;display:flex!important;gap:8px;align-items:center;justify-content:center}
+.retroBagMain{grid-template-rows:minmax(60px,1fr) minmax(175px,1fr)!important}
+.retroInlineActions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.retroInlineActions>button{grid-column:auto!important}
+#frontierModalBody svg{max-width:100%;max-height:calc(var(--frontier-vh)*.48);min-width:0!important;width:100%;height:auto}
+/* Updated: 2026-11-08 JST / Ver1.155 */
+.frendaUserOverlay{padding:7px!important}.frendaUserPanel{height:calc(var(--frontier-vh) - 16px)!important;max-height:calc(var(--frontier-vh) - 16px)!important;display:flex!important;flex-direction:column;min-height:0;overflow:hidden!important;padding:10px!important}.frendaUserHead{flex:none;margin-bottom:6px!important}.frendaUserHead b{font-size:16px!important}.screenUserBody{flex:1;min-height:0;overflow:hidden}.frendaUnifiedList{max-height:none!important;overflow:hidden!important}.frendaUserPanel .screenPager{color:#222}
+/* Updated: 2026-11-08 JST / Ver1.155 */
+#frendaUnifiedList{overflow:hidden!important;max-height:none!important}
+.modalActions.manyActions{height:120px!important;max-height:120px!important;min-height:120px!important;align-content:start}
+/* Updated: 2026-11-08 JST / Ver1.155 */
+.retroBagMain{grid-template-rows:minmax(70px,.75fr) minmax(200px,1.25fr)!important}
+/* Updated: 2026-11-08 JST / Ver1.155 */
+/* Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle. */

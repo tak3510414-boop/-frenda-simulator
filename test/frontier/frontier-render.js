@@ -277,8 +277,8 @@ function drawDungeonAutoMap(c,run,visibility,viewRect){
  return {x:left,y:top,cell,w,h};
 }
 
-R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;rect(c,0,0,W,H,'#17231b');
- const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(Number(F.DUNGEON_VIEW_COLS)||11,mapW),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH),t=15,ox=Math.round((W-viewCols*t)/2),oy=27;
+R.renderDungeon=(canvas,run)=>{const c=setup(canvas);if(!c||!run?.map)return null;const cssWidth=canvas.clientWidth||360,cssHeight=canvas.clientHeight||480,scale=Math.min(cssWidth/180,cssHeight/240),W=Math.max(180,Math.round(cssWidth/scale)),H=Math.max(180,Math.round(cssHeight/scale));canvas.width=W;canvas.height=H;c.imageSmoothingEnabled=false;rect(c,0,0,W,H,'#17231b');
+ const F=window.FRENDA_FRONTIER||{},mapH=run.map.length,mapW=run.map[0]?.length||0,viewCols=Math.min(mapW,Math.max(Number(F.DUNGEON_VIEW_COLS)||11,Math.floor((W-15)/15))),viewRows=Math.min(Number(F.DUNGEON_VIEW_ROWS)||9,mapH,Math.max(3,Math.floor((H-96)/15))),t=15,ox=Math.round((W-viewCols*t)/2),oy=48;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),camX=clamp(Math.round(run.player.x-(viewCols-1)/2),0,Math.max(0,mapW-viewCols)),camY=clamp(Math.round(run.player.y-(viewRows-1)/2),0,Math.max(0,mapH-viewRows)),visibility=F.dungeonVisibility?.(run)||[],groundMap=new Map((run.floorItems||[]).map(it=>[it.x+','+it.y,it])),trapMap=new Map((run.traps||[]).filter(t=>t?.revealed).map(t=>[t.x+','+t.y,t])),cave=run.dungeonId==='rocky_cave',wallBase=cave?'#433d39':'#344c36',wallInset=cave?'#5b5046':'#426047',floorBase=cave?['#82735f','#756852','#685d4f']:['#7e8d5f','#74845a','#6c7b52'];
  // Ver0.72: local camera keeps the Ver0.63 visibility model; the accumulated blue auto map is drawn separately above it.
  for(let vy=0;vy<viewRows;vy++)for(let vx=0;vx<viewCols;vx++){
@@ -505,4 +505,6 @@ R.renderGeneratedArea=(canvas,s,areaId,compiled=null)=>{compiled=compiled||windo
 /* Updated: 2026-10-23 20:14 JST / Ver1.19 */
 
 // Bundle updated: 2026-10-25 18:48 JST / Frontier Ver1.65
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+
+// Updated: 2026-11-08 23:29 JST / Ver1.155: dungeon camera fits the available display height.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.

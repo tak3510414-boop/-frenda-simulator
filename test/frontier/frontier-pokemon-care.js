@@ -289,4 +289,4 @@ PC.canInteract=()=>['recovering','healthy'].includes(PC.visual()?.status);
 // Updated: 2026-11-08 22:31 JST / Ver1.152: state-based first-aid goals and B1F rescue progression.
 
 // Updated: 2026-11-08 22:39 JST / Ver1.153: verified against current repository and complete dependency set.
-// Updated: 2026-11-08 22:56 JST / Ver1.154 distribution bundle; module version markers are retained.
+// Updated: 2026-11-08 23:56 JST / Ver1.155 distribution bundle; dependency module versions retained.
