@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>バーコードモンスター</title>
+<style>
+:root{--bg:#10142a;--card:#1b2145;--card2:#252c5a;--ink:#f2f4ff;--sub:#9aa3d6;--ac:#ffcb3d;--ok:#4cd37b;--ng:#ff5d5d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+#app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 18px)}
+.screen{display:none}
+.screen.active{display:block}
+h1{font-size:22px;margin:6px 0 2px;text-align:center;letter-spacing:.05em}
+.lead{color:var(--sub);font-size:13px;text-align:center;margin:0 0 12px}
+.card{background:var(--card);border-radius:16px;padding:14px;margin:10px 0}
+button{font:inherit;color:var(--ink);background:var(--card2);border:0;border-radius:12px;padding:13px 14px;width:100%;margin:5px 0;font-weight:700;font-size:15px}
+button:active{transform:scale(.98)}
+button.pri{background:var(--ac);color:#2a2100}
+button.sec{background:#3a4286}
+button:disabled{opacity:.4}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;color:#fff}
+.sprite{width:150px;height:150px;margin:0 auto}
+.sprite svg{width:100%;height:100%;display:block}
+.nm{font-size:18px;font-weight:800;margin:4px 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:12px;color:var(--sub);text-align:center;margin-top:8px}
+.stats b{display:block;color:var(--ink);font-size:15px}
+.center{text-align:center}
+/* scan */
+.vwrap{position:relative;background:#000;border-radius:16px;overflow:hidden;aspect-ratio:4/3}
+video{width:100%;height:100%;object-fit:cover;display:block}
+.frame{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:3px solid var(--ac);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.status{font-size:13px;color:var(--sub);margin:8px 2px;min-height:34px}
+input[type=text]{width:100%;padding:12px;border-radius:10px;border:2px solid #3a4286;background:#0d1130;color:var(--ink);font-size:16px}
+/* battle */
+.side{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px;margin:8px 0}
+.side .sprite{width:112px;height:112px;margin:0;flex:none}
+.side .info{flex:1;min-width:0}
+.hpwrap{height:12px;border-radius:8px;background:#0d1130;overflow:hidden;margin-top:6px}
+.hpbar{height:100%;width:100%;background:var(--ok);transition:width .5s,background .5s}
+.hpnum{font-size:12px;color:var(--sub);margin-top:3px;text-align:right}
+.side.me{flex-direction:row-reverse}
+.log{background:#0d1130;border:2px solid #3a4286;border-radius:12px;padding:12px;min-height:64px;font-size:15px;line-height:1.5;margin:8px 0}
+.moves{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.moves button{margin:0;padding:10px 8px;font-size:14px;line-height:1.3}
+.moves small{display:block;font-weight:400;color:#dfe3ff;font-size:11px;margin-top:2px}
+.after button{margin:5px 0}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.lunge-p{animation:lungep .35s}
+.lunge-f{animation:lungef .35s}
+@keyframes lungep{50%{transform:translate(-26px,-14px)}}
+@keyframes lungef{50%{transform:translate(26px,14px)}}
+.faint{animation:faint .8s forwards}
+@keyframes faint{to{transform:translateY(40px);opacity:0}}
+.pop{animation:pop .9s}
+@keyframes pop{0%{transform:scale(.1) rotate(-30deg);filter:brightness(4)}60%{transform:scale(1.2) rotate(6deg);filter:brightness(1.6)}100%{transform:scale(1);filter:none}}
+.heal{animation:heal .6s}
+@keyframes heal{50%{filter:brightness(1.8) saturate(1.5)}}
+/* dex */
+.dex{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dexc{background:var(--card);border-radius:12px;padding:6px;text-align:center;font-size:11px;cursor:pointer}
+.dexc svg{width:100%;height:auto;display:block}
+.small{font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ホーム -->
+<section id="s-home" class="screen active">
+  <h1>バーコードモンスター</h1>
+  <p class="lead">バーコードを読むと、そのモンスターに へんしん！</p>
+  <div class="card center" id="meCard"></div>
+  <button class="pri" id="btnScanMe">📷 バーコードを読んで へんしん</button>
+  <button id="btnWild">⚔ やせいのモンスターと バトル</button>
+  <button id="btnScanFoe">📷 バーコードを読んで あいてを きめる</button>
+  <button class="sec" id="btnDex">📖 ずかん</button>
+  <p class="small center" id="winTxt"></p>
+</section>
+
+<!-- スキャン -->
+<section id="s-scan" class="screen">
+  <h1 id="scanTitle">スキャン</h1>
+  <div class="vwrap"><video id="video" playsinline muted autoplay></video><div class="frame"></div></div>
+  <div class="status" id="scanStatus"></div>
+  <div class="card">
+    <div class="small" style="margin-bottom:6px">読み取れない時は、数字や文字を入力してもOK</div>
+    <input type="text" id="manual" inputmode="text" placeholder="例: 4901234567894" autocomplete="off">
+    <button class="pri" id="btnManual">この文字で けってい</button>
+  </div>
+  <button class="sec" id="btnScanCancel">もどる</button>
+</section>
+
+<!-- バトル -->
+<section id="s-battle" class="screen">
+  <div class="side" id="foeSide">
+    <div class="info">
+      <div class="nm" id="foeName"></div>
+      <div id="foeType"></div>
+      <div class="hpwrap"><div class="hpbar" id="foeHp"></div></div>
+      <div class="hpnum" id="foeHpNum"></div>
+    </div>
+    <div class="sprite" id="foeSprite"></div>
+  </div>
+  <div class="side me" id="meSide">
+    <div class="info">
+      <div class="nm" id="pName"></div>
+      <div id="pType"></div>
+      <div class="hpwrap"><div class="hpbar" id="pHp"></div></div>
+      <div class="hpnum" id="pHpNum"></div>
+    </div>
+    <div class="sprite" id="pSprite"></div>
+  </div>
+  <div class="log" id="log"></div>
+  <div class="moves" id="moves"></div>
+  <div class="after" id="after"></div>
+</section>
+
+<!-- ずかん -->
+<section id="s-dex" class="screen">
+  <h1>ずかん</h1>
+  <p class="lead">タップすると そのモンスターに へんしん</p>
+  <div class="dex" id="dexList"></div>
+  <button class="sec" id="btnDexBack" style="margin-top:12px">もどる</button>
+</section>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ===== 基本ユーティリティ ===== */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function xmur3(str){
+  let h = 1779033703 ^ str.length;
+  for(let i=0;i<str.length;i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function(){
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return h >>> 0;
+  };
+}
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function load(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+/* ===== モンスター定義 ===== */
+const TYPES = [
+  {name:'ほのお', mark:'炎', color:'#e8552b', hue:10},
+  {name:'くさ',   mark:'草', color:'#3fa34d', hue:125},
+  {name:'でんき', mark:'雷', color:'#d9a400', hue:48},
+  {name:'みず',   mark:'水', color:'#2d8fdd', hue:205},
+  {name:'やみ',   mark:'闇', color:'#6a4c93', hue:270}
+];
+// 相性: タイプiは (i+1),(i+2) に強く、(i+3),(i+4) に弱い
+function mult(a, d){
+  const diff = (d - a + 5) % 5;
+  if(diff === 1 || diff === 2) return 1.5;
+  if(diff === 3 || diff === 4) return 0.7;
+  return 1;
+}
+const SYL = ['ア','カ','サ','タ','ナ','ハ','マ','ヤ','ラ','ル','ポ','ピ','モ','ゴ','ゼ','ニ','ヌ','ミ','ロ','ブ','ド','ガ','ジ','フ','ケ','ソ','リ'];
+const MOVEPOOL = [
+  ['ほのおスラッシュ','ねつのあらし'],
+  ['リーフダンス','しげみアタック'],
+  ['ビリビリショット','らいめいキック'],
+  ['しぶきスラッシュ','だいかいろう'],
+  ['かげのつめ','やみのうねり']
+];
+function makeName(rng){
+  const n = 2 + Math.floor(rng()*3);
+  let s = '';
+  for(let i=0;i<n;i++) s += SYL[Math.floor(rng()*SYL.length)];
+  return s;
+}
+function makeMonster(code){
+  const rng = mulberry32(xmur3('bm1:' + code)());
+  const type = Math.floor(rng()*5);
+  const hue = (TYPES[type].hue + Math.floor(rng()*31) - 15 + 360) % 360;
+  const name = makeName(rng);
+  const maxHp = 90 + Math.floor(rng()*60);
+  const atk = 40 + Math.floor(rng()*50);
+  const def = 40 + Math.floor(rng()*50);
+  const spd = 40 + Math.floor(rng()*50);
+  const look = {
+    shape: Math.floor(rng()*3),
+    ears: Math.floor(rng()*4),
+    tail: Math.floor(rng()*3),
+    horn: rng() < 0.4 ? 1 : 0,
+    eye: Math.floor(rng()*3),
+    mouth: Math.floor(rng()*3),
+    spots: []
+  };
+  const ns = Math.floor(rng()*4);
+  for(let i=0;i<ns;i++) look.spots.push([38 + Math.floor(rng()*44), 52 + Math.floor(rng()*40), 3 + Math.floor(rng()*5)]);
+  const pool = MOVEPOOL[type];
+  const moves = [
+    {n:'ぐるぐるアタック', p:40, a:100, t:-1},
+    {n:pool[0], p:60, a:95, t:type},
+    {n:pool[1], p:95, a:70, t:type},
+    {n:'ひとやすみ', heal:true}
+  ];
+  return {code, name, type, hue, maxHp, atk, def, spd, look, moves};
+}
+
+/* ===== モンスター描画(SVG) ===== */
+function monsterSVG(m){
+  const L = m.look, T = TYPES[m.type];
+  const body = 'hsl(' + m.hue + ' 60% 55%)';
+  const belly = 'hsl(' + ((m.hue+20)%360) + ' 75% 82%)';
+  const dark = 'hsl(' + m.hue + ' 50% 28%)';
+  const ac = T.color;
+  let s = '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">';
+  s += '<ellipse cx="60" cy="112" rx="34" ry="5" fill="rgba(0,0,0,.3)"/>';
+  // しっぽ
+  if(L.tail === 1) s += '<path d="M94 90 C120 88 120 60 108 54" stroke="' + body + '" stroke-width="9" fill="none" stroke-linecap="round"/>';
+  if(L.tail === 2) s += '<polygon points="94,86 118,68 110,98" fill="' + ac + '"/>';
+  // みみ
+  if(L.ears === 1) s += '<polygon points="28,48 36,10 56,38" fill="' + body + '"/><polygon points="92,48 84,10 64,38" fill="' + body + '"/><polygon points="34,40 37,22 47,38" fill="' + belly + '"/><polygon points="86,40 83,22 73,38" fill="' + belly + '"/>';
+  if(L.ears === 2) s += '<circle cx="32" cy="40" r="13" fill="' + body + '"/><circle cx="88" cy="40" r="13" fill="' + body + '"/><circle cx="32" cy="40" r="7" fill="' + belly + '"/><circle cx="88" cy="40" r="7" fill="' + belly + '"/>';
+  if(L.ears === 3) s += '<ellipse cx="24" cy="62" rx="9" ry="22" fill="' + body + '" transform="rotate(18 24 62)"/><ellipse cx="96" cy="62" rx="9" ry="22" fill="' + body + '" transform="rotate(-18 96 62)"/>';
+  // からだ
+  if(L.shape === 0) s += '<ellipse cx="60" cy="72" rx="38" ry="34" fill="' + body + '"/>';
+  if(L.shape === 1) s += '<rect x="24" y="38" width="72" height="68" rx="30" fill="' + body + '"/>';
+  if(L.shape === 2) s += '<path d="M60 30 C95 30 100 70 92 92 C86 108 34 108 28 92 C20 70 25 30 60 30Z" fill="' + body + '"/>';
+  // つの
+  if(L.horn) s += '<polygon points="53,36 60,8 67,36" fill="' + ac + '"/>';
+  // おなか・もよう
+  s += '<ellipse cx="60" cy="90" rx="20" ry="14" fill="' + belly + '"/>';
+  L.spots.forEach(function(p){ s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" fill="' + dark + '" opacity=".25"/>'; });
+  // め
+  if(L.eye === 0) s += '<circle cx="46" cy="66" r="8" fill="#fff"/><circle cx="74" cy="66" r="8" fill="#fff"/><circle cx="47" cy="67" r="4" fill="#111"/><circle cx="73" cy="67" r="4" fill="#111"/>';
+  if(L.eye === 1) s += '<circle cx="46" cy="67" r="6" fill="#111"/><circle cx="74" cy="67" r="6" fill="#111"/><circle cx="48" cy="65" r="2" fill="#fff"/><circle cx="76" cy="65" r="2" fill="#fff"/><line x1="37" y1="56" x2="53" y2="61" stroke="' + dark + '" stroke-width="3" stroke-linecap="round"/><line x1="83" y1="56" x2="67" y2="61" stroke="' + dark + '" stroke-width="3" stroke-linecap="round"/>';
+  if(L.eye === 2) s += '<path d="M38 68 Q46 57 54 68" stroke="#111" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M66 68 Q74 57 82 68" stroke="#111" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  // くち
+  if(L.mouth === 0) s += '<path d="M52 79 Q60 87 68 79" stroke="#111" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  if(L.mouth === 1) s += '<ellipse cx="60" cy="81" rx="6" ry="5" fill="' + dark + '"/>';
+  if(L.mouth === 2) s += '<path d="M50 78 Q60 86 70 78" stroke="#111" stroke-width="3" fill="none" stroke-linecap="round"/><polygon points="53,80 56,86 58,81" fill="#fff"/><polygon points="67,80 64,86 62,81" fill="#fff"/>';
+  // タイプマーク
+  s += '<circle cx="60" cy="98" r="8" fill="' + ac + '"/><text x="60" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">' + T.mark + '</text>';
+  s += '</svg>';
+  return s;
+}
+function typeBadge(m){
+  const T = TYPES[m.type];
+  return '<span class="badge" style="background:' + T.color + '">' + T.mark + ' ' + T.name + '</span>';
+}
+
+/* ===== 画面制御 ===== */
+let player = null;
+function show(id){
+  if(id !== 's-scan') stopScan();
+  document.querySelectorAll('.screen').forEach(function(e){ e.classList.remove('active'); });
+  $(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function renderHome(pop){
+  const c = $('meCard');
+  if(!player){
+    c.innerHTML = '<div class="nm">まだ へんしんしていません</div><div class="small">まずは身の回りのバーコードを読んでみよう</div>';
+  }else{
+    const m = player;
+    c.innerHTML = '<div class="sprite' + (pop ? ' pop' : '') + '">' + monsterSVG(m) + '</div>' +
+      '<div class="nm">' + m.name + '</div>' + typeBadge(m) +
+      '<div class="stats"><div><b>' + m.maxHp + '</b>HP</div><div><b>' + m.atk + '</b>こうげき</div><div><b>' + m.def + '</b>ぼうぎょ</div><div><b>' + m.spd + '</b>すばやさ</div></div>' +
+      '<div class="small" style="margin-top:8px">バーコード: <span id="codeTxt"></span></div>';
+    $('codeTxt').textContent = m.code;
+  }
+  $('btnWild').disabled = !player;
+  $('btnScanFoe').disabled = !player;
+  $('winTxt').textContent = 'しょうり: ' + load('bm_wins', 0) + '回';
+}
+function addDex(code){
+  let d = load('bm_dex', []);
+  d = d.filter(function(c){ return c !== code; });
+  d.unshift(code);
+  if(d.length > 200) d = d.slice(0, 200);
+  save('bm_dex', d);
+}
+function becomePlayer(code){
+  player = makeMonster(code);
+  addDex(code);
+  save('bm_last', code);
+  show('s-home');
+  renderHome(true);
+}
+
+/* ===== スキャン ===== */
+let scanMode = null;
+let scanTimer = 0;
+let scanStream = null;
+let zxReader = null;
+let scanBusy = false;
+
+function loadScript(src){
+  return new Promise(function(res, rej){
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+function stopScan(){
+  if(scanTimer){ clearInterval(scanTimer); scanTimer = 0; }
+  if(scanStream){ scanStream.getTracks().forEach(function(t){ t.stop(); }); scanStream = null; }
+  if(zxReader){ try{ zxReader.reset(); }catch(e){} zxReader = null; }
+  const v = $('video');
+  try{ v.pause(); v.srcObject = null; }catch(e){}
+}
+async function startScan(mode){
+  scanMode = mode;
+  scanBusy = false;
+  $('scanTitle').textContent = (mode === 'me') ? 'へんしんする バーコードを読もう' : 'あいての バーコードを読もう';
+  $('scanStatus').textContent = 'カメラを起動しています…';
+  $('manual').value = '';
+  show('s-scan');
+  const video = $('video');
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('nocamera');
+    }
+    if('BarcodeDetector' in window){
+      let formats = ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','qr_code'];
+      try{
+        const sup = await window.BarcodeDetector.getSupportedFormats();
+        const f2 = formats.filter(function(f){ return sup.indexOf(f) >= 0; });
+        if(f2.length) formats = f2;
+      }catch(e){}
+      const det = new window.BarcodeDetector({formats: formats});
+      scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}, audio:false});
+      video.srcObject = scanStream;
+      await video.play();
+      $('scanStatus').textContent = 'バーコードを 枠の中に うつしてね';
+      scanTimer = setInterval(async function(){
+        if(scanBusy || video.readyState < 2) return;
+        scanBusy = true;
+        try{
+          const r = await det.detect(video);
+          if(r && r.length){ onCode(r[0].rawValue); return; }
+        }catch(e){}
+        scanBusy = false;
+      }, 250);
+    }else{
+      $('scanStatus').textContent = '読み取りエンジンを準備中…(ネット接続が必要)';
+      await loadScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');
+      zxReader = new ZXing.BrowserMultiFormatReader();
+      $('scanStatus').textContent = 'バーコードを 枠の中に うつしてね';
+      zxReader.decodeFromVideoDevice(null, 'video', function(res){
+        if(res && !scanBusy){ scanBusy = true; onCode(res.getText()); }
+      });
+    }
+  }catch(e){
+    stopScan();
+    $('scanStatus').textContent = 'カメラを使えませんでした(HTTPSでの表示・カメラ許可が必要です)。下の入力欄から遊べます。';
+  }
+}
+function onCode(code){
+  code = String(code || '').trim();
+  if(!code){ scanBusy = false; return; }
+  stopScan();
+  try{ if(navigator.vibrate) navigator.vibrate(60); }catch(e){}
+  if(scanMode === 'me'){ becomePlayer(code); }
+  else{ startBattle(code); }
+}
+
+/* ===== バトル ===== */
+let B = null;
+function say(t){ $('log').textContent = t; }
+function hpColor(r){ return r > .5 ? 'var(--ok)' : (r > .2 ? '#f0b429' : 'var(--ng)'); }
+function updBars(){
+  [['p','pHp','pHpNum'],['f','foeHp','foeHpNum']].forEach(function(a){
+    const o = B[a[0]], r = o.hp / o.m.maxHp;
+    $(a[1]).style.width = Math.max(0, r*100) + '%';
+    $(a[1]).style.background = hpColor(r);
+    $(a[2]).textContent = Math.max(0, o.hp) + ' / ' + o.m.maxHp;
+  });
+}
+function spriteEl(o){ return $(o.side === 'p' ? 'pSprite' : 'foeSprite'); }
+function anim(el, cls, ms){
+  el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+  return sleep(ms);
+}
+async function startBattle(foeCode){
+  const pm = player, fm = makeMonster(foeCode);
+  B = {p:{m:pm, hp:pm.maxHp, heals:2, side:'p'}, f:{m:fm, hp:fm.maxHp, heals:2, side:'f'}, busy:true, over:false};
+  show('s-battle');
+  $('foeName').textContent = fm.name; $('foeType').innerHTML = typeBadge(fm);
+  $('pName').textContent = pm.name;   $('pType').innerHTML = typeBadge(pm);
+  $('foeSprite').innerHTML = monsterSVG(fm);
+  $('pSprite').innerHTML = monsterSVG(pm);
+  ['foeSprite','pSprite'].forEach(function(id){ $(id).className = 'sprite'; });
+  $('after').innerHTML = '';
+  $('moves').innerHTML = '';
+  updBars();
+  say('あいての ' + fm.name + ' が あらわれた！');
+  await sleep(1000);
+  buildMoves();
+  say('どうする？');
+  B.busy = false;
+}
+function buildMoves(){
+  const box = $('moves');
+  box.innerHTML = '';
+  B.p.m.moves.forEach(function(mv, i){
+    const b = document.createElement('button');
+    let sub;
+    if(mv.heal){ b.style.background = '#2f7d55'; sub = 'のこり' + B.p.heals + '回'; }
+    else{
+      const col = mv.t >= 0 ? TYPES[mv.t].color : '#5b638f';
+      b.style.background = col;
+      sub = 'いりょく' + mv.p + ' / めいちゅう' + mv.a;
+    }
+    b.innerHTML = '';
+    b.appendChild(document.createTextNode(mv.n));
+    const sm = document.createElement('small'); sm.textContent = sub; b.appendChild(sm);
+    b.addEventListener('click', function(){ turn(i); });
+    box.appendChild(b);
+  });
+}
+function setMovesEnabled(on){
+  $('moves').querySelectorAll('button').forEach(function(b){ b.disabled = !on; });
+}
+function foeChoose(){
+  const f = B.f;
+  if(f.hp / f.m.maxHp < 0.35 && f.heals > 0 && Math.random() < 0.6) return f.m.moves[3];
+  const r = Math.random();
+  return f.m.moves[r < 0.25 ? 0 : (r < 0.7 ? 1 : 2)];
+}
+async function act(a, d, mv){
+  if(a.hp <= 0 || d.hp <= 0) return;
+  const aEl = spriteEl(a), dEl = spriteEl(d);
+  say(a.m.name + 'の ' + mv.n + '！');
+  await sleep(600);
+  if(mv.heal){
+    if(a.heals <= 0){ say('しかし もう つかえない！'); await sleep(700); return; }
+    a.heals--;
+    a.hp = Math.min(a.m.maxHp, a.hp + Math.floor(a.m.maxHp * 0.35));
+    updBars();
+    await anim(aEl, 'heal', 650);
+    say(a.m.name + 'は HPを かいふくした！');
+    await sleep(700);
+    return;
+  }
+  if(Math.random()*100 > mv.a){ say('しかし こうげきは はずれた！'); await sleep(800); return; }
+  await anim(aEl, a.side === 'p' ? 'lunge-p' : 'lunge-f', 360);
+  const mul = mv.t >= 0 ? mult(mv.t, d.m.type) : 1;
+  const crit = Math.random() < 1/16;
+  let dmg = Math.floor((22 * mv.p * (a.m.atk / d.m.def)) / 50 + 2);
+  dmg = Math.max(1, Math.floor(dmg * mul * (crit ? 1.5 : 1) * (0.85 + Math.random()*0.15)));
+  d.hp = Math.max(0, d.hp - dmg);
+  updBars();
+  try{ if(navigator.vibrate) navigator.vibrate(a.side === 'f' ? 120 : 40); }catch(e){}
+  await anim(dEl, 'shake', 420);
+  let msg = dmg + ' ダメージ！';
+  if(mul > 1) msg = 'こうかは ばつぐんだ！ ' + msg;
+  if(mul < 1) msg = 'こうかは いまひとつ… ' + msg;
+  if(crit) msg = 'きゅうしょに あたった！ ' + msg;
+  say(msg);
+  await sleep(900);
+  if(d.hp <= 0){
+    dEl.classList.add('faint');
+    say(d.m.name + 'は たおれた！');
+    await sleep(1000);
+  }
+}
+async function turn(idx){
+  if(!B || B.busy || B.over) return;
+  B.busy = true;
+  setMovesEnabled(false);
+  const pmv = B.p.m.moves[idx];
+  const fmv = foeChoose();
+  let pf;
+  if(B.p.m.spd > B.f.m.spd) pf = true;
+  else if(B.p.m.spd < B.f.m.spd) pf = false;
+  else pf = Math.random() < 0.5;
+  const seq = pf ? [[B.p, B.f, pmv], [B.f, B.p, fmv]] : [[B.f, B.p, fmv], [B.p, B.f, pmv]];
+  for(let i=0;i<seq.length;i++){
+    await act(seq[i][0], seq[i][1], seq[i][2]);
+    if(B.p.hp <= 0 || B.f.hp <= 0) break;
+  }
+  if(B.f.hp <= 0) endBattle(true);
+  else if(B.p.hp <= 0) endBattle(false);
+  else{
+    buildMoves();
+    say('どうする？');
+    B.busy = false;
+  }
+}
+function endBattle(win){
+  B.over = true;
+  $('moves').innerHTML = '';
+  if(win){
+    save('bm_wins', load('bm_wins', 0) + 1);
+    say('やったー！ ' + B.f.m.name + ' に かった！');
+  }else{
+    say('…まけてしまった。もういちど ちょうせんしよう！');
+  }
+  const af = $('after');
+  af.innerHTML = '';
+  function mk(label, cls, fn){
+    const b = document.createElement('button');
+    b.className = cls; b.textContent = label;
+    b.addEventListener('click', fn);
+    af.appendChild(b);
+  }
+  mk('⚔ つぎは やせいのモンスターと', 'pri', function(){ startBattle(randomCode()); });
+  mk('📷 バーコードで あいてを きめる', '', function(){ startScan('foe'); });
+  mk('ホームへ', 'sec', function(){ show('s-home'); renderHome(false); });
+}
+function randomCode(){
+  let s = '';
+  for(let i=0;i<13;i++) s += Math.floor(Math.random()*10);
+  return s;
+}
+
+/* ===== ずかん ===== */
+function renderDex(){
+  const box = $('dexList');
+  box.innerHTML = '';
+  const d = load('bm_dex', []);
+  if(!d.length){
+    const p = document.createElement('div');
+    p.className = 'small'; p.style.gridColumn = '1 / -1';
+    p.textContent = 'まだ だれも いません。バーコードを読んで へんしんしてみよう！';
+    box.appendChild(p);
+    return;
+  }
+  d.forEach(function(code){
+    const m = makeMonster(code);
+    const c = document.createElement('div');
+    c.className = 'dexc';
+    c.innerHTML = monsterSVG(m);
+    const t = document.createElement('div'); t.textContent = m.name; c.appendChild(t);
+    c.addEventListener('click', function(){ becomePlayer(code); });
+    box.appendChild(c);
+  });
+}
+
+/* ===== イベント登録 ===== */
+$('btnScanMe').addEventListener('click', function(){ startScan('me'); });
+$('btnScanFoe').addEventListener('click', function(){ startScan('foe'); });
+$('btnWild').addEventListener('click', function(){ startBattle(randomCode()); });
+$('btnDex').addEventListener('click', function(){ renderDex(); show('s-dex'); });
+$('btnDexBack').addEventListener('click', function(){ show('s-home'); renderHome(false); });
+$('btnScanCancel').addEventListener('click', function(){ show('s-home'); renderHome(false); });
+$('btnManual').addEventListener('click', function(){ onCode($('manual').value); });
+$('manual').addEventListener('keydown', function(e){ if(e.key === 'Enter') onCode($('manual').value); });
+document.addEventListener('visibilitychange', function(){ if(document.hidden) stopScan(); });
+
+/* ===== 起動 ===== */
+const last = load('bm_last', null);
+if(last) player = makeMonster(last);
+renderHome(false);
+
+})();
+</script>
+</body>
+</html>
+<!-- 更新日時: 2026-11-14 19:58 / Ver1 -->
