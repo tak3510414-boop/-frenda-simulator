@@ -52,3 +52,25 @@
 .history-row{padding:9px;border-bottom:1px solid #e4edf2}
 @media(max-width:620px){.compact-toolbar{grid-template-columns:1fr auto}.compact-toolbar input{grid-column:1/-1}.compact-toolbar select{max-width:none}.pick-grid.size-small{grid-template-columns:repeat(3,minmax(0,1fr))}.pick-grid.size-medium{grid-template-columns:repeat(2,minmax(0,1fr))}.pick-grid.size-large{grid-template-columns:1fr 1fr}.pick-grid.size-large .pick-card .picture{height:150px}.detail-sheet .detail-hero{grid-template-columns:minmax(90px,135px) 1fr;gap:9px}.detail-sheet .detail-pic{height:170px}.ability-grid{grid-template-columns:1fr 1fr;gap:8px}.move-info>div{grid-template-columns:90px 1fr}}
 /* Updated: 2026-11-15 08:45 JST / Ver05 */
+
+/* Ver06: 1v1 Dungeon-inspired attack/impact animation using card artwork */
+.battle-stage{position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(130deg,#cdeaf7,#f2f9ff,#e5f1ed);padding:14px 9px;margin:10px 0;isolation:isolate}
+.battle-stage .combatant{position:relative;z-index:2;background:#ffffffb8;border:1px solid #ffffffdd;transition:transform .22s ease,filter .18s ease}
+.battle-stage .combatant.activeTurn{box-shadow:0 0 0 3px #f7d35f}
+.battle-stage .combatant.attackLeft{transform:translateX(35px) scale(1.06)}
+.battle-stage .combatant.attackRight{transform:translateX(-35px) scale(1.06)}
+.battle-stage .combatant.hit{animation:barcodeHit .32s 1}
+@keyframes barcodeHit{0%{filter:brightness(1)}35%{filter:brightness(1.7);transform:translateX(-8px)}75%{transform:translateX(8px)}100%{filter:brightness(1)}}
+.battle-message{background:#ecf6fd;border-radius:8px;padding:10px;font-size:13px;font-weight:800;margin:8px 0;min-height:38px}
+.battle-fx-layer{position:absolute;pointer-events:none;z-index:3;left:39%;top:29%;font-size:23px;color:#d65723;opacity:0;transform:scale(.6) translateX(0);transition:opacity .16s,transform .3s}
+.battle-fx-layer.show{opacity:1;transform:scale(1.2) translateX(10px)}.battle-fx-layer.to-ally.show{transform:scale(1.2) translateX(-10px)}
+.battle-impact{pointer-events:none;position:absolute;z-index:5;top:42%;left:12%;right:12%;text-align:center;color:#ffed7f;text-shadow:2px 2px 3px #132b39,-2px -2px 3px #132b39;font-size:clamp(24px,5vw,38px);font-weight:1000;opacity:0;transform:scale(.65)}
+.battle-impact.show{animation:barcodeImpact .5s ease-out 1}
+@keyframes barcodeImpact{0%{opacity:0;transform:scale(.65)}40%{opacity:1;transform:scale(1.12)}100%{opacity:0;transform:scale(1)}}
+.battle-special-banner{pointer-events:none;position:absolute;z-index:4;top:5%;left:10%;right:10%;border-radius:15px;background:#f9d575;padding:7px;text-align:center;opacity:0;transform:translateY(-12px);font-weight:900}
+.battle-special-banner.show{opacity:1;transform:translateY(0);transition:all .2s}
+.damage-pop{position:absolute;right:5px;top:25%;pointer-events:none;color:#c32a25;font-weight:1000;font-size:26px;text-shadow:1px 1px #fff;animation:barcodeDamageFloat .7s ease-out forwards}
+@keyframes barcodeDamageFloat{0%{opacity:0;transform:translateY(10px)}30%{opacity:1}100%{opacity:0;transform:translateY(-25px)}}
+.reward-panel{text-align:center}.reward-panel .picture{display:flex;align-items:center;justify-content:center}
+@media(max-width:620px){.battle-stage{padding:9px 5px}.battle-stage .combatant .picture{height:116px}.battle-stage .combatant.attackLeft{transform:translateX(14px) scale(1.04)}.battle-stage .combatant.attackRight{transform:translateX(-14px) scale(1.04)}}
+/* Updated: 2026-11-15 12:53 JST / Ver06 */

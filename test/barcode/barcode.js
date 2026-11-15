@@ -1,16 +1,18 @@
-/* FRENDA_BARCODE_VERSION: 0.5 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 0.6 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='Ver0.5';
+const VERSION='Ver0.6';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
 const REG_KEY='frenda:barcode:test:ver02:registry';
 const AUDIO_KEY='frenda:barcode:test:ver02:audio';
+const GIFT_KEY='frenda:barcode:test:ver06:gift:registry';
+const SPEED_KEY='frenda:barcode:test:ver06:auto-speed';
 const RATES=[['2',45],['3',30],['4',15],['5',5],['special',5]];
 const STAT_KEYS=['hp','atk','def','sp_atk','sp_def'];
 const byId=new Map((DB?.records||[]).map(r=>[String(r.master_id),r]));
-const RATE_POOLS=Object.fromEntries(RATES.map(([k])=>[k,(DB?.records||[]).filter(r=>group(r)===k)]));
+const RATE_POOLS=Object.fromEntries(RATES.map(([k])=>[k,(DB?.records||[]).filter(r=>group(r)===k&&battleOK(r))]));
 // The same nine regional starter groups as the existing Frenda Dungeon.
 // Only groups for which all three Grade-2 records have battle stats are selectable.
 const STARTER_SET_DEFS=[
@@ -33,15 +35,16 @@ function group(r){return Number(r?.grade)>=2&&Number(r?.grade)<=5?String(r.grade
 function grade(r){return group(r)==='special'?'スペシャル':'★'.repeat(number(r?.grade))}
 function getJSON(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function putJSON(key,v){localStorage.setItem(key,JSON.stringify(v))}
-function newPlayer(){return {starterSetKey:null,starterIds:[],starterOptions:null,owned:{},reads:{},used:{},battle:null,created:stamp()}}
+function newPlayer(){return {starterSetKey:null,starterIds:[],starterOptions:null,owned:{},reads:{},used:{},battle:null,dailyGachaDate:null,created:stamp()}}
 let state=getJSON(STORE_KEY,{profile:'A',profiles:{A:newPlayer(),B:newPlayer(),C:newPlayer()}});
 let registry=getJSON(REG_KEY,{});
+let giftRegistry=getJSON(GIFT_KEY,{});
 if(!state.profiles||typeof state.profiles!=='object')state={profile:'A',profiles:{A:newPlayer(),B:newPlayer(),C:newPlayer()}};
 for(const x of ['A','B','C'])state.profiles[x]??=newPlayer();
-let view='home',filter='',sort='series',lastRead=null,showScan=false,scanStream=null,scanTimer=null,scanBusy=false,scanNative=null,autoTimer=null,autoSpeed=1,audio=getJSON(AUDIO_KEY,true),battleError='';
+let view='home',filter='',sort='series',lastRead=null,showScan=false,scanStream=null,scanTimer=null,scanBusy=false,scanNative=null,autoTimer=null,autoSpeed=Math.min(5,Math.max(1,Number(getJSON(SPEED_KEY,1))||1)),autoRunning=false,battleBusy=false,battleEpoch=0,audio=getJSON(AUDIO_KEY,true),battleError='';
 let filterSet={series:'all',grade:'all',type:'all',status:'all'},filterOpen=false,cardSize='medium',dexLimit=70,searchComposing=false,scanEpoch=0,scanPhase=0,scanStatus='',detailId=null,historyCode=null;
 const p=()=>state.profiles[state.profile];
-function save(){putJSON(STORE_KEY,state);putJSON(REG_KEY,registry)}
+function save(){putJSON(STORE_KEY,state);putJSON(REG_KEY,registry);putJSON(GIFT_KEY,giftRegistry)}
 function beep(freq=700){if(!audio)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=freq;o.type='sine';g.gain.value=.035;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.07);o.onended=()=>c.close()}catch{}}
 function pic(r,kind='normal'){
  if(kind==='none')return '<div class="question">？</div>';
@@ -55,15 +58,15 @@ function battleOK(r){return Boolean(r&&STAT_KEYS.every(k=>Number(r[k])>0)&&Numbe
 function noStats(r){return !battleOK(r)}
 function progress(){const owned=Object.keys(p().owned).length,found=new Set(Object.values(p().reads).map(x=>x.pickId));for(const id of Object.keys(p().owned))found.add(id);return {owned,found:found.size,total:byId.size,pending:Object.values(p().reads).filter(x=>x.status==='pending').length}}
 function nav(v){
- stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}
+ stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;
  view=v;filter='';sort='series';filterSet={series:'all',grade:'all',type:'all',status:'all'};filterOpen=false;dexLimit=70;lastRead=null;
  if(window.history?.pushState&&v!=='home')try{window.history.pushState({frendaBarcode:true,view:v},'',location.href)}catch{}
  render()
 }
 function cash(s){return `<span class="chip">${esc(s)}</span>`}
 function topNav(title){return `<section class="panel row between"><h2 style="margin:0">${esc(title)}</h2><button class="secondary small" data-action="home">ホームへ</button></section>`}
-function buttons(){return `<div class="button-grid"><button data-action="scan">📷 バーコードスキャン<small>カメラで新しいピックを発見</small></button><button data-action="pending">⚔ 出現中一覧<small>バトルに挑戦</small></button><button data-action="owned">🗂 所持ピック<small>出撃回数・強化倍率</small></button><button data-action="dex">📖 ポケモン図鑑<small>発見・入手を記録</small></button><button data-action="history">🕒 読取履歴<small>初回日時・現在の状態</small></button><button data-action="settings">⚙ テスト設定<small>プレイヤー切替・動作確認</small></button></div>`}
-function home(){const s=progress(),starters=(p().starterIds||[]).map(id=>byId.get(id)).filter(Boolean);return `<section class="panel hero"><h2>バーコードを探してピックを集めよう！</h2><p class="sub">商品についているJAN・UPCコードをカメラで読み取ると、ピックが出現します。敵を倒してゲット！ 同じピックは自動強化。</p><button class="green" data-action="scan">📷 バーコードをスキャン</button></section><section class="panel"><div class="metrics"><div class="metric"><b>${s.owned}</b><span>入手済みピック</span></div><div class="metric"><b>${s.found}</b><span>発見ピック</span></div><div class="metric"><b>${s.pending}</b><span>出現中</span></div></div><p class="sub">現在のテストプレイヤー：${esc(state.profile)} ／ マスター：${DB.records.length}件</p>${starters.length?`<div class="row">${starters.map(r=>cash('初期ピック：'+r.name_ja+'（出撃'+usedLeft(r.master_id)+'/3）')).join('')}${p().battle?'<span class="chip wait">中断中のバトルあり</span>':''}</div>`:''}</section><section class="panel">${buttons()}</section>${p().battle?`<section class="panel"><p class="warn">中断したバトルがあります。新しいバトルは開始できません。</p><button data-action="battle">バトルを再開</button></section>`:''}`}
+function buttons(){return `<div class="button-grid"><button data-action="scan">📷 バーコードスキャン<small>カメラで新しいピックを発見</small></button><button data-action="pending">⚔ 出現中一覧<small>バトルに挑戦</small></button><button data-action="owned">🗂 所持ピック<small>出撃回数・強化倍率</small></button><button data-action="dex">📖 ポケモン図鑑<small>発見・入手を記録</small></button><button data-action="history">🕒 読取履歴<small>初回日時・現在の状態</small></button><button data-action="daily">🎰 1日1回ガチャ<small>バトルなしで直接ゲット（テスト）</small></button><button data-action="gift">🎁 プレゼントコード<small>コードを使ってピック出現</small></button><button data-action="settings">⚙ テスト設定<small>プレイヤー切替・動作確認</small></button></div>`}
+function home(){const s=progress(),starters=(p().starterIds||[]).map(id=>byId.get(id)).filter(Boolean);return `<section class="panel hero"><h2>バーコードを探してピックを集めよう！</h2><p class="sub">商品についているJAN・UPCコードをカメラで読み取ると、ピックが出現します。敵を倒してゲット！ 同じピックは自動強化。</p><button class="green" data-action="scan">📷 バーコードをスキャン</button></section><section class="panel"><p class="sub">デイリーガチャ：${p().dailyGachaDate===dateJST()?'本日は使用済み':'本日まだ引けます'}</p><div class="metrics"><div class="metric"><b>${s.owned}</b><span>入手済みピック</span></div><div class="metric"><b>${s.found}</b><span>発見ピック</span></div><div class="metric"><b>${s.pending}</b><span>出現中</span></div></div><p class="sub">現在のテストプレイヤー：${esc(state.profile)} ／ マスター：${DB.records.length}件</p>${starters.length?`<div class="row">${starters.map(r=>cash('初期ピック：'+r.name_ja+'（出撃'+usedLeft(r.master_id)+'/3）')).join('')}${p().battle?'<span class="chip wait">中断中のバトルあり</span>':''}</div>`:''}</section><section class="panel">${buttons()}</section>${p().battle?`<section class="panel"><p class="warn">中断したバトルがあります。新しいバトルは開始できません。</p><button data-action="battle">バトルを再開</button></section>`:''}`}
 function starterOptions(){
  const player=p();
  if(Array.isArray(player.starterOptions)&&player.starterOptions.length)return player.starterOptions;
@@ -97,7 +100,7 @@ function chooseStarterSet(key){
 }
 
 function recordCard(r,mode,data={}){const o=p().owned[r.master_id],owned=!!o,ct=o?.count||0,mult=Math.pow(1.1,Math.min(8,Math.max(0,ct-1))),status=data.status||'none';let button='';if(mode==='pending'){button=`<button data-action="choose" data-code="${esc(data.barcode)}" ${p().battle?'disabled':''}>バトルを選択</button>`}else if(mode==='owned'){button=`<button data-action="detail" data-id="${esc(r.master_id)}">詳細</button>`}else if(mode==='history'){button=`<button data-action="history-detail" data-code="${esc(data.barcode)}">詳細</button>`}else if(mode==='dex'&&status!=='none'){button=`<button data-action="detail" data-id="${esc(r.master_id)}">詳細</button>`}
-return `<article class="pick-card"><div class="picture">${pic(r,mode==='dex'?(status==='none'?'none':status==='pending'?'silhouette':'normal'):'normal')}</div><b>${esc(r.name_ja)}</b><span class="${group(r)==='special'?'special':'stars'}">${grade(r)}</span><span class="sub">${esc(r.series||'')} ／ ${esc(r.pick_no||'')}</span>${mode==='pending'?`<span class="chip wait">出現中・${number(data.attempts)}戦</span>`:''}${owned?`<span class="sub">累計${ct}枚 ／ 強化×${mult.toFixed(2)}${ct>=9?' MAX':''}</span><span class="stamina">本日 ${usedLeft(r.master_id)}/3 回</span>`:''}${mode==='dex'?`<span class="chip ${status==='owned'?'ok':'wait'}">${status==='owned'?'入手済み':status==='pending'?'発見済み':'未発見'}</span>`:''}${button}</article>`}
+return `<article class="pick-card"><div class="picture">${pic(r,mode==='dex'?(status==='none'?'none':status==='pending'?'silhouette':'normal'):'normal')}</div><b>${esc(r.name_ja)}</b><span class="${group(r)==='special'?'special':'stars'}">${grade(r)}</span><span class="sub">${esc(r.series||'')} ／ ${esc(r.pick_no||'')}</span>${mode==='pending'?`<span class="chip wait">${data.source==='gift'?'🎁 プレゼント':'出現中'}・${number(data.attempts)}戦</span>`:''}${owned?`<span class="sub">累計${ct}枚 ／ 強化×${mult.toFixed(2)}${ct>=9?' MAX':''}</span><span class="stamina">本日 ${usedLeft(r.master_id)}/3 回</span>`:''}${mode==='dex'?`<span class="chip ${status==='owned'?'ok':'wait'}">${status==='owned'?'入手済み':status==='pending'?'発見済み':'未発見'}</span>`:''}${button}</article>`}
 function filterOptions(items,selected){return items.map(([value,label])=>`<option value="${esc(value)}" ${selected===value?'selected':''}>${esc(label)}</option>`).join('')}
 function controls(name,mode='owned'){
  const series=[...new Set(DB.records.map(r=>r.series||'その他'))];
@@ -142,7 +145,7 @@ function dex(){
  return `${topNav('ポケモン図鑑')}<section class="panel"><div class="metrics"><div class="metric"><b>${s.owned}/${s.total}</b><span>入手率 ${(s.owned/s.total*100).toFixed(1)}%</span></div><div class="metric"><b>${s.found}/${s.total}</b><span>発見率 ${(s.found/s.total*100).toFixed(1)}%</span></div><div class="metric"><b>${series.length}</b><span>シリーズ数</span></div></div><div class="progress"><div style="width:${s.owned/s.total*100}%"></div></div></section><section class="panel">${controls('図鑑から名前を検索','dex')}<p class="sub">表示 ${d.length}/${list.length}件 ／ ？：未発見・暗いピック：発見済み・カラー：入手済み</p><div class="pick-grid size-${cardSize}" id="dexGrid">${d.slice(0,dexLimit).map(x=>recordCard(x.r,'dex',{status:x.status})).join('')||'<div class="empty">条件に合うピックはありません</div>'}</div>${d.length>dexLimit?`<button class="secondary" data-action="more-dex">さらに表示（残り${d.length-dexLimit}件）</button>`:''}</section><section class="panel"><h3>シリーズ別コンプリート</h3>${series.map(name=>{const all=DB.records.filter(x=>(x.series||'その他')===name),own=all.filter(x=>owned.has(x.master_id)).length,fnd=all.filter(x=>found.has(x.master_id)).length;return `<div style="margin:8px 0"><div class="row between"><span class="sub">${esc(name)} ${own===all.length?'🏆':''}</span><span class="sub">${own}/${all.length}（発見${fnd}）</span></div><div class="progress"><div style="width:${own/all.length*100}%"></div></div></div>`}).join('')}</section>`
 }
 function history(){
- const rows=Object.entries(p().reads).map(([barcode,x])=>({r:byId.get(x.pickId),barcode,...x,time:x.scannedAt})).filter(x=>x.r),data=sorted(rows,'history');
+ const rows=Object.entries(p().reads).filter(([,x])=>x.source!=='gift').map(([barcode,x])=>({r:byId.get(x.pickId),barcode,...x,time:x.scannedAt})).filter(x=>x.r),data=sorted(rows,'history');
  return `${topNav('バーコード読取履歴')}<section class="panel">${controls('名前・バーコード番号','history')}<p class="sub">表示 ${data.length}/${rows.length}件 ／ 初回読取日時（日本時間）</p>${data.map(x=>`<div class="row between history-row"><div><b>${esc(x.r.name_ja)}</b><span class="sub"> ${grade(x.r)} ／ ${esc(x.barcode)}</span><div class="sub">${esc(x.scannedAt)}</div></div><div><span class="chip ${x.status==='owned'?'ok':'wait'}">${x.status==='owned'?'入手済み':'出現中'}</span><button class="secondary small" data-action="history-detail" data-code="${esc(x.barcode)}">詳細</button></div></div>`).join('')||'<div class="empty">該当する読取履歴はありません</div>'}</section>`
 }
 function statGraph(name,base,current,max){
@@ -168,17 +171,98 @@ function estimate(m,e){const a=battleRecord(m),b=e;return (number(a.hp)||0)+(num
 function choose(code){const enemy=byId.get(p().reads[code]?.pickId);if(!enemy||p().reads[code]?.status!=='pending'){nav('pending');return}if(p().battle){alert('中断中のバトルがあります。先に再開してください。');nav('battle');return}lastRead=code;view='choose';filter='';sort='grade';render()}
 function chooseScreen(){const code=lastRead,enemy=byId.get(p().reads[code]?.pickId);if(!enemy)return topNav('バトル準備')+`<section class="panel">出現中一覧から選んでください。</section>`;const rows=Object.keys(p().owned).map(id=>byId.get(id)).filter(Boolean);const active=rows.filter(r=>usedLeft(r.master_id)>0&&battleOK(r));active.sort((a,b)=>estimate(b,enemy)-estimate(a,enemy));return `${topNav('1対1 バトル準備')}<section class="panel"><div class="row"><div class="picture" style="width:140px;height:140px">${pic(enemy)}</div><div><h2>${grade(enemy)} ${esc(enemy.name_ja)}</h2><p class="sub">${esc(enemy.series)} ／ 敵は未強化</p><span class="chip wait">この戦闘は開始時に出撃1回消費</span></div></div>${stats(enemy)}${noStats(enemy)?'<p class="callout">マスターにバトル能力値が不足しています。この敵との戦闘はマスター補完後に可能になります。</p>':''}</section><section class="panel"><h2>おすすめの出撃ピック</h2><p class="sub">強化後能力・タイプ・出撃回数を基に並べています。推奨順はテスト用の簡易評価で、勝利保証ではありません。</p><div class="pick-grid">${active.slice(0,3).map(r=>fighterCard(r,code,true)).join('')}</div></section><section class="panel"><h2>すべての所持ピック</h2><div class="pick-grid">${active.map(r=>fighterCard(r,code,false)).join('')||'<p>出撃可能なピックがありません。日本時間の翌日0時に回復します。</p>'}</div></section>`}
 function fighterCard(r,code,recommended){return `<article class="pick-card"><div class="picture">${pic(r)}</div><b>${esc(r.name_ja)}</b><span class="sub">${grade(r)} 強化×${battleRecord(r)._mult.toFixed(2)}</span><span class="stamina">残り${usedLeft(r.master_id)}/3回</span><button data-action="start-battle" data-code="${esc(code)}" data-id="${esc(r.master_id)}">${recommended?'おすすめ：':''}出撃する</button></article>`}
-function startBattle(code,id){if(p().battle){nav('battle');return}if(!navigator.onLine){alert('通信できない状態です。獲得バトルは開始できません。');return}const enemy=byId.get(p().reads[code]?.pickId),me=byId.get(id);if(!enemy||!me||p().reads[code].status!=='pending'||!p().owned[id]||usedLeft(id)<1){alert('開始条件を満たしていません。');nav('pending');return}if(!battleOK(enemy)||!battleOK(me)){alert('マスター能力値の未登録があるため、このテスト版では戦闘できません。');return}if(!confirm(`${me.name_ja}で${enemy.name_ja}に挑みますか？\nバトル開始時に出撃回数を1回消費します。`))return;
- const day=dateJST(),u=p().used[id];p().used[id]={date:day,count:(u?.date===day?number(u.count):0)+1};const ally=battleRecord(me),speedA=number(ally.speed_level),speedB=number(enemy.speed_level),first=speedA===speedB?(Math.random()<.5?'ally':'enemy'):(speedA>speedB?'ally':'enemy');p().battle={id:'demo-'+Date.now(),code,ally:id,enemy:enemy.master_id,allyStats:ally,enemyStats:{...enemy},allyHp:number(ally.hp),enemyHp:number(enemy.hp),turn:1,first,log:[`${grade(enemy)} ${enemy.name_ja}とのバトル開始！`,`${first==='ally'?ally.name_ja:enemy.name_ja}が先攻！`],createdAt:stamp(),auto:false};p().reads[code].attempts=(p().reads[code].attempts||0)+1;save();view='battle';render()}
-function takeDamage(att,def){const x=CORE.dmg(att,def,'v1');const acc=number(x.accuracy)||1;if(Math.random()>acc)return {n:0,hit:false,eff:x.e,nice:false};const spread=95+Math.floor(Math.random()*11),nice=Math.random()<.05;const n=Math.max(1,Math.round(number(x.hitN||x.n)*spread/100*(nice?1.2:1)));return {n,hit:true,eff:x.e,nice}}
-function battleTurn(){const b=p().battle;if(!b)return;if(!navigator.onLine){battleError='通信がありません。復旧後に再開できます。';render();return}const order=b.first==='ally'?['ally','enemy']:['enemy','ally'];for(const side of order){if(b.allyHp<=0||b.enemyHp<=0)break;const my=side==='ally',a=my?b.allyStats:b.enemyStats,d=my?b.enemyStats:b.allyStats,x=takeDamage(a,d);if(my)b.enemyHp=Math.max(0,b.enemyHp-x.n);else b.allyHp=Math.max(0,b.allyHp-x.n);b.log.push(`${a.name_ja}の${CORE.skillName(a)}！ ${x.hit?`${x.n}ダメージ${x.nice?' ✨ナイスアタック！':''}`:'ミス！'}`)}b.turn++;b.log=b.log.slice(-60);if(b.enemyHp<=0){captureAfterVictory(b.code);beep(950);view='result';lastRead={result:'win',pickId:b.enemy,barcode:b.code};p().battle=null}else if(b.allyHp<=0){p().battle=null;lastRead={result:'lost',pickId:b.enemy,barcode:b.code};view='result';beep(280)}save();render()}
+function battleRandom(b){
+ // Battle-local deterministic PRNG, saved after every action to prevent reroll on reload.
+ let x=(b.rng>>>0)||0x9e3779b9;x^=(x<<13);x^=(x>>>17);x^=(x<<5);b.rng=x>>>0;return (b.rng>>>0)/4294967296
+}
+function startBattle(code,id){
+ if(p().battle){nav('battle');return}
+ if(!navigator.onLine){alert('通信できない状態です。獲得バトルは開始できません。');return}
+ const enemy=byId.get(p().reads[code]?.pickId),me=byId.get(id);
+ if(!enemy||!me||p().reads[code].status!=='pending'||!p().owned[id]||usedLeft(id)<1){alert('開始条件を満たしていません。');nav('pending');return}
+ if(!battleOK(enemy)||!battleOK(me)){alert('マスター能力値の未登録があるため、このテスト版では戦闘できません。');return}
+ if(!confirm(`${me.name_ja}で${enemy.name_ja}に挑みますか？\nバトル開始時に出撃回数を1回消費します。`))return;
+ const day=dateJST(),u=p().used[id];p().used[id]={date:day,count:(u?.date===day?number(u.count):0)+1};
+ const ally=battleRecord(me),speedA=number(ally.speed_level),speedB=number(enemy.speed_level);
+ const b={id:'demo-'+Date.now(),code,ally:id,enemy:enemy.master_id,allyStats:ally,enemyStats:{...enemy},allyHp:number(ally.hp),enemyHp:number(enemy.hp),turn:1,phaseIndex:0,rng:(Math.floor(cryptoRandom()*4294967295)||1),first:'ally',model:localStorage.getItem('frenda:damageModel:v1')==='v2'?'v2':'v1',log:[],createdAt:stamp()};
+ b.first=speedA===speedB?(battleRandom(b)<.5?'ally':'enemy'):(speedA>speedB?'ally':'enemy');
+ b.log=[`${grade(enemy)} ${enemy.name_ja}とのバトル開始！`,`${b.first==='ally'?ally.name_ja:enemy.name_ja}が先攻！`];
+ p().battle=b;p().reads[code].attempts=(p().reads[code].attempts||0)+1;
+ battleError='';autoRunning=false;battleBusy=false;save();view='battle';render();
+}
+function takeDamage(att,def,b){
+ // Exact damage/accuracy/spread/nice constants from Dungeon attackValue (no party luck in 1v1).
+ const x=CORE.dmg(att,def,b.model||'v1'),acc=Math.max(0,Math.min(1,number(x.accuracy??1))),hit=battleRandom(b)<acc;
+ if(!hit)return {n:0,hit:false,eff:x.e,nice:false};
+ const spreadPct=95+Math.floor(battleRandom(b)*11),nice=battleRandom(b)<.05;
+ const n=Math.max(1,Math.round(Math.max(1,number(x.hitN??x.n))*(spreadPct/100)*(nice?1.2:1)));
+ return {n,hit:true,eff:x.e,nice};
+}
+const fxSleep=(ms)=>new Promise(resolve=>setTimeout(resolve,Math.max(50,Math.round(ms/(autoRunning?autoSpeed:1)))));
+function battleStageMessage(v){const el=$('battleMessage');if(el)el.textContent=v}
+function battleHpUI(side,hp,max){const el=$(side==='ally'?'myHpFill':'enemyHpFill'),txt=$(side==='ally'?'myHpText':'enemyHpText');if(el)el.style.width=`${Math.max(0,Math.min(100,hp/Math.max(1,max)*100))}%`;if(txt)txt.textContent=`HP ${hp}/${max}`}
+function typeEffectLabel(e){const low=CORE.FRIENDA_EFFECT?.VERY_LOW||.59;if(e<=low+.0001)return 'ほとんどこうかがない';if(e>1)return '効果ばつぐん！';if(e<1)return '効果はいまひとつ';return ''}
+async function animateAttack(a,side,x,newHp,maxHp,epoch){
+ if(epoch!==battleEpoch||view!=='battle')return;
+ const attackingMe=side==='ally',attacker=$(attackingMe?'myFighter':'enemyFighter'),defender=$(attackingMe?'enemyFighter':'myFighter');
+ const direction=attackingMe?'enemy':'ally',special=!!(a.finisher_move&&String(a.finisher_move).trim());
+ battleStageMessage(`${a.name_ja}の${special?'必殺技 ':''}${CORE.skillName(a)}！`);
+ const specialNode=$('battleSpecialBanner');if(special&&specialNode){specialNode.textContent=`SPECIAL ATTACK　${a.name_ja}　${CORE.skillName(a)}`;specialNode.classList.add('show')}
+ attacker?.classList.add('activeTurn',attackingMe?'attackLeft':'attackRight');
+ const fx=$('battleFxLayer');if(fx){fx.textContent=`${a.move_type||'ノーマル'} ✦`;fx.className=`battle-fx-layer show ${attackingMe?'to-enemy':'to-ally'}`}
+ await fxSleep(special?370:230);
+ if(epoch!==battleEpoch||view!=='battle')return;
+ attacker?.classList.remove('attackLeft','attackRight');specialNode?.classList.remove('show');
+ if(!x.hit){battleStageMessage('ミス！ 攻撃は外れた！');await impact('ミス！',epoch);}
+ else{
+  defender?.classList.add('hit');battleStageMessage(typeEffectLabel(x.e)||`${x.n}ダメージ！`);
+  if(typeEffectLabel(x.e))await impact(typeEffectLabel(x.e),epoch);
+  if(epoch!==battleEpoch||view!=='battle')return;
+  const d=document.createElement('span');d.className='damage-pop';d.textContent=x.nice?`✨ -${x.n}`:`-${x.n}`;defender?.appendChild(d);
+  battleStageMessage(x.nice?`✨ ナイスアタック！ ${x.n}ダメージ！`:`${x.n}ダメージ！`);
+  await fxSleep(330);if(epoch!==battleEpoch||view!=='battle')return;
+  battleHpUI(attackingMe?'enemy':'ally',newHp,maxHp);
+  if(newHp<=0)await impact('K.O.!',epoch);
+  defender?.classList.remove('hit');
+ }
+ fx?.classList.remove('show');attacker?.classList.remove('activeTurn');
+ await fxSleep(140);
+}
+async function impact(msg,epoch){const el=$('battleImpact');if(!el)return;el.textContent=msg;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');await fxSleep(390);if(epoch===battleEpoch)el.classList.remove('show')}
+async function battleTurn(){
+ const b=p().battle;if(!b||battleBusy||view!=='battle')return;
+ if(!navigator.onLine){battleError='通信がありません。復旧後に再開できます。';render();return}
+ battleBusy=true;const epoch=battleEpoch,order=b.first==='ally'?['ally','enemy']:['enemy','ally'];
+ const isCurrent=()=>epoch===battleEpoch&&view==='battle'&&p().battle===b;
+ try{
+  if(b.phaseIndex===0){battleStageMessage(`TURN ${b.turn}　${b.first==='ally'?b.allyStats.name_ja:b.enemyStats.name_ja}が先攻！`);await fxSleep(320)}
+  for(let i=b.phaseIndex||0;i<2;i++){
+   if(!isCurrent()||b.allyHp<=0||b.enemyHp<=0)break;
+   const side=order[i],mine=side==='ally',a=mine?b.allyStats:b.enemyStats,d=mine?b.enemyStats:b.allyStats,x=takeDamage(a,d,b);
+   if(mine)b.enemyHp=Math.max(0,b.enemyHp-x.n);else b.allyHp=Math.max(0,b.allyHp-x.n);
+   b.log.push(`${a.name_ja}の${CORE.skillName(a)}！ ${x.hit?`${x.n}ダメージ${x.nice?' ✨ナイスアタック！':''}`:'ミス！'}`);
+   b.log=b.log.slice(-60);b.phaseIndex=i+1;save(); // commit HP, RNG and phase BEFORE animation
+   await animateAttack(a,side,x,mine?b.enemyHp:b.allyHp,number(d.hp),epoch);
+   if(!isCurrent())return;
+  }
+  if(!isCurrent())return;
+  if(b.enemyHp<=0){captureAfterVictory(b.code);beep(950);lastRead={result:'win',pickId:b.enemy,barcode:b.code};p().battle=null;view='result';autoRunning=false;}
+  else if(b.allyHp<=0){p().battle=null;lastRead={result:'lost',pickId:b.enemy,barcode:b.code};view='result';beep(280);autoRunning=false;}
+  else{b.turn++;b.phaseIndex=0}
+  save();battleBusy=false;render();
+ }finally{if(epoch===battleEpoch)battleBusy=false}
+}
 function captureAfterVictory(code){const read=p().reads[code];if(!read)return;const id=read.pickId;const claims=Object.entries(p().reads).filter(([,v])=>v.pickId===id&&v.status==='pending');for(const [barcode,entry] of claims){entry.status='owned';entry.captureAt=stamp();if(!p().owned[id])p().owned[id]={count:0,firstAt:entry.captureAt};p().owned[id].count++;p().owned[id].lastAt=stamp()}return claims.length}
-function forfeit(){if(!p().battle)return;if(!confirm('このバトルをあきらめますか？ 出撃回数は返却されません。'))return;const b=p().battle;p().battle=null;lastRead={result:'forfeit',pickId:b.enemy,barcode:b.code};view='result';save();render()}
-function battlePage(){const b=p().battle;if(!b)return `${topNav('バトル')}<section class="panel empty">進行中のバトルはありません</section>`;const me=b.allyStats,en=b.enemyStats,mePct=Math.max(0,Math.min(100,b.allyHp/me.hp*100)),enPct=Math.max(0,Math.min(100,b.enemyHp/en.hp*100));return `${topNav('バトル中')}<section class="panel"><div class="row between"><h2 style="margin:0">第${b.turn}ターン</h2><span class="chip">手動 / AUTO ${autoSpeed}倍</span></div><div class="battle-board"><div class="combatant"><strong>自分：${esc(me.name_ja)}</strong><div class="picture">${pic(me)}</div><div class="hp-track"><div class="hp-fill ${mePct<35?'low':''}" style="width:${mePct}%"></div></div><div class="sub">HP ${b.allyHp}/${me.hp}</div></div><div class="combatant"><strong>敵：${esc(en.name_ja)}</strong><div class="picture">${pic(en)}</div><div class="hp-track"><div class="hp-fill ${enPct<35?'low':''}" style="width:${enPct}%"></div></div><div class="sub">HP ${b.enemyHp}/${en.hp}</div></div></div><div class="combat-log" role="log">${b.log.slice(-7).map(x=>`<p>${esc(x)}</p>`).join('')}</div>${battleError?`<p class="warn">${esc(battleError)}</p>`:''}<div class="button-row" style="margin-top:10px"><button data-action="turn">こうげき</button><button class="secondary" data-action="auto">${autoTimer?'AUTO停止':'AUTO開始'}</button><button class="secondary" data-action="speed">速度 ×${autoSpeed}</button><button class="danger" data-action="forfeit">あきらめる</button></div><p class="sub">※初期テスト版：フレンダダンジョンと同じ共通計算式・±5%乱数・5%ナイス攻撃を使用。演出と一部の戦闘処理は移植途中です。</p></section>`}
+function forfeit(){if(!p().battle||battleBusy)return;if(!confirm('このバトルをあきらめますか？ 出撃回数は返却されません。'))return;const b=p().battle;p().battle=null;lastRead={result:'forfeit',pickId:b.enemy,barcode:b.code};view='result';save();render()}
+function battlePage(){
+ const b=p().battle;if(!b)return `${topNav('バトル')}<section class="panel empty">進行中のバトルはありません</section>`;
+ const me=b.allyStats,en=b.enemyStats,mePct=Math.max(0,Math.min(100,b.allyHp/me.hp*100)),enPct=Math.max(0,Math.min(100,b.enemyHp/en.hp*100));
+ return `${topNav('バトル中')}<section class="panel"><div class="row between"><h2 style="margin:0">第${b.turn}ターン</h2><span class="chip" id="autoSpeedStatus">${autoRunning?'🤖 AUTO':'手動'} ×${autoSpeed}</span></div><div id="battleStage" class="battle-stage"><div id="battleTurnSplash" class="battle-turn-splash"></div><div id="battleSpecialBanner" class="battle-special-banner"></div><div id="battleImpact" class="battle-impact"></div><div id="battleFxLayer" class="battle-fx-layer"></div><div class="battle-board"><div class="combatant" id="myFighter"><strong>自分：${esc(me.name_ja)}</strong><div class="picture">${pic(me)}</div><div class="hp-track"><div id="myHpFill" class="hp-fill ${mePct<35?'low':''}" style="width:${mePct}%"></div></div><div id="myHpText" class="sub">HP ${b.allyHp}/${me.hp}</div></div><div class="combatant" id="enemyFighter"><strong>敵：${esc(en.name_ja)}</strong><div class="picture">${pic(en)}</div><div class="hp-track"><div id="enemyHpFill" class="hp-fill ${enPct<35?'low':''}" style="width:${enPct}%"></div></div><div id="enemyHpText" class="sub">HP ${b.enemyHp}/${en.hp}</div></div></div></div><p id="battleMessage" class="battle-message">${b.phaseIndex?'ターン途中から再開できます。':'攻撃の準備ができました。'}</p><div class="combat-log" role="log">${b.log.slice(-7).map(x=>`<p>${esc(x)}</p>`).join('')}</div>${battleError?`<p class="warn">${esc(battleError)}</p>`:''}<div class="button-row" style="margin-top:10px"><button data-action="turn" ${autoRunning||battleBusy?'disabled':''}>こうげき</button><button class="secondary" data-action="auto">${autoRunning?'AUTO停止':'AUTO開始'}</button><button class="secondary" data-action="speed">速度 ×${autoSpeed}</button><button class="danger" data-action="forfeit" ${battleBusy?'disabled':''}>あきらめる</button></div><p class="sub">ダンジョン共通ダメージ計算（${esc(b.model||'v1')}）：タイプ相性・±5%・5%ナイス攻撃／攻撃演出はピック画像版に移植。1対1のためパーティ・アイテム効果はありません。</p></section>`;
+}
 function resultPage(){
  const info=lastRead;if(!info?.result)return home();const r=byId.get(info.pickId),o=p().owned[info.pickId];const won=info.result==='win';
  const actions=won?'<button data-action="pending">出現中一覧に戻る</button><button class="secondary" data-action="home">ホームへ</button>':`<button data-action="retry" data-code="${esc(info.barcode)}">別のピックで再戦</button><button class="secondary" data-action="pending">出現中一覧に戻る</button>`;
- return `${topNav('バトル結果')}<section class="panel" style="text-align:center"><h2>${won?'🎉 バトル勝利！':info.result==='forfeit'?'バトルを棄権':'バトル敗北'}</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>${won?`ピックを獲得しました！ 累計${o?.count||0}枚・強化×${Math.pow(1.1,Math.min(8,(o?.count||1)-1)).toFixed(2)}`:'このピックは出現中です。出撃可能なピックを選び、再挑戦できます。'}</p><div class="button-row">${actions}</div></section>`
+ return `${topNav('バトル結果')}<section class="panel" style="text-align:center"><h2>${won?'🎉 バトル勝利！':info.result==='forfeit'?'バトルを棄権':'バトル敗北'}</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>${won?`ピックを獲得しました！ 累計${o?.count||0}枚・強化×${Math.pow(1.1,Math.min(8,(o?.count||1)-1)).toFixed(2)}`:'このピックは出現中です。別の所持ピックを選んで再挑戦できます。'}</p><div class="button-row">${actions}</div></section>`
 }
 function registerBarcode(code){
  const canonical=normalize(code);if(!canonical){showCodeError('バーコードの桁数またはチェックデジットが正しくありません。');return}
@@ -194,12 +278,12 @@ function registerBarcode(code){
  save();lastRead={barcode:canonical,pickId:entry.pickId,status};beep(950);if(navigator.vibrate)try{navigator.vibrate(70)}catch{}view='encounter';render()
 }
 function cryptoRandom(){const x=new Uint32Array(1);crypto.getRandomValues(x);return x[0]/4294967296}
-function drawPick(){const groups=RATES.reduce((s,[k,rate])=>{s.push([k,rate]);return s},[]);let z=cryptoRandom()*100,k=groups[groups.length-1][0];for(const [key,rate] of groups){z-=rate;if(z<0){k=key;break}}const pool=RATE_POOLS[k]||[];if(!pool.length)throw Error('抽選対象がありません');const appearance={};for(const row of Object.values(registry))appearance[row.pickId]=(appearance[row.pickId]||0)+1;let weights=pool.map(r=>1/Math.sqrt(1+(appearance[r.master_id]||0))),sum=weights.reduce((a,b)=>a+b,0),u=cryptoRandom()*sum;for(let i=0;i<pool.length;i++){u-=weights[i];if(u<0)return pool[i]}return pool[pool.length-1]}
+function drawPick(forcedGroup){const groups=RATES.reduce((s,[k,rate])=>{s.push([k,rate]);return s},[]);let z=cryptoRandom()*100,k=groups[groups.length-1][0];if(forcedGroup&&RATE_POOLS[forcedGroup]?.length){k=forcedGroup}else for(const [key,rate] of groups){z-=rate;if(z<0){k=key;break}}const pool=RATE_POOLS[k]||[];if(!pool.length)throw Error('抽選対象がありません');const appearance={};for(const row of Object.values(registry))appearance[row.pickId]=(appearance[row.pickId]||0)+1;let weights=pool.map(r=>1/Math.sqrt(1+(appearance[r.master_id]||0))),sum=weights.reduce((a,b)=>a+b,0),u=cryptoRandom()*sum;for(let i=0;i<pool.length;i++){u-=weights[i];if(u<0)return pool[i]}return pool[pool.length-1]}
 function normalize(value){const code=String(value||'').replace(/\s/g,'');if(!/^\d+$/.test(code)||![8,12,13].includes(code.length))return null;let digits=code.split('').map(Number),check=digits.pop(),sum=0;for(let i=digits.length-1,weight=3;i>=0;i--,weight=weight===3?1:3)sum+=digits[i]*weight;const computed=(10-sum%10)%10;if(computed!==check)return null;return code.length===12?'0'+code:code}
 function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new';return `${topNav('バーコード読み取り結果')}<section class="panel" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックを自動強化！'}</p><div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">コード：${esc(x.barcode)} ／ ${esc(r.series)}</p>${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=9?' MAX':''}</p>`:'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${p().reads[x.barcode]?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
 function scanMessage(message){scanStatus=message;const e=$('scanState');if(e)e.textContent=message}
 function showCodeError(message){const e=$('testCodeError');if(e){e.textContent=message;e.hidden=!message}if(!e)scanMessage(message)}
-function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">カメラ読み取り限定です。HTTPSとカメラ許可が必要です。このVer05の共通台帳はまだブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを起動してください。')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button data-action="camera">📷 カメラを起動</button><button class="secondary" data-action="stopcamera">カメラ停止</button></div></section>`}
+function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">カメラ読み取り限定です。HTTPSとカメラ許可が必要です。このVer06の共通台帳はまだブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを起動してください。')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button data-action="camera">📷 カメラを起動</button><button class="secondary" data-action="stopcamera">カメラ停止</button></div></section>`}
 async function startScan(){
  if(!navigator.onLine){scanMessage('通信がありません。');return}
  if(!isSecureContext){scanMessage('HTTPSで開いてください。');return}
@@ -256,18 +340,55 @@ async function scanLoop(){
   if(epoch===scanEpoch&&showScan)scanTimer=setTimeout(scanLoop,180)
  }
 }
-function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通バーコード台帳はこのブラウザ内の全テストユーザーで共通。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者テスト機能（本番に設置しない）</h2><p class="sub">テスト用の番号入力です。一般プレイではカメラのみとします。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><p class="sub">本番ルールでは同一バーコードは初回のみ。別コードで同じピックが出ると自動強化されます。</p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div><p class="callout">この機能は画面とロジックの検証用です。実際の商品の存在を確認するものではありません。</p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div></section>`}
+function addDirectPick(id,source){
+ const r=byId.get(id);if(!r)return null;
+ const owned=p().owned[id]||(p().owned[id]={count:0,firstAt:stamp()});owned.count++;owned.lastAt=stamp();
+ let collected=0;
+ for(const read of Object.values(p().reads))if(read.pickId===id&&read.status==='pending'){read.status='owned';read.captureAt=stamp();owned.count++;collected++}
+ save();return {pick:r,count:owned.count,extra:collected,mult:Math.pow(1.1,Math.min(8,Math.max(0,owned.count-1)))};
+}
+function dailyPage(){const drawn=p().dailyGachaDate===dateJST();return `${topNav('1日1回ガチャ')}<section class="panel hero"><h2>🎰 デイリーガチャ</h2><p>毎日1回、バトルなしでピックを直接入手。重複したら強化されます。</p><p class="sub">本日は ${drawn?'使用済み':'まだ引けます'} ／ ★2 45%、★3 30%、★4 15%、★5 5%、スペシャル 5%</p><button data-action="daily-pull" ${drawn?'disabled':''}>${drawn?'本日はガチャ終了':'ガチャを1回引く'}</button><p class="sub">テスト版：日付は端末の時計から判定。本番はSupabaseのサーバー時刻と原子的な獲得処理に置き換えます。</p></section>`}
+function pullDaily(){if(p().dailyGachaDate===dateJST()){alert('本日のガチャはすでに引いています。');return}if(!confirm('本日のガチャを引きますか？ ピックを直接1枚獲得します。'))return;
+ const r=drawPick();p().dailyGachaDate=dateJST();const info=addDirectPick(r.master_id,'daily');lastRead={result:'daily',pickId:r.master_id,info};save();view='reward';render();
+}
+function rewardPage(){const x=lastRead||{},r=byId.get(x.pickId);if(!r)return home();const o=p().owned[r.master_id];return `${topNav('ピック獲得')}<section class="panel reward-panel"><h2>🎉 ${x.result==='daily'?'デイリーガチャ':'プレゼント'}でゲット！</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>累計 ${number(o?.count)}枚 ／ 強化×${Math.pow(1.1,Math.min(8,Math.max(0,number(o?.count)-1))).toFixed(2)}</p><p class="sub">このピックを今すぐ使用できます。出撃回数は消費しません。</p><div class="button-row"><button data-action="owned">所持ピックへ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`}
+function createGiftCode(){
+ const mode=$('giftMode')?.value,val=$('giftValue')?.value;if(!['grade','pick'].includes(mode)){alert('種類を指定してください。');return}
+ if(mode==='grade'&&!RATES.some(([k])=>k===val)){alert('レア度を指定してください。');return}
+ if(mode==='pick'&&!battleOK(byId.get(val))){alert('バトル可能なピックIDを指定してください。');return}
+ let code;for(let tries=0;tries<40;tries++){const s=Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');code='FG-'+s.slice(0,4)+'-'+s.slice(4);if(!giftRegistry[code])break}
+ if(giftRegistry[code]){alert('コード生成に失敗しました。');return}
+ giftRegistry[code]={kind:mode,value:val,createdAt:stamp(),usedBy:null,usedAt:null};save();const out=$('giftCreated');if(out){out.hidden=false;out.textContent='発行済み：'+code+'（1回限定）'}
+}
+function giftPage(){return `${topNav('プレゼントコード')}<section class="panel"><h2>🎁 プレゼントコードを入力</h2><p class="sub">コードを利用すると指定のピックが出現。未所持ならバトル、所持済みならその場で強化します。</p><div class="row"><input id="giftCodeInput" type="text" autocapitalize="characters" autocomplete="off" placeholder="FG-XXXX-XXXX" class="grow"><button data-action="gift-redeem">コードを使う</button></div><p id="giftError" class="warn" role="alert" hidden></p></section><section class="panel"><p class="callout">これは同一ブラウザ内だけの検証用コードです。端末間共有・管理者認証・1回限りの厳格な保証は、サーバー実装まで未対応です。</p></section>`}
+function giftError(msg){const el=$('giftError');if(el){el.textContent=msg;el.hidden=!msg}}
+function redeemGift(){const code=String($('giftCodeInput')?.value||'').trim().toUpperCase(),gift=giftRegistry[code];if(!gift){giftError('プレゼントコードが存在しません。');return}if(gift.usedAt){giftError('このコードは使用済みです。');return}
+ let r;if(gift.kind==='pick')r=byId.get(gift.value);else r=drawPick(gift.value);
+ if(!r){giftError('対象ピックを取得できません。');return}
+ gift.usedBy=state.profile;gift.usedAt=stamp();gift.pickId=r.master_id;
+ if(p().owned[r.master_id]){const info=addDirectPick(r.master_id,'gift');lastRead={result:'gift',pickId:r.master_id,info};view='reward'}
+ else{p().reads[code]={pickId:r.master_id,scannedAt:stamp(),source:'gift',status:'pending',attempts:0};lastRead={barcode:code,pickId:r.master_id,status:'new'};view='encounter'}
+ save();render();
+}
+function debugPickOptions(){const owned=Object.keys(p().owned);const all=[...DB.records].filter(battleOK).sort((a,b)=>String(a.name_ja).localeCompare(String(b.name_ja),'ja'));
+ return `<option value="">ピックを選択</option>${owned.length?`<optgroup label="現在の所持ピック">${owned.map(id=>byId.get(id)).filter(Boolean).map(r=>`<option value="${esc(r.master_id)}">${esc(r.name_ja)} / ${esc(r.pick_no||r.master_id)} / ${esc(r.series)}</option>`).join('')}</optgroup>`:''}<optgroup label="すべてのバトル可能ピック">${all.map(r=>`<option value="${esc(r.master_id)}">${esc(r.name_ja)} / ${esc(r.pick_no||r.master_id)} / ${esc(r.series)}</option>`).join('')}</optgroup>`;
+}
+function simulateExactPick(){const id=$('debugPick')?.value;if(!byId.has(id)){alert('ピックを選択してください。');return}
+ for(let i=0;i<100;i++){const prefix='290'+String(Math.floor(cryptoRandom()*1e9)).padStart(9,'0'),code=prefix+checksum(prefix);if(!registry[code]){registry[code]={pickId:id,grade:group(byId.get(id)),createdAt:stamp(),debug:true};save();registerBarcode(code);return}}
+ alert('テストコードを生成できませんでした。')
+}
+function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計9枚で強化上限に達することを確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
 function checksum(prefix){let digits=String(prefix).split('').map(Number),s=0;for(let i=digits.length-1,w=3;i>=0;i--,w=w===3?1:3)s+=digits[i]*w;return String((10-s%10)%10)}
 function render(){
  if(!DB?.records||!CORE){app.innerHTML='<div class="panel warn">マスターまたは戦闘計算を読み込めません。</div>';return}
  if(!Array.isArray(p().starterIds)||p().starterIds.length!==3){app.innerHTML=starter();return}
- const pages={home,pending,owned:ownedPage,dex,history,scan:scanPage,settings,battle:battlePage,choose:chooseScreen,encounter,result:resultPage,detail:()=>detail(detailId),historyDetail:()=>historyDetail(historyCode)};
+ const pages={home,pending,owned:ownedPage,dex,history,scan:scanPage,settings,daily:dailyPage,gift:giftPage,reward:rewardPage,battle:battlePage,choose:chooseScreen,encounter,result:resultPage,detail:()=>detail(detailId),historyDetail:()=>historyDetail(historyCode)};
  app.innerHTML=(pages[view]||home)()
 }
 function onAction(e){
  const button=e.target.closest('[data-action]');if(!button)return;const act=button.dataset.action,id=button.dataset.id,code=button.dataset.code;
  switch(act){
- case 'home':nav('home');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':nav('scan');break;case 'settings':nav('settings');break;
+ case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':nav('scan');break;case 'settings':nav('settings');break;
  case 'camera':startScan();break;case 'stopcamera':stopScan();scanMessage('カメラ停止中です。');break;
  case 'starter-set':chooseStarterSet(id);break;
  case 'choose':choose(code);break;case 'retry':if(code&&p().reads[code]?.status==='pending')choose(code);else nav('pending');break;
@@ -275,22 +396,22 @@ function onAction(e){
  case 'battle':if(p().battle){battleError='';stopScan();view='battle';render()}else nav('home');break;
  case 'detail':detailId=id;view='detail';render();break;
  case 'history-detail':historyCode=code;view='historyDetail';render();break;
- case 'turn':battleError='';battleTurn();break;
- case 'auto':if(autoTimer){clearTimeout(autoTimer);autoTimer=null;render()}else{autoTimer=setTimeout(autoTick,120);render()}break;
- case 'speed':autoSpeed=autoSpeed%5+1;render();break;
- case 'forfeit':if(autoTimer){clearTimeout(autoTimer);autoTimer=null}forfeit();break;
- case 'test-code':registerBarcode($('testCode')?.value||'');break;
+ case 'turn':battleError='';void battleTurn();break;
+ case 'auto':autoRunning=!autoRunning;if(autoTimer){clearTimeout(autoTimer);autoTimer=null}if(autoRunning)autoTimer=setTimeout(autoTick,90);if(!battleBusy)render();break;
+ case 'speed':autoSpeed=autoSpeed%5+1;putJSON(SPEED_KEY,autoSpeed);if(!battleBusy)render();else{const e=$('autoSpeedStatus');if(e)e.textContent='×'+autoSpeed}break;
+ case 'forfeit':if(battleBusy){alert('攻撃演出の完了後にあきらめる操作をしてください。');break}autoRunning=false;if(autoTimer){clearTimeout(autoTimer);autoTimer=null}forfeit();break;
+ case 'test-code':registerBarcode($('testCode')?.value||'');break;case 'daily-pull':pullDaily();break;case 'gift-redeem':redeemGift();break;case 'gift-generate':createGiftCode();break;case 'debug-pick':simulateExactPick();break;
  case 'simulate':{let val='490'+String(Math.floor(Math.random()*1e9)).padStart(9,'0');val+=checksum(val);registerBarcode(val);break}
  case 'toggle-audio':audio=!audio;putJSON(AUDIO_KEY,audio);render();break;
  case 'reset-player':if(confirm('テストプレイヤー'+state.profile+'のデータを初期化しますか？')){state.profiles[state.profile]=newPlayer();save();nav('home')}break;
- case 'reset-demo':if(confirm('全プレイヤーと共通テスト台帳をすべて初期化しますか？')){state={profile:'A',profiles:{A:newPlayer(),B:newPlayer(),C:newPlayer()}};registry={};save();nav('home')}break;
+ case 'reset-demo':if(confirm('全プレイヤーと共通テスト台帳をすべて初期化しますか？')){state={profile:'A',profiles:{A:newPlayer(),B:newPlayer(),C:newPlayer()}};registry={};giftRegistry={};save();nav('home')}break;
  case 'toggle-filter':filterOpen=!filterOpen;render();break;
- case 'clear-filters':filterSet={series:'all',grade:'all',type:'all',status:'all'};dexLimit=70;render();break;
+ case 'clear-filters':filter='';sort='series';filterSet={series:'all',grade:'all',type:'all',status:'all'};dexLimit=70;render();break;
  case 'card-size':if(['small','medium','large'].includes(id)){cardSize=id;render()}break;
  case 'more-dex':dexLimit+=120;render();break;
  }
 }
-function autoTick(){if(!autoTimer||!p().battle||view!=='battle'){autoTimer=null;return}battleTurn();if(p().battle&&view==='battle'){autoTimer=setTimeout(autoTick,Math.round(1400/autoSpeed))}else autoTimer=null}
+async function autoTick(){autoTimer=null;if(!autoRunning||!p().battle||view!=='battle')return;await battleTurn();if(autoRunning&&p().battle&&view==='battle')autoTimer=setTimeout(autoTick,Math.max(120,Math.round(560/autoSpeed)))}
 app.addEventListener('click',onAction);
 function updateSearchInput(el){
  filter=el.value;dexLimit=70;
@@ -303,14 +424,15 @@ app.addEventListener('input',e=>{if(e.target.id==='searchPick'&&!searchComposing
 app.addEventListener('change',e=>{
  if(e.target.id==='sortPick'){sort=e.target.value;render()}
  if(e.target.dataset.filterKey){filterSet[e.target.dataset.filterKey]=e.target.value;dexLimit=70;render()}
+ if(e.target.id==='giftMode'){const o=$('giftValue');if(o)o.innerHTML=e.target.value==='pick'?debugPickOptions():RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}
  if(e.target.id==='profileSel'){if(p().battle)alert('戦闘途中のプレイヤーでも切替できますが、元に戻して再開してください。');state.profile=e.target.value;save();nav('home')}
 });
 $('homeTop').addEventListener('click',()=>nav('home'));
-window.addEventListener('popstate',event=>{stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render()});
+window.addEventListener('popstate',event=>{stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render()});
 window.addEventListener('pagehide',stopScan);
-window.addEventListener('offline',()=>{if(autoTimer){clearTimeout(autoTimer);autoTimer=null}if(view==='battle'){battleError='通信が切断されました。戦闘は保存済みです。';render()}});
+window.addEventListener('offline',()=>{if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;if(view==='battle'){battleError='通信が切断されました。戦闘は保存済みです。';render()}});
 window.addEventListener('online',()=>{if(view==='battle'){battleError='通信が回復しました。途中から再開できます。';render()}});
-window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,registerBarcode,usedLeft,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry))})});
+window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,registerBarcode,usedLeft,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick}});
 render();
 })();
-/* Updated: 2026-11-15 08:45 JST / Ver05 */
+/* Updated: 2026-11-15 12:53 JST / Ver06 */
