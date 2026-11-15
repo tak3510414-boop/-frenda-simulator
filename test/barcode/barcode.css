@@ -319,4 +319,20 @@
   }
 }
 /* Narrow white-PC layouts use the existing single-column layout, and remain page-scrollable. */
-/* Updated: 2026-11-15 17:18 JST / Ver14 */
+/* Gift presentation: gift box opens into the existing rarity-specific pick reveal. */
+.gift-reveal-overlay{background:radial-gradient(ellipse at 50% 22%,#423461 0%,#241e3d 46%,#101122 100%)}
+.gift-reveal-overlay .gacha-reveal-scene{border-width:3px;box-shadow:0 0 38px #000b,0 0 42px var(--gacha-main),inset 0 0 34px #d49bfc12}
+.gift-reveal-overlay .gacha-reveal-source{letter-spacing:.02em;text-shadow:0 0 16px var(--gacha-main)}
+.gift-reveal-overlay .gacha-reveal-orb{border-radius:18%;background:linear-gradient(145deg,var(--gacha-glow),var(--gacha-main) 52%,#544274);
+ box-shadow:0 0 44px var(--gacha-main),inset 0 0 20px #fff8;transform:rotate(-4deg);animation:giftBoxBounce .85s ease-in-out infinite alternate}
+.gift-reveal-overlay .gacha-reveal-orb:before{content:'';position:absolute;inset:0 42%;background:#fff9;opacity:.7}
+.gift-reveal-overlay .gacha-reveal-orb:after{content:'';position:absolute;inset:42% 0;background:#fff9;opacity:.7}
+.gift-reveal-overlay .gacha-reveal-orb span{font-size:clamp(50px,15vw,83px);position:relative;z-index:2}
+.gift-reveal-overlay.is-revealed .gacha-reveal-orb{animation:gachaOrbBurst .7s ease-out forwards}
+.gift-reveal-overlay .gacha-reveal-info p:last-child{font-size:14px;line-height:1.6}
+.gift-reveal-overlay .gacha-reveal-sparks i{font-size:22px}
+.gift-ticket-result{display:grid;place-items:center;align-content:center;gap:12px;font-size:100px;color:#fff;font-weight:900;text-shadow:0 0 22px var(--gacha-main)}
+.gift-ticket-result small{display:block;font-size:18px}
+@keyframes giftBoxBounce{0%{transform:translateY(8px) rotate(-7deg) scale(.94)}100%{transform:translateY(-9px) rotate(7deg) scale(1.06)}}
+@media(prefers-reduced-motion:reduce){.gift-reveal-overlay .gacha-reveal-orb{animation:none}}
+/* Updated: 2026-11-15 17:53 JST / Ver15 */

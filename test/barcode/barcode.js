@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 14 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 15 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='14';
+const VERSION='15';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -281,10 +281,15 @@ async function battleTurn(){
    if(!isCurrent())return;
   }
   if(!isCurrent())return;
-  if(b.enemyHp<=0){captureAfterVictory(b.code);beep(950);lastRead={result:'win',pickId:b.enemy,barcode:b.code};p().battle=null;view='result';autoRunning=false;}
+  if(b.enemyHp<=0){
+   const giftWin=p().reads[b.code]?.source==='gift';
+   captureAfterVictory(b.code);beep(950);lastRead={result:'win',pickId:b.enemy,barcode:b.code};p().battle=null;view='result';autoRunning=false;
+   if(giftWin)p().gachaReveal={source:'gift',giftStage:'victory',pickId:b.enemy,barcode:b.code,at:stamp()};
+  }
   else if(b.allyHp<=0){p().battle=null;lastRead={result:'lost',pickId:b.enemy,barcode:b.code};view='result';beep(280);autoRunning=false;}
   else{b.turn++;b.phaseIndex=0}
   save();battleBusy=false;render();
+  if(p().gachaReveal?.source==='gift'&&p().gachaReveal.giftStage==='victory')showGachaReveal();
  }finally{if(epoch===battleEpoch)battleBusy=false}
 }
 function captureAfterVictory(code){const read=p().reads[code];if(!read)return;const id=read.pickId;const claims=Object.entries(p().reads).filter(([,v])=>v.pickId===id&&v.status==='pending');for(const [barcode,entry] of claims){entry.status='owned';entry.captureAt=stamp();if(!p().owned[id])p().owned[id]={count:0,firstAt:entry.captureAt};p().owned[id].count++;p().owned[id].lastAt=stamp()}awardDexTickets();return claims.length}
@@ -423,15 +428,20 @@ function finishClaim(q,id,kind){
   }else{read.status='pending';pending=true}
  }else{info=addDirectPick(id,q.source)}
  ply.pendingReward=null;
- ply.lastReward={result:pending?'pending':kind||q.source,pickId:id,barcode:q.barcode||null,info,at:stamp()};
+ ply.lastReward={result:pending?'pending':kind||q.source,source:q.source,pickId:id,barcode:q.barcode||null,info,at:stamp()};
  lastRead=pending?{barcode:q.barcode,pickId:id,status:'new'}:ply.lastReward;
+ // Gift reveal: after a chosen boost show a real acquisition. A rerolled new pick is only an encounter.
+ if(q.source==='gift')ply.gachaReveal={source:'gift',giftStage:pending?'appearance':'obtained',pickId:id,barcode:q.barcode,at:stamp(),rerolled:!!q.rerolled,boosted:kind==='boost'};
  save();view=pending?'encounter':'reward';render();
+ if(q.source==='gift')showGachaReveal();
 }
 function finishTicket(q,gradeKey){
  const ply=p(),read=q.barcode?ply.reads[q.barcode]:null;
  if(read){read.status='ticket';read.captureAt=stamp();read.pickId=q.pickId;if(q.rerolled)read.rerolledPickId=q.pickId}
  giftTicket(gradeKey);ply.pendingReward=null;
- ply.lastReward={result:'ticket',ticket:gradeKey,pickId:q.pickId,barcode:q.barcode||null,at:stamp()};lastRead=ply.lastReward;save();view='reward';render();
+ ply.lastReward={result:'ticket',source:q.source,ticket:gradeKey,pickId:q.pickId,barcode:q.barcode||null,at:stamp()};lastRead=ply.lastReward;
+ if(q.source==='gift')ply.gachaReveal={source:'gift',giftStage:'ticket',ticketKey:gradeKey,pickId:q.pickId,barcode:q.barcode,at:stamp()};
+ save();view='reward';render();if(q.source==='gift')showGachaReveal();
 }
 function decideClaim(action){
  const q=p().pendingReward;if(!q)return;
@@ -478,23 +488,30 @@ function startGacha(source,ticketKey=null){
 function showGachaReveal(preview=null){
  const data=preview||p().gachaReveal;if(!data||!byId.has(data.pickId))return;
  document.getElementById('gachaRevealOverlay')?.remove();
- const r=byId.get(data.pickId),g=group(r),isTicket=data.source==='ticket';
- const title=data.preview?'★保証ガチャ演出テスト':isTicket?ticketName(data.ticketKey||g)+' の結果':'デイリーガチャの結果';
+ const r=byId.get(data.pickId),g=group(r),isTicket=data.source==='ticket',isGift=data.source==='gift';
+ const giftStage=data.giftStage||'appearance',giftTicket=isGift&&giftStage==='ticket';
+ const title=data.preview?'★保証ガチャ演出テスト':isGift?
+  giftStage==='ticket'?'プレゼント特典の獲得':giftStage==='victory'?'プレゼントピック・バトル勝利！':giftStage==='obtained'?'プレゼントピックをゲット！':data.rerolled?'プレゼントの再抽選結果':'プレゼントコード開封！':
+  isTicket?ticketName(data.ticketKey||g)+' の結果':'デイリーガチャの結果';
  const gradeLabel=g==='special'?'スペシャル':'★'+g;
+ const giftDescription=giftStage==='appearance'?(data.ownedAtReveal?'所持済み！ 強化または再抽選を選ぼう':'ピックが出現！ バトルに勝つとゲットできます'):
+  giftStage==='ticket'?ticketName(data.ticketKey||g)+'を獲得！':giftStage==='victory'?'バトル勝利！ プレゼントピックをゲット！':
+  data.boosted?'重複強化が完了！':'ピックを獲得！';
+ const message=data.preview?'画面表示のテスト（獲得なし）':isGift?giftDescription:'ピックを獲得！';
  const overlay=document.createElement('div');
- overlay.id='gachaRevealOverlay';overlay.className='gacha-reveal-overlay rarity-'+g;
- overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','ガチャの抽選結果');
+ overlay.id='gachaRevealOverlay';overlay.className='gacha-reveal-overlay rarity-'+g+(isGift?' gift-reveal-overlay gift-stage-'+giftStage:'');
+ overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',isGift?'プレゼントコードの開封演出':'ガチャの抽選結果');
  overlay.innerHTML=`<div class="gacha-reveal-scene">
- <p class="gacha-reveal-source">🎰 ${esc(title)}</p>
+ <p class="gacha-reveal-source">${isGift?'🎁':'🎰'} ${esc(title)}</p>
  <div class="gacha-reveal-stage">
   <div class="gacha-reveal-aura" aria-hidden="true"></div>
-  <div class="gacha-reveal-orb" aria-hidden="true"><span>?</span></div>
-  <div class="gacha-reveal-sparks" aria-hidden="true">${Array.from({length:12},(_,i)=>`<i style="--i:${i}">✦</i>`).join('')}</div>
-  <div class="gacha-reveal-pick"><div class="picture"><div class="gacha-card-placeholder">${esc(r.name_ja)}<small>ピック画像</small></div>${pic(r)}</div></div>
+  <div class="gacha-reveal-orb" aria-hidden="true"><span>${isGift?'🎁':'?'}</span></div>
+  <div class="gacha-reveal-sparks" aria-hidden="true">${Array.from({length:16},(_,i)=>`<i style="--i:${i}">${isGift&&i%4===0?'★':'✦'}</i>`).join('')}</div>
+  <div class="gacha-reveal-pick"><div class="picture">${giftTicket?`<div class="gift-ticket-result">🎟<small>${esc(ticketName(data.ticketKey||g))}</small></div>`:`<div class="gacha-card-placeholder">${esc(r.name_ja)}<small>ピック画像</small></div>${pic(r)}`}</div></div>
  </div>
- <div class="gacha-reveal-info" aria-live="polite"><p class="gacha-reveal-grade">${esc(gradeLabel)}</p><h2>${esc(r.name_ja)}</h2><p>${data.preview?'画面表示のテスト（獲得なし）':'ピックを獲得！'}</p></div>
- <p class="gacha-reveal-progress">抽選結果を開封しています…</p>
- <div class="gacha-reveal-actions"><button type="button" class="secondary" data-gacha-reveal="skip">演出をスキップ</button><button type="button" data-gacha-reveal="done" hidden>結果を確認する</button></div>
+ <div class="gacha-reveal-info" aria-live="polite"><p class="gacha-reveal-grade">${giftTicket?'🎟 保証ガチャ券':esc(gradeLabel)}</p><h2>${esc(giftTicket?ticketName(data.ticketKey||g):r.name_ja)}</h2><p>${esc(message)}</p></div>
+ <p class="gacha-reveal-progress">${isGift?'プレゼントを開封しています…':'抽選結果を開封しています…'}</p>
+ <div class="gacha-reveal-actions"><button type="button" class="secondary" data-gacha-reveal="skip">演出をスキップ</button><button type="button" data-gacha-reveal="done" hidden>${isGift&&giftStage==='appearance'?'次へ進む':'結果を確認する'}</button></div>
  </div>`;
  document.body.appendChild(overlay);document.body.classList.add('gacha-reveal-lock');
  let timer=null;
@@ -503,7 +520,7 @@ function showGachaReveal(preview=null){
   overlay.classList.add('is-revealed');
   overlay.querySelector('[data-gacha-reveal="skip"]').hidden=true;
   overlay.querySelector('[data-gacha-reveal="done"]').hidden=false;
-  overlay.querySelector('.gacha-reveal-progress').textContent=data.preview?'テスト演出：ガチャ券・所持数は変更しません':'獲得内容は保存されています';
+  overlay.querySelector('.gacha-reveal-progress').textContent=data.preview?'テスト演出：ガチャ券・所持数は変更しません':isGift&&giftStage==='appearance'?'出現結果は保存されています':'獲得結果は保存されています';
   beep(g==='special'?988:g==='5'?880:740);
   overlay.querySelector('[data-gacha-reveal="done"]')?.focus({preventScroll:true});
  }
@@ -531,7 +548,7 @@ function rewardPage(){
  const x=lastRead?.result?lastRead:p().lastReward,r=byId.get(x?.pickId);if(!x)return home();
  if(x.result==='ticket')return `${topNav('ガチャ券獲得')}<section class="panel reward-panel"><h2>🎟 ${esc(ticketName(x.ticket))}を獲得！</h2><p>ガチャ画面から好きなときに使用できます。</p>${x.barcode&&p().reads[x.barcode]?.source==='barcode'?barcodeHead3Display(x.barcode,'detail'):''}<div class="button-row"><button data-action="daily">ガチャ画面へ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
  if(!r)return home();const o=p().owned[r.master_id];
- return `${topNav('ピック獲得')}<section class="panel reward-panel"><h2>🎉 ピックを獲得！</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>累計 ${number(o?.count)}枚 ／ 強化×${boostMultiplier(r.master_id).toFixed(3)}${isMax(r.master_id)?' MAX':''}</p><p class="sub">バトルなしで獲得。出撃回数は消費しません。</p>${x.barcode&&p().reads[x.barcode]?.source==='barcode'?barcodeHead3Display(x.barcode,'detail'):''}<div class="button-row">${x.barcode&&p().reads[x.barcode]?.source==='barcode'?'<button data-action="scan">次のバーコード</button>':'<button data-action="daily">ガチャへ</button>'}<button data-action="owned">所持ピックへ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
+ return `${topNav('ピック獲得')}<section class="panel reward-panel"><h2>🎉 ピックを獲得！</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>累計 ${number(o?.count)}枚 ／ 強化×${boostMultiplier(r.master_id).toFixed(3)}${isMax(r.master_id)?' MAX':''}</p><p class="sub">バトルなしで獲得。出撃回数は消費しません。</p>${x.barcode&&p().reads[x.barcode]?.source==='barcode'?barcodeHead3Display(x.barcode,'detail'):''}<div class="button-row">${x.source==='gift'?'<button data-action="gift">プレゼントコードへ</button>':x.barcode&&p().reads[x.barcode]?.source==='barcode'?'<button data-action="scan">次のバーコード</button>':'<button data-action="daily">ガチャへ</button>'}<button data-action="owned">所持ピックへ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
 }
 // A redemption code has a single canonical identity regardless of presentation.
 // NFKC handles full-width Latin letters/digits; remove spaces and common hyphen forms.
@@ -554,7 +571,7 @@ function createGiftCode(){
  if(findGiftRegistryKey(code)){alert('コード生成に失敗しました。');return}
  giftRegistry[code]={kind:mode,value:val,createdAt:stamp(),usedBy:null,usedAt:null};save();const out=$('giftCreated');if(out){out.hidden=false;out.textContent='発行済み：'+code+'（1回限定）'}
 }
-function giftPage(){return `${topNav('プレゼントコード')}<section class="panel"><h2>🎁 プレゼントコードを入力</h2><p class="sub">コードを利用すると指定のピックが出現。未所持ならバトル、所持済みならその場で強化します。</p><p class="sub">英字の大文字・小文字、全角・半角、ハイフンの有無・種類、空白の有無は区別せず認識します。</p><div class="row"><input id="giftCodeInput" type="text" autocapitalize="characters" autocomplete="off" placeholder="FG-XXXX-XXXX" class="grow"><button data-action="gift-redeem">コードを使う</button></div><p id="giftError" class="warn" role="alert" hidden></p></section><section class="panel"><p class="callout">これは同一ブラウザ内だけの検証用コードです。端末間共有・管理者認証・1回限りの厳格な保証は、サーバー実装まで未対応です。</p></section>`}
+function giftPage(){return `${topNav('プレゼントコード')}<section class="panel"><h2>🎁 プレゼントコードを入力</h2><p class="sub">コードを利用すると開封演出とともにピックが出現。未所持ならバトル勝利で獲得、所持済みなら強化または再抽選を選べます。</p><p class="sub">英字の大文字・小文字、全角・半角、ハイフンの有無・種類、空白の有無は区別せず認識します。</p><div class="row"><input id="giftCodeInput" type="text" autocapitalize="characters" autocomplete="off" placeholder="FG-XXXX-XXXX" class="grow"><button data-action="gift-redeem">コードを使う</button></div><p id="giftError" class="warn" role="alert" hidden></p></section><section class="panel"><p class="callout">これは同一ブラウザ内だけの検証用コードです。端末間共有・管理者認証・1回限りの厳格な保証は、サーバー実装まで未対応です。</p></section>`}
 function giftError(msg){const el=$('giftError');if(el){el.textContent=msg;el.hidden=!msg}}
 function redeemGift(){
  const entered=String($('giftCodeInput')?.value||'');
@@ -572,7 +589,9 @@ function redeemGift(){
   p().reads[code]={pickId:r.master_id,originalPickId:r.master_id,scannedAt:stamp(),source:'gift',status:'pending',attempts:0};
   lastRead={barcode:code,pickId:r.master_id,status:'new'};view='encounter';
  }
- save();render();
+ // Presentation is separate from the redeemed code. A reload cannot roll or redeem again.
+ p().gachaReveal={source:'gift',giftStage:'appearance',pickId:r.master_id,barcode:code,at:stamp(),ownedAtReveal:!!p().owned[r.master_id]};
+ save();render();showGachaReveal();
 }
 function debugPickOptions(){const owned=Object.keys(p().owned);const all=[...DB.records].filter(battleOK).sort((a,b)=>String(a.name_ja).localeCompare(String(b.name_ja),'ja'));
  return `<option value="">ピックを選択</option>${owned.length?`<optgroup label="現在の所持ピック">${owned.map(id=>byId.get(id)).filter(Boolean).map(r=>`<option value="${esc(r.master_id)}">${esc(r.name_ja)} / ${esc(r.pick_no||r.master_id)} / ${esc(r.series)}</option>`).join('')}</optgroup>`:''}<optgroup label="すべてのバトル可能ピック">${all.map(r=>`<option value="${esc(r.master_id)}">${esc(r.name_ja)} / ${esc(r.pick_no||r.master_id)} / ${esc(r.series)}</option>`).join('')}</optgroup>`;
@@ -581,7 +600,7 @@ function simulateExactPick(){const id=$('debugPick')?.value;if(!byId.has(id)){al
  for(let i=0;i<100;i++){const prefix='290'+String(Math.floor(cryptoRandom()*1e9)).padStart(9,'0'),code=prefix+checksum(prefix);if(!registry[code]){registry[code]={pickId:id,grade:group(byId.get(id)),createdAt:stamp(),debug:true};save();registerBarcode(code);return}}
  alert('テストコードを生成できませんでした。')
 }
-function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><p class="sub">白PCでは画面右上の［白PC表示］をONにすると、狭いPC画面向けに余白と画像サイズを調整できます。設定は端末ごとに保存されます。</p><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計4枚で強化MAX。MAXでは保証券と再抽選を確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎰 ガチャの開封演出テスト</h3><p class="sub">★4以上保証ガチャの演出を試します。ガチャ券・所持ピック・抽選回数は変更しません。</p><button class="secondary" data-action="preview-gacha">★保証ガチャの演出だけ確認</button></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
+function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><p class="sub">白PCでは画面右上の［白PC表示］をONにすると、狭いPC画面向けに余白と画像サイズを調整できます。設定は端末ごとに保存されます。</p><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計4枚で強化MAX。MAXでは保証券と再抽選を確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎰 ガチャの開封演出テスト</h3><p class="sub">★4以上保証ガチャの演出を試します。ガチャ券・所持ピック・抽選回数は変更しません。</p><button class="secondary" data-action="preview-gacha">★保証ガチャの演出だけ確認</button> <button class="secondary" data-action="preview-gift">🎁 プレゼント開封演出だけ確認</button></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
 function checksum(prefix){let digits=String(prefix).split('').map(Number),s=0;for(let i=digits.length-1,w=3;i>=0;i--,w=w===3?1:3)s+=digits[i]*w;return String((10-s%10)%10)}
 function render(){
  app.dataset.view=!isGameStarted()?'starter':view;
@@ -609,6 +628,7 @@ function onAction(e){
  case 'claim-boost':decideClaim('boost');break;case 'claim-ticket':decideClaim('ticket');break;case 'claim-reroll':decideClaim('reroll');break;
  case 'ticket-pull':startGacha('ticket',id);break;
  case 'preview-gacha':{const r=drawGacha('premium');if(r)showGachaReveal({preview:true,source:'ticket',ticketKey:'premium',pickId:r.master_id,at:stamp()});else alert('演出対象のピックがありません。');break}
+ case 'preview-gift':{const r=drawGacha('premium');if(r)showGachaReveal({preview:true,source:'gift',giftStage:'obtained',pickId:r.master_id,at:stamp()});else alert('演出対象のピックがありません。');break}
  case 'test-code':registerBarcode($('testCode')?.value||'');break;case 'daily-pull':pullDaily();break;case 'gift-redeem':redeemGift();break;case 'gift-generate':createGiftCode();break;case 'debug-pick':simulateExactPick();break;
  case 'simulate':{let val='490'+String(Math.floor(Math.random()*1e9)).padStart(9,'0');val+=checksum(val);registerBarcode(val);break}
  case 'toggle-audio':audio=!audio;putJSON(AUDIO_KEY,audio);render();break;
@@ -649,9 +669,17 @@ for(const user of Object.values(state.profiles)){
 }
 save();
 applyDisplayMode();
-if(p().gachaReveal) view=p().pendingReward?'claim':'reward';
+if(p().gachaReveal){
+ const a=p().gachaReveal;
+ if(a.source==='gift'){
+  if(a.giftStage==='victory'){lastRead={result:'win',pickId:a.pickId,barcode:a.barcode};view='result'}
+  else if(a.giftStage==='appearance'){
+   view=p().pendingReward?'claim':'encounter';lastRead={barcode:a.barcode,pickId:a.pickId,status:'new'};
+  }else{view='reward';lastRead=p().lastReward}
+ }else view=p().pendingReward?'claim':'reward';
+}
 window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha}});
 render();
 if(p().gachaReveal)showGachaReveal();
 })();
-/* Updated: 2026-11-15 17:18 JST / Ver14 */
+/* Updated: 2026-11-15 17:53 JST / Ver15 */
