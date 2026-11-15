@@ -74,3 +74,6 @@
 .reward-panel{text-align:center}.reward-panel .picture{display:flex;align-items:center;justify-content:center}
 @media(max-width:620px){.battle-stage{padding:9px 5px}.battle-stage .combatant .picture{height:116px}.battle-stage .combatant.attackLeft{transform:translateX(14px) scale(1.04)}.battle-stage .combatant.attackRight{transform:translateX(-14px) scale(1.04)}}
 /* Updated: 2026-11-15 12:53 JST / Ver06 */
+
+.ticket-row{padding:8px 0;border-bottom:1px solid #e1ebf0;gap:8px}.ticket-row button{flex-shrink:0}
+/* Updated: 2026-11-15 16:00 JST / Ver07 */
