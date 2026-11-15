@@ -356,3 +356,68 @@
 @media(max-width:620px){.fighter-restriction{font-size:11px;padding:4px 5px}}
 
 /* Updated: 2026-11-15 19:25 JST / Ver17 */
+
+/* Ver18: Original procedural BGM / SE, brighter battle and reward animations. */
+.sound-quick-toggle{min-width:80px;white-space:nowrap;background:#20577f}
+.sound-quick-toggle[aria-pressed="false"]{background:#394754;color:#e9eef4}
+.sound-setting-panel .sound-volume-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:13px}
+.sound-volume-grid label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:750}
+.sound-volume-grid label strong{font-variant-numeric:tabular-nums;color:#27628d}
+.sound-volume-grid input[type=range]{accent-color:#2275c0;width:100%;padding:3px;min-height:32px}
+@media(max-width:600px){.sound-quick-toggle{min-width:68px;font-size:11px;padding:7px 5px}.sound-setting-panel .sound-volume-grid{grid-template-columns:1fr}.topright{gap:4px}}
+/* Rarity-dependent entrance: keep barcode prefix fully readable. */
+.encounter-scene{position:relative;overflow:hidden;isolation:isolate;--entrance:#5594d3;
+ background:radial-gradient(ellipse at 50% 28%,#fff 20%,#f1f7fe 75%)}
+.encounter-scene.rarity-4{--entrance:#a35be5;background:radial-gradient(ellipse at 50% 28%,#fff 20%,#f5edff 80%)}
+.encounter-scene.rarity-5{--entrance:#eeb037;background:radial-gradient(ellipse at 50% 28%,#fff6d8 10%,#fff 74%)}
+.encounter-scene.rarity-special{--entrance:#f25eac;background:radial-gradient(ellipse at 50% 28%,#ffe7f6 10%,#fff 76%)}
+.encounter-scene::before{content:'';position:absolute;left:50%;top:65px;width:min(65vw,340px);height:min(65vw,340px);border:3px solid var(--entrance);border-radius:50%;
+ opacity:.24;filter:blur(2px);transform:translateX(-50%);z-index:-1;animation:encounterRing 2.2s ease-in-out infinite alternate}
+.encounter-scene>.picture{position:relative;filter:drop-shadow(0 10px 15px #32618530);animation:encounterCard .78s cubic-bezier(.2,1.3,.35,1) both}
+.encounter-scene>.picture img{animation:encounterFloat 2.3s ease-in-out .85s infinite alternate}
+.encounter-scene .barcode-head3--hero{animation:prefixPop .5s cubic-bezier(.2,1.5,.25,1) both}
+@keyframes encounterRing{from{transform:translateX(-50%) scale(.82);opacity:.1}to{transform:translateX(-50%) scale(1.13);opacity:.4}}
+@keyframes encounterCard{from{opacity:0;transform:translateY(35px) scale(.55) rotate(-10deg)}to{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+@keyframes encounterFloat{from{transform:translateY(4px) rotate(-1.4deg)}to{transform:translateY(-5px) rotate(1.4deg)}}
+@keyframes prefixPop{from{transform:scale(.68);opacity:.3}to{transform:scale(1);opacity:1}}
+/* Progressive reveal: moving light beams and stronger sparkle depth for rare cards. */
+.gacha-reveal-stage{isolation:isolate}
+.gacha-reveal-stage::before,.gacha-reveal-stage::after{content:'';position:absolute;inset:-50%;pointer-events:none;z-index:0;
+ background:conic-gradient(from 0deg at 50% 50%,transparent 0deg,var(--gacha-glow) 11deg,transparent 21deg,transparent 55deg,var(--gacha-glow) 65deg,transparent 76deg,transparent 120deg,var(--gacha-glow) 132deg,transparent 146deg,transparent 230deg,var(--gacha-glow) 241deg,transparent 255deg);opacity:.17;animation:revealRotate 9s linear infinite}
+.gacha-reveal-stage::after{opacity:.12;animation-duration:14s;animation-direction:reverse}
+.gacha-reveal-overlay.is-revealed .gacha-reveal-stage::before{opacity:.47}
+.gacha-reveal-overlay.rarity-5 .gacha-reveal-scene,.gacha-reveal-overlay.rarity-special .gacha-reveal-scene{box-shadow:0 0 55px var(--gacha-main),inset 0 0 32px #ffffff19}
+.gacha-reveal-overlay.rarity-5 .gacha-reveal-pick .picture,.gacha-reveal-overlay.rarity-special .gacha-reveal-pick .picture{filter:drop-shadow(0 0 22px var(--gacha-glow))}
+.gacha-reveal-overlay.gacha-reveal-burst .gacha-reveal-stage{animation:rarityStageFlash .6s ease-out 1}
+.gacha-reveal-overlay.gacha-reveal-burst .gacha-reveal-sparks i{animation-duration:.64s}
+.battle-result-scene{position:relative;overflow:hidden}
+.battle-result-scene.is-victory{background:radial-gradient(ellipse at 50% 10%,#fff6c7,#fff 70%)}
+.battle-result-scene.is-victory>.picture{animation:victoryZoom .75s cubic-bezier(.2,1.3,.3,1) both}
+.battle-result-scene.is-victory::before{content:'✦  ★  ✦  ★  ✦';position:absolute;left:0;right:0;top:10%;font-size:30px;color:#e9ad21;opacity:.6;letter-spacing:25px;pointer-events:none;animation:winSpark 2.3s ease-in-out infinite alternate}
+.battle-result-scene.is-defeat{background:linear-gradient(180deg,#f6f7f8,#fff)}
+@keyframes revealRotate{to{transform:rotate(360deg)}}
+@keyframes rarityStageFlash{0%{filter:brightness(1)}42%{filter:brightness(1.65)}100%{filter:brightness(1)}}
+@keyframes victoryZoom{0%{opacity:0;transform:translateY(20px) scale(.7)}80%{transform:translateY(0) scale(1.07)}100%{opacity:1;transform:scale(1)}}
+@keyframes winSpark{from{transform:translateY(9px);opacity:.3}to{transform:translateY(-14px);opacity:.8}}
+.battle-stage{background:radial-gradient(ellipse at center,#effaff 6%,#c5e6f1 65%,#93bcce 100%);box-shadow:inset 0 0 28px #4b82a133}
+.battle-stage::before{content:'';pointer-events:none;position:absolute;inset:-70%;background:repeating-conic-gradient(from 0deg,#ffffff1f 0 10deg,transparent 10deg 25deg);animation:revealRotate 40s linear infinite}
+.battle-stage .combatant{box-shadow:0 4px 12px #39647f1b}
+.battle-stage .combatant.activeTurn{box-shadow:0 0 0 3px #ffd64e,0 0 20px #e6bc4d8c}
+.battle-stage .combatant.hit{animation:barcodeHit .32s 1;box-shadow:0 0 0 3px #ef4b48,0 0 26px #ff594580}
+.combat-burst{position:absolute;inset:0;pointer-events:none;z-index:7}
+.combat-burst i{position:absolute;left:50%;top:47%;display:block;width:8px;height:8px;background:#ff8e56;box-shadow:0 0 12px #ff5e40;border-radius:50%;opacity:0;
+ --angle:calc(var(--j)*45deg);animation:combatSpark .65s cubic-bezier(.16,.82,.26,1) forwards}
+.combat-burst--strong i{background:#ffe95d;box-shadow:0 0 16px #ffd621;width:11px;height:11px}
+@keyframes combatSpark{0%{opacity:1;transform:rotate(var(--angle)) translateX(0) scale(1.4)}100%{opacity:0;transform:rotate(var(--angle)) translateX(85px) scale(.4)}}
+@media(max-width:620px){.combat-burst i{width:6px;height:6px}@keyframes combatSpark{0%{opacity:1;transform:rotate(var(--angle)) translateX(0)}100%{opacity:0;transform:rotate(var(--angle)) translateX(40px)}}}
+@media(prefers-reduced-motion:reduce){
+ .encounter-scene::before,.encounter-scene>.picture,.encounter-scene>.picture img,.encounter-scene .barcode-head3--hero,
+ .battle-result-scene.is-victory>.picture,.battle-result-scene.is-victory::before,.battle-stage::before,
+ .gacha-reveal-stage::before,.gacha-reveal-stage::after,.gacha-reveal-overlay.gacha-reveal-burst .gacha-reveal-stage{animation:none!important}
+ .combat-burst{display:none}
+}
+/* Updated: 2026-11-15 19:45 JST / Ver18 */
+
+/* Ver19: grouped pending chips should remain legible on compact cards. */
+.grouped-pending-note{display:block;font-size:11px;line-height:1.4;margin:0 1px 4px;overflow-wrap:anywhere;}
+/* Updated: 2026-11-15 19:54 JST / Ver19 */
