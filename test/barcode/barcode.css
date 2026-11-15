@@ -205,4 +205,118 @@
   body.white-pc-mode main[data-view="choose"]{display:block;height:auto}
 }
 @media(max-width:620px){.white-pc-toggle{display:none}.topright{flex-shrink:0}}
-/* Updated: 2026-11-15 16:46 JST / Ver10 */
+
+/* Ver11: rarity-sensitive guaranteed/daily gacha reveal; animation is presentation only. */
+.gacha-reveal-lock{overflow:hidden}
+.gacha-reveal-overlay{
+ --gacha-main:#65b8ed;--gacha-glow:#c4f1ff;
+ position:fixed;inset:0;z-index:9999;display:grid;place-items:center;
+ padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));
+ background:radial-gradient(ellipse at 50% 27%,#264872 0%,#10253e 45%,#06121f 100%);
+ color:#fff;overflow-y:auto;overscroll-behavior:contain
+}
+.gacha-reveal-overlay.rarity-3{--gacha-main:#67e0b7;--gacha-glow:#d7ffe8}
+.gacha-reveal-overlay.rarity-4{--gacha-main:#bf88fb;--gacha-glow:#efdbff}
+.gacha-reveal-overlay.rarity-5{--gacha-main:#ffca5f;--gacha-glow:#fff4ad}
+.gacha-reveal-overlay.rarity-special{--gacha-main:#ff79ce;--gacha-glow:#ffe1f4}
+.gacha-reveal-scene{width:min(450px,100%);max-height:calc(100dvh - 24px);overflow-y:auto;text-align:center;padding:17px 18px 19px;
+ border:2px solid var(--gacha-main);border-radius:22px;background:linear-gradient(160deg,#172e4d,#0b1c35);
+ box-shadow:0 0 48px #0008,0 0 30px var(--gacha-main);position:relative}
+.gacha-reveal-source{font-size:17px;font-weight:900;margin:0 0 4px;line-height:1.45}
+.gacha-reveal-stage{height:clamp(172px,36vh,280px);position:relative;display:grid;place-items:center;overflow:hidden}
+.gacha-reveal-aura{position:absolute;inset:10%;border-radius:50%;background:radial-gradient(circle,var(--gacha-glow),transparent 67%);
+ opacity:.35;animation:gachaPulse 1s ease-in-out infinite alternate}
+.gacha-reveal-orb{width:min(38vw,136px);height:min(38vw,136px);max-width:136px;max-height:136px;display:grid;place-items:center;
+ border-radius:50%;background:radial-gradient(circle at 32% 25%,#fff 0%,var(--gacha-glow) 19%,var(--gacha-main) 52%,#243b69 100%);
+ box-shadow:0 0 50px var(--gacha-main),inset 0 0 15px #fff7;z-index:2;animation:gachaOrbShake .65s ease-in-out infinite alternate}
+.gacha-reveal-orb span{font-size:64px;line-height:1;color:#fff;text-shadow:0 1px 10px #123a65}
+.gacha-reveal-sparks{position:absolute;inset:0;z-index:1;pointer-events:none}
+.gacha-reveal-sparks i{position:absolute;left:50%;top:50%;font-style:normal;font-size:18px;color:var(--gacha-glow);
+ transform:rotate(calc(var(--i)*30deg)) translateY(-100px);animation:gachaSpark 1.2s ease-out infinite;animation-delay:calc(var(--i)*-0.09s)}
+.gacha-reveal-pick{position:absolute;inset:4px;display:grid;place-items:center;opacity:0;transform:scale(.35) rotate(-9deg);z-index:4}
+.gacha-reveal-pick .picture{height:100%;width:100%;max-width:290px;display:grid;place-items:center}
+.gacha-reveal-pick .picture img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 20px var(--gacha-main))}
+.gacha-reveal-info{opacity:0;transform:translateY(12px);min-height:95px}
+.gacha-reveal-info h2{margin:1px 0 4px;font-size:22px;overflow-wrap:anywhere}
+.gacha-reveal-info p{margin:4px 0;font-size:13px;font-weight:700}
+.gacha-reveal-info .gacha-reveal-grade{font-size:21px;color:var(--gacha-main);font-weight:1000}
+.gacha-reveal-progress{font-size:12px;color:#c3d8eb;margin:7px 0 11px}
+.gacha-reveal-actions button{min-height:43px;min-width:160px;font-size:14px}
+.gacha-reveal-overlay.is-revealed .gacha-reveal-orb{animation:gachaOrbBurst .6s ease-out forwards}
+.gacha-reveal-overlay.is-revealed .gacha-reveal-pick{animation:gachaCardArrive .66s cubic-bezier(.13,1.45,.45,1) forwards}
+.gacha-reveal-overlay.is-revealed .gacha-reveal-info{animation:gachaInfoIn .42s ease-out .24s forwards}
+.gacha-reveal-overlay.is-revealed .gacha-reveal-aura{opacity:.75;animation:gachaPulse .6s ease-in-out infinite alternate}
+@keyframes gachaPulse{from{transform:scale(.82);opacity:.24}to{transform:scale(1.17);opacity:.6}}
+@keyframes gachaOrbShake{from{transform:translate(-4px,-3px) rotate(-6deg)}to{transform:translate(4px,3px) rotate(6deg)}}
+@keyframes gachaSpark{0%{opacity:0;scale:.5}30%{opacity:1}100%{opacity:0;scale:1.4}}
+@keyframes gachaOrbBurst{0%{transform:scale(1);opacity:1}65%{transform:scale(1.55);opacity:.9}100%{transform:scale(3);opacity:0;visibility:hidden}}
+@keyframes gachaCardArrive{0%{opacity:0;transform:scale(.35) rotate(-9deg)}65%{opacity:1;transform:scale(1.13) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes gachaInfoIn{to{opacity:1;transform:translateY(0)}}
+@media(max-width:420px){.gacha-reveal-scene{padding:12px}.gacha-reveal-source{font-size:15px}.gacha-reveal-info h2{font-size:19px}.gacha-reveal-stage{height:32vh;min-height:165px}}
+@media(prefers-reduced-motion:reduce){
+ .gacha-reveal-aura,.gacha-reveal-orb,.gacha-reveal-sparks i{animation:none}
+ .gacha-reveal-overlay.is-revealed .gacha-reveal-orb{display:none}
+ .gacha-reveal-overlay.is-revealed .gacha-reveal-pick,.gacha-reveal-overlay.is-revealed .gacha-reveal-info{animation:none;opacity:1;transform:none}
+}
+.gacha-reveal-pick .picture{position:relative}
+.gacha-card-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:0;
+ font-size:22px;font-weight:800;color:#f5ecff;opacity:.85;text-shadow:0 2px 10px #0008}
+.gacha-card-placeholder small{font-size:12px;opacity:.65;margin-top:5px}
+.gacha-reveal-pick .picture>img,.gacha-reveal-pick .picture>.fallback{position:relative;z-index:1}
+/* Ver12: barcode prefix is a prominent, accessible visual key. Only 3 digits are shown. */
+.barcode-head3{display:flex;align-items:center;justify-content:center;gap:10px;margin:9px auto 13px;
+ width:fit-content;max-width:100%;padding:9px 17px;border:2px solid #1a5d94;border-radius:15px;
+ background:linear-gradient(135deg,#0c3255,#164e7e);color:#fff;box-shadow:0 3px 11px #11395630}
+.barcode-head3-label{font-weight:800;font-size:12px;line-height:1.25;letter-spacing:.02em}
+.barcode-head3-number{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace;
+ font-size:clamp(30px,7vw,48px);font-weight:950;letter-spacing:.14em;color:#ffec6b;line-height:1.1;text-shadow:0 2px 5px #0007}
+.barcode-head3--hero{padding:13px 24px;margin:8px auto 14px;border-width:3px}
+.barcode-head3--hero .barcode-head3-number{font-size:clamp(40px,9vw,65px)}
+.barcode-head3--hero .barcode-head3-label{font-size:14px}
+.barcode-head3--list{flex:0 0 auto;flex-direction:column;gap:2px;padding:6px 12px;margin:0;border-radius:10px;box-shadow:none}
+.barcode-head3--list .barcode-head3-label{font-size:10px}
+.barcode-head3--list .barcode-head3-number{font-size:28px;letter-spacing:.08em}
+.barcode-head3--detail{margin:10px 0 14px}
+.history-main{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.history-main>div:last-child{min-width:0}
+@media(max-width:620px){
+ .barcode-head3--hero{padding:10px 18px;margin:7px auto 12px}
+ .barcode-head3--hero .barcode-head3-number{font-size:42px}
+ .barcode-head3--hero .barcode-head3-label{font-size:12px}
+ .barcode-head3--list{padding:5px 9px}
+ .barcode-head3--list .barcode-head3-number{font-size:24px}
+ .barcode-head3--list .barcode-head3-label{font-size:9px}
+}
+@media(min-width:740px){body.white-pc-mode .barcode-head3--hero{padding:7px 17px;margin:5px auto 7px}
+ body.white-pc-mode .barcode-head3--hero .barcode-head3-number{font-size:40px}}
+
+/* Ver13: prevent battle-preparation recommendation buttons being covered by the next grid row.
+   Earlier card panels grew beyond their allocated grid tracks even though overflow-y was auto.
+   Constrain panel height to track and allocate enough height for recommended choices. */
+@media (min-width:900px) and (max-height:850px){
+  main[data-view="choose"]{
+    grid-template-rows:auto minmax(0,1.35fr) minmax(0,.65fr);
+  }
+  main[data-view="choose"]>.panel:nth-child(n+2){
+    height:100%;max-height:100%;min-height:0;min-width:0;
+    overflow-y:auto;overscroll-behavior:contain;
+  }
+  main[data-view="choose"]>.panel:nth-child(3) .pick-card{
+    gap:4px;
+  }
+  main[data-view="choose"]>.panel:nth-child(3) .pick-card .picture{
+    height:clamp(68px,11vh,95px);
+  }
+  main[data-view="choose"]>.panel:nth-child(3) .pick-card button{
+    flex-shrink:0;min-height:38px;margin-top:auto;
+  }
+}
+/* In white-PC mode reserve additional height for the three primary battle buttons;
+   the secondary full owned list remains independently scrollable when needed. */
+@media (min-width:900px) and (max-height:850px){
+  body.white-pc-mode main[data-view="choose"]{
+    grid-template-rows:auto minmax(0,1.45fr) minmax(0,.55fr);
+  }
+}
+/* Narrow white-PC layouts use the existing single-column layout, and remain page-scrollable. */
+/* Updated: 2026-11-15 17:18 JST / Ver14 */

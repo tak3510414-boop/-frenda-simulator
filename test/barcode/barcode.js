@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 1.0 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 14 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='1.0';
+const VERSION='14';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -34,6 +34,11 @@ const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 // Presentation only. Keep full normalized barcode in registry, read history keys and action attributes.
 function barcodeHead3(code){return String(code??'').slice(0,3)}
+function barcodeHead3Display(code,style='hero'){
+ const raw=String(code??'');if(!/^\d+$/.test(raw))return '';
+ const kind=['hero','list','detail'].includes(style)?style:'hero';
+ return `<div class="barcode-head3 barcode-head3--${kind}" aria-label="バーコード番号の先頭3桁 ${esc(barcodeHead3(raw))}"><span class="barcode-head3-label">バーコード先頭3桁</span><strong class="barcode-head3-number">${esc(barcodeHead3(raw))}</strong></div>`;
+}
 const dateJST=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const stamp=()=>new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date());
 const number=v=>Number.isFinite(+v)?+v:0;
@@ -49,7 +54,7 @@ if(!state.profiles||typeof state.profiles!=='object')state={profile:'A',profiles
 for(const x of ['A','B','C']){
  const q=state.profiles[x]??=newPlayer();
  q.tickets??={};q.dailyGachaCount??=(q.dailyGachaDate?1:0);
- q.pendingReward??=null;q.lastReward??=null;q.dexRewardsPaid??=0;
+ q.pendingReward??=null;q.lastReward??=null;q.gachaReveal??=null;q.dexRewardsPaid??=0;
  q.owned??={};q.reads??={};q.used??={};
 }
 let displayMode=getJSON(DISPLAY_KEY,'auto')==='white'?'white':'auto';
@@ -176,7 +181,7 @@ function dex(){
 }
 function history(){
  const rows=Object.entries(p().reads).filter(([,x])=>x.source!=='gift').map(([barcode,x])=>({r:byId.get(x.pickId),barcode,...x,time:x.scannedAt})).filter(x=>x.r),data=sorted(rows,'history');
- return `${topNav('バーコード読取履歴')}<section class="panel">${controls('名前・バーコード番号','history')}<p class="sub">表示 ${data.length}/${rows.length}件 ／ 初回読取日時（日本時間）</p>${data.map(x=>`<div class="row between history-row"><div><b>${esc(x.r.name_ja)}</b><span class="sub"> ${grade(x.r)} ／ 先頭3桁 ${esc(barcodeHead3(x.barcode))}</span><div class="sub">${esc(x.scannedAt)}</div></div><div><span class="chip ${x.status==='owned'?'ok':'wait'}">${x.status==='owned'?'入手済み':x.status==='ticket'?'保証券に交換済み':x.status==='decision'?'選択待ち':'出現中'}</span><button class="secondary small" data-action="history-detail" data-code="${esc(x.barcode)}">詳細</button></div></div>`).join('')||'<div class="empty">該当する読取履歴はありません</div>'}</section>`
+ return `${topNav('バーコード読取履歴')}<section class="panel">${controls('名前・バーコード番号','history')}<p class="sub">表示 ${data.length}/${rows.length}件 ／ 初回読取日時（日本時間）</p>${data.map(x=>`<div class="row between history-row"><div class="history-main">${barcodeHead3Display(x.barcode,'list')}<div><b>${esc(x.r.name_ja)}</b><span class="sub"> ${grade(x.r)}</span><div class="sub">${esc(x.scannedAt)}</div></div></div><div><span class="chip ${x.status==='owned'?'ok':'wait'}">${x.status==='owned'?'入手済み':x.status==='ticket'?'保証券に交換済み':x.status==='decision'?'選択待ち':'出現中'}</span><button class="secondary small" data-action="history-detail" data-code="${esc(x.barcode)}">詳細</button></div></div>`).join('')||'<div class="empty">該当する読取履歴はありません</div>'}</section>`
 }
 function statGraph(name,base,current,max){
  const original=Math.max(0,number(base)),effective=Math.max(0,number(current));
@@ -196,7 +201,7 @@ function detail(id){
  const owned=p().owned[id],pend=Object.entries(p().reads).filter(([,x])=>x.pickId===id&&x.status==='pending'),found=owned||pend.length;
  return `${topNav('ピック詳細')}<section class="panel detail-sheet"><div class="detail-hero"><div class="picture detail-pic">${pic(r,owned?'normal':found?'silhouette':'none')}</div><div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">${esc(r.series)} ／ ${esc(r.pick_no||r.master_id)}</p><p>${owned?`累計${owned.count}枚 ／ 強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}`:found?'発見済み・未入手':'未発見'}</p>${owned?`<p class="stamina">本日 残り${usedLeft(r.master_id)}/3回</p>`:''}</div></div>${found?stats(r):''}${pend.length?`<p><button data-action="choose" data-code="${esc(pend[0][0])}">このピックに挑戦</button></p>`:''}</section>`
 }
-function historyDetail(code){const x=p().reads[code],r=byId.get(x?.pickId);return `${topNav('読取履歴詳細')}<section class="panel"><h2>${esc(r?.name_ja||'不明')}</h2><p>バーコード先頭3桁：${esc(barcodeHead3(code))}</p><p>初回読取：${esc(x?.scannedAt)}</p><p>状態：${x?.status==='owned'?'入手済み':x?.status==='ticket'?'保証券に交換済み':x?.status==='decision'?'選択待ち':'出現中'}</p><p>元のピック：${esc(byId.get(x?.originalPickId)?.name_ja||r?.name_ja||'不明')}</p><p>勝利・取得：${esc(x?.captureAt||'未取得')}</p><p>挑戦回数：${number(x?.attempts)}</p>${x?.status==='pending'?`<button data-action="choose" data-code="${esc(code)}">バトル</button>`:`<button data-action="detail" data-id="${esc(x?.pickId)}">ピック詳細</button>`}</section>`}
+function historyDetail(code){const x=p().reads[code],r=byId.get(x?.pickId);return `${topNav('読取履歴詳細')}<section class="panel"><h2>${esc(r?.name_ja||'不明')}</h2>${barcodeHead3Display(code,'detail')}<p>初回読取：${esc(x?.scannedAt)}</p><p>状態：${x?.status==='owned'?'入手済み':x?.status==='ticket'?'保証券に交換済み':x?.status==='decision'?'選択待ち':'出現中'}</p><p>元のピック：${esc(byId.get(x?.originalPickId)?.name_ja||r?.name_ja||'不明')}</p><p>勝利・取得：${esc(x?.captureAt||'未取得')}</p><p>挑戦回数：${number(x?.attempts)}</p>${x?.status==='pending'?`<button data-action="choose" data-code="${esc(code)}">バトル</button>`:`<button data-action="detail" data-id="${esc(x?.pickId)}">ピック詳細</button>`}</section>`}
 function estimate(m,e){const a=battleRecord(m),b=e;return (number(a.hp)||0)+(number(a.atk)+number(a.sp_atk))*1.5+(number(a.def)+number(a.sp_def))*.5 + number(CORE.eff(a.move_type,b))*35}
 function choose(code){const enemy=byId.get(p().reads[code]?.pickId);if(!enemy||p().reads[code]?.status!=='pending'){nav('pending');return}if(p().battle){alert('中断中のバトルがあります。先に再開してください。');nav('battle');return}lastRead=code;view='choose';filter='';sort='grade';render()}
 function chooseScreen(){const code=lastRead,enemy=byId.get(p().reads[code]?.pickId);if(!enemy)return topNav('バトル準備')+`<section class="panel">出現中一覧から選んでください。</section>`;const rows=Object.keys(p().owned).map(id=>byId.get(id)).filter(Boolean);const active=rows.filter(r=>usedLeft(r.master_id)>0&&battleOK(r));active.sort((a,b)=>estimate(b,enemy)-estimate(a,enemy));return `${topNav('1対1 バトル準備')}<section class="panel"><div class="row"><div class="picture" style="width:140px;height:140px">${pic(enemy)}</div><div><h2>${grade(enemy)} ${esc(enemy.name_ja)}</h2><p class="sub">${esc(enemy.series)} ／ 敵は未強化</p><span class="chip wait">この戦闘は開始時に出撃1回消費</span></div></div>${stats(enemy,true)}${noStats(enemy)?'<p class="callout">マスターにバトル能力値が不足しています。この敵との戦闘はマスター補完後に可能になります。</p>':''}</section><section class="panel"><h2>おすすめの出撃ピック</h2><p class="sub">強化後能力・タイプ・出撃回数を基に並べています。推奨順はテスト用の簡易評価で、勝利保証ではありません。</p><div class="pick-grid">${active.slice(0,3).map(r=>fighterCard(r,code,true)).join('')}</div></section><section class="panel"><h2>すべての所持ピック</h2><div class="pick-grid">${active.map(r=>fighterCard(r,code,false)).join('')||'<p>出撃可能なピックがありません。日本時間の翌日0時に回復します。</p>'}</div></section>`}
@@ -313,7 +318,7 @@ function registerBarcode(code){
 function cryptoRandom(){const x=new Uint32Array(1);crypto.getRandomValues(x);return x[0]/4294967296}
 function drawPick(forcedGroup){const groups=RATES.reduce((s,[k,rate])=>{s.push([k,rate]);return s},[]);let z=cryptoRandom()*100,k=groups[groups.length-1][0];if(forcedGroup&&RATE_POOLS[forcedGroup]?.length){k=forcedGroup}else for(const [key,rate] of groups){z-=rate;if(z<0){k=key;break}}const pool=RATE_POOLS[k]||[];if(!pool.length)throw Error('抽選対象がありません');const appearance={};for(const row of Object.values(registry))appearance[row.pickId]=(appearance[row.pickId]||0)+1;let weights=pool.map(r=>1/Math.sqrt(1+(appearance[r.master_id]||0))),sum=weights.reduce((a,b)=>a+b,0),u=cryptoRandom()*sum;for(let i=0;i<pool.length;i++){u-=weights[i];if(u<0)return pool[i]}return pool[pool.length-1]}
 function normalize(value){const code=String(value||'').replace(/\s/g,'');if(!/^\d+$/.test(code)||![8,12,13].includes(code.length))return null;let digits=code.split('').map(Number),check=digits.pop(),sum=0;for(let i=digits.length-1,weight=3;i>=0;i--,weight=weight===3?1:3)sum+=digits[i]*weight;const computed=(10-sum%10)%10;if(computed!==check)return null;return code.length===12?'0'+code:code}
-function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];return `${topNav('バーコード読み取り結果')}<section class="panel" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックが出現！'}</p><div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">コード先頭3桁：${esc(barcodeHead3(x.barcode))} ／ ${esc(r.series)}</p>${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
+function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];return `${topNav('バーコード読み取り結果')}<section class="panel" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックが出現！'}</p>${barcodeHead3Display(x.barcode,'hero')}<div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">${esc(r.series)}</p>${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
 function scanMessage(message){scanStatus=message;const e=$('scanState');if(e)e.textContent=message}
 function showCodeError(message){const e=$('testCodeError');if(e){e.textContent=message;e.hidden=!message}if(!e)scanMessage(message)}
 function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">この画面を開くとカメラが自動起動します。初回のみブラウザの使用許可が必要です。HTTPS接続が必要です。このVer08の共通台帳はブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button class="secondary" data-action="camera" id="cameraRetry" hidden>📷 カメラを再試行</button><button class="secondary" data-action="stopcamera" id="cameraStop">カメラ停止</button></div></section>`}
@@ -405,7 +410,7 @@ function claimPage(){
  const q=p().pendingReward,r=byId.get(q?.pickId);
  if(!q||!r)return `${topNav('獲得処理')}<section class="panel">保存済みの抽選情報がありません。</section>`;
  const max=isMax(r.master_id);
- return `${topNav('ピックの重複を確認')}<section class="panel reward-panel"><h2>${esc(claimTitle(q))}</h2><p class="sub">結果は保存済みです。画面を閉じても同じ結果から続けられます。</p><div class="picture" style="height:210px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>所持${number(p().owned[r.master_id]?.count)}枚 ／ ${max?'MAX ×2.197':`強化×${boostMultiplier(r.master_id).toFixed(3)}`}</p><p class="sub">再抽選は1回のみ・元の分類以上を保証（スペシャルはスペシャルのみ）。</p><div class="button-row">${!max?'<button data-action="claim-boost">重複強化</button>':`<button data-action="claim-ticket">${esc(ticketName(group(r)))}を受け取る</button>`}<button class="secondary" data-action="claim-reroll">別ピックを1回再抽選</button></div></section>`;
+ return `${topNav('ピックの重複を確認')}<section class="panel reward-panel"><h2>${esc(claimTitle(q))}</h2><p class="sub">結果は保存済みです。画面を閉じても同じ結果から続けられます。</p>${q.source==='barcode'?barcodeHead3Display(q.barcode,'hero'):''}<div class="picture" style="height:210px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>所持${number(p().owned[r.master_id]?.count)}枚 ／ ${max?'MAX ×2.197':`強化×${boostMultiplier(r.master_id).toFixed(3)}`}</p><p class="sub">再抽選は1回のみ・元の分類以上を保証（スペシャルはスペシャルのみ）。</p><div class="button-row">${!max?'<button data-action="claim-boost">重複強化</button>':`<button data-action="claim-ticket">${esc(ticketName(group(r)))}を受け取る</button>`}<button class="secondary" data-action="claim-reroll">別ピックを1回再抽選</button></div></section>`;
 }
 function finishClaim(q,id,kind){
  const r=byId.get(id);if(!r){alert('マスターに対象ピックがありません。');return}
@@ -461,35 +466,101 @@ function startGacha(source,ticketKey=null){
   if(q.dailyGachaCount%7===0)giftTicket('premium');
  }else if(source==='ticket')q.tickets[ticketKey]--;
  q.pendingReward={source,pickId:r.master_id,originalPickId:r.master_id,grade:group(r),rerolled:false,createdAt:stamp(),ticketKey};
- save(); // persist draw, daily usage and ticket consumption BEFORE displaying result
+ // Presentation is stored independently of the award. Reloading must never draw or consume the ticket twice.
+ q.gachaReveal={source,ticketKey,pickId:r.master_id,at:stamp()};
+ save(); // persist draw, daily usage, ticket consumption and reveal BEFORE displaying result
  if(source==='ticket'||!q.owned[r.master_id])finishClaim(q.pendingReward,r.master_id,source);
  else{view='claim';render()}
+ showGachaReveal();
+}
+// Shared reveal for daily and all guaranteed gacha tickets. Results are already committed to storage.
+// Never roll, award, or deduct a ticket from an animation callback.
+function showGachaReveal(preview=null){
+ const data=preview||p().gachaReveal;if(!data||!byId.has(data.pickId))return;
+ document.getElementById('gachaRevealOverlay')?.remove();
+ const r=byId.get(data.pickId),g=group(r),isTicket=data.source==='ticket';
+ const title=data.preview?'★保証ガチャ演出テスト':isTicket?ticketName(data.ticketKey||g)+' の結果':'デイリーガチャの結果';
+ const gradeLabel=g==='special'?'スペシャル':'★'+g;
+ const overlay=document.createElement('div');
+ overlay.id='gachaRevealOverlay';overlay.className='gacha-reveal-overlay rarity-'+g;
+ overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','ガチャの抽選結果');
+ overlay.innerHTML=`<div class="gacha-reveal-scene">
+ <p class="gacha-reveal-source">🎰 ${esc(title)}</p>
+ <div class="gacha-reveal-stage">
+  <div class="gacha-reveal-aura" aria-hidden="true"></div>
+  <div class="gacha-reveal-orb" aria-hidden="true"><span>?</span></div>
+  <div class="gacha-reveal-sparks" aria-hidden="true">${Array.from({length:12},(_,i)=>`<i style="--i:${i}">✦</i>`).join('')}</div>
+  <div class="gacha-reveal-pick"><div class="picture"><div class="gacha-card-placeholder">${esc(r.name_ja)}<small>ピック画像</small></div>${pic(r)}</div></div>
+ </div>
+ <div class="gacha-reveal-info" aria-live="polite"><p class="gacha-reveal-grade">${esc(gradeLabel)}</p><h2>${esc(r.name_ja)}</h2><p>${data.preview?'画面表示のテスト（獲得なし）':'ピックを獲得！'}</p></div>
+ <p class="gacha-reveal-progress">抽選結果を開封しています…</p>
+ <div class="gacha-reveal-actions"><button type="button" class="secondary" data-gacha-reveal="skip">演出をスキップ</button><button type="button" data-gacha-reveal="done" hidden>結果を確認する</button></div>
+ </div>`;
+ document.body.appendChild(overlay);document.body.classList.add('gacha-reveal-lock');
+ let timer=null;
+ function reveal(){
+  if(!overlay.isConnected||overlay.classList.contains('is-revealed'))return;
+  overlay.classList.add('is-revealed');
+  overlay.querySelector('[data-gacha-reveal="skip"]').hidden=true;
+  overlay.querySelector('[data-gacha-reveal="done"]').hidden=false;
+  overlay.querySelector('.gacha-reveal-progress').textContent=data.preview?'テスト演出：ガチャ券・所持数は変更しません':'獲得内容は保存されています';
+  beep(g==='special'?988:g==='5'?880:740);
+  overlay.querySelector('[data-gacha-reveal="done"]')?.focus({preventScroll:true});
+ }
+ function done(){
+  if(timer)clearTimeout(timer);
+  overlay.remove();document.body.classList.remove('gacha-reveal-lock');
+  const active=p().gachaReveal;
+  if(!data.preview&&active&&active.at===data.at&&active.pickId===data.pickId&&active.source===data.source){p().gachaReveal=null;save()}
+  // The underlying claim/reward screen is already based on the saved, final draw.
+ }
+ overlay.addEventListener('click',e=>{
+  const button=e.target.closest('[data-gacha-reveal]');if(!button)return;
+  if(button.dataset.gachaReveal==='skip')reveal();
+  if(button.dataset.gachaReveal==='done')done();
+ });
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ timer=setTimeout(reveal,reduced?120:1250);
 }
 function dailyPage(){
  const q=p(),drawn=q.dailyGachaDate===dateJST(),d=number(q.dailyGachaCount),tickets=q.tickets||{},dexCount=Object.keys(q.owned).length;
- return `${topNav('ガチャ')}<section class="panel hero"><h2>🎰 デイリーガチャ</h2><p>毎日1回、ピックを直接獲得。レア度別出現率はバーコードと同じ。未所持ピックは同じレア度内で抽選重み3倍。</p><p class="sub">本日：${drawn?'使用済み':'未使用'} ／ 累計${d}回 ／ 7回ボーナス ${d%7}/7</p><button data-action="daily-pull" ${drawn||q.pendingReward?'disabled':''}>${drawn?'本日はガチャ終了':'ガチャを1回引く'}</button><p class="sub">★2 45%、★3 30%、★4 15%、★5 5%、スペシャル 5%。日本時間0時更新。</p></section><section class="panel"><h2>🎟 所持ガチャ券</h2><p class="sub">図鑑：${dexCount}種類獲得 ／ 次の報酬まで${10-dexCount%10}種類。7回ごとのデイリーボーナスと、図鑑10種類ごとの達成報酬は★4以上ボーナス券。券の抽選はMAX済みを除外し、再抽選も新しい券の発行もありません。</p>${TICKET_TYPES.map(k=>`<div class="row between ticket-row"><span>${esc(ticketName(k))} ×${number(tickets[k])}</span><button class="secondary small" data-action="ticket-pull" data-id="${k}" ${number(tickets[k])<1||q.pendingReward?'disabled':''}>使用</button></div>`).join('')}<p class="sub">★4以上券：★4 80%、★5 15%、スペシャル 5%。条件に合う候補がない場合は券を消費しません。</p></section><section class="panel"><p class="callout">このVer07はブラウザ内だけのテスト版です。本番ではSupabaseのサーバー時刻・利用回数・ガチャ券・獲得処理を一つの安全な取引で管理します。</p></section>`;
+ return `${topNav('ガチャ')}<section class="panel hero"><h2>🎰 デイリーガチャ</h2><p>毎日1回、ピックを直接獲得。レア度別出現率はバーコードと同じ。未所持ピックは同じレア度内で抽選重み3倍。</p><p class="sub">本日：${drawn?'使用済み':'未使用'} ／ 累計${d}回 ／ 7回ボーナス ${d%7}/7</p><button data-action="daily-pull" ${drawn||q.pendingReward?'disabled':''}>${drawn?'本日はガチャ終了':'ガチャを1回引く'}</button><p class="sub">★2 45%、★3 30%、★4 15%、★5 5%、スペシャル 5%。日本時間0時更新。</p></section><section class="panel"><h2>🎟 所持ガチャ券</h2><p class="sub">図鑑：${dexCount}種類獲得 ／ 次の報酬まで${10-dexCount%10}種類。7回ごとのデイリーボーナスと、図鑑10種類ごとの達成報酬は★4以上ボーナス券。券の抽選はMAX済みを除外し、再抽選も新しい券の発行もありません。</p>${TICKET_TYPES.map(k=>`<div class="row between ticket-row"><span>${esc(ticketName(k))} ×${number(tickets[k])}</span><button class="secondary small" data-action="ticket-pull" data-id="${k}" ${number(tickets[k])<1||q.pendingReward?'disabled':''}>使用</button></div>`).join('')}<p class="sub">★4以上券：★4 80%、★5 15%、スペシャル 5%。条件に合う候補がない場合は券を消費しません。</p></section><section class="panel"><p class="callout">このVer11はブラウザ内だけのテスト版です。本番ではSupabaseのサーバー時刻・利用回数・ガチャ券・獲得処理を一つの安全な取引で管理します。</p></section>`;
 }
 function pullDaily(){if(p().pendingReward){view='claim';render();return}if(!confirm('デイリーガチャを引きますか？（1日1回）'))return;startGacha('daily')}
 function rewardPage(){
  const x=lastRead?.result?lastRead:p().lastReward,r=byId.get(x?.pickId);if(!x)return home();
- if(x.result==='ticket')return `${topNav('ガチャ券獲得')}<section class="panel reward-panel"><h2>🎟 ${esc(ticketName(x.ticket))}を獲得！</h2><p>ガチャ画面から好きなときに使用できます。</p><div class="button-row"><button data-action="daily">ガチャ画面へ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
+ if(x.result==='ticket')return `${topNav('ガチャ券獲得')}<section class="panel reward-panel"><h2>🎟 ${esc(ticketName(x.ticket))}を獲得！</h2><p>ガチャ画面から好きなときに使用できます。</p>${x.barcode&&p().reads[x.barcode]?.source==='barcode'?barcodeHead3Display(x.barcode,'detail'):''}<div class="button-row"><button data-action="daily">ガチャ画面へ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
  if(!r)return home();const o=p().owned[r.master_id];
- return `${topNav('ピック獲得')}<section class="panel reward-panel"><h2>🎉 ピックを獲得！</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>累計 ${number(o?.count)}枚 ／ 強化×${boostMultiplier(r.master_id).toFixed(3)}${isMax(r.master_id)?' MAX':''}</p><p class="sub">バトルなしで獲得。出撃回数は消費しません。</p><div class="button-row"><button data-action="daily">ガチャへ</button><button data-action="owned">所持ピックへ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
+ return `${topNav('ピック獲得')}<section class="panel reward-panel"><h2>🎉 ピックを獲得！</h2><div class="picture" style="height:220px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>累計 ${number(o?.count)}枚 ／ 強化×${boostMultiplier(r.master_id).toFixed(3)}${isMax(r.master_id)?' MAX':''}</p><p class="sub">バトルなしで獲得。出撃回数は消費しません。</p>${x.barcode&&p().reads[x.barcode]?.source==='barcode'?barcodeHead3Display(x.barcode,'detail'):''}<div class="button-row">${x.barcode&&p().reads[x.barcode]?.source==='barcode'?'<button data-action="scan">次のバーコード</button>':'<button data-action="daily">ガチャへ</button>'}<button data-action="owned">所持ピックへ</button><button class="secondary" data-action="home">ホームへ</button></div></section>`;
+}
+// A redemption code has a single canonical identity regardless of presentation.
+// NFKC handles full-width Latin letters/digits; remove spaces and common hyphen forms.
+// Never normalize or modify barcodes with this helper.
+function normalizeGiftCode(value){
+ return String(value??'').normalize('NFKC').toUpperCase()
+  .replace(/[\s\u3000\-\u2010-\u2015\u2212\uFE63\uFF0D\u30FC\uFF70]/g,'');
+}
+function findGiftRegistryKey(input){
+ const needle=normalizeGiftCode(input);
+ if(!/^FG[A-Z2-9]{8}$/.test(needle))return null;
+ // Keep original keys in existing saved games; look them up through their canonical forms.
+ return Object.keys(giftRegistry).find(key=>normalizeGiftCode(key)===needle)??null;
 }
 function createGiftCode(){
  const mode=$('giftMode')?.value,val=$('giftValue')?.value;if(!['grade','pick'].includes(mode)){alert('種類を指定してください。');return}
  if(mode==='grade'&&!RATES.some(([k])=>k===val)){alert('レア度を指定してください。');return}
  if(mode==='pick'&&!battleOK(byId.get(val))){alert('バトル可能なピックIDを指定してください。');return}
- let code;for(let tries=0;tries<40;tries++){const s=Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');code='FG-'+s.slice(0,4)+'-'+s.slice(4);if(!giftRegistry[code])break}
- if(giftRegistry[code]){alert('コード生成に失敗しました。');return}
+ let code;for(let tries=0;tries<40;tries++){const s=Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');code='FG-'+s.slice(0,4)+'-'+s.slice(4);if(!findGiftRegistryKey(code))break}
+ if(findGiftRegistryKey(code)){alert('コード生成に失敗しました。');return}
  giftRegistry[code]={kind:mode,value:val,createdAt:stamp(),usedBy:null,usedAt:null};save();const out=$('giftCreated');if(out){out.hidden=false;out.textContent='発行済み：'+code+'（1回限定）'}
 }
-function giftPage(){return `${topNav('プレゼントコード')}<section class="panel"><h2>🎁 プレゼントコードを入力</h2><p class="sub">コードを利用すると指定のピックが出現。未所持ならバトル、所持済みならその場で強化します。</p><div class="row"><input id="giftCodeInput" type="text" autocapitalize="characters" autocomplete="off" placeholder="FG-XXXX-XXXX" class="grow"><button data-action="gift-redeem">コードを使う</button></div><p id="giftError" class="warn" role="alert" hidden></p></section><section class="panel"><p class="callout">これは同一ブラウザ内だけの検証用コードです。端末間共有・管理者認証・1回限りの厳格な保証は、サーバー実装まで未対応です。</p></section>`}
+function giftPage(){return `${topNav('プレゼントコード')}<section class="panel"><h2>🎁 プレゼントコードを入力</h2><p class="sub">コードを利用すると指定のピックが出現。未所持ならバトル、所持済みならその場で強化します。</p><p class="sub">英字の大文字・小文字、全角・半角、ハイフンの有無・種類、空白の有無は区別せず認識します。</p><div class="row"><input id="giftCodeInput" type="text" autocapitalize="characters" autocomplete="off" placeholder="FG-XXXX-XXXX" class="grow"><button data-action="gift-redeem">コードを使う</button></div><p id="giftError" class="warn" role="alert" hidden></p></section><section class="panel"><p class="callout">これは同一ブラウザ内だけの検証用コードです。端末間共有・管理者認証・1回限りの厳格な保証は、サーバー実装まで未対応です。</p></section>`}
 function giftError(msg){const el=$('giftError');if(el){el.textContent=msg;el.hidden=!msg}}
 function redeemGift(){
- const code=String($('giftCodeInput')?.value||'').trim().toUpperCase(),gift=giftRegistry[code];
+ const entered=String($('giftCodeInput')?.value||'');
+ const code=findGiftRegistryKey(entered),gift=code?giftRegistry[code]:null;
  if(p().pendingReward){view='claim';render();return}
- if(!gift){giftError('プレゼントコードが存在しません。');return}if(gift.usedAt){giftError('このコードは使用済みです。');return}
+ if(!gift){giftError(/^FG[A-Z2-9]{8}$/.test(normalizeGiftCode(entered))?'プレゼントコードが存在しません。':'コード形式が正しくありません（例：FG-ABCD-2345）。');return}if(gift.usedAt){giftError('このコードは使用済みです。');return}
  let r;if(gift.kind==='pick')r=byId.get(gift.value);else r=drawPick(gift.value);
  if(!r){giftError('対象ピックを取得できません。');return}
  gift.usedBy=state.profile;gift.usedAt=stamp();gift.pickId=r.master_id;
@@ -510,7 +581,7 @@ function simulateExactPick(){const id=$('debugPick')?.value;if(!byId.has(id)){al
  for(let i=0;i<100;i++){const prefix='290'+String(Math.floor(cryptoRandom()*1e9)).padStart(9,'0'),code=prefix+checksum(prefix);if(!registry[code]){registry[code]={pickId:id,grade:group(byId.get(id)),createdAt:stamp(),debug:true};save();registerBarcode(code);return}}
  alert('テストコードを生成できませんでした。')
 }
-function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><p class="sub">白PCでは画面右上の［白PC表示］をONにすると、狭いPC画面向けに余白と画像サイズを調整できます。設定は端末ごとに保存されます。</p><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計4枚で強化MAX。MAXでは保証券と再抽選を確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
+function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><p class="sub">白PCでは画面右上の［白PC表示］をONにすると、狭いPC画面向けに余白と画像サイズを調整できます。設定は端末ごとに保存されます。</p><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計4枚で強化MAX。MAXでは保証券と再抽選を確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎰 ガチャの開封演出テスト</h3><p class="sub">★4以上保証ガチャの演出を試します。ガチャ券・所持ピック・抽選回数は変更しません。</p><button class="secondary" data-action="preview-gacha">★保証ガチャの演出だけ確認</button></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
 function checksum(prefix){let digits=String(prefix).split('').map(Number),s=0;for(let i=digits.length-1,w=3;i>=0;i--,w=w===3?1:3)s+=digits[i]*w;return String((10-s%10)%10)}
 function render(){
  app.dataset.view=!isGameStarted()?'starter':view;
@@ -537,6 +608,7 @@ function onAction(e){
  case 'forfeit':if(battleBusy){alert('攻撃演出の完了後にあきらめる操作をしてください。');break}autoRunning=false;if(autoTimer){clearTimeout(autoTimer);autoTimer=null}forfeit();break;
  case 'claim-boost':decideClaim('boost');break;case 'claim-ticket':decideClaim('ticket');break;case 'claim-reroll':decideClaim('reroll');break;
  case 'ticket-pull':startGacha('ticket',id);break;
+ case 'preview-gacha':{const r=drawGacha('premium');if(r)showGachaReveal({preview:true,source:'ticket',ticketKey:'premium',pickId:r.master_id,at:stamp()});else alert('演出対象のピックがありません。');break}
  case 'test-code':registerBarcode($('testCode')?.value||'');break;case 'daily-pull':pullDaily();break;case 'gift-redeem':redeemGift();break;case 'gift-generate':createGiftCode();break;case 'debug-pick':simulateExactPick();break;
  case 'simulate':{let val='490'+String(Math.floor(Math.random()*1e9)).padStart(9,'0');val+=checksum(val);registerBarcode(val);break}
  case 'toggle-audio':audio=!audio;putJSON(AUDIO_KEY,audio);render();break;
@@ -577,7 +649,9 @@ for(const user of Object.values(state.profiles)){
 }
 save();
 applyDisplayMode();
+if(p().gachaReveal) view=p().pendingReward?'claim':'reward';
 window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha}});
 render();
+if(p().gachaReveal)showGachaReveal();
 })();
-/* Updated: 2026-11-15 16:46 JST / Ver10 */
+/* Updated: 2026-11-15 17:18 JST / Ver14 */
