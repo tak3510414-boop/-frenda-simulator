@@ -79,3 +79,130 @@
 /* Camera retry is hidden unless the initial request fails or the user stops scanning. */
 [hidden]{display:none !important}
 /* Updated: 2026-11-15 16:26 JST / Ver08 */
+
+
+/* Ver10: White-PC responsive layout. Optional compact mode is local to each browser.
+   Target: smaller landscape laptop screens and typical desktops; preserve smartphone UI. */
+.white-pc-toggle{white-space:nowrap;font-size:11px}
+.white-pc-toggle[aria-pressed="true"]{background:#dff3ff;color:#145884;border-color:#85c6ec}
+@media(max-width:739px){.white-pc-toggle{display:none}}
+
+/* General landscape desktop: distribute controls horizontally instead of making one long column. */
+@media(min-width:900px){
+  main{max-width:min(1380px,100%);padding:12px clamp(10px,1.15vw,18px)}
+  #notice{max-width:1380px}
+  .button-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .button-grid button{min-width:0}
+  main[data-view="home"]{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:11px;align-items:stretch}
+  main[data-view="home"]>.panel{margin:0;min-width:0}
+  main[data-view="home"]>.panel:nth-child(3){grid-column:1/-1}
+  main[data-view="home"]>.panel:nth-child(n+4){grid-column:1/-1}
+  main[data-view="settings"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-items:start}
+  main[data-view="settings"]>.panel{margin:0;min-width:0}
+  main[data-view="settings"]>.panel:first-child{grid-column:1/-1}
+  main[data-view="dex"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(225px,.34fr);gap:10px;align-items:start}
+  main[data-view="dex"]>.panel{margin:0;min-width:0}
+  main[data-view="dex"]>.panel:first-child{grid-column:1/-1}
+  main[data-view="dex"]>.panel:nth-child(2){grid-column:1;grid-row:2}
+  main[data-view="dex"]>.panel:nth-child(3){grid-column:1;grid-row:3}
+  main[data-view="dex"]>.panel:nth-child(4){grid-column:2;grid-row:2 / 4;align-self:stretch;min-width:0}
+  main[data-view="choose"]{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:10px;align-items:start}
+  main[data-view="choose"]>.panel{margin:0;min-width:0}
+  main[data-view="choose"]>.panel:first-child{grid-column:1/-1}
+  main[data-view="choose"]>.panel:nth-child(2){grid-column:1;grid-row:2/4}
+  main[data-view="choose"]>.panel:nth-child(3){grid-column:2;grid-row:2}
+  main[data-view="choose"]>.panel:nth-child(4){grid-column:2;grid-row:3}
+  main[data-view="choose"] .pick-grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+  main[data-view="daily"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+  main[data-view="daily"]>.panel{margin:0;min-width:0}
+  main[data-view="daily"]>.panel:first-child{grid-column:1/-1}
+  main[data-view="daily"]>.panel:nth-child(2){grid-column:1;grid-row:2}
+  main[data-view="daily"]>.panel:nth-child(3){grid-column:2;grid-row:2}
+  main[data-view="daily"]>.panel:nth-child(n+4){grid-column:1/-1}
+  main[data-view="choose"] .pick-card .picture{height:105px}
+  main[data-view="starter"] .starter-set-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  main[data-view="starter"] .starter-pick .picture{height:95px}
+  main[data-view="scan"] .scan-view{max-width:660px}
+  main[data-view="scan"] .scan-view video{height:clamp(240px,36vh,380px);object-fit:contain}
+}
+
+/* Short white-PC displays (for example 1280x720 / 1366x768): prevent huge card rows. */
+@media(min-width:900px) and (max-height:850px){
+  .top{padding:7px 12px}
+  .panel{padding:10px 12px;margin-bottom:8px;border-radius:12px}
+  .panel h2{font-size:17px;margin-bottom:7px}
+  .panel h3{margin:5px 0;font-size:15px}
+  .hero button{min-height:48px;font-size:17px}
+  .button-grid{gap:7px}
+  .button-grid button{min-height:53px;padding:8px 10px;font-size:13px}
+  .button-grid small{font-size:10px;margin-top:2px}
+  .metric{padding:6px}
+  .metric b{font-size:18px}
+  .compact-toolbar input,.compact-toolbar select{padding:7px}
+  .pick-card .picture{height:100px}
+  .pick-grid.size-medium .pick-card .picture{height:100px}
+  .pick-grid.size-large .pick-card .picture{height:142px}
+  .battle-stage{padding:6px 8px;margin:6px 0}
+  .battle-stage .combatant .picture{height:clamp(75px,15vh,120px)}
+  .battle-message{padding:6px;margin:5px 0;min-height:30px}
+  .combat-log{height:clamp(52px,10vh,82px);padding:8px}
+  main[data-view="battle"]>.panel:last-child{max-width:940px;margin-inline:auto}
+  main[data-view="dex"]>.panel:nth-child(3),
+  main[data-view="dex"]>.panel:nth-child(4){max-height:calc(100dvh - 235px);overflow-y:auto;overscroll-behavior:contain}
+  main[data-view="pending"]>.panel:nth-child(2),
+  main[data-view="owned"]>.panel:nth-child(2),
+  main[data-view="history"]>.panel:nth-child(2){max-height:calc(100dvh - 145px);overflow-y:auto;overscroll-behavior:contain}
+  main[data-view="choose"]{height:calc(100dvh - 103px);grid-template-rows:auto minmax(0,1fr) minmax(0,.75fr)}
+  main[data-view="choose"]>.panel:nth-child(n+2){overflow-y:auto;min-height:0;overscroll-behavior:contain}
+}
+
+/* Manual "白PC表示" setting: intentionally changes only visual density on that PC. */
+@media(min-width:740px){
+  body.white-pc-mode main{max-width:calc(100% - 12px);padding:7px}
+  body.white-pc-mode #notice{margin:4px auto 8px;padding:0 12px}
+  body.white-pc-mode .top{padding:6px 10px}
+  body.white-pc-mode .top strong{font-size:15px}
+  body.white-pc-mode .top small{font-size:9px}
+  body.white-pc-mode .panel{padding:9px 11px;margin-bottom:7px;border-radius:11px}
+  body.white-pc-mode .panel h2{font-size:17px;margin-bottom:6px}
+  body.white-pc-mode .panel h3{font-size:14px;margin:5px 0}
+  body.white-pc-mode .button-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  body.white-pc-mode .button-grid button{min-height:53px;font-size:12px;padding:7px 8px}
+  body.white-pc-mode .button-grid small{font-size:10px;margin-top:2px}
+  body.white-pc-mode .hero button{font-size:16px;min-height:47px}
+  body.white-pc-mode .hero .sub{font-size:11px}
+  body.white-pc-mode .metric{padding:6px}
+  body.white-pc-mode .metric b{font-size:18px}
+  body.white-pc-mode .pick-grid.size-small{grid-template-columns:repeat(auto-fill,minmax(105px,1fr))}
+  body.white-pc-mode .pick-grid.size-medium{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}
+  body.white-pc-mode .pick-grid.size-large{grid-template-columns:repeat(auto-fill,minmax(205px,1fr))}
+  body.white-pc-mode .pick-grid.size-medium .pick-card .picture{height:105px}
+  body.white-pc-mode .pick-grid.size-large .pick-card .picture{height:140px}
+  body.white-pc-mode .starter-set-grid{grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:7px}
+  body.white-pc-mode .starter-pick .picture{height:85px}
+  body.white-pc-mode .detail-sheet .detail-pic{height:165px}
+  body.white-pc-mode .detail-sheet .detail-hero{grid-template-columns:minmax(100px,155px) 1fr}
+  body.white-pc-mode .battle-stage{padding:6px;margin:5px 0}
+  body.white-pc-mode .battle-stage .combatant .picture{height:clamp(72px,14vh,115px)}
+  body.white-pc-mode .combat-log{height:clamp(55px,11vh,95px)}
+  body.white-pc-mode .battle-message{padding:6px;margin:5px 0;min-height:30px}
+  body.white-pc-mode main[data-view="pending"]>.panel:nth-child(2),
+  body.white-pc-mode main[data-view="owned"]>.panel:nth-child(2),
+  body.white-pc-mode main[data-view="history"]>.panel:nth-child(2){max-height:calc(100dvh - 138px);overflow-y:auto}
+  body.white-pc-mode main[data-view="dex"]>.panel:nth-child(3),
+  body.white-pc-mode main[data-view="dex"]>.panel:nth-child(4){max-height:calc(100dvh - 300px);overflow-y:auto}
+  body.white-pc-mode main[data-view="scan"] .scan-view video{height:clamp(210px,35vh,310px);object-fit:contain}
+  body.white-pc-mode main[data-view="choose"]{height:calc(100dvh - 145px);grid-template-rows:auto minmax(0,1fr) minmax(0,.75fr)}
+  body.white-pc-mode main[data-view="choose"]>.panel{margin:0}
+  body.white-pc-mode main[data-view="choose"]>.panel:nth-child(n+2){overflow-y:auto;min-height:0}
+  body.white-pc-mode main[data-view="daily"]>.panel{margin:0}
+}
+@media(min-width:740px) and (max-width:899px){
+  body.white-pc-mode main[data-view="home"]{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:8px;align-items:stretch}
+  body.white-pc-mode main[data-view="home"]>.panel{margin:0;min-width:0}
+  body.white-pc-mode main[data-view="home"]>.panel:nth-child(3){grid-column:1/-1}
+  body.white-pc-mode main[data-view="home"]>.panel:nth-child(n+4){grid-column:1/-1}
+  body.white-pc-mode main[data-view="choose"]{display:block;height:auto}
+}
+@media(max-width:620px){.white-pc-toggle{display:none}.topright{flex-shrink:0}}
+/* Updated: 2026-11-15 16:46 JST / Ver10 */

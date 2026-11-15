@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 0.8 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 1.0 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='0.8';
+const VERSION='1.0';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -9,6 +9,7 @@ const REG_KEY='frenda:barcode:test:ver02:registry';
 const AUDIO_KEY='frenda:barcode:test:ver02:audio';
 const GIFT_KEY='frenda:barcode:test:ver06:gift:registry';
 const SPEED_KEY='frenda:barcode:test:ver06:auto-speed';
+const DISPLAY_KEY='frenda:barcode:test:display-mode:v1';
 const RATES=[['2',45],['3',30],['4',15],['5',5],['special',5]];
 const STAT_KEYS=['hp','atk','def','sp_atk','sp_def'];
 const BOOST_RATE=1.30,BOOST_LIMIT=3;
@@ -31,6 +32,8 @@ const STARTER_SET_DEFS=[
 ];
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+// Presentation only. Keep full normalized barcode in registry, read history keys and action attributes.
+function barcodeHead3(code){return String(code??'').slice(0,3)}
 const dateJST=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const stamp=()=>new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date());
 const number=v=>Number.isFinite(+v)?+v:0;
@@ -49,9 +52,16 @@ for(const x of ['A','B','C']){
  q.pendingReward??=null;q.lastReward??=null;q.dexRewardsPaid??=0;
  q.owned??={};q.reads??={};q.used??={};
 }
+let displayMode=getJSON(DISPLAY_KEY,'auto')==='white'?'white':'auto';
 let view='home',filter='',sort='series',lastRead=null,showScan=false,scanStream=null,scanTimer=null,scanBusy=false,scanNative=null,autoTimer=null,autoSpeed=Math.min(5,Math.max(1,Number(getJSON(SPEED_KEY,1))||1)),autoRunning=false,battleBusy=false,battleEpoch=0,audio=getJSON(AUDIO_KEY,true),battleError='';
 let filterSet={series:'all',grade:'all',type:'all',status:'all'},filterOpen=false,cardSize='medium',dexLimit=70,searchComposing=false,scanEpoch=0,scanPhase=0,scanStatus='',detailId=null,historyCode=null;
 const p=()=>state.profiles[state.profile];
+// White PC mode is a local presentation preference; it does not change save data or battle logic.
+function applyDisplayMode(){
+ document.body.classList.toggle('white-pc-mode',displayMode==='white');
+ const toggle=$('whitePcToggle');if(toggle){toggle.textContent=displayMode==='white'?'白PC表示 ON':'白PC表示';toggle.setAttribute('aria-pressed',displayMode==='white'?'true':'false')}
+}
+
 function boostLevel(id){return Math.min(BOOST_LIMIT,Math.max(0,number(p().owned[id]?.count)-1))}
 function boostMultiplier(id){return Math.pow(BOOST_RATE,boostLevel(id))}
 function isMax(id){return boostLevel(id)>=BOOST_LIMIT}
@@ -166,7 +176,7 @@ function dex(){
 }
 function history(){
  const rows=Object.entries(p().reads).filter(([,x])=>x.source!=='gift').map(([barcode,x])=>({r:byId.get(x.pickId),barcode,...x,time:x.scannedAt})).filter(x=>x.r),data=sorted(rows,'history');
- return `${topNav('バーコード読取履歴')}<section class="panel">${controls('名前・バーコード番号','history')}<p class="sub">表示 ${data.length}/${rows.length}件 ／ 初回読取日時（日本時間）</p>${data.map(x=>`<div class="row between history-row"><div><b>${esc(x.r.name_ja)}</b><span class="sub"> ${grade(x.r)} ／ ${esc(x.barcode)}</span><div class="sub">${esc(x.scannedAt)}</div></div><div><span class="chip ${x.status==='owned'?'ok':'wait'}">${x.status==='owned'?'入手済み':x.status==='ticket'?'保証券に交換済み':x.status==='decision'?'選択待ち':'出現中'}</span><button class="secondary small" data-action="history-detail" data-code="${esc(x.barcode)}">詳細</button></div></div>`).join('')||'<div class="empty">該当する読取履歴はありません</div>'}</section>`
+ return `${topNav('バーコード読取履歴')}<section class="panel">${controls('名前・バーコード番号','history')}<p class="sub">表示 ${data.length}/${rows.length}件 ／ 初回読取日時（日本時間）</p>${data.map(x=>`<div class="row between history-row"><div><b>${esc(x.r.name_ja)}</b><span class="sub"> ${grade(x.r)} ／ 先頭3桁 ${esc(barcodeHead3(x.barcode))}</span><div class="sub">${esc(x.scannedAt)}</div></div><div><span class="chip ${x.status==='owned'?'ok':'wait'}">${x.status==='owned'?'入手済み':x.status==='ticket'?'保証券に交換済み':x.status==='decision'?'選択待ち':'出現中'}</span><button class="secondary small" data-action="history-detail" data-code="${esc(x.barcode)}">詳細</button></div></div>`).join('')||'<div class="empty">該当する読取履歴はありません</div>'}</section>`
 }
 function statGraph(name,base,current,max){
  const original=Math.max(0,number(base)),effective=Math.max(0,number(current));
@@ -186,7 +196,7 @@ function detail(id){
  const owned=p().owned[id],pend=Object.entries(p().reads).filter(([,x])=>x.pickId===id&&x.status==='pending'),found=owned||pend.length;
  return `${topNav('ピック詳細')}<section class="panel detail-sheet"><div class="detail-hero"><div class="picture detail-pic">${pic(r,owned?'normal':found?'silhouette':'none')}</div><div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">${esc(r.series)} ／ ${esc(r.pick_no||r.master_id)}</p><p>${owned?`累計${owned.count}枚 ／ 強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}`:found?'発見済み・未入手':'未発見'}</p>${owned?`<p class="stamina">本日 残り${usedLeft(r.master_id)}/3回</p>`:''}</div></div>${found?stats(r):''}${pend.length?`<p><button data-action="choose" data-code="${esc(pend[0][0])}">このピックに挑戦</button></p>`:''}</section>`
 }
-function historyDetail(code){const x=p().reads[code],r=byId.get(x?.pickId);return `${topNav('読取履歴詳細')}<section class="panel"><h2>${esc(r?.name_ja||'不明')}</h2><p>バーコード：${esc(code)}</p><p>初回読取：${esc(x?.scannedAt)}</p><p>状態：${x?.status==='owned'?'入手済み':x?.status==='ticket'?'保証券に交換済み':x?.status==='decision'?'選択待ち':'出現中'}</p><p>元のピック：${esc(byId.get(x?.originalPickId)?.name_ja||r?.name_ja||'不明')}</p><p>勝利・取得：${esc(x?.captureAt||'未取得')}</p><p>挑戦回数：${number(x?.attempts)}</p>${x?.status==='pending'?`<button data-action="choose" data-code="${esc(code)}">バトル</button>`:`<button data-action="detail" data-id="${esc(x?.pickId)}">ピック詳細</button>`}</section>`}
+function historyDetail(code){const x=p().reads[code],r=byId.get(x?.pickId);return `${topNav('読取履歴詳細')}<section class="panel"><h2>${esc(r?.name_ja||'不明')}</h2><p>バーコード先頭3桁：${esc(barcodeHead3(code))}</p><p>初回読取：${esc(x?.scannedAt)}</p><p>状態：${x?.status==='owned'?'入手済み':x?.status==='ticket'?'保証券に交換済み':x?.status==='decision'?'選択待ち':'出現中'}</p><p>元のピック：${esc(byId.get(x?.originalPickId)?.name_ja||r?.name_ja||'不明')}</p><p>勝利・取得：${esc(x?.captureAt||'未取得')}</p><p>挑戦回数：${number(x?.attempts)}</p>${x?.status==='pending'?`<button data-action="choose" data-code="${esc(code)}">バトル</button>`:`<button data-action="detail" data-id="${esc(x?.pickId)}">ピック詳細</button>`}</section>`}
 function estimate(m,e){const a=battleRecord(m),b=e;return (number(a.hp)||0)+(number(a.atk)+number(a.sp_atk))*1.5+(number(a.def)+number(a.sp_def))*.5 + number(CORE.eff(a.move_type,b))*35}
 function choose(code){const enemy=byId.get(p().reads[code]?.pickId);if(!enemy||p().reads[code]?.status!=='pending'){nav('pending');return}if(p().battle){alert('中断中のバトルがあります。先に再開してください。');nav('battle');return}lastRead=code;view='choose';filter='';sort='grade';render()}
 function chooseScreen(){const code=lastRead,enemy=byId.get(p().reads[code]?.pickId);if(!enemy)return topNav('バトル準備')+`<section class="panel">出現中一覧から選んでください。</section>`;const rows=Object.keys(p().owned).map(id=>byId.get(id)).filter(Boolean);const active=rows.filter(r=>usedLeft(r.master_id)>0&&battleOK(r));active.sort((a,b)=>estimate(b,enemy)-estimate(a,enemy));return `${topNav('1対1 バトル準備')}<section class="panel"><div class="row"><div class="picture" style="width:140px;height:140px">${pic(enemy)}</div><div><h2>${grade(enemy)} ${esc(enemy.name_ja)}</h2><p class="sub">${esc(enemy.series)} ／ 敵は未強化</p><span class="chip wait">この戦闘は開始時に出撃1回消費</span></div></div>${stats(enemy,true)}${noStats(enemy)?'<p class="callout">マスターにバトル能力値が不足しています。この敵との戦闘はマスター補完後に可能になります。</p>':''}</section><section class="panel"><h2>おすすめの出撃ピック</h2><p class="sub">強化後能力・タイプ・出撃回数を基に並べています。推奨順はテスト用の簡易評価で、勝利保証ではありません。</p><div class="pick-grid">${active.slice(0,3).map(r=>fighterCard(r,code,true)).join('')}</div></section><section class="panel"><h2>すべての所持ピック</h2><div class="pick-grid">${active.map(r=>fighterCard(r,code,false)).join('')||'<p>出撃可能なピックがありません。日本時間の翌日0時に回復します。</p>'}</div></section>`}
@@ -303,7 +313,7 @@ function registerBarcode(code){
 function cryptoRandom(){const x=new Uint32Array(1);crypto.getRandomValues(x);return x[0]/4294967296}
 function drawPick(forcedGroup){const groups=RATES.reduce((s,[k,rate])=>{s.push([k,rate]);return s},[]);let z=cryptoRandom()*100,k=groups[groups.length-1][0];if(forcedGroup&&RATE_POOLS[forcedGroup]?.length){k=forcedGroup}else for(const [key,rate] of groups){z-=rate;if(z<0){k=key;break}}const pool=RATE_POOLS[k]||[];if(!pool.length)throw Error('抽選対象がありません');const appearance={};for(const row of Object.values(registry))appearance[row.pickId]=(appearance[row.pickId]||0)+1;let weights=pool.map(r=>1/Math.sqrt(1+(appearance[r.master_id]||0))),sum=weights.reduce((a,b)=>a+b,0),u=cryptoRandom()*sum;for(let i=0;i<pool.length;i++){u-=weights[i];if(u<0)return pool[i]}return pool[pool.length-1]}
 function normalize(value){const code=String(value||'').replace(/\s/g,'');if(!/^\d+$/.test(code)||![8,12,13].includes(code.length))return null;let digits=code.split('').map(Number),check=digits.pop(),sum=0;for(let i=digits.length-1,weight=3;i>=0;i--,weight=weight===3?1:3)sum+=digits[i]*weight;const computed=(10-sum%10)%10;if(computed!==check)return null;return code.length===12?'0'+code:code}
-function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];return `${topNav('バーコード読み取り結果')}<section class="panel" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックが出現！'}</p><div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">コード：${esc(x.barcode)} ／ ${esc(r.series)}</p>${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
+function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];return `${topNav('バーコード読み取り結果')}<section class="panel" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックが出現！'}</p><div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">コード先頭3桁：${esc(barcodeHead3(x.barcode))} ／ ${esc(r.series)}</p>${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
 function scanMessage(message){scanStatus=message;const e=$('scanState');if(e)e.textContent=message}
 function showCodeError(message){const e=$('testCodeError');if(e){e.textContent=message;e.hidden=!message}if(!e)scanMessage(message)}
 function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">この画面を開くとカメラが自動起動します。初回のみブラウザの使用許可が必要です。HTTPS接続が必要です。このVer08の共通台帳はブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button class="secondary" data-action="camera" id="cameraRetry" hidden>📷 カメラを再試行</button><button class="secondary" data-action="stopcamera" id="cameraStop">カメラ停止</button></div></section>`}
@@ -500,9 +510,10 @@ function simulateExactPick(){const id=$('debugPick')?.value;if(!byId.has(id)){al
  for(let i=0;i<100;i++){const prefix='290'+String(Math.floor(cryptoRandom()*1e9)).padStart(9,'0'),code=prefix+checksum(prefix);if(!registry[code]){registry[code]={pickId:id,grade:group(byId.get(id)),createdAt:stamp(),debug:true};save();registerBarcode(code);return}}
  alert('テストコードを生成できませんでした。')
 }
-function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計4枚で強化MAX。MAXでは保証券と再抽選を確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
+function settings(){return `${topNav('テスト設定')}<section class="panel"><h2>テストプレイヤー</h2><p class="sub">白PCでは画面右上の［白PC表示］をONにすると、狭いPC画面向けに余白と画像サイズを調整できます。設定は端末ごとに保存されます。</p><div class="row"><select id="profileSel"><option ${state.profile==='A'?'selected':''}>A</option><option ${state.profile==='B'?'selected':''}>B</option><option ${state.profile==='C'?'selected':''}>C</option></select><span class="sub">3人の独立したテストユーザー</span></div><p class="sub">共通台帳はこのブラウザのテストデータです。別端末との共有はまだできません。</p></section><section class="panel"><h2>管理者用テスト（本番には設置しません）</h2><p class="sub">本番では管理者認証・サーバー権限が必須です。ここは動作試験専用で、誰でも操作できます。</p><div class="row"><input id="testCode" inputmode="numeric" maxlength="13" placeholder="JAN-13 / JAN-8 / UPC-A" class="grow"><button data-action="test-code">コードをテスト</button></div><p id="testCodeError" class="warn" role="alert" hidden></p><div class="button-row"><button class="secondary" data-action="simulate">有効なテストコードを自動生成してスキャン</button><button class="secondary" data-action="toggle-audio">効果音 ${audio?'ON':'OFF'}</button></div></section><section class="panel"><h3>同一ピックを指定して重複強化テスト</h3><p class="sub">毎回異なる、有効な試験用バーコードを作成して指定ピックに割り当てます。累計4枚で強化MAX。MAXでは保証券と再抽選を確認できます。</p><div class="row"><select id="debugPick" class="grow">${debugPickOptions()}</select><button data-action="debug-pick">指定ピックを出現</button></div></section><section class="panel"><h3>🎁 プレゼントコード発行（ローカル実験用）</h3><div class="filter-grid"><label>発行方式<select id="giftMode"><option value="grade">レア度指定</option><option value="pick">特定ピックID指定</option></select></label><label>指定値<select id="giftValue">${RATES.map(([v])=>`<option value="${v}">${v==='special'?'スペシャル':'★'+v}</option>`).join('')}</select></label></div><button data-action="gift-generate">1回限定コードを発行</button><p id="giftCreated" class="callout" hidden></p></section><section class="panel"><h2>初期化（テスト専用）</h2><div class="button-row"><button class="danger" data-action="reset-player">現在のプレイヤーを初期化</button><button class="danger" data-action="reset-demo">共通テスト台帳を含めて初期化</button></div><p class="sub">個人の初期化では、共通バーコード台帳とプレゼントコードの発行履歴は残します。</p></section>`}
 function checksum(prefix){let digits=String(prefix).split('').map(Number),s=0;for(let i=digits.length-1,w=3;i>=0;i--,w=w===3?1:3)s+=digits[i]*w;return String((10-s%10)%10)}
 function render(){
+ app.dataset.view=!isGameStarted()?'starter':view;
  if(!DB?.records||!CORE){app.innerHTML='<div class="panel warn">マスターまたは戦闘計算を読み込めません。</div>';return}
  if(!isGameStarted()){app.innerHTML=starter();return}
  if(p().pendingReward&&view!=='claim')view='claim';
@@ -554,6 +565,7 @@ app.addEventListener('change',e=>{
  if(e.target.id==='profileSel'){if(p().battle)alert('戦闘途中のプレイヤーでも切替できますが、元に戻して再開してください。');state.profile=e.target.value;save();nav('home')}
 });
 $('homeTop').addEventListener('click',()=>nav('home'));
+$('whitePcToggle')?.addEventListener('click',()=>{displayMode=displayMode==='white'?'auto':'white';putJSON(DISPLAY_KEY,displayMode);applyDisplayMode()});
 window.addEventListener('popstate',event=>{stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render();if(view==='scan'){scanMessage('ブラウザの戻る操作で開きました。「カメラを再試行」を押してください。');cameraControls(true)}});
 window.addEventListener('pagehide',stopScan);
 window.addEventListener('offline',()=>{if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;if(view==='battle'){battleError='通信が切断されました。戦闘は保存済みです。';render()}});
@@ -564,7 +576,8 @@ for(const user of Object.values(state.profiles)){
  if(milestone>paid){user.tickets??={};user.tickets.premium=number(user.tickets.premium)+milestone-paid;user.dexRewardsPaid=milestone}
 }
 save();
+applyDisplayMode();
 window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha}});
 render();
 })();
-/* Updated: 2026-11-15 16:26 JST / Ver08 */
+/* Updated: 2026-11-15 16:46 JST / Ver10 */
