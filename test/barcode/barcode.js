@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 19 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 20 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='19';
+const VERSION='20';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -11,6 +11,7 @@ const SOUND_PREF_KEY='frenda:barcode:test:sound:ver18';
 const GIFT_KEY='frenda:barcode:test:ver06:gift:registry';
 const SPEED_KEY='frenda:barcode:test:ver06:auto-speed';
 const DISPLAY_KEY='frenda:barcode:test:display-mode:v1';
+const CONTINUOUS_KEY='frenda:barcode:test:continuous-scan:v20';
 const RATES=[['2',45],['3',30],['4',15],['5',5],['special',5]];
 const STAT_KEYS=['hp','atk','def','sp_atk','sp_def'];
 const BOOST_RATE=1.30,BOOST_LIMIT=3;
@@ -60,6 +61,8 @@ for(const x of ['A','B','C']){
 }
 let displayMode=getJSON(DISPLAY_KEY,'auto')==='white'?'white':'auto';
 let view='home',filter='',sort='series',lastRead=null,showScan=false,scanStream=null,scanTimer=null,scanBusy=false,scanNative=null,autoTimer=null,autoSpeed=Math.min(5,Math.max(1,Number(getJSON(SPEED_KEY,1))||1)),autoRunning=false,battleBusy=false,battleEpoch=0,audio=getJSON(AUDIO_KEY,true),battleError='';
+let lastCameraCode=null,lastCameraRepeatWarn=false;
+let continuousScan=getJSON(CONTINUOUS_KEY,true)!==false,scanStartedAt=0,scanHintStage=0,autoReturnTimer=null,autoReturnInterval=null,autoReturnSeq=0;
 let filterSet={series:'all',grade:'all',type:'all',status:'all'},filterOpen=false,cardSize='medium',dexLimit=70,searchComposing=false,scanEpoch=0,scanPhase=0,scanStatus='',detailId=null,historyCode=null;
 const p=()=>state.profiles[state.profile];
 // White PC mode is a local presentation preference; it does not change save data or battle logic.
@@ -203,7 +206,7 @@ function battleOK(r){return Boolean(r&&STAT_KEYS.every(k=>Number(r[k])>0)&&Numbe
 function noStats(r){return !battleOK(r)}
 function progress(){const owned=Object.keys(p().owned).length,found=new Set(),pendingPickIds=new Set();let pendingCodes=0;for(const x of Object.values(p().reads)){found.add(x.pickId);if(x.originalPickId)found.add(x.originalPickId);if(x.status==='pending'){pendingPickIds.add(x.pickId);pendingCodes++}}for(const id of Object.keys(p().owned))found.add(id);return {owned,found:found.size,total:byId.size,pending:pendingPickIds.size,pendingCodes}}
 function nav(v){
- stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;
+ cancelAutoReturn();stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;
  view=v;filter='';sort='series';filterSet={series:'all',grade:'all',type:'all',status:'all'};filterOpen=false;dexLimit=70;lastRead=null;
  if(window.history?.pushState&&v!=='home')try{window.history.pushState({frendaBarcode:true,view:v},'',location.href)}catch{}
  render()
@@ -476,22 +479,65 @@ function registerBarcode(code){
   p().pendingReward={source:'barcode',barcode:canonical,pickId:entry.pickId,originalPickId:entry.pickId,grade:group(r),rerolled:false,createdAt:stamp()};
   status='decision';
  }else{read={pickId:entry.pickId,originalPickId:entry.pickId,scannedAt:stamp(),status:'pending',attempts:0,source:'barcode'};p().reads[canonical]=read;status='new'}
- save();lastRead={barcode:canonical,pickId:read.pickId,status};cue(status==='decision'?'duplicate':status==='new'?'appear':'scan',group(r));if(navigator.vibrate)try{navigator.vibrate(70)}catch{}view=status==='decision'?'claim':'encounter';render()
+ save();lastRead={barcode:canonical,pickId:read.pickId,status};cue(status==='decision'?'duplicate':status==='new'?'reveal':'scan',group(r));if(navigator.vibrate)try{navigator.vibrate(group(r)==='5'||group(r)==='special'?[100,70,150]:[65,35,65])}catch{}view=status==='decision'?'claim':'encounter';render();window.scrollTo(0,0);if(view==='encounter')scheduleAutoReturn()
 }
 function cryptoRandom(){const x=new Uint32Array(1);crypto.getRandomValues(x);return x[0]/4294967296}
 function drawPick(forcedGroup){const groups=RATES.reduce((s,[k,rate])=>{s.push([k,rate]);return s},[]);let z=cryptoRandom()*100,k=groups[groups.length-1][0];if(forcedGroup&&RATE_POOLS[forcedGroup]?.length){k=forcedGroup}else for(const [key,rate] of groups){z-=rate;if(z<0){k=key;break}}const pool=RATE_POOLS[k]||[];if(!pool.length)throw Error('抽選対象がありません');const appearance={};for(const row of Object.values(registry))appearance[row.pickId]=(appearance[row.pickId]||0)+1;let weights=pool.map(r=>1/Math.sqrt(1+(appearance[r.master_id]||0))),sum=weights.reduce((a,b)=>a+b,0),u=cryptoRandom()*sum;for(let i=0;i<pool.length;i++){u-=weights[i];if(u<0)return pool[i]}return pool[pool.length-1]}
 function normalize(value){const code=String(value||'').replace(/\s/g,'');if(!/^\d+$/.test(code)||![8,12,13].includes(code.length))return null;let digits=code.split('').map(Number),check=digits.pop(),sum=0;for(let i=digits.length-1,weight=3;i>=0;i--,weight=weight===3?1:3)sum+=digits[i]*weight;const computed=(10-sum%10)%10;if(computed!==check)return null;return code.length===12?'0'+code:code}
-function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];return `${topNav('バーコード読み取り結果')}<section class="panel encounter-scene rarity-${group(r)}" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックが出現！'}</p>${barcodeHead3Display(x.barcode,'hero')}<div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">${esc(r.series)}</p>${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
+function encounter(){
+ const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();
+ const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];
+ const rarity=group(r),rare=rarity==='5'||rarity==='special';
+ const gradeText=rarity==='special'?'スペシャル':`★${rarity}`;
+ const glowCount=rarity==='special'?22:rarity==='5'?18:rarity==='4'?13:rarity==='3'?8:5;
+ return `${topNav('バーコード読み取り結果')}<section class="panel encounter-scene encounter-v20 rarity-${rarity}" style="text-align:center" aria-label="ピック出現 ${esc(gradeText)} ${esc(r.name_ja)}">
+ <div class="encounter-starlight" aria-hidden="true">${Array.from({length:glowCount},(_,i)=>`<i style="--s:${i};--total:${glowCount}">✦</i>`).join('')}</div>
+ <p class="encounter-first-msg">${x.status==='already'?'もう読み取ったバーコードです':isNew?'バーコード読取成功！':'所持済みピックが出現！'}</p>
+ ${barcodeHead3Display(x.barcode,'hero')}
+ <div class="encounter-rarity-banner ${rare?'encounter-rarity-ultra':''}"><small>レア度</small><strong>${esc(gradeText)}</strong><span>${rarity==='special'?'SPECIAL':rarity==='5'?'ULTRA RARE':rarity==='4'?'SUPER RARE':rarity==='3'?'RARE':'NORMAL'}</span></div>
+ <div class="encounter-pick-frame"><span class="encounter-ring" aria-hidden="true"></span><div class="picture">${pic(r)}</div></div>
+ <h2 class="encounter-name">${esc(r.name_ja)}</h2><p class="sub">${esc(r.series)}</p>
+ ${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}
+ ${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}
+ <div class="button-row encounter-actions">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div>
+ <div id="scanAutoReturn" class="scan-auto-return" ${continuousScan?'':'hidden'} aria-live="off"><span id="scanAutoRemaining">連続スキャンの準備中…</span><button class="secondary small" data-action="continuous-pause">自動再開を止める</button></div>
+ <button class="secondary small encounter-skip" data-action="encounter-skip">演出をスキップ</button>
+ </section>`;
+}
+function cancelAutoReturn(){
+ autoReturnSeq++;if(autoReturnTimer!==null){clearTimeout(autoReturnTimer);autoReturnTimer=null}
+ if(autoReturnInterval!==null){clearInterval(autoReturnInterval);autoReturnInterval=null}
+}
+function scheduleAutoReturn(){
+ cancelAutoReturn();
+ if(!continuousScan||view!=='encounter'||p().pendingReward||!lastRead?.barcode)return;
+ const x=lastRead,rarity=group(byId.get(x.pickId)),ms=x.status==='already'?3800:(rarity==='5'||rarity==='special'?8000:rarity==='4'?6200:4800);
+ const session=autoReturnSeq,deadline=Date.now()+ms;
+ const message=$('scanAutoRemaining'),container=$('scanAutoReturn');if(container)container.hidden=false;
+ const tick=()=>{if(view!=='encounter'||autoReturnSeq!==session)return;const seconds=Math.max(0,Math.ceil((deadline-Date.now())/1000));if(message)message.textContent=`${seconds}秒後にカメラへ戻ります（1件ずつ読み取り）`};
+ tick();autoReturnInterval=setInterval(tick,250);
+ autoReturnTimer=setTimeout(()=>{
+  if(view!=='encounter'||autoReturnSeq!==session||document.hidden||p().pendingReward||lastRead?.barcode!==x.barcode)return;
+  cancelAutoReturn();nav('scan');startScan();
+ },ms);
+}
+
 function scanMessage(message){scanStatus=message;const e=$('scanState');if(e)e.textContent=message}
 function showCodeError(message){const e=$('testCodeError');if(e){e.textContent=message;e.hidden=!message}if(!e)scanMessage(message)}
-function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">この画面を開くとカメラが自動起動します。初回のみブラウザの使用許可が必要です。HTTPS接続が必要です。このVer08の共通台帳はブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button class="secondary" data-action="camera" id="cameraRetry" hidden>📷 カメラを再試行</button><button class="secondary" data-action="stopcamera" id="cameraStop">カメラ停止</button></div></section>`}
+function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">枠内にはバーコードを1つずつ。読み取った後はピック出現を表示します。カメラ利用にはHTTPSと許可が必要です。共通台帳はこのブラウザ内の試験用データです。</div>
+ <div class="scan-mode-bar"><button type="button" class="${continuousScan?'green':'secondary'}" data-action="continuous-toggle" id="continuousToggle" aria-pressed="${continuousScan}">📷 連続スキャン ${continuousScan?'ON':'OFF'}</button><span class="sub">ON：ピック出現を表示したあと、数秒で次の読み取りに戻ります。重複選択中は自動で進みません。</span></div>
+ <div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"><span>バーコードを1つ、中央に</span></div></div>
+ <p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p>
+ <p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p>
+ <p class="scan-help" id="scanHelp">読みにくいとき：少し離す・明るい場所に移動・傾きを変える・反射を避ける</p>
+ <div class="button-row"><button class="secondary" data-action="camera" id="cameraRetry" hidden>📷 カメラを再試行</button><button class="secondary" data-action="stopcamera" id="cameraStop">カメラ停止</button></div></section>`}
 function cameraControls(retry){const retryButton=$('cameraRetry'),stopButton=$('cameraStop');if(retryButton)retryButton.hidden=!retry;if(stopButton)stopButton.hidden=retry}
 async function startScan(){
  if(!navigator.onLine){scanMessage('通信がありません。');cameraControls(true);return}
  if(!isSecureContext){scanMessage('HTTPSで開いてください。');cameraControls(true);return}
  if(!navigator.mediaDevices?.getUserMedia){scanMessage('このブラウザではカメラを利用できません。');cameraControls(true);return}
  if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');cameraControls(true);return}
- stopScan();cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
+ stopScan();scanStartedAt=Date.now();scanHintStage=0;cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
   if(epoch!==scanEpoch||view!=='scan'){stream.getTracks().forEach(t=>t.stop());return}
@@ -500,7 +546,8 @@ async function startScan(){
   scanNative=null;if('BarcodeDetector' in window){try{scanNative=new BarcodeDetector({formats:['ean_13','ean_8','upc_a']})}catch{scanNative=null}}
   scanPhase=0;scanBusy=false;showScan=true;
   const track=stream.getVideoTracks()[0],settings=track?.getSettings?.()||{};
-  const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ 読取：全画面・中央拡大・階調補正を交互に検証`;
+  try{const caps=track?.getCapabilities?.()||{};if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))await track.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch{/* Some iPhone/PC drivers do not support autofocus configuration. */}
+  const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ 読取：全画面・中央拡大・濃淡補正を切替`;
   scanMessage('バーコードを中央の枠内に、水平に写してください。');scanLoop()
  }catch(e){if(epoch===scanEpoch&&view==='scan'){scanMessage('カメラ起動に失敗：'+(e.name||e.message)+'。許可設定を確認して再試行してください。');cameraControls(true)}}
 }
@@ -510,38 +557,66 @@ function stopScan(){
  if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}
  const v=$('video');if(v)v.srcObject=null
 }
+function bestCode(found,width,height){
+ const choices=[];
+ for(const result of found||[]){const code=normalize(result.rawValue||result.text);if(!code)continue;
+  const box=result.boundingBox||result.position?.boundingBox||null;
+  let score=0;
+  if(box){const mx=Number(box.x)+Number(box.width||0)/2,my=Number(box.y)+Number(box.height||0)/2;
+   if(Number.isFinite(mx)&&Number.isFinite(my))score=-(Math.pow(mx-width/2,2)/Math.max(width*width,1)+Math.pow(my-height/2,2)/Math.max(height*height,1));
+  }
+  choices.push({code,score});
+ }
+ choices.sort((a,b)=>b.score-a.score);
+ return choices[0]?.code||null;
+}
 async function scanLoop(){
  if(!showScan||scanBusy)return;
  const epoch=scanEpoch;scanBusy=true;
  try{
-  const v=$('video');if(!v||!v.videoWidth){return}
+  const v=$('video');if(!v||!v.videoWidth)return;
   let code=null;
-  if(scanNative){try{for(const x of await scanNative.detect(v)||[]){code=normalize(x.rawValue);if(code)break}}catch(e){scanNative=null}}
-  if(!code&&window.ZXingWASM?.readBarcodes){
-   const c=$('scanCanvas');const ctx=c?.getContext('2d',{willReadFrequently:true});
+  // Native detector is fast on phones; choose the nearest code to the picture centre when several are visible.
+  if(scanNative){try{code=bestCode(await scanNative.detect(v),v.videoWidth,v.videoHeight)}catch{scanNative=null}}
+  if(!code){
+   const c=$('scanCanvas'),ctx=c?.getContext('2d',{willReadFrequently:true});
    if(ctx){
-    const w=v.videoWidth,h=v.videoHeight,phase=scanPhase++%3;
-    // Frame 0: high-resolution full frame; frame 1/2: native-resolution center crop.
-    // The crop magnifies narrow bars instead of shrinking the entire PC camera frame to 850 px.
-    const crop=phase!==0,sx=crop?Math.round(w*.10):0,sy=crop?Math.round(h*.20):0,sw=crop?Math.round(w*.80):w,sh=crop?Math.round(h*.60):h;
-    const scale=Math.min(1,1800/Math.max(sw,sh));c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));
+    const w=v.videoWidth,h=v.videoHeight,phase=scanPhase++%5;
+    const crop=[null,[.10,.18,.80,.64],[.17,.28,.66,.44],null,[.05,.32,.90,.36]][phase];
+    const sx=crop?Math.round(w*crop[0]):0,sy=crop?Math.round(h*crop[1]):0,sw=crop?Math.max(1,Math.round(w*crop[2])):w,sh=crop?Math.max(1,Math.round(h*crop[3])):h;
+    const scale=Math.min(1,2100/Math.max(sw,sh));c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));
     ctx.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);
-    const data=ctx.getImageData(0,0,c.width,c.height);
-    if(phase===2){ // Higher local contrast helps thin black/white bars on some webcams.
-     const a=data.data;for(let i=0;i<a.length;i+=4){const gray=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;const boosted=Math.max(0,Math.min(255,Math.round((gray-128)*1.8+128)));a[i]=a[i+1]=a[i+2]=boosted}
+    // Some browsers can decode a crop directly without the WASM fallback.
+    if(scanNative&&(phase===1||phase===2)){
+     try{code=bestCode(await scanNative.detect(c),c.width,c.height)}catch{/* Keep other readers available. */}
     }
-    const found=await window.ZXingWASM.readBarcodes(data,{formats:['EAN13','EAN8','UPCA'],tryHarder:true,maxNumberOfSymbols:3});
-    for(const x of found||[]){code=normalize(x.text||x.rawValue);if(code)break}
+    if(!code&&window.ZXingWASM?.readBarcodes){
+     const data=ctx.getImageData(0,0,c.width,c.height);
+     if(phase===2||phase===3||phase===4){
+      const a=data.data,contrast=phase===4?1.95:phase===3?1.35:1.65;
+      for(let i=0;i<a.length;i+=4){const gray=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;
+       const boosted=Math.max(0,Math.min(255,Math.round((gray-128)*contrast+128)));a[i]=a[i+1]=a[i+2]=boosted}
+     }
+     const found=await window.ZXingWASM.readBarcodes(data,{formats:['EAN13','EAN8','UPCA'],tryHarder:true,maxNumberOfSymbols:3});
+     code=bestCode(found,c.width,c.height);
+    }
    }
   }
   if(epoch!==scanEpoch||!showScan)return;
-  if(code){stopScan();registerBarcode(code);return}
+  if(code){
+   if(code===lastCameraCode){if(!lastCameraRepeatWarn){scanMessage('同じ商品のバーコードが映っています。次の商品に替えてください。');lastCameraRepeatWarn=true}}
+   else{lastCameraCode=code;lastCameraRepeatWarn=false;stopScan();registerBarcode(code);return}
+  }
+  const elapsed=Date.now()-scanStartedAt;
+  if(elapsed>11000&&scanHintStage<2){scanHintStage=2;scanMessage('まだ読めません。印字の線が枠内で大きく見える距離へ調整し、バーコードを少し傾けてください。')}
+  else if(elapsed>5000&&scanHintStage<1){scanHintStage=1;scanMessage('読取中です。画面が鮮明でも、商品を少し離す・回す・反射を避けると認識できる場合があります。')}
  }catch(e){if(epoch===scanEpoch&&showScan)scanMessage('認識処理中：'+(e.message||e))}
  finally{
   scanBusy=false;
-  if(epoch===scanEpoch&&showScan)scanTimer=setTimeout(scanLoop,180)
+  if(epoch===scanEpoch&&showScan)scanTimer=setTimeout(scanLoop,190)
  }
 }
+
 function addDirectPick(id,source){
  const r=byId.get(id);if(!r)return null;
  const owned=p().owned[id]||(p().owned[id]={count:0,firstAt:stamp()});const wasOwned=owned.count>0;owned.count++;owned.lastAt=stamp();if(wasOwned)cue('boost',group(r));
@@ -573,7 +648,7 @@ function claimPage(){
  const q=p().pendingReward,r=byId.get(q?.pickId);
  if(!q||!r)return `${topNav('獲得処理')}<section class="panel">保存済みの抽選情報がありません。</section>`;
  const max=isMax(r.master_id);
- return `${topNav('ピックの重複を確認')}<section class="panel reward-panel"><h2>${esc(claimTitle(q))}</h2><p class="sub">結果は保存済みです。画面を閉じても同じ結果から続けられます。</p>${q.source==='barcode'?barcodeHead3Display(q.barcode,'hero'):''}<div class="picture" style="height:210px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p>所持${number(p().owned[r.master_id]?.count)}枚 ／ ${max?'MAX ×2.197':`強化×${boostMultiplier(r.master_id).toFixed(3)}`}</p><p class="sub">再抽選は1回のみ・元の分類以上を保証（スペシャルはスペシャルのみ）。</p><div class="button-row">${!max?'<button data-action="claim-boost">重複強化</button>':`<button data-action="claim-ticket">${esc(ticketName(group(r)))}を受け取る</button>`}<button class="secondary" data-action="claim-reroll">別ピックを1回再抽選</button></div></section>`;
+ return `${topNav('ピックの重複を確認')}<section class="panel reward-panel"><h2>${esc(claimTitle(q))}</h2><p class="sub">結果は保存済みです。画面を閉じても同じ結果から続けられます。</p>${q.source==='barcode'?barcodeHead3Display(q.barcode,'hero'):''}<div class="encounter-rarity-banner rarity-${group(r)}"><small>レア度</small><strong>${group(r)==='special'?'スペシャル':'★'+group(r)}</strong><span>所持済みピック</span></div><div class="picture" style="height:210px">${pic(r)}</div><h2>${esc(r.name_ja)}</h2><p>所持${number(p().owned[r.master_id]?.count)}枚 ／ ${max?'MAX ×2.197':`強化×${boostMultiplier(r.master_id).toFixed(3)}`}</p><p class="sub">再抽選は1回のみ・元の分類以上を保証（スペシャルはスペシャルのみ）。</p><div class="button-row">${!max?'<button data-action="claim-boost">重複強化</button>':`<button data-action="claim-ticket">${esc(ticketName(group(r)))}を受け取る</button>`}<button class="secondary" data-action="claim-reroll">別ピックを1回再抽選</button></div></section>`;
 }
 function finishClaim(q,id,kind){
  const r=byId.get(id);if(!r){alert('マスターに対象ピックがありません。');return}
@@ -770,8 +845,12 @@ function render(){
 }
 function onAction(e){
  const button=e.target.closest('[data-action]');if(!button)return;wakeSound();const act=button.dataset.action,id=button.dataset.id,code=button.dataset.code;
+ if(view==='encounter'&&!['continuous-pause','encounter-skip'].includes(act))cancelAutoReturn();
  switch(act){
- case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':nav('scan');startScan();break;case 'settings':nav('settings');break;
+ case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':if(view!=='encounter')lastCameraCode=null;nav('scan');startScan();break;case 'settings':nav('settings');break;
+ case 'continuous-toggle':{continuousScan=!continuousScan;putJSON(CONTINUOUS_KEY,continuousScan);const button=$('continuousToggle');if(button){button.textContent='📷 連続スキャン '+(continuousScan?'ON':'OFF');button.classList.toggle('green',continuousScan);button.classList.toggle('secondary',!continuousScan);button.setAttribute('aria-pressed',String(continuousScan))}break}
+ case 'continuous-pause':{cancelAutoReturn();const e=$('scanAutoReturn');if(e)e.innerHTML='<span>自動再開は停止しました。［次のバーコード］から再開できます。</span>';break}
+ case 'encounter-skip':{const e=button.closest('.encounter-v20');if(e)e.classList.add('is-skipped');break}
  case 'camera':startScan();break;case 'stopcamera':stopScan();scanMessage('カメラ停止中です。再開するには「カメラを再試行」を押してください。');cameraControls(true);break;
  case 'starter-set':chooseStarterSet(id);break;
  case 'choose':choose(code);break;case 'retry':if(code&&p().reads[code]?.status==='pending')choose(code);else nav('pending');break;
@@ -820,7 +899,7 @@ app.addEventListener('change',e=>{
 $('homeTop').addEventListener('click',()=>nav('home'));
 $('soundQuickToggle')?.addEventListener('click',()=>{soundPrefs.enabled=!soundPrefs.enabled;rememberSound();updateSoundLevels();if(soundPrefs.enabled){wakeSound();cue('start')}else if(musicTimer){clearInterval(musicTimer);musicTimer=null}updateSoundControls()});
 $('whitePcToggle')?.addEventListener('click',()=>{displayMode=displayMode==='white'?'auto':'white';putJSON(DISPLAY_KEY,displayMode);applyDisplayMode()});
-window.addEventListener('popstate',event=>{stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render();if(view==='scan'){scanMessage('ブラウザの戻る操作で開きました。「カメラを再試行」を押してください。');cameraControls(true)}});
+window.addEventListener('popstate',event=>{cancelAutoReturn();stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render();if(view==='scan'){scanMessage('ブラウザの戻る操作で開きました。「カメラを再試行」を押してください。');cameraControls(true)}});
 window.addEventListener('pagehide',()=>{stopScan();if(musicTimer){clearInterval(musicTimer);musicTimer=null}});
 window.addEventListener('offline',()=>{if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;if(view==='battle'){battleError='通信が切断されました。戦闘は保存済みです。';render()}});
 window.addEventListener('online',()=>{if(view==='battle'){battleError='通信が回復しました。途中から再開できます。';render()}});
@@ -841,7 +920,7 @@ if(p().gachaReveal){
   }else{view='reward';lastRead=p().lastReward}
  }else view=p().pendingReward?'claim':'reward';
 }
-window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha,canEnterByGrade,battleBlockReason}});
+window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha,canEnterByGrade,battleBlockReason,bestCode,encounter,scheduleAutoReturn}});
 render();
 if(p().gachaReveal)showGachaReveal();
 })();
@@ -854,3 +933,5 @@ if(p().gachaReveal)showGachaReveal();
 /* Updated: 2026-11-15 19:45 JST / Ver18 */
 
 /* Updated: 2026-11-15 19:54 JST / Ver19 */
+
+/* Updated: 2026-11-15 20:31 JST / Ver20 */
