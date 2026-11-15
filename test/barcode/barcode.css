@@ -76,4 +76,6 @@
 /* Updated: 2026-11-15 12:53 JST / Ver06 */
 
 .ticket-row{padding:8px 0;border-bottom:1px solid #e1ebf0;gap:8px}.ticket-row button{flex-shrink:0}
-/* Updated: 2026-11-15 16:00 JST / Ver07 */
+/* Camera retry is hidden unless the initial request fails or the user stops scanning. */
+[hidden]{display:none !important}
+/* Updated: 2026-11-15 16:26 JST / Ver08 */

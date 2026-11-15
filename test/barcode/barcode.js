@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 0.7 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 0.8 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='Ver0.7';
+const VERSION='0.8';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -306,13 +306,14 @@ function normalize(value){const code=String(value||'').replace(/\s/g,'');if(!/^\
 function encounter(){const x=lastRead,r=byId.get(x?.pickId);if(!r)return home();const owned=p().owned[r.master_id],isNew=x.status==='new',read=p().reads[x.barcode];return `${topNav('バーコード読み取り結果')}<section class="panel" style="text-align:center"><p class="${x.status==='already'?'warn':'safe'}">${x.status==='already'?'このバーコードは読み取り済み':isNew?'新しいピックが出現！':'所持済みピックが出現！'}</p><div class="picture" style="height:230px">${pic(r)}</div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">コード：${esc(x.barcode)} ／ ${esc(r.series)}</p>${read?.originalPickId&&read.originalPickId!==read.pickId?`<p class="sub">元の出現：${esc(byId.get(read.originalPickId)?.name_ja||'?')} ／ 再抽選後：${esc(byId.get(read.pickId)?.name_ja||'?')}</p>`:''}${owned?`<p>累計${owned.count}枚・強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}</p>`:read?.status==='ticket'?'<p>このバーコードでは保証ガチャ券を獲得済みです。</p>':'<p>出現中一覧に登録しました。勝利すればゲット！</p>'}<div class="button-row">${read?.status==='pending'?`<button data-action="choose" data-code="${esc(x.barcode)}">今すぐバトル</button>`:`<button data-action="detail" data-id="${esc(r.master_id)}">ピック詳細</button>`}<button class="secondary" data-action="scan">次のバーコード</button><button class="secondary" data-action="home">あとで</button></div></section>`}
 function scanMessage(message){scanStatus=message;const e=$('scanState');if(e)e.textContent=message}
 function showCodeError(message){const e=$('testCodeError');if(e){e.textContent=message;e.hidden=!message}if(!e)scanMessage(message)}
-function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">カメラ読み取り限定です。HTTPSとカメラ許可が必要です。このVer07の共通台帳はまだブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを起動してください。')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button data-action="camera">📷 カメラを起動</button><button class="secondary" data-action="stopcamera">カメラ停止</button></div></section>`}
+function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">この画面を開くとカメラが自動起動します。初回のみブラウザの使用許可が必要です。HTTPS接続が必要です。このVer08の共通台帳はブラウザ内のテストデータです。</div><div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"></div></div><p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p><p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p><div class="button-row"><button class="secondary" data-action="camera" id="cameraRetry" hidden>📷 カメラを再試行</button><button class="secondary" data-action="stopcamera" id="cameraStop">カメラ停止</button></div></section>`}
+function cameraControls(retry){const retryButton=$('cameraRetry'),stopButton=$('cameraStop');if(retryButton)retryButton.hidden=!retry;if(stopButton)stopButton.hidden=retry}
 async function startScan(){
- if(!navigator.onLine){scanMessage('通信がありません。');return}
- if(!isSecureContext){scanMessage('HTTPSで開いてください。');return}
- if(!navigator.mediaDevices?.getUserMedia){scanMessage('このブラウザではカメラを利用できません。');return}
- if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');return}
- stopScan();const epoch=scanEpoch;
+ if(!navigator.onLine){scanMessage('通信がありません。');cameraControls(true);return}
+ if(!isSecureContext){scanMessage('HTTPSで開いてください。');cameraControls(true);return}
+ if(!navigator.mediaDevices?.getUserMedia){scanMessage('このブラウザではカメラを利用できません。');cameraControls(true);return}
+ if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');cameraControls(true);return}
+ stopScan();cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
   if(epoch!==scanEpoch||view!=='scan'){stream.getTracks().forEach(t=>t.stop());return}
@@ -323,7 +324,7 @@ async function startScan(){
   const track=stream.getVideoTracks()[0],settings=track?.getSettings?.()||{};
   const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ 読取：全画面・中央拡大・階調補正を交互に検証`;
   scanMessage('バーコードを中央の枠内に、水平に写してください。');scanLoop()
- }catch(e){scanMessage('カメラ起動に失敗：'+(e.name||e.message))}
+ }catch(e){if(epoch===scanEpoch&&view==='scan'){scanMessage('カメラ起動に失敗：'+(e.name||e.message)+'。許可設定を確認して再試行してください。');cameraControls(true)}}
 }
 function stopScan(){
  scanEpoch++;showScan=false;
@@ -511,8 +512,8 @@ function render(){
 function onAction(e){
  const button=e.target.closest('[data-action]');if(!button)return;const act=button.dataset.action,id=button.dataset.id,code=button.dataset.code;
  switch(act){
- case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':nav('scan');break;case 'settings':nav('settings');break;
- case 'camera':startScan();break;case 'stopcamera':stopScan();scanMessage('カメラ停止中です。');break;
+ case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':nav('scan');startScan();break;case 'settings':nav('settings');break;
+ case 'camera':startScan();break;case 'stopcamera':stopScan();scanMessage('カメラ停止中です。再開するには「カメラを再試行」を押してください。');cameraControls(true);break;
  case 'starter-set':chooseStarterSet(id);break;
  case 'choose':choose(code);break;case 'retry':if(code&&p().reads[code]?.status==='pending')choose(code);else nav('pending');break;
  case 'start-battle':startBattle(code,id);break;
@@ -553,7 +554,7 @@ app.addEventListener('change',e=>{
  if(e.target.id==='profileSel'){if(p().battle)alert('戦闘途中のプレイヤーでも切替できますが、元に戻して再開してください。');state.profile=e.target.value;save();nav('home')}
 });
 $('homeTop').addEventListener('click',()=>nav('home'));
-window.addEventListener('popstate',event=>{stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render()});
+window.addEventListener('popstate',event=>{stopScan();if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;view=event.state?.frendaBarcode&&['home','pending','owned','dex','history','settings','scan'].includes(event.state.view)?event.state.view:'home';filter='';filterOpen=false;render();if(view==='scan'){scanMessage('ブラウザの戻る操作で開きました。「カメラを再試行」を押してください。');cameraControls(true)}});
 window.addEventListener('pagehide',stopScan);
 window.addEventListener('offline',()=>{if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoRunning=false;battleEpoch++;battleBusy=false;if(view==='battle'){battleError='通信が切断されました。戦闘は保存済みです。';render()}});
 window.addEventListener('online',()=>{if(view==='battle'){battleError='通信が回復しました。途中から再開できます。';render()}});
@@ -566,4 +567,4 @@ save();
 window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha}});
 render();
 })();
-/* Updated: 2026-11-15 16:00 JST / Ver07 */
+/* Updated: 2026-11-15 16:26 JST / Ver08 */
