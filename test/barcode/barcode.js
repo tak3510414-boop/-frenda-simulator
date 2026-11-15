@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 20 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 21 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='20';
+const VERSION='21';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -61,8 +61,7 @@ for(const x of ['A','B','C']){
 }
 let displayMode=getJSON(DISPLAY_KEY,'auto')==='white'?'white':'auto';
 let view='home',filter='',sort='series',lastRead=null,showScan=false,scanStream=null,scanTimer=null,scanBusy=false,scanNative=null,autoTimer=null,autoSpeed=Math.min(5,Math.max(1,Number(getJSON(SPEED_KEY,1))||1)),autoRunning=false,battleBusy=false,battleEpoch=0,audio=getJSON(AUDIO_KEY,true),battleError='';
-let lastCameraCode=null,lastCameraRepeatWarn=false;
-let continuousScan=getJSON(CONTINUOUS_KEY,true)!==false,scanStartedAt=0,scanHintStage=0,autoReturnTimer=null,autoReturnInterval=null,autoReturnSeq=0;
+let continuousScan=getJSON(CONTINUOUS_KEY,true)!==false,autoReturnTimer=null,autoReturnInterval=null,autoReturnSeq=0;
 let filterSet={series:'all',grade:'all',type:'all',status:'all'},filterOpen=false,cardSize='medium',dexLimit=70,searchComposing=false,scanEpoch=0,scanPhase=0,scanStatus='',detailId=null,historyCode=null;
 const p=()=>state.profiles[state.profile];
 // White PC mode is a local presentation preference; it does not change save data or battle logic.
@@ -537,7 +536,7 @@ async function startScan(){
  if(!isSecureContext){scanMessage('HTTPSで開いてください。');cameraControls(true);return}
  if(!navigator.mediaDevices?.getUserMedia){scanMessage('このブラウザではカメラを利用できません。');cameraControls(true);return}
  if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');cameraControls(true);return}
- stopScan();scanStartedAt=Date.now();scanHintStage=0;cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
+ stopScan();cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
   if(epoch!==scanEpoch||view!=='scan'){stream.getTracks().forEach(t=>t.stop());return}
@@ -546,8 +545,7 @@ async function startScan(){
   scanNative=null;if('BarcodeDetector' in window){try{scanNative=new BarcodeDetector({formats:['ean_13','ean_8','upc_a']})}catch{scanNative=null}}
   scanPhase=0;scanBusy=false;showScan=true;
   const track=stream.getVideoTracks()[0],settings=track?.getSettings?.()||{};
-  try{const caps=track?.getCapabilities?.()||{};if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))await track.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch{/* Some iPhone/PC drivers do not support autofocus configuration. */}
-  const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ 読取：全画面・中央拡大・濃淡補正を切替`;
+  const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ 読取：安定版（Ver19方式）`;
   scanMessage('バーコードを中央の枠内に、水平に写してください。');scanLoop()
  }catch(e){if(epoch===scanEpoch&&view==='scan'){scanMessage('カメラ起動に失敗：'+(e.name||e.message)+'。許可設定を確認して再試行してください。');cameraControls(true)}}
 }
@@ -557,66 +555,38 @@ function stopScan(){
  if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}
  const v=$('video');if(v)v.srcObject=null
 }
-function bestCode(found,width,height){
- const choices=[];
- for(const result of found||[]){const code=normalize(result.rawValue||result.text);if(!code)continue;
-  const box=result.boundingBox||result.position?.boundingBox||null;
-  let score=0;
-  if(box){const mx=Number(box.x)+Number(box.width||0)/2,my=Number(box.y)+Number(box.height||0)/2;
-   if(Number.isFinite(mx)&&Number.isFinite(my))score=-(Math.pow(mx-width/2,2)/Math.max(width*width,1)+Math.pow(my-height/2,2)/Math.max(height*height,1));
-  }
-  choices.push({code,score});
- }
- choices.sort((a,b)=>b.score-a.score);
- return choices[0]?.code||null;
-}
 async function scanLoop(){
  if(!showScan||scanBusy)return;
  const epoch=scanEpoch;scanBusy=true;
  try{
-  const v=$('video');if(!v||!v.videoWidth)return;
+  const v=$('video');if(!v||!v.videoWidth){return}
   let code=null;
-  // Native detector is fast on phones; choose the nearest code to the picture centre when several are visible.
-  if(scanNative){try{code=bestCode(await scanNative.detect(v),v.videoWidth,v.videoHeight)}catch{scanNative=null}}
-  if(!code){
-   const c=$('scanCanvas'),ctx=c?.getContext('2d',{willReadFrequently:true});
+  if(scanNative){try{for(const x of await scanNative.detect(v)||[]){code=normalize(x.rawValue);if(code)break}}catch(e){scanNative=null}}
+  if(!code&&window.ZXingWASM?.readBarcodes){
+   const c=$('scanCanvas');const ctx=c?.getContext('2d',{willReadFrequently:true});
    if(ctx){
-    const w=v.videoWidth,h=v.videoHeight,phase=scanPhase++%5;
-    const crop=[null,[.10,.18,.80,.64],[.17,.28,.66,.44],null,[.05,.32,.90,.36]][phase];
-    const sx=crop?Math.round(w*crop[0]):0,sy=crop?Math.round(h*crop[1]):0,sw=crop?Math.max(1,Math.round(w*crop[2])):w,sh=crop?Math.max(1,Math.round(h*crop[3])):h;
-    const scale=Math.min(1,2100/Math.max(sw,sh));c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));
+    const w=v.videoWidth,h=v.videoHeight,phase=scanPhase++%3;
+    // Frame 0: high-resolution full frame; frame 1/2: native-resolution center crop.
+    // The crop magnifies narrow bars instead of shrinking the entire PC camera frame to 850 px.
+    const crop=phase!==0,sx=crop?Math.round(w*.10):0,sy=crop?Math.round(h*.20):0,sw=crop?Math.round(w*.80):w,sh=crop?Math.round(h*.60):h;
+    const scale=Math.min(1,1800/Math.max(sw,sh));c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));
     ctx.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);
-    // Some browsers can decode a crop directly without the WASM fallback.
-    if(scanNative&&(phase===1||phase===2)){
-     try{code=bestCode(await scanNative.detect(c),c.width,c.height)}catch{/* Keep other readers available. */}
+    const data=ctx.getImageData(0,0,c.width,c.height);
+    if(phase===2){ // Higher local contrast helps thin black/white bars on some webcams.
+     const a=data.data;for(let i=0;i<a.length;i+=4){const gray=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;const boosted=Math.max(0,Math.min(255,Math.round((gray-128)*1.8+128)));a[i]=a[i+1]=a[i+2]=boosted}
     }
-    if(!code&&window.ZXingWASM?.readBarcodes){
-     const data=ctx.getImageData(0,0,c.width,c.height);
-     if(phase===2||phase===3||phase===4){
-      const a=data.data,contrast=phase===4?1.95:phase===3?1.35:1.65;
-      for(let i=0;i<a.length;i+=4){const gray=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;
-       const boosted=Math.max(0,Math.min(255,Math.round((gray-128)*contrast+128)));a[i]=a[i+1]=a[i+2]=boosted}
-     }
-     const found=await window.ZXingWASM.readBarcodes(data,{formats:['EAN13','EAN8','UPCA'],tryHarder:true,maxNumberOfSymbols:3});
-     code=bestCode(found,c.width,c.height);
-    }
+    const found=await window.ZXingWASM.readBarcodes(data,{formats:['EAN13','EAN8','UPCA'],tryHarder:true,maxNumberOfSymbols:3});
+    for(const x of found||[]){code=normalize(x.text||x.rawValue);if(code)break}
    }
   }
   if(epoch!==scanEpoch||!showScan)return;
-  if(code){
-   if(code===lastCameraCode){if(!lastCameraRepeatWarn){scanMessage('同じ商品のバーコードが映っています。次の商品に替えてください。');lastCameraRepeatWarn=true}}
-   else{lastCameraCode=code;lastCameraRepeatWarn=false;stopScan();registerBarcode(code);return}
-  }
-  const elapsed=Date.now()-scanStartedAt;
-  if(elapsed>11000&&scanHintStage<2){scanHintStage=2;scanMessage('まだ読めません。印字の線が枠内で大きく見える距離へ調整し、バーコードを少し傾けてください。')}
-  else if(elapsed>5000&&scanHintStage<1){scanHintStage=1;scanMessage('読取中です。画面が鮮明でも、商品を少し離す・回す・反射を避けると認識できる場合があります。')}
+  if(code){stopScan();registerBarcode(code);return}
  }catch(e){if(epoch===scanEpoch&&showScan)scanMessage('認識処理中：'+(e.message||e))}
  finally{
   scanBusy=false;
-  if(epoch===scanEpoch&&showScan)scanTimer=setTimeout(scanLoop,190)
+  if(epoch===scanEpoch&&showScan)scanTimer=setTimeout(scanLoop,180)
  }
 }
-
 function addDirectPick(id,source){
  const r=byId.get(id);if(!r)return null;
  const owned=p().owned[id]||(p().owned[id]={count:0,firstAt:stamp()});const wasOwned=owned.count>0;owned.count++;owned.lastAt=stamp();if(wasOwned)cue('boost',group(r));
@@ -847,7 +817,7 @@ function onAction(e){
  const button=e.target.closest('[data-action]');if(!button)return;wakeSound();const act=button.dataset.action,id=button.dataset.id,code=button.dataset.code;
  if(view==='encounter'&&!['continuous-pause','encounter-skip'].includes(act))cancelAutoReturn();
  switch(act){
- case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':if(view!=='encounter')lastCameraCode=null;nav('scan');startScan();break;case 'settings':nav('settings');break;
+ case 'home':nav('home');break;case 'daily':nav('daily');break;case 'gift':nav('gift');break;case 'pending':nav('pending');break;case 'owned':nav('owned');break;case 'dex':nav('dex');break;case 'history':nav('history');break;case 'scan':nav('scan');startScan();break;case 'settings':nav('settings');break;
  case 'continuous-toggle':{continuousScan=!continuousScan;putJSON(CONTINUOUS_KEY,continuousScan);const button=$('continuousToggle');if(button){button.textContent='📷 連続スキャン '+(continuousScan?'ON':'OFF');button.classList.toggle('green',continuousScan);button.classList.toggle('secondary',!continuousScan);button.setAttribute('aria-pressed',String(continuousScan))}break}
  case 'continuous-pause':{cancelAutoReturn();const e=$('scanAutoReturn');if(e)e.innerHTML='<span>自動再開は停止しました。［次のバーコード］から再開できます。</span>';break}
  case 'encounter-skip':{const e=button.closest('.encounter-v20');if(e)e.classList.add('is-skipped');break}
@@ -920,7 +890,7 @@ if(p().gachaReveal){
   }else{view='reward';lastRead=p().lastReward}
  }else view=p().pendingReward?'claim':'reward';
 }
-window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha,canEnterByGrade,battleBlockReason,bestCode,encounter,scheduleAutoReturn}});
+window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha,canEnterByGrade,battleBlockReason,encounter,scheduleAutoReturn}});
 render();
 if(p().gachaReveal)showGachaReveal();
 })();
@@ -935,3 +905,5 @@ if(p().gachaReveal)showGachaReveal();
 /* Updated: 2026-11-15 19:54 JST / Ver19 */
 
 /* Updated: 2026-11-15 20:31 JST / Ver20 */
+
+/* Updated: 2026-11-15 20:52 JST / Ver21 - scanner rollback to Ver19 proven logic; keep Ver20 animations */
