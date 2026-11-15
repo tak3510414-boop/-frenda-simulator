@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 15 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 17 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='15';
+const VERSION='17';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -202,10 +202,37 @@ function detail(id){
  return `${topNav('ピック詳細')}<section class="panel detail-sheet"><div class="detail-hero"><div class="picture detail-pic">${pic(r,owned?'normal':found?'silhouette':'none')}</div><div><h2>${grade(r)} ${esc(r.name_ja)}</h2><p class="sub">${esc(r.series)} ／ ${esc(r.pick_no||r.master_id)}</p><p>${owned?`累計${owned.count}枚 ／ 強化×${battleRecord(r)._mult.toFixed(2)}${owned.count>=4?' MAX':''}`:found?'発見済み・未入手':'未発見'}</p>${owned?`<p class="stamina">本日 残り${usedLeft(r.master_id)}/3回</p>`:''}</div></div>${found?stats(r):''}${pend.length?`<p><button data-action="choose" data-code="${esc(pend[0][0])}">このピックに挑戦</button></p>`:''}</section>`
 }
 function historyDetail(code){const x=p().reads[code],r=byId.get(x?.pickId);return `${topNav('読取履歴詳細')}<section class="panel"><h2>${esc(r?.name_ja||'不明')}</h2>${barcodeHead3Display(code,'detail')}<p>初回読取：${esc(x?.scannedAt)}</p><p>状態：${x?.status==='owned'?'入手済み':x?.status==='ticket'?'保証券に交換済み':x?.status==='decision'?'選択待ち':'出現中'}</p><p>元のピック：${esc(byId.get(x?.originalPickId)?.name_ja||r?.name_ja||'不明')}</p><p>勝利・取得：${esc(x?.captureAt||'未取得')}</p><p>挑戦回数：${number(x?.attempts)}</p>${x?.status==='pending'?`<button data-action="choose" data-code="${esc(code)}">バトル</button>`:`<button data-action="detail" data-id="${esc(x?.pickId)}">ピック詳細</button>`}</section>`}
+// Ver17: compare only defined star ranks ★2–★5. Special rank battle policy is pending;
+// until confirmed, retain the previous unrestricted behavior whenever either pick is Special.
+function canEnterByGrade(enemy,ally){
+ const e=group(enemy),a=group(ally);
+ if(e==='special'||a==='special')return true;
+ return Number(a)<=Number(e);
+}
+function battleBlockReason(ally,enemy){
+ if(!battleOK(ally))return 'バトル能力値が不足しています';
+ if(!canEnterByGrade(enemy,ally))return '敵よりレア度が高いため出撃できません';
+ if(usedLeft(ally.master_id)<1)return '本日の出撃回数が0回です';
+ return '';
+}
 function estimate(m,e){const a=battleRecord(m),b=e;return (number(a.hp)||0)+(number(a.atk)+number(a.sp_atk))*1.5+(number(a.def)+number(a.sp_def))*.5 + number(CORE.eff(a.move_type,b))*35}
 function choose(code){const enemy=byId.get(p().reads[code]?.pickId);if(!enemy||p().reads[code]?.status!=='pending'){nav('pending');return}if(p().battle){alert('中断中のバトルがあります。先に再開してください。');nav('battle');return}lastRead=code;view='choose';filter='';sort='grade';render()}
-function chooseScreen(){const code=lastRead,enemy=byId.get(p().reads[code]?.pickId);if(!enemy)return topNav('バトル準備')+`<section class="panel">出現中一覧から選んでください。</section>`;const rows=Object.keys(p().owned).map(id=>byId.get(id)).filter(Boolean);const active=rows.filter(r=>usedLeft(r.master_id)>0&&battleOK(r));active.sort((a,b)=>estimate(b,enemy)-estimate(a,enemy));return `${topNav('1対1 バトル準備')}<section class="panel"><div class="row"><div class="picture" style="width:140px;height:140px">${pic(enemy)}</div><div><h2>${grade(enemy)} ${esc(enemy.name_ja)}</h2><p class="sub">${esc(enemy.series)} ／ 敵は未強化</p><span class="chip wait">この戦闘は開始時に出撃1回消費</span></div></div>${stats(enemy,true)}${noStats(enemy)?'<p class="callout">マスターにバトル能力値が不足しています。この敵との戦闘はマスター補完後に可能になります。</p>':''}</section><section class="panel"><h2>おすすめの出撃ピック</h2><p class="sub">強化後能力・タイプ・出撃回数を基に並べています。推奨順はテスト用の簡易評価で、勝利保証ではありません。</p><div class="pick-grid">${active.slice(0,3).map(r=>fighterCard(r,code,true)).join('')}</div></section><section class="panel"><h2>すべての所持ピック</h2><div class="pick-grid">${active.map(r=>fighterCard(r,code,false)).join('')||'<p>出撃可能なピックがありません。日本時間の翌日0時に回復します。</p>'}</div></section>`}
-function fighterCard(r,code,recommended){return `<article class="pick-card"><div class="picture">${pic(r)}</div><b>${esc(r.name_ja)}</b><span class="sub">${grade(r)} 強化×${battleRecord(r)._mult.toFixed(2)}</span><span class="stamina">残り${usedLeft(r.master_id)}/3回</span><button data-action="start-battle" data-code="${esc(code)}" data-id="${esc(r.master_id)}">${recommended?'おすすめ：':''}出撃する</button></article>`}
+function chooseScreen(){
+ const code=lastRead,enemy=byId.get(p().reads[code]?.pickId);
+ if(!enemy)return topNav('バトル準備')+`<section class="panel">出現中一覧から選んでください。</section>`;
+ const rows=Object.keys(p().owned).map(id=>byId.get(id)).filter(Boolean);
+ const active=rows.filter(r=>!battleBlockReason(r,enemy));
+ active.sort((a,b)=>estimate(b,enemy)-estimate(a,enemy));
+ const inactive=rows.filter(r=>!!battleBlockReason(r,enemy));
+ inactive.sort((a,b)=>Number(group(a)==='special')-Number(group(b)==='special')||number(a.grade)-number(b.grade)||String(a.name_ja).localeCompare(String(b.name_ja),'ja'));
+ const eligibleCount=active.length;
+ const starNote=group(enemy)==='special'?'スペシャルの出撃条件は未確定です。現在は従来の判定を維持しています。':'★2～★5の敵には、敵と同じか低いレア度のピックだけ出撃できます。スペシャルを含む組み合わせは条件未確定のため従来どおりです。';
+ return `${topNav('1対1 バトル準備')}<section class="panel"><div class="row"><div class="picture" style="width:140px;height:140px">${pic(enemy)}</div><div><h2>${grade(enemy)} ${esc(enemy.name_ja)}</h2><p class="sub">${esc(enemy.series)} ／ 敵は未強化</p><span class="chip wait">この戦闘は開始時に出撃1回消費</span></div></div>${stats(enemy,true)}${noStats(enemy)?'<p class="callout">マスターにバトル能力値が不足しています。この敵との戦闘はマスター補完後に可能になります。</p>':''}<p class="sub" role="note">${starNote}</p></section><section class="panel"><h2>おすすめの出撃ピック</h2><p class="sub">出撃可能なピックの中から、強化後能力・タイプ相性・残り回数でおすすめします（勝利保証ではありません）。</p><div class="pick-grid">${active.slice(0,3).map(r=>fighterCard(r,code,true,enemy)).join('')||'<p class="callout">出撃可能なピックがありません。出現中リストに残るため、使用可能なピックが増えてから挑戦できます。</p>'}</div></section><section class="panel"><h2>すべての所持ピック</h2><p class="sub">出撃可能 ${eligibleCount} / ${rows.length}種類。選べないピックは灰色で理由を表示します。</p><div class="pick-grid">${[...active,...inactive].map(r=>fighterCard(r,code,false,enemy)).join('')||'<p>まだ所持ピックがありません。</p>'}</div></section>`;
+}
+function fighterCard(r,code,recommended,enemy){
+ const reason=battleBlockReason(r,enemy),disabled=!!reason;
+ return `<article class="pick-card fighter-pick-card ${disabled?'fighter-pick-card--disabled':''}"><div class="picture">${pic(r)}</div><b>${esc(r.name_ja)}</b><span class="sub">${grade(r)} 強化×${battleRecord(r)._mult.toFixed(2)}</span><span class="stamina">残り${usedLeft(r.master_id)}/3回</span>${reason?`<p class="fighter-restriction" role="note">${esc(reason)}</p>`:''}<button data-action="start-battle" data-code="${esc(code)}" data-id="${esc(r.master_id)}" ${disabled?'disabled aria-disabled="true"':''}>${recommended?'おすすめ：':''}${disabled?'出撃不可':'出撃する'}</button></article>`;
+}
 function battleRandom(b){
  // Battle-local deterministic PRNG, saved after every action to prevent reroll on reload.
  let x=(b.rng>>>0)||0x9e3779b9;x^=(x<<13);x^=(x>>>17);x^=(x<<5);b.rng=x>>>0;return (b.rng>>>0)/4294967296
@@ -216,6 +243,7 @@ function startBattle(code,id){
  const enemy=byId.get(p().reads[code]?.pickId),me=byId.get(id);
  if(!enemy||!me||p().reads[code].status!=='pending'||!p().owned[id]||usedLeft(id)<1){alert('開始条件を満たしていません。');nav('pending');return}
  if(!battleOK(enemy)||!battleOK(me)){alert('マスター能力値の未登録があるため、このテスト版では戦闘できません。');return}
+ if(!canEnterByGrade(enemy,me)){alert('敵よりレア度が高いため出撃できません。\n敵：'+grade(enemy)+' ／ 出撃ピック：'+grade(me));return}
  if(!confirm(`${me.name_ja}で${enemy.name_ja}に挑みますか？\nバトル開始時に出撃回数を1回消費します。`))return;
  const day=dateJST(),u=p().used[id];p().used[id]={date:day,count:(u?.date===day?number(u.count):0)+1};
  const ally=battleRecord(me),speedA=number(ally.speed_level),speedB=number(enemy.speed_level);
@@ -541,7 +569,7 @@ function showGachaReveal(preview=null){
 }
 function dailyPage(){
  const q=p(),drawn=q.dailyGachaDate===dateJST(),d=number(q.dailyGachaCount),tickets=q.tickets||{},dexCount=Object.keys(q.owned).length;
- return `${topNav('ガチャ')}<section class="panel hero"><h2>🎰 デイリーガチャ</h2><p>毎日1回、ピックを直接獲得。レア度別出現率はバーコードと同じ。未所持ピックは同じレア度内で抽選重み3倍。</p><p class="sub">本日：${drawn?'使用済み':'未使用'} ／ 累計${d}回 ／ 7回ボーナス ${d%7}/7</p><button data-action="daily-pull" ${drawn||q.pendingReward?'disabled':''}>${drawn?'本日はガチャ終了':'ガチャを1回引く'}</button><p class="sub">★2 45%、★3 30%、★4 15%、★5 5%、スペシャル 5%。日本時間0時更新。</p></section><section class="panel"><h2>🎟 所持ガチャ券</h2><p class="sub">図鑑：${dexCount}種類獲得 ／ 次の報酬まで${10-dexCount%10}種類。7回ごとのデイリーボーナスと、図鑑10種類ごとの達成報酬は★4以上ボーナス券。券の抽選はMAX済みを除外し、再抽選も新しい券の発行もありません。</p>${TICKET_TYPES.map(k=>`<div class="row between ticket-row"><span>${esc(ticketName(k))} ×${number(tickets[k])}</span><button class="secondary small" data-action="ticket-pull" data-id="${k}" ${number(tickets[k])<1||q.pendingReward?'disabled':''}>使用</button></div>`).join('')}<p class="sub">★4以上券：★4 80%、★5 15%、スペシャル 5%。条件に合う候補がない場合は券を消費しません。</p></section><section class="panel"><p class="callout">このVer11はブラウザ内だけのテスト版です。本番ではSupabaseのサーバー時刻・利用回数・ガチャ券・獲得処理を一つの安全な取引で管理します。</p></section>`;
+ return `${topNav('ガチャ')}<section class="panel hero"><h2>🎰 デイリーガチャ</h2><p>毎日1回、ピックを直接獲得。レア度別出現率はバーコードと同じ。未所持ピックは同じレア度内で抽選重み3倍。</p><p class="sub">今日：${drawn?'ガチャ済み':'まだ引けます'} ／ これまでに${d}回引きました</p><button data-action="daily-pull" ${drawn||q.pendingReward?'disabled':''}>${drawn?'本日はガチャ終了':'ガチャを1回引く'}</button><p class="sub">★2 45%、★3 30%、★4 15%、★5 5%、スペシャル 5%。日本時間0時更新。</p></section><section class="panel"><h2>🎁 ボーナス券をもらうには</h2><div class="bonus-rule"><span>🎰 毎日ガチャ</span><strong>あと${7-d%7}回 引くと</strong><span>★4以上ボーナス券 ×1</span></div><div class="bonus-rule"><span>📖 ポケモン図鑑（現在${dexCount}種類）</span><strong>あと${10-dexCount%10}種類 集めると</strong><span>★4以上ボーナス券 ×1</span></div><p class="sub">毎日ガチャは連続でなくてもOK。図鑑は初めてゲットしたピックの種類数で数えます。</p></section><section class="panel"><h2>🎟 持っているガチャ券</h2>${TICKET_TYPES.map(k=>`<div class="row between ticket-row"><span>${esc(ticketName(k))} ×${number(tickets[k])}</span><button class="secondary small" data-action="ticket-pull" data-id="${k}" ${number(tickets[k])<1||q.pendingReward?'disabled':''}>使用</button></div>`).join('')}<p class="sub">★4以上ボーナス券では、★4（80%）・★5（15%）・スペシャル（5%）のどれかをバトルなしでゲットできます。</p><p class="sub">強化MAXのピックは出ません。引き直しや券の追加獲得はありません。対象ピックがいなければ券は減りません。</p></section><section class="panel"><p class="callout">このVer17はブラウザ内だけのテスト版です。本番ではSupabaseのサーバー時刻・利用回数・ガチャ券・獲得処理を一つの安全な取引で管理します。</p></section>`;
 }
 function pullDaily(){if(p().pendingReward){view='claim';render();return}if(!confirm('デイリーガチャを引きますか？（1日1回）'))return;startGacha('daily')}
 function rewardPage(){
@@ -678,8 +706,12 @@ if(p().gachaReveal){
   }else{view='reward';lastRead=p().lastReward}
  }else view=p().pendingReward?'claim':'reward';
 }
-window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha}});
+window.FRENDA_BARCODE_TEST=Object.freeze({version:VERSION,normalize,group,drawPick,drawGacha,registerBarcode,usedLeft,boostMultiplier,publicSnapshot:()=>({state:JSON.parse(JSON.stringify(state)),registry:JSON.parse(JSON.stringify(registry)),gifts:JSON.parse(JSON.stringify(giftRegistry))}),testHelpers:{drawPick,addDirectPick,simulateExactPick,decideClaim,startGacha,canEnterByGrade,battleBlockReason}});
 render();
 if(p().gachaReveal)showGachaReveal();
 })();
 /* Updated: 2026-11-15 17:53 JST / Ver15 */
+
+/* Updated: 2026-11-15 18:46 JST / Ver16 */
+
+/* Updated: 2026-11-15 19:25 JST / Ver17 */
