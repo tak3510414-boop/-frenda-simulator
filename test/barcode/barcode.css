@@ -501,3 +501,37 @@
 /* Updated: 2026-11-15 20:31 JST / Ver20 */
 
 /* Updated: 2026-11-15 20:52 JST / Ver21 */
+
+/* Scanner diagnostics Ver22 */
+.scan-engine-status{display:block;padding:9px 12px;border:1px solid #576f87;border-radius:9px;background:#172a3b;color:#f2f7fa;white-space:normal;overflow-wrap:anywhere;font-size:13px;line-height:1.5;}
+
+/* Updated: 2026-11-15 21:07 JST / Ver22 */
+
+
+/* Ver23: separate camera modes + optional comparable 20-second reading trials. */
+.scan-mode-panel{padding:10px;border:1px solid #b8d6e5;border-radius:12px;background:#f1f8fd;margin:10px 0}
+.scan-mode-title{font-weight:900;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.scan-mode-title span{font-size:11px;color:#436679;font-weight:500}
+.scan-mode-buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.scan-mode-button{background:#fff;color:#17465f;border:1px solid #aac5d4;border-radius:10px;min-width:0;padding:11px 4px;font-size:13px;white-space:nowrap}
+.scan-mode-button.scan-mode-active{background:#145c92;color:white;border:2px solid #145c92;box-shadow:0 0 0 2px #c3e9ff inset}
+.scan-mode-panel p{margin:8px 0 0;line-height:1.55}
+.scan-comparison{padding:10px;border:1px solid #c4d7e2;border-radius:12px;background:#f8fbfd;margin:10px 0}
+.scan-comparison-head{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap}
+.scan-comparison-head strong{font-size:14px}
+.scan-comparison-actions{display:flex;gap:7px;flex-wrap:wrap}
+.scan-comparison-actions button{padding:7px 9px}
+#scanTrialState{background:#ebf4fa;padding:7px;border-radius:7px;color:#205775}
+.scan-table-wrap{width:100%;overflow-x:auto}
+.scan-compare-table{border-collapse:collapse;width:100%;font-size:12px;min-width:435px}
+.scan-compare-table th,.scan-compare-table td{border-bottom:1px solid #cedee8;text-align:center;padding:7px 5px;white-space:nowrap}
+.scan-compare-table th:first-child{text-align:left}
+.scan-compare-table thead th{background:#e0eef6;color:#22526c}
+.scan-table-current{background:#deeffb;font-weight:800}
+.scan-diagnostics-details{margin:9px 0 5px}
+.scan-diagnostics-details summary{color:#375c73;font-size:12px;cursor:pointer;font-weight:700}
+.scan-diagnostics-details .scan-engine-status{font-size:11px;margin:7px 0}
+@media(max-width:620px){.scan-mode-buttons{gap:4px}.scan-mode-button{font-size:12px;padding:10px 1px}.scan-mode-title{font-size:13px}.scan-comparison{padding:8px}.scan-comparison-head{display:block}.scan-comparison-actions{margin-top:7px}}
+.scan-results-details{margin-top:6px}
+.scan-results-details summary{font-size:13px;font-weight:800;color:#205b83;cursor:pointer;padding:5px 2px}
+/* Updated: 2026-11-16 18:45 JST / Ver23 */

@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 21 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 23 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='21';
+const VERSION='23';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -12,6 +12,9 @@ const GIFT_KEY='frenda:barcode:test:ver06:gift:registry';
 const SPEED_KEY='frenda:barcode:test:ver06:auto-speed';
 const DISPLAY_KEY='frenda:barcode:test:display-mode:v1';
 const CONTINUOUS_KEY='frenda:barcode:test:continuous-scan:v20';
+const SCAN_MODE_KEY='frenda:barcode:test:scan-mode:v23';
+const SCAN_METRICS_KEY='frenda:barcode:test:scan-performance:v23';
+const SCAN_MODES=[{id:'standard',label:'標準',desc:'Ver22で動作確認済みの解析を変更せず使用します。'},{id:'high',label:'高精細',desc:'広い映像と中央拡大を、高い解像度で交互に解析します。'},{id:'dark',label:'暗所補正',desc:'映像の明暗差を補正して、薄い線を解析します。'},{id:'glare',label:'反射対策',desc:'局所的な明暗差と二値化を使って解析します。反射で消えた線は復元できません。'}];
 const RATES=[['2',45],['3',30],['4',15],['5',5],['special',5]];
 const STAT_KEYS=['hp','atk','def','sp_atk','sp_def'];
 const BOOST_RATE=1.30,BOOST_LIMIT=3;
@@ -62,6 +65,64 @@ for(const x of ['A','B','C']){
 let displayMode=getJSON(DISPLAY_KEY,'auto')==='white'?'white':'auto';
 let view='home',filter='',sort='series',lastRead=null,showScan=false,scanStream=null,scanTimer=null,scanBusy=false,scanNative=null,autoTimer=null,autoSpeed=Math.min(5,Math.max(1,Number(getJSON(SPEED_KEY,1))||1)),autoRunning=false,battleBusy=false,battleEpoch=0,audio=getJSON(AUDIO_KEY,true),battleError='';
 let continuousScan=getJSON(CONTINUOUS_KEY,true)!==false,autoReturnTimer=null,autoReturnInterval=null,autoReturnSeq=0;
+
+// Mode and comparison records are LOCAL DEVICE preferences. No player / barcode save data changes.
+let scanMode=SCAN_MODES.some(m=>m.id===getJSON(SCAN_MODE_KEY,'standard'))?getJSON(SCAN_MODE_KEY,'standard'):'standard';
+const freshModeMetrics=()=>({trials:0,success:0,failed:0,totalHits:0,totalSeconds:0,errors:0,resolution:'—'});
+let scanMetrics=getJSON(SCAN_METRICS_KEY,{});
+if(!scanMetrics||typeof scanMetrics!=='object')scanMetrics={};
+for(const m of SCAN_MODES){scanMetrics[m.id]=Object.assign(freshModeMetrics(),scanMetrics[m.id]||{});}
+let scanTrial=null,scanTrialTimer=null;
+function saveScanMetrics(){try{putJSON(SCAN_METRICS_KEY,scanMetrics)}catch(e){console.warn('モード計測データ保存に失敗',e)}}
+function cancelScanTrial(){if(scanTrialTimer){clearTimeout(scanTrialTimer);scanTrialTimer=null}scanTrial=null;}
+function updateTrialIndicator(message){const el=$('scanTrialState');if(el)el.textContent=message||'比較する場合は、モードを選んで「20秒テスト開始」を押してください。'}
+function modeMetricsMarkup(){
+ const rows=SCAN_MODES.map(m=>{const x=scanMetrics[m.id]||freshModeMetrics();const avg=x.success?(x.totalSeconds/x.success).toFixed(1)+'秒':'—';
+  return `<tr class="${scanMode===m.id?'scan-table-current':''}"><th scope="row">${esc(m.label)}</th><td>${number(x.success)}/${number(x.trials)}</td><td>${esc(avg)}</td><td>${number(x.errors)}</td><td>${esc(x.resolution)}</td></tr>`}).join('');
+ return `<div class="scan-table-wrap"><table class="scan-compare-table"><thead><tr><th>モード</th><th>成功／試行</th><th>平均秒数</th><th>認識エラー</th><th>解像度</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function refreshScanModeUI(){
+ document.querySelectorAll('[data-action="scan-mode"]').forEach(btn=>{const active=btn.dataset.id===scanMode;btn.classList.toggle('scan-mode-active',active);btn.setAttribute('aria-pressed',String(active));});
+ const d=$('scanModeDescription');if(d){let suffix='';if(scanMode!=='standard'&&!window.ZXingWASM?.readBarcodes)suffix=' ⚠ 補正に必要なZXingが未読込のため、現在は標準検出へフォールバックします。';d.textContent=SCAN_MODES.find(m=>m.id===scanMode).desc+suffix;}
+ const table=$('scanMetricsTable');if(table)table.innerHTML=modeMetricsMarkup();
+}
+function switchScanMode(next){
+ if(!SCAN_MODES.some(x=>x.id===next)||next===scanMode)return;
+ cancelScanTrial();scanMode=next;putJSON(SCAN_MODE_KEY,scanMode);scanPhase=0;
+ const v=$('video');if(v?.videoWidth)scanMetrics[scanMode].resolution=v.videoWidth+'×'+v.videoHeight;
+ saveScanMetrics();refreshScanModeUI();updateTrialIndicator('モードを切り替えました。必要なら新しく20秒テストを開始してください。');
+ if(view==='scan')scanMessage('読取モード：'+SCAN_MODES.find(m=>m.id===scanMode).label+'。カメラを止めずに切り替えました。');
+}
+function finishScanTrial(success){
+ const t=scanTrial;if(!t)return;
+ if(scanTrialTimer){clearTimeout(scanTrialTimer);scanTrialTimer=null}scanTrial=null;
+ const m=scanMetrics[t.mode],seconds=Math.max(0,(Date.now()-t.started)/1000);
+ m.trials++;if(success){m.success++;m.totalSeconds+=seconds}else m.failed++;
+ saveScanMetrics();refreshScanModeUI();updateTrialIndicator(success?`✅ ${SCAN_MODES.find(x=>x.id===t.mode).label}：${seconds.toFixed(1)}秒で成功しました。`:`⏱ ${SCAN_MODES.find(x=>x.id===t.mode).label}：20秒以内には認識できませんでした。カメラは継続中です。`);
+}
+function startScanTrial(){
+ if(view!=='scan'||!showScan){updateTrialIndicator('先にカメラを起動してください。');return}
+ cancelScanTrial();scanTrial={mode:scanMode,started:Date.now()};
+ scanTrialTimer=setTimeout(()=>finishScanTrial(false),20000);
+ updateTrialIndicator('⏱ 計測中（最大20秒）。バーコードを中央の枠内に写してください。');
+}
+function recordScanSuccess(mode,video){
+ const m=scanMetrics[mode];if(!m)return;
+ m.totalHits++;if(video?.videoWidth)m.resolution=video.videoWidth+'×'+video.videoHeight;
+ if(scanTrial?.mode===mode)finishScanTrial(true);
+ saveScanMetrics();
+}
+function recordScanError(mode){if(scanMetrics[mode]){scanMetrics[mode].errors++;saveScanMetrics();}}
+
+// Scanner diagnosis: read-only counters. No changes to pick selection / scan success logic.
+let scanDiag={frames:0,nativeHits:0,wasmHits:0,invalid:0,nativeErrors:0,wasmErrors:0,lastError:'',started:0,lastUpdate:0};
+function showScannerDiagnostics(force=false){
+ const now=Date.now();if(!force&&now-scanDiag.lastUpdate<1000)return;scanDiag.lastUpdate=now;
+ const e=$('scanEngineStatus');if(!e)return;
+ const native=('BarcodeDetector' in window)?(scanNative?'使用中':'利用可能／停止中'):'なし';
+ const wasm=window.ZXingWASM?.readBarcodes?'読込済み（本体は別途取得）':'未読込';
+ e.textContent=`読取診断：Ver${VERSION} ／ 映像解析 ${scanDiag.frames}回 ／ 有効検出 ${scanDiag.nativeHits+scanDiag.wasmHits}件 ／ チェック不一致 ${scanDiag.invalid}件 ／ ネイティブ ${native} ／ WASM ${wasm}${scanDiag.lastError?' ／ エラー：'+scanDiag.lastError.slice(0,130):''}`;
+}
 let filterSet={series:'all',grade:'all',type:'all',status:'all'},filterOpen=false,cardSize='medium',dexLimit=70,searchComposing=false,scanEpoch=0,scanPhase=0,scanStatus='',detailId=null,historyCode=null;
 const p=()=>state.profiles[state.profile];
 // White PC mode is a local presentation preference; it does not change save data or battle logic.
@@ -525,17 +586,23 @@ function scanMessage(message){scanStatus=message;const e=$('scanState');if(e)e.t
 function showCodeError(message){const e=$('testCodeError');if(e){e.textContent=message;e.hidden=!message}if(!e)scanMessage(message)}
 function scanPage(){return `${topNav('バーコードスキャン')}<section class="panel"><div class="callout">枠内にはバーコードを1つずつ。読み取った後はピック出現を表示します。カメラ利用にはHTTPSと許可が必要です。共通台帳はこのブラウザ内の試験用データです。</div>
  <div class="scan-mode-bar"><button type="button" class="${continuousScan?'green':'secondary'}" data-action="continuous-toggle" id="continuousToggle" aria-pressed="${continuousScan}">📷 連続スキャン ${continuousScan?'ON':'OFF'}</button><span class="sub">ON：ピック出現を表示したあと、数秒で次の読み取りに戻ります。重複選択中は自動で進みません。</span></div>
+ <div class="scan-mode-panel"><div class="scan-mode-title">📷 読取モードを選択 <span>端末ごとに保存</span></div><div class="scan-mode-buttons">${SCAN_MODES.map(m=>`<button type="button" class="scan-mode-button ${scanMode===m.id?'scan-mode-active':''}" data-action="scan-mode" data-id="${m.id}" aria-pressed="${scanMode===m.id}">${esc(m.label)}</button>`).join('')}</div><p id="scanModeDescription" class="sub">${esc(SCAN_MODES.find(m=>m.id===scanMode).desc)}</p></div>
  <div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"><span>バーコードを1つ、中央に</span></div></div>
  <p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p>
  <p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p>
+ <div class="scan-comparison"><div class="scan-comparison-head"><strong>📊 モード別の読取比較</strong><div class="scan-comparison-actions"><button type="button" class="secondary small" data-action="scan-trial">▶ 20秒テスト開始</button><button type="button" class="ghost small" data-action="scan-metrics-clear">計測結果のみ消去</button></div></div><p id="scanTrialState" class="sub" role="status">比較する場合は、モードを選んで「20秒テスト開始」を押してください。</p><details class="scan-results-details"><summary>4モードの比較結果を見る</summary><div id="scanMetricsTable">${modeMetricsMarkup()}</div><p class="sub">成功／試行・平均秒数は「20秒テスト」の記録です。認識エラーはバーコード検証不一致と解析例外の累計です。通常のスキャンもそのまま使用できます。</p></details></div>
+ <details class="scan-diagnostics-details"><summary>詳しい読取診断を見る</summary><p id="scanEngineStatus" class="scan-engine-status" aria-live="off">読取診断を準備しています…</p></details>
  <p class="scan-help" id="scanHelp">読みにくいとき：少し離す・明るい場所に移動・傾きを変える・反射を避ける</p>
  <div class="button-row"><button class="secondary" data-action="camera" id="cameraRetry" hidden>📷 カメラを再試行</button><button class="secondary" data-action="stopcamera" id="cameraStop">カメラ停止</button></div></section>`}
 function cameraControls(retry){const retryButton=$('cameraRetry'),stopButton=$('cameraStop');if(retryButton)retryButton.hidden=!retry;if(stopButton)stopButton.hidden=retry}
 async function startScan(){
+ scanDiag={frames:0,nativeHits:0,wasmHits:0,invalid:0,nativeErrors:0,wasmErrors:0,lastError:'',started:Date.now(),lastUpdate:0};
+ showScannerDiagnostics(true);
+
  if(!navigator.onLine){scanMessage('通信がありません。');cameraControls(true);return}
  if(!isSecureContext){scanMessage('HTTPSで開いてください。');cameraControls(true);return}
  if(!navigator.mediaDevices?.getUserMedia){scanMessage('このブラウザではカメラを利用できません。');cameraControls(true);return}
- if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');cameraControls(true);return}
+ if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanDiag.lastError='ネイティブAPIなし・ZXing JS未読込（外部配信を確認）';showScannerDiagnostics(true);scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');cameraControls(true);return}
  stopScan();cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
@@ -544,24 +611,77 @@ async function startScan(){
   if(epoch!==scanEpoch||view!=='scan'){stopScan();return}
   scanNative=null;if('BarcodeDetector' in window){try{scanNative=new BarcodeDetector({formats:['ean_13','ean_8','upc_a']})}catch{scanNative=null}}
   scanPhase=0;scanBusy=false;showScan=true;
+  showScannerDiagnostics(true);
   const track=stream.getVideoTracks()[0],settings=track?.getSettings?.()||{};
-  const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ 読取：安定版（Ver19方式）`;
-  scanMessage('バーコードを中央の枠内に、水平に写してください。');scanLoop()
- }catch(e){if(epoch===scanEpoch&&view==='scan'){scanMessage('カメラ起動に失敗：'+(e.name||e.message)+'。許可設定を確認して再試行してください。');cameraControls(true)}}
+  const res=$('scanDiagnostics');if(res)res.textContent=`実際のカメラ解像度：${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'} ／ モード：${SCAN_MODES.find(m=>m.id===scanMode).label}`;
+  scanMetrics[scanMode].resolution=`${v.videoWidth||settings.width||'?'}×${v.videoHeight||settings.height||'?'}`;saveScanMetrics();refreshScanModeUI();
+  scanMessage('カメラ起動OK。バーコードを中央の枠内に写してください。');scanLoop()
+ }catch(e){if(epoch===scanEpoch&&view==='scan'){scanDiag.lastError='カメラ起動：'+(e?.name||e?.message||e);showScannerDiagnostics(true);scanMessage('カメラ起動に失敗：'+(e.name||e.message)+'。許可設定を確認して再試行してください。');cameraControls(true)}}
 }
 function stopScan(){
+ cancelScanTrial();
  scanEpoch++;showScan=false;
  if(scanTimer){clearTimeout(scanTimer);scanTimer=null}
  if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}
  const v=$('video');if(v)v.srcObject=null
 }
+// Alternate modes are isolated from the verified Ver22 standard path.
+// ZXing receives ImageData copied from a canvas; the original video frame is unchanged.
+function getAlternativeScanImage(v,mode,phase){
+ const c=$('scanCanvas'),ctx=c?.getContext('2d',{willReadFrequently:true});if(!ctx)return null;
+ const w=v.videoWidth,h=v.videoHeight;
+ let sx=0,sy=0,sw=w,sh=h;
+ if(mode==='high'){
+  if(phase===1){sx=Math.round(w*.10);sy=Math.round(h*.16);sw=Math.round(w*.80);sh=Math.round(h*.68)}
+  else if(phase===2){sx=Math.round(w*.20);sy=Math.round(h*.26);sw=Math.round(w*.60);sh=Math.round(h*.48)}
+ }else if(phase!==0){sx=Math.round(w*.08);sy=Math.round(h*.18);sw=Math.round(w*.84);sh=Math.round(h*.64)}
+ const limit=mode==='high'?2500:1600,scale=Math.min(1,limit/Math.max(sw,sh));
+ c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));
+ ctx.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);
+ const image=ctx.getImageData(0,0,c.width,c.height);
+ if(mode==='dark'){
+  const a=image.data,hist=new Uint32Array(256);let total=0;
+  for(let i=0;i<a.length;i+=64){const g=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;hist[g]++;total++}
+  let lo=0,hi=255,cum=0;
+  for(let v=0;v<256;v++){cum+=hist[v];if(cum>=total*.08){lo=v;break}}
+  cum=0;for(let v=0;v<256;v++){cum+=hist[v];if(cum>=total*.92){hi=v;break}}
+  lo=Math.max(0,lo-10);hi=Math.min(255,hi+10);
+  if(hi-lo<38){lo=Math.max(0,lo-25);hi=Math.min(255,hi+25)}
+  const lut=new Uint8Array(256),range=Math.max(30,hi-lo);
+  for(let v=0;v<256;v++){let t=Math.max(0,Math.min(1,(v-lo)/range));t=Math.pow(t,.84);lut[v]=Math.round(t*255)}
+  for(let i=0;i<a.length;i+=4){const g=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;a[i]=a[i+1]=a[i+2]=lut[g]}
+ }else if(mode==='glare'){
+  const a=image.data,iw=image.width,ih=image.height,gray=new Uint8Array(iw*ih);
+  for(let i=0,j=0;i<a.length;i+=4,j++)gray[j]=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;
+  if(phase===1){ // Gentle grayscale contrast keeps anti-aliased edges intact.
+   for(let j=0,i=0;j<gray.length;j++,i+=4){const g=gray[j],v=Math.max(0,Math.min(255,Math.round((g-128)*1.35+128)));a[i]=a[i+1]=a[i+2]=v}
+  }else{ // Adaptive local threshold for uneven light/partial reflections.
+   const stride=iw+1,integral=new Uint32Array(stride*(ih+1));
+   for(let y=1;y<=ih;y++){let rowsum=0,base=(y-1)*iw,up=(y-1)*stride,down=y*stride;
+    for(let x=1;x<=iw;x++){rowsum+=gray[base+x-1];integral[down+x]=integral[up+x]+rowsum}}
+   const radius=phase===0?14:30;
+   for(let y=0;y<ih;y++){
+    const y1=Math.max(0,y-radius),y2=Math.min(ih,y+radius+1);
+    for(let x=0;x<iw;x++){
+     const x1=Math.max(0,x-radius),x2=Math.min(iw,x+radius+1),sum=integral[y2*stride+x2]-integral[y1*stride+x2]-integral[y2*stride+x1]+integral[y1*stride+x1];
+     const avg=sum/((x2-x1)*(y2-y1)),v=gray[y*iw+x]<avg-7?0:255,i=(y*iw+x)*4;
+     a[i]=a[i+1]=a[i+2]=v;
+    }
+   }
+  }
+ }
+ return image;
+}
 async function scanLoop(){
+ scanDiag.frames++;
  if(!showScan||scanBusy)return;
  const epoch=scanEpoch;scanBusy=true;
  try{
   const v=$('video');if(!v||!v.videoWidth){return}
   let code=null;
-  if(scanNative){try{for(const x of await scanNative.detect(v)||[]){code=normalize(x.rawValue);if(code)break}}catch(e){scanNative=null}}
+  const modeAtStart=scanMode,baselineErrors=scanDiag.invalid+scanDiag.nativeErrors+scanDiag.wasmErrors;
+  if(modeAtStart==='standard'){
+  if(scanNative){try{for(const x of await scanNative.detect(v)||[]){code=normalize(x.rawValue);if(code){scanDiag.nativeHits++;break}else scanDiag.invalid++}}catch(e){scanDiag.nativeErrors++;scanDiag.lastError='ネイティブ '+(e?.message||e);scanNative=null}}
   if(!code&&window.ZXingWASM?.readBarcodes){
    const c=$('scanCanvas');const ctx=c?.getContext('2d',{willReadFrequently:true});
    if(ctx){
@@ -576,15 +696,33 @@ async function scanLoop(){
      const a=data.data;for(let i=0;i<a.length;i+=4){const gray=(a[i]*77+a[i+1]*150+a[i+2]*29)>>8;const boosted=Math.max(0,Math.min(255,Math.round((gray-128)*1.8+128)));a[i]=a[i+1]=a[i+2]=boosted}
     }
     const found=await window.ZXingWASM.readBarcodes(data,{formats:['EAN13','EAN8','UPCA'],tryHarder:true,maxNumberOfSymbols:3});
-    for(const x of found||[]){code=normalize(x.text||x.rawValue);if(code)break}
+    for(const x of found||[]){code=normalize(x.text||x.rawValue);if(code){scanDiag.wasmHits++;scanDiag.lastError='';break}else scanDiag.invalid++}
    }
   }
-  if(epoch!==scanEpoch||!showScan)return;
-  if(code){stopScan();registerBarcode(code);return}
- }catch(e){if(epoch===scanEpoch&&showScan)scanMessage('認識処理中：'+(e.message||e))}
+  }else{
+   // Three alternate modes must NOT change the verified standard-mode decoder.
+   // If ZXing was not loaded, native detection still works as a fallback.
+   if(window.ZXingWASM?.readBarcodes){
+    try{
+     const phase=scanPhase++%3,frame=getAlternativeScanImage(v,modeAtStart,phase);
+     if(frame){
+      const matches=await window.ZXingWASM.readBarcodes(frame,{formats:['EAN13','EAN8','UPCA'],tryHarder:true,maxNumberOfSymbols:3});
+      if(modeAtStart===scanMode){for(const x of matches||[]){code=normalize(x.text||x.rawValue);if(code){scanDiag.wasmHits++;scanDiag.lastError='';break}else{scanDiag.invalid++;recordScanError(modeAtStart)}}}
+     }
+    }catch(e){scanDiag.wasmErrors++;scanDiag.lastError='補正モード '+String(e?.message||e);recordScanError(modeAtStart)}
+   }
+   if(!code&&scanNative){
+    try{for(const x of await scanNative.detect(v)||[]){code=normalize(x.rawValue);if(code){scanDiag.nativeHits++;break}else{scanDiag.invalid++;recordScanError(modeAtStart)}}}
+    catch(e){scanDiag.nativeErrors++;scanDiag.lastError='ネイティブ '+String(e?.message||e);scanNative=null;recordScanError(modeAtStart)}
+   }
+  }
+  if(epoch!==scanEpoch||!showScan||modeAtStart!==scanMode)return;
+  if(modeAtStart==='standard'){const n=scanDiag.invalid+scanDiag.nativeErrors+scanDiag.wasmErrors-baselineErrors;if(n>0){scanMetrics.standard.errors+=n;saveScanMetrics()}}
+  if(code){recordScanSuccess(modeAtStart,v);stopScan();registerBarcode(code);return}
+ }catch(e){scanDiag.wasmErrors++;scanDiag.lastError=String(e?.message||e);if(epoch===scanEpoch&&showScan)scanMessage('認識エラー：'+scanDiag.lastError+'。画面の読取診断を確認してください。')}
  finally{
   scanBusy=false;
-  if(epoch===scanEpoch&&showScan)scanTimer=setTimeout(scanLoop,180)
+  if(epoch===scanEpoch&&showScan){showScannerDiagnostics();scanTimer=setTimeout(scanLoop,180)}
  }
 }
 function addDirectPick(id,source){
@@ -811,7 +949,7 @@ function render(){
  if(!isGameStarted()){app.innerHTML=starter();syncMusic();return}
  if(p().pendingReward&&view!=='claim')view='claim';
  const pages={home,pending,owned:ownedPage,dex,history,scan:scanPage,settings,daily:dailyPage,gift:giftPage,reward:rewardPage,claim:claimPage,battle:battlePage,choose:chooseScreen,encounter,result:resultPage,detail:()=>detail(detailId),historyDetail:()=>historyDetail(historyCode)};
- app.innerHTML=(pages[view]||home)();syncMusic()
+ app.innerHTML=(pages[view]||home)();syncMusic();if(view==='scan')refreshScanModeUI()
 }
 function onAction(e){
  const button=e.target.closest('[data-action]');if(!button)return;wakeSound();const act=button.dataset.action,id=button.dataset.id,code=button.dataset.code;
@@ -821,6 +959,9 @@ function onAction(e){
  case 'continuous-toggle':{continuousScan=!continuousScan;putJSON(CONTINUOUS_KEY,continuousScan);const button=$('continuousToggle');if(button){button.textContent='📷 連続スキャン '+(continuousScan?'ON':'OFF');button.classList.toggle('green',continuousScan);button.classList.toggle('secondary',!continuousScan);button.setAttribute('aria-pressed',String(continuousScan))}break}
  case 'continuous-pause':{cancelAutoReturn();const e=$('scanAutoReturn');if(e)e.innerHTML='<span>自動再開は停止しました。［次のバーコード］から再開できます。</span>';break}
  case 'encounter-skip':{const e=button.closest('.encounter-v20');if(e)e.classList.add('is-skipped');break}
+ case 'scan-mode':switchScanMode(id);break;
+ case 'scan-trial':startScanTrial();break;
+ case 'scan-metrics-clear':if(confirm('4モードの比較記録だけを消去しますか？　ピックや読取履歴は削除しません。')){scanMetrics={};for(const m of SCAN_MODES)scanMetrics[m.id]=freshModeMetrics();saveScanMetrics();refreshScanModeUI();updateTrialIndicator('比較記録を消去しました。')}break;
  case 'camera':startScan();break;case 'stopcamera':stopScan();scanMessage('カメラ停止中です。再開するには「カメラを再試行」を押してください。');cameraControls(true);break;
  case 'starter-set':chooseStarterSet(id);break;
  case 'choose':choose(code);break;case 'retry':if(code&&p().reads[code]?.status==='pending')choose(code);else nav('pending');break;
@@ -907,3 +1048,7 @@ if(p().gachaReveal)showGachaReveal();
 /* Updated: 2026-11-15 20:31 JST / Ver20 */
 
 /* Updated: 2026-11-15 20:52 JST / Ver21 - scanner rollback to Ver19 proven logic; keep Ver20 animations */
+
+/* Updated: 2026-11-15 21:07 JST / Ver22 diagnostics; V19 scanner algorithm retained */
+
+/* Updated: 2026-11-16 18:45 JST / Ver23: Independent scanning modes, per-device prefs, comparison trials */
