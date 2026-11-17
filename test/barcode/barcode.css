@@ -576,3 +576,10 @@
 
 .scan-ocr-shortcut{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0}.scan-ocr-shortcut .sub{flex:1;min-width:210px}.scan-ocr-shortcut button{font-size:13px}
 /* Updated: 2026-11-17 22:14 JST / Ver27 layout */
+
+/* Ver28: larger portrait-photo selection preview; the OCR guide maps to the photo, not the viewport. */
+.ocr-image-wrap img{max-height:min(68dvh,640px)}
+#ocrGuide{border-width:3px;box-shadow:0 0 0 1px #075f4a,0 0 10px rgba(0,231,165,.55)}
+.ocr-cropped{max-height:170px;image-rendering:auto}
+@media(max-width:620px){.ocr-image-wrap img{max-height:min(65dvh,560px)}.ocr-cropped{max-height:175px}}
+/* Updated: 2026-11-18 07:09 JST / Ver28 */

@@ -144,9 +144,11 @@ function snapshotSetCanvas(c,source,origin='camera'){
 function snapshotCapture(){
  const v=$('video');if(!scanStream||!v||!v.videoWidth||!v.videoHeight){snapshotMessage('カメラ映像がありません。カメラを起動してから撮影してください。');return}
  try{
+  const initialDigits=ocrSelectionFromVideoGuide(v);
   const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
   c.getContext('2d',{willReadFrequently:true}).drawImage(v,0,0,c.width,c.height);
   snapshotSetCanvas(c,c);
+  ocrSelection=initialDigits;ocrPanelUpdate();
  }catch(e){snapshotMessage('静止画像を取得できません：'+String(e.message||e))}
 }
 function snapshotDownload(){
@@ -263,32 +265,74 @@ async function snapshotAnalyze(){
 // Ver27: camera-photo digit OCR fallback. OCR is an explicit user action, never a live-frame replacement.
 // Tesseract downloads its engine and English numeric model on first use; photos stay in the browser.
 let ocrWorker=null,ocrWorkerPromise=null,ocrBusy=false,ocrJob=0;
-let ocrSelection={x:.32,y:.58,w:.38,h:.11};
-let ocrRawText='',ocrEngineCode='',ocrBarcodeCode='',ocrSourceType='camera';
+let ocrSelection={x:.12,y:.48,w:.76,h:.09};
+let ocrRawText='',ocrEngineCode='',ocrBarcodeCode='',ocrSourceType='camera',ocrAttempted=false;
 const OCR_SCRIPT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
 function ocrMessage(msg){const el=$('ocrStatus');if(el)el.textContent=msg}
-function ocrClear(){ocrJob++;ocrBusy=false;ocrRawText='';ocrEngineCode='';ocrBarcodeCode='';ocrSelection={x:.32,y:.58,w:.38,h:.11};ocrPanelUpdate()}
+function ocrClear(){ocrJob++;ocrBusy=false;ocrRawText='';ocrEngineCode='';ocrBarcodeCode='';ocrAttempted=false;ocrSelection={x:.12,y:.48,w:.76,h:.09};ocrPanelUpdate()}
 function ocrPanelUpdate(){
  const box=$('ocrFramePanel'),img=$('ocrPhoto'),guide=$('ocrGuide'),inputs=$('ocrResultPanel');if(!box)return;
  box.hidden=!diagnosticSnapshot;
  if(diagnosticSnapshot){if(img){const newSrc=diagnosticSnapshotUrl||diagnosticSnapshot.toDataURL('image/png');if(img.src!==newSrc)img.src=newSrc}ocrSourceType=diagnosticSnapshotSource}
  if(guide){guide.style.left=ocrSelection.x*100+'%';guide.style.top=ocrSelection.y*100+'%';guide.style.width=ocrSelection.w*100+'%';guide.style.height=ocrSelection.h*100+'%'}
- if(inputs)inputs.hidden=!ocrRawText;
+ if(inputs)inputs.hidden=!ocrAttempted;
  const source=$('ocrSourceNote');if(source)source.textContent=ocrSourceType==='camera'?'📷 カメラ撮影画像：番号確認後にピック登録できます。':'📂 取込画像：OCR診断のみ。ピックの登録はカメラ撮影から行います。';
  const b=$('ocrRegister');if(b)b.disabled=ocrSourceType!=='camera'||!normalize($('ocrCodeInput')?.value||'');
 }
+// Ver28: On iPhone, tap a printed digit to center the OCR rectangle; drag to select the complete row.
 function ocrDrag(evt,phase){
  const photo=$('ocrPhoto');if(!photo||!diagnosticSnapshot||ocrBusy)return;
  const r=photo.getBoundingClientRect();if(!r.width||!r.height)return;
  const px=Math.min(1,Math.max(0,(evt.clientX-r.left)/r.width)),py=Math.min(1,Math.max(0,(evt.clientY-r.top)/r.height));
- if(phase==='start'){ocrDrag.anchor={x:px,y:py};try{photo.setPointerCapture(evt.pointerId)}catch{}}
- if(!ocrDrag.anchor)return;
- if(phase==='move'||phase==='end'){
-  const ax=ocrDrag.anchor.x,ay=ocrDrag.anchor.y;
-  if(Math.abs(px-ax)>.012&&Math.abs(py-ay)>.012){ocrSelection={x:Math.min(px,ax),y:Math.min(py,ay),w:Math.abs(px-ax),h:Math.abs(py-ay)};ocrPanelUpdate()}
+ if(phase==='start'){
+  ocrDrag.anchor={x:px,y:py};ocrDrag.moved=false;
+  try{photo.setPointerCapture(evt.pointerId)}catch{}
  }
- if(phase==='end')ocrDrag.anchor=null;
+ if(!ocrDrag.anchor)return;
+ const ax=ocrDrag.anchor.x,ay=ocrDrag.anchor.y;
+ const dx=Math.abs(px-ax),dy=Math.abs(py-ay);
+ if(phase==='move'||phase==='end'){
+  if(dx>.016||dy>.016)ocrDrag.moved=true;
+  if(ocrDrag.moved&&dx>.01&&dy>.01){
+   const x=Math.min(px,ax),y=Math.min(py,ay);
+   ocrSelection={x,y,w:Math.max(.025,dx),h:Math.max(.02,dy)};ocrPanelUpdate()
+  }
+ }
+ if(phase==='end'){
+  if(!ocrDrag.moved){
+   // A tap is easier than drawing a tiny rectangle on a narrow portrait photo.
+   const w=Math.max(.35,Math.min(.86,ocrSelection.w||.7));
+   const h=Math.max(.035,Math.min(.12,ocrSelection.h||.065));
+   ocrSelection={x:Math.max(0,Math.min(1-w,px-w/2)),y:Math.max(0,Math.min(1-h,py-h/2)),w,h};
+   ocrPanelUpdate();
+  }
+  ocrDrag.anchor=null;ocrDrag.moved=false;
+ }
  evt.preventDefault();
+}
+
+// Map the yellow live-camera guide into the ORIGINAL camera frame. This handles
+// CSS object-fit:cover on portrait phones, object-fit:contain on PCs, and letterboxing.
+// Ver27 used a fixed 32%/58% position unrelated to the actual live framing.
+function ocrSelectionFromVideoGuide(v){
+ const videoRect=v?.getBoundingClientRect?.();
+ const guideRect=document.querySelector('.scan-view .scan-guide')?.getBoundingClientRect?.();
+ if(!videoRect||!guideRect||!v.videoWidth||!v.videoHeight||!videoRect.width||!videoRect.height)
+  return {x:.12,y:.48,w:.76,h:.09};
+ const vw=v.videoWidth,vh=v.videoHeight;
+ const fit=(getComputedStyle(v).objectFit||'cover').toLowerCase();
+ const factor=fit==='contain'?Math.min(videoRect.width/vw,videoRect.height/vh):Math.max(videoRect.width/vw,videoRect.height/vh);
+ if(!Number.isFinite(factor)||factor<=0)return {x:.12,y:.48,w:.76,h:.09};
+ const offsetX=(videoRect.width-vw*factor)/2,offsetY=(videoRect.height-vh*factor)/2;
+ const toX=screenX=>(screenX-videoRect.left-offsetX)/factor/vw;
+ const toY=screenY=>(screenY-videoRect.top-offsetY)/factor/vh;
+ // The barcode bars are normally in the middle of the yellow guide.
+ // The printed number row is near its BOTTOM, rather than at a fixed point in the full photo.
+ const left=toX(guideRect.left+guideRect.width*.03),right=toX(guideRect.right-guideRect.width*.03);
+ const top=toY(guideRect.top+guideRect.height*.60);
+ const bottom=toY(guideRect.top+guideRect.height*1.10);
+ const x=Math.max(0,Math.min(.98,left)),y=Math.max(0,Math.min(.97,top));
+ return {x,y,w:Math.max(.02,Math.min(1-x,right-left)),h:Math.max(.02,Math.min(1-y,bottom-top))};
 }
 function cropOCRRegion(){
  const s=diagnosticSnapshot;if(!s)throw Error('静止画像がありません');
@@ -355,14 +399,14 @@ async function runDigitOCR(){
  if(ocrBusy)return;
  if(!diagnosticSnapshot){ocrMessage('まずカメラ撮影するか、診断用の画像を取り込んでください。');return}
  ocrBusy=true;const token=++ocrJob,original=diagnosticSnapshot;
- ocrRawText='';ocrEngineCode='';ocrBarcodeCode='';ocrPanelUpdate();
+ ocrRawText='';ocrEngineCode='';ocrBarcodeCode='';ocrAttempted=false;ocrPanelUpdate();
  try{
   const crop=cropOCRRegion(),shown=$('ocrCropped');if(shown)shown.src=crop.toDataURL('image/png');
   ocrMessage('数字OCRを実行中です…');const worker=await getOcrWorker();
   if(token!==ocrJob||diagnosticSnapshot!==original)return;
   const [result,barcode]=await Promise.all([worker.recognize(crop),barcodeOnPhoto(original)]);
   if(token!==ocrJob||diagnosticSnapshot!==original)return;
-  ocrRawText=String(result?.data?.text||'').trim();
+  ocrRawText=String(result?.data?.text||'').trim();ocrAttempted=true;
   const candidates=digitCandidates(ocrRawText);
   ocrEngineCode=candidates[0]?.code||'';ocrBarcodeCode=barcode;
   const field=$('ocrCodeInput');if(field)field.value=ocrEngineCode||ocrRawText.replace(/[^\d]/g,'').slice(0,13);
@@ -370,7 +414,7 @@ async function runDigitOCR(){
   const info=$('ocrCompareInfo');
   if(info){info.textContent=`数字OCR：${ocrEngineCode||'有効なJAN/UPC番号なし'} ／ バーコード認識：${ocrBarcodeCode||'検出なし'}${ocrEngineCode&&ocrBarcodeCode?(ocrEngineCode===ocrBarcodeCode?' ／ ✅ 一致':' ／ ⚠ 不一致・画像で確認してください'):''}`}
   ocrPanelUpdate();ocrValidateInput();
-  ocrMessage(ocrEngineCode?'✅ JAN/UPC番号の候補を認識しました。必ず元画像と照合してから確定してください。':'有効な番号を検出できませんでした。数字だけをドラッグで囲んで［選択範囲でOCR］を押してください。');
+  ocrMessage(ocrEngineCode?'✅ JAN/UPC番号の候補を認識しました。必ず元画像と照合してから確定してください。':'有効な番号を検出できませんでした。写真の数字をタップするか、数字の行全体をなぞってから［選択範囲でOCR］を押してください。');
  }catch(e){if(token===ocrJob)ocrMessage('OCR失敗：'+String(e?.message||e)+'。OCRモデルの取得にはネット接続が必要です。')}
  finally{if(token===ocrJob)ocrBusy=false}
 }
@@ -383,7 +427,7 @@ function ocrValidateInput(){
 function ocrCommit(){
  const val=normalize($('ocrCodeInput')?.value||'');
  if(!val||!diagnosticSnapshot||diagnosticSnapshotSource!=='camera')return ocrMessage('カメラで撮影した画像と、有効な番号が必要です。');
- if(!ocrRawText)return ocrMessage('OCRを実行して候補を確認してください。');
+ if(!ocrAttempted)return ocrMessage('先に画像の数字部分を選び、OCRを実行してください。');
  if(!confirm('カメラ画像に印刷されている番号が「'+val+'」で間違いありませんか？\n※誤登録を防ぐため、必ず画像と照合してください。'))return;
  const existed=Boolean(p().reads[val]);registerBarcode(val);
  if(!existed&&p().reads[val]){p().reads[val].inputMethod='ocr';save()}
@@ -869,10 +913,10 @@ function scanPage(){return `${topNav('バーコードスキャン')}<section cla
  <div class="scan-comparison"><div class="scan-comparison-head"><strong>📊 モード別の読取比較</strong><div class="scan-comparison-actions"><button type="button" class="secondary small" data-action="scan-trial">▶ 20秒テスト開始</button><button type="button" class="ghost small" data-action="scan-metrics-clear">計測結果のみ消去</button></div></div><p id="scanTrialState" class="sub" role="status">比較する場合は、モードを選んで「20秒テスト開始」を押してください。</p><details class="scan-results-details"><summary>5モードの比較結果を見る</summary><div id="scanMetricsTable">${modeMetricsMarkup()}</div><p class="sub">成功／試行・平均秒数は「20秒テスト」の記録です。認識エラーはバーコード検証不一致と解析例外の累計です。通常のスキャンもそのまま使用できます。</p></details></div>
  <details class="scan-diagnostics-details"><summary>詳しい読取診断を見る</summary><p class="sub">ネイティブとZXingの実際の呼出回数・検出候補数・処理時間を別々に表示します。候補が両方0件なら、チェックデジット以前に認識できていません。</p><p id="scanEngineStatus" class="scan-engine-status" aria-live="off">読取診断を準備しています…</p></details>
  <section class="scan-ocr-panel"><div class="scan-comparison-head"><strong>🔢 バーコード下の数字をOCRで読む（Ver27）</strong><span class="sub">PCの光沢バーコード向け・通常スキャンは変更なし</span></div>
- <p class="sub">［数字OCRで撮影］を押すとカメラ映像を固定して数字を認識します。OCRモデルは初回だけネットから取得します。自動登録はしません。</p>
+ <p class="sub">黄色い撮影枠の下寄りから数字の位置を推定してOCRします。ずれた場合は撮影写真の数字部分をタップして合わせ直せます。OCRモデルは初回だけネットから取得します。自動登録はしません。</p>
  <div class="button-row"><button type="button" class="green" data-action="ocr-capture">📷 数字OCRで撮影</button><button type="button" class="secondary" data-action="ocr-run">🔍 選択範囲でOCR</button></div>
  <p id="ocrStatus" class="sub" role="status">カメラを起動してから数字OCRで撮影してください。</p>
- <div id="ocrFramePanel" hidden><p class="sub">下の写真で<strong>13桁または8桁の数字をドラッグして囲む</strong>と、認識する位置を変更できます。</p>
+ <div id="ocrFramePanel" hidden><p class="sub"><strong>緑の枠が数字を囲んでいることを確認</strong>してください。ずれていたら<strong>数字をタップ</strong>するか、数字の行全体を指でなぞって選択し、［選択範囲でOCR］を押してください。</p>
  <div class="ocr-image-wrap"><img id="ocrPhoto" alt="カメラで固定したバーコード画像。数字部分をドラッグして囲みます"><div id="ocrGuide" aria-hidden="true"></div></div>
  <p id="ocrSourceNote" class="sub"></p><p class="sub">OCRに渡す部分の拡大画像</p><img id="ocrCropped" class="ocr-cropped" alt="数字OCRの解析範囲">
  <div id="ocrResultPanel" hidden><p class="sub">OCRの読み取り文字： <strong id="ocrRawText"></strong></p><p id="ocrCompareInfo" class="ocr-compare-result"></p>
@@ -1414,3 +1458,4 @@ if(p().gachaReveal)showGachaReveal();
 /* Updated: 2026-11-17 21:41 JST / Ver26 - still-image capture, local PNG export/import and independent frozen-frame decoder comparison */
 
 /* Updated: 2026-11-17 22:14 JST / Ver27 OCR numeric mode */
+/* Updated: 2026-11-18 07:09 JST / Ver28 - yellow scanner guide maps to OCR pixels; iPhone tap/drag selection */
