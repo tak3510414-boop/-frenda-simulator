@@ -535,3 +535,8 @@
 .scan-results-details{margin-top:6px}
 .scan-results-details summary{font-size:13px;font-weight:800;color:#205b83;cursor:pointer;padding:5px 2px}
 /* Updated: 2026-11-16 18:45 JST / Ver23 */
+
+/* Ver24: five scanner mode buttons remain usable on PC and iPhone */
+.scan-mode-buttons{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:620px){.scan-mode-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* Updated: 2026-11-17 21:07 JST / Ver24 */
