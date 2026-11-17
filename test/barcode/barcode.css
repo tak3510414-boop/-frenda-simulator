@@ -540,3 +540,7 @@
 .scan-mode-buttons{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media(max-width:620px){.scan-mode-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}}
 /* Updated: 2026-11-17 21:07 JST / Ver24 */
+
+/* Ver25: preserve line breaks in decoder diagnostics on small PC screens */
+.scan-engine-status{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;}
+/* Updated: 2026-11-17 21:21 JST / Ver25 */
