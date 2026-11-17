@@ -557,3 +557,22 @@
 .snapshot-quality{font-size:12px;color:#22566c;font-weight:600;overflow-wrap:anywhere}
 @media(max-width:620px){.scan-snapshot-panel{padding:9px}.scan-snapshot-preview{max-height:220px}.scan-snapshot-panel .button-row button{flex:1 1 45%;font-size:12px}}
 /* Updated: 2026-11-17 21:41 JST / Ver26 */
+
+/* Ver27 OCR: optional numeric recognition of camera-captured digits, never runs in background. */
+.scan-ocr-panel{border:1px solid #8cb6ce;background:#f1f8fc;border-radius:12px;padding:12px;margin:12px 0}
+.scan-ocr-panel .button-row{display:flex;flex-wrap:wrap;gap:8px}
+.scan-ocr-panel .button-row button{min-width:0}
+.scan-ocr-panel #ocrStatus{background:#e5f2fd;border-left:3px solid #19678e;border-radius:4px;padding:8px;color:#194a66;overflow-wrap:anywhere}
+.scan-ocr-panel [hidden]{display:none!important}
+.ocr-image-wrap{position:relative;display:block;width:fit-content;max-width:100%;margin:8px auto;border:2px solid #668ca4;border-radius:8px;overflow:hidden;touch-action:none;user-select:none}
+.ocr-image-wrap img{display:block;max-width:100%;max-height:280px;width:auto;height:auto;cursor:crosshair;user-select:none;-webkit-user-drag:none}
+#ocrGuide{position:absolute;border:3px solid #00e7a5;background:rgba(0,220,160,.14);box-shadow:0 0 0 1px #075f4a;pointer-events:none}
+.ocr-cropped{display:block;width:auto;max-width:100%;max-height:98px;min-height:26px;margin:8px auto;border:1px solid #9fbaca;background:#fff}
+.ocr-code-input{flex:1 1 155px;min-width:0;font-size:20px!important;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.ocr-compare-result{font-size:12px;font-weight:700;color:#124a64;background:#e8f3fb;padding:7px;border-radius:7px;overflow-wrap:anywhere}
+.scan-ocr-panel label[for=ocrCodeInput]{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+@media(max-width:620px){.scan-ocr-panel{padding:9px}.ocr-image-wrap img{max-height:195px}.scan-ocr-panel .button-row button{flex:1 1 42%;font-size:12px}.ocr-code-input{font-size:17px!important}}
+/* Updated: 2026-11-17 22:09 JST / Ver27 */
+
+.scan-ocr-shortcut{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0}.scan-ocr-shortcut .sub{flex:1;min-width:210px}.scan-ocr-shortcut button{font-size:13px}
+/* Updated: 2026-11-17 22:14 JST / Ver27 layout */
