@@ -599,4 +599,4 @@
 @media(prefers-reduced-motion:reduce){.scan-known-toast{animation:none}}
 /* Updated: 2026-11-18 11:15 JST / Ver29 - keep camera live on repeated barcode; small pick notification */
 
-/* Updated: 2026-11-18 11:39 JST / Ver30 - unchanged styles; scanner confirmation status uses existing styling */
+/* Updated: 2026-11-18 13:12 JST / Ver31 - unchanged styling, preserve previously-read scan notice */

@@ -1,7 +1,7 @@
-/* FRENDA_BARCODE_VERSION: 30 / isolated TEST prototype / regional starter trios */
+/* FRENDA_BARCODE_VERSION: 31 / isolated TEST prototype / regional starter trios */
 (()=>{
 'use strict';
-const VERSION='30';
+const VERSION='31';
 const DB=window.FRENDA_MASTER,CORE=window.FRENDA_CORE;
 const app=document.getElementById('app');
 const STORE_KEY='frenda:barcode:test:ver02:state';
@@ -68,35 +68,6 @@ let continuousScan=getJSON(CONTINUOUS_KEY,true)!==false,autoReturnTimer=null,aut
 // Ver29: camera-only informational overlay for previously read barcodes.
 // One notice per code per active camera session prevents frame-by-frame popups.
 let knownScanNotified=new Set(),knownScanToastTimer=null;
-// Ver30 integrity gate: JAN/UPC check digits alone cannot prove a camera decode is correct.
-// Require the exact same complete barcode across separate video frames before *any* registration.
-const SCAN_CONFIRM_MIN_HITS=5,SCAN_CONFIRM_MIN_SPAN_MS=700,SCAN_CONFIRM_WINDOW_MS=3500,SCAN_CONFIRM_DOMINANCE=.85;
-let scanEvidence=[];
-function clearScanEvidence(){scanEvidence=[]}
-function confirmScanFrame(freshCodes,now=Date.now()){
- const incoming=[...new Set(freshCodes||[])];
- scanEvidence=scanEvidence.filter(x=>now-x.t<=SCAN_CONFIRM_WINDOW_MS);
- // A no-detection frame cannot count as confirmation.  It also must not reset a
- // legitimate barcode that temporarily drops out while the camera refocuses.
- if(!incoming.length)return {code:null,best:0,ambiguous:false};
- scanEvidence.push({t:now,codes:incoming});
- if(scanEvidence.length>48)scanEvidence=scanEvidence.slice(-48);
- const counts=new Map(),firstSeen=new Map();let total=0;
- for(const frame of scanEvidence){
-  for(const code of frame.codes){counts.set(code,(counts.get(code)||0)+1);if(!firstSeen.has(code))firstSeen.set(code,frame.t);total++}
- }
- const ordered=[...counts].sort((a,b)=>b[1]-a[1]);
- const [leader,hits]=ordered[0];
- const competing=ordered.length>1&&ordered[1][1]>=2;
- // Both a repeated false read and two adjacent, different barcodes must be
- // denied while the observed number is unstable/ambiguous.
- if(incoming.includes(leader)&&hits>=SCAN_CONFIRM_MIN_HITS&&
-    now-firstSeen.get(leader)>=SCAN_CONFIRM_MIN_SPAN_MS&&hits/total>=SCAN_CONFIRM_DOMINANCE){
-  return {code:leader,best:hits,ambiguous:false};
- }
- return {code:null,best:hits,ambiguous:incoming.length>1||competing};
-}
-
 function clearKnownScanToast(){
  if(knownScanToastTimer!==null){clearTimeout(knownScanToastTimer);knownScanToastTimer=null}
  const box=$('scanKnownToast');if(box){box.hidden=true;box.innerHTML=''}
@@ -136,7 +107,7 @@ function refreshScanModeUI(){
 }
 function switchScanMode(next){
  if(!SCAN_MODES.some(x=>x.id===next)||next===scanMode)return;
- cancelScanTrial();clearScanEvidence();scanMode=next;putJSON(SCAN_MODE_KEY,scanMode);scanPhase=0;scanDiag.lastPass="";
+ cancelScanTrial();scanMode=next;putJSON(SCAN_MODE_KEY,scanMode);scanPhase=0;scanDiag.lastPass="";
  const v=$('video');if(v?.videoWidth)scanMetrics[scanMode].resolution=v.videoWidth+'×'+v.videoHeight;
  saveScanMetrics();refreshScanModeUI();updateTrialIndicator('モードを切り替えました。必要なら新しく20秒テストを開始してください。');
  if(view==='scan')scanMessage('読取モード：'+SCAN_MODES.find(m=>m.id===scanMode).label+'。カメラを止めずに切り替えました。');
@@ -956,7 +927,7 @@ function scanPage(){return `${topNav('バーコードスキャン')}<section cla
  <div class="scan-mode-panel"><div class="scan-mode-title">📷 読取モードを選択 <span>端末ごとに保存</span></div><div class="scan-mode-buttons">${SCAN_MODES.map(m=>`<button type="button" class="scan-mode-button ${scanMode===m.id?'scan-mode-active':''}" data-action="scan-mode" data-id="${m.id}" aria-pressed="${scanMode===m.id}">${esc(m.label)}</button>`).join('')}</div><p id="scanModeDescription" class="sub">${esc(SCAN_MODES.find(m=>m.id===scanMode).desc)}</p></div>
  <div class="scan-ocr-shortcut"><button type="button" class="secondary" data-action="ocr-capture">🔢 数字OCRで撮影（光沢バーコード用）</button><span class="sub">通常スキャンで読めない場合、下の印刷数字を認識します。</span></div>
  <div class="scan-view" style="margin-top:12px"><video id="video" autoplay playsinline muted></video><div class="scan-guide"><span>バーコードを1つ、中央に</span></div><div id="scanKnownToast" class="scan-known-toast" role="status" aria-live="polite" aria-atomic="true" hidden></div></div>
- <p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p><p class="sub">誤認識によるピックの誤登録を防ぐため、同じ番号を複数回確認してから確定します。複数の番号が映るときは、読みたい方を中央に合わせてください。</p>
+ <p id="scanState" class="sub" role="status">${esc(scanStatus||'カメラを準備しています…')}</p>
  <p id="scanDiagnostics" class="sub" aria-live="polite">カメラ解像度：起動前</p>
  <div class="scan-comparison"><div class="scan-comparison-head"><strong>📊 モード別の読取比較</strong><div class="scan-comparison-actions"><button type="button" class="secondary small" data-action="scan-trial">▶ 20秒テスト開始</button><button type="button" class="ghost small" data-action="scan-metrics-clear">計測結果のみ消去</button></div></div><p id="scanTrialState" class="sub" role="status">比較する場合は、モードを選んで「20秒テスト開始」を押してください。</p><details class="scan-results-details"><summary>5モードの比較結果を見る</summary><div id="scanMetricsTable">${modeMetricsMarkup()}</div><p class="sub">成功／試行・平均秒数は「20秒テスト」の記録です。認識エラーはバーコード検証不一致と解析例外の累計です。通常のスキャンもそのまま使用できます。</p></details></div>
  <details class="scan-diagnostics-details"><summary>詳しい読取診断を見る</summary><p class="sub">ネイティブとZXingの実際の呼出回数・検出候補数・処理時間を別々に表示します。候補が両方0件なら、チェックデジット以前に認識できていません。</p><p id="scanEngineStatus" class="scan-engine-status" aria-live="off">読取診断を準備しています…</p></details>
@@ -990,7 +961,7 @@ async function startScan(){
  if(!isSecureContext){scanMessage('HTTPSで開いてください。');cameraControls(true);return}
  if(!navigator.mediaDevices?.getUserMedia){scanMessage('このブラウザではカメラを利用できません。');cameraControls(true);return}
  if(!('BarcodeDetector' in window)&&!window.ZXingWASM?.readBarcodes){scanDiag.lastError='ネイティブAPIなし・ZXing JS未読込（外部配信を確認）';showScannerDiagnostics(true);scanMessage('読取ライブラリを読み込めません。通信状態を確認してください。');cameraControls(true);return}
- stopScan();clearScanEvidence();knownScanNotified.clear();cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
+ stopScan();knownScanNotified.clear();cameraControls(false);scanMessage('カメラを準備しています…');const epoch=scanEpoch;
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
   if(epoch!==scanEpoch||view!=='scan'){stream.getTracks().forEach(t=>t.stop());return}
@@ -1006,7 +977,7 @@ async function startScan(){
  }catch(e){if(epoch===scanEpoch&&view==='scan'){scanDiag.lastError='カメラ起動：'+(e?.name||e?.message||e);showScannerDiagnostics(true);scanMessage('カメラ起動に失敗：'+(e.name||e.message)+'。許可設定を確認して再試行してください。');cameraControls(true)}}
 }
 function stopScan(){
- cancelScanTrial();clearScanEvidence();
+ cancelScanTrial();
  scanEpoch++;showScan=false;
  if(scanTimer){clearTimeout(scanTimer);scanTimer=null}
  if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}
@@ -1101,7 +1072,7 @@ function chooseDecodedCodes(candidates,mode){
   if(p().reads[value]){if(!known)known=value}
   else if(!fresh)fresh=value;
  }
- return {fresh,known,validCount,freshCodes:[...new Set((candidates||[]).map(x=>normalize(x?.rawValue||x?.text)).filter(x=>x&&!p().reads[x]))]};
+ return {fresh,known,validCount};
 }
 async function scanLoop(){
  if(snapshotPaused){if(showScan)scanTimer=setTimeout(scanLoop,250);return}
@@ -1110,14 +1081,13 @@ async function scanLoop(){
  const epoch=scanEpoch;scanBusy=true;
  try{
   const v=$('video');if(!v||!v.videoWidth)return;
-  let code=null,knownCode=null;const freshCodes=new Set();
+  let code=null,knownCode=null;
   const modeAtStart=scanMode,baselineErrors=scanDiag.invalid+scanDiag.nativeErrors+scanDiag.wasmErrors;
   // Keeps a previously-read candidate while searching the other decoder for an unread one.
   const accept=(matches,engine)=>{
    const selected=chooseDecodedCodes(matches,modeAtStart);
    if(selected.validCount)scanDiag[engine==='native'?'nativeHits':'wasmHits']++;
    if(selected.fresh)code=selected.fresh;
-   for(const x of selected.freshCodes)freshCodes.add(x);
    if(selected.known&&!knownCode)knownCode=selected.known;
   };
   if(modeAtStart==='standard'){
@@ -1171,19 +1141,9 @@ async function scanLoop(){
    const n=scanDiag.invalid+scanDiag.nativeErrors+scanDiag.wasmErrors-baselineErrors;
    if(n>0){scanMetrics.standard.errors+=n;saveScanMetrics()}
   }
-  if(freshCodes.size){
-   const proof=confirmScanFrame(freshCodes);
-   if(proof.code){
-    // A verified code is the only path from camera detection to new registration.
-    recordScanSuccess(modeAtStart,v);
-    stopScan();registerBarcode(proof.code);return;
-   }
-   scanMessage(proof.ambiguous?
-     '複数の番号を検出しています。読みたいバーコードを中央に寄せてください。確定前なので登録していません。':
-     `番号を照合中（${Math.min(proof.best,SCAN_CONFIRM_MIN_HITS)}/${SCAN_CONFIRM_MIN_HITS}回）。同じバーコードをそのまま写してください。`);
-  }else{
-   // Expire partial evidence automatically; don't carry it into the next item.
-   confirmScanFrame([]);
+  if(code){
+   recordScanSuccess(modeAtStart,v);
+   stopScan();registerBarcode(code);return;
   }
   // Previously-read codes are informational only. Never stop the camera,
   // navigate, duplicate an acquisition, or retrigger the encounter effect.
@@ -1550,4 +1510,5 @@ if(p().gachaReveal)showGachaReveal();
 /* Updated: 2026-11-18 07:09 JST / Ver28 - yellow scanner guide maps to OCR pixels; iPhone tap/drag selection */
 
 /* Updated: 2026-11-18 11:15 JST / Ver29 - previously-read barcode inline camera notice; prefer unseen codes; no scan navigation for repeats */
-/* Updated: 2026-11-18 11:39 JST / Ver30 - require multi-frame verification before registering new barcode */
+
+/* Updated: 2026-11-18 13:12 JST / Ver31 - restore one valid barcode detection per scan; retain non-blocking previously-read notifications */
