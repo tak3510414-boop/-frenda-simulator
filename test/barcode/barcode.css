@@ -583,3 +583,18 @@
 .ocr-cropped{max-height:170px;image-rendering:auto}
 @media(max-width:620px){.ocr-image-wrap img{max-height:min(65dvh,560px)}.ocr-cropped{max-height:175px}}
 /* Updated: 2026-11-18 07:09 JST / Ver28 */
+
+/* Ver29 - previously scanned code notification floats over the live camera without blocking scanning. */
+.scan-known-toast{position:absolute;z-index:4;bottom:10px;left:10px;right:10px;display:flex;align-items:center;gap:10px;max-width:460px;margin:auto;padding:8px 10px;background:rgba(12,36,49,.94);border:1px solid #a4e7ff;border-radius:12px;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;animation:scanKnownAppear .22s ease-out}
+.scan-known-toast[hidden]{display:none!important}
+.scan-known-toast-image{width:59px;height:63px;display:flex;align-items:center;justify-content:center;flex:0 0 59px;background:rgba(255,255,255,.12);border-radius:7px;overflow:hidden}
+.scan-known-toast-image img{max-width:100%;max-height:100%;object-fit:contain}
+.scan-known-toast-image .fallback{font-size:9px;color:#fff}
+.scan-known-toast-text{display:flex;flex-direction:column;min-width:0;gap:2px;font-size:12px;line-height:1.35}
+.scan-known-toast-text strong{color:#ffdf79;font-size:14px;overflow-wrap:anywhere}
+.scan-known-toast-text small{color:#d9f4fe;font-size:11px}
+.scan-known-toast-text>span{color:#fff}
+@keyframes scanKnownAppear{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:620px){.scan-known-toast{left:5px;right:5px;bottom:6px;padding:6px 8px;gap:7px}.scan-known-toast-image{width:49px;height:51px;flex-basis:49px}.scan-known-toast-text strong{font-size:12px}.scan-known-toast-text{font-size:11px}.scan-known-toast-text small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.scan-known-toast{animation:none}}
+/* Updated: 2026-11-18 11:15 JST / Ver29 - keep camera live on repeated barcode; small pick notification */
