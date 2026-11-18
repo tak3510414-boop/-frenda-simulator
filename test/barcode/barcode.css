@@ -598,3 +598,5 @@
 @media(max-width:620px){.scan-known-toast{left:5px;right:5px;bottom:6px;padding:6px 8px;gap:7px}.scan-known-toast-image{width:49px;height:51px;flex-basis:49px}.scan-known-toast-text strong{font-size:12px}.scan-known-toast-text{font-size:11px}.scan-known-toast-text small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.scan-known-toast{animation:none}}
 /* Updated: 2026-11-18 11:15 JST / Ver29 - keep camera live on repeated barcode; small pick notification */
+
+/* Updated: 2026-11-18 11:39 JST / Ver30 - unchanged styles; scanner confirmation status uses existing styling */
