@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.102-TEST -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.103 / common TEST+PRODUCTION HTML -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.102 TEST</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.103</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -672,9 +672,9 @@ body.battleOverlayOpen{overflow:hidden}
 .pickCard.previewOnly .pickImageFrame{background:linear-gradient(130deg,#e7f3fb,#fdfcff)!important;}
 .previewOnly .ownedCard img{object-fit:contain!important;}
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.101 TEST</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.103</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
-<div id="simTestMasterStatus" class="simTestMasterStatus" role="status">TESTマスタを読み込み中…</div>
+<div id="simTestMasterStatus" class="simTestMasterStatus" role="status">マスタを読み込み中…</div>
 <details class="simLoginGuide" id="simCircleGuide">
   <summary>🔐 マイページの登録・変更（この端末だけ）</summary>
   <p>初回だけトレーナーピックのQRから取得した「https://circle.pokemonfrienda.com/TP?s=...」のURLを貼り付けます。登録後は上部の「マイページへ」から開けます。</p>
@@ -1019,7 +1019,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.102-test-m166");
+ const v=encodeURIComponent("6.103-portable-m166");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1032,14 +1032,23 @@ body.battleOverlayOpen{overflow:hidden}
      location.replace(url.href);
      return;
    }
+ }else{
+   // A copied production URL must not misleadingly retain TEST query parameters.
+   const url=new URL(location.href);
+   if(url.searchParams.has("test")||url.searchParams.has("selftest")){
+     url.searchParams.delete("test");url.searchParams.delete("selftest");
+     location.replace(url.href);
+     return;
+   }
  }
  if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
  document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
- // In /test/, load ONLY the local TEST master; all other runtime libraries are shared.
- // Do not update /frenda-master.js or rewrite production simulator.html.
- for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js"]){
-   const src=(inTest && f==="frenda-master.js")?"frenda-master.js":base+f;
-   document.write(`<script src="${src}?app=${v}"><\/script>`);
+ // Portable release: local master in BOTH environments; shared libs retain their original paths.
+ // The identical simulator.html + frenda-master.js pair is copied into /test/ first, then root after approval.
+ // Do not load the root (production) master into TEST, nor the TEST master into production.
+ document.write(`<script src="frenda-master.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js"]){
+   document.write(`<script src="${base+f}?app=${v}"><\/script>`);
  }
  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
  if(inTest)document.write(`<script src="frenda-cloud-test.js?app=${v}"><\/script>`); else document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
@@ -1047,12 +1056,26 @@ body.battleOverlayOpen{overflow:hidden}
 })();
 </script>
 <script>
-// Ver6.98 TEST: require active isolated test runtime before accessing any simulator storage.
-if(!window.FRENDA_TEST?.active || !window.FRENDA_USER?.isTest){
+// Ver6.103: SAME HTML for TEST and production.  TEST must be sandboxed; production must use production runtime.
+const simIsTest=/\/test(?:\/|$)/.test(location.pathname);
+const simRuntimeOk=!!window.FRENDA_USER && (simIsTest
+  ? (window.FRENDA_TEST?.active===true && window.FRENDA_USER.isTest===true)
+  : (window.FRENDA_TEST?.active!==true && window.FRENDA_USER.isTest===false));
+if(!simRuntimeOk){
  const el=document.getElementById("simTestMasterStatus");
- if(el){el.textContent="保存領域が分離されていないため、起動を停止しました。URLに ?test=1 を指定し、テスト環境を確認してください。";el.classList.add("error")}
- throw new Error("FRENDA_TEST_ISOLATION_REQUIRED");
+ if(el){
+   el.textContent=simIsTest
+     ? "TEST保存領域の分離に失敗しました。起動を停止します。"
+     : "本番用ユーザー保存処理を確認できません。起動を停止します。";
+   el.classList.add("error");
+ }
+ throw new Error("FRENDA_RUNTIME_ISOLATION_REQUIRED");
 }
+// Only the environment display changes; no different HTML or master is required for promotion.
+const simHeaderTitle=document.querySelector(".simHeaderTitle");
+const simDisplayVersion="Ver6.103"+(simIsTest?" TEST":"");
+if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
+document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
 const simStorage=window.FRENDA_USER?.storage||window.localStorage;
 const $=id=>document.getElementById(id);
@@ -1069,19 +1092,19 @@ if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 const R=DB.records;
 // v1.66 preview records retain explicit battle_ready:false. A complete reference stat set is NOT sufficient to unlock battle.
 const simPreviewNotReady=r=>!!r && r.battle_ready===false;
-const simTestPath=/\/test(?:\/|$)/.test(location.pathname);
 const simExpectedMasterVersion="1.66-xt3-research-preview";
 const simExpectedMasterCount=1104;
-const simTestMasterOk=simTestPath && DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
+const simMasterOk=DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
 const simTestStatusEl=document.getElementById("simTestMasterStatus");
 if(simTestStatusEl){
- simTestStatusEl.textContent=simTestMasterOk
-   ?`TEST専用マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（先行・検証待ち ${R.filter(simPreviewNotReady).length}件：対戦・評価対象外）`
-   :`TEST専用マスタの確認に失敗しました。/test/simulator.html と /test/frenda-master.js を配置してください。現在：${DB.master_version||"不明"} ／ ${R.length}件。`;
- simTestStatusEl.classList.toggle("error",!simTestMasterOk);
+ const simEnvName=simIsTest?"TEST":"本番";
+ simTestStatusEl.textContent=simMasterOk
+   ?`${simEnvName}マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（先行・検証待ち ${R.filter(simPreviewNotReady).length}件：対戦・評価対象外）`
+   :`${simEnvName}マスタがHTMLと一致しません。同じ配布版の simulator.html と frenda-master.js を同じフォルダに配置してください。現在：${DB.master_version||"不明"} ／ ${R.length}件。`;
+ simTestStatusEl.classList.toggle("error",!simMasterOk);
 }
-// Avoid executing this TEST build against production master or an older TEST master.
-if(!simTestMasterOk)throw new Error("TEST専用マスタのバージョン・件数または配置先が一致しません。");
+// Mismatched master versions must fail closed in TEST AND production.
+if(!simMasterOk)throw new Error("MasterDBのバージョン・件数がHTMLと一致しません。");
 const {TYPES,TYPE,FRIENDA_STEP,FRIENDA_EFFECT,rawEff,eff,speedLevel,compareSpeed,skillName,movePowerRef,moveAccuracyRef,displaySpeed}=CORE;
 const fields=[
  ["poke_ene","ポケエネ"],["grade","グレード"],["speed_level","すばやさ（段階）"],["speed_value","すばやさ値"],
@@ -2925,7 +2948,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.101-TEST",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.103",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2966,3 +2989,7 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 <!-- Updated: 2026-11-22 13:14 JST / Simulator Ver6.101 TEST / Source Ver05. -->
 
 <!-- Updated: 2026-11-22 13:28 JST / Ver6.102 TEST + MasterDB v1.66 (1,104 records, 38 official images). -->
+
+<!-- Updated: 2026-11-22 15:34 JST / Ver6.103 / Deliverable Ver07 / Same HTML+Master pair for TEST and production. -->
+
+<!-- Updated: 2026-11-22 15:36 JST / Ver6.103 / Ver07 source full text / portable TEST+PRODUCTION. -->
