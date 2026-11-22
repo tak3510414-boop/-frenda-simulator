@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.100-TEST -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.101-TEST -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.100 TEST</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.101 TEST</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -10,7 +10,7 @@ header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10
 .simHeaderActions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-shrink:0}
 .simHeaderActions a{min-height:36px;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
 .simOfficialPageLink{color:#06364a;background:#e5faff;border-color:#82d5e8}
-/* Ver6.100 TEST: official sign-in helper. No QR values, cookies, tokens, or user IDs are saved by the simulator. */
+/* Ver6.100 TEST: initial official sign-in guide. Ver6.101 adds optional browser-local URL registration. */
 .simLoginGuide{margin:0 0 10px;padding:0 11px;border:1px solid #cad9e3;border-radius:10px;background:#fff;color:#294a60;font-size:12px;line-height:1.6}
 .simLoginGuide summary{cursor:pointer;padding:8px 0;font-weight:800;list-style-position:inside}
 .simLoginGuide[open]{padding-bottom:10px}
@@ -657,16 +657,31 @@ body.battleOverlayOpen{overflow:hidden}
 .miniBadge.previewOnlyBadge{background:#fff1c7;color:#865a00}
 .pickCard.previewOnly{border-style:dashed}
 .battlePick:disabled{cursor:not-allowed;opacity:.55}
+
+/* Ver6.101 TEST: personal trainer entry is configured ONLY in this browser, never shipped in public source. */
+.simLoginGuide label{display:block;margin:10px 0 5px;font-weight:900;font-size:12px}
+.simLoginGuide input{width:100%;min-width:0;font-size:13px;line-height:1.35}
+.simLoginGuide .simCircleActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.simLoginGuide .simCircleActions button{padding:9px 11px;font-size:12px;min-height:40px}
+.simLoginGuide .simCircleActions a{display:inline-flex;align-items:center;padding:8px 11px;border-radius:10px;border:1px solid #bfd3e0;background:#edf6fc;color:#064a7b;text-decoration:none}
+.simCircleStatus{font-size:12px;font-weight:800;min-height:1.4em;margin-top:8px}
+.simCircleStatus.bad{color:#aa1d1d}.simCircleStatus.good{color:#17633e}
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.100 TEST</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" href="https://circle.pokemonfrienda.com/mypage/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルへログインしてマイページを別タブで開く">🔐 公式ログイン・マイページ</a></nav></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.101 TEST</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
 <div id="simTestMasterStatus" class="simTestMasterStatus" role="status">TESTマスタを読み込み中…</div>
-<details class="simLoginGuide">
-  <summary>公式マイページへのログイン方法（初回のみ確認）</summary>
-  <p>「🔐 公式ログイン・マイページ」から公式サイトを開きます。ログイン済みならマイページへ移動します。</p>
-  <p>未ログインの場合は、公式画面の「トレーナーピックをスキャンする！」を押して、<strong>お手元のトレーナーピック</strong>の2次元コードをカメラで読み取ってください。</p>
-  <p>次回以降のログインを簡単にするには、公式サイトをSafariで開き、案内に従ってホーム画面に追加してください。<a href="https://circle.pokemonfrienda.com/app/" target="_blank" rel="noopener noreferrer">公式アプリの説明</a></p>
-  <p>※ログインは公式サイトで行います。シミュレーターにはトレーナーID・QRコード・ログイン情報を保存しません。</p>
+<details class="simLoginGuide" id="simCircleGuide">
+  <summary>🔐 マイページの登録・変更（この端末だけ）</summary>
+  <p>初回だけトレーナーピックのQRから取得した「https://circle.pokemonfrienda.com/TP?s=...」のURLを貼り付けます。登録後は上部の「マイページへ」から開けます。</p>
+  <label for="simCircleUrlInput">公式トレーナーピックURL</label>
+  <input id="simCircleUrlInput" type="url" inputmode="url" placeholder="https://circle.pokemonfrienda.com/TP?s=…" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="simCirclePrivacy" />
+  <div class="simCircleActions">
+    <button type="button" id="simCircleSave" >登録して開く</button>
+    <button type="button" id="simCircleDelete" class="secondary">登録解除</button>
+    <a href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer">通常の公式ログイン</a>
+  </div>
+  <p class="simCircleStatus" id="simCircleStatus" role="status" aria-live="polite"></p>
+  <p id="simCirclePrivacy">※登録URLは<strong>このブラウザ内の端末保存領域だけ</strong>に保管し、GitHub・シミュレーターのクラウド同期やバックアップに含めません。ただし同じ端末を共有する人や、ブラウザの同一サイト上で動くプログラムから参照され得ます。共有端末では登録しないでください。URLの有効期限・認証省略は公式サイトの仕様に依存します。</p>
 </details>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
@@ -940,10 +955,66 @@ body.battleOverlayOpen{overflow:hidden}
 <p class="note">所持・お気に入り・修正値・写真はこの端末内に保存し、マスターDBは変更しません。</p>
 </section></div>
 </section>
+<script>
+/* Ver6.101 TEST: browser-local private official-circle entry; never embed user tokens in public repository files. */
+(function(){
+  "use strict";
+  // Non-frenda prefix is intentional: existing simulator cloud backup copies frenda:* keys.
+  var LOCAL_KEY="official-circle-private-entry-url:v1";
+  var link=document.getElementById("simOfficialPageLink");
+  var guide=document.getElementById("simCircleGuide");
+  var input=document.getElementById("simCircleUrlInput");
+  var status=document.getElementById("simCircleStatus");
+  var save=document.getElementById("simCircleSave");
+  var del=document.getElementById("simCircleDelete");
+  function validate(raw){
+    try{
+      var u=new URL(String(raw||"").trim());
+      if(u.protocol!=="https:" || u.hostname!=="circle.pokemonfrienda.com" || u.port || u.username || u.password || u.pathname!=="/TP" || u.hash)return "";
+      var token=u.searchParams.get("s");
+      if(!token || token.length<10 || token.length>2048)return "";
+      return u.href;
+    }catch(e){return "";}
+  }
+  function read(){
+    try {return validate(window.localStorage.getItem(LOCAL_KEY));}
+    catch(e){return "";}
+  }
+  function message(t,bad){status.textContent=t;status.className="simCircleStatus "+(bad?"bad":"good");}
+  function refresh(){
+    var registered=!!read();
+    link.textContent=registered?"🔐 マイページへ":"🔐 マイページを登録";
+    link.href="https://circle.pokemonfrienda.com/";
+    link.setAttribute("aria-label",registered?"登録済みの公式マイページを開く":"公式マイページのURLを登録する");
+    if(registered){message("この端末には登録済みです（URL自体は画面に表示しません）。",false);}
+    else{message("未登録です。URLを貼り付けてください。",false);}
+  }
+  link.addEventListener("click",function(e){
+    var url=read();
+    if(!url){e.preventDefault();guide.open=true;guide.scrollIntoView({block:"nearest"});input.focus();return;}
+    // Assign the destination only on a direct user click. Do not persist in public HTML.
+    link.href=url;
+  });
+  save.addEventListener("click",function(){
+    var url=validate(input.value);
+    if(!url){message("URLを確認してください。フレンダサークルの /TP?s= 形式のみ登録できます。",true);return;}
+    try{window.localStorage.setItem(LOCAL_KEY,url);}catch(e){message("ブラウザに保存できません。プライベートモードやサイトデータ設定を確認してください。",true);return;}
+    input.value="";refresh();message("この端末に登録しました。次回から上部のボタンで開けます。",false);
+    // This is invoked inside a click handler; Safari can permit a new tab here.
+    window.open(url,"_blank","noopener,noreferrer");
+  });
+  del.addEventListener("click",function(){
+    try{window.localStorage.removeItem(LOCAL_KEY);}catch(e){message("削除できません。ブラウザ設定を確認してください。",true);return;}
+    input.value="";refresh();message("登録を解除しました。",false);
+  });
+  // In-memory input is cleared on navigation and is never included in exports.
+  refresh();
+})();
+</script>
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.100-test-m165");
+ const v=encodeURIComponent("6.101-test-m165");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -2829,7 +2900,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.100-TEST",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.101-TEST",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2849,7 +2920,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.100-TEST",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.101-TEST",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2884,5 +2955,7 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 <!-- Ver6.99 TEST: シミュレーター上部に公式フレンダサークル（マイページ）を新規タブで開くリンクを追加。スマートフォンは2段構成にしてボタンを確保。マスタと保存キーは変更しない。 -->
 <!-- Updated: 2026-11-22 12:59 JST / Ver6.99 TEST (Source delivery Ver03). -->
 
-<!-- Ver6.100 TEST: 公式マイページ直通リンクと初回QRログイン手順。ログイン処理とセッションは公式サイトだけで管理し、シミュレーター側には認証情報を保存しない。 -->
+<!-- Ver6.100 TEST: 初期版の公式マイページ直通リンクとQRログイン手順。 -->
 <!-- Updated: 2026-11-22 13:02 JST / Ver6.100 TEST (Source delivery Ver04). -->
+
+<!-- Updated: 2026-11-22 13:14 JST / Simulator Ver6.101 TEST / Source Ver05. -->
