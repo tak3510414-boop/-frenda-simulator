@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.109 / common TEST+PRODUCTION HTML -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.111 / common TEST+PRODUCTION HTML -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.109</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.111</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -699,6 +699,15 @@ body.battleOverlayOpen{overflow:hidden}
 .best3SeriesOpponentNote{margin-top:8px;font-size:11px;color:#365970;line-height:1.6;font-weight:700;overflow-wrap:anywhere}
 .best3SeriesOpponentNote strong{color:#075b83}
 .best3OpponentOverviewWrap.hidden,#best3ManualOpponentPanel.hidden{display:none!important}
+
+/* Ver6.111: XT2 legacy picks use the official gold artwork, cropping the bottom gameplay panel.
+   Original illustration is never recolored or reconstructed. The normal matching pick
+   image is layered underneath as a fallback if the official gold composite is unavailable. */
+.legacyGoldArt{display:block;width:100%;aspect-ratio:2/3;border-radius:9px;
+ background-color:#fff8db;background-position:center top,center center;
+ background-repeat:no-repeat;background-size:100% 220%,100% auto;
+ border:2px solid #e5b431;box-shadow:inset 0 0 0 1px #fff4a6;}
+.pickBackPhotoWrap .legacyGoldArt{width:100%;border-radius:10px;}
 </style></head><body>
 <header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.105</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
@@ -1056,7 +1065,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.109-portable-m166");
+ const v=encodeURIComponent("6.111-portable-m168");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1110,7 +1119,7 @@ if(!simRuntimeOk){
 }
 // Only the environment display changes; no different HTML or master is required for promotion.
 const simHeaderTitle=document.querySelector(".simHeaderTitle");
-const simDisplayVersion="Ver6.109"+(simIsTest?" TEST":"");
+const simDisplayVersion="Ver6.111"+(simIsTest?" TEST":"");
 if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
 document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
@@ -1144,7 +1153,7 @@ const simReferenceBattle=r=>simPreviewNotReady(r)&&simReferenceBattleComplete(r)
 const simBattleBlocked=r=>simPreviewNotReady(r)&&!simReferenceBattleComplete(r);
 // Casual battles may use complete reference data; official strength and ranking pools retain their separate exclusion rule.
 const simCasualBattleEligible=r=>!!r&&RULES.validBattle(r)&&!!r.type1&&!simBattleBlocked(r);
-const simExpectedMasterVersion="1.66-xt3-research-preview";
+const simExpectedMasterVersion="1.68-xt2-legacy-gold-linked";
 const simExpectedMasterCount=1104;
 const simMasterOk=DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
 const simTestStatusEl=document.getElementById("simTestMasterStatus");
@@ -1180,6 +1189,15 @@ function pickImage(r){
  // Official image URL is unverified for pre-registered records: local placeholder only.
  if(simPreviewNotReady(r)&&!r.official_image)return svgPlaceholder(r.name_ja||"先行登録");
  return DATA.simulator.pickImage(r,svgPlaceholder);
+}
+// Gold legacy artwork uses actual official event art, not recoloring the base image.
+// The original pick artwork is displayed as a fallback behind the gold layer.
+function legacyGoldArtHTML(r){
+ if(!r||r.legacy_image_mode!=="official_gold_composite_crop")return "";
+ const gold=String(r.official_image||""),orig=String(r.legacy_source_image||"");
+ if(!/^https:\/\/pokemonfrienda\.com\/event\/e261016l\/img\//.test(gold)||
+    !/^https:\/\/pokemonfrienda\.com\/new\//.test(orig))return "";
+ return `<span class="legacyGoldArt" role="img" aria-label="${esc(r.name_ja)}・公式金色レガシーピック" style="background-image:url('${esc(gold)}'),url('${esc(orig)}')"></span>`;
 }
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","エクストレジャー3だん","スペシャルフレンダピック"];
 let browseSeries=null;
@@ -1528,7 +1546,7 @@ function renderBrowser(){
    const ss=strengthData?.scores?.get(r.master_id),sr=strengthData?.ranks?.get(r.master_id),si=Number.isFinite(ss)?{score:ss,rank:sr}:null;
    d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"")+(simPreviewNotReady(r)?" previewOnly":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simReferenceBattle(merged(r))?'<span class="miniBadge previewReadyBadge">参考値・総当たり可</span>':simBattleBlocked(merged(r))?'<span class="miniBadge previewOnlyBadge">能力値未完成・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame">${legacyGoldArtHTML(r)||`<img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}">`}<span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simReferenceBattle(merged(r))?'<span class="miniBadge previewReadyBadge">参考値・総当たり可</span>':simBattleBlocked(merged(r))?'<span class="miniBadge previewOnlyBadge">能力値未完成・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};const sb=d.querySelector(".strengthBadge");if(sb)sb.onclick=e=>{e.preventDefault();e.stopPropagation();showStrengthOverlay(r)};d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
  if(shown.length<a.length){
@@ -1564,7 +1582,7 @@ function showPickBack(r){
  const atkMatch=pickBackAttackTypes(m.move_type),defMatch=pickBackDefenseTypes(m.type1,m.type2),stab=!!m.move_type&&(m.move_type===m.type1||m.move_type===m.type2);
  const matchupHTML=`<div class="pickBackMatchups"><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>攻撃相性（技タイプ）</span>${stab?'<span class="pickBackStab">タイプ一致</span>':''}</div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">◎ ばつぐん</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.good)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">△ いまひとつ</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.immune)}</div></div><div class="pickBackMatchupNote">このピックの技タイプを、相手が単タイプだった場合の相性です。</div></div><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>防御相性（自分のタイプ）</span></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× 弱点</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.weak)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">○ 耐性</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.immune)}</div></div><div class="pickBackMatchupNote">複合タイプは2タイプを掛け合わせた最終相性で判定します。</div></div></div>`;
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simReferenceBattle(m)?'<div class="pickBackWarning">参考データで1対1バトルと参考値を含む総当たりランキングに参加できます。数値は未検証のため総合強さ・トーナメントからは除外しています。</div>':simBattleBlocked(m)?'<div class="pickBackWarning">能力値・技などが不足しているため対戦できません。総合ランキングからも除外しています。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap">${legacyGoldArtHTML(r)||`<img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}">`}<span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simReferenceBattle(m)?'<div class="pickBackWarning">参考データで1対1バトルと参考値を含む総当たりランキングに参加できます。数値は未検証のため総合強さ・トーナメントからは除外しています。</div>':simBattleBlocked(m)?'<div class="pickBackWarning">能力値・技などが不足しているため対戦できません。総合ランキングからも除外しています。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  const body=$("pickBackBody"),strengthBtn=body.querySelector(".pickBackStrength"),topBtn=body.querySelector(".pickBackMatchupTopBtn"),editBtn=body.querySelector(".pickBackEditBtn"),toggle=body.querySelector(".pickBackMatchupToggle"),collapse=body.querySelector(".pickBackMatchupCollapse");
  if(strengthBtn)strengthBtn.onclick=()=>{closePickBack();showStrengthOverlay(r)};
  if(topBtn)topBtn.onclick=()=>{closePickBack();openPickRecommendOverlay(r)};
@@ -3320,7 +3338,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.109",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.111",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -3340,7 +3358,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.109",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.111",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -3391,4 +3409,8 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 
 <!-- Updated: 2026-11-22 18:27 JST / Simulator Ver6.107 / Source Ver11 / tactical opponent-specific ranking; KO priority; reference data in counter teams; same TEST=PRODUCTION files. -->
 <!-- Updated: 2026-11-22 19:10 JST / Simulator Ver6.108 / Source Ver12 / default latest active series opponent pool, 3-pick complementary coverage. -->
-<!-- Updated: 2026-11-22 19:49 JST / Simulator Ver6.109 / Source Ver13 / individual opponents with latest-series picker default; unchanged master; portable TEST+PRODUCTION. -->
+<!-- Updated: 2026-11-22 19:49 JST / Simulator Ver6.111 / Source Ver13 / individual opponents with latest-series picker default; unchanged master; portable TEST+PRODUCTION. -->
+
+<!-- Updated: 2026-11-22 20:15 JST / Simulator Ver6.111 / Source Ver14 / matching MasterDB v1.67 legacy official imagery. No game logic changes. -->
+
+<!-- Updated: 2026-11-22 20:39 JST / Simulator Ver6.111 / Source Ver15 / official gold XT2 legacy crop and source matching (23 records). -->
