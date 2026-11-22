@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.101-TEST -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.102-TEST -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.101 TEST</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.102 TEST</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -666,6 +666,11 @@ body.battleOverlayOpen{overflow:hidden}
 .simLoginGuide .simCircleActions a{display:inline-flex;align-items:center;padding:8px 11px;border-radius:10px;border:1px solid #bfd3e0;background:#edf6fc;color:#064a7b;text-decoration:none}
 .simCircleStatus{font-size:12px;font-weight:800;min-height:1.4em;margin-top:8px}
 .simCircleStatus.bad{color:#aa1d1d}.simCircleStatus.good{color:#17633e}
+
+/* Ver6.102 TEST: show full official preview cards irrespective of horizontal/vertical layout */
+.pickCard.previewOnly .pickImageFrame img{object-fit:contain!important;background:#f6f8fb!important;}
+.pickCard.previewOnly .pickImageFrame{background:linear-gradient(130deg,#e7f3fb,#fdfcff)!important;}
+.previewOnly .ownedCard img{object-fit:contain!important;}
 </style></head><body>
 <header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.101 TEST</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
@@ -1014,7 +1019,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.101-test-m165");
+ const v=encodeURIComponent("6.102-test-m166");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1062,16 +1067,16 @@ if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。"
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 const R=DB.records;
-// v1.65 preview records have explicit battle_ready:false. Never infer missing stats.
+// v1.66 preview records retain explicit battle_ready:false. A complete reference stat set is NOT sufficient to unlock battle.
 const simPreviewNotReady=r=>!!r && r.battle_ready===false;
 const simTestPath=/\/test(?:\/|$)/.test(location.pathname);
-const simExpectedMasterVersion="1.65-xt3-official-preview";
+const simExpectedMasterVersion="1.66-xt3-research-preview";
 const simExpectedMasterCount=1104;
 const simTestMasterOk=simTestPath && DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
 const simTestStatusEl=document.getElementById("simTestMasterStatus");
 if(simTestStatusEl){
  simTestStatusEl.textContent=simTestMasterOk
-   ?`TEST専用マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（先行登録 ${R.filter(simPreviewNotReady).length}件：対戦・評価対象外）`
+   ?`TEST専用マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（先行・検証待ち ${R.filter(simPreviewNotReady).length}件：対戦・評価対象外）`
    :`TEST専用マスタの確認に失敗しました。/test/simulator.html と /test/frenda-master.js を配置してください。現在：${DB.master_version||"不明"} ／ ${R.length}件。`;
  simTestStatusEl.classList.toggle("error",!simTestMasterOk);
 }
@@ -1291,7 +1296,7 @@ function initBrowser(){
 function hasMasterFiveStats(r){return ["hp","atk","def","sp_atk","sp_def"].every(k=>r[k]!==null&&r[k]!==undefined&&r[k]!=="")}
 function renderMasterStatsStatus(){
  const verified=R.filter(hasMasterFiveStats).length,missing=R.length-verified,pct=R.length?Math.round(verified/R.length*1000)/10:0;
- $("masterStatsStatus").innerHTML=`マスター能力値：<strong>確認済み ${verified.toLocaleString("ja-JP")} / ${R.length.toLocaleString("ja-JP")}（${pct}%）</strong>　未確認 ${missing.toLocaleString("ja-JP")}件`;
+ $("masterStatsStatus").innerHTML=`マスター能力値：<strong>数値入力済み（参考値を含む） ${verified.toLocaleString("ja-JP")} / ${R.length.toLocaleString("ja-JP")}（${pct}%）</strong>　未入力 ${missing.toLocaleString("ja-JP")}件`;
 }
 function renderCollectionOverall(){
  const ids=new Set(getIds(OWNED_KEY)),n=ids.size,pct=R.length?Math.round(n/R.length*1000)/10:0;
@@ -1448,7 +1453,7 @@ function renderBrowser(){
    const ss=strengthData?.scores?.get(r.master_id),sr=strengthData?.ranks?.get(r.master_id),si=Number.isFinite(ss)?{score:ss,rank:sr}:null;
    d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"")+(simPreviewNotReady(r)?" previewOnly":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simPreviewNotReady(r)?'<span class="miniBadge previewOnlyBadge">先行登録・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simPreviewNotReady(r)?'<span class="miniBadge previewOnlyBadge">参考登録・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};const sb=d.querySelector(".strengthBadge");if(sb)sb.onclick=e=>{e.preventDefault();e.stopPropagation();showStrengthOverlay(r)};d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
  if(shown.length<a.length){
@@ -1484,7 +1489,7 @@ function showPickBack(r){
  const atkMatch=pickBackAttackTypes(m.move_type),defMatch=pickBackDefenseTypes(m.type1,m.type2),stab=!!m.move_type&&(m.move_type===m.type1||m.move_type===m.type2);
  const matchupHTML=`<div class="pickBackMatchups"><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>攻撃相性（技タイプ）</span>${stab?'<span class="pickBackStab">タイプ一致</span>':''}</div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">◎ ばつぐん</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.good)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">△ いまひとつ</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.immune)}</div></div><div class="pickBackMatchupNote">このピックの技タイプを、相手が単タイプだった場合の相性です。</div></div><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>防御相性（自分のタイプ）</span></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× 弱点</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.weak)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">○ 耐性</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.immune)}</div></div><div class="pickBackMatchupNote">複合タイプは2タイプを掛け合わせた最終相性で判定します。</div></div></div>`;
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simPreviewNotReady(r)?'<div class="pickBackWarning">TEST先行登録：公式能力値等の確認が完了するまで対戦・総合強さ評価に使用できません。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simPreviewNotReady(r)?'<div class="pickBackWarning">参考値・未検証データを含むため、確認が完了するまで対戦・総合強さ評価に使用できません。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  const body=$("pickBackBody"),strengthBtn=body.querySelector(".pickBackStrength"),topBtn=body.querySelector(".pickBackMatchupTopBtn"),editBtn=body.querySelector(".pickBackEditBtn"),toggle=body.querySelector(".pickBackMatchupToggle"),collapse=body.querySelector(".pickBackMatchupCollapse");
  if(strengthBtn)strengthBtn.onclick=()=>{closePickBack();showStrengthOverlay(r)};
  if(topBtn)topBtn.onclick=()=>{closePickBack();openPickRecommendOverlay(r)};
@@ -2959,3 +2964,5 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 <!-- Updated: 2026-11-22 13:02 JST / Ver6.100 TEST (Source delivery Ver04). -->
 
 <!-- Updated: 2026-11-22 13:14 JST / Simulator Ver6.101 TEST / Source Ver05. -->
+
+<!-- Updated: 2026-11-22 13:28 JST / Ver6.102 TEST + MasterDB v1.66 (1,104 records, 38 official images). -->
