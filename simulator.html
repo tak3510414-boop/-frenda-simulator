@@ -1,11 +1,25 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.97 -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.103 / common TEST+PRODUCTION HTML -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.97</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.103</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
-header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:600px){.simHeaderRow{gap:6px}.simHeaderTitle{font-size:12px}.simHomeLink{font-size:9px;padding:6px 7px}}
+header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+/* Ver6.99 TEST: 公式フレンダサークルへのマイページ導線を追加。外部サイトは別タブで開く。 */
+.simHeaderActions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-shrink:0}
+.simHeaderActions a{min-height:36px;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
+.simOfficialPageLink{color:#06364a;background:#e5faff;border-color:#82d5e8}
+/* Ver6.100 TEST: initial official sign-in guide. Ver6.101 adds optional browser-local URL registration. */
+.simLoginGuide{margin:0 0 10px;padding:0 11px;border:1px solid #cad9e3;border-radius:10px;background:#fff;color:#294a60;font-size:12px;line-height:1.6}
+.simLoginGuide summary{cursor:pointer;padding:8px 0;font-weight:800;list-style-position:inside}
+.simLoginGuide[open]{padding-bottom:10px}
+.simLoginGuide p{margin:7px 0}.simLoginGuide a{color:#075f98;font-weight:800}
+@media(max-width:380px){.simHeaderActions .simHomeLink{font-size:10px;padding:8px 7px}}
+
+.simHeaderActions a:focus-visible{outline:3px solid #ffcd49;outline-offset:2px}
+@media(max-width:600px){.simHeaderRow{gap:7px;flex-wrap:wrap}.simHeaderTitle{font-size:12px;width:100%}.simHeaderActions{width:100%;gap:8px}.simHeaderActions .simHomeLink{font-size:11px;padding:8px 11px}}
+
 main{max-width:760px;margin:auto;padding:12px}.card{background:white;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 6px #0002}
 h2{font-size:18px;margin:0 0 10px}.note{font-size:12px;color:#65717c;line-height:1.55}.search{display:flex;gap:8px}.search input{flex:1}
 input,button{font:inherit}input{width:100%;padding:11px;border:1px solid #b9c1c8;border-radius:10px;background:#fff}
@@ -637,9 +651,43 @@ body.battleOverlayOpen{overflow:hidden}
   }
 }
 
+/* Ver6.98 TEST: distinguish pre-registered, unverified picks. */
+.simTestMasterStatus{margin:0 0 10px;padding:10px 12px;border-radius:10px;border:1px solid #8cbbe1;background:#e7f5ff;color:#0a476a;font-size:12px;font-weight:900;line-height:1.6}
+.simTestMasterStatus.error{background:#ffece8;border-color:#efaaa1;color:#922b20}
+.miniBadge.previewOnlyBadge{background:#fff1c7;color:#865a00}
+.pickCard.previewOnly{border-style:dashed}
+.battlePick:disabled{cursor:not-allowed;opacity:.55}
+
+/* Ver6.101 TEST: personal trainer entry is configured ONLY in this browser, never shipped in public source. */
+.simLoginGuide label{display:block;margin:10px 0 5px;font-weight:900;font-size:12px}
+.simLoginGuide input{width:100%;min-width:0;font-size:13px;line-height:1.35}
+.simLoginGuide .simCircleActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.simLoginGuide .simCircleActions button{padding:9px 11px;font-size:12px;min-height:40px}
+.simLoginGuide .simCircleActions a{display:inline-flex;align-items:center;padding:8px 11px;border-radius:10px;border:1px solid #bfd3e0;background:#edf6fc;color:#064a7b;text-decoration:none}
+.simCircleStatus{font-size:12px;font-weight:800;min-height:1.4em;margin-top:8px}
+.simCircleStatus.bad{color:#aa1d1d}.simCircleStatus.good{color:#17633e}
+
+/* Ver6.102 TEST: show full official preview cards irrespective of horizontal/vertical layout */
+.pickCard.previewOnly .pickImageFrame img{object-fit:contain!important;background:#f6f8fb!important;}
+.pickCard.previewOnly .pickImageFrame{background:linear-gradient(130deg,#e7f3fb,#fdfcff)!important;}
+.previewOnly .ownedCard img{object-fit:contain!important;}
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.97</div><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.103</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
+<div id="simTestMasterStatus" class="simTestMasterStatus" role="status">マスタを読み込み中…</div>
+<details class="simLoginGuide" id="simCircleGuide">
+  <summary>🔐 マイページの登録・変更（この端末だけ）</summary>
+  <p>初回だけトレーナーピックのQRから取得した「https://circle.pokemonfrienda.com/TP?s=...」のURLを貼り付けます。登録後は上部の「マイページへ」から開けます。</p>
+  <label for="simCircleUrlInput">公式トレーナーピックURL</label>
+  <input id="simCircleUrlInput" type="url" inputmode="url" placeholder="https://circle.pokemonfrienda.com/TP?s=…" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="simCirclePrivacy" />
+  <div class="simCircleActions">
+    <button type="button" id="simCircleSave" >登録して開く</button>
+    <button type="button" id="simCircleDelete" class="secondary">登録解除</button>
+    <a href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer">通常の公式ログイン</a>
+  </div>
+  <p class="simCircleStatus" id="simCircleStatus" role="status" aria-live="polite"></p>
+  <p id="simCirclePrivacy">※登録URLは<strong>このブラウザ内の端末保存領域だけ</strong>に保管し、GitHub・シミュレーターのクラウド同期やバックアップに含めません。ただし同じ端末を共有する人や、ブラウザの同一サイト上で動くプログラムから参照され得ます。共有端末では登録しないでください。URLの有効期限・認証省略は公式サイトの仕様に依存します。</p>
+</details>
 <nav class="mainTabs" aria-label="メインメニュー">
   <button class="mainTabBtn active" type="button" data-main-tab="pick" aria-selected="true"><span class="tabNo">①</span><span class="tabLabel">ピック</span></button>
   <button class="mainTabBtn" type="button" data-main-tab="team" aria-selected="false"><span class="tabNo">②</span><span class="tabLabel">最強3体</span></button>
@@ -912,21 +960,122 @@ body.battleOverlayOpen{overflow:hidden}
 <p class="note">所持・お気に入り・修正値・写真はこの端末内に保存し、マスターDBは変更しません。</p>
 </section></div>
 </section>
+<script>
+/* Ver6.101 TEST: browser-local private official-circle entry; never embed user tokens in public repository files. */
+(function(){
+  "use strict";
+  // Non-frenda prefix is intentional: existing simulator cloud backup copies frenda:* keys.
+  var LOCAL_KEY="official-circle-private-entry-url:v1";
+  var link=document.getElementById("simOfficialPageLink");
+  var guide=document.getElementById("simCircleGuide");
+  var input=document.getElementById("simCircleUrlInput");
+  var status=document.getElementById("simCircleStatus");
+  var save=document.getElementById("simCircleSave");
+  var del=document.getElementById("simCircleDelete");
+  function validate(raw){
+    try{
+      var u=new URL(String(raw||"").trim());
+      if(u.protocol!=="https:" || u.hostname!=="circle.pokemonfrienda.com" || u.port || u.username || u.password || u.pathname!=="/TP" || u.hash)return "";
+      var token=u.searchParams.get("s");
+      if(!token || token.length<10 || token.length>2048)return "";
+      return u.href;
+    }catch(e){return "";}
+  }
+  function read(){
+    try {return validate(window.localStorage.getItem(LOCAL_KEY));}
+    catch(e){return "";}
+  }
+  function message(t,bad){status.textContent=t;status.className="simCircleStatus "+(bad?"bad":"good");}
+  function refresh(){
+    var registered=!!read();
+    link.textContent=registered?"🔐 マイページへ":"🔐 マイページを登録";
+    link.href="https://circle.pokemonfrienda.com/";
+    link.setAttribute("aria-label",registered?"登録済みの公式マイページを開く":"公式マイページのURLを登録する");
+    if(registered){message("この端末には登録済みです（URL自体は画面に表示しません）。",false);}
+    else{message("未登録です。URLを貼り付けてください。",false);}
+  }
+  link.addEventListener("click",function(e){
+    var url=read();
+    if(!url){e.preventDefault();guide.open=true;guide.scrollIntoView({block:"nearest"});input.focus();return;}
+    // Assign the destination only on a direct user click. Do not persist in public HTML.
+    link.href=url;
+  });
+  save.addEventListener("click",function(){
+    var url=validate(input.value);
+    if(!url){message("URLを確認してください。フレンダサークルの /TP?s= 形式のみ登録できます。",true);return;}
+    try{window.localStorage.setItem(LOCAL_KEY,url);}catch(e){message("ブラウザに保存できません。プライベートモードやサイトデータ設定を確認してください。",true);return;}
+    input.value="";refresh();message("この端末に登録しました。次回から上部のボタンで開けます。",false);
+    // This is invoked inside a click handler; Safari can permit a new tab here.
+    window.open(url,"_blank","noopener,noreferrer");
+  });
+  del.addEventListener("click",function(){
+    try{window.localStorage.removeItem(LOCAL_KEY);}catch(e){message("削除できません。ブラウザ設定を確認してください。",true);return;}
+    input.value="";refresh();message("登録を解除しました。",false);
+  });
+  // In-memory input is cleared on navigation and is never included in exports.
+  refresh();
+})();
+</script>
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.97");
+ const v=encodeURIComponent("6.103-portable-m166");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
+ // TEST storage in the existing test runtime is activated with ?test=1.
+ // Redirect before any user/data/cloud scripts are loaded to prevent writes to production saves.
+ if(inTest){
+   const url=new URL(location.href);
+   const qp=url.searchParams;
+   if(qp.get("test")!=="1" && qp.get("selftest")!=="1"){
+     qp.set("test","1");
+     location.replace(url.href);
+     return;
+   }
+ }else{
+   // A copied production URL must not misleadingly retain TEST query parameters.
+   const url=new URL(location.href);
+   if(url.searchParams.has("test")||url.searchParams.has("selftest")){
+     url.searchParams.delete("test");url.searchParams.delete("selftest");
+     location.replace(url.href);
+     return;
+   }
+ }
  if(inTest)document.write(`<script src="frenda-test.js?app=${v}"><\/script>`);
  document.write(`<script src="frenda-user.js?app=${v}"><\/script>`);
- for(const f of ["frenda-master.js","frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js"]) document.write(`<script src="${base}${f}?app=${v}"><\/script>`);
+ // Portable release: local master in BOTH environments; shared libs retain their original paths.
+ // The identical simulator.html + frenda-master.js pair is copied into /test/ first, then root after approval.
+ // Do not load the root (production) master into TEST, nor the TEST master into production.
+ document.write(`<script src="frenda-master.js?app=${v}"><\/script>`);
+ for(const f of ["frenda-core.js","frenda-rules.js","frenda-data.js","frenda-ui.js"]){
+   document.write(`<script src="${base+f}?app=${v}"><\/script>`);
+ }
  document.write(`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`);
  if(inTest)document.write(`<script src="frenda-cloud-test.js?app=${v}"><\/script>`); else document.write(`<script src="frenda-cloud.js?app=${v}"><\/script>`);
  document.write(`<script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js"><\/script>`);
 })();
 </script>
 <script>
+// Ver6.103: SAME HTML for TEST and production.  TEST must be sandboxed; production must use production runtime.
+const simIsTest=/\/test(?:\/|$)/.test(location.pathname);
+const simRuntimeOk=!!window.FRENDA_USER && (simIsTest
+  ? (window.FRENDA_TEST?.active===true && window.FRENDA_USER.isTest===true)
+  : (window.FRENDA_TEST?.active!==true && window.FRENDA_USER.isTest===false));
+if(!simRuntimeOk){
+ const el=document.getElementById("simTestMasterStatus");
+ if(el){
+   el.textContent=simIsTest
+     ? "TEST保存領域の分離に失敗しました。起動を停止します。"
+     : "本番用ユーザー保存処理を確認できません。起動を停止します。";
+   el.classList.add("error");
+ }
+ throw new Error("FRENDA_RUNTIME_ISOLATION_REQUIRED");
+}
+// Only the environment display changes; no different HTML or master is required for promotion.
+const simHeaderTitle=document.querySelector(".simHeaderTitle");
+const simDisplayVersion="Ver6.103"+(simIsTest?" TEST":"");
+if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
+document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
 const simStorage=window.FRENDA_USER?.storage||window.localStorage;
 const $=id=>document.getElementById(id);
@@ -941,6 +1090,21 @@ if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。"
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 const R=DB.records;
+// v1.66 preview records retain explicit battle_ready:false. A complete reference stat set is NOT sufficient to unlock battle.
+const simPreviewNotReady=r=>!!r && r.battle_ready===false;
+const simExpectedMasterVersion="1.66-xt3-research-preview";
+const simExpectedMasterCount=1104;
+const simMasterOk=DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
+const simTestStatusEl=document.getElementById("simTestMasterStatus");
+if(simTestStatusEl){
+ const simEnvName=simIsTest?"TEST":"本番";
+ simTestStatusEl.textContent=simMasterOk
+   ?`${simEnvName}マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（先行・検証待ち ${R.filter(simPreviewNotReady).length}件：対戦・評価対象外）`
+   :`${simEnvName}マスタがHTMLと一致しません。同じ配布版の simulator.html と frenda-master.js を同じフォルダに配置してください。現在：${DB.master_version||"不明"} ／ ${R.length}件。`;
+ simTestStatusEl.classList.toggle("error",!simMasterOk);
+}
+// Mismatched master versions must fail closed in TEST AND production.
+if(!simMasterOk)throw new Error("MasterDBのバージョン・件数がHTMLと一致しません。");
 const {TYPES,TYPE,FRIENDA_STEP,FRIENDA_EFFECT,rawEff,eff,speedLevel,compareSpeed,skillName,movePowerRef,moveAccuracyRef,displaySpeed}=CORE;
 const fields=[
  ["poke_ene","ポケエネ"],["grade","グレード"],["speed_level","すばやさ（段階）"],["speed_value","すばやさ値"],
@@ -960,8 +1124,12 @@ function migrateLegacyTeamToFavorites(){
  if(legacy.length)setIds(FAVORITE_KEY,[...getIds(FAVORITE_KEY),...legacy]);
  if(simStorage.getItem(LEGACY_TEAM_KEY)!==null)simStorage.removeItem(LEGACY_TEAM_KEY);
 }
-function pickImage(r){return DATA.simulator.pickImage(r,svgPlaceholder)}
-const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","スペシャルフレンダピック"];
+function pickImage(r){
+ // Official image URL is unverified for pre-registered records: local placeholder only.
+ if(simPreviewNotReady(r)&&!r.official_image)return svgPlaceholder(r.name_ja||"先行登録");
+ return DATA.simulator.pickImage(r,svgPlaceholder);
+}
+const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","エクストレジャー3だん","スペシャルフレンダピック"];
 let browseSeries=null;
 const PICK_VIEW_SIZE_KEY="frenda:simulator:pickViewSize:v1";
 let pickViewSize=["large","medium","small"].includes(simStorage.getItem(PICK_VIEW_SIZE_KEY))?simStorage.getItem(PICK_VIEW_SIZE_KEY):"medium";
@@ -1151,7 +1319,7 @@ function initBrowser(){
 function hasMasterFiveStats(r){return ["hp","atk","def","sp_atk","sp_def"].every(k=>r[k]!==null&&r[k]!==undefined&&r[k]!=="")}
 function renderMasterStatsStatus(){
  const verified=R.filter(hasMasterFiveStats).length,missing=R.length-verified,pct=R.length?Math.round(verified/R.length*1000)/10:0;
- $("masterStatsStatus").innerHTML=`マスター能力値：<strong>確認済み ${verified.toLocaleString("ja-JP")} / ${R.length.toLocaleString("ja-JP")}（${pct}%）</strong>　未確認 ${missing.toLocaleString("ja-JP")}件`;
+ $("masterStatsStatus").innerHTML=`マスター能力値：<strong>数値入力済み（参考値を含む） ${verified.toLocaleString("ja-JP")} / ${R.length.toLocaleString("ja-JP")}（${pct}%）</strong>　未入力 ${missing.toLocaleString("ja-JP")}件`;
 }
 function renderCollectionOverall(){
  const ids=new Set(getIds(OWNED_KEY)),n=ids.size,pct=R.length?Math.round(n/R.length*1000)/10:0;
@@ -1306,9 +1474,9 @@ function renderBrowser(){
  for(const r of shown){
    const m=merged(r),owned=isOwned(r),favorite=isFavorite(r),grade=Number(m.grade)||0,d=document.createElement("div");
    const ss=strengthData?.scores?.get(r.master_id),sr=strengthData?.ranks?.get(r.master_id),si=Number.isFinite(ss)?{score:ss,rank:sr}:null;
-   d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"");d.dataset.mid=String(r.master_id);
+   d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"")+(simPreviewNotReady(r)?" previewOnly":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:"・計算待ち"}</small></div><div class="cardBadges">${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simPreviewNotReady(r)?'<span class="miniBadge previewOnlyBadge">参考登録・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};const sb=d.querySelector(".strengthBadge");if(sb)sb.onclick=e=>{e.preventDefault();e.stopPropagation();showStrengthOverlay(r)};d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
  if(shown.length<a.length){
@@ -1344,7 +1512,7 @@ function showPickBack(r){
  const atkMatch=pickBackAttackTypes(m.move_type),defMatch=pickBackDefenseTypes(m.type1,m.type2),stab=!!m.move_type&&(m.move_type===m.type1||m.move_type===m.type2);
  const matchupHTML=`<div class="pickBackMatchups"><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>攻撃相性（技タイプ）</span>${stab?'<span class="pickBackStab">タイプ一致</span>':''}</div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">◎ ばつぐん</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.good)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">△ いまひとつ</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.immune)}</div></div><div class="pickBackMatchupNote">このピックの技タイプを、相手が単タイプだった場合の相性です。</div></div><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>防御相性（自分のタイプ）</span></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× 弱点</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.weak)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">○ 耐性</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.immune)}</div></div><div class="pickBackMatchupNote">複合タイプは2タイプを掛け合わせた最終相性で判定します。</div></div></div>`;
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simPreviewNotReady(r)?'<div class="pickBackWarning">参考値・未検証データを含むため、確認が完了するまで対戦・総合強さ評価に使用できません。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  const body=$("pickBackBody"),strengthBtn=body.querySelector(".pickBackStrength"),topBtn=body.querySelector(".pickBackMatchupTopBtn"),editBtn=body.querySelector(".pickBackEditBtn"),toggle=body.querySelector(".pickBackMatchupToggle"),collapse=body.querySelector(".pickBackMatchupCollapse");
  if(strengthBtn)strengthBtn.onclick=()=>{closePickBack();showStrengthOverlay(r)};
  if(topBtn)topBtn.onclick=()=>{closePickBack();openPickRecommendOverlay(r)};
@@ -1368,7 +1536,7 @@ function render(){
  $("status").className="status"+(edited?" edited":"");$("status").textContent=edited?"ユーザー修正値を適用中":"マスターDB値";
  $("fields").innerHTML="";
  for(const [k,label] of fields){const l=document.createElement("label");l.textContent=label;const i=document.createElement("input");i.id="v_"+k;i.value=Array.isArray(r[k])?r[k].join(" / "):(r[k]??"");i.disabled=!editing;l.appendChild(i);$("fields").appendChild(l)}
- $("photo").src=DATA.simulator.pickImage(selected,svgPlaceholder);
+ $("photo").src=pickImage(selected);
  const ownedNow=isOwned(selected);$("ownedBtn").textContent=ownedNow?"✓ 所持中":"未所持";$("ownedBtn").classList.toggle("on",ownedNow);
  const favoriteNow=isFavorite(selected);$("favoriteBtn").textContent=favoriteNow?"★ お気に入り登録済":"☆ お気に入りに追加";$("favoriteBtn").classList.toggle("on",favoriteNow);
  $("editBtn").classList.toggle("hidden",editing);$("saveBtn").classList.toggle("hidden",!editing);$("cancelBtn").classList.toggle("hidden",!editing)
@@ -1610,7 +1778,10 @@ function updateEnemyRandomStatus(){
 }
 function openMyPickOverlay(){renderBattlePicks();showBattleOverlay("myPickOverlay");setTimeout(()=>$("myPickQ")?.focus(),30)}
 function openEnemyPickOverlay(){pendingRandomEnemy=null;document.querySelectorAll(".enemyPickScopeBtn").forEach(b=>b.classList.toggle("on",(b.dataset.enemyScope||"all")===enemyPickScope));enemySearch();updateEnemyRandomStatus();updateEnemyRandomButtonLabel();showBattleOverlay("enemyPickOverlay");setTimeout(()=>$("enemyQ")?.focus(),30)}
-function openPickRecommendOverlay(r){recommendTargetRecord=merged(r);renderRecommendations();showBattleOverlay("recommendOverlay")}
+function openPickRecommendOverlay(r){
+ if(simPreviewNotReady(r)){UI.dialog.alert("先行登録ピックは能力値未確定のため、相性・対戦の計算ができません。");return}
+ recommendTargetRecord=merged(r);renderRecommendations();showBattleOverlay("recommendOverlay")
+}
 function openRecommendOverlay(){if(!recommendTargetRecord)return;renderRecommendations();showBattleOverlay("recommendOverlay")}
 function closeEnemyPicker(){
  if(pendingRandomEnemy&&battleMode==="single"&&!battle.busy){
@@ -1622,16 +1793,22 @@ function closeEnemyPicker(){
  updateEnemyRandomStatus();
  closeBattleOverlays()
 }
-function chooseMe(r){if(battle.busy)return;if(battleMode==="tournament"&&tournament.active){UI.dialog.alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
-function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;pendingRandomEnemy=null;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady();closeBattleOverlays()}
+function chooseMe(r){if(battle.busy)return;if(simPreviewNotReady(r)){UI.dialog.alert("このピックは先行登録中のため、バトルに使用できません。");return}if(battleMode==="tournament"&&tournament.active){UI.dialog.alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
+function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;if(simPreviewNotReady(r)){UI.dialog.alert("このピックは先行登録中のため、バトル相手にできません。");return}pendingRandomEnemy=null;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady();closeBattleOverlays()}
 function previewRandomEnemy(r){
- if(battle.busy||battleMode!=="single")return;
+ if(battle.busy||battleMode!=="single"||simPreviewNotReady(r))return;
  pendingRandomEnemy=merged(r);
  updateEnemyRandomStatus();
 }
 function startIfReady(){
  if(battle.busy||autoBattleRunning)return;
  if(!battle.me||!battle.enemy){arena();return}
+ if(simPreviewNotReady(battle.me)||simPreviewNotReady(battle.enemy)){
+   UI.dialog.alert("先行登録・能力値未確定のピックはバトルに使用できません。");
+   if(simPreviewNotReady(battle.me))battle.me=null;
+   if(simPreviewNotReady(battle.enemy))battle.enemy=null;
+   updateBattleSelectionStatus();arena();return;
+ }
  resetBattleVisuals();
  battle.mhp=Number(battle.me.hp)||1;battle.ehp=Number(battle.enemy.hp)||1;battle.over=false;battle.turn=1;battle.intro=false;battle.stats=freshBattleStats();
  $("battleLog").innerHTML="";$("battleWinner").innerHTML="";$("battleResult").innerHTML="";$("battleMessage").textContent="中央の 🆚 をタップすると最後まで戦います";
@@ -1682,7 +1859,7 @@ async function turn(){
    }else{battle.turn++;arena()}
  }finally{battle.busy=false;updateBattleVsState()}
 }
-function battlePickButton(r,onClick,selectedNow=false){const b=document.createElement("button"),owned=isOwned(r),favorite=isFavorite(r);b.className="battlePick"+(selectedNow?" selected":"");b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(r.name_ja)}</b><span>${esc(r.pick_no)} / ${esc(r.series)}${owned?' / <span class="ownedTiny">✓所持</span>':''}${favorite?' / <span class="favStar">★お気に入り</span>':''}</span></span>`;b.onclick=onClick;return b}
+function battlePickButton(r,onClick,selectedNow=false){const b=document.createElement("button"),owned=isOwned(r),favorite=isFavorite(r);b.className="battlePick"+(selectedNow?" selected":"");b.disabled=simPreviewNotReady(r);b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(r.name_ja)}</b><span>${esc(r.pick_no)} / ${esc(r.series)}${simPreviewNotReady(r)?" / 先行登録・対戦不可":""}${owned?' / <span class="ownedTiny">✓所持</span>':''}${favorite?' / <span class="favStar">★お気に入り</span>':''}</span></span>`;b.onclick=onClick;return b}
 let myPickScope="all";
 let enemyPickScope="all";
 function scopeLabel(scope){return scope==="owned"?"所持":scope==="favorite"?"お気に入り":"全件"}
@@ -1750,10 +1927,11 @@ function matchupScoreReference(x){
  return Math.round(clamp(typePts+energyPts+speedPts,0,59));
 }
 function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null,direction="best"}={}){
- const sourceEnemy=enemyRecord||battle.enemy;if(!sourceEnemy)return [];
+ const sourceEnemy=enemyRecord||battle.enemy;if(!sourceEnemy||simPreviewNotReady(sourceEnemy))return [];
  const enemy=merged(sourceEnemy), ownedIds=new Set(getIds(OWNED_KEY)), favoriteIds=new Set(getIds(FAVORITE_KEY));
  const fullRows=[],refRows=[];
  for(const base of R){
+   if(simPreviewNotReady(base))continue;
    const owned=ownedIds.has(base.master_id);
    if(ownedOnly&&!owned)continue;
    const c=merged(base),outEff=eff(c.move_type,enemy),inEff=eff(enemy.move_type,c);
@@ -1805,10 +1983,11 @@ function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null,
 function ownedRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:true,fullOnly:false,enemyRecord})}
 function allRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:false,fullOnly:true,enemyRecord})}
 function browserRecommendationRecords(targetRecord=null,direction="best"){
- const sourceTarget=targetRecord||recommendTargetRecord;if(!sourceTarget)return [];
+ const sourceTarget=targetRecord||recommendTargetRecord;if(!sourceTarget||simPreviewNotReady(sourceTarget))return [];
  const me=merged(sourceTarget),ownedIds=new Set(getIds(OWNED_KEY)),favoriteIds=new Set(getIds(FAVORITE_KEY));
  const rows=[];
  for(const base of R){
+   if(simPreviewNotReady(base))continue;
    if(base.master_id===sourceTarget.master_id)continue;
    const owned=ownedIds.has(base.master_id);
    if(recommendScope==="owned"&&!owned)continue;
@@ -1852,12 +2031,12 @@ function browserRecommendationRecords(targetRecord=null,direction="best"){
  return rows.slice(0,recommendLimit);
 }
 function chooseRecommended(r){
- if(!recommendTargetRecord)return;
+ if(!recommendTargetRecord||simPreviewNotReady(recommendTargetRecord)||simPreviewNotReady(r))return;
  battle.me=merged(recommendTargetRecord);battle.enemy=merged(r);
  updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();setMainTab("battle",false);setBattleMode("single");startIfReady();
 }
 function chooseRandomRecommended(r){
- if(!pendingRandomEnemy||battle.busy||battleMode!=="single")return;
+ if(!pendingRandomEnemy||battle.busy||battleMode!=="single"||simPreviewNotReady(r)||simPreviewNotReady(pendingRandomEnemy))return;
  battle.me=merged(r);
  battle.enemy=merged(pendingRandomEnemy);
  pendingRandomEnemy=null;
@@ -2266,7 +2445,7 @@ function setDamageModel(m){
  if(!$("enemyPickOverlay")?.classList.contains("hidden"))renderEnemyRandomRecommendations();
  renderBestThreeMode();
 }
-function hasBattleStats(r){return RULES.validBattle(r)&&!!r.type1}
+function hasBattleStats(r){return !simPreviewNotReady(r)&&RULES.validBattle(r)&&!!r.type1}
 function updateEnemyRandomButtonLabel(){const b=$("randomEnemyBtn");if(!b)return;const grade=$("enemyGrade")?.value||"";b.textContent=`${scopeLabel(enemyPickScope)}${grade?`・★${grade}`:""}からランダム`}
 function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>inPickScope(r,enemyPickScope)&&hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
 
@@ -2330,7 +2509,7 @@ function renderBestOwnedThree(){
  if(!team.length){box.innerHTML='<div class="historyEmpty639" style="grid-column:1/-1">能力値確認済みの所持ピックがありません。</div>';return}
  box.innerHTML=team.map((x,i)=>best3CardHTML(x,{slotLabel:`${i+1}位`})).join("");bindBest3ResultCards(box,{syncAll:true});
 }
-function best3OpponentBase(i){const id=best3OpponentSlots[i];return id?R.find(r=>r.master_id===id)||null:null}
+function best3OpponentBase(i){const id=best3OpponentSlots[i];if(!id)return null;const r=R.find(x=>x.master_id===id)||null;return simPreviewNotReady(r)?null:r}
 function best3Condition(i){
  const base=best3OpponentBase(i),c=base?merged(base):null,dbHasType=!!c?.type1;
  const manual=[...(best3WeakSlots[i]||[])].sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b));
@@ -2432,7 +2611,7 @@ function renderBest3WeakChooser({recalc=false}={}){
  if(recalc)updateBest3CounterTeams();else applyBest3CounterScopeUI(best3CounterScope);
 }
 function populateBest3OpponentSeries(){const sel=$("best3OpponentSeries");if(!sel||sel.dataset.ready)return;const vals=[...new Set(R.map(r=>r.series).filter(Boolean))];for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)}sel.dataset.ready="1"}
-function best3OpponentPickButton(r){const b=document.createElement("button"),c=merged(r),full=hasBattleStats(c),hasType=!!c.type1;b.className="battlePick";const st=full?["full","● 詳細データあり"]:hasType?["partial",c.move_type?"▲ タイプ＋攻撃属性あり":"▲ タイプ情報あり"]:["need","？ タイプ不明"];b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(c.name_ja)}</b><span>${esc(c.pick_no)} / ${esc(c.series||"")}</span><span class="best3OpponentPickStatus ${st[0]}">${st[1]}</span></span>`;b.onclick=()=>chooseBest3Opponent(r);return b}
+function best3OpponentPickButton(r){const b=document.createElement("button"),c=merged(r),full=hasBattleStats(c),hasType=!!c.type1;b.className="battlePick";b.disabled=simPreviewNotReady(r);const st=full?["full","● 詳細データあり"]:hasType?["partial",c.move_type?"▲ タイプ＋攻撃属性あり":"▲ タイプ情報あり"]:["need","？ タイプ不明"];b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(c.name_ja)}</b><span>${esc(c.pick_no)} / ${esc(c.series||"")}</span><span class="best3OpponentPickStatus ${st[0]}">${st[1]}</span></span>`;b.onclick=()=>chooseBest3Opponent(r);if(simPreviewNotReady(r))b.title="先行登録・能力未確定：相手に指定できません";return b}
 const BEST3_OPPONENT_PAGE_SIZE=80;
 const BEST3_OPPONENT_SEARCH_DELAY=130;
 let best3OpponentPickerLimit=BEST3_OPPONENT_PAGE_SIZE,best3OpponentSearchTimer=null;
@@ -2453,7 +2632,7 @@ function runBest3OpponentSearchNow(){
  renderBest3OpponentPicker(true);
 }
 function openBest3OpponentPicker(slot){best3OpponentPickerSlot=slot;populateBest3OpponentSeries();const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;if($("best3OpponentQ"))$("best3OpponentQ").value="";if($("best3OpponentSeries"))$("best3OpponentSeries").value="";renderBest3OpponentPicker(true);showBattleOverlay("best3OpponentOverlay");setTimeout(()=>$("best3OpponentQ")?.focus(),30)}
-function chooseBest3Opponent(r){best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser({recalc:true})}
+function chooseBest3Opponent(r){if(simPreviewNotReady(r)){UI.dialog.alert("先行登録・能力値未確定のピックは対象に指定できません。");return}best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser({recalc:true})}
 function best3AttackPts(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return 55;if(e>=FRIENDA_EFFECT.HIGH-.001)return 48;if(e>=1)return 24;if(e>=FRIENDA_EFFECT.LOW-.001)return 8;return 2}
 function best3ResistPts(e){if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return 20;if(e<=FRIENDA_EFFECT.LOW+.001)return 17;if(e<=1.001)return 10;if(e<=FRIENDA_EFFECT.HIGH+.001)return 3;return 0}
 function best3EffShort(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return "4倍弱点相当";if(e>=FRIENDA_EFFECT.HIGH-.001)return "ばつぐん";if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return "ほとんどこうかがない";if(e<=FRIENDA_EFFECT.LOW+.001)return "耐性";return "等倍"}
@@ -2749,7 +2928,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.97",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.101-TEST",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2769,7 +2948,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.97",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.103",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2798,3 +2977,19 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
   ・Simulator保存参照を simStorage (= FRENDA_USER.storage) に統一し、ユーザー別保存へ接続。
   ・トップレベル `storage` 宣言を禁止し、frenda-user.js のstorageイベント登録とのTDZ衝突を防止。
 -->
+
+<!-- Updated: 2026-11-22 12:33 JST / Ver6.98 TEST (master v1.65 preview, 1104 records). -->
+
+<!-- Ver6.99 TEST: シミュレーター上部に公式フレンダサークル（マイページ）を新規タブで開くリンクを追加。スマートフォンは2段構成にしてボタンを確保。マスタと保存キーは変更しない。 -->
+<!-- Updated: 2026-11-22 12:59 JST / Ver6.99 TEST (Source delivery Ver03). -->
+
+<!-- Ver6.100 TEST: 初期版の公式マイページ直通リンクとQRログイン手順。 -->
+<!-- Updated: 2026-11-22 13:02 JST / Ver6.100 TEST (Source delivery Ver04). -->
+
+<!-- Updated: 2026-11-22 13:14 JST / Simulator Ver6.101 TEST / Source Ver05. -->
+
+<!-- Updated: 2026-11-22 13:28 JST / Ver6.102 TEST + MasterDB v1.66 (1,104 records, 38 official images). -->
+
+<!-- Updated: 2026-11-22 15:34 JST / Ver6.103 / Deliverable Ver07 / Same HTML+Master pair for TEST and production. -->
+
+<!-- Updated: 2026-11-22 15:36 JST / Ver6.103 / Ver07 source full text / portable TEST+PRODUCTION. -->
