@@ -651,6 +651,9 @@ body.battleOverlayOpen{overflow:hidden}
   }
 }
 
+/* Ver6.104: reference picks can battle casually when complete, while ranking pools remain verified-only. */
+.miniBadge.previewReadyBadge{background:#dff4e5;color:#226737}
+.battleReferenceNotice{padding:10px 12px;margin:8px 0 10px;border:1px solid #c89a37;border-radius:11px;background:#fff4d2;color:#714b03;font-size:12px;font-weight:900;line-height:1.55}
 /* Ver6.98 TEST: distinguish pre-registered, unverified picks. */
 .simTestMasterStatus{margin:0 0 10px;padding:10px 12px;border-radius:10px;border:1px solid #8cbbe1;background:#e7f5ff;color:#0a476a;font-size:12px;font-weight:900;line-height:1.6}
 .simTestMasterStatus.error{background:#ffece8;border-color:#efaaa1;color:#922b20}
@@ -794,6 +797,7 @@ body.battleOverlayOpen{overflow:hidden}
 <div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div class="tournamentBracketHint">準々決勝 → 準決勝 → 決勝　（スマホは横にスライドできます）</div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px">
 <div class="battleSheetTop"><div class="battleSheetTitle">⚔️ 戦闘シート</div><div class="battleSheetBadges"><span id="battleModelBadge" class="battleSheetBadge">計算 Ver1</span><span id="battleTurnBadge" class="battleSheetBadge turn">TURN 1</span></div></div>
+ <div id="battleReferenceNotice" class="battleReferenceNotice hidden" role="status">参考データで対戦中。数値は未検証です。総合ランキング・総当たりランキングには反映されません。</div>
 <div class="battleFxControl" aria-label="バトル演出速度"><span>演出</span><button type="button" data-fx-speed="normal">標準</button><button type="button" data-fx-speed="fast">速い</button><button type="button" data-fx-speed="off">OFF</button></div>
 <div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><button id="battleVsButton" class="vsBadge" type="button" aria-label="最後まで戦う" title="最後まで戦う">🆚</button><div class="fighter" id="enemyFighter"></div></div><div id="battleFxLayer" class="battleFxLayer" aria-hidden="true"></div><div id="battleIntro" class="battleIntro" aria-hidden="true"><div class="battleIntroSide me"><span id="battleIntroMe"></span><small>MY PICK</small></div><div class="battleIntroVS">VS</div><div class="battleIntroSide enemy"><span id="battleIntroEnemy"></span><small>OPPONENT</small></div></div><div id="battleTurnSplash" class="battleTurnSplash" aria-hidden="true"><b></b><span></span></div><div id="battleImpact" class="battleImpact" aria-hidden="true"></div><div id="battleSpecialBanner" class="battleSpecialBanner" aria-hidden="true"><b></b><span></span></div><div id="battleVictoryFx" class="battleVictoryFx" aria-hidden="true"><b>WIN!</b><span></span></div></div>
 <div class="battleTapGuide">左右のピック画像をタップして選択・変更 ／ 中央の 🆚 をタップすると最後まで自動で戦います</div>
@@ -887,7 +891,7 @@ body.battleOverlayOpen{overflow:hidden}
       <div class="enemyRandomRow"><select id="enemyGrade"><option value="">全ランク</option><option value="5">★5</option><option value="4">★4</option><option value="3">★3</option><option value="2">★2</option><option value="1">★1</option></select><button id="randomEnemyBtn" class="ghost" type="button">この範囲からランダム</button></div>
       <div id="enemyRandomStatus" class="enemyRandomStatus">ランダムは何度でも引き直せます。現在の範囲から候補を選び、「閉じる」で確定します。</div>
       <div id="enemyRandomCandidate" class="enemyRandomCandidate hidden"></div>
-      <div class="battleModeHint">ランダムは能力値確認済みピックから抽選します。検索結果を押した場合は、そのピックを対戦相手として確定します。</div>
+      <div class="battleModeHint">ランダムは対戦可能なピックから抽選します（参考値のピックを含む）。検索結果を押した場合は、そのピックを対戦相手として確定します。</div>
       <div id="enemyResults" class="battlePickerList"></div>
     </div>
   </div>
@@ -1019,7 +1023,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.103-portable-m166");
+ const v=encodeURIComponent("6.104-portable-m166");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1073,7 +1077,7 @@ if(!simRuntimeOk){
 }
 // Only the environment display changes; no different HTML or master is required for promotion.
 const simHeaderTitle=document.querySelector(".simHeaderTitle");
-const simDisplayVersion="Ver6.103"+(simIsTest?" TEST":"");
+const simDisplayVersion="Ver6.104"+(simIsTest?" TEST":"");
 if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
 document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
@@ -1090,8 +1094,23 @@ if(!RULES)throw new Error("frenda-rules.js を読み込めませんでした。"
 if(!DATA)throw new Error("frenda-data.js を読み込めませんでした。");
 if(!UI)throw new Error("frenda-ui.js を読み込めませんでした。");
 const R=DB.records;
-// v1.66 preview records retain explicit battle_ready:false. A complete reference stat set is NOT sufficient to unlock battle.
+// v1.66 reference records stay outside official rankings, but can play casual 1v1 when complete.
 const simPreviewNotReady=r=>!!r && r.battle_ready===false;
+// Require all five numeric stats, move/type/class and a usable speed measure. Never fill missing values with guesses.
+function simReferenceBattleComplete(r){
+ if(!simPreviewNotReady(r)||!RULES.validBattle(r))return false;
+ const typeOk=t=>CORE.TYPES.includes(t);
+ const speedLevel=Number(r.speed_level),speedValue=Number(r.speed_value);
+ const speedOk=(r.speed_level!==null&&r.speed_level!==undefined&&r.speed_level!==""&&Number.isInteger(speedLevel)&&speedLevel>=1&&speedLevel<=5)
+   ||(r.speed_value!==null&&r.speed_value!==undefined&&r.speed_value!==""&&Number.isFinite(speedValue)&&speedValue>0);
+ return typeOk(r.type1)&&(!r.type2||typeOk(r.type2))&&typeOk(r.move_type)
+   &&(r.move_class==="物理"||r.move_class==="特殊")
+   &&typeof r.move==="string"&&r.move.trim().length>0&&speedOk;
+}
+const simReferenceBattle=r=>simPreviewNotReady(r)&&simReferenceBattleComplete(r);
+const simBattleBlocked=r=>simPreviewNotReady(r)&&!simReferenceBattleComplete(r);
+// Casual battles may use complete reference data; official strength and ranking pools retain their separate exclusion rule.
+const simCasualBattleEligible=r=>!!r&&RULES.validBattle(r)&&!!r.type1&&!simBattleBlocked(r);
 const simExpectedMasterVersion="1.66-xt3-research-preview";
 const simExpectedMasterCount=1104;
 const simMasterOk=DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
@@ -1099,7 +1118,7 @@ const simTestStatusEl=document.getElementById("simTestMasterStatus");
 if(simTestStatusEl){
  const simEnvName=simIsTest?"TEST":"本番";
  simTestStatusEl.textContent=simMasterOk
-   ?`${simEnvName}マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（先行・検証待ち ${R.filter(simPreviewNotReady).length}件：対戦・評価対象外）`
+   ?`${simEnvName}マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（参考値で1対1可 ${R.filter(simReferenceBattle).length}件 ／ 未完成・対戦不可 ${R.filter(simBattleBlocked).length}件 ／ 参考登録は総合ランキング対象外）`
    :`${simEnvName}マスタがHTMLと一致しません。同じ配布版の simulator.html と frenda-master.js を同じフォルダに配置してください。現在：${DB.master_version||"不明"} ／ ${R.length}件。`;
  simTestStatusEl.classList.toggle("error",!simMasterOk);
 }
@@ -1476,7 +1495,7 @@ function renderBrowser(){
    const ss=strengthData?.scores?.get(r.master_id),sr=strengthData?.ranks?.get(r.master_id),si=Number.isFinite(ss)?{score:ss,rank:sr}:null;
    d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"")+(simPreviewNotReady(r)?" previewOnly":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simPreviewNotReady(r)?'<span class="miniBadge previewOnlyBadge">参考登録・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simReferenceBattle(merged(r))?'<span class="miniBadge previewReadyBadge">参考値・1対1可（順位対象外）</span>':simBattleBlocked(merged(r))?'<span class="miniBadge previewOnlyBadge">能力値未完成・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};const sb=d.querySelector(".strengthBadge");if(sb)sb.onclick=e=>{e.preventDefault();e.stopPropagation();showStrengthOverlay(r)};d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
  if(shown.length<a.length){
@@ -1512,7 +1531,7 @@ function showPickBack(r){
  const atkMatch=pickBackAttackTypes(m.move_type),defMatch=pickBackDefenseTypes(m.type1,m.type2),stab=!!m.move_type&&(m.move_type===m.type1||m.move_type===m.type2);
  const matchupHTML=`<div class="pickBackMatchups"><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>攻撃相性（技タイプ）</span>${stab?'<span class="pickBackStab">タイプ一致</span>':''}</div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">◎ ばつぐん</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.good)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">△ いまひとつ</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.immune)}</div></div><div class="pickBackMatchupNote">このピックの技タイプを、相手が単タイプだった場合の相性です。</div></div><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>防御相性（自分のタイプ）</span></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× 弱点</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.weak)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">○ 耐性</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.immune)}</div></div><div class="pickBackMatchupNote">複合タイプは2タイプを掛け合わせた最終相性で判定します。</div></div></div>`;
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simPreviewNotReady(r)?'<div class="pickBackWarning">参考値・未検証データを含むため、確認が完了するまで対戦・総合強さ評価に使用できません。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simReferenceBattle(m)?'<div class="pickBackWarning">参考データで1対1バトルができます。数値は未検証のため、総合強さ・総当たりランキングからは除外しています。</div>':simBattleBlocked(m)?'<div class="pickBackWarning">能力値・技などが不足しているため対戦できません。総合ランキングからも除外しています。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  const body=$("pickBackBody"),strengthBtn=body.querySelector(".pickBackStrength"),topBtn=body.querySelector(".pickBackMatchupTopBtn"),editBtn=body.querySelector(".pickBackEditBtn"),toggle=body.querySelector(".pickBackMatchupToggle"),collapse=body.querySelector(".pickBackMatchupCollapse");
  if(strengthBtn)strengthBtn.onclick=()=>{closePickBack();showStrengthOverlay(r)};
  if(topBtn)topBtn.onclick=()=>{closePickBack();openPickRecommendOverlay(r)};
@@ -1660,7 +1679,7 @@ function battleHistoryData(){try{const x=JSON.parse(simStorage.getItem(BATTLE_HI
 function saveBattleHistory(winnerRec){
  if(battleMode!=="single"||!battle.me||!battle.enemy||!battle.stats)return;
  const won=winnerRec.master_id===battle.me.master_id,f=battleForecastData(),list=battleHistoryData();
- list.unshift({date:new Date().toISOString(),meId:battle.me.master_id,enemyId:battle.enemy.master_id,result:won?"win":"lose",turns:battle.turn,myRemain:Math.max(0,battle.mhp),enemyRemain:Math.max(0,battle.ehp),model:damageModel,score:f?.score??null,stats:{me:{...battle.stats.me},enemy:{...battle.stats.enemy}}});
+ list.unshift({date:new Date().toISOString(),meId:battle.me.master_id,enemyId:battle.enemy.master_id,result:won?"win":"lose",turns:battle.turn,myRemain:Math.max(0,battle.mhp),enemyRemain:Math.max(0,battle.ehp),model:damageModel,reference:simReferenceBattle(battle.me)||simReferenceBattle(battle.enemy),score:f?.score??null,stats:{me:{...battle.stats.me},enemy:{...battle.stats.enemy}}});
  try{simStorage.setItem(BATTLE_HISTORY_KEY,JSON.stringify(list.slice(0,50)))}catch{}
  renderBattleHistory();
 }
@@ -1679,7 +1698,7 @@ function renderBattleHistory(){
  const top=[...nem.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
  const title=$("battleNemesisTitle");if(title){const fr=focusId?R.find(x=>x.master_id===focusId):null;title.textContent=fr?`${fr.name_ja}がよく負ける相手 TOP5`:"よく負ける相手 TOP5"}
  nemBox.innerHTML=top.length?`<div class="nemesisList">${top.map(([id,n])=>{const r=R.find(x=>x.master_id===id);return r?`<div class="nemesisItem"><img src="${esc(pickImage(r))}" alt=""><div><b>${esc(r.name_ja)}</b><span>${n}敗 / ${esc(r.pick_no)}</span></div></div>`:`<div class="nemesisItem"><div><b>${esc(id)}</b><span>${n}敗</span></div></div>`}).join("")}</div>`:'<div class="historyEmpty639">このピックの敗戦データはありません。</div>';
- listBox.innerHTML=`<div class="historyList639">${list.map(h=>{const me=R.find(x=>x.master_id===h.meId),en=R.find(x=>x.master_id===h.enemyId),model=h.model==="v2"?"Ver2":"Ver1";return `<div class="historyBattleRow"><div class="date">${esc(battleHistoryDate(h.date))}</div><div class="match"><b>${esc(me?.name_ja||h.meId)} 🆚 ${esc(en?.name_ja||h.enemyId)}</b><span>${h.turns}ターン / 残HP ${h.myRemain} / 相性 ${h.score??"-"}点 / ${model}</span></div><span class="historyBattleResult ${h.result}">${h.result==="win"?"WIN":"LOSE"}</span></div>`}).join("")}</div>`;
+ listBox.innerHTML=`<div class="historyList639">${list.map(h=>{const me=R.find(x=>x.master_id===h.meId),en=R.find(x=>x.master_id===h.enemyId),model=h.model==="v2"?"Ver2":"Ver1";return `<div class="historyBattleRow"><div class="date">${esc(battleHistoryDate(h.date))}</div><div class="match"><b>${esc(me?.name_ja||h.meId)} 🆚 ${esc(en?.name_ja||h.enemyId)}</b><span>${h.turns}ターン / 残HP ${h.myRemain} / 相性 ${h.score??"-"}点 / ${model}${h.reference?" / ⚠参考値":""}</span></div><span class="historyBattleResult ${h.result}">${h.result==="win"?"WIN":"LOSE"}</span></div>`}).join("")}</div>`;
 }
 function clearBattleHistory(){
  const n=battleHistoryData().length;if(!n)return;if(!UI.dialog.confirm(`保存している対戦履歴 ${n}戦をすべて消去しますか？`))return;simStorage.removeItem(BATTLE_HISTORY_KEY);renderBattleHistory();
@@ -1749,7 +1768,12 @@ function arena(){
  bindFighterSelectors();renderBattleForecast();updateBattleVsState()
 }
 function updateBattleSelectionStatus(){
- const my=$("myBattleSelection"),en=$("enemyBattleSelection");
+ const my=$("myBattleSelection"),en=$("enemyBattleSelection"),notice=$("battleReferenceNotice");
+ if(notice){
+   const reference=simReferenceBattle(battle.me)||simReferenceBattle(battle.enemy);
+   notice.classList.toggle("hidden",!(reference&&battleMode==="single"));
+   if(reference)notice.textContent="⚠️ 参考データで対戦中：未検証の能力値を使用しています。総合強さ・総当たりランキングには反映しません。";
+ }
  if(my){my.textContent=battle.me?`選択中：${battle.me.name_ja}（${battle.me.pick_no}）`:"未選択";my.classList.toggle("active",!!battle.me)}
  if(en){en.textContent=battle.enemy?`選択中：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`:"未選択";en.classList.toggle("active",!!battle.enemy)}
  renderBattleHistory();
@@ -1779,7 +1803,7 @@ function updateEnemyRandomStatus(){
 function openMyPickOverlay(){renderBattlePicks();showBattleOverlay("myPickOverlay");setTimeout(()=>$("myPickQ")?.focus(),30)}
 function openEnemyPickOverlay(){pendingRandomEnemy=null;document.querySelectorAll(".enemyPickScopeBtn").forEach(b=>b.classList.toggle("on",(b.dataset.enemyScope||"all")===enemyPickScope));enemySearch();updateEnemyRandomStatus();updateEnemyRandomButtonLabel();showBattleOverlay("enemyPickOverlay");setTimeout(()=>$("enemyQ")?.focus(),30)}
 function openPickRecommendOverlay(r){
- if(simPreviewNotReady(r)){UI.dialog.alert("先行登録ピックは能力値未確定のため、相性・対戦の計算ができません。");return}
+ if(simBattleBlocked(merged(r))){UI.dialog.alert("能力値や技が未完成のため、相性・対戦の計算ができません。");return}
  recommendTargetRecord=merged(r);renderRecommendations();showBattleOverlay("recommendOverlay")
 }
 function openRecommendOverlay(){if(!recommendTargetRecord)return;renderRecommendations();showBattleOverlay("recommendOverlay")}
@@ -1793,26 +1817,27 @@ function closeEnemyPicker(){
  updateEnemyRandomStatus();
  closeBattleOverlays()
 }
-function chooseMe(r){if(battle.busy)return;if(simPreviewNotReady(r)){UI.dialog.alert("このピックは先行登録中のため、バトルに使用できません。");return}if(battleMode==="tournament"&&tournament.active){UI.dialog.alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
-function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;if(simPreviewNotReady(r)){UI.dialog.alert("このピックは先行登録中のため、バトル相手にできません。");return}pendingRandomEnemy=null;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady();closeBattleOverlays()}
+function chooseMe(r){if(battle.busy)return;if(simBattleBlocked(merged(r))){UI.dialog.alert("このピックは能力値や技が未完成のためバトルに使用できません。");return}if(battleMode==="tournament"&&simReferenceBattle(merged(r))){UI.dialog.alert("参考値ピックは1対1バトルで使用できます。トーナメントはランキング対象ピックのみ参加できます。");return}if(battleMode==="tournament"&&tournament.active){UI.dialog.alert("大会中は参加ピックを変更できません。大会を中止してから変更してください。");return}battle.me=merged(r);updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();if(battleMode==="single")startIfReady()}
+function chooseEnemy(r){if(battle.busy||battleMode!=="single")return;if(simBattleBlocked(merged(r))){UI.dialog.alert("このピックは能力値や技が未完成のためバトル相手にできません。");return}pendingRandomEnemy=null;battle.enemy=merged(r);updateBattleSelectionStatus();enemySearch();startIfReady();closeBattleOverlays()}
 function previewRandomEnemy(r){
- if(battle.busy||battleMode!=="single"||simPreviewNotReady(r))return;
+ if(battle.busy||battleMode!=="single"||!simCasualBattleEligible(merged(r)))return;
  pendingRandomEnemy=merged(r);
  updateEnemyRandomStatus();
 }
 function startIfReady(){
  if(battle.busy||autoBattleRunning)return;
  if(!battle.me||!battle.enemy){arena();return}
- if(simPreviewNotReady(battle.me)||simPreviewNotReady(battle.enemy)){
-   UI.dialog.alert("先行登録・能力値未確定のピックはバトルに使用できません。");
-   if(simPreviewNotReady(battle.me))battle.me=null;
-   if(simPreviewNotReady(battle.enemy))battle.enemy=null;
+ if(simBattleBlocked(battle.me)||simBattleBlocked(battle.enemy)){
+   UI.dialog.alert("能力値や技が未完成のピックはバトルに使用できません。");
+   if(simBattleBlocked(battle.me))battle.me=null;
+   if(simBattleBlocked(battle.enemy))battle.enemy=null;
    updateBattleSelectionStatus();arena();return;
  }
  resetBattleVisuals();
  battle.mhp=Number(battle.me.hp)||1;battle.ehp=Number(battle.enemy.hp)||1;battle.over=false;battle.turn=1;battle.intro=false;battle.stats=freshBattleStats();
  $("battleLog").innerHTML="";$("battleWinner").innerHTML="";$("battleResult").innerHTML="";$("battleMessage").textContent="中央の 🆚 をタップすると最後まで戦います";
  blog(`⚔️ ${esc(battle.me.name_ja)} vs ${esc(battle.enemy.name_ja)}　1対1・交代なし`);
+ if(simReferenceBattle(battle.me)||simReferenceBattle(battle.enemy))blog("⚠️ 参考データで対戦中：未検証の能力値を使用。総合ランキングには反映しません。");
  blog(`開始HP：${esc(battle.me.name_ja)} ${battle.mhp} / ${esc(battle.enemy.name_ja)} ${battle.ehp}`);
  arena()
 }
@@ -1859,7 +1884,7 @@ async function turn(){
    }else{battle.turn++;arena()}
  }finally{battle.busy=false;updateBattleVsState()}
 }
-function battlePickButton(r,onClick,selectedNow=false){const b=document.createElement("button"),owned=isOwned(r),favorite=isFavorite(r);b.className="battlePick"+(selectedNow?" selected":"");b.disabled=simPreviewNotReady(r);b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(r.name_ja)}</b><span>${esc(r.pick_no)} / ${esc(r.series)}${simPreviewNotReady(r)?" / 先行登録・対戦不可":""}${owned?' / <span class="ownedTiny">✓所持</span>':''}${favorite?' / <span class="favStar">★お気に入り</span>':''}</span></span>`;b.onclick=onClick;return b}
+function battlePickButton(r,onClick,selectedNow=false){const b=document.createElement("button"),owned=isOwned(r),favorite=isFavorite(r),m=merged(r),blocked=simBattleBlocked(m),reference=simReferenceBattle(m),cupBlocked=battleMode==="tournament"&&reference;b.className="battlePick"+(selectedNow?" selected":"");b.disabled=blocked||cupBlocked;b.title=blocked?"能力値や技が未完成":cupBlocked?"参考値ピックは1対1のみ（大会・ランキング対象外）":reference?"参考データで1対1対戦可能":"";b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(r.name_ja)}</b><span>${esc(r.pick_no)} / ${esc(r.series)}${blocked?" / 能力値未完成・対戦不可":cupBlocked?" / 参考値・大会対象外":reference?" / 参考値・1対1可":""}${owned?' / <span class="ownedTiny">✓所持</span>':''}${favorite?' / <span class="favStar">★お気に入り</span>':''}</span></span>`;b.onclick=onClick;return b}
 let myPickScope="all";
 let enemyPickScope="all";
 function scopeLabel(scope){return scope==="owned"?"所持":scope==="favorite"?"お気に入り":"全件"}
@@ -1927,11 +1952,11 @@ function matchupScoreReference(x){
  return Math.round(clamp(typePts+energyPts+speedPts,0,59));
 }
 function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null,direction="best"}={}){
- const sourceEnemy=enemyRecord||battle.enemy;if(!sourceEnemy||simPreviewNotReady(sourceEnemy))return [];
+ const sourceEnemy=enemyRecord||battle.enemy;if(!sourceEnemy||simBattleBlocked(sourceEnemy))return [];
  const enemy=merged(sourceEnemy), ownedIds=new Set(getIds(OWNED_KEY)), favoriteIds=new Set(getIds(FAVORITE_KEY));
  const fullRows=[],refRows=[];
  for(const base of R){
-   if(simPreviewNotReady(base))continue;
+   if(simBattleBlocked(merged(base)))continue;
    const owned=ownedIds.has(base.master_id);
    if(ownedOnly&&!owned)continue;
    const c=merged(base),outEff=eff(c.move_type,enemy),inEff=eff(enemy.move_type,c);
@@ -1983,11 +2008,11 @@ function recommendationRecords({ownedOnly=false,fullOnly=false,enemyRecord=null,
 function ownedRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:true,fullOnly:false,enemyRecord})}
 function allRecommendationRecords(enemyRecord=null){return recommendationRecords({ownedOnly:false,fullOnly:true,enemyRecord})}
 function browserRecommendationRecords(targetRecord=null,direction="best"){
- const sourceTarget=targetRecord||recommendTargetRecord;if(!sourceTarget||simPreviewNotReady(sourceTarget))return [];
+ const sourceTarget=targetRecord||recommendTargetRecord;if(!sourceTarget||simBattleBlocked(sourceTarget))return [];
  const me=merged(sourceTarget),ownedIds=new Set(getIds(OWNED_KEY)),favoriteIds=new Set(getIds(FAVORITE_KEY));
  const rows=[];
  for(const base of R){
-   if(simPreviewNotReady(base))continue;
+   if(simBattleBlocked(merged(base)))continue;
    if(base.master_id===sourceTarget.master_id)continue;
    const owned=ownedIds.has(base.master_id);
    if(recommendScope==="owned"&&!owned)continue;
@@ -2031,12 +2056,12 @@ function browserRecommendationRecords(targetRecord=null,direction="best"){
  return rows.slice(0,recommendLimit);
 }
 function chooseRecommended(r){
- if(!recommendTargetRecord||simPreviewNotReady(recommendTargetRecord)||simPreviewNotReady(r))return;
+ if(!recommendTargetRecord||simBattleBlocked(recommendTargetRecord)||simBattleBlocked(merged(r)))return;
  battle.me=merged(recommendTargetRecord);battle.enemy=merged(r);
  updateBattleSelectionStatus();renderBattlePicks();closeBattleOverlays();setMainTab("battle",false);setBattleMode("single");startIfReady();
 }
 function chooseRandomRecommended(r){
- if(!pendingRandomEnemy||battle.busy||battleMode!=="single"||simPreviewNotReady(r)||simPreviewNotReady(pendingRandomEnemy))return;
+ if(!pendingRandomEnemy||battle.busy||battleMode!=="single"||simBattleBlocked(merged(r))||simBattleBlocked(pendingRandomEnemy))return;
  battle.me=merged(r);
  battle.enemy=merged(pendingRandomEnemy);
  pendingRandomEnemy=null;
@@ -2106,7 +2131,7 @@ function renderRecommendations(){
  const owned=recommendScope==="owned";
  const label=recommendDirection==="best"?"相性がいい":"相性が悪い";
  const meaning=recommendDirection==="best"?"このピックが戦いやすい相手":"このピックが苦手な相手";
- note.textContent=(owned?"所持中かつ能力値確認済みの相手候補から選出。":"能力値確認済みの全相手候補から選出。")+` ${label} TOP${recommendLimit}（${meaning}）を表示中。`;
+ note.textContent=(owned?"所持中で対戦計算が可能な相手候補から選出（参考値を含む）。":"対戦計算が可能な全相手候補から選出（参考値を含む）。")+` ${label} TOP${recommendLimit}（${meaning}）を表示中。`;
  if(recommendDirection==="best"){
    renderRecommendationCards(bestGrid,browserRecommendationRecords(me,"best"),{overall:!owned});
    worstGrid.innerHTML="";
@@ -2311,7 +2336,7 @@ function roundRobinPoolInfo(){
  const scope=ownedOnly?"所持ピック":"全ピック",modelLabel=damageModel==="v2"?"Ver2":"Ver1";
  const meta={pool,pairs,ownedOnly,excluded},cacheInfo=roundRobinCacheEntry(meta),hasCache=!!cacheInfo.entry;
  const el=$("roundRobinPoolNote");
- if(el)el.textContent=`対象：${scope} ${pool.length.toLocaleString("ja-JP")}件 / 総当たり ${pairs.toLocaleString("ja-JP")}試合 / ${modelLabel}${excluded?` / 能力値未確認など ${excluded.toLocaleString("ja-JP")}件は除外`:""}。勝ち3点・引き分け1点・負け0点。${hasCache?" 前回計算結果を再利用できます。":""}`;
+ if(el)el.textContent=`対象：${scope} ${pool.length.toLocaleString("ja-JP")}件 / 総当たり ${pairs.toLocaleString("ja-JP")}試合 / ${modelLabel}${excluded?` / 能力値未確認・参考値など ${excluded.toLocaleString("ja-JP")}件は除外`:""}。勝ち3点・引き分け1点・負け0点。${hasCache?" 前回計算結果を再利用できます。":""}`;
  const btn=$("runRoundRobinBtn");if(btn)btn.textContent=hasCache?"前回結果を表示":"総当たりを実行";
  return meta
 }
@@ -2447,7 +2472,7 @@ function setDamageModel(m){
 }
 function hasBattleStats(r){return !simPreviewNotReady(r)&&RULES.validBattle(r)&&!!r.type1}
 function updateEnemyRandomButtonLabel(){const b=$("randomEnemyBtn");if(!b)return;const grade=$("enemyGrade")?.value||"";b.textContent=`${scopeLabel(enemyPickScope)}${grade?`・★${grade}`:""}からランダム`}
-function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>inPickScope(r,enemyPickScope)&&hasBattleStats(r)&&(!grade||String(r.grade)===grade))}
+function randomEnemyPool(){const grade=$("enemyGrade").value;return R.filter(r=>inPickScope(r,enemyPickScope)&&simCasualBattleEligible(merged(r))&&(!grade||String(r.grade)===grade))}
 
 const BEST3_WEAK_KEY="frenda:best3Weak:v1";
 const BEST3_OPP_KEY="frenda:best3Opponent:v1";
@@ -2509,7 +2534,7 @@ function renderBestOwnedThree(){
  if(!team.length){box.innerHTML='<div class="historyEmpty639" style="grid-column:1/-1">能力値確認済みの所持ピックがありません。</div>';return}
  box.innerHTML=team.map((x,i)=>best3CardHTML(x,{slotLabel:`${i+1}位`})).join("");bindBest3ResultCards(box,{syncAll:true});
 }
-function best3OpponentBase(i){const id=best3OpponentSlots[i];if(!id)return null;const r=R.find(x=>x.master_id===id)||null;return simPreviewNotReady(r)?null:r}
+function best3OpponentBase(i){const id=best3OpponentSlots[i];if(!id)return null;const r=R.find(x=>x.master_id===id)||null;return simBattleBlocked(merged(r))?null:r}
 function best3Condition(i){
  const base=best3OpponentBase(i),c=base?merged(base):null,dbHasType=!!c?.type1;
  const manual=[...(best3WeakSlots[i]||[])].sort((a,b)=>best3TypeOrder(a)-best3TypeOrder(b));
@@ -2611,7 +2636,7 @@ function renderBest3WeakChooser({recalc=false}={}){
  if(recalc)updateBest3CounterTeams();else applyBest3CounterScopeUI(best3CounterScope);
 }
 function populateBest3OpponentSeries(){const sel=$("best3OpponentSeries");if(!sel||sel.dataset.ready)return;const vals=[...new Set(R.map(r=>r.series).filter(Boolean))];for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)}sel.dataset.ready="1"}
-function best3OpponentPickButton(r){const b=document.createElement("button"),c=merged(r),full=hasBattleStats(c),hasType=!!c.type1;b.className="battlePick";b.disabled=simPreviewNotReady(r);const st=full?["full","● 詳細データあり"]:hasType?["partial",c.move_type?"▲ タイプ＋攻撃属性あり":"▲ タイプ情報あり"]:["need","？ タイプ不明"];b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(c.name_ja)}</b><span>${esc(c.pick_no)} / ${esc(c.series||"")}</span><span class="best3OpponentPickStatus ${st[0]}">${st[1]}</span></span>`;b.onclick=()=>chooseBest3Opponent(r);if(simPreviewNotReady(r))b.title="先行登録・能力未確定：相手に指定できません";return b}
+function best3OpponentPickButton(r){const b=document.createElement("button"),c=merged(r),full=simCasualBattleEligible(c),hasType=!!c.type1;b.className="battlePick";b.disabled=simBattleBlocked(c);const st=full?["full","● 詳細データあり"]:hasType?["partial",c.move_type?"▲ タイプ＋攻撃属性あり":"▲ タイプ情報あり"]:["need","？ タイプ不明"];b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(c.name_ja)}</b><span>${esc(c.pick_no)} / ${esc(c.series||"")}</span><span class="best3OpponentPickStatus ${st[0]}">${st[1]}</span></span>`;b.onclick=()=>chooseBest3Opponent(r);if(simBattleBlocked(c))b.title="能力値や技が未完成：相手に指定できません";else if(simReferenceBattle(c))b.title="参考データで相性を計算します";return b}
 const BEST3_OPPONENT_PAGE_SIZE=80;
 const BEST3_OPPONENT_SEARCH_DELAY=130;
 let best3OpponentPickerLimit=BEST3_OPPONENT_PAGE_SIZE,best3OpponentSearchTimer=null;
@@ -2632,13 +2657,13 @@ function runBest3OpponentSearchNow(){
  renderBest3OpponentPicker(true);
 }
 function openBest3OpponentPicker(slot){best3OpponentPickerSlot=slot;populateBest3OpponentSeries();const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;if($("best3OpponentQ"))$("best3OpponentQ").value="";if($("best3OpponentSeries"))$("best3OpponentSeries").value="";renderBest3OpponentPicker(true);showBattleOverlay("best3OpponentOverlay");setTimeout(()=>$("best3OpponentQ")?.focus(),30)}
-function chooseBest3Opponent(r){if(simPreviewNotReady(r)){UI.dialog.alert("先行登録・能力値未確定のピックは対象に指定できません。");return}best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser({recalc:true})}
+function chooseBest3Opponent(r){if(simBattleBlocked(merged(r))){UI.dialog.alert("能力値や技が未完成のピックは対象に指定できません。");return}best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser({recalc:true})}
 function best3AttackPts(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return 55;if(e>=FRIENDA_EFFECT.HIGH-.001)return 48;if(e>=1)return 24;if(e>=FRIENDA_EFFECT.LOW-.001)return 8;return 2}
 function best3ResistPts(e){if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return 20;if(e<=FRIENDA_EFFECT.LOW+.001)return 17;if(e<=1.001)return 10;if(e<=FRIENDA_EFFECT.HIGH+.001)return 3;return 0}
 function best3EffShort(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return "4倍弱点相当";if(e>=FRIENDA_EFFECT.HIGH-.001)return "ばつぐん";if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return "ほとんどこうかがない";if(e<=FRIENDA_EFFECT.LOW+.001)return "耐性";return "等倍"}
 function best3EvaluateCandidate(base,slot){
  const c=merged(base),strength=Math.max(0,best3Strength(base)),enemy=slot.enemy||slot.c;let counterScore=0,reasons=[],outEff=null,inEff=null,detail="暫定";
- if(enemy&&slot.full&&hasBattleStats(c)){
+ if(enemy&&slot.full&&simCasualBattleEligible(c)){
    outEff=eff(c.move_type,enemy);inEff=eff(enemy.move_type,c);const sr=speedRelation(c,enemy),cd=dmg(c,enemy).n,ed=dmg(enemy,c).n,cHits=hitsToKO(enemy.hp,cd),eHits=hitsToKO(c.hp,ed),cTime=actionTimeToKO(cHits,sr.cFirst),eTime=actionTimeToKO(eHits,!sr.cFirst);let outcome;if(!Number.isFinite(cHits)&&!Number.isFinite(eHits))outcome="draw";else if(!Number.isFinite(cHits))outcome="lose";else if(!Number.isFinite(eHits))outcome="win";else outcome=cTime<eTime?"win":"lose";const full={c,enemy,outcome,cHits,eHits,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd,ed,cTime,eTime};const match=matchupScoreFull(full);counterScore=Math.round(clamp(match*.85+(strength/1000)*15,0,100));detail="詳細";reasons.push(`${outcome==="win"?"勝利見込み":outcome==="draw"?"互角":"苦戦見込み"}・${cHits}発KO`);reasons.push(`${typeIconText(c.move_type)} ${best3EffShort(outEff)}`);reasons.push(`相手${typeIconText(enemy.move_type)}技 ${best3EffShort(inEff)}`);reasons.push(sr.cFirst?"先攻見込み":"後攻見込み");
  }else{
    let attackPts=0;if(slot.hasType&&enemy&&c.move_type){outEff=eff(c.move_type,enemy);attackPts=best3AttackPts(outEff);reasons.push(`${typeIconText(c.move_type)} ${best3EffShort(outEff)}`)}else{const match=slot.weakTypes.includes(c.move_type);attackPts=match?55:0;reasons.push(match?`指定弱点 ${typeIconText(c.move_type)} に一致`:"指定弱点への一致なし")}
@@ -2789,7 +2814,7 @@ function setBattleMode(mode){
  }else if(mode==="roundrobin"){
    $("battleArena").classList.add("hidden");roundRobinPoolInfo();
  }else{
-   if(battle.me&&battle.enemy)startIfReady();else arena();renderBattleHistory();
+   if(battle.me&&battle.enemy)startIfReady();else arena();updateBattleSelectionStatus();renderBattleHistory();
  }
 }
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
@@ -2804,7 +2829,7 @@ function makeMatch(a,b){return {a,b,winner:null,method:"",live:false}}
 function startTournament(){
  if(!battle.me){UI.dialog.alert("先に参加する自分のピックを選んでください。");return}
  const playerBase=R.find(r=>r.master_id===battle.me.master_id);if(!playerBase){UI.dialog.alert("参加ピックを確認できません。");return}
- if(!hasBattleStats(playerBase)){UI.dialog.alert("このピックは能力値が未確認のためトーナメント参加できません。");return}
+ if(!hasBattleStats(playerBase)){UI.dialog.alert("トーナメントはランキング対象の能力値確認済みピックのみ参加できます。参考値ピックは1対1バトルを利用してください。");return}
  const cup=$("tournamentCup").value;if(cup==="5"&&Number(playerBase.grade)!==5){UI.dialog.alert("スーパートレジャーカップは★5ピックのみ参加できます。");return}if(cup==="le4"&&!(Number(playerBase.grade)>0&&Number(playerBase.grade)<=4)){UI.dialog.alert("チャレンジカップは★4以下のピックのみ参加できます。");return}
  if(tournament.active&&!UI.dialog.confirm("現在の大会を中止して新しいトーナメントを開始しますか？"))return;
  const pool=tournamentPool(cup).filter(r=>r.master_id!==playerBase.master_id);if(pool.length<7){UI.dialog.alert("この大会条件では参加ピックが不足しています。");return}
@@ -2928,7 +2953,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.101-TEST",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.104",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2948,7 +2973,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.103",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.104",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -2993,3 +3018,4 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 <!-- Updated: 2026-11-22 15:34 JST / Ver6.103 / Deliverable Ver07 / Same HTML+Master pair for TEST and production. -->
 
 <!-- Updated: 2026-11-22 15:36 JST / Ver6.103 / Ver07 source full text / portable TEST+PRODUCTION. -->
+<!-- Updated: 2026-11-22 16:15 JST / Ver6.104 / Source Ver08 / Reference battles enabled, ranking excluded. -->
