@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.103 / common TEST+PRODUCTION HTML -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.105 / common TEST+PRODUCTION HTML -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.103</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.105</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -651,7 +651,10 @@ body.battleOverlayOpen{overflow:hidden}
   }
 }
 
-/* Ver6.104: reference picks can battle casually when complete, while ranking pools remain verified-only. */
+/* Ver6.105: complete reference data joins casual 1v1 and the provisional round-robin leaderboard;
+   verified-only strength rankings and tournaments remain unchanged. */
+.rrReferenceTag{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:5px;background:#fff1c7;color:#81570b;font-size:9px;font-weight:900;white-space:nowrap}
+.rrReferenceNote{font-size:11px;line-height:1.6;margin:5px 0 10px;padding:8px 9px;border-left:3px solid #d3a33b;background:#fff9e9;color:#694d13}
 .miniBadge.previewReadyBadge{background:#dff4e5;color:#226737}
 .battleReferenceNotice{padding:10px 12px;margin:8px 0 10px;border:1px solid #c89a37;border-radius:11px;background:#fff4d2;color:#714b03;font-size:12px;font-weight:900;line-height:1.55}
 /* Ver6.98 TEST: distinguish pre-registered, unverified picks. */
@@ -675,7 +678,7 @@ body.battleOverlayOpen{overflow:hidden}
 .pickCard.previewOnly .pickImageFrame{background:linear-gradient(130deg,#e7f3fb,#fdfcff)!important;}
 .previewOnly .ownedCard img{object-fit:contain!important;}
 </style></head><body>
-<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.103</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
+<header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.105</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
 <div id="simTestMasterStatus" class="simTestMasterStatus" role="status">マスタを読み込み中…</div>
 <details class="simLoginGuide" id="simCircleGuide">
@@ -785,9 +788,9 @@ body.battleOverlayOpen{overflow:hidden}
   <div id="tournamentSetupPanel" class="tournamentSetup hidden"><h3>🏆 大会設定</h3><div class="setupGrid"><select id="tournamentCup"><option value="all">フレンダカップ（全ランク）</option><option value="5">スーパートレジャーカップ（★5限定）</option><option value="le4">チャレンジカップ（★4以下）</option></select><button id="startTournamentBtn" type="button">8体トーナメント開始</button></div><div class="battleModeHint">選択中の自分ピック1体で3戦。各試合HP全回復。CPU同士は自動判定します。</div></div>
 </div>
 <div id="roundRobinPanel" class="roundRobinInline hidden">
-  <h3>📊 総当たりシミュレーション</h3><div class="roundRobinPoolNote">ランキングの行をタップすると、得意・苦手TOP5とタイプ別成績を分析できます。</div>
+  <h3>📊 総当たりシミュレーション</h3><div class="roundRobinPoolNote">参考値がそろったピックも総当たりに参加できます。参考値を含む順位は暫定です。行をタップすると対戦分析を表示します。</div>
   <div class="roundRobinControls">
-    <label><input id="roundRobinOwnedOnly" type="checkbox" checked>所持ピックのみ</label>
+    <label><input id="roundRobinOwnedOnly" type="checkbox">所持ピックのみ</label>
     <div class="roundRobinActionBtns"><button id="runRoundRobinBtn" type="button">結果を表示</button><button id="recalcRoundRobinBtn" type="button" class="ghost">再計算</button></div>
   </div>
   <div id="roundRobinPoolNote" class="roundRobinPoolNote"></div>
@@ -797,7 +800,7 @@ body.battleOverlayOpen{overflow:hidden}
 <div id="tournamentWrap" class="tournamentWrap hidden"><div class="tournamentHead"><div><div id="tournamentTitle" class="tournamentTitle">FRIENDA TOURNAMENT</div><div id="tournamentSub" class="tournamentSub">大会未開始</div></div><div id="tournamentState" class="tournamentState">READY</div></div><div id="tournamentBracket" class="tournamentBracket"></div><div class="tournamentBracketHint">準々決勝 → 準決勝 → 決勝　（スマホは横にスライドできます）</div><div id="tournamentBattleNote" class="tournamentBattleNote hidden"></div><div class="tournamentControls"><button id="cancelTournamentBtn" type="button" class="ghost">大会を中止</button></div><div class="tournamentHistory"><div class="historyHead"><b>大会履歴</b><button id="clearTournamentHistoryBtn" type="button" class="ghost">履歴消去</button></div><div id="tournamentHistoryList" class="historyList"></div></div></div>
 <div id="battleArena" class="hidden" style="margin-top:12px">
 <div class="battleSheetTop"><div class="battleSheetTitle">⚔️ 戦闘シート</div><div class="battleSheetBadges"><span id="battleModelBadge" class="battleSheetBadge">計算 Ver1</span><span id="battleTurnBadge" class="battleSheetBadge turn">TURN 1</span></div></div>
- <div id="battleReferenceNotice" class="battleReferenceNotice hidden" role="status">参考データで対戦中。数値は未検証です。総合ランキング・総当たりランキングには反映されません。</div>
+ <div id="battleReferenceNotice" class="battleReferenceNotice hidden" role="status">参考データで対戦中。1対1の勝敗はランキングに加算しませんが、参考値を含む総当たりシミュレーションには参加できます。総合強さ・トーナメントは対象外です。</div>
 <div class="battleFxControl" aria-label="バトル演出速度"><span>演出</span><button type="button" data-fx-speed="normal">標準</button><button type="button" data-fx-speed="fast">速い</button><button type="button" data-fx-speed="off">OFF</button></div>
 <div id="battleStage" class="battleStage"><div class="battleGrid"><div class="fighter" id="myFighter"></div><button id="battleVsButton" class="vsBadge" type="button" aria-label="最後まで戦う" title="最後まで戦う">🆚</button><div class="fighter" id="enemyFighter"></div></div><div id="battleFxLayer" class="battleFxLayer" aria-hidden="true"></div><div id="battleIntro" class="battleIntro" aria-hidden="true"><div class="battleIntroSide me"><span id="battleIntroMe"></span><small>MY PICK</small></div><div class="battleIntroVS">VS</div><div class="battleIntroSide enemy"><span id="battleIntroEnemy"></span><small>OPPONENT</small></div></div><div id="battleTurnSplash" class="battleTurnSplash" aria-hidden="true"><b></b><span></span></div><div id="battleImpact" class="battleImpact" aria-hidden="true"></div><div id="battleSpecialBanner" class="battleSpecialBanner" aria-hidden="true"><b></b><span></span></div><div id="battleVictoryFx" class="battleVictoryFx" aria-hidden="true"><b>WIN!</b><span></span></div></div>
 <div class="battleTapGuide">左右のピック画像をタップして選択・変更 ／ 中央の 🆚 をタップすると最後まで自動で戦います</div>
@@ -1023,7 +1026,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.104-portable-m166");
+ const v=encodeURIComponent("6.105-portable-m166");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1077,7 +1080,7 @@ if(!simRuntimeOk){
 }
 // Only the environment display changes; no different HTML or master is required for promotion.
 const simHeaderTitle=document.querySelector(".simHeaderTitle");
-const simDisplayVersion="Ver6.104"+(simIsTest?" TEST":"");
+const simDisplayVersion="Ver6.105"+(simIsTest?" TEST":"");
 if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
 document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
@@ -1118,7 +1121,7 @@ const simTestStatusEl=document.getElementById("simTestMasterStatus");
 if(simTestStatusEl){
  const simEnvName=simIsTest?"TEST":"本番";
  simTestStatusEl.textContent=simMasterOk
-   ?`${simEnvName}マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（参考値で1対1可 ${R.filter(simReferenceBattle).length}件 ／ 未完成・対戦不可 ${R.filter(simBattleBlocked).length}件 ／ 参考登録は総合ランキング対象外）`
+   ?`${simEnvName}マスタ：${DB.master_version} ／ 全${R.length.toLocaleString("ja-JP")}件（参考値で1対1・総当たり可 ${R.filter(simReferenceBattle).length}件 ／ 未完成・対戦不可 ${R.filter(simBattleBlocked).length}件 ／ 参考登録は総合強さ・トーナメント対象外）`
    :`${simEnvName}マスタがHTMLと一致しません。同じ配布版の simulator.html と frenda-master.js を同じフォルダに配置してください。現在：${DB.master_version||"不明"} ／ ${R.length}件。`;
  simTestStatusEl.classList.toggle("error",!simMasterOk);
 }
@@ -1772,7 +1775,7 @@ function updateBattleSelectionStatus(){
  if(notice){
    const reference=simReferenceBattle(battle.me)||simReferenceBattle(battle.enemy);
    notice.classList.toggle("hidden",!(reference&&battleMode==="single"));
-   if(reference)notice.textContent="⚠️ 参考データで対戦中：未検証の能力値を使用しています。総合強さ・総当たりランキングには反映しません。";
+   if(reference)notice.textContent="⚠️ 参考データで対戦中：能力値は未検証です。1対1の結果はランキングに加算されませんが、参考値を含む総当たり計算には参加します。総合強さ・トーナメントは対象外です。";
  }
  if(my){my.textContent=battle.me?`選択中：${battle.me.name_ja}（${battle.me.pick_no}）`:"未選択";my.classList.toggle("active",!!battle.me)}
  if(en){en.textContent=battle.enemy?`選択中：${battle.enemy.name_ja}（${battle.enemy.pick_no}）`:"未選択";en.classList.toggle("active",!!battle.enemy)}
@@ -2156,9 +2159,15 @@ const ROUND_ROBIN_CACHE_KEY="frenda:roundrobin:cache:v1";
 const ROUND_ROBIN_RULE_VERSION="6.28-v2ref";
 const ROUND_ROBIN_SIG_FIELDS=["poke_ene","speed_level","speed_value","type1","type2","move_type","move_class","move_power_ref","move_accuracy_ref","move_accuracy_always","hp","atk","def","sp_atk","sp_def"];
 
-function roundRobinEligible(ownedOnly){
+function roundRobinEligible(ownedOnly,includeReference=false){
  const ownedIds=new Set(getIds(OWNED_KEY));
- return R.filter(r=>hasBattleStats(merged(r))&&(!ownedOnly||ownedIds.has(r.master_id)));
+ // Only round-robin explicitly opts into complete reference data.
+ // strengthMeta() still calls the verified-only default, so official strength and tournaments stay isolated.
+ return R.filter(r=>{
+   const c=merged(r);
+   return (includeReference?simCasualBattleEligible(c):hasBattleStats(c))
+     &&(!ownedOnly||ownedIds.has(r.master_id));
+ });
 }
 function roundRobinJudge(A,B){
  const cmp=compareSpeed(A,B),ad=dmg(A,B).n,bd=dmg(B,A).n;
@@ -2188,7 +2197,9 @@ function roundRobinSignature(meta){
    for(const k of ROUND_ROBIN_SIG_FIELDS)if(Object.prototype.hasOwnProperty.call(o,k))v[k]=o[k];
    if(Object.keys(v).length)mods.push([r.master_id,v])
  }
- return roundRobinHash(JSON.stringify([DB.master_version,ROUND_ROBIN_RULE_VERSION,damageModel,meta.ownedOnly?"owned":"all",ids,mods]))
+ const params=[DB.master_version,ROUND_ROBIN_RULE_VERSION,damageModel,meta.ownedOnly?"owned":"all",ids,mods];
+ if(meta.includeReferences)params.push("reference-roundrobin-v1");
+ return roundRobinHash(JSON.stringify(params))
 }
 function readRoundRobinCache(){
  try{const x=JSON.parse(simStorage.getItem(ROUND_ROBIN_CACHE_KEY)||"{}");return x&&typeof x==="object"?x:{}}catch{return {}}
@@ -2330,13 +2341,14 @@ function saveRoundRobinRows(meta,signature,rows){
 }
 function roundRobinPoolInfo(){
  const ownedOnly=$("roundRobinOwnedOnly")?.checked!==false;
- const pool=roundRobinEligible(ownedOnly),pairs=pool.length*(pool.length-1)/2;
+ const pool=roundRobinEligible(ownedOnly,true),pairs=pool.length*(pool.length-1)/2;
  const ownedCount=getIds(OWNED_KEY).length;
+ const referenceCount=pool.filter(r=>simReferenceBattle(merged(r))).length;
  const excluded=ownedOnly?Math.max(0,ownedCount-pool.length):Math.max(0,R.length-pool.length);
  const scope=ownedOnly?"所持ピック":"全ピック",modelLabel=damageModel==="v2"?"Ver2":"Ver1";
- const meta={pool,pairs,ownedOnly,excluded},cacheInfo=roundRobinCacheEntry(meta),hasCache=!!cacheInfo.entry;
+ const meta={pool,pairs,ownedOnly,excluded,referenceCount,includeReferences:true},cacheInfo=roundRobinCacheEntry(meta),hasCache=!!cacheInfo.entry;
  const el=$("roundRobinPoolNote");
- if(el)el.textContent=`対象：${scope} ${pool.length.toLocaleString("ja-JP")}件 / 総当たり ${pairs.toLocaleString("ja-JP")}試合 / ${modelLabel}${excluded?` / 能力値未確認・参考値など ${excluded.toLocaleString("ja-JP")}件は除外`:""}。勝ち3点・引き分け1点・負け0点。${hasCache?" 前回計算結果を再利用できます。":""}`;
+ if(el)el.textContent=`対象：${scope} ${pool.length.toLocaleString("ja-JP")}件（参考値 ${referenceCount.toLocaleString("ja-JP")}件を含む） / 総当たり ${pairs.toLocaleString("ja-JP")}試合 / ${modelLabel}${excluded?` / 未完成など ${excluded.toLocaleString("ja-JP")}件は除外`:""}。参考値を含む順位は暫定です。勝ち3点・引き分け1点・負け0点。${ownedOnly?" 未所持ピックを表示するには「所持ピックのみ」を解除してください。":""}${hasCache?" 前回計算結果を再利用できます。":""}`;
  const btn=$("runRoundRobinBtn");if(btn)btn.textContent=hasCache?"前回結果を表示":"総当たりを実行";
  return meta
 }
@@ -2383,15 +2395,15 @@ function buildRoundRobinAnalysis(base,meta,row,rank){
  return {A,matches,best,worst,types,wins,draws,losses,games,points,winRate,avgScore,rank}
 }
 function rrMatchCards(list){
- return `<div class="rrMatchList">${list.map((x,i)=>`<div class="rrMatchCard" data-rr-match="${i}"><img src="${esc(pickImage(x.base))}" alt="${esc(x.c.name_ja)}"><div><div class="rrMatchName">${esc(x.c.name_ja)}</div><div class="rrMatchMeta">${esc(x.c.pick_no)} / ${esc(x.c.series)}<br>与${x.cd}・被${x.ed} / KO ${rrHitsLabel(x.cHits)}・被KO ${rrHitsLabel(x.eHits)}</div><span class="rrMatchScore">${x.score}点</span><span class="rrMatchResult ${x.outcome}">${rrResultLabel(x.outcome)}</span><br><button type="button" class="rrMatchBackBtn">裏面データ</button></div></div>`).join("")}</div>`
+ return `<div class="rrMatchList">${list.map((x,i)=>`<div class="rrMatchCard" data-rr-match="${i}"><img src="${esc(pickImage(x.base))}" alt="${esc(x.c.name_ja)}"><div><div class="rrMatchName">${esc(x.c.name_ja)}${simReferenceBattle(x.c)?'<span class="rrReferenceTag">参考</span>':''}</div><div class="rrMatchMeta">${esc(x.c.pick_no)} / ${esc(x.c.series)}<br>与${x.cd}・被${x.ed} / KO ${rrHitsLabel(x.cHits)}・被KO ${rrHitsLabel(x.eHits)}</div><span class="rrMatchScore">${x.score}点</span><span class="rrMatchResult ${x.outcome}">${rrResultLabel(x.outcome)}</span><br><button type="button" class="rrMatchBackBtn">裏面データ</button></div></div>`).join("")}</div>`
 }
 function openRoundRobinAnalysis(base,meta,row,rank){
  if(!base||!meta)return;
  const a=buildRoundRobinAnalysis(base,meta,row,rank),owned=isOwned(base),favorite=isFavorite(base),body=$("roundRobinAnalysisBody");
  const grade=Number(a.A.grade)||0,stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
  const typeRows=a.types.map(x=>`<tr><td>${esc(x.type)}</td><td>${x.games}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td class="${x.winRate>=60?"rrTypeGood":x.winRate<=40?"rrTypeBad":""}">${x.winRate.toFixed(1)}%</td><td>${x.avgScore.toFixed(1)}</td></tr>`).join("");
- body.innerHTML=`<div class="rrAnalysisHero"><img src="${esc(pickImage(base))}" alt="${esc(a.A.name_ja)}"><div><div class="rrAnalysisName">${esc(a.A.name_ja)}${owned?'<span class="rrOwnedMark">✓ 所持</span>':''}${favorite?'<span class="rrOwnedMark" style="background:#fff0b8;color:#765100">★ お気に入り</span>':''}</div><div class="rrAnalysisMeta">${esc(a.A.pick_no)} / ${esc(a.A.series)} / ${stars}<br>タイプ：${typePairHTML(a.A.type1,a.A.type2,{tiny:true})} / ポケエネ ${esc(a.A.poke_ene??"-")}<br>分析対象：${meta.ownedOnly?"所持ピック同士":"能力値確認済み全ピック"} ${meta.pool.length.toLocaleString("ja-JP")}件</div><div class="rrAnalysisActions"><button id="rrShowBackBtn" type="button" class="ghost">裏面データ</button><button id="rrUseBattleBtn" type="button">このピックで1対1</button></div></div></div>
- <div class="rrSummaryGrid"><div class="rrSummaryCard"><b>${rank?`${rank}位`:"-"}</b><span>総合順位</span></div><div class="rrSummaryCard"><b>${a.winRate.toFixed(1)}%</b><span>勝率</span></div><div class="rrSummaryCard"><b>${a.wins}-${a.draws}-${a.losses}</b><span>勝-分-敗</span></div><div class="rrSummaryCard"><b>${a.points}</b><span>勝点</span></div><div class="rrSummaryCard"><b>${a.avgScore.toFixed(1)}</b><span>平均相性スコア</span></div><div class="rrSummaryCard"><b>${a.games}</b><span>対戦数</span></div></div>
+ body.innerHTML=`<div class="rrAnalysisHero"><img src="${esc(pickImage(base))}" alt="${esc(a.A.name_ja)}"><div><div class="rrAnalysisName">${esc(a.A.name_ja)}${owned?'<span class="rrOwnedMark">✓ 所持</span>':''}${favorite?'<span class="rrOwnedMark" style="background:#fff0b8;color:#765100">★ お気に入り</span>':''}${simReferenceBattle(a.A)?'<span class="rrReferenceTag">参考データ</span>':''}</div><div class="rrAnalysisMeta">${esc(a.A.pick_no)} / ${esc(a.A.series)} / ${stars}<br>タイプ：${typePairHTML(a.A.type1,a.A.type2,{tiny:true})} / ポケエネ ${esc(a.A.poke_ene??"-")}<br>分析対象：${meta.ownedOnly?"所持ピック同士":"対戦計算可能な全ピック"} ${meta.pool.length.toLocaleString("ja-JP")}件（参考値を含む暫定結果）</div><div class="rrAnalysisActions"><button id="rrShowBackBtn" type="button" class="ghost">裏面データ</button><button id="rrUseBattleBtn" type="button">このピックで1対1</button></div></div></div>
+ <div class="rrSummaryGrid"><div class="rrSummaryCard"><b>${rank?`${rank}位`:"-"}</b><span>総当たり順位</span></div><div class="rrSummaryCard"><b>${a.winRate.toFixed(1)}%</b><span>勝率</span></div><div class="rrSummaryCard"><b>${a.wins}-${a.draws}-${a.losses}</b><span>勝-分-敗</span></div><div class="rrSummaryCard"><b>${a.points}</b><span>勝点</span></div><div class="rrSummaryCard"><b>${a.avgScore.toFixed(1)}</b><span>平均相性スコア</span></div><div class="rrSummaryCard"><b>${a.games}</b><span>対戦数</span></div></div>
  <div class="rrAnalysisSection"><h3>得意 TOP5</h3><div class="rrSectionNote">このピックから見た相性スコア上位5件です。</div><div id="rrBestList">${rrMatchCards(a.best)}</div></div>
  <div class="rrAnalysisSection"><h3>苦手 TOP5</h3><div class="rrSectionNote">このピックから見た相性スコア下位5件です。</div><div id="rrWorstList">${rrMatchCards(a.worst)}</div></div>
  <div class="rrAnalysisSection"><h3>相手タイプ別成績</h3><div class="rrSectionNote">複合タイプの相手は両方のタイプに集計します。平均点は100点満点の相性スコアです。</div><div class="rrTypeTableWrap"><table class="rrTypeTable"><thead><tr><th>タイプ</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>勝率</th><th>平均点</th></tr></thead><tbody>${typeRows}</tbody></table></div></div>`;
@@ -2409,8 +2421,10 @@ function renderRoundRobinResults(rows,meta){
  currentRoundRobinRows=rows;currentRoundRobinMeta=meta;
  const box=$("roundRobinResults");
  const mode=meta.ownedOnly?"所持ピックのみ":"全ピック";
- box.innerHTML=`<div class="roundRobinSummary">${mode}：${rows.length.toLocaleString("ja-JP")}件 / ${meta.pairs.toLocaleString("ja-JP")}試合</div>
- <div class="roundRobinTableWrap"><table class="roundRobinTable"><thead><tr><th>順位</th><th>ピック</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>勝率</th><th>勝点</th></tr></thead><tbody>${rows.map((x,i)=>`<tr class="${i===0?"top1":i===1?"top2":i===2?"top3":""}" title="タップして対戦分析"><td class="roundRobinRank">${i+1}</td><td><span class="roundRobinName">${esc(x.c.name_ja)}</span> <span class="roundRobinMuted">${esc(x.c.pick_no)}</span>${isOwned(x.base)?'<span class="roundRobinOwnedBadge">✓ 所持</span>':''}</td><td>${x.games}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.winRate.toFixed(1)}%</td><td>${x.points}</td></tr>`).join("")}</tbody></table></div>`;
+ const refCount=meta.referenceCount??rows.filter(x=>simReferenceBattle(x.c)).length;
+ box.innerHTML=`<div class="roundRobinSummary">${mode}：${rows.length.toLocaleString("ja-JP")}件（参考値 ${refCount}件） / ${meta.pairs.toLocaleString("ja-JP")}試合</div>
+ ${refCount?'<div class="rrReferenceNote">「参考」印は未検証能力値を使用したピックです。参考値を含む順位・勝点は暫定結果で、総合強さランキングとは別集計です。</div>':""}
+ <div class="roundRobinTableWrap"><table class="roundRobinTable"><thead><tr><th>順位</th><th>ピック</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>勝率</th><th>勝点</th></tr></thead><tbody>${rows.map((x,i)=>`<tr class="${i===0?"top1":i===1?"top2":i===2?"top3":""}" title="タップして対戦分析"><td class="roundRobinRank">${i+1}</td><td><span class="roundRobinName">${esc(x.c.name_ja)}</span> <span class="roundRobinMuted">${esc(x.c.pick_no)}</span>${isOwned(x.base)?'<span class="roundRobinOwnedBadge">✓ 所持</span>':''}${simReferenceBattle(x.c)?'<span class="rrReferenceTag">参考</span>':''}</td><td>${x.games}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.winRate.toFixed(1)}%</td><td>${x.points}</td></tr>`).join("")}</tbody></table></div>`;
  box.querySelectorAll("tbody tr").forEach((tr,i)=>tr.onclick=()=>openRoundRobinAnalysis(rows[i].base,meta,rows[i],i+1));
 }
 async function runRoundRobin(force=false){
@@ -2808,7 +2822,7 @@ function setBattleMode(mode){
  $("battleModeDescription").textContent=
    mode==="single"?"左右のピック画像をタップして自分・相手を選択し、中央の🆚をタップすると最後まで自動で戦います。全件・所持・お気に入りから選択できます。":
    mode==="tournament"?"自分のピックを全件・所持・お気に入りから1体選び、8体トーナメントを戦います。CPU同士は自動判定、各試合HP全回復です。":
-   "所持ピックのみ、または能力値確認済み全ピックで総当たりシミュレーションを行い、勝点・勝数・勝率でランキングします。";
+   "所持ピックのみ、または対戦計算可能な全ピックで総当たりを行います。参考能力値のピックも参加し、順位は暫定結果として表示します。";
  if(mode==="tournament"){
    $("battleArena").classList.add("hidden");renderTournament();renderTournamentHistory();
  }else if(mode==="roundrobin"){
@@ -2953,7 +2967,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.104",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.105",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -2973,7 +2987,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.104",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.105",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -3019,3 +3033,5 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 
 <!-- Updated: 2026-11-22 15:36 JST / Ver6.103 / Ver07 source full text / portable TEST+PRODUCTION. -->
 <!-- Updated: 2026-11-22 16:15 JST / Ver6.104 / Source Ver08 / Reference battles enabled, ranking excluded. -->
+
+<!-- Updated: 2026-11-22 16:33 JST / Simulator Ver6.105 / Source Ver09 / Reference picks included in provisional round-robin only. -->
