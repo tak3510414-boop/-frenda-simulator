@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.106 / common TEST+PRODUCTION HTML -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.111 / common TEST+PRODUCTION HTML -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.106</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.111</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -168,7 +168,7 @@ body.battleOverlayOpen{overflow:hidden}
 .rrAnalysisHero{display:grid;grid-template-columns:112px 1fr;gap:12px;align-items:start;padding:12px;border-radius:16px;background:linear-gradient(145deg,#0b2d43,#124e69);color:#fff;border:1px solid #55cce9;box-shadow:0 6px 20px #0b2f4422}.rrAnalysisHero img{width:112px;aspect-ratio:2/3;object-fit:cover;border-radius:12px;background:#e8eef2}.rrAnalysisName{font-size:24px;font-weight:1000;line-height:1.08}.rrAnalysisMeta{font-size:11px;color:#b8e8f5;line-height:1.55;margin-top:5px}.rrAnalysisActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.rrAnalysisActions button{padding:8px 10px}.rrAnalysisActions .ghost{background:#eaf8fc;color:#123c50}.rrOwnedMark{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#dff4e5;color:#246d3a;font-size:10px;font-weight:1000;vertical-align:2px}
 .rrSummaryGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.rrSummaryCard{padding:9px;border-radius:12px;background:#fff;border:1px solid #d6e1e7;text-align:center}.rrSummaryCard b{display:block;font-size:21px;color:#13384c}.rrSummaryCard span{display:block;font-size:9px;font-weight:900;color:#71818b;margin-top:3px;letter-spacing:.03em}.rrAnalysisSection{margin-top:13px;padding:11px;border-radius:15px;background:#fff;border:1px solid #d5e0e6}.rrAnalysisSection h3{margin:0 0 4px;font-size:15px}.rrSectionNote{font-size:10px;color:#72818a;margin-bottom:8px}.rrMatchList{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rrMatchCard{display:grid;grid-template-columns:58px 1fr;gap:8px;padding:8px;border:1px solid #dbe4e9;border-radius:12px;background:#f9fbfc;align-items:center}.rrMatchCard img{width:58px;aspect-ratio:2/3;object-fit:cover;border-radius:8px;background:#e8eef2;cursor:pointer}.rrMatchName{font-size:13px;font-weight:1000}.rrMatchMeta{font-size:10px;color:#6b7a83;line-height:1.45}.rrMatchScore{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:999px;background:#e8f5fb;color:#0e6688;font-size:10px;font-weight:1000}.rrMatchResult{display:inline-block;margin-left:4px;font-size:10px;font-weight:1000}.rrMatchResult.win{color:#208044}.rrMatchResult.lose{color:#a83b34}.rrMatchResult.draw{color:#7a681b}.rrMatchBackBtn{margin-top:5px;padding:5px 7px!important;font-size:10px!important;background:#edf3f6!important;color:#264656!important}
 .rrTypeTableWrap{overflow:auto;border:1px solid #d7e1e6;border-radius:11px}.rrTypeTable{width:100%;border-collapse:collapse;min-width:560px;font-size:10px}.rrTypeTable th,.rrTypeTable td{padding:7px 8px;border-bottom:1px solid #e7ecef;text-align:right;white-space:nowrap}.rrTypeTable th{background:#173c50;color:#fff}.rrTypeTable th:first-child,.rrTypeTable td:first-child{text-align:left;font-weight:900}.rrTypeGood{color:#1f7d42;font-weight:900}.rrTypeBad{color:#a63b36;font-weight:900}.rrAnalysisEmpty{padding:18px;text-align:center;color:#6f7e87}
-/* Ver6.106: independent roster / opponent-series controls, mobile friendly */
+/* Ver6.107: independent roster / opponent-series controls, mobile friendly */
 .rrSelectorGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
 .rrSelectLabel{display:block;border:1px solid #bed0dc;border-radius:12px;padding:9px;background:#f8fcff;color:#1c4f68;font-weight:900;font-size:12px;min-width:0}
 .rrSelectLabel select{display:block;width:100%;min-width:0;margin-top:7px;padding:11px 6px;border:1px solid #aac6d7;border-radius:9px;background:#fff;color:#17394e;font-size:13px;font-weight:800}
@@ -684,6 +684,30 @@ body.battleOverlayOpen{overflow:hidden}
 .pickCard.previewOnly .pickImageFrame img{object-fit:contain!important;background:#f6f8fb!important;}
 .pickCard.previewOnly .pickImageFrame{background:linear-gradient(130deg,#e7f3fb,#fdfcff)!important;}
 .previewOnly .ownedCard img{object-fit:contain!important;}
+
+/* Ver6.107: opponent-specific tactical selection, independent of overall strength. */
+.best3CounterValue{display:flex;flex-direction:column;gap:2px;margin:5px 0 3px;border:1px solid #8ad0ec;background:#e4f7ff;color:#075477;border-radius:9px;padding:5px 4px;text-align:center}
+.best3CounterValue b{font-size:11px;font-weight:1000}.best3CounterValue small{font-size:7px;font-weight:800;color:#3b697b}
+.best3RefBadge{display:inline-block;margin-left:3px;vertical-align:middle;border-radius:5px;padding:1px 3px;background:#fff0c5;color:#815300;font-size:7px;font-weight:900}
+.counterResultBlock .best3SelectionReason{gap:3px}.counterResultBlock .best3SelectionReason span{font-size:6.7px;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:620px){.best3CounterValue b{font-size:10px}.counterResultBlock .best3SelectionReason span{font-size:6.2px}}
+
+/* Ver6.108 / Source Ver12: ② 最強3体 - latest active series as initial opponent pool */
+.best3SeriesModeBox{padding:12px;border:1px solid #b7d6e6;border-radius:13px;background:linear-gradient(180deg,#ecf8ff,#f7fcff);margin:8px 0 12px}
+.best3SeriesModeBox label{display:block;font-size:13px;font-weight:900;color:#194967;margin-bottom:7px}
+.best3SeriesModeBox select{display:block;width:100%;min-height:45px;border:2px solid #6cb4da;background:#fff;color:#183b51;font-weight:850;padding:8px 10px;border-radius:10px;font-size:14px}
+.best3SeriesOpponentNote{margin-top:8px;font-size:11px;color:#365970;line-height:1.6;font-weight:700;overflow-wrap:anywhere}
+.best3SeriesOpponentNote strong{color:#075b83}
+.best3OpponentOverviewWrap.hidden,#best3ManualOpponentPanel.hidden{display:none!important}
+
+/* Ver6.111: XT2 legacy picks use the official gold artwork, cropping the bottom gameplay panel.
+   Original illustration is never recolored or reconstructed. The normal matching pick
+   image is layered underneath as a fallback if the official gold composite is unavailable. */
+.legacyGoldArt{display:block;width:100%;aspect-ratio:2/3;border-radius:9px;
+ background-color:#fff8db;background-position:center top,center center;
+ background-repeat:no-repeat;background-size:100% 220%,100% auto;
+ border:2px solid #e5b431;box-shadow:inset 0 0 0 1px #fff4a6;}
+.pickBackPhotoWrap .legacyGoldArt{width:100%;border-radius:10px;}
 </style></head><body>
 <header><div class="simHeaderRow"><div class="simHeaderTitle">ポケモンフレンダ 家庭版シミュレーター　Ver6.105</div><nav class="simHeaderActions" aria-label="関連ページへの移動"><a class="simHomeLink" href="index.html">🏠 フレンダホーム</a><a class="simHomeLink simOfficialPageLink" id="simOfficialPageLink" href="https://circle.pokemonfrienda.com/" target="_blank" rel="noopener noreferrer" aria-label="公式フレンダサークルのマイページを開く">🔐 マイページを登録</a></nav></div></header>
 <main>
@@ -753,7 +777,13 @@ body.battleOverlayOpen{overflow:hidden}
     <div id="bestOwnedThreeResult" class="bestThreeCards"></div>
   </div>
   <div id="best3CounterView" class="bestThreeSection counterBuilder bestThreeViewPanel hidden">
-    <div class="bestThreeHead"><div><h3>🎯 相手ピックから最強3体</h3><p>相手ピックを選んだ場合はマスタデータのタイプから弱点を判定します。相手を選ばない場合は、実機に表示された弱点を選び、表示されたタイプ候補から該当タイプを選択してください。</p></div></div>
+    <div class="bestThreeHead"><div><h3>🎯 相手に合わせた最強3体</h3><p>相手1〜3を個別に指定します。「＋」を押すと、現在稼働中の最新弾で絞り込んだ一覧を開きます。別の弾・全弾にも切り替えられます。</p></div></div>
+    <div class="best3SeriesModeBox">
+      <label for="best3OpponentModeSelect">対戦相手の指定方法</label>
+      <select id="best3OpponentModeSelect" aria-label="最強3体の対戦相手の指定方法"><option value="manual" selected>相手1〜3を個別指定（初期値）</option></select>
+      <div id="best3SeriesOpponentNote" class="best3SeriesOpponentNote" role="status">相手カードの「＋」から、最新弾で絞り込んだ一覧を開きます。</div>
+    </div>
+    <div id="best3ManualOpponentPanel" class="hidden">
     <div class="best3OpponentOverviewWrap">
       <div class="best3OpponentOverviewHead"><b>相手1・2・3</b><span>カードをタップして編集</span></div>
       <div id="best3OpponentOverview" class="bestThreeCards best3OpponentOverview"></div>
@@ -766,14 +796,15 @@ body.battleOverlayOpen{overflow:hidden}
     <div id="best3TypeCandidatePanel" class="best3TypeCandidatePanel hidden"></div>
     <div id="best3InferredTypeStatus" class="bestThreeMeta hidden"></div>
     <div class="weakTypeActions"><button id="clearAllWeakBtn" type="button" class="ghost">3人ともクリア</button></div>
+    </div>
     <div id="weakCounterStatus" class="bestThreeMeta"></div>
     <div class="bestThreeViewSwitch best3CounterScopeSwitch" role="tablist" aria-label="対策ピックの対象切替">
       <button id="best3CounterOwnedScopeBtn" class="bestThreeViewBtn on" type="button" role="tab" aria-selected="true">✓ 所持から</button>
       <button id="best3CounterAllScopeBtn" class="bestThreeViewBtn" type="button" role="tab" aria-selected="false">全体から</button>
     </div>
     <div class="counterResultBlocks">
-      <div id="best3CounterOwnedScope" class="counterResultBlock"><div class="counterResultTitle"><b>✓ 所持から</b><span>能力値確認済み</span></div><div id="weakOwnedThreeResult" class="bestThreeCards"></div></div>
-      <div id="best3CounterAllScope" class="counterResultBlock hidden"><div class="counterResultTitle"><b>全体から</b><span>能力値確認済み</span></div><div id="weakAllThreeResult" class="bestThreeCards"></div></div>
+      <div id="best3CounterOwnedScope" class="counterResultBlock"><div class="counterResultTitle"><b>✓ 所持から</b><span>参考データを含む・対策評価</span></div><div id="weakOwnedThreeResult" class="bestThreeCards"></div></div>
+      <div id="best3CounterAllScope" class="counterResultBlock hidden"><div class="counterResultTitle"><b>全体から</b><span>参考データを含む・対策評価</span></div><div id="weakAllThreeResult" class="bestThreeCards"></div></div>
     </div>
   </div>
 </div>
@@ -913,9 +944,9 @@ body.battleOverlayOpen{overflow:hidden}
   <div class="battlePickerShell">
     <div class="battlePickerHead"><div><small>COUNTER TARGET SELECT</small><b id="best3OpponentPickerTitle">相手1を一覧から選ぶ</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
     <div class="battlePickerBody">
-      <div class="pickerHelp">マスターDBの全ピックから相手を選べます。能力値が未確認でも、タイプや技タイプが登録されていれば分かる範囲で対策選出に利用します。</div>
+      <div class="pickerHelp">初期表示は現在稼働中の最新弾です。下の「弾」を切り替えると過去弾・全弾からも選べます。対戦に必要な能力値や技が未完成のピックは選択できません。</div>
       <div class="best3OpponentPickerToolbar">
-        <div class="best3OpponentPickerSearch"><input id="best3OpponentQ" placeholder="番号・名前で検索"><select id="best3OpponentSeries"><option value="">全シリーズ</option></select><button id="clearBest3OpponentQ" type="button" class="ghost">消去</button></div>
+        <div class="best3OpponentPickerSearch"><input id="best3OpponentQ" placeholder="番号・名前で検索"><select id="best3OpponentSeries" aria-label="相手ピックの弾フィルタ"><option value="">全弾</option></select><button id="clearBest3OpponentQ" type="button" class="ghost">消去</button></div>
         <div id="best3OpponentPickCount" class="best3OpponentPickerCount"></div>
       </div>
       <div id="best3OpponentResults" class="battlePickerList"></div>
@@ -1034,7 +1065,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.106-portable-m166");
+ const v=encodeURIComponent("6.111-portable-m168");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1088,7 +1119,7 @@ if(!simRuntimeOk){
 }
 // Only the environment display changes; no different HTML or master is required for promotion.
 const simHeaderTitle=document.querySelector(".simHeaderTitle");
-const simDisplayVersion="Ver6.106"+(simIsTest?" TEST":"");
+const simDisplayVersion="Ver6.111"+(simIsTest?" TEST":"");
 if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
 document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
@@ -1122,7 +1153,7 @@ const simReferenceBattle=r=>simPreviewNotReady(r)&&simReferenceBattleComplete(r)
 const simBattleBlocked=r=>simPreviewNotReady(r)&&!simReferenceBattleComplete(r);
 // Casual battles may use complete reference data; official strength and ranking pools retain their separate exclusion rule.
 const simCasualBattleEligible=r=>!!r&&RULES.validBattle(r)&&!!r.type1&&!simBattleBlocked(r);
-const simExpectedMasterVersion="1.66-xt3-research-preview";
+const simExpectedMasterVersion="1.68-xt2-legacy-gold-linked";
 const simExpectedMasterCount=1104;
 const simMasterOk=DB.master_version===simExpectedMasterVersion && R.length===simExpectedMasterCount;
 const simTestStatusEl=document.getElementById("simTestMasterStatus");
@@ -1158,6 +1189,15 @@ function pickImage(r){
  // Official image URL is unverified for pre-registered records: local placeholder only.
  if(simPreviewNotReady(r)&&!r.official_image)return svgPlaceholder(r.name_ja||"先行登録");
  return DATA.simulator.pickImage(r,svgPlaceholder);
+}
+// Gold legacy artwork uses actual official event art, not recoloring the base image.
+// The original pick artwork is displayed as a fallback behind the gold layer.
+function legacyGoldArtHTML(r){
+ if(!r||r.legacy_image_mode!=="official_gold_composite_crop")return "";
+ const gold=String(r.official_image||""),orig=String(r.legacy_source_image||"");
+ if(!/^https:\/\/pokemonfrienda\.com\/event\/e261016l\/img\//.test(gold)||
+    !/^https:\/\/pokemonfrienda\.com\/new\//.test(orig))return "";
+ return `<span class="legacyGoldArt" role="img" aria-label="${esc(r.name_ja)}・公式金色レガシーピック" style="background-image:url('${esc(gold)}'),url('${esc(orig)}')"></span>`;
 }
 const SERIES_ORDER=["フレンダ1だん","フレンダ2だん","フレンダ3だん","フレンダ4だん","フレンダ5だん","ベストタッグ1だん","ベストタッグ2だん","ベストタッグ3だん","ベストタッグ4だん","ベストタッグ5だん","エクストレジャー1だん","エクストレジャー2だん","エクストレジャー3だん","スペシャルフレンダピック"];
 let browseSeries=null;
@@ -1506,7 +1546,7 @@ function renderBrowser(){
    const ss=strengthData?.scores?.get(r.master_id),sr=strengthData?.ranks?.get(r.master_id),si=Number.isFinite(ss)?{score:ss,rank:sr}:null;
    d.className="pickCard grade"+grade+(owned?" owned":"")+(favorite?" favorite":"")+(simPreviewNotReady(r)?" previewOnly":"");d.dataset.mid=String(r.master_id);
    const stars=grade?"★".repeat(Math.max(1,Math.min(5,grade))):"☆";
-   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame"><img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}"><span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simReferenceBattle(merged(r))?'<span class="miniBadge previewReadyBadge">参考値・総当たり可</span>':simBattleBlocked(merged(r))?'<span class="miniBadge previewOnlyBadge">能力値未完成・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
+   d.innerHTML=`<div class="arcadeCardTop"><span class="arcadeStars">${stars}</span><span class="arcadeNo">${esc(r.pick_no)}</span></div><div class="pickOpen"><div class="pickImageFrame">${legacyGoldArtHTML(r)||`<img loading="lazy" src="${esc(pickImage(r))}" alt="${esc(r.name_ja)}">`}<span class="energyOrb"><small>ENERGY</small>${esc(m.poke_ene??"-")}</span></div><span class="pickName">${esc(r.name_ja)}</span><div class="pickMeta">${esc(r.series)}<br>${typePairHTML(m.type1,m.type2,{tiny:true})}</div><div class="strengthBadge${si?"":" missing"}" title="全能力値・技・タイプ相性・すばやさ・耐久を総当たりシミュレーションで評価（${damageModel==="v2"?"Ver2":"Ver1"}）"><span>総合強さ</span><b>${si?si.score:"…"}</b><small>/1000${si?`・${si.rank}位`:(simPreviewNotReady(r)?"・評価対象外":"・計算待ち")}</small></div><div class="cardBadges">${simReferenceBattle(merged(r))?'<span class="miniBadge previewReadyBadge">参考値・総当たり可</span>':simBattleBlocked(merged(r))?'<span class="miniBadge previewOnlyBadge">能力値未完成・対戦不可</span>':''}${owned?'<span class="miniBadge ownedBadge">✓ 所持中</span>':''}${favorite?'<span class="miniBadge favoriteBadge">★ お気に入り</span>':''}</div></div><div class="quickActions"><button type="button" class="ownedQuick${owned?' on':''}">${owned?'✓ 所持中':'未所持'}</button><button type="button" class="favoriteQuick${favorite?' on':''}">${favorite?'★ お気に入り':'☆ お気に入り'}</button></div>`;
    d.querySelector(".pickImageFrame").onclick=e=>{e.stopPropagation();showPickBack(r)};const sb=d.querySelector(".strengthBadge");if(sb)sb.onclick=e=>{e.preventDefault();e.stopPropagation();showStrengthOverlay(r)};d.querySelector(".ownedQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleOwned(r)};d.querySelector(".favoriteQuick").onclick=e=>{e.preventDefault();e.stopPropagation();e.currentTarget.blur();toggleFavorite(r)};box.appendChild(d)
  }
  if(shown.length<a.length){
@@ -1542,7 +1582,7 @@ function showPickBack(r){
  const atkMatch=pickBackAttackTypes(m.move_type),defMatch=pickBackDefenseTypes(m.type1,m.type2),stab=!!m.move_type&&(m.move_type===m.type1||m.move_type===m.type2);
  const matchupHTML=`<div class="pickBackMatchups"><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>攻撃相性（技タイプ）</span>${stab?'<span class="pickBackStab">タイプ一致</span>':''}</div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">◎ ばつぐん</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.good)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">△ いまひとつ</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(atkMatch.immune)}</div></div><div class="pickBackMatchupNote">このピックの技タイプを、相手が単タイプだった場合の相性です。</div></div><div class="pickBackMatchupBox"><div class="pickBackMatchupTitle"><span>防御相性（自分のタイプ）</span></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× 弱点</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.weak)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">○ 耐性</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.resist)}</div></div><div class="pickBackMatchupRow"><div class="pickBackMatchupLabel">× ほとんどこうかがない</div><div class="pickBackMatchupTypes">${pickBackTypeListHTML(defMatch.immune)}</div></div><div class="pickBackMatchupNote">複合タイプは2タイプを掛け合わせた最終相性で判定します。</div></div></div>`;
  $("pickBackShell").classList.toggle("edited",edited);
- $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap"><img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}"><span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simReferenceBattle(m)?'<div class="pickBackWarning">参考データで1対1バトルと参考値を含む総当たりランキングに参加できます。数値は未検証のため総合強さ・トーナメントからは除外しています。</div>':simBattleBlocked(m)?'<div class="pickBackWarning">能力値・技などが不足しているため対戦できません。総合ランキングからも除外しています。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
+ $("pickBackBody").innerHTML=`<div class="pickBackCard"><div class="pickBackTop"><div class="pickBackPhotoWrap">${legacyGoldArtHTML(r)||`<img class="pickBackPhoto" src="${esc(pickImage(r))}" alt="${esc(m.name_ja)}">`}<span class="pickBackPhotoLabel">PICK IMAGE</span></div><div><div class="pickBackName">${esc(m.name_ja)}${edited?'<span class="pickBackEditState">修正値反映</span>':''}</div><div class="pickBackSub">${esc(m.pick_no)} / ${esc(m.series)} / ${stars}</div><div class="pickBackTypes">${types}</div><div class="pickBackStrength${si?"":" missing"}"><span>総合強さ</span><b>${si?si.score:"—"}</b><small>/1000${si?`・全体${si.rank}位`:"・未評価"}</small></div></div><div class="pickBackEnergy"><small>POKE ENE</small>${esc(dataValue(m.poke_ene))}</div></div><div class="pickBackMove"><div class="pickBackMoveLabel">MOVE</div><div class="pickBackMoveName">${esc(dataValue(m.move))}</div><div class="pickBackMoveMeta">${typeIconHTML(m.move_type,{label:true,small:true})} / ${esc(dataValue(m.move_class))}<br>参考威力：${m.move_power_ref??"未確認"} / 参考命中：${m.move_accuracy_always?"必中":(m.move_accuracy_ref!=null?`${m.move_accuracy_ref}%`:"未確認")}${m.move_ref_note?` <span class="moveRefTag">${esc(m.move_ref_note)}</span>`:""}</div></div>${m.finisher_move?`<div class="pickBackMove"><div class="pickBackMoveLabel">FINISHER</div><div class="pickBackMoveName">${esc(m.finisher_move)}</div></div>`:""}<div class="pickBackStats">${stats.map(([k,v])=>`<div class="pickBackStat"><b>${k==="SPEED"?v:esc(dataValue(v))}</b><span>${k}</span></div>`).join("")}</div><div class="pickBackPrimaryActions"><button type="button" class="pickBackMatchupTopBtn">相性TOP</button><button type="button" class="pickBackEditBtn">編集</button></div><button type="button" class="pickBackMatchupToggle" aria-expanded="false"><span>相性</span><span class="pickBackMatchupChevron">▼</span></button><div class="pickBackMatchupCollapse hidden">${matchupHTML}</div>${sp?`<div class="pickBackSpecial"><b>特殊要素</b><br>${esc(sp)}</div>`:""}${simReferenceBattle(m)?'<div class="pickBackWarning">参考データで1対1バトルと参考値を含む総当たりランキングに参加できます。数値は未検証のため総合強さ・トーナメントからは除外しています。</div>':simBattleBlocked(m)?'<div class="pickBackWarning">能力値・技などが不足しているため対戦できません。総合ランキングからも除外しています。</div>':''}${missing?'<div class="pickBackWarning">一部の能力値は詳細データ未確認のため「未確認」と表示しています。</div>':''}<div class="pickBackFooter">DBの登録値から生成した情報表示です。実物ピック裏面画像ではありません。技威力・命中は本編ポケモンの参考値で、フレンダ実機の公式公開値ではありません。</div></div>`;
  const body=$("pickBackBody"),strengthBtn=body.querySelector(".pickBackStrength"),topBtn=body.querySelector(".pickBackMatchupTopBtn"),editBtn=body.querySelector(".pickBackEditBtn"),toggle=body.querySelector(".pickBackMatchupToggle"),collapse=body.querySelector(".pickBackMatchupCollapse");
  if(strengthBtn)strengthBtn.onclick=()=>{closePickBack();showStrengthOverlay(r)};
  if(topBtn)topBtn.onclick=()=>{closePickBack();openPickRecommendOverlay(r)};
@@ -2580,6 +2620,49 @@ const BEST3_OPP_KEY="frenda:best3Opponent:v1";
 const BEST3_TYPE_CHOICE_KEY="frenda:best3TypeChoice:v1";
 let best3WeakSlot=0;
 let best3OpponentPickerSlot=0;
+// Initially choose three individual opponents, not every pick in the latest series.
+// The opponent picker defaults to the currently active latest series on each opening.
+// Previous opponent slots remain in the existing saved data and are not cleared.
+let best3OpponentMode="manual";
+function best3PopulateOpponentModes(){
+ const select=$("best3OpponentModeSelect");if(!select)return;
+ const old=best3OpponentMode,latest=rrLatestSeries();
+ const names=[...new Set(R.map(r=>r.series).filter(Boolean))]
+   .sort((a,b)=>rrSeriesOrder(b)-rrSeriesOrder(a)||a.localeCompare(b,"ja"));
+ select.replaceChildren();
+ const add=(value,label)=>{const option=document.createElement("option");option.value=value;option.textContent=label;select.appendChild(option)};
+ add("manual","相手1〜3を個別指定（初期値）");
+ add("latest",`【別モード】${latest}全体と対戦`);
+ add("all","【別モード】全ピックと対戦");
+ for(const name of names){const start=RR_RELEASE_DATES[name];const upcoming=start&&start>rrJapanToday();
+   add("series:"+name,`【別モード】${name}全体`+(upcoming?`（${start.slice(5).replace("-","/")}稼働予定）`:""));}
+ select.value=Array.from(select.options).some(x=>x.value===old)?old:"manual";
+}
+function best3CurrentOpponentSeries(){
+ return best3OpponentMode==="latest"?rrLatestSeries():best3OpponentMode.startsWith("series:")?best3OpponentMode.slice(7):null;
+}
+function best3SelectedEnemyPool(){
+ const s=best3CurrentOpponentSeries(),all=R.filter(r=>!s||r.series===s),complete=all.filter(r=>simCasualBattleEligible(merged(r)));
+ return {series:s,all,complete,excluded:all.length-complete.length,label:s||"全ピック"};
+}
+function best3RenderOpponentModeUI(){
+ best3PopulateOpponentModes();
+ const manual=best3OpponentMode==="manual";
+ $("best3ManualOpponentPanel")?.classList.toggle("hidden",!manual);
+ const note=$("best3SeriesOpponentNote");if(!note)return;
+ if(manual){note.textContent=`相手1〜3の「＋」をタップすると、稼働中の最新弾（${rrLatestSeries()}）に絞った選択一覧が開きます。選択時にほかの弾・全弾への切替も可能です。既に選んだ相手は保持しています。`;return;}
+ const p=best3SelectedEnemyPool();
+ const upcoming=p.series&&RR_RELEASE_DATES[p.series]>rrJapanToday();
+ note.innerHTML=`対戦相手：<strong>${esc(p.label)}</strong> の ${p.complete.length.toLocaleString("ja-JP")}件（登録 ${p.all.length.toLocaleString("ja-JP")}件、能力値未完成 ${p.excluded}件は除外）。${upcoming?"※稼働前の弾は試算用です。":""}この相手全体に対して、所持ピックから補完し合う3体を選出します。`;
+}
+function best3ChangeOpponentMode(value){
+ best3OpponentMode=value||"manual";best3RenderOpponentModeUI();
+ if(best3View==="counter"){
+   if(best3OpponentMode==="manual")renderBest3WeakChooser({recalc:true});
+   else updateBest3CounterTeams();
+ }
+}
+
 let best3WeakSlots=(()=>{try{const x=JSON.parse(simStorage.getItem(BEST3_WEAK_KEY)||"[]");return [0,1,2].map(i=>Array.isArray(x?.[i])?x[i].filter(t=>Object.keys(TYPE).includes(t)):[])}catch{return [[],[],[]]}})();
 let best3OpponentSlots=(()=>{try{const x=JSON.parse(simStorage.getItem(BEST3_OPP_KEY)||"[]");return [0,1,2].map(i=>typeof x?.[i]==="string"&&R.some(r=>r.master_id===x[i])?x[i]:null)}catch{return [null,null,null]}})();
 let best3TypeChoiceSlots=(()=>{try{const x=JSON.parse(simStorage.getItem(BEST3_TYPE_CHOICE_KEY)||"[]");return [0,1,2].map(i=>{const v=x?.[i];return v&&TYPES.includes(v.type1)&&(!v.type2||TYPES.includes(v.type2))&&v.type1!==v.type2?{type1:v.type1,type2:v.type2||""}:null})}catch{return [null,null,null]}})();
@@ -2611,12 +2694,26 @@ function best3MatchupDetailHTML(base){
 }
 function best3Strength(base){return strengthInfo(base)?.score??-1}
 function best3EligiblePool(ownedOnly){const ownedIds=new Set(getIds(OWNED_KEY));return R.filter(r=>hasBattleStats(merged(r))&&(!ownedOnly||ownedIds.has(r.master_id)))}
+// Ver6.107: keep confirmed-only owned global-strength ranking independent of opponent recommendations.
+// For opponent-specific counter teams, accept complete reference-stat picks too.
+function best3CounterEligiblePool(ownedOnly){
+ const ownedIds=new Set(getIds(OWNED_KEY));
+ return R.filter(r=>{
+   if(ownedOnly&&!ownedIds.has(r.master_id))return false;
+   const c=merged(r);
+   // Match the already validated official ranking pool, plus the separately validated references.
+   return simPreviewNotReady(c)?simReferenceBattle(c):hasBattleStats(c);
+ });
+}
 function best3Strongest(pool,n=3){return pool.map(base=>({base,score:best3Strength(base)})).filter(x=>x.score>=0).sort((a,b)=>(b.score-a.score)||((Number(merged(b.base).poke_ene)||0)-(Number(merged(a.base).poke_ene)||0))||String(merged(a.base).pick_no).localeCompare(String(merged(b.base).pick_no),"ja",{numeric:true})).slice(0,n)}
 function best3CardHTML(item,{slotLabel="",weakTypes=null,reasonLines=null}={}){
  const base=item.base||item,c=merged(base),score=item.score??best3Strength(base),move=c.move_type||"-";
- const match=Array.isArray(weakTypes)&&weakTypes.includes(move),reasons=Array.isArray(reasonLines)?reasonLines.filter(Boolean).slice(0,2):[];
+ const match=Array.isArray(weakTypes)&&weakTypes.includes(move),reasons=Array.isArray(reasonLines)?reasonLines.filter(Boolean).slice(0,4):[];
  const reasonHTML=reasons.length?`<div class="best3SelectionReason"><b>選出理由</b>${reasons.map(x=>`<span>・${esc(x)}</span>`).join("")}</div>`:"";
- return `<div class="bestThreeCard best3ResultCard" tabindex="0" role="button" aria-expanded="false">${slotLabel?`<span class="teamSlotLabel">${esc(slotLabel)}</span>`:""}<img src="${esc(pickImage(base))}" alt="${esc(c.name_ja)}"><div class="bestThreeName">${esc(c.name_ja)}</div><div class="bestThreeSub">${esc(c.pick_no)} / ${c.grade?"★"+esc(c.grade):"ランク-"}</div><div class="bestThreeScore"><b>${score>=0?score:"—"}</b><span>/1000</span></div>${weakTypes?`<div class="counterMatchLine${match?"":" no"}">${match?`✓ 弱点タイプ ${typeIconHTML(move,{label:true,tiny:true})} に一致`:`弱点一致なし（総合力で補完）`}</div>`:""}${reasonHTML}${best3SummaryHTML(base)}<div class="best3ExpandHint">タップで全相性を表示</div><div class="best3FullDetail">${best3MatchupDetailHTML(base)}</div></div>`
+ const isCounter=Number.isFinite(item?.counterScore),ref=simReferenceBattle(c);
+ const counterHTML=isCounter?`<div class="best3CounterValue"><b>対策評価 ${Math.round(item.counterScore)}点</b><small>${item.detail==="詳細"?"対戦予測":item.detail==="弾全体"?"弾全体の平均評価":"タイプ相性で暫定評価"}</small></div>`:"";
+ const strengthHTML=`<div class="bestThreeScore" title="対戦相手専用ではない総合強さ"><b>${score>=0?score:"—"}</b><span>/1000 総合</span></div>`;
+ return `<div class="bestThreeCard best3ResultCard" tabindex="0" role="button" aria-expanded="false">${slotLabel?`<span class="teamSlotLabel">${esc(slotLabel)}</span>`:""}<img src="${esc(pickImage(base))}" alt="${esc(c.name_ja)}"><div class="bestThreeName">${esc(c.name_ja)}${ref?'<span class="best3RefBadge">参考</span>':''}</div><div class="bestThreeSub">${esc(c.pick_no)} / ${c.grade?"★"+esc(c.grade):"ランク-"}</div>${counterHTML}${strengthHTML}${weakTypes?`<div class="counterMatchLine${match?"":" no"}">${match?`✓ 弱点タイプ ${typeIconHTML(move,{label:true,tiny:true})} に一致`:`弱点一致なし（総合力で補完）`}</div>`:""}${reasonHTML}${best3SummaryHTML(base)}<div class="best3ExpandHint">タップで全相性を表示</div><div class="best3FullDetail">${best3MatchupDetailHTML(base)}</div></div>`
 }
 function bindBest3ResultCards(root,{syncAll=false}={}){
  if(!root)return;
@@ -2736,7 +2833,21 @@ function renderBest3WeakChooser({recalc=false}={}){
  renderBest3OpponentCurrent();
  if(recalc)updateBest3CounterTeams();else applyBest3CounterScopeUI(best3CounterScope);
 }
-function populateBest3OpponentSeries(){const sel=$("best3OpponentSeries");if(!sel||sel.dataset.ready)return;const vals=[...new Set(R.map(r=>r.series).filter(Boolean))];for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)}sel.dataset.ready="1"}
+function populateBest3OpponentSeries(){
+ const sel=$("best3OpponentSeries");if(!sel)return;
+ // Rebuild on every opening: the latest active series can change on its official release date.
+ const latest=rrLatestSeries(),today=rrJapanToday();
+ const vals=[...new Set(R.map(r=>r.series).filter(Boolean))]
+   .sort((a,b)=>rrSeriesOrder(b)-rrSeriesOrder(a)||a.localeCompare(b,"ja"));
+ sel.replaceChildren();
+ const add=(value,label)=>{const o=document.createElement("option");o.value=value;o.textContent=label;sel.appendChild(o)};
+ if(vals.includes(latest))add(latest,`★ 稼働中の最新弾：${latest}`);
+ for(const name of vals){if(name===latest)continue;
+   const start=RR_RELEASE_DATES[name],upcoming=start&&start>today;
+   add(name,name+(upcoming?`（${start.slice(5).replace("-","/")}稼働予定）`:""));
+ }
+ add("","全弾・スペシャルを含む");
+}
 function best3OpponentPickButton(r){const b=document.createElement("button"),c=merged(r),full=simCasualBattleEligible(c),hasType=!!c.type1;b.className="battlePick";b.disabled=simBattleBlocked(c);const st=full?["full","● 詳細データあり"]:hasType?["partial",c.move_type?"▲ タイプ＋攻撃属性あり":"▲ タイプ情報あり"]:["need","？ タイプ不明"];b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(c.name_ja)}</b><span>${esc(c.pick_no)} / ${esc(c.series||"")}</span><span class="best3OpponentPickStatus ${st[0]}">${st[1]}</span></span>`;b.onclick=()=>chooseBest3Opponent(r);if(simBattleBlocked(c))b.title="能力値や技が未完成：相手に指定できません";else if(simReferenceBattle(c))b.title="参考データで相性を計算します";return b}
 const BEST3_OPPONENT_PAGE_SIZE=80;
 const BEST3_OPPONENT_SEARCH_DELAY=130;
@@ -2757,36 +2868,107 @@ function runBest3OpponentSearchNow(){
  if(best3OpponentSearchTimer){clearTimeout(best3OpponentSearchTimer);best3OpponentSearchTimer=null}
  renderBest3OpponentPicker(true);
 }
-function openBest3OpponentPicker(slot){best3OpponentPickerSlot=slot;populateBest3OpponentSeries();const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;if($("best3OpponentQ"))$("best3OpponentQ").value="";if($("best3OpponentSeries"))$("best3OpponentSeries").value="";renderBest3OpponentPicker(true);showBattleOverlay("best3OpponentOverlay");setTimeout(()=>$("best3OpponentQ")?.focus(),30)}
+function openBest3OpponentPicker(slot){
+ best3OpponentPickerSlot=slot;
+ populateBest3OpponentSeries();
+ const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;
+ const q=$("best3OpponentQ"),sel=$("best3OpponentSeries");
+ if(q)q.value="";
+ if(sel){const latest=rrLatestSeries();sel.value=[...sel.options].some(o=>o.value===latest)?latest:"";}
+ renderBest3OpponentPicker(true);
+ showBattleOverlay("best3OpponentOverlay");
+ // Do not automatically raise the iPhone keyboard: keep the latest-series list visible.
+}
 function chooseBest3Opponent(r){if(simBattleBlocked(merged(r))){UI.dialog.alert("能力値や技が未完成のピックは対象に指定できません。");return}best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser({recalc:true})}
 function best3AttackPts(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return 55;if(e>=FRIENDA_EFFECT.HIGH-.001)return 48;if(e>=1)return 24;if(e>=FRIENDA_EFFECT.LOW-.001)return 8;return 2}
 function best3ResistPts(e){if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return 20;if(e<=FRIENDA_EFFECT.LOW+.001)return 17;if(e<=1.001)return 10;if(e<=FRIENDA_EFFECT.HIGH+.001)return 3;return 0}
 function best3EffShort(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return "4倍弱点相当";if(e>=FRIENDA_EFFECT.HIGH-.001)return "ばつぐん";if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return "ほとんどこうかがない";if(e<=FRIENDA_EFFECT.LOW+.001)return "耐性";return "等倍"}
+// Opponent-specific tactical scoring, NOT global strength or a measured win probability.
+// Win bands do not overlap draw/loss bands; among predicted wins, 1-hit KO outranks 2-hit KO.
+function best3WinKoBase(hits){
+ if(hits===1)return 94;
+ if(hits===2)return 88;
+ if(hits===3)return 83;
+ if(hits===4)return 78;
+ if(hits===5)return 74;
+ return 70;
+}
+function best3TacticalRating({outcome,cHits,eHits,cFirst,rawType,inEff,accuracyKnown,accuracy}){
+ const stamina=Number.isFinite(eHits)?Math.min(1.5,Math.max(0,eHits-1)*.5):1.5;
+ const typeBonus=rawType>=4?1:rawType>=2?.5:0;
+ const defenseBonus=inEff<1?.5:0;
+ const speedBonus=cFirst?.5:0;
+ const accuracyBonus=accuracyKnown?Math.max(0,Math.min(1,accuracy))*.5:0;
+ const minor=Math.min(3.5,stamina+typeBonus+defenseBonus+speedBonus+accuracyBonus);
+ if(outcome==="win")return Math.min(99,Math.round(best3WinKoBase(cHits)+minor));
+ if(outcome==="draw")return Math.min(59,Math.round(48+minor));
+ const survival=Number.isFinite(eHits)?Math.min(16,Math.max(0,eHits-1)*3):16;
+ const offense=Number.isFinite(cHits)?Math.max(0,12-Math.max(0,cHits-1)*3):0;
+ return Math.min(39,Math.round(8+survival+offense+minor));
+}
 function best3EvaluateCandidate(base,slot){
- const c=merged(base),strength=Math.max(0,best3Strength(base)),enemy=slot.enemy||slot.c;let counterScore=0,reasons=[],outEff=null,inEff=null,detail="暫定";
+ const c=merged(base),strength=best3Strength(base),tieStrength=Math.max(0,strength),enemy=slot.enemy||slot.c;
+ let counterScore=0,reasons=[],outEff=null,inEff=null,detail="暫定";
  if(enemy&&slot.full&&simCasualBattleEligible(c)){
-   outEff=eff(c.move_type,enemy);inEff=eff(enemy.move_type,c);const sr=speedRelation(c,enemy),cd=dmg(c,enemy).n,ed=dmg(enemy,c).n,cHits=hitsToKO(enemy.hp,cd),eHits=hitsToKO(c.hp,ed),cTime=actionTimeToKO(cHits,sr.cFirst),eTime=actionTimeToKO(eHits,!sr.cFirst);let outcome;if(!Number.isFinite(cHits)&&!Number.isFinite(eHits))outcome="draw";else if(!Number.isFinite(cHits))outcome="lose";else if(!Number.isFinite(eHits))outcome="win";else outcome=cTime<eTime?"win":"lose";const full={c,enemy,outcome,cHits,eHits,cFirst:sr.cFirst,speedTie:sr.tie,outEff,inEff,cd,ed,cTime,eTime};const match=matchupScoreFull(full);counterScore=Math.round(clamp(match*.85+(strength/1000)*15,0,100));detail="詳細";reasons.push(`${outcome==="win"?"勝利見込み":outcome==="draw"?"互角":"苦戦見込み"}・${cHits}発KO`);reasons.push(`${typeIconText(c.move_type)} ${best3EffShort(outEff)}`);reasons.push(`相手${typeIconText(enemy.move_type)}技 ${best3EffShort(inEff)}`);reasons.push(sr.cFirst?"先攻見込み":"後攻見込み");
+   outEff=eff(c.move_type,enemy);inEff=eff(enemy.move_type,c);
+   const rawType=rawEff(c.move_type,enemy),sr=speedRelation(c,enemy);
+   const attack=dmg(c,enemy),defense=dmg(enemy,c),cd=attack.n,ed=defense.n;
+   const cHits=hitsToKO(enemy.hp,cd),eHits=hitsToKO(c.hp,ed);
+   const cTime=actionTimeToKO(cHits,sr.cFirst),eTime=actionTimeToKO(eHits,!sr.cFirst);
+   let outcome;
+   if(!Number.isFinite(cHits)&&!Number.isFinite(eHits))outcome="draw";
+   else if(!Number.isFinite(cHits))outcome="lose";
+   else if(!Number.isFinite(eHits))outcome="win";
+   else if(sr.tie)outcome=cHits<eHits?"win":cHits>eHits?"lose":"draw";
+   else outcome=cTime<eTime?"win":"lose";
+   // Accuracy is meaningful only when the selected damage model applies move power and hit chance.
+   const accuracyKnown=damageModel==="v2"&&attack.model==="v2"&&
+     (c.move_accuracy_always===true||(c.move_accuracy_ref!==null&&c.move_accuracy_ref!==undefined&&c.move_accuracy_ref!==""&&Number(c.move_accuracy_ref)>0));
+   const accuracy=accuracyKnown?CORE.moveAccuracyRef(c):null;
+   counterScore=best3TacticalRating({outcome,cHits,eHits,cFirst:sr.cFirst,rawType,inEff,accuracyKnown,accuracy});
+   detail="詳細";
+   const koText=Number.isFinite(cHits)?`${cHits}発KO`:`KO不可`;
+   reasons.push(`${outcome==="win"?"勝利見込み":outcome==="draw"?"互角見込み":"苦戦見込み"}・${koText}・${sr.tie?"同速":sr.cFirst?"先攻":"後攻"}`);
+   const attackType=rawType>=4?"二重弱点（換算×1.69）":best3EffShort(outEff);
+   reasons.push(`${typeIconText(c.move_type)}技：${attackType} / 相手の技：${best3EffShort(inEff)}`);
+   reasons.push(`想定ダメージ：与${cd} / 被${ed}（${damageModel==="v2"?"Ver2":"Ver1"}）`);
+   if(accuracyKnown)reasons.push(`技の参考命中率：${Math.round(accuracy*100)}%（Ver2期待値）`);
+   else reasons.push("技の命中率：未確認または現計算では未使用");
  }else{
-   let attackPts=0;if(slot.hasType&&enemy&&c.move_type){outEff=eff(c.move_type,enemy);attackPts=best3AttackPts(outEff);reasons.push(`${typeIconText(c.move_type)} ${best3EffShort(outEff)}`)}else{const match=slot.weakTypes.includes(c.move_type);attackPts=match?55:0;reasons.push(match?`指定弱点 ${typeIconText(c.move_type)} に一致`:"指定弱点への一致なし")}
-   let defensePts=10;if(slot.attackType){inEff=eff(slot.attackType,c);defensePts=best3ResistPts(inEff);reasons.push(`相手${typeIconText(slot.attackType)}技 ${best3EffShort(inEff)}`)}else reasons.push("相手の攻撃属性は未確認");
-   let speedPts=2.5;if(enemy){const av=Number(c.speed_value),bv=Number(enemy.speed_value);if(av>0&&bv>0){speedPts=av>=bv?5:0;reasons.push(av>=bv?"先攻見込み":"後攻見込み")}}
-   counterScore=Math.round(clamp(attackPts+defensePts+speedPts+(strength/1000)*20,0,100));detail=slot.hasType?(slot.attackType?"タイプ＋耐性":"タイプ"):"弱点手入力";
+   let attackPts=0;
+   if(slot.hasType&&enemy&&c.move_type){
+     outEff=eff(c.move_type,enemy);attackPts=best3AttackPts(outEff);
+     const raw=rawEff(c.move_type,enemy);
+     reasons.push(`${typeIconText(c.move_type)}：${raw>=4?"二重弱点（換算×1.69）":best3EffShort(outEff)}`);
+   }else{
+     const match=slot.weakTypes.includes(c.move_type);attackPts=match?55:0;
+     reasons.push(match?`指定弱点 ${typeIconText(c.move_type)} に一致`:"指定弱点への一致なし");
+   }
+   let defensePts=10;
+   if(slot.attackType){inEff=eff(slot.attackType,c);defensePts=best3ResistPts(inEff);reasons.push(`相手${typeIconText(slot.attackType)}技 ${best3EffShort(inEff)}`)}
+   else reasons.push("相手の攻撃属性は未確認");
+   let speedPts=2.5;
+   if(enemy){const av=Number(c.speed_value),bv=Number(enemy.speed_value);if(av>0&&bv>0){speedPts=av>=bv?5:0;reasons.push(av>=bv?"先攻見込み":"後攻見込み")}}
+   // Without the opponent's HP/stats, there is no legitimate predicted win or turn count.
+   counterScore=Math.round(clamp(attackPts+defensePts+speedPts,0,80));
+   detail=slot.hasType?(slot.attackType?"タイプ＋耐性":"タイプ"):"弱点手入力";
+   reasons.push("相手能力値不足のため勝敗・KO手数は未評価");
  }
- return {base,score:strength,counterScore,reasons,outEff,inEff,detail,slotValue:counterScore*10000+strength};
+ return {base,score:strength,counterScore,reasons,outEff,inEff,detail,
+         slotValue:counterScore*10000+tieStrength};
 }
 function typeIconText(t){return t||"不明"}
 const BEST3_COUNTER_ASYNC_CHUNK=120;
 const best3CounterYield=()=>new Promise(resolve=>setTimeout(resolve,0));
 function best3CounterReasonLines(x){
  const src=(x?.reasons||[]).map(v=>String(v).replace(/4倍弱点相当/g,"二重弱点")).filter(Boolean);
- const useful=src.filter(v=>!v.includes("未確認")&&!v.includes("一致なし"));
- return (useful.length?useful:src).slice(0,2);
+ return src.slice(0,4);
 }
 async function best3SlotRankAsync(pool,slot,token,onProgress){
  const rows=[];
  for(let i=0;i<pool.length;i++){
    if(token!==best3CounterCalcSeq)return null;
-   const x=best3EvaluateCandidate(pool[i],slot);if(x.score>=0)rows.push(x);
+   const x=best3EvaluateCandidate(pool[i],slot);if(Number.isFinite(x.counterScore))rows.push(x);
    if((i+1)%BEST3_COUNTER_ASYNC_CHUNK===0){onProgress?.(i+1,pool.length);await best3CounterYield()}
  }
  rows.sort((a,b)=>(b.slotValue-a.slotValue)||String(merged(a.base).pick_no).localeCompare(String(merged(b.base).pick_no),"ja",{numeric:true}));
@@ -2819,19 +3001,88 @@ async function best3CounterTeamAsync(pool,active,token,onProgress){
  }
  return {team:chosen.slice(0,3),active};
 }
-function best3CounterCardHTML(x){return best3CardHTML({base:x.base,score:x.score},{slotLabel:x.label||"",reasonLines:best3CounterReasonLines(x)})}
+// Use exactly the same tactical formula as individual recommendations, without
+// rebuilding the global strength ranking for each enemy in a series.
+function best3SeriesQuickRating(c,enemy){
+ const outEff=eff(c.move_type,enemy),inEff=eff(enemy.move_type,c);
+ const rawType=rawEff(c.move_type,enemy),sr=speedRelation(c,enemy);
+ const attack=dmg(c,enemy),defense=dmg(enemy,c);
+ const cHits=hitsToKO(enemy.hp,attack.n),eHits=hitsToKO(c.hp,defense.n);
+ const cTime=actionTimeToKO(cHits,sr.cFirst),eTime=actionTimeToKO(eHits,!sr.cFirst);
+ let outcome;
+ if(!Number.isFinite(cHits)&&!Number.isFinite(eHits))outcome="draw";
+ else if(!Number.isFinite(cHits))outcome="lose";
+ else if(!Number.isFinite(eHits))outcome="win";
+ else if(sr.tie)outcome=cHits<eHits?"win":cHits>eHits?"lose":"draw";
+ else outcome=cTime<eTime?"win":"lose";
+ const accuracyKnown=damageModel==="v2"&&attack.model==="v2"&&
+   (c.move_accuracy_always===true||(c.move_accuracy_ref!==null&&c.move_accuracy_ref!==undefined&&c.move_accuracy_ref!==""&&Number(c.move_accuracy_ref)>0));
+ const accuracy=accuracyKnown?CORE.moveAccuracyRef(c):null;
+ return best3TacticalRating({outcome,cHits,eHits,cFirst:sr.cFirst,rawType,inEff,accuracyKnown,accuracy});
+}
+// A series is a pool of possible CPU opponents, not three arbitrary picks.
+// Each distinct entry is evaluated; the selected trio maximizes best-member coverage per opponent.
+async function best3SeriesTeamAsync(pool,enemies,token,onProgress){
+ if(!pool.length||!enemies.length)return {team:[],active:[{source:"series"}],teamWins:0,total:enemies.length,available:pool.length};
+ const m=enemies.length,enemyMerged=enemies.map(merged),rows=[];
+ for(let i=0;i<pool.length;i++){
+   if(token!==best3CounterCalcSeq)return null;
+   const base=pool[i],candidate=merged(base),scores=new Float32Array(m),enemySelfId=base.master_id;
+   let rated=0,sum=0,wins=0;
+   for(let j=0;j<m;j++){
+     if(enemies[j].master_id===enemySelfId){scores[j]=-1;continue;} // no self-match
+     const score=best3SeriesQuickRating(candidate,enemyMerged[j]);
+     scores[j]=score;
+     rated++;sum+=score;
+     if(score>=70)wins++;
+   }
+   rows.push({base,scores,rated,average:rated?sum/rated:0,wins});
+   if(i%5===4||i===pool.length-1){onProgress?.(`候補 ${i+1}/${pool.length}・相手 ${m}件を評価`);await best3CounterYield()}
+ }
+ const current=new Float32Array(m),selected=[],used=new Set();
+ for(let turn=0;turn<Math.min(3,rows.length);turn++){
+   let best=null;
+   for(const row of rows){
+     if(used.has(row.base.master_id))continue;
+     let gain=0;
+     for(let j=0;j<m;j++){
+       const s=row.scores[j];if(s>=0&&s>current[j])gain+=s-current[j];
+     }
+     const energy=Math.max(0,Number(merged(row.base).poke_ene)||0);
+     const merit=gain+row.average*0.000001+energy*0.000000001;
+     if(!best||merit>best.merit+1e-9){best={row,merit}}
+   }
+   if(!best)break;
+   const chosen=best.row;selected.push(chosen);used.add(chosen.base.master_id);
+   for(let j=0;j<m;j++)if(chosen.scores[j]>current[j])current[j]=chosen.scores[j];
+   await best3CounterYield();if(token!==best3CounterCalcSeq)return null;
+ }
+ const teamWins=Array.from(current).filter(score=>score>=70).length;
+ const team=selected.map((r,i)=>({
+   base:r.base,score:best3Strength(r.base),counterScore:Math.round(r.average),detail:"弾全体",
+   label:`持ち込み ${i+1}`,
+   reasons:[`対象 ${r.rated}件に対する平均評価 ${Math.round(r.average)}点`,
+            `単独で勝利見込み ${r.wins} / ${r.rated}件`,
+            `この3体のいずれかで勝利見込み ${teamWins} / ${m}件`,
+            "全相手を評価し、3体の得意分野を補完"]
+ }));
+ return {team,active:[{source:"series"}],teamWins,total:m,available:pool.length};
+}
+function best3CounterCardHTML(x){return best3CardHTML({base:x.base,score:x.score,counterScore:x.counterScore,detail:x.detail},{slotLabel:x.label||"",reasonLines:best3CounterReasonLines(x)})}
 function renderBest3CounterResult(boxId,result,scopeLabelText){const box=$(boxId);if(!box)return;if(!result.active.length){box.innerHTML='<div class="historyEmpty639" style="grid-column:1/-1">相手ピックまたは弱点タイプを1つ以上指定してください。</div>';return}if(!result.team.length){box.innerHTML=`<div class="historyEmpty639" style="grid-column:1/-1">${esc(scopeLabelText)}に選出可能なピックがありません。</div>`;return}box.innerHTML=result.team.map(best3CounterCardHTML).join("");bindBest3ResultCards(box)}
 let best3CounterScope="owned";
 const BEST3_COUNTER_CACHE_MAX=24;
+const BEST3_COUNTER_POLICY="v6108-series-coverage-v1";
 const best3CounterCache=new Map();
 let best3CounterDataRevision=0,best3CounterCalcSeq=0;
 function invalidateBest3CounterCache(){best3CounterDataRevision++;best3CounterCalcSeq++;best3CounterCache.clear()}
 function best3CounterConditionSignature(){
- return JSON.stringify([best3OpponentSlots,best3WeakSlots.map(a=>[...(a||[])].sort()),best3TypeChoiceSlots.map(x=>x?{type1:x.type1||"",type2:x.type2||""}:null)]);
+ if(best3OpponentMode!=="manual")return JSON.stringify([best3OpponentMode,best3CurrentOpponentSeries()]);
+ return JSON.stringify(["manual",best3OpponentSlots,best3WeakSlots.map(a=>[...(a||[])].sort()),best3TypeChoiceSlots.map(x=>x?{type1:x.type1||"",type2:x.type2||""}:null)]);
 }
 function best3CounterCacheKey(scope){
  const ownedSig=scope==="owned"?getIds(OWNED_KEY).slice().sort().join(","):"";
- return JSON.stringify([DB.master_version,damageModel,scope,best3CounterDataRevision,ownedSig,best3CounterConditionSignature()]);
+ return JSON.stringify([BEST3_COUNTER_POLICY,DB.master_version,damageModel,scope,best3CounterDataRevision,ownedSig,best3CounterConditionSignature()]);
 }
 function best3CounterCacheGet(key){
  if(!best3CounterCache.has(key))return null;const v=best3CounterCache.get(key);best3CounterCache.delete(key);best3CounterCache.set(key,v);return v;
@@ -2851,7 +3102,7 @@ function setBest3CounterScope(scope,{calculate=true}={}){
 function best3CounterMessage(msg){
  const html=`<div class="historyEmpty639" style="grid-column:1/-1">${esc(msg)}</div>`,box=$(best3CounterScope==="owned"?"weakOwnedThreeResult":"weakAllThreeResult"),s=$("weakCounterStatus");if(box)box.innerHTML=html;if(s)s.textContent=msg;applyBest3CounterScopeUI(best3CounterScope);
 }
-async function updateBest3CounterTeams(){
+async function updateBest3CounterTeamsManual(){
  const token=++best3CounterCalcSeq,all=[0,1,2].map(best3Condition);
  const missingMaster=all.filter(c=>c.base&&c.needsMasterType);if(missingMaster.length){best3CounterMessage(`${missingMaster.map(c=>`相手${c.index+1}（${c.c.name_ja}）`).join("、")}はマスタデータにタイプ情報がないため弱点判定できません。`);return}
  const invalid=all.filter(c=>!c.base&&c.invalidWeak);if(invalid.length){best3CounterMessage(`${invalid.map(c=>`相手${c.index+1}`).join("、")}の弱点の組み合わせに一致するタイプ候補がありません。弱点を確認してください。`);return}
@@ -2860,18 +3111,46 @@ async function updateBest3CounterTeams(){
  const scope=best3CounterScope,key=best3CounterCacheKey(scope);let result=best3CounterCacheGet(key),reused=!!result,status=$("weakCounterStatus");
  try{
    if(!result){
-     const pool=best3EligiblePool(scope==="owned");
+     const pool=best3CounterEligiblePool(scope==="owned");
      if(status)status.textContent=`計算中：${scope==="owned"?"所持から":"全体から"} / ${pool.length.toLocaleString("ja-JP")}件を評価しています…`;
      await best3CounterYield();if(token!==best3CounterCalcSeq)return;
      result=await best3CounterTeamAsync(pool,active,token,msg=>{if(token===best3CounterCalcSeq&&status)status.textContent=`計算中：${scope==="owned"?"所持から":"全体から"} / ${msg}`});
      if(!result||token!==best3CounterCalcSeq)return;best3CounterCacheSet(key,result);
    }
    renderBest3CounterResult(scope==="owned"?"weakOwnedThreeResult":"weakAllThreeResult",result,scope==="owned"?"所持ピック":"全ピック");
-   const master=active.filter(c=>c.source==="master").length,manual=active.filter(c=>c.source==="manual").length,full=active.filter(c=>c.full).length;if(status)status.textContent=`自動選出：${scope==="owned"?"所持から":"全体から"} / 相手 ${active.length}人を反映。マスタデータ判定 ${master}人、手動弱点→タイプ選択 ${manual}人、詳細評価 ${full}人（${damageModel==="v2"?"Ver2":"Ver1"}）${reused?" / 前回結果を再利用":""}。`;applyBest3CounterScopeUI(scope);
+   const master=active.filter(c=>c.source==="master").length,manual=active.filter(c=>c.source==="manual").length,full=active.filter(c=>c.full).length;if(status)status.textContent=`対策評価：${scope==="owned"?"所持から":"全体から"} / 相手 ${active.length}人。詳細評価 ${full}人、タイプ暫定評価 ${manual}人（${damageModel==="v2"?"Ver2":"Ver1"}）。勝敗予測・KO手数を優先し、総合強さは同点時の参考。参考能力値も含みます。実機の勝率を保証する値ではありません${reused?" / 前回結果を再利用":""}。`;applyBest3CounterScopeUI(scope);
  }catch(err){
    if(token===best3CounterCalcSeq){console.error(err);best3CounterMessage("最強3体の計算に失敗しました。条件を変更して再度お試しください。")}
  }
 }
+async function updateBest3CounterTeamsSeries(){
+ const token=++best3CounterCalcSeq;
+ const enemies=best3SelectedEnemyPool(),scope=best3CounterScope;
+ const key=best3CounterCacheKey(scope),status=$("weakCounterStatus");
+ if(!enemies.complete.length){best3CounterMessage(`${enemies.label}に対戦可能なピックがありません。能力値が公開されるまで対戦評価できません。`);return}
+ let result=best3CounterCacheGet(key),reused=!!result;
+ try{
+   if(!result){
+     const pool=best3CounterEligiblePool(scope==="owned");
+     if(status)status.textContent=`計算中：${scope==="owned"?"所持から":"全体から"} ${pool.length}件 × ${enemies.complete.length}件を評価します…`;
+     await best3CounterYield();if(token!==best3CounterCalcSeq)return;
+     result=await best3SeriesTeamAsync(pool,enemies.complete,token,msg=>{
+       if(token===best3CounterCalcSeq&&status)status.textContent=`計算中：${msg}`;
+     });
+     if(!result||token!==best3CounterCalcSeq)return;
+     best3CounterCacheSet(key,result);
+   }
+   renderBest3CounterResult(scope==="owned"?"weakOwnedThreeResult":"weakAllThreeResult",result,scope==="owned"?"所持ピック":"全ピック");
+   if(status)status.textContent=`${enemies.label} ${result.total}件に対する3体の対策評価（${damageModel==="v2"?"Ver2":"Ver1"}）。いずれかが勝利見込み ${result.teamWins}/${result.total}件。候補 ${result.available}件から得意分野が重ならないよう選出。自己対戦は除外。参考データを含むモデル上の予測で、実機の勝率ではありません${reused?" / 前回結果を再利用":""}。`;
+   applyBest3CounterScopeUI(scope);
+ }catch(err){if(token===best3CounterCalcSeq){console.error(err);best3CounterMessage("弾全体との対戦評価に失敗しました。条件を変更して再度お試しください。")}}
+}
+async function updateBest3CounterTeams(){
+ best3RenderOpponentModeUI();
+ if(best3OpponentMode==="manual")return updateBest3CounterTeamsManual();
+ return updateBest3CounterTeamsSeries();
+}
+
 const BEST3_VIEW_KEY="frenda:best3View:v1";
 let best3View=simStorage.getItem(BEST3_VIEW_KEY)==="counter"?"counter":"owned";
 function setBestThreeView(view,{save=true,scroll=false}={}){
@@ -2881,7 +3160,7 @@ function setBestThreeView(view,{save=true,scroll=false}={}){
  owned?.classList.toggle("hidden",view!=="owned");counter?.classList.toggle("hidden",view!=="counter");
  if(ownedBtn){ownedBtn.classList.toggle("on",view==="owned");ownedBtn.setAttribute("aria-selected",view==="owned"?"true":"false")}
  if(counterBtn){counterBtn.classList.toggle("on",view==="counter");counterBtn.setAttribute("aria-selected",view==="counter"?"true":"false")}
- if(view==="owned")renderBestOwnedThree();else renderBest3WeakChooser({recalc:true});
+ if(view==="owned")renderBestOwnedThree();else{best3RenderOpponentModeUI();if(best3OpponentMode==="manual")renderBest3WeakChooser({recalc:true});else updateBest3CounterTeams()}
  if(scroll)document.querySelector(".bestThreeViewSwitch")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function renderBestThreeMode(){setBestThreeView(best3View,{save:false})}
@@ -3004,6 +3283,7 @@ $("best3OwnedViewBtn").onclick=()=>setBestThreeView("owned",{save:true,scroll:fa
 $("best3CounterViewBtn").onclick=()=>setBestThreeView("counter",{save:true,scroll:false});
 $("best3CounterOwnedScopeBtn").onclick=()=>setBest3CounterScope("owned");
 $("best3CounterAllScopeBtn").onclick=()=>setBest3CounterScope("all");
+$("best3OpponentModeSelect").onchange=e=>best3ChangeOpponentMode(e.target.value);
 $("clearAllWeakBtn").onclick=()=>{best3WeakSlots=[[],[],[]];best3OpponentSlots=[null,null,null];best3TypeChoiceSlots=[null,null,null];saveBest3WeakSlots();saveBest3OpponentSlots();saveBest3TypeChoiceSlots();renderBest3WeakChooser({recalc:true})} ;
 
 
@@ -3058,7 +3338,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.106",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.111",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -3078,7 +3358,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.106",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.111",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -3127,4 +3407,10 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 
 <!-- Updated: 2026-11-22 16:33 JST / Simulator Ver6.105 / Source Ver09 / Reference picks included in provisional round-robin only. -->
 
-<!-- Updated: 2026-11-22 17:59 JST / Simulator Ver6.106 / Source Ver10 / Owned/all rosters x active/latest/selected series opponents; TEST=PROD files. -->
+<!-- Updated: 2026-11-22 18:27 JST / Simulator Ver6.107 / Source Ver11 / tactical opponent-specific ranking; KO priority; reference data in counter teams; same TEST=PRODUCTION files. -->
+<!-- Updated: 2026-11-22 19:10 JST / Simulator Ver6.108 / Source Ver12 / default latest active series opponent pool, 3-pick complementary coverage. -->
+<!-- Updated: 2026-11-22 19:49 JST / Simulator Ver6.111 / Source Ver13 / individual opponents with latest-series picker default; unchanged master; portable TEST+PRODUCTION. -->
+
+<!-- Updated: 2026-11-22 20:15 JST / Simulator Ver6.111 / Source Ver14 / matching MasterDB v1.67 legacy official imagery. No game logic changes. -->
+
+<!-- Updated: 2026-11-22 20:39 JST / Simulator Ver6.111 / Source Ver15 / official gold XT2 legacy crop and source matching (23 records). -->
