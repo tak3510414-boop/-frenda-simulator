@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- FRENDA_SIMULATOR_VERSION: 6.108 / common TEST+PRODUCTION HTML -->
+<!-- FRENDA_SIMULATOR_VERSION: 6.109 / common TEST+PRODUCTION HTML -->
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ポケモンフレンダ 家庭版シミュレーター Ver6.108</title>
+<title>ポケモンフレンダ 家庭版シミュレーター Ver6.109</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 header{position:sticky;top:0;z-index:5;background:#172b3a;color:white;padding:10px 12px;font-weight:800}.simHeaderRow{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.simHeaderTitle{min-width:0}.simHomeLink{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;background:#ffffff18;border:1px solid #ffffff3a;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
@@ -768,11 +768,11 @@ body.battleOverlayOpen{overflow:hidden}
     <div id="bestOwnedThreeResult" class="bestThreeCards"></div>
   </div>
   <div id="best3CounterView" class="bestThreeSection counterBuilder bestThreeViewPanel hidden">
-    <div class="bestThreeHead"><div><h3>🎯 相手に合わせた最強3体</h3><p>初期設定は「所持ピックから選出 × 稼働中の最新弾全体と対戦」です。指定弾や全ピックも選択可能。個別対策は「相手1〜3を個別指定」に切り替えます。</p></div></div>
+    <div class="bestThreeHead"><div><h3>🎯 相手に合わせた最強3体</h3><p>相手1〜3を個別に指定します。「＋」を押すと、現在稼働中の最新弾で絞り込んだ一覧を開きます。別の弾・全弾にも切り替えられます。</p></div></div>
     <div class="best3SeriesModeBox">
-      <label for="best3OpponentModeSelect">対戦相手の範囲</label>
-      <select id="best3OpponentModeSelect" aria-label="最強3体の対戦相手の範囲"><option value="latest" selected>稼働中の最新弾（読込中）</option></select>
-      <div id="best3SeriesOpponentNote" class="best3SeriesOpponentNote" role="status">稼働中の最新弾のピック全体と対戦し、持ち込む最強3体を選出します。</div>
+      <label for="best3OpponentModeSelect">対戦相手の指定方法</label>
+      <select id="best3OpponentModeSelect" aria-label="最強3体の対戦相手の指定方法"><option value="manual" selected>相手1〜3を個別指定（初期値）</option></select>
+      <div id="best3SeriesOpponentNote" class="best3SeriesOpponentNote" role="status">相手カードの「＋」から、最新弾で絞り込んだ一覧を開きます。</div>
     </div>
     <div id="best3ManualOpponentPanel" class="hidden">
     <div class="best3OpponentOverviewWrap">
@@ -935,9 +935,9 @@ body.battleOverlayOpen{overflow:hidden}
   <div class="battlePickerShell">
     <div class="battlePickerHead"><div><small>COUNTER TARGET SELECT</small><b id="best3OpponentPickerTitle">相手1を一覧から選ぶ</b></div><button class="battlePickerClose" type="button">× 閉じる</button></div>
     <div class="battlePickerBody">
-      <div class="pickerHelp">マスターDBの全ピックから相手を選べます。能力値が未確認でも、タイプや技タイプが登録されていれば分かる範囲で対策選出に利用します。</div>
+      <div class="pickerHelp">初期表示は現在稼働中の最新弾です。下の「弾」を切り替えると過去弾・全弾からも選べます。対戦に必要な能力値や技が未完成のピックは選択できません。</div>
       <div class="best3OpponentPickerToolbar">
-        <div class="best3OpponentPickerSearch"><input id="best3OpponentQ" placeholder="番号・名前で検索"><select id="best3OpponentSeries"><option value="">全シリーズ</option></select><button id="clearBest3OpponentQ" type="button" class="ghost">消去</button></div>
+        <div class="best3OpponentPickerSearch"><input id="best3OpponentQ" placeholder="番号・名前で検索"><select id="best3OpponentSeries" aria-label="相手ピックの弾フィルタ"><option value="">全弾</option></select><button id="clearBest3OpponentQ" type="button" class="ghost">消去</button></div>
         <div id="best3OpponentPickCount" class="best3OpponentPickerCount"></div>
       </div>
       <div id="best3OpponentResults" class="battlePickerList"></div>
@@ -1056,7 +1056,7 @@ body.battleOverlayOpen{overflow:hidden}
 <!-- ===== DEPENDENCIES: shared Frenda runtime / test-safe ===== -->
 <script>
 (()=>{
- const v=encodeURIComponent("6.108-portable-m166");
+ const v=encodeURIComponent("6.109-portable-m166");
  const inTest=/\/test(?:\/|$)/.test(location.pathname);
  const base=inTest?"../":"";
  // TEST storage in the existing test runtime is activated with ?test=1.
@@ -1110,7 +1110,7 @@ if(!simRuntimeOk){
 }
 // Only the environment display changes; no different HTML or master is required for promotion.
 const simHeaderTitle=document.querySelector(".simHeaderTitle");
-const simDisplayVersion="Ver6.108"+(simIsTest?" TEST":"");
+const simDisplayVersion="Ver6.109"+(simIsTest?" TEST":"");
 if(simHeaderTitle)simHeaderTitle.textContent="ポケモンフレンダ 家庭版シミュレーター　"+simDisplayVersion;
 document.title="ポケモンフレンダ 家庭版シミュレーター "+simDisplayVersion;
 // Ver6.97: top-level `storage` is intentionally forbidden; it can collide with frenda-user.js during dependency evaluation.
@@ -2602,9 +2602,10 @@ const BEST3_OPP_KEY="frenda:best3Opponent:v1";
 const BEST3_TYPE_CHOICE_KEY="frenda:best3TypeChoice:v1";
 let best3WeakSlot=0;
 let best3OpponentPickerSlot=0;
-// Default always means "currently running" (not merely the newest announced master series).
-// Previously selected individual opponents remain saved for use in manual mode.
-let best3OpponentMode="latest";
+// Initially choose three individual opponents, not every pick in the latest series.
+// The opponent picker defaults to the currently active latest series on each opening.
+// Previous opponent slots remain in the existing saved data and are not cleared.
+let best3OpponentMode="manual";
 function best3PopulateOpponentModes(){
  const select=$("best3OpponentModeSelect");if(!select)return;
  const old=best3OpponentMode,latest=rrLatestSeries();
@@ -2612,12 +2613,12 @@ function best3PopulateOpponentModes(){
    .sort((a,b)=>rrSeriesOrder(b)-rrSeriesOrder(a)||a.localeCompare(b,"ja"));
  select.replaceChildren();
  const add=(value,label)=>{const option=document.createElement("option");option.value=value;option.textContent=label;select.appendChild(option)};
- add("latest",`稼働中の最新弾（${latest}）`);
- add("all","全ピック（全弾・特別配布含む）");
+ add("manual","相手1〜3を個別指定（初期値）");
+ add("latest",`【別モード】${latest}全体と対戦`);
+ add("all","【別モード】全ピックと対戦");
  for(const name of names){const start=RR_RELEASE_DATES[name];const upcoming=start&&start>rrJapanToday();
-   add("series:"+name,name+(upcoming?`（${start.slice(5).replace("-","/")}稼働予定）`:""));}
- add("manual","相手1・2・3を個別指定（弱点入力も可）");
- select.value=Array.from(select.options).some(x=>x.value===old)?old:"latest";
+   add("series:"+name,`【別モード】${name}全体`+(upcoming?`（${start.slice(5).replace("-","/")}稼働予定）`:""));}
+ select.value=Array.from(select.options).some(x=>x.value===old)?old:"manual";
 }
 function best3CurrentOpponentSeries(){
  return best3OpponentMode==="latest"?rrLatestSeries():best3OpponentMode.startsWith("series:")?best3OpponentMode.slice(7):null;
@@ -2631,13 +2632,13 @@ function best3RenderOpponentModeUI(){
  const manual=best3OpponentMode==="manual";
  $("best3ManualOpponentPanel")?.classList.toggle("hidden",!manual);
  const note=$("best3SeriesOpponentNote");if(!note)return;
- if(manual){note.textContent="相手1〜3のピックを個別指定できます。未設定枠には弱点タイプの入力もできます。以前の選択は保持しています。";return;}
+ if(manual){note.textContent=`相手1〜3の「＋」をタップすると、稼働中の最新弾（${rrLatestSeries()}）に絞った選択一覧が開きます。選択時にほかの弾・全弾への切替も可能です。既に選んだ相手は保持しています。`;return;}
  const p=best3SelectedEnemyPool();
  const upcoming=p.series&&RR_RELEASE_DATES[p.series]>rrJapanToday();
  note.innerHTML=`対戦相手：<strong>${esc(p.label)}</strong> の ${p.complete.length.toLocaleString("ja-JP")}件（登録 ${p.all.length.toLocaleString("ja-JP")}件、能力値未完成 ${p.excluded}件は除外）。${upcoming?"※稼働前の弾は試算用です。":""}この相手全体に対して、所持ピックから補完し合う3体を選出します。`;
 }
 function best3ChangeOpponentMode(value){
- best3OpponentMode=value||"latest";best3RenderOpponentModeUI();
+ best3OpponentMode=value||"manual";best3RenderOpponentModeUI();
  if(best3View==="counter"){
    if(best3OpponentMode==="manual")renderBest3WeakChooser({recalc:true});
    else updateBest3CounterTeams();
@@ -2814,7 +2815,21 @@ function renderBest3WeakChooser({recalc=false}={}){
  renderBest3OpponentCurrent();
  if(recalc)updateBest3CounterTeams();else applyBest3CounterScopeUI(best3CounterScope);
 }
-function populateBest3OpponentSeries(){const sel=$("best3OpponentSeries");if(!sel||sel.dataset.ready)return;const vals=[...new Set(R.map(r=>r.series).filter(Boolean))];for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)}sel.dataset.ready="1"}
+function populateBest3OpponentSeries(){
+ const sel=$("best3OpponentSeries");if(!sel)return;
+ // Rebuild on every opening: the latest active series can change on its official release date.
+ const latest=rrLatestSeries(),today=rrJapanToday();
+ const vals=[...new Set(R.map(r=>r.series).filter(Boolean))]
+   .sort((a,b)=>rrSeriesOrder(b)-rrSeriesOrder(a)||a.localeCompare(b,"ja"));
+ sel.replaceChildren();
+ const add=(value,label)=>{const o=document.createElement("option");o.value=value;o.textContent=label;sel.appendChild(o)};
+ if(vals.includes(latest))add(latest,`★ 稼働中の最新弾：${latest}`);
+ for(const name of vals){if(name===latest)continue;
+   const start=RR_RELEASE_DATES[name],upcoming=start&&start>today;
+   add(name,name+(upcoming?`（${start.slice(5).replace("-","/")}稼働予定）`:""));
+ }
+ add("","全弾・スペシャルを含む");
+}
 function best3OpponentPickButton(r){const b=document.createElement("button"),c=merged(r),full=simCasualBattleEligible(c),hasType=!!c.type1;b.className="battlePick";b.disabled=simBattleBlocked(c);const st=full?["full","● 詳細データあり"]:hasType?["partial",c.move_type?"▲ タイプ＋攻撃属性あり":"▲ タイプ情報あり"]:["need","？ タイプ不明"];b.innerHTML=`<img loading="lazy" src="${esc(pickImage(r))}" alt=""><span class="battlePickText"><b>${esc(c.name_ja)}</b><span>${esc(c.pick_no)} / ${esc(c.series||"")}</span><span class="best3OpponentPickStatus ${st[0]}">${st[1]}</span></span>`;b.onclick=()=>chooseBest3Opponent(r);if(simBattleBlocked(c))b.title="能力値や技が未完成：相手に指定できません";else if(simReferenceBattle(c))b.title="参考データで相性を計算します";return b}
 const BEST3_OPPONENT_PAGE_SIZE=80;
 const BEST3_OPPONENT_SEARCH_DELAY=130;
@@ -2835,7 +2850,17 @@ function runBest3OpponentSearchNow(){
  if(best3OpponentSearchTimer){clearTimeout(best3OpponentSearchTimer);best3OpponentSearchTimer=null}
  renderBest3OpponentPicker(true);
 }
-function openBest3OpponentPicker(slot){best3OpponentPickerSlot=slot;populateBest3OpponentSeries();const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;if($("best3OpponentQ"))$("best3OpponentQ").value="";if($("best3OpponentSeries"))$("best3OpponentSeries").value="";renderBest3OpponentPicker(true);showBattleOverlay("best3OpponentOverlay");setTimeout(()=>$("best3OpponentQ")?.focus(),30)}
+function openBest3OpponentPicker(slot){
+ best3OpponentPickerSlot=slot;
+ populateBest3OpponentSeries();
+ const title=$("best3OpponentPickerTitle");if(title)title.textContent=`相手${slot+1}を一覧から選ぶ`;
+ const q=$("best3OpponentQ"),sel=$("best3OpponentSeries");
+ if(q)q.value="";
+ if(sel){const latest=rrLatestSeries();sel.value=[...sel.options].some(o=>o.value===latest)?latest:"";}
+ renderBest3OpponentPicker(true);
+ showBattleOverlay("best3OpponentOverlay");
+ // Do not automatically raise the iPhone keyboard: keep the latest-series list visible.
+}
 function chooseBest3Opponent(r){if(simBattleBlocked(merged(r))){UI.dialog.alert("能力値や技が未完成のピックは対象に指定できません。");return}best3OpponentSlots[best3OpponentPickerSlot]=r.master_id;best3WeakSlots[best3OpponentPickerSlot]=[];best3TypeChoiceSlots[best3OpponentPickerSlot]=null;saveBest3OpponentSlots();saveBest3WeakSlots();saveBest3TypeChoiceSlots();best3WeakSlot=best3OpponentPickerSlot;closeBattleOverlays();renderBest3WeakChooser({recalc:true})}
 function best3AttackPts(e){if(e>=FRIENDA_EFFECT.VERY_HIGH-.001)return 55;if(e>=FRIENDA_EFFECT.HIGH-.001)return 48;if(e>=1)return 24;if(e>=FRIENDA_EFFECT.LOW-.001)return 8;return 2}
 function best3ResistPts(e){if(e<=FRIENDA_EFFECT.VERY_LOW+.001)return 20;if(e<=FRIENDA_EFFECT.LOW+.001)return 17;if(e<=1.001)return 10;if(e<=FRIENDA_EFFECT.HIGH+.001)return 3;return 0}
@@ -3295,7 +3320,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&& !$("pickS
 
 function backupData(){
  const snapshotStorage={};for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(k&&k.startsWith("frenda:"))snapshotStorage[k]=simStorage.getItem(k)}
- return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.108",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
+ return {app:"pokemon-frienda-home-simulator",format_version:1,simulator_version:"6.109",master_version:DB.master_version,exported_at:new Date().toISOString(),storage:snapshotStorage};
 }
 $("backupBtn").onclick=()=>{
  try{const data=JSON.stringify(backupData(),null,2),blob=new Blob([data],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a"),d=new Date(),pad=n=>String(n).padStart(2,"0");a.href=u;a.download=`frenda_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);$("backupStatus").textContent="バックアップを書き出しました。"}catch(e){$("backupStatus").textContent="バックアップの作成に失敗しました。"}};
@@ -3315,7 +3340,7 @@ function simulatorCloudKey(k){return typeof k==="string"&&k.startsWith("frenda:"
 function simulatorCloudData(){
  const snapshotStorage={};
  for(let i=0;i<simStorage.length;i++){const k=simStorage.key(i);if(simulatorCloudKey(k))snapshotStorage[k]=simStorage.getItem(k)}
- return {format_version:1,simulator_version:"6.108",storage:snapshotStorage};
+ return {format_version:1,simulator_version:"6.109",storage:snapshotStorage};
 }
 function applySimulatorCloudData(data){
  if(!data||typeof data!=="object"||!data.storage||typeof data.storage!=="object")throw new Error("クラウドデータ形式が不正です");
@@ -3366,3 +3391,4 @@ if(window.FrendaCloud)window.FrendaCloud.init({app:"simulator",hideButton:true,l
 
 <!-- Updated: 2026-11-22 18:27 JST / Simulator Ver6.107 / Source Ver11 / tactical opponent-specific ranking; KO priority; reference data in counter teams; same TEST=PRODUCTION files. -->
 <!-- Updated: 2026-11-22 19:10 JST / Simulator Ver6.108 / Source Ver12 / default latest active series opponent pool, 3-pick complementary coverage. -->
+<!-- Updated: 2026-11-22 19:49 JST / Simulator Ver6.109 / Source Ver13 / individual opponents with latest-series picker default; unchanged master; portable TEST+PRODUCTION. -->
